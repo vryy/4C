@@ -44,10 +44,10 @@ output.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace FLD
 {
@@ -65,7 +65,7 @@ namespace FLD
 
 
     */
-    TurbulenceStatisticsCcy(Teuchos::RCP<Discret::Discretization> actdis, bool alefluid,
+    TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Discretization> actdis, bool alefluid,
         Teuchos::RCP<Epetra_Vector> dispnp, Teuchos::ParameterList& params,
         const std::string& statistics_outfilename, const bool withscatra);
 
@@ -133,7 +133,7 @@ namespace FLD
 
     // Add results from scalar transport field solver to statistics
     void AddScaTraResults(
-        Teuchos::RCP<Discret::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp);
+        Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp);
 
    protected:
     /*!
@@ -162,10 +162,10 @@ namespace FLD
     int countrecord_;
 
     //! The discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! the scatra discretization
-    Teuchos::RCP<Discret::Discretization> scatradis_;
+    Teuchos::RCP<Core::FE::Discretization> scatradis_;
 
     //! node displacements due to mesh motion
     Teuchos::RCP<Epetra_Vector> dispnp_;

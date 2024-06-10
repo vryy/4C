@@ -50,7 +50,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Adapter::StructureBaseAlgorithm::StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
-    const Teuchos::ParameterList& sdyn, Teuchos::RCP<Discret::Discretization> actdis)
+    const Teuchos::ParameterList& sdyn, Teuchos::RCP<Core::FE::Discretization> actdis)
 {
   create_structure(prbdyn, sdyn, actdis);
 }
@@ -59,7 +59,7 @@ Adapter::StructureBaseAlgorithm::StructureBaseAlgorithm(const Teuchos::Parameter
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::StructureBaseAlgorithm::create_structure(const Teuchos::ParameterList& prbdyn,
-    const Teuchos::ParameterList& sdyn, Teuchos::RCP<Discret::Discretization> actdis)
+    const Teuchos::ParameterList& sdyn, Teuchos::RCP<Core::FE::Discretization> actdis)
 {
   // major switch to different time integrators
   switch (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP"))
@@ -85,7 +85,7 @@ void Adapter::StructureBaseAlgorithm::create_structure(const Teuchos::ParameterL
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterList& prbdyn,
-    const Teuchos::ParameterList& sdyn, Teuchos::RCP<Discret::Discretization> actdis)
+    const Teuchos::ParameterList& sdyn, Teuchos::RCP<Core::FE::Discretization> actdis)
 {
   // this is not exactly a one hundred meter race, but we need timing
   Teuchos::RCP<Teuchos::Time> t =
@@ -473,7 +473,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_linear_solver(
-    Teuchos::RCP<Discret::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
+    Teuchos::RCP<Core::FE::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
 {
   Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::null;
 
@@ -496,7 +496,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_linea
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_contact_meshtying_solver(
-    Teuchos::RCP<Discret::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
+    Teuchos::RCP<Core::FE::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
 {
   Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::null;
 

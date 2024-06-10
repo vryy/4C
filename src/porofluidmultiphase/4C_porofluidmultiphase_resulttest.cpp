@@ -9,9 +9,9 @@
 
 #include "4C_porofluidmultiphase_resulttest.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_porofluidmultiphase_meshtying_strategy_base.hpp"
 #include "4C_porofluidmultiphase_timint_implicit.hpp"
 

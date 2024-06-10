@@ -37,10 +37,10 @@ namespace Core::LinAlg
   class SparseMatrix;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -68,7 +68,7 @@ namespace CONTACT
     \param discret (in): A discretization containing beam elements
 
     */
-    Beam3cmanager(Discret::Discretization& discret, double alphaf);
+    Beam3cmanager(Core::FE::Discretization& discret, double alphaf);
 
     /*!
     \brief Destructor
@@ -90,13 +90,13 @@ namespace CONTACT
     \brief Get problem discretization
 
     */
-    inline const Discret::Discretization& ProblemDiscret() const { return pdiscret_; }
+    inline const Core::FE::Discretization& ProblemDiscret() const { return pdiscret_; }
 
     /*!
     \brief Get beam to solid contact discretization
 
     */
-    inline Discret::Discretization& BTSolDiscret() { return *btsoldiscret_; }
+    inline Core::FE::Discretization& BTSolDiscret() { return *btsoldiscret_; }
 
     /*!
     \brief Get communicator
@@ -269,10 +269,10 @@ namespace CONTACT
     int numnodalvalues_;
 
     //! problem discretizaton
-    Discret::Discretization& pdiscret_;
+    Core::FE::Discretization& pdiscret_;
 
     //! contact discretization (basically a copy)
-    Teuchos::RCP<Discret::Discretization> btsoldiscret_;
+    Teuchos::RCP<Core::FE::Discretization> btsoldiscret_;
 
     //! the Comm interface of the problem discretization
     const Epetra_Comm& pdiscomm_;

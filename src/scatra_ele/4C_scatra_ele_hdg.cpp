@@ -10,13 +10,13 @@
 #include "4C_scatra_ele_hdg.hpp"
 
 #include "4C_comm_utils_factory.hpp"
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
-#include "4C_discretization_fem_general_utils_polynomial.hpp"
+#include "4C_fem_discretization_faces.hpp"
+#include "4C_fem_discretization_hdg.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_polynomial.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret_faces.hpp"
-#include "4C_lib_discret_hdg.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_myocard.hpp"
 #include "4C_scatra_ele_action.hpp"
@@ -423,7 +423,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ScaTraHDG::CreateFaceEl
 |  evaluate the element (public)                         hoermann 09/15|
 *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -437,9 +437,9 @@ int Discret::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
   ScaTra::Action act;
   if (params.get<bool>("hdg_action", false))
   {
-    switch (Teuchos::getIntegralValue<Discret::HDGAction>(params, "action"))
+    switch (Teuchos::getIntegralValue<Core::FE::HDGAction>(params, "action"))
     {
-      case Discret::HDGAction::project_dirich_field:
+      case Core::FE::HDGAction::project_dirich_field:
         act = ScaTra::Action::project_dirich_field;
         break;
       default:
@@ -659,7 +659,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ScaTraHDGB
  |  evaluate the element (public)                        hoermann 09/15 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::ScaTraHDGBoundary::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -672,7 +672,7 @@ int Discret::ELEMENTS::ScaTraHDGBoundary::Evaluate(Teuchos::ParameterList& param
  |  Integrate a surface/line Neumann boundary condition  hoermann 09/15 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::ScaTraHDGBoundary::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 
@@ -695,7 +695,7 @@ int Discret::ELEMENTS::ScaTraHDGBoundary::evaluate_neumann(Teuchos::ParameterLis
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element (public) hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraHDGBoundary::LocationVector(const Discretization& dis,
+void Discret::ELEMENTS::ScaTraHDGBoundary::LocationVector(const Core::FE::Discretization& dis,
     LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {
@@ -708,7 +708,7 @@ void Discret::ELEMENTS::ScaTraHDGBoundary::LocationVector(const Discretization& 
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element (public) hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraHDGBoundary::LocationVector(const Discretization& dis,
+void Discret::ELEMENTS::ScaTraHDGBoundary::LocationVector(const Core::FE::Discretization& dis,
     std::vector<int>& lm, std::vector<int>& lmowner, std::vector<int>& lmstride) const
 {
   // we have to do it this way
@@ -820,18 +820,18 @@ void Discret::ELEMENTS::ScaTraHDGIntFace::Unpack(const std::vector<char>& data)
  |  create the patch location vector (public)            hoermann 09/15 |
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
-    Discret::Discretization& discretization,  ///< discretization
-    std::vector<int>& nds_master,             ///< nodal dofset w.r.t master parent element
-    std::vector<int>& nds_slave,              ///< nodal dofset w.r.t slave parent element
-    std::vector<int>& patchlm,                ///< local map for gdof ids for patch of elements
-    std::vector<int>& master_lm,              ///< local map for gdof ids for master element
-    std::vector<int>& slave_lm,               ///< local map for gdof ids for slave element
-    std::vector<int>& face_lm,                ///< local map for gdof ids for face element
-    std::vector<int>& lm_masterToPatch,       ///< local map between lm_master and lm_patch
-    std::vector<int>& lm_slaveToPatch,        ///< local map between lm_slave and lm_patch
-    std::vector<int>& lm_faceToPatch,         ///< local map between lm_face and lm_patch
-    std::vector<int>& lm_masterNodeToPatch,   ///< local map between master nodes and nodes in patch
-    std::vector<int>& lm_slaveNodeToPatch     ///< local map between slave nodes and nodes in patch
+    Core::FE::Discretization& discretization,  ///< discretization
+    std::vector<int>& nds_master,              ///< nodal dofset w.r.t master parent element
+    std::vector<int>& nds_slave,               ///< nodal dofset w.r.t slave parent element
+    std::vector<int>& patchlm,                 ///< local map for gdof ids for patch of elements
+    std::vector<int>& master_lm,               ///< local map for gdof ids for master element
+    std::vector<int>& slave_lm,                ///< local map for gdof ids for slave element
+    std::vector<int>& face_lm,                 ///< local map for gdof ids for face element
+    std::vector<int>& lm_masterToPatch,        ///< local map between lm_master and lm_patch
+    std::vector<int>& lm_slaveToPatch,         ///< local map between lm_slave and lm_patch
+    std::vector<int>& lm_faceToPatch,          ///< local map between lm_face and lm_patch
+    std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
+    std::vector<int>& lm_slaveNodeToPatch    ///< local map between slave nodes and nodes in patch
 )
 {
   // create one patch location vector containing all dofs of master, slave and
@@ -1045,7 +1045,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ScaTraHDGI
  |  evaluate the element (public)                        hoermann 09/15 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::ScaTraHDGIntFace::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -1065,7 +1065,7 @@ int Discret::ELEMENTS::ScaTraHDGIntFace::Evaluate(Teuchos::ParameterList& params
  |  Integrate a surface/line Neumann boundary condition  hoermann 09/15 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::ScaTraHDGIntFace::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

@@ -14,7 +14,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_fluid_ele_calc_xfem_coupling.hpp"
 #include "4C_inpar_xfem.hpp"
 
@@ -66,25 +66,25 @@ namespace Discret
         //! add coupling slave element's displacements and set current slave element node
         //! coordinates
         void AddSlaveEleDisp(
-            const Discret::Discretization& slavedis,  ///< coupling slave discretization
-            const std::vector<int>& lm                ///< local map
+            const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
+            const std::vector<int>& lm                 ///< local map
             ) override;
         void AddSlaveEleDisp(
-            const Discret::Discretization& slavedis,  ///< coupling slave discretization
-            const std::vector<int>& lm,               ///< local map
-            std::vector<double>& mymatrix             ///< slave element displacement vector
+            const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
+            const std::vector<int>& lm,                ///< local map
+            std::vector<double>& mymatrix              ///< slave element displacement vector
             ) override;
 
         //! set slave element's interface velocity & pressure for current time step
         void SetSlaveState(
-            const Discret::Discretization& slavedis,  ///< coupling slave discretization
-            const std::vector<int>& lm                ///< local map
+            const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
+            const std::vector<int>& lm                 ///< local map
             ) override;
 
         //! set slave element's interface velocity & pressure for previous time step
         void SetSlaveStaten(
-            const Discret::Discretization& slavedis,  ///< coupling slave discretization
-            const std::vector<int>& lm                ///< local map
+            const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
+            const std::vector<int>& lm                 ///< local map
             ) override;
 
         //! @name Accessors
@@ -125,16 +125,16 @@ namespace Discret
 
         //! set state for interface velocity jump
         void set_interface_jump_statenp(
-            const Discret::Discretization& cutterdis,  ///< cutter discretization
-            const std::string state,                   ///< state
-            const std::vector<int>& lm                 ///< local map
+            const Core::FE::Discretization& cutterdis,  ///< cutter discretization
+            const std::string state,                    ///< state
+            const std::vector<int>& lm                  ///< local map
             ) override;
 
         //! set state for interface velocity jump for previous time step
         void set_interface_jump_staten(
-            const Discret::Discretization& cutterdis,  ///< cutter discretization
-            const std::string state,                   ///< state
-            const std::vector<int>& lm                 ///< local map
+            const Core::FE::Discretization& cutterdis,  ///< cutter discretization
+            const std::string state,                    ///< state
+            const std::vector<int>& lm                  ///< local map
             ) override;
 
         //! get interface velocity jump at Gaussian point

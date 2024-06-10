@@ -10,8 +10,8 @@
 
 #include "4C_comm_parobject.hpp"
 #include "4C_comm_utils_factory.hpp"
-#include "4C_discretization_fem_general_cell_type.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_cell_type.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_so3_line.hpp"

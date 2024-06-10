@@ -7,10 +7,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_elements_paramsinterface.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  * Integrate a Line Neumann boundary condition (public)         gee 04/08|
  * ----------------------------------------------------------------------*/
 int Discret::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

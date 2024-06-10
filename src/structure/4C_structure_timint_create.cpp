@@ -9,10 +9,10 @@
 /* headers */
 #include "4C_structure_timint_create.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_structure_timint_ab2.hpp"
 #include "4C_structure_timint_centrdiff.hpp"
@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 /* create marching time integrator */
 Teuchos::RCP<STR::TimInt> STR::TimIntCreate(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization>& actdis,
     Teuchos::RCP<Core::LinAlg::Solver>& solver, Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter>& output)
 {
@@ -57,7 +57,7 @@ Teuchos::RCP<STR::TimInt> STR::TimIntCreate(const Teuchos::ParameterList& timepa
 /* create implicit marching time integrator */
 Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization>& actdis,
     Teuchos::RCP<Core::LinAlg::Solver>& solver, Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter>& output)
 {
@@ -118,7 +118,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate(const Teuchos::ParameterList
 /* create explicit marching time integrator */
 Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization>& actdis,
     Teuchos::RCP<Core::LinAlg::Solver>& solver, Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter>& output)
 {

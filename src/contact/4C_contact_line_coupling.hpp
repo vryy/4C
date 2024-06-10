@@ -49,7 +49,7 @@ namespace CONTACT
      performed in parallel by individual processes.
 
      */
-    LineToSurfaceCoupling3d(Discret::Discretization& idiscret, int dim,
+    LineToSurfaceCoupling3d(Core::FE::Discretization& idiscret, int dim,
         Teuchos::ParameterList& params, Element& pEle, Teuchos::RCP<Mortar::Element>& lEle,
         std::vector<Element*> surfEles, LineToSurfaceCoupling3d::IntType itype);
 
@@ -117,7 +117,7 @@ namespace CONTACT
      \brief Get interface discretization
 
      */
-    virtual Discret::Discretization& discret() const { return idiscret_; };
+    virtual Core::FE::Discretization& discret() const { return idiscret_; };
 
     /*!
      \brief Get problem dimension (here: 3D)
@@ -363,8 +363,8 @@ namespace CONTACT
     LineToSurfaceCoupling3d operator=(const LineToSurfaceCoupling3d& old) = delete;
     LineToSurfaceCoupling3d(const LineToSurfaceCoupling3d& old) = delete;
 
-    Discret::Discretization& idiscret_;  //< discretization of the contact interface
-    int dim_;                            //< problem dimension (here: 3D)
+    Core::FE::Discretization& idiscret_;  //< discretization of the contact interface
+    int dim_;                             //< problem dimension (here: 3D)
 
     Element& p_ele_;                        //< parent element connected to line element
     Teuchos::RCP<Mortar::Element>& l_ele_;  //< line element to perform coupling for
@@ -409,7 +409,7 @@ namespace CONTACT
      performed in parallel by individual processes.
 
      */
-    LineToLineCouplingPoint3d(Discret::Discretization& idiscret, int dim,
+    LineToLineCouplingPoint3d(Core::FE::Discretization& idiscret, int dim,
         Teuchos::ParameterList& params, Teuchos::RCP<Mortar::Element>& lsele,
         Teuchos::RCP<Mortar::Element>& lmele);
 
@@ -468,7 +468,7 @@ namespace CONTACT
      \brief Get interface discretization
 
      */
-    virtual Discret::Discretization& discret() const { return idiscret_; };
+    virtual Core::FE::Discretization& discret() const { return idiscret_; };
 
     /*!
      \brief Get problem dimension (here: 3D)
@@ -500,7 +500,7 @@ namespace CONTACT
     LineToLineCouplingPoint3d operator=(const LineToLineCouplingPoint3d& old) = delete;
     LineToLineCouplingPoint3d(const LineToLineCouplingPoint3d& old) = delete;
 
-    Discret::Discretization& idiscret_;      //< discretization of the contact interface
+    Core::FE::Discretization& idiscret_;     //< discretization of the contact interface
     int dim_;                                //< problem dimension (here: 3D)
     Teuchos::ParameterList& imortar_;        //< containing contact input parameters
     Teuchos::RCP<Mortar::Element>& l_sele_;  //< line element to perform coupling for

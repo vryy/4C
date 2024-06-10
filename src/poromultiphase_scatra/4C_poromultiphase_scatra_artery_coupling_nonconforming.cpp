@@ -9,8 +9,8 @@
 
 #include "4C_poromultiphase_scatra_artery_coupling_nonconforming.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -32,10 +32,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
-    PoroMultiPhaseScaTraArtCouplNonConforming(Teuchos::RCP<Discret::Discretization> arterydis,
-        Teuchos::RCP<Discret::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
-        const std::string& condname, const std::string& artcoupleddofname,
-        const std::string& contcoupleddofname)
+    PoroMultiPhaseScaTraArtCouplNonConforming(Teuchos::RCP<Core::FE::Discretization> arterydis,
+        Teuchos::RCP<Core::FE::Discretization> contdis,
+        const Teuchos::ParameterList& couplingparams, const std::string& condname,
+        const std::string& artcoupleddofname, const std::string& contcoupleddofname)
     : PoroMultiPhaseScaTraArtCouplBase(
           arterydis, contdis, couplingparams, condname, artcoupleddofname, contcoupleddofname),
       couplingparams_(couplingparams),

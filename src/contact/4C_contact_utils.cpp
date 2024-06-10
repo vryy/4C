@@ -10,11 +10,11 @@
 
 #include "4C_contact_utils.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_mortar.hpp"
 #include "4C_io_every_iteration_writer.hpp"
-#include "4C_lib_discret.hpp"
 
 #include <fstream>
 
@@ -83,7 +83,7 @@ int CONTACT::UTILS::GetContactConditions(
  *----------------------------------------------------------------------------*/
 int CONTACT::UTILS::GetContactConditionGroups(
     std::vector<std::vector<Core::Conditions::Condition*>>& ccond_grps,
-    const Discret::Discretization& discret, const bool& throw_error)
+    const Core::FE::Discretization& discret, const bool& throw_error)
 {
   // vector that contains solid-to-solid and beam-to-solid contact pairs
   std::vector<Core::Conditions::Condition*> beamandsolidcontactconditions(0);
@@ -429,7 +429,7 @@ void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int inte
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
-    const Discret::Discretization& str_discret,
+    const Core::FE::Discretization& str_discret,
     const std::vector<std::vector<Core::Conditions::Condition*>>& ccond_grps,
     std::set<const Core::Nodes::Node*>& dbc_slave_nodes,
     std::set<const Core::Elements::Element*>& dbc_slave_eles)
@@ -486,7 +486,7 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
  *----------------------------------------------------------------------------*/
 void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes(
     std::map<const Core::Nodes::Node*, int>& dbc_slave_node_map,
-    const Discret::Discretization& str_discret,
+    const Core::FE::Discretization& str_discret,
     const std::vector<const Core::Conditions::Condition*>& sl_conds)
 {
   std::vector<Core::Conditions::Condition*> dconds;

@@ -10,10 +10,10 @@
 
 #include "4C_xfem_discretization_utils.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_dofset_fixed_size.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization_faces.hpp"
+#include "4C_fem_dofset_fixed_size.hpp"
 #include "4C_io_gmsh.hpp"
-#include "4C_lib_discret_faces.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_graph_based.hpp"
@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<Discret::Discretization> dis,
+void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<Core::FE::Discretization> dis,
     const std::string& disname, bool elements, bool elecol, bool nodes, bool nodecol, bool faces,
     bool facecol, std::ostream& s, std::map<int, Core::LinAlg::Matrix<3, 1>>* curr_pos)
 {
@@ -120,10 +120,12 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<Discret::Discretizati
   if (faces)
   {
     // cast to DiscretizationXFEM
-    Teuchos::RCP<Discret::DiscretizationFaces> xdis =
-        Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(dis, true);
+    Teuchos::RCP<Core::FE::DiscretizationFaces> xdis =
+        Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(dis, true);
     if (xdis == Teuchos::null)
-      FOUR_C_THROW("Failed to cast Discret::Discretization to Discret::DiscretizationFaces.");
+      FOUR_C_THROW(
+          "Failed to cast Core::FE::Discretization to "
+          "Core::FE::DiscretizationFaces.");
 
     s << "View \" " << disname;
 
@@ -163,7 +165,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<Discret::Discretizati
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
-    const Teuchos::ParameterList& xgen_params, Teuchos::RCP<Discret::Discretization> dis,
+    const Teuchos::ParameterList& xgen_params, Teuchos::RCP<Core::FE::Discretization> dis,
     int numdof) const
 {
   Teuchos::RCP<XFEM::DiscretizationXFEM> xdis =
@@ -208,8 +210,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
-    const Teuchos::ParameterList& xgen_params, Teuchos::RCP<Discret::Discretization> dis,
-    Teuchos::RCP<Discret::Discretization> embedded_dis, const std::string& embedded_cond_name,
+    const Teuchos::ParameterList& xgen_params, Teuchos::RCP<Core::FE::Discretization> dis,
+    Teuchos::RCP<Core::FE::Discretization> embedded_dis, const std::string& embedded_cond_name,
     int numdof) const
 {
   if (!embedded_dis->Filled()) embedded_dis->fill_complete();
@@ -238,8 +240,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
-    const Teuchos::ParameterList& xgen_params, Teuchos::RCP<Discret::Discretization> src_dis,
-    Teuchos::RCP<Discret::Discretization> target_dis,
+    const Teuchos::ParameterList& xgen_params, Teuchos::RCP<Core::FE::Discretization> src_dis,
+    Teuchos::RCP<Core::FE::Discretization> target_dis,
     const std::vector<Core::Conditions::Condition*>& boundary_conds) const
 {
   if (!target_dis->Filled()) target_dis->fill_complete();
@@ -272,8 +274,8 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
-    Teuchos::RCP<Discret::Discretization> sourcedis,
-    Teuchos::RCP<Discret::Discretization> targetdis,
+    Teuchos::RCP<Core::FE::Discretization> sourcedis,
+    Teuchos::RCP<Core::FE::Discretization> targetdis,
     std::vector<Core::Conditions::Condition*>& conditions,
     const std::vector<std::string>& conditions_to_copy) const
 {
@@ -297,8 +299,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
-    Teuchos::RCP<Discret::Discretization> sourcedis,
-    Teuchos::RCP<Discret::Discretization> targetdis,
+    Teuchos::RCP<Core::FE::Discretization> sourcedis,
+    Teuchos::RCP<Core::FE::Discretization> targetdis,
     const std::map<int, Core::Nodes::Node*>& sourcenodes,
     const std::map<int, Core::Nodes::Node*>& sourcegnodes,
     const std::map<int, Teuchos::RCP<Core::Elements::Element>>& sourceelements,
@@ -444,8 +446,9 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::XFEMDiscretizationBuilder::redistribute(Teuchos::RCP<Discret::Discretization> dis,
-    std::vector<int>& noderowvec, std::vector<int>& nodecolvec) const
+void XFEM::UTILS::XFEMDiscretizationBuilder::redistribute(
+    Teuchos::RCP<Core::FE::Discretization> dis, std::vector<int>& noderowvec,
+    std::vector<int>& nodecolvec) const
 {
   dis->CheckFilledGlobally();
 
@@ -479,8 +482,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::redistribute(Teuchos::RCP<Discret::
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_condition(
-    const Teuchos::RCP<Discret::Discretization>& sourcedis,
-    const Teuchos::RCP<Discret::Discretization>& targetdis,
+    const Teuchos::RCP<Core::FE::Discretization>& sourcedis,
+    const Teuchos::RCP<Core::FE::Discretization>& targetdis,
     const std::vector<Core::Conditions::Condition*>& boundary_conds,
     const std::vector<std::string>& conditions_to_copy) const
 {

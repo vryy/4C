@@ -14,8 +14,8 @@
 
 #include "4C_constraint_lagpenconstraint_noxinterface.hpp"
 
-#include "4C_discretization_condition.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_condition.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
 
@@ -193,7 +193,7 @@ double LAGPENCONSTRAINT::NoxInterface::get_previous_lagrange_multiplier_norms(
  *----------------------------------------------------------------------------*/
 bool LAGPENCONSTRAINT::NoxInterfacePrec::IsSaddlePointSystem() const
 {
-  Teuchos::RCP<const Discret::Discretization> dis = gstate_ptr_->get_discret();
+  Teuchos::RCP<const Core::FE::Discretization> dis = gstate_ptr_->get_discret();
 
   // ---------------------------------------------------------------------------
   // check type of constraint conditions (Lagrange multiplier vs. penalty)

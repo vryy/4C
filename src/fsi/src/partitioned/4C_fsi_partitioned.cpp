@@ -994,7 +994,7 @@ void FSI::Partitioned::read_restart(int step)
       {
         Teuchos::RCP<Adapter::FluidAle> fluidale =
             Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(MBFluidField());
-        Core::IO::DiscretizationReader reader(Teuchos::rcp_const_cast<Discret::Discretization>(
+        Core::IO::DiscretizationReader reader(Teuchos::rcp_const_cast<Core::FE::Discretization>(
                                                   fluidale->ale_field()->discretization()),
             input_control_file, step);
         omega = reader.ReadDouble("omega");

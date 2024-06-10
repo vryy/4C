@@ -15,10 +15,10 @@
 #include "4C_beam3_reissner.hpp"
 #include "4C_beamcontact_beam3contact_manager.hpp"
 #include "4C_beaminteraction_beam_to_beam_contact_defines.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_beamcontact.hpp"
 #include "4C_inpar_contact.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_rigidsphere.hpp"
@@ -45,7 +45,7 @@ FOUR_C_NAMESPACE_OPEN
  |  constructor (public)                                     meier 01/11|
  *----------------------------------------------------------------------*/
 Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
-    Discret::Discretization& discret, Discret::Discretization& searchdis)
+    Core::FE::Discretization& discret, Core::FE::Discretization& searchdis)
     : btsol_(false), discret_(discret), searchdis_(searchdis), basisnodes_(discret.NumGlobalNodes())
 {
   extrusionvalue_ = Teuchos::rcp(new std::vector<double>);

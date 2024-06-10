@@ -31,11 +31,11 @@ namespace Core::DOFSets
   class DofSet;
 }
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
+
 namespace Core::IO
 {
   class DiscretizationReader;
@@ -69,10 +69,10 @@ namespace FLD
     \param (in) the discretisation (containing nodes, dofs etc.)
 
     */
-    TurbulenceStatisticsGeneralMean(Teuchos::RCP<Discret::Discretization> discret,
+    TurbulenceStatisticsGeneralMean(Teuchos::RCP<Core::FE::Discretization> discret,
         std::string homdir, Core::LinAlg::MapExtractor& velpressplitter, const bool withscatra);
 
-    TurbulenceStatisticsGeneralMean(Teuchos::RCP<Discret::Discretization> discret,
+    TurbulenceStatisticsGeneralMean(Teuchos::RCP<Core::FE::Discretization> discret,
         Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset, std::string homdir,
         Core::LinAlg::MapExtractor& velpressplitter, const bool withscatra);
 
@@ -169,14 +169,14 @@ namespace FLD
 
     */
     void Redistribute(Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset,
-        Teuchos::RCP<Discret::Discretization> discret);
+        Teuchos::RCP<Core::FE::Discretization> discret);
 
     /*!
     \brief Add results from scalar transport field solver to statistics
 
     */
     void AddScaTraResults(
-        Teuchos::RCP<Discret::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> myphinp);
+        Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> myphinp);
 
     /*!
     \brief Do output of ScaTra mean field for visualization/restart
@@ -189,13 +189,13 @@ namespace FLD
 
    private:
     //! the fluid discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! dofset containing fluid standard dofs (no XFEM dofs)
     Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset_;
 
     //! the scatra discretization
-    Teuchos::RCP<Discret::Discretization> scatradis_;
+    Teuchos::RCP<Core::FE::Discretization> scatradis_;
 
     //! a splitter between velocities and pressure dofs
     Core::LinAlg::MapExtractor& velpressplitter_;

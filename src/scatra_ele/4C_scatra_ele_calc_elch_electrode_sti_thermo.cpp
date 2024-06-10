@@ -41,7 +41,7 @@ Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<
     distype>::extract_element_and_node_values(Core::Elements::Element* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la)
 {
   // call base class routine to extract scatra-related quantities
@@ -106,7 +106,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::calc_mat_a
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::EvaluateActionOD(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, const ScaTra::Action& action,
+    Core::FE::Discretization& discretization, const ScaTra::Action& action,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,

@@ -15,8 +15,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/09 |
  *----------------------------------------------------------------------*/
+#include "4C_fem_discretization.hpp"
 #include "4C_io_legacy_table.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_post_common.hpp"
 #include "4C_post_processor_single_field_writers.hpp"
@@ -115,7 +115,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
 
     // create the parameters for the discretization
     Teuchos::ParameterList p;
@@ -239,7 +239,7 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
     //--------------------------------------------------------------------
     // calculate element center heatfluxes from gauss point heatfluxes
     //--------------------------------------------------------------------
-    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
     // create the parameters for the discretization

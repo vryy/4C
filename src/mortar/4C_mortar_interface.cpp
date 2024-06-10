@@ -11,7 +11,7 @@
 
 #include "4C_binstrategy.hpp"
 #include "4C_contact_interpolator.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
@@ -253,7 +253,7 @@ void Mortar::Interface::create_interface_discretization()
   else
   {
     idiscret_ = Teuchos::rcp(
-        new Discret::Discretization(dis_name.str(), comm, Global::Problem::Instance()->NDim()));
+        new Core::FE::Discretization(dis_name.str(), comm, Global::Problem::Instance()->NDim()));
   }
 
   // Prepare discretization writer

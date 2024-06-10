@@ -9,11 +9,11 @@
 
 #include "4C_cardiovascular0d_syspulcirculation.hpp"
 
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
 UTILS::Cardiovascular0DSysPulCirculation::Cardiovascular0DSysPulCirculation(
-    Teuchos::RCP<Discret::Discretization> discr, const std::string& conditionname,
+    Teuchos::RCP<Core::FE::Discretization> discr, const std::string& conditionname,
     std::vector<int>& curID)
     : Cardiovascular0D(discr, conditionname, curID)
 {

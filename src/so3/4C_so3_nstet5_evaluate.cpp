@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_mat_aaaneohooke.hpp"
 #include "4C_mat_elasthyper.hpp"
@@ -133,7 +133,7 @@ void Discret::ELEMENTS::NStet5::init_element()
  |  evaluate the element (public)                              gee 03/12|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -829,7 +829,7 @@ void Discret::ELEMENTS::NStet5::select_material(Core::LinAlg::Matrix<6, 1>& stre
  |  Integrate a Volume Neumann boundary condition (public)     gee 03/12|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::NStet5::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

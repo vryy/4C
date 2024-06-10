@@ -14,16 +14,19 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class ScaTraHDGBoundary;
@@ -48,7 +51,7 @@ namespace Discret
         must be defined in ScaTraHDGBoundaryImpl.
        */
       virtual int evaluate_neumann(Discret::ELEMENTS::ScaTraHDGBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra) = 0;
@@ -81,7 +84,7 @@ namespace Discret
 
       //! Evaluate a Neumann boundary condition
       int evaluate_neumann(Discret::ELEMENTS::ScaTraHDGBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra) override;

@@ -11,8 +11,8 @@
 #include "4C_beam3_euler_bernoulli.hpp"
 
 #include "4C_beaminteraction_periodic_boundingbox.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -215,7 +215,7 @@ void Discret::ELEMENTS::Beam3ebType::setup_element_definition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Beam3ebType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::Beam3ebType::Initialize(Core::FE::Discretization& dis)
 {
   // setting up geometric variables for beam3eb elements
   for (int num = 0; num < dis.NumMyColElements(); ++num)

@@ -13,8 +13,8 @@
 #include "4C_adapter_coupling_nonlin_mortar.hpp"
 #include "4C_contact_interface.hpp"
 #include "4C_contact_node.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-ALE::Meshsliding::Meshsliding(Teuchos::RCP<Discret::Discretization> dis,
+ALE::Meshsliding::Meshsliding(Teuchos::RCP<Core::FE::Discretization> dis,
     Core::LinAlg::Solver& solver, int msht, int nsd, const UTILS::MapExtractor* surfacesplitter)
     : Meshtying(dis, solver, msht, nsd, surfacesplitter)
 {

@@ -18,7 +18,7 @@
 #include "4C_art_net_art_junction.hpp"
 #include "4C_art_net_artery_ele_action.hpp"
 #include "4C_art_net_artery_resulttest.hpp"
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -43,9 +43,10 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-Arteries::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(Teuchos::RCP<Discret::Discretization> actdis,
-    const int linsolvernumber, const Teuchos::ParameterList& probparams,
-    const Teuchos::ParameterList& artparams, Core::IO::DiscretizationWriter& output)
+Arteries::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(
+    Teuchos::RCP<Core::FE::Discretization> actdis, const int linsolvernumber,
+    const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
+    Core::IO::DiscretizationWriter& output)
     : TimInt(actdis, linsolvernumber, probparams, artparams, output)
 {
   //  exit(1);

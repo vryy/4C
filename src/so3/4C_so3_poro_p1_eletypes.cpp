@@ -83,7 +83,7 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex8PoroP1Type::ComputeNull
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
-int Discret::ELEMENTS::SoHex8PoroP1Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex8PoroP1Type::Initialize(Core::FE::Discretization& dis)
 {
   SoHex8Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
@@ -153,7 +153,7 @@ void Discret::ELEMENTS::SoTet4PoroP1Type::setup_element_definition(
   defs["TET4"] = defs_tet4["TET4"];
 }
 
-int Discret::ELEMENTS::SoTet4PoroP1Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoTet4PoroP1Type::Initialize(Core::FE::Discretization& dis)
 {
   SoTet4PoroType::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)

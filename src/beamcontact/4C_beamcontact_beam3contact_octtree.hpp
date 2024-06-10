@@ -26,10 +26,10 @@ FOUR_C_NAMESPACE_OPEN
 using namespace CONTACT;
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -44,8 +44,8 @@ class Beam3ContactOctTree
 {
  public:
   //!\brief Constructor
-  Beam3ContactOctTree(Teuchos::ParameterList& params, Discret::Discretization& discret,
-      Discret::Discretization& searchdis);
+  Beam3ContactOctTree(Teuchos::ParameterList& params, Core::FE::Discretization& discret,
+      Core::FE::Discretization& searchdis);
 
   //!\brief Destructor
   virtual ~Beam3ContactOctTree() = default;
@@ -255,10 +255,10 @@ class Beam3ContactOctTree
   Core::LinAlg::Matrix<6, 1> initbox_;
 
   //!\brief problem discretization
-  Discret::Discretization& discret_;
+  Core::FE::Discretization& discret_;
 
   //!\brief contact discretization
-  Discret::Discretization& searchdis_;
+  Core::FE::Discretization& searchdis_;
 
   //!\brief number of initial nodes
   int basisnodes_;

@@ -9,9 +9,9 @@ concentrations and with advanced reaction terms
 
 #include "4C_scatra_ele_boundary_calc_refconc_reac.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
-#include "4C_discretization_geometry_position_array.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_geometry_position_array.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
@@ -61,7 +61,7 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::fa
     const int iquad,                          ///< current boundary integration point
     const Core::Elements::FaceElement* bele,  ///< current boundary element
     Teuchos::ParameterList& params,           ///< parameter list
-    Discret::Discretization& discretization   ///< discretization
+    Core::FE::Discretization& discretization  ///< discretization
 )
 {
   const Core::Elements::Element* pele = bele->parent_element();
@@ -107,7 +107,7 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ca
     const Core::Elements::FaceElement* bele,  ///< current boundary element
     const Core::Elements::Element* pele,      ///< current parent element
     Teuchos::ParameterList& params,           ///< parameter list
-    Discret::Discretization& discretization   ///< discretization
+    Core::FE::Discretization& discretization  ///< discretization
 )
 {
   // NOTE: we want to evaluate J=det(F) on the current gauss point of the current boundary element.

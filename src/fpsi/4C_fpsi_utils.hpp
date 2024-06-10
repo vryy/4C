@@ -20,13 +20,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-/*----------------------------------------------------------------------*
- | forward declarations                                                  |
- *----------------------------------------------------------------------*/
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 
 /*----------------------------------------------------------------------*
@@ -50,15 +47,16 @@ namespace FPSI
         const Teuchos::ParameterList& poroelastdynparams);
 
     //! redistribute interface for parallel computations
-    void redistribute_interface(Teuchos::RCP<Discret::Discretization> masterdis,
-        Teuchos::RCP<const Discret::Discretization> slavedis, const std::string& condname,
+    void redistribute_interface(Teuchos::RCP<Core::FE::Discretization> masterdis,
+        Teuchos::RCP<const Core::FE::Discretization> slavedis, const std::string& condname,
         std::map<int, int>& interfacefacingelementmap);
 
     //! build map for fpsi interface
-    void SetupInterfaceMap(const Epetra_Comm& comm, Teuchos::RCP<Discret::Discretization> structdis,
-        Teuchos::RCP<Discret::Discretization> porofluiddis,
-        Teuchos::RCP<Discret::Discretization> fluiddis,
-        Teuchos::RCP<Discret::Discretization> aledis);
+    void SetupInterfaceMap(const Epetra_Comm& comm,
+        Teuchos::RCP<Core::FE::Discretization> structdis,
+        Teuchos::RCP<Core::FE::Discretization> porofluiddis,
+        Teuchos::RCP<Core::FE::Discretization> fluiddis,
+        Teuchos::RCP<Core::FE::Discretization> aledis);
 
     //! Fills a map that matches the global id of an interface element on the slave side to the
     //! global id of the opposing bulk element. This is done processor locally. Works only for
@@ -75,8 +73,8 @@ namespace FPSI
 
        See Detailed Description section for further discussion.
     */
-    void setup_local_interface_facing_element_map(Discret::Discretization& masterdis,
-        const Discret::Discretization& slavedis, const std::string& condname,
+    void setup_local_interface_facing_element_map(Core::FE::Discretization& masterdis,
+        const Core::FE::Discretization& slavedis, const std::string& condname,
         std::map<int, int>& interfacefacingelementmap);
 
     //! access methods
@@ -112,7 +110,7 @@ namespace FPSI
 
       /// setup the whole thing
       void Setup(
-          const Discret::Discretization& dis, bool withpressure = false, bool overlapping = false);
+          const Core::FE::Discretization& dis, bool withpressure = false, bool overlapping = false);
 
       /*!
        * \brief setup from an existing extractor
@@ -129,7 +127,8 @@ namespace FPSI
           const FPSI::UTILS::MapExtractor& extractor);
 
       /// get all element gids those nodes are touched by any condition
-      Teuchos::RCP<std::set<int>> conditioned_element_map(const Discret::Discretization& dis) const;
+      Teuchos::RCP<std::set<int>> conditioned_element_map(
+          const Core::FE::Discretization& dis) const;
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(FSICond, cond_fsi)

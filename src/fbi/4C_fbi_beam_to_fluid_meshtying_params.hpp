@@ -14,7 +14,7 @@
 #include "4C_config.hpp"
 
 #include "4C_beaminteraction_contact_params.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

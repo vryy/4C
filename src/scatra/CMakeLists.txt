@@ -10,7 +10,6 @@ set(_dependencies
     fluid_turbulence
     global_data
     inpar
-    lib
     mat
     mortar
     nurbs_discret

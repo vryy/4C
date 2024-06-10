@@ -11,8 +11,8 @@ xfluid class and the cut-library
 
 #include "4C_xfem_coupling_fpi_mesh.hpp"
 
-#include "4C_discretization_dofset_transparent_independent.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_dofset_transparent_independent.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_parameter_xfem.hpp"
 #include "4C_io.hpp"
@@ -36,10 +36,10 @@ FOUR_C_NAMESPACE_OPEN
 
 //! constructor
 XFEM::MeshCouplingFPI::MeshCouplingFPI(
-    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<Discret::Discretization>&
+    Teuchos::RCP<Core::FE::Discretization>&
         cond_dis,           ///< discretization from which cutter discretization can be derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -1067,7 +1067,7 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 bool XFEM::MeshCouplingFPI::initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
-    Teuchos::RCP<Discret::Discretization> fluiddis,
+    Teuchos::RCP<Core::FE::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)
 {

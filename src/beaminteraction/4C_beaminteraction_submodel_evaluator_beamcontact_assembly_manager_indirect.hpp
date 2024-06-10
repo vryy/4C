@@ -51,7 +51,7 @@ namespace BEAMINTERACTION
       BeamContactAssemblyManagerInDirect(
           const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>&
               assembly_contact_elepairs,
-          const Teuchos::RCP<const Discret::Discretization>& discret,
+          const Teuchos::RCP<const Core::FE::Discretization>& discret,
           const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& beam_to_solid_params);
 
 
@@ -62,7 +62,7 @@ namespace BEAMINTERACTION
        * @param fe_sysvec (out) Global force vector.
        * @param fe_sysmat (out) Global stiffness matrix.
        */
-      void evaluate_force_stiff(Teuchos::RCP<Discret::Discretization> discret,
+      void evaluate_force_stiff(Teuchos::RCP<Core::FE::Discretization> discret,
           const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
           Teuchos::RCP<Epetra_FEVector> fe_sysvec,
           Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat) override;

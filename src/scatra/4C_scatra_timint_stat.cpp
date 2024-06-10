@@ -9,9 +9,9 @@
 
 #include "4C_scatra_timint_stat.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_timint_meshtying_strategy_base.hpp"
 #include "4C_utils_parameter_list.hpp"
@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      gjb 08/08 |
  *----------------------------------------------------------------------*/
-ScaTra::TimIntStationary::TimIntStationary(Teuchos::RCP<Discret::Discretization> actdis,
+ScaTra::TimIntStationary::TimIntStationary(Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)

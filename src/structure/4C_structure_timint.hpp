@@ -16,7 +16,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_str_structure.hpp"
-#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
+#include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_timestepping_mstep.hpp"
 
@@ -39,11 +39,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
   class DiscretizationFaces;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace UTILS
 {
@@ -140,7 +140,7 @@ namespace STR
         const Teuchos::ParameterList& ioparams,              //!< ioflags
         const Teuchos::ParameterList& sdynparams,            //!< input parameters
         const Teuchos::ParameterList& xparams,               //!< extra flags
-        Teuchos::RCP<Discret::Discretization> actdis,        //!< current discretisation
+        Teuchos::RCP<Core::FE::Discretization> actdis,       //!< current discretisation
         Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
         Teuchos::RCP<Core::LinAlg::Solver> contactsolver,    //!< the solver for contact/meshtying
         Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
@@ -169,7 +169,7 @@ namespace STR
     \author rauch  */
     virtual void Init(const Teuchos::ParameterList& timeparams,
         const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver);
+        Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
@@ -608,7 +608,7 @@ namespace STR
     //@{
 
     //! Access discretisation
-    Teuchos::RCP<Discret::Discretization> discretization() override
+    Teuchos::RCP<Core::FE::Discretization> discretization() override
     {
       // Here a 'false' must be used. This is due to
       // the fact that TimInt possesses a references
@@ -1035,10 +1035,10 @@ namespace STR
 
     //! @name General purpose algorithm members
     //@{
-    Teuchos::RCP<Discret::Discretization> discret_;  //!< attached discretisation
+    Teuchos::RCP<Core::FE::Discretization> discret_;  //!< attached discretisation
 
     // face discretization (only initialized for edge-based stabilization)
-    Teuchos::RCP<Discret::DiscretizationFaces> facediscret_;
+    Teuchos::RCP<Core::FE::DiscretizationFaces> facediscret_;
 
     int myrank_;                                 //!< ID of actual processor in parallel
     Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver (no contact/meshtying)

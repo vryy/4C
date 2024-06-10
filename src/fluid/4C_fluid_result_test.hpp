@@ -21,10 +21,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace FLD
 {
@@ -56,7 +56,7 @@ namespace FLD
 
    private:
     /// pointer to fluid discretization
-    Teuchos::RCP<Discret::Discretization> fluiddis_;
+    Teuchos::RCP<Core::FE::Discretization> fluiddis_;
     /// pointer to unknown vector with nodal values
     Teuchos::RCP<Epetra_Vector> mysol_;
     /// pointer to traction vector with values

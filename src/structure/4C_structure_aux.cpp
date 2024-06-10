@@ -11,10 +11,10 @@
 
 #include "4C_structure_aux.hpp"
 
-#include "4C_discretization_condition_selector.hpp"
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_selector.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -62,7 +62,7 @@ double STR::calculate_vector_norm(const enum Inpar::STR::VectorNorm norm,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void STR::MapExtractor::Setup(
-    const Discret::Discretization& dis, const Epetra_Map& fullmap, bool overlapping)
+    const Core::FE::Discretization& dis, const Epetra_Map& fullmap, bool overlapping)
 {
   const int ndim = Global::Problem::Instance()->NDim();
   Core::Conditions::MultiConditionSelector mcs;
@@ -89,7 +89,7 @@ void STR::MapExtractor::Setup(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<std::set<int>> STR::MapExtractor::conditioned_element_map(
-    const Discret::Discretization& dis) const
+    const Core::FE::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int>> condelements =
       Core::Conditions::conditioned_element_map(dis, "FSICoupling");

@@ -276,7 +276,7 @@ namespace Discret
       \param condstring (in) : Name of condition to be evaluated
       \param params (in)     : List of parameters for use at element level
       */
-      void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
+      void LocationVector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
           const std::string& condstring, Teuchos::ParameterList& params) const override;
 
      private:

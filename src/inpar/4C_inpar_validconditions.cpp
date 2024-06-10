@@ -11,7 +11,7 @@
 
 #include "4C_inpar_validconditions.hpp"
 
-#include "4C_discretization_condition_definition.hpp"
+#include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_ale.hpp"
 #include "4C_inpar_beaminteraction.hpp"
 #include "4C_inpar_beampotential.hpp"

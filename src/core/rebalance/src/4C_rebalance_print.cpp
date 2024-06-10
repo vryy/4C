@@ -10,12 +10,12 @@
 
 #include "4C_rebalance_print.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-void Core::Rebalance::UTILS::print_parallel_distribution(const Discret::Discretization& dis)
+void Core::Rebalance::UTILS::print_parallel_distribution(const Core::FE::Discretization& dis)
 {
   const int numproc = dis.Comm().NumProc();
   const int myrank = dis.Comm().MyPID();

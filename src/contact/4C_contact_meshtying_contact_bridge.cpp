@@ -12,8 +12,8 @@
 
 #include "4C_contact_manager.hpp"
 #include "4C_contact_meshtying_manager.hpp"
-#include "4C_discretization_condition.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_condition.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_mortar_manager_base.hpp"
 #include "4C_mortar_strategy_base.hpp"
@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 06/14|
  *----------------------------------------------------------------------*/
-CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(Discret::Discretization& dis,
+CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(Core::FE::Discretization& dis,
     std::vector<Core::Conditions::Condition*>& meshtyingConditions,
     std::vector<Core::Conditions::Condition*>& contactConditions, double timeIntegrationMidPoint)
     : cman_(Teuchos::null), mtman_(Teuchos::null)

@@ -18,6 +18,7 @@
 #include "4C_ale_utils_mapextractor.hpp"
 #include "4C_constraint_manager.hpp"
 #include "4C_coupling_adapter.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_debugwriter.hpp"
 #include "4C_fsi_nox_group.hpp"
@@ -29,7 +30,6 @@
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -64,10 +64,10 @@ FSI::MonolithicBase::MonolithicBase(
           Global::Problem::Instance()->FSIDynamicParams(), "VERBOSITY"))
 {
   // access the discretizations
-  Teuchos::RCP<Discret::Discretization> structdis =
+  Teuchos::RCP<Core::FE::Discretization> structdis =
       Global::Problem::Instance()->GetDis("structure");
-  Teuchos::RCP<Discret::Discretization> fluiddis = Global::Problem::Instance()->GetDis("fluid");
-  Teuchos::RCP<Discret::Discretization> aledis = Global::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = Global::Problem::Instance()->GetDis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> aledis = Global::Problem::Instance()->GetDis("ale");
 
   create_structure_time_integrator(timeparams, structdis);
   create_fluid_and_ale_time_integrator(timeparams, fluiddis, aledis);
@@ -94,7 +94,7 @@ void FSI::MonolithicBase::read_restart(int step)
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::create_structure_time_integrator(
-    const Teuchos::ParameterList& timeparams, Teuchos::RCP<Discret::Discretization> structdis)
+    const Teuchos::ParameterList& timeparams, Teuchos::RCP<Core::FE::Discretization> structdis)
 {
   // delete deprecated time integrator
   structure_ = Teuchos::null;
@@ -121,8 +121,8 @@ void FSI::MonolithicBase::create_structure_time_integrator(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::create_fluid_and_ale_time_integrator(
-    const Teuchos::ParameterList& timeparams, Teuchos::RCP<Discret::Discretization> fluiddis,
-    Teuchos::RCP<Discret::Discretization> aledis)
+    const Teuchos::ParameterList& timeparams, Teuchos::RCP<Core::FE::Discretization> fluiddis,
+    Teuchos::RCP<Core::FE::Discretization> aledis)
 {
   // delete deprecated time integrators
   fluid_ = Teuchos::null;
@@ -1329,7 +1329,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
           // solver->Params().sublist("Inverse3").set<Teuchos::RCP<Epetra_Map>>("null space: map",
           // Teuchos::rcp(new Epetra_Map(system_matrix()->Matrix(2,2).RowMap()))); we have to cast
           // the const on the ale discretization away!
-          const_cast<Discret::Discretization&>(*(ale_field()->discretization()))
+          const_cast<Core::FE::Discretization&>(*(ale_field()->discretization()))
               .compute_null_space_if_necessary(solver->Params().sublist("Inverse3"));
           Core::LinearSolver::Parameters::FixNullSpace("Ale",
               *ale_field()->discretization()->dof_row_map(),

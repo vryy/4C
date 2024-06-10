@@ -25,11 +25,10 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 01/14 |
  *---------------------------------------------------------------------*/
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
-
+}  // namespace Core::FE
 namespace Core::Elements
 {
   class Element;
@@ -119,8 +118,8 @@ namespace Core::VolMortar
      \brief Constructor
 
      */
-    VolMortarCoupl(int dim, Teuchos::RCP<Discret::Discretization> dis1,
-        Teuchos::RCP<Discret::Discretization> dis2,
+    VolMortarCoupl(int dim, Teuchos::RCP<Core::FE::Discretization> dis1,
+        Teuchos::RCP<Core::FE::Discretization> dis2,
         const Teuchos::ParameterList& volmortar_parameters,
         std::vector<int>* coupleddof12 = nullptr, std::vector<int>* coupleddof21 = nullptr,
         std::pair<int, int>* dofset12 = nullptr, std::pair<int, int>* dofset21 = nullptr,
@@ -187,7 +186,7 @@ namespace Core::VolMortar
      \brief Build maps based n coupling dofs
 
      */
-    virtual void build_maps(Teuchos::RCP<Discret::Discretization>& dis,
+    virtual void build_maps(Teuchos::RCP<Core::FE::Discretization>& dis,
         Teuchos::RCP<const Epetra_Map>& dofmap, const std::vector<int>* coupleddof,
         const int* nodes, int numnode, int dofset);
 
@@ -196,7 +195,7 @@ namespace Core::VolMortar
 
      */
     virtual std::map<int, Core::LinAlg::Matrix<9, 2>> calc_background_dops(
-        Teuchos::RCP<Discret::Discretization> searchdis);
+        Teuchos::RCP<Core::FE::Discretization> searchdis);
 
     /*!
      \brief calc dops for one element
@@ -247,7 +246,7 @@ namespace Core::VolMortar
 
      */
     virtual void create_trafo_operator(Core::Elements::Element& ele,
-        Teuchos::RCP<Discret::Discretization> searchdis, bool dis, std::set<int>& donebefore);
+        Teuchos::RCP<Core::FE::Discretization> searchdis, bool dis, std::set<int>& donebefore);
 
     /*!
      \brief define vertices for 2D polygon clipping (master)
@@ -274,13 +273,13 @@ namespace Core::VolMortar
      \brief Get discretization of Omega_1
 
      */
-    virtual Teuchos::RCP<const Discret::Discretization> discret1() const { return dis1_; }
+    virtual Teuchos::RCP<const Core::FE::Discretization> discret1() const { return dis1_; }
 
     /*!
      \brief Get discretization of Omega_2
 
      */
-    virtual Teuchos::RCP<Discret::Discretization> discret2() const { return dis2_; }
+    virtual Teuchos::RCP<Core::FE::Discretization> discret2() const { return dis2_; }
 
     /*!
      \brief Evaluate element-based
@@ -329,7 +328,7 @@ namespace Core::VolMortar
 
      */
     virtual Teuchos::RCP<Core::Geo::SearchTree> init_search(
-        Teuchos::RCP<Discret::Discretization> searchdis);
+        Teuchos::RCP<Core::FE::Discretization> searchdis);
 
     /*!
      \brief perform 2D integration
@@ -450,8 +449,8 @@ namespace Core::VolMortar
     //@}
 
     //! @name discretizations
-    Teuchos::RCP<Discret::Discretization> dis1_;  /// the discretization Omega_1
-    Teuchos::RCP<Discret::Discretization> dis2_;  /// the discretization Omega_2
+    Teuchos::RCP<Core::FE::Discretization> dis1_;  /// the discretization Omega_1
+    Teuchos::RCP<Core::FE::Discretization> dis2_;  /// the discretization Omega_2
     //@}
 
     //! @name mortar matrices and projector

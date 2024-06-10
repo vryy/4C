@@ -13,12 +13,12 @@
 #include "4C_beam3_spatial_discretization_utils.hpp"
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"
 #include "4C_beaminteraction_periodic_boundingbox.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_largerotations.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_so3_nullspace.hpp"
@@ -178,7 +178,7 @@ void Discret::ELEMENTS::Beam3rType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      cyron 01/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Beam3rType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::Beam3rType::Initialize(Core::FE::Discretization& dis)
 {
   // setting up geometric variables for beam3r elements
   for (int num = 0; num < dis.NumMyColElements(); ++num)

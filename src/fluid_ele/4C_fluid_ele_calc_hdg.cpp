@@ -11,7 +11,7 @@
 
 #include "4C_fluid_ele_calc_hdg.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_calc.hpp"
 #include "4C_fluid_ele_parameter_std.hpp"
@@ -44,7 +44,7 @@ Discret::ELEMENTS::FluidEleCalcHDG<distype>::FluidEleCalcHDG() : usescompletepol
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -94,7 +94,7 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix&,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector&,
@@ -183,7 +183,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(Discret::ELEMENTS::Flu
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleCalcHDG<distype>::read_global_vectors(
-    const Core::Elements::Element& ele, Discret::Discretization& discretization,
+    const Core::Elements::Element& ele, Core::FE::Discretization& discretization,
     const std::vector<int>& lm, const bool updateLocally)
 {
   // read the HDG solution vector (for traces)
@@ -207,7 +207,7 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::read_global_vectors(
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleCalcHDG<distype>::update_secondary_solution(
-    const Core::Elements::Element& ele, Discret::Discretization& discretization,
+    const Core::Elements::Element& ele, Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseVector& updateG, const Core::LinAlg::SerialDenseVector& updateUp)
 {
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "intvelnp");
@@ -259,7 +259,7 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::update_secondary_solution(
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(Discret::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -318,7 +318,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(Discret::ELEMEN
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDG<distype>::compute_error(Discret::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec)
 {
   InitializeShapes(ele);
@@ -400,7 +400,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::compute_error(Discret::ELEMENTS
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(Discret::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
   // Create the necessary objects to the solution of the problem as the solver
@@ -666,7 +666,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(Discret::ELEMENTS:
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
-    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   InitializeShapes(ele);
@@ -853,7 +853,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_for_hit(
-    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   InitializeShapes(ele);
@@ -924,7 +924,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_for_hit(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hit(
-    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
   const int numsamppoints = 5;
@@ -1040,7 +1040,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hi
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
-    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {

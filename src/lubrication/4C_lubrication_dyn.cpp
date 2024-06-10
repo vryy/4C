@@ -12,8 +12,8 @@
 #include "4C_lubrication_dyn.hpp"
 
 #include "4C_adapter_lubrication.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lubrication_timint_implicit.hpp"
 
@@ -41,7 +41,7 @@ void lubrication_dyn(int restart)
       Global::Problem::Instance()->lubrication_dynamic_params();
 
   // access the lubrication discretization
-  Teuchos::RCP<Discret::Discretization> lubricationdis =
+  Teuchos::RCP<Core::FE::Discretization> lubricationdis =
       Global::Problem::Instance()->GetDis("lubrication");
 
   lubricationdis->fill_complete();

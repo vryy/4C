@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 XFEM::XFEMTransparentIndependentDofSet::XFEMTransparentIndependentDofSet(
-    Teuchos::RCP<Discret::Discretization> sourcedis, bool parallel,
+    Teuchos::RCP<Core::FE::Discretization> sourcedis, bool parallel,
     Teuchos::RCP<Core::Geo::CutWizard> wizard)
     : Core::DOFSets::TransparentIndependentDofSet(sourcedis, parallel), wizard_(wizard)
 {

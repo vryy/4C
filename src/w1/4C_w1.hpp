@@ -16,11 +16,11 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_node.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_node.hpp"
+#include "4C_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
@@ -32,11 +32,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
+
 namespace Discret
 {
-  // forward declarations
-  class Discretization;
-
   namespace ELEMENTS
   {
     // forward declarations
@@ -240,7 +242,7 @@ namespace Discret
       /// \return 0 if successful, negative otherwise
       int Evaluate(Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication
                                                     ///< between control routine and elements
-          Discret::Discretization&
+          Core::FE::Discretization&
               discretization,    ///< A reference to the underlying discretization
           std::vector<int>& lm,  ///< location vector of this element
           Core::LinAlg::SerialDenseMatrix& elemat1,  ///< matrix to be filled by element. If nullptr
@@ -268,7 +270,7 @@ namespace Discret
       int evaluate_neumann(
           Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication between
                                            ///< control routine and elements
-          Discret::Discretization&
+          Core::FE::Discretization&
               discretization,                      ///< A reference to the underlying discretization
           Core::Conditions::Condition& condition,  ///<  The condition to be evaluated
           std::vector<int>& lm,                    ///< location vector of this element
@@ -843,7 +845,7 @@ namespace Discret
           Teuchos::ParameterList&
               params,  ///< (in/out) ParameterList for communication between control routine
                        ///<   and elements
-          Discret::Discretization&
+          Core::FE::Discretization&
               discretization,  ///< (in) A reference to the underlying discretization
           Core::Conditions::Condition& condition,  ///< (in) The condition to be evaluated
           std::vector<int>& lm,                    ///< (in) location vector of this element
@@ -858,7 +860,7 @@ namespace Discret
       /// \return 0 if successful, negative otherwise
       int Evaluate(Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication
                                                     ///< between control routine and elements
-          Discret::Discretization&
+          Core::FE::Discretization&
               discretization,    ///< (in) A reference to the underlying discretization
           std::vector<int>& lm,  ///< (in) location vector of this element
           Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
@@ -866,7 +868,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevector3) override;
 
       //! Evaluate method on mutliple dofsets for wall element
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           LocationArray& la, Core::LinAlg::SerialDenseMatrix& elematrix1,
           Core::LinAlg::SerialDenseMatrix& elematrix2, Core::LinAlg::SerialDenseVector& elevector1,
           Core::LinAlg::SerialDenseVector& elevector2,

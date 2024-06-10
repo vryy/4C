@@ -12,7 +12,7 @@
 
 #include "4C_adapter_coupling_nonlin_mortar.hpp"
 #include "4C_contact_interface.hpp"
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"  // has to go before io.hpp
@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
  |                                                         pfaller Apr15|
  *----------------------------------------------------------------------*/
 CONSTRAINTS::SpringDashpot::SpringDashpot(
-    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::Conditions::Condition> cond)
+    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::Conditions::Condition> cond)
     : actdisc_(std::move(dis)),
       spring_(std::move(cond)),
       stiff_tens_((spring_->parameters().Get<std::vector<double>>("stiff"))[0]),

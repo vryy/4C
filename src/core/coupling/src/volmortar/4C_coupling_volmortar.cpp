@@ -20,10 +20,10 @@
 #include "4C_cut_cutwizard.hpp"
 #include "4C_cut_elementhandle.hpp"
 #include "4C_cut_volumecell.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_discretization_geometry_searchtree.hpp"
-#include "4C_discretization_geometry_searchtree_service.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
+#include "4C_fem_geometry_searchtree.hpp"
+#include "4C_fem_geometry_searchtree_service.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
@@ -47,8 +47,8 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
 Core::VolMortar::VolMortarCoupl::VolMortarCoupl(int dim,
-    Teuchos::RCP<Discret::Discretization> dis1,  // on Omega_1
-    Teuchos::RCP<Discret::Discretization> dis2,  // on Omega_2
+    Teuchos::RCP<Core::FE::Discretization> dis1,  // on Omega_1
+    Teuchos::RCP<Core::FE::Discretization> dis2,  // on Omega_2
     const Teuchos::ParameterList& volmortar_parameters,
     std::vector<int>* coupleddof12,  // 2-->1
     std::vector<int>* coupleddof21,  // 1-->2
@@ -128,7 +128,7 @@ Core::VolMortar::VolMortarCoupl::VolMortarCoupl(int dim,
 /*----------------------------------------------------------------------*
  |  Build maps based on coupling dofs                        farah 03/15|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::VolMortarCoupl::build_maps(Teuchos::RCP<Discret::Discretization>& dis,
+void Core::VolMortar::VolMortarCoupl::build_maps(Teuchos::RCP<Core::FE::Discretization>& dis,
     Teuchos::RCP<const Epetra_Map>& dofmap, const std::vector<int>* coupleddof, const int* nodes,
     int numnode, int dofset)
 {
@@ -300,7 +300,7 @@ void Core::VolMortar::VolMortarCoupl::init_dop_normals()
  |  Init search tree                                         farah 05/14|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Geo::SearchTree> Core::VolMortar::VolMortarCoupl::init_search(
-    Teuchos::RCP<Discret::Discretization> searchdis)
+    Teuchos::RCP<Core::FE::Discretization> searchdis)
 {
   // init current positions
   std::map<int, Core::LinAlg::Matrix<3, 1>> currentpositions;
@@ -337,7 +337,7 @@ Teuchos::RCP<Core::Geo::SearchTree> Core::VolMortar::VolMortarCoupl::init_search
  |  Calculate Dops for background mesh                       farah 05/14|
  *----------------------------------------------------------------------*/
 std::map<int, Core::LinAlg::Matrix<9, 2>> Core::VolMortar::VolMortarCoupl::calc_background_dops(
-    Teuchos::RCP<Discret::Discretization> searchdis)
+    Teuchos::RCP<Core::FE::Discretization> searchdis)
 {
   std::map<int, Core::LinAlg::Matrix<9, 2>> currentKDOPs;
 
@@ -598,7 +598,7 @@ std::vector<int> Core::VolMortar::VolMortarCoupl::get_adjacent_nodes(
  |  Calculate trafo matrix for quadr. elements               farah 05/14|
  *----------------------------------------------------------------------*/
 void Core::VolMortar::VolMortarCoupl::create_trafo_operator(Core::Elements::Element& ele,
-    Teuchos::RCP<Discret::Discretization> searchdis, bool dis, std::set<int>& donebefore)
+    Teuchos::RCP<Core::FE::Discretization> searchdis, bool dis, std::set<int>& donebefore)
 {
   // trafo parameter
   const double alpha = 0.3;
@@ -1589,10 +1589,10 @@ void Core::VolMortar::VolMortarCoupl::perform_cut(
   // nodes, as we only need the geometrie to perform the cut, but want to make sure that the gids
   // and dofs of the original elements are kept untouched.
 
-  Teuchos::RCP<Discret::Discretization> sauxdis =
-      Teuchos::rcp(new Discret::Discretization((std::string) "slaveauxdis", comm_, dim_));
-  Teuchos::RCP<Discret::Discretization> mauxdis =
-      Teuchos::rcp(new Discret::Discretization((std::string) "masterauxdis", comm_, dim_));
+  Teuchos::RCP<Core::FE::Discretization> sauxdis =
+      Teuchos::rcp(new Core::FE::Discretization((std::string) "slaveauxdis", comm_, dim_));
+  Teuchos::RCP<Core::FE::Discretization> mauxdis =
+      Teuchos::rcp(new Core::FE::Discretization((std::string) "masterauxdis", comm_, dim_));
 
   // build surface elements for all surfaces of slave element
   std::vector<Teuchos::RCP<Core::Elements::Element>> sele_surfs = sele->Surfaces();

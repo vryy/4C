@@ -9,7 +9,7 @@
 
 #include "4C_mortar_coupling2d.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Mortar::Coupling2d::Coupling2d(Discret::Discretization& idiscret, int dim, bool quad,
+Mortar::Coupling2d::Coupling2d(Core::FE::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele)
     : idiscret_(idiscret),
       dim_(dim),
@@ -897,7 +897,7 @@ bool Mortar::Coupling2d::IntegrateOverlap(const Teuchos::RCP<Mortar::ParamsInter
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Mortar::Coupling2dManager::Coupling2dManager(Discret::Discretization& idiscret, int dim, bool quad,
+Mortar::Coupling2dManager::Coupling2dManager(Core::FE::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele)
     : idiscret_(idiscret),
       dim_(dim),

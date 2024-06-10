@@ -21,11 +21,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -48,7 +47,7 @@ namespace CONSTRAINTS
     /*!
       \brief Constructor
     */
-    SpringDashpotManager(Teuchos::RCP<Discret::Discretization> dis);
+    SpringDashpotManager(Teuchos::RCP<Core::FE::Discretization> dis);
 
     /*!
      \brief Return if there are spring dashpots
@@ -65,11 +64,11 @@ namespace CONSTRAINTS
 
     //! output of gap, normal, and nodal stiffness
     void Output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
-        Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp);
+        Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp);
 
     //! output of prestressing offset for restart
     void output_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
-        Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp);
+        Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp);
 
     /*!
      \brief Read restart information
@@ -80,7 +79,7 @@ namespace CONSTRAINTS
     void ResetPrestress(Teuchos::RCP<Epetra_Vector> disold);
 
    private:
-    Teuchos::RCP<Discret::Discretization> actdisc_;     ///< standard discretization
+    Teuchos::RCP<Core::FE::Discretization> actdisc_;    ///< standard discretization
     std::vector<Teuchos::RCP<SpringDashpot>> springs_;  ///< all spring dashpot instances
 
     bool havespringdashpot_;  ///< are there any spring dashpot BCs at all?

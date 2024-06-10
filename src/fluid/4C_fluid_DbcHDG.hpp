@@ -13,8 +13,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_discret.hpp"
-#include "4C_lib_utils_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_discretization_utils.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -32,7 +32,7 @@ namespace FLD
     /** \brief Specialized Dbc evaluation class for HDG discretizations
      *
      *  \author hiermeier \date 10/16 */
-    class DbcHdgFluid : public Discret::UTILS::Dbc
+    class DbcHdgFluid : public Core::FE::UTILS::Dbc
     {
      public:
       /// constructor
@@ -40,23 +40,23 @@ namespace FLD
 
      protected:
       void read_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
+          const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
           double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
           int hierarchical_order) const override;
 
       void read_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
+          const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
           double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
           int hierarchical_order) const;
 
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
+          const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
           double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const override;
 
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
+          const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
           double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle) const;
     };  // class DbcHDG_Fluid

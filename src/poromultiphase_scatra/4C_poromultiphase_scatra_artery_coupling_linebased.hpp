@@ -31,10 +31,10 @@ namespace PoroMultiPhaseScaTra
   {
    public:
     //! create using a Epetra_Comm
-    PoroMultiPhaseScaTraArtCouplLineBased(Teuchos::RCP<Discret::Discretization> arterydis,
-        Teuchos::RCP<Discret::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
-        const std::string& condname, const std::string& artcoupleddofname,
-        const std::string& contcoupleddofname);
+    PoroMultiPhaseScaTraArtCouplLineBased(Teuchos::RCP<Core::FE::Discretization> arterydis,
+        Teuchos::RCP<Core::FE::Discretization> contdis,
+        const Teuchos::ParameterList& couplingparams, const std::string& condname,
+        const std::string& artcoupleddofname, const std::string& contcoupleddofname);
 
     //! set-up linear system of equations of coupled problem
     void SetupSystem(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
@@ -96,7 +96,7 @@ namespace PoroMultiPhaseScaTra
      * @param this_connected_comp : current connected component
      */
     void depth_first_search_util(Core::Nodes::Node* actnode, Teuchos::RCP<Epetra_IntVector> visited,
-        Teuchos::RCP<Discret::Discretization> artconncompdis,
+        Teuchos::RCP<Core::FE::Discretization> artconncompdis,
         Teuchos::RCP<const Epetra_Vector> ele_diams_artery_full_overlap,
         std::vector<int>& this_connected_comp);
 

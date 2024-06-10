@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 #include "4C_coupling_volmortar_shape.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_scatra_multiscale.hpp"
@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, const ScaTra::Action& action,
+    Core::FE::Discretization& discretization, const ScaTra::Action& action,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -735,7 +735,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -787,7 +787,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // extract scalar values from global vector
   Teuchos::RCP<const Epetra_Vector> scalar = discretization.GetState("scalar");
@@ -877,7 +877,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_deriv
     Core::LinAlg::SerialDenseMatrix& emat,      //!< element matrix
     Core::LinAlg::SerialDenseVector& erhs,      //!< element residual
     Teuchos::ParameterList& params,             //!< parameter list
-    Discret::Discretization& discretization,    //!< discretization
+    Core::FE::Discretization& discretization,   //!< discretization
     Core::Elements::Element::LocationArray& la  //!< location array
 )
 {
@@ -1269,8 +1269,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalars(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalar_time_derivatives(
-    const Discret::Discretization& discretization,  //!< discretization
-    const std::vector<int>& lm,                     //!< location vector
+    const Core::FE::Discretization& discretization,  //!< discretization
+    const std::vector<int>& lm,                      //!< location vector
     Core::LinAlg::SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
 )
 {

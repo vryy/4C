@@ -13,8 +13,8 @@
 #include "4C_adapter_str_factory.hpp"
 #include "4C_adapter_str_pasiwrapper.hpp"
 #include "4C_adapter_str_structure_new.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_particle_algorithm.hpp"
@@ -243,7 +243,7 @@ void PaSI::PartitionedAlgo::init_structure_field()
   const Teuchos::ParameterList& params = problem->structural_dynamic_params();
 
   // access the structural discretization
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis("structure");
 
   // build structure
   if (params.get<std::string>("INT_STRATEGY") == "Standard")

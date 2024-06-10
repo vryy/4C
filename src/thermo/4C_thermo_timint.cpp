@@ -43,7 +43,7 @@ void THR::TimInt::Logo()
  *----------------------------------------------------------------------*/
 THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : discret_(actdis),
       myrank_(actdis->Comm().MyPID()),

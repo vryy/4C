@@ -32,10 +32,10 @@ functions there exist also for fields.
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations:
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {

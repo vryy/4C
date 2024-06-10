@@ -10,10 +10,10 @@
 
 #include "4C_scatra_ele_calc.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
-#include "4C_discretization_fem_general_utils_gder2.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_utils_gder2.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
@@ -95,7 +95,7 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
-    Core::Elements::Element* ele, Discret::Discretization& discretization)
+    Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
   // get element coordinates
   read_element_coordinates(ele);
@@ -148,7 +148,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::Evaluate(Core::Elements::Element* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -204,7 +204,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::Evaluate(Core::Elements:
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // get number of dofset associated with velocity related dofs
   const int ndsvel = scatrapara_->NdsVel();
@@ -339,7 +339,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_turbulence_approach(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     int& nlayer)
 {
   if (turbparams_->TurbModel() != Inpar::FLUID::no_model or
@@ -894,7 +894,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::body_force(
  *------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::other_node_based_source_terms(
-    const std::vector<int>& lm, Discret::Discretization& discretization,
+    const std::vector<int>& lm, Core::FE::Discretization& discretization,
     Teuchos::ParameterList& params)
 {
   // set externally calculated source term instead of body force by volume
@@ -1223,7 +1223,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::mat_scatra(
       scatrapara_->RBSubGrVel() or turbparams_->TurbModel() == Inpar::FLUID::dynamic_smagorinsky)
   {
     // access fluid discretization
-    Teuchos::RCP<Discret::Discretization> fluiddis = Teuchos::null;
+    Teuchos::RCP<Core::FE::Discretization> fluiddis = Teuchos::null;
     fluiddis = Global::Problem::Instance()->GetDis("fluid");
     // get corresponding fluid element (it has the same global ID as the scatra element)
     Core::Elements::Element* fluidele = fluiddis->gElement(eid_);

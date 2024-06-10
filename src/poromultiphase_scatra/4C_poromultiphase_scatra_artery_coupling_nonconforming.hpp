@@ -38,10 +38,10 @@ namespace PoroMultiPhaseScaTra
   {
    public:
     //! create using a Epetra_Comm
-    PoroMultiPhaseScaTraArtCouplNonConforming(Teuchos::RCP<Discret::Discretization> arterydis,
-        Teuchos::RCP<Discret::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
-        const std::string& condname, const std::string& artcoupleddofname,
-        const std::string& contcoupleddofname);
+    PoroMultiPhaseScaTraArtCouplNonConforming(Teuchos::RCP<Core::FE::Discretization> arterydis,
+        Teuchos::RCP<Core::FE::Discretization> contdis,
+        const Teuchos::ParameterList& couplingparams, const std::string& condname,
+        const std::string& artcoupleddofname, const std::string& contcoupleddofname);
 
    protected:
     //! Evaluate the 1D-3D coupling

@@ -31,7 +31,7 @@ namespace BINSTRATEGY
   {
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void ExtendDiscretizationGhosting(Teuchos::RCP<Discret::Discretization> discret,
+    void ExtendDiscretizationGhosting(Teuchos::RCP<Core::FE::Discretization> discret,
         Teuchos::RCP<Epetra_Map> const& extendedelecolmap, bool assigndegreesoffreedom,
         bool initelements, bool doboundaryconditions)
     {
@@ -116,7 +116,7 @@ namespace BINSTRATEGY
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void CommunicateElements(Teuchos::RCP<Discret::Discretization>& discret,
+    void CommunicateElements(Teuchos::RCP<Core::FE::Discretization>& discret,
         std::map<int, std::vector<Core::Elements::Element*>> const& toranktosendeles)
     {
       // build exporter
@@ -218,7 +218,7 @@ namespace BINSTRATEGY
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void CommunicateDistributionOfTransferredElementsToBins(
-        Teuchos::RCP<Discret::Discretization>& discret,
+        Teuchos::RCP<Core::FE::Discretization>& discret,
         std::map<int, std::vector<std::pair<int, std::vector<int>>>> const& toranktosendbinids,
         std::map<int, std::set<int>>& bintorowelemap)
     {
@@ -305,7 +305,7 @@ namespace BINSTRATEGY
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void GetCurrentNodePos(Teuchos::RCP<const Discret::Discretization> const discret,
+    void GetCurrentNodePos(Teuchos::RCP<const Core::FE::Discretization> const discret,
         Core::Nodes::Node const* node, Teuchos::RCP<const Epetra_Vector> const disnp,
         double* currpos)
     {

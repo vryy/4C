@@ -14,10 +14,10 @@
 
 #include "4C_adapter_str_timeada_joint.hpp"
 #include "4C_adapter_str_timeada_zienxie.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_structure_new_dbc.hpp"
 #include "4C_structure_new_timint_base.hpp"

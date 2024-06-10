@@ -10,7 +10,7 @@
 
 
 
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_nurbs_discret.hpp"
 #include "4C_nurbs_discret_control_point.hpp"
@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& geofile,
-    const Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
+    const Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
 {
   using namespace FourC;
 
@@ -1407,7 +1407,8 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
 ----------------------------------------------------------------------*/
 void EnsightWriter::write_nurbs_cell(const Core::FE::CellType distype, const int gid,
     std::ofstream& geofile, std::vector<int>& nodevector,
-    const Teuchos::RCP<Discret::Discretization> dis, const Teuchos::RCP<Epetra_Map>& proc0map) const
+    const Teuchos::RCP<Core::FE::Discretization> dis,
+    const Teuchos::RCP<Epetra_Map>& proc0map) const
 {
   using namespace FourC;
 

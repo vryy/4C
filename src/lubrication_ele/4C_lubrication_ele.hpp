@@ -17,8 +17,8 @@ Pack, Unpack, NumDofPerNode etc.
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -52,7 +52,7 @@ namespace Discret
           override;
 
       /// pre-evaluation
-      void pre_evaluate(Discret::Discretization& dis, Teuchos::ParameterList& p,
+      void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
           Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
           Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
           Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -243,7 +243,7 @@ namespace Discret
                                   given in params
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -263,7 +263,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -496,7 +496,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -524,7 +524,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override

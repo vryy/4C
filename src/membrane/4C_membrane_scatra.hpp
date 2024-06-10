@@ -18,10 +18,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
+
 namespace Discret
 {
-  // forward declarations
-  class Discretization;
 
   namespace ELEMENTS
   {
@@ -170,7 +173,7 @@ namespace Discret
       \param discretization : pointer to discretization for de-assembly
       \param la (in)        : location array for de-assembly
       */
-      void pre_evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      void pre_evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la);
 
       /*!
@@ -199,7 +202,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

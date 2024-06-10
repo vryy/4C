@@ -62,7 +62,7 @@ template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_action(
     Core::Elements::FaceElement* ele,                 //!< boundary element
     Teuchos::ParameterList& params,                   //!< parameter list
-    Discret::Discretization& discretization,          //!< discretization
+    Core::FE::Discretization& discretization,         //!< discretization
     ScaTra::BoundaryAction action,                    //!< action
     Core::Elements::Element::LocationArray& la,       //!< location array
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
@@ -129,7 +129,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::eval
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_neumann(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1,
     const double scalar)
 {
@@ -266,7 +266,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_s2_i_coupling(
     const Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& eslavematrix, Core::LinAlg::SerialDenseMatrix& emastermatrix,
     Core::LinAlg::SerialDenseVector& eslaveresidual)
 {
@@ -296,7 +296,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::eva
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
     probdim>::evaluate_s2_i_coupling_od(const Core::Elements::FaceElement* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix)
 {
   switch (my::scatraparamsboundary_->KineticModel())

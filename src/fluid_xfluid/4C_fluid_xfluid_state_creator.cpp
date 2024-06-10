@@ -12,7 +12,7 @@
 #include "4C_fluid_xfluid_state_creator.hpp"
 
 #include "4C_cut_cutwizard.hpp"
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fluid_xfluid_fluid_state.hpp"
 #include "4C_fluid_xfluid_state.hpp"
@@ -77,7 +77,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::Create(
     const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
-    const Teuchos::RCP<Discret::Discretization>&
+    const Teuchos::RCP<Core::FE::Discretization>&
         embfluiddiscret,  //!< embedded fluid discretization
     Teuchos::RCP<const Epetra_Vector>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis

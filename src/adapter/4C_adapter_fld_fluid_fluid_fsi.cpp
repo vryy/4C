@@ -218,7 +218,7 @@ Teuchos::RCP<const Epetra_Vector> Adapter::FluidFluidFSI::Dispn() { return fluid
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<Discret::Discretization>& Adapter::FluidFluidFSI::discretization()
+const Teuchos::RCP<Core::FE::Discretization>& Adapter::FluidFluidFSI::discretization()
 {
   return fluidimpl_->discretization();
 }

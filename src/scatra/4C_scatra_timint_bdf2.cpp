@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ScaTra::TimIntBDF2::TimIntBDF2(Teuchos::RCP<Discret::Discretization> actdis,
+ScaTra::TimIntBDF2::TimIntBDF2(Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)

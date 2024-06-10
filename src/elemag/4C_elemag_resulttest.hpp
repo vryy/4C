@@ -21,10 +21,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace EleMag
 {
@@ -47,7 +47,7 @@ namespace EleMag
 
    private:
     /// Teuchos::RCP to elemagstical discretization
-    Teuchos::RCP<Discret::Discretization> dis_;
+    Teuchos::RCP<Core::FE::Discretization> dis_;
     /// Teuchos::RCP to solution vector
     Teuchos::RCP<Epetra_Vector> mysol_;
     /// Error vector

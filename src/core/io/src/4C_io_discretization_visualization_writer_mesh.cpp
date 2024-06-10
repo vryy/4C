@@ -12,11 +12,11 @@ to disk
 /* headers */
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_io.hpp"
 #include "4C_io_element_vtk_cell_type_register.hpp"
 #include "4C_io_visualization_manager.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_FEVector.h>
@@ -31,7 +31,7 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   DiscretizationVisualizationWriterMesh::DiscretizationVisualizationWriterMesh(
-      const Teuchos::RCP<const Discret::Discretization>& discretization,
+      const Teuchos::RCP<const Core::FE::Discretization>& discretization,
       VisualizationParameters parameters,
       std::function<bool(const Core::Elements::Element* element)> element_filter)
       : discretization_(discretization),
@@ -405,7 +405,7 @@ namespace Core::IO
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
-  void append_element_ghosting_information(const Discret::Discretization& discretization,
+  void append_element_ghosting_information(const Core::FE::Discretization& discretization,
       VisualizationManager& visualization_manager,
       const std::function<bool(const Core::Elements::Element* ele)>& element_predicate)
   {

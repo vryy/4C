@@ -33,7 +33,7 @@ Adapter::FluidXFEM::FluidXFEM(const Teuchos::ParameterList& prbdyn, std::string 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization> Adapter::FluidXFEM::discretization()
+Teuchos::RCP<Core::FE::Discretization> Adapter::FluidXFEM::discretization()
 {
   // returns the boundary discretization
   // REMARK:
@@ -46,7 +46,7 @@ Teuchos::RCP<Discret::Discretization> Adapter::FluidXFEM::discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization> Adapter::FluidXFEM::boundary_discretization()
+Teuchos::RCP<Core::FE::Discretization> Adapter::FluidXFEM::boundary_discretization()
 {
   // returns the boundary discretization
   // REMARK:

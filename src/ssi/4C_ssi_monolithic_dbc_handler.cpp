@@ -10,7 +10,7 @@
 #include "4C_ssi_monolithic_dbc_handler.hpp"
 
 #include "4C_adapter_str_ssiwrapper.hpp"
-#include "4C_discretization_condition_locsys.hpp"
+#include "4C_fem_condition_locsys.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"

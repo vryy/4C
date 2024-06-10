@@ -18,11 +18,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
-
+}  // namespace Core::FE
 namespace Core::Nodes
 {
   class Node;
@@ -72,7 +71,7 @@ namespace Mortar
 
       //! initialization of class variables
       void Init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr);
-      void Init(Teuchos::RCP<Discret::Discretization> dis);
+      void Init(Teuchos::RCP<Core::FE::Discretization> dis);
 
       /*! \brief Setup of class variables
        *
@@ -129,7 +128,7 @@ namespace Mortar
        *  Stores knot vector, zerosized information and normal factor
        *
        *  \author Farah */
-      void prepare_nurbs_element(const Discret::Discretization& discret,
+      void prepare_nurbs_element(const Core::FE::Discretization& discret,
           Teuchos::RCP<Core::Elements::Element> ele, Teuchos::RCP<Mortar::Element> cele) const;
 
       /*! \brief Prepare mortar node for NURBS case
@@ -149,8 +148,8 @@ namespace Mortar
       const STR::TimeInt::BaseDataGlobalState& g_state() const;
 
       //! Returns the (structural) discretization
-      Discret::Discretization& discret();
-      const Discret::Discretization& discret() const;
+      Core::FE::Discretization& discret();
+      const Core::FE::Discretization& discret() const;
 
       //! returns a reference to a copy of the structural communicator
       Epetra_Comm& comm();
@@ -164,7 +163,7 @@ namespace Mortar
       //!@}
 
       //! pointer to the structural problem discretization
-      Teuchos::RCP<Discret::Discretization> discret_ptr_;
+      Teuchos::RCP<Core::FE::Discretization> discret_ptr_;
 
      private:
       //! @name Status flags

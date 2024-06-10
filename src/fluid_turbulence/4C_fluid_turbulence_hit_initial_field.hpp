@@ -21,11 +21,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace FLD
 {
@@ -68,7 +67,7 @@ namespace FLD
     double calculate_energy_from_spectrum(double k);
 
     //! fluid discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! state vectors to be initialized
     Teuchos::RCP<Epetra_Vector> velnp_;

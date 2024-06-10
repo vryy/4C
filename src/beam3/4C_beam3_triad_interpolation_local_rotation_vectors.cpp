@@ -11,9 +11,9 @@
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"
 
 #include "4C_beam3_triad_interpolation.hpp"
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_largerotations.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_fad.hpp"
 

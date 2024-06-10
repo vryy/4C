@@ -16,7 +16,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_fld_fluid_fpsi.hpp"
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_poroelast_utils.hpp"
 
@@ -31,7 +31,7 @@ namespace Adapter
   {
    public:
     //! Constructor
-    FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+    FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 

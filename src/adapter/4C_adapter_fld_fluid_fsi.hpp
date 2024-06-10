@@ -53,7 +53,7 @@ namespace Adapter
   {
    public:
     /// Constructor
-    FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+    FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
@@ -233,7 +233,7 @@ namespace Adapter
     Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpl_;
 
     //! @name local copies of input parameters
-    Teuchos::RCP<Discret::Discretization> dis_;
+    Teuchos::RCP<Core::FE::Discretization> dis_;
     Teuchos::RCP<Teuchos::ParameterList> params_;
     Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
     bool dirichletcond_;

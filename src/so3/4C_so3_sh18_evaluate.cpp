@@ -6,10 +6,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_so3_sh18.hpp"
@@ -425,7 +425,7 @@ void Discret::ELEMENTS::SoSh18::soh18_lumpmass(
 /*----------------------------------------------------------------------*
  |  init the element (public)                               seitz 11/14 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh18Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoSh18Type::Initialize(Core::FE::Discretization& dis)
 {
   // here we order the nodes such that we have a positive definite jacobian
   //       maybe the python script generating the hex18 elements would be a better place for this.

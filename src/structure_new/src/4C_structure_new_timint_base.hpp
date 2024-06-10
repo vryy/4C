@@ -97,7 +97,7 @@ namespace STR
       /// @name General access methods
       ///@{
       /// Access discretization (structure only)
-      Teuchos::RCP<Discret::Discretization> discretization() override;
+      Teuchos::RCP<Core::FE::Discretization> discretization() override;
 
       /// Access to pointer to DoF row map of the discretization (structure only)
       const Epetra_Map* dof_row_map_view() override

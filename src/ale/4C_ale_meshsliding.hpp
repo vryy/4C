@@ -27,7 +27,7 @@ namespace ALE
   {
    public:
     //! Constructor
-    Meshsliding(Teuchos::RCP<Discret::Discretization> dis,      ///> actual discretisation
+    Meshsliding(Teuchos::RCP<Core::FE::Discretization> dis,     ///> actual discretisation
         Core::LinAlg::Solver& solver,                           ///> solver
         int msht,                                               ///> meshting parameter list
         int nsd,                                                ///> number space dimensions

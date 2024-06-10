@@ -46,7 +46,7 @@ FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 void FSI::Algorithm::Setup()
 {
   // access the structural discretization
-  Teuchos::RCP<Discret::Discretization> structdis =
+  Teuchos::RCP<Core::FE::Discretization> structdis =
       Global::Problem::Instance()->GetDis("structure");
 
   // access structural dynamic params list which will be possibly modified while creating the time

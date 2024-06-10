@@ -10,9 +10,9 @@
 /*----------------------------------------------------------------------*/
 #include "4C_coupling_adapter_mortar.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -44,9 +44,9 @@ Core::Adapter::CouplingMortar::CouplingMortar(int spatial_dimension,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Adapter::CouplingMortar::Setup(const Teuchos::RCP<Discret::Discretization>& masterdis,
-    const Teuchos::RCP<Discret::Discretization>& slavedis,
-    const Teuchos::RCP<Discret::Discretization>& aledis, const std::vector<int>& coupleddof,
+void Core::Adapter::CouplingMortar::Setup(const Teuchos::RCP<Core::FE::Discretization>& masterdis,
+    const Teuchos::RCP<Core::FE::Discretization>& slavedis,
+    const Teuchos::RCP<Core::FE::Discretization>& aledis, const std::vector<int>& coupleddof,
     const std::string& couplingcond, const Epetra_Comm& comm,
     const Core::UTILS::FunctionManager& function_manager, const bool slavewithale,
     const bool slidingale, const int nds_master, const int nds_slave)
@@ -194,7 +194,7 @@ void Core::Adapter::CouplingMortar::Setup(const Teuchos::RCP<Discret::Discretiza
  | check for overlap of slave and Dirichlet boundaries      farah 02/16 |
  *----------------------------------------------------------------------*/
 void Core::Adapter::CouplingMortar::check_slave_dirichlet_overlap(
-    const Teuchos::RCP<Discret::Discretization>& slavedis, const Epetra_Comm& comm,
+    const Teuchos::RCP<Core::FE::Discretization>& slavedis, const Epetra_Comm& comm,
     const Core::UTILS::FunctionManager& function_manager)
 {
   // safety check
@@ -250,8 +250,8 @@ void Core::Adapter::CouplingMortar::check_slave_dirichlet_overlap(
  | setup routine for mortar framework                        ehrl 08/13 |
  *----------------------------------------------------------------------*/
 void Core::Adapter::CouplingMortar::setup_interface(
-    const Teuchos::RCP<Discret::Discretization>& masterdis,  ///< master discretization
-    const Teuchos::RCP<Discret::Discretization>& slavedis,   ///< slave discretization
+    const Teuchos::RCP<Core::FE::Discretization>& masterdis,  ///< master discretization
+    const Teuchos::RCP<Core::FE::Discretization>& slavedis,   ///< slave discretization
     const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
     const std::map<int, Core::Nodes::Node*>&
         mastergnodes,  ///< master nodes, including ghosted nodes
@@ -495,8 +495,8 @@ void Core::Adapter::CouplingMortar::setup_interface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Adapter::CouplingMortar::mesh_relocation(Teuchos::RCP<Discret::Discretization> slavedis,
-    Teuchos::RCP<Discret::Discretization> aledis, Teuchos::RCP<const Epetra_Map> masterdofrowmap,
+void Core::Adapter::CouplingMortar::mesh_relocation(Teuchos::RCP<Core::FE::Discretization> slavedis,
+    Teuchos::RCP<Core::FE::Discretization> aledis, Teuchos::RCP<const Epetra_Map> masterdofrowmap,
     Teuchos::RCP<const Epetra_Map> slavedofrowmap, Teuchos::RCP<Epetra_Vector>& idisp,
     const Epetra_Comm& comm, bool slavewithale)
 {
@@ -1186,7 +1186,7 @@ void Core::Adapter::CouplingMortar::matrix_row_col_transform()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
-    Teuchos::RCP<Discret::Discretization> slavedis, Teuchos::RCP<Discret::Discretization> aledis,
+    Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::RCP<Core::FE::Discretization> aledis,
     Teuchos::RCP<Epetra_Vector>& idisp, const Epetra_Comm& comm, bool slavewithale)
 {
   // safety check

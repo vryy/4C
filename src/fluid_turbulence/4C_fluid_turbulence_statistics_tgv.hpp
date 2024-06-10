@@ -15,9 +15,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_scatra.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 #include <Epetra_MpiComm.h>
@@ -35,7 +35,7 @@ namespace FLD
     /*!
     \brief Standard Constructor (public)
     */
-    TurbulenceStatisticsTgv(Teuchos::RCP<Discret::Discretization> actdis,
+    TurbulenceStatisticsTgv(Teuchos::RCP<Core::FE::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename);
 
     /*!
@@ -79,7 +79,7 @@ namespace FLD
     int numele_;
 
     //! The discretization (required for nodes, dofs etc;)
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! contains plane normal direction etc --- this is the original
     //! fluid dynamic parameterlist

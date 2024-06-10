@@ -14,8 +14,8 @@ MATLAB, PGFPlot or other tools.
 #include "4C_contact_aug_plot.hpp"
 
 #include "4C_contact_aug_strategy.hpp"
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_node.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_io_every_iteration_writer.hpp"
 #include "4C_io_pstream.hpp"
@@ -200,7 +200,7 @@ void CONTACT::Aug::Plot::Direction::split_into_slave_master_body(const Epetra_Ve
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> CONTACT::Aug::Plot::Direction::find_connected_dofs(
-    const Core::Nodes::Node* node, const Discret::Discretization& discret) const
+    const Core::Nodes::Node* node, const Core::FE::Discretization& discret) const
 {
   std::set<int> done_element_ids;
   std::set<int> connected_node_gids;
@@ -383,7 +383,7 @@ void CONTACT::Aug::Plot::init(
     const Teuchos::ParameterList& plot_params, const CONTACT::AbstractStrategy* strat)
 {
   strat_ = dynamic_cast<const CONTACT::Aug::Strategy*>(strat);
-  discret_ = plot_params.get<const Discret::Discretization*>("DISCRETIZATION");
+  discret_ = plot_params.get<const Core::FE::Discretization*>("DISCRETIZATION");
   model_ = plot_params.get<STR::MODELEVALUATOR::Contact*>("MODELEVALUATOR");
 
   const int output_precision = plot_params.get<int>("OUTPUT_PRECISION");

@@ -11,12 +11,12 @@ class for handling of micro-macro transitions
 
 #include "4C_mat_micromaterialgp_static.hpp"
 
-#include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_elementtype.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_so3_hex8.hpp"
 #include "4C_so3_shw6.hpp"
@@ -39,7 +39,7 @@ Mat::MicroMaterialGP::MicroMaterialGP(
     : gp_(gp), ele_id_(ele_ID), microdisnum_(microdisnum)
 {
   Global::Problem* microproblem = Global::Problem::Instance(microdisnum_);
-  Teuchos::RCP<Discret::Discretization> microdis = microproblem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->GetDis("structure");
   dis_ = Core::LinAlg::CreateVector(*microdis->dof_row_map(), true);
   disn_ = Core::LinAlg::CreateVector(*microdis->dof_row_map(), true);
   lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
@@ -132,7 +132,7 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
   std::string micronewprefix = macrocontrol->NewOutputFileName();
 
   Global::Problem* microproblem = Global::Problem::Instance(microdisnum_);
-  Teuchos::RCP<Discret::Discretization> microdis = microproblem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->GetDis("structure");
 
   if (microdis->Comm().MyPID() == 0)
   {
@@ -228,7 +228,7 @@ std::string Mat::MicroMaterialGP::new_result_file_path(const std::string& newpre
 
 void Mat::MicroMaterialGP::eas_init()
 {
-  Teuchos::RCP<Discret::Discretization> discret =
+  Teuchos::RCP<Core::FE::Discretization> discret =
       (Global::Problem::Instance(microdisnum_))->GetDis("structure");
 
   for (int lid = 0; lid < discret->ElementRowMap()->NumMyElements(); ++lid)
@@ -315,7 +315,7 @@ void Mat::MicroMaterialGP::Update()
   dis_->Update(1.0, *disn_, 0.0);
 
   Global::Problem* microproblem = Global::Problem::Instance(microdisnum_);
-  Teuchos::RCP<Discret::Discretization> microdis = microproblem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->GetDis("structure");
   const Epetra_Map* elemap = microdis->ElementRowMap();
 
   for (int i = 0; i < elemap->NumMyElements(); ++i) (*lastalpha_)[i] = (*oldalpha_)[i];

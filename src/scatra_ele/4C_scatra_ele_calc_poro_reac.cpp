@@ -9,9 +9,9 @@
  *----------------------------------------------------------------------*/
 #include "4C_scatra_ele_calc_poro_reac.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_scatra.hpp"
 #include "4C_mat_structporo.hpp"
 #include "4C_mat_structporo_reaction_ecm.hpp"
@@ -130,7 +130,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::mat_scatra(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // call base class routine
   poro::extract_element_and_node_values(ele, params, discretization, la);

@@ -26,10 +26,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::IO
 {
@@ -59,13 +59,13 @@ namespace Core::IO
       \param reader (i) the dat file reader
       \param sectionname (i) the section that contains the element lines
      */
-    DomainReader(Teuchos::RCP<Discret::Discretization> dis, const Core::IO::DatFileReader& reader,
+    DomainReader(Teuchos::RCP<Core::FE::Discretization> dis, const Core::IO::DatFileReader& reader,
         std::string sectionname);
 
     //! Destructor
     virtual ~DomainReader() = default;
     /// give the discretization this reader fills
-    Teuchos::RCP<Discret::Discretization> MyDis() const { return dis_; }
+    Teuchos::RCP<Core::FE::Discretization> MyDis() const { return dis_; }
 
    private:
     /*! \brief generate elements, partition node graph, create nodes
@@ -105,7 +105,7 @@ namespace Core::IO
     std::string sectionname_;
 
     /// my discretization
-    Teuchos::RCP<Discret::Discretization> dis_;
+    Teuchos::RCP<Core::FE::Discretization> dis_;
   };
 
 }  // namespace Core::IO

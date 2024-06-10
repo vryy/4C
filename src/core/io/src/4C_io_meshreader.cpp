@@ -10,11 +10,11 @@
 
 #include "4C_io_meshreader.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io_domainreader.hpp"
 #include "4C_io_elementreader.hpp"
 #include "4C_io_inputreader.hpp"
 #include "4C_io_nodereader.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_rebalance.hpp"
 #include "4C_rebalance_graph_based.hpp"
 #include "4C_rebalance_print.hpp"
@@ -43,7 +43,7 @@ Core::IO::MeshReader::MeshReader(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::MeshReader::AddAdvancedReader(Teuchos::RCP<Discret::Discretization> dis,
+void Core::IO::MeshReader::AddAdvancedReader(Teuchos::RCP<Core::FE::Discretization> dis,
     const Core::IO::DatFileReader& reader, const std::string& sectionname,
     const Core::IO::GeometryType geometrysource, const std::string* geofilepath)
 {

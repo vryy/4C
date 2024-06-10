@@ -7,11 +7,11 @@
 \level 3
 *----------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_element_integration_select.hpp"
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_general_element_integration_select.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_densematrix_determinant.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"

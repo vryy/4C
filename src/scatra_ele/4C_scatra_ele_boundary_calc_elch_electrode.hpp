@@ -243,24 +243,24 @@ namespace Discret
           int numdofpernode, int numscal, const std::string& disname);
 
       void evaluate_s2_i_coupling(const Core::Elements::FaceElement* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix,
           Core::LinAlg::SerialDenseVector& eslaveresidual) override;
 
-      void evaluate_s2_i_coupling_capacitance(const Discret::Discretization& discretization,
+      void evaluate_s2_i_coupling_capacitance(const Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix,
           Core::LinAlg::SerialDenseVector& eslaveresidual,
           Core::LinAlg::SerialDenseVector& emasterresidual) override;
 
       void evaluate_s2_i_coupling_od(const Core::Elements::FaceElement* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& eslavematrix) override;
 
       void evaluate_s2_i_coupling_capacitance_od(Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix) override;
 
@@ -268,7 +268,7 @@ namespace Discret
           const Teuchos::RCP<const Core::Mat::Material>& material, int k) const override;
 
       void calc_s2_i_coupling_flux(const Core::Elements::FaceElement* ele,
-          const Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          const Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::FaceElement::LocationArray& la,
           Core::LinAlg::SerialDenseVector& scalars) override;
 

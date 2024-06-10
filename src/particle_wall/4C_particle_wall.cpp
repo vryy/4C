@@ -12,16 +12,16 @@
 
 #include "4C_binstrategy.hpp"
 #include "4C_comm_utils_factory.hpp"
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_dofset_transparent.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_geometry_searchtree_service.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_dofset_transparent.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_geometry_searchtree_service.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_particle.hpp"
 #include "4C_io.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_mat_material_factory.hpp"
@@ -448,7 +448,7 @@ void PARTICLEWALL::WallHandlerBase::create_wall_discretization_runtime_vtu_write
 void PARTICLEWALL::WallHandlerBase::create_wall_discretization()
 {
   // create wall discretization
-  walldiscretization_ = Teuchos::rcp(new Discret::Discretization(
+  walldiscretization_ = Teuchos::rcp(new Core::FE::Discretization(
       "particlewalls", Teuchos::rcp(comm_.Clone()), Global::Problem::Instance()->NDim()));
 
   // create wall discretization writer
@@ -540,7 +540,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
   create_wall_discretization();
 
   // access the structural discretization
-  Teuchos::RCP<Discret::Discretization> structurediscretization =
+  Teuchos::RCP<Core::FE::Discretization> structurediscretization =
       Global::Problem::Instance()->GetDis("structure");
 
   // finalize structure discretization construction

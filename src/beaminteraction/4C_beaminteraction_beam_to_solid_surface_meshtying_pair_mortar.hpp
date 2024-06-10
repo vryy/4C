@@ -15,8 +15,8 @@
 #include "4C_config.hpp"
 
 #include "4C_beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_base.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_geometry_pair_scalar_types.hpp"
-#include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -63,7 +63,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void evaluate_and_assemble_mortar_contributions(const Discret::Discretization& discret,
+    void evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_G_B,
         Core::LinAlg::SparseMatrix& global_G_S, Core::LinAlg::SparseMatrix& global_FB_L,
         Core::LinAlg::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,

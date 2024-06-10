@@ -59,7 +59,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void evaluate_and_assemble_mortar_contributions(const Discret::Discretization& discret,
+    void evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_G_B,
         Core::LinAlg::SparseMatrix& global_G_S, Core::LinAlg::SparseMatrix& global_FB_L,
         Core::LinAlg::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,

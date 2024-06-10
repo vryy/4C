@@ -714,14 +714,14 @@ int Mortar::SortConvexHullPoints(bool out, Core::LinAlg::SerialDenseMatrix& tran
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mortar::UTILS::create_volume_ghosting(const Discret::Discretization& dis_src,
+void Mortar::UTILS::create_volume_ghosting(const Core::FE::Discretization& dis_src,
     const std::vector<std::string> dis_tar, std::vector<std::pair<int, int>> material_links,
     bool check_on_in, bool check_on_exit)
 {
   if (dis_tar.size() == 0) return;
 
   Global::Problem* problem = Global::Problem::Instance();
-  std::vector<Teuchos::RCP<Discret::Discretization>> voldis;
+  std::vector<Teuchos::RCP<Core::FE::Discretization>> voldis;
   for (int name = 0; name < (int)dis_tar.size(); ++name)
     voldis.push_back(problem->GetDis(dis_tar.at(name)));
 
@@ -825,8 +825,8 @@ void Mortar::UTILS::create_volume_ghosting(const Discret::Discretization& dis_sr
   for (std::vector<std::pair<int, int>>::const_iterator m = material_links.begin();
        m != material_links.end(); ++m)
   {
-    Teuchos::RCP<Discret::Discretization> dis_src_mat = voldis.at(m->first);
-    Teuchos::RCP<Discret::Discretization> dis_tar_mat = voldis.at(m->second);
+    Teuchos::RCP<Core::FE::Discretization> dis_src_mat = voldis.at(m->first);
+    Teuchos::RCP<Core::FE::Discretization> dis_tar_mat = voldis.at(m->second);
 
     for (int i = 0; i < dis_tar_mat->NumMyColElements(); ++i)
     {
@@ -845,7 +845,7 @@ void Mortar::UTILS::create_volume_ghosting(const Discret::Discretization& dis_sr
 /*----------------------------------------------------------------------*
  |  Prepare mortar element for nurbs-case                    farah 11/14|
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::prepare_nurbs_element(Discret::Discretization& discret,
+void Mortar::UTILS::prepare_nurbs_element(Core::FE::Discretization& discret,
     Teuchos::RCP<Core::Elements::Element> ele, Teuchos::RCP<Mortar::Element> cele, int dim)
 {
   Discret::Nurbs::NurbsDiscretization* nurbsdis =

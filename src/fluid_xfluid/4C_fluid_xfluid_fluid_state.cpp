@@ -125,8 +125,8 @@ void FLD::XFluidFluidState::create_merged_dbc_map_extractor(
  |  Set dirichlet- and velocity/pressure-map extractor      kruse 01/15 |
  *----------------------------------------------------------------------*/
 void FLD::XFluidFluidState::SetupMapExtractors(
-    const Teuchos::RCP<Discret::Discretization>& xfluiddiscret,
-    const Teuchos::RCP<Discret::Discretization>& embfluiddiscret, const double& time)
+    const Teuchos::RCP<Core::FE::Discretization>& xfluiddiscret,
+    const Teuchos::RCP<Core::FE::Discretization>& embfluiddiscret, const double& time)
 {
   // create merged dirichlet map extractor
   XFluidState::SetupMapExtractors(xfluiddiscret, time);

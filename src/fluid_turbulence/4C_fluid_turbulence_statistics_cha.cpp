@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
                   Standard Constructor (public)
 
   ---------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Discret::Discretization> actdis,
+FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Discretization> actdis,
     bool alefluid, Teuchos::RCP<Epetra_Vector> dispnp, Teuchos::ParameterList& params,
     const std::string& statistics_outfilename, bool subgrid_dissipation,
     Teuchos::RCP<FLD::XWall> xwallobj)
@@ -5850,7 +5850,7 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
 
 
 void FLD::TurbulenceStatisticsCha::store_scatra_discret_and_params(
-    Teuchos::RCP<Discret::Discretization> scatradis,
+    Teuchos::RCP<Core::FE::Discretization> scatradis,
     Teuchos::RCP<Teuchos::ParameterList> scatraparams,
     Teuchos::RCP<Teuchos::ParameterList> scatraextraparams,
     Teuchos::RCP<Teuchos::ParameterList> scatratimeparams)

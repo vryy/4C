@@ -9,12 +9,12 @@
 #include "4C_porofluidmultiphase_utils.hpp"
 
 #include "4C_adapter_porofluidmultiphase.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
-#include "4C_discretization_geometry_intersection_service.hpp"
-#include "4C_discretization_geometry_intersection_service_templates.hpp"
-#include "4C_discretization_geometry_position_array.hpp"
-#include "4C_discretization_geometry_searchtree.hpp"
-#include "4C_discretization_geometry_searchtree_service.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
+#include "4C_fem_geometry_intersection_service.hpp"
+#include "4C_fem_geometry_intersection_service_templates.hpp"
+#include "4C_fem_geometry_position_array.hpp"
+#include "4C_fem_geometry_searchtree.hpp"
+#include "4C_fem_geometry_searchtree_service.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_bio.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  std::vector<int> GetCouplingArteriesNodeToPoint(Teuchos::RCP<Discret::Discretization> artdis,
-      Teuchos::RCP<Discret::Discretization> artsearchdis)
+  std::vector<int> GetCouplingArteriesNodeToPoint(Teuchos::RCP<Core::FE::Discretization> artdis,
+      Teuchos::RCP<Core::FE::Discretization> artsearchdis)
   {
     // this vector will be filled
     std::vector<int> artEleGIDs_help;
@@ -70,7 +70,7 @@ void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
     const Epetra_Comm& comm, const std::string& struct_disname, const std::string& fluid_disname)
 {
   // get the fluid discretization
-  Teuchos::RCP<Discret::Discretization> fluiddis =
+  Teuchos::RCP<Core::FE::Discretization> fluiddis =
       Global::Problem::Instance()->GetDis(fluid_disname);
 
   // initialize material map
@@ -131,7 +131,7 @@ void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToNodeBasedMultiVector(
-    const Discret::Discretization& dis, const Epetra_Vector& vector, const int nds,
+    const Core::FE::Discretization& dis, const Epetra_Vector& vector, const int nds,
     const int numdofpernode)
 {
   // initialize multi vector
@@ -159,7 +159,7 @@ Teuchos::RCP<Epetra_MultiVector> POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToN
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Adapter::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(
     Inpar::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme,
-    Teuchos::RCP<Discret::Discretization> dis, const int linsolvernumber,
+    Teuchos::RCP<Core::FE::Discretization> dis, const int linsolvernumber,
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
@@ -192,7 +192,7 @@ Teuchos::RCP<Adapter::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlg
  | perform extended ghosting for artery dis                kremheller 03/19 |
  *--------------------------------------------------------------------------*/
 std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(
-    Teuchos::RCP<Discret::Discretization> contdis, Teuchos::RCP<Discret::Discretization> artdis,
+    Teuchos::RCP<Core::FE::Discretization> contdis, Teuchos::RCP<Core::FE::Discretization> artdis,
     const bool evaluate_on_lateral_surface,
     const Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod couplingmethod)
 {
@@ -208,7 +208,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
   if (!contdis->Filled()) contdis->fill_complete();
 
   // create the fully overlapping search discretization
-  Teuchos::RCP<Discret::Discretization> artsearchdis =
+  Teuchos::RCP<Core::FE::Discretization> artsearchdis =
       CreateFullyOverlappingArteryDiscretization(artdis, "artsearchdis", false);
 
   // to be filled with additional elements to be ghosted
@@ -285,15 +285,15 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
 /*--------------------------------------------------------------------------*
  | create the fully overlapping artery discretization      kremheller 03/19 |
  *--------------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization>
+Teuchos::RCP<Core::FE::Discretization>
 POROFLUIDMULTIPHASE::UTILS::CreateFullyOverlappingArteryDiscretization(
-    Teuchos::RCP<Discret::Discretization> artdis, std::string disname, bool doboundaryconditions)
+    Teuchos::RCP<Core::FE::Discretization> artdis, std::string disname, bool doboundaryconditions)
 {
   // we clone a search discretization of the artery discretization on which the search will be
   // performed in a brute force way fully overlapping
   Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discloner =
       Teuchos::rcp(new Core::FE::DiscretizationCreatorBase());
-  Teuchos::RCP<Discret::Discretization> artsearchdis =
+  Teuchos::RCP<Core::FE::Discretization> artsearchdis =
       discloner->create_matching_discretization(artdis, disname, false, false, false, false);
 
   // ghost on all procs.
@@ -306,8 +306,8 @@ POROFLUIDMULTIPHASE::UTILS::CreateFullyOverlappingArteryDiscretization(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
-    Teuchos::RCP<Discret::Discretization> contdis, Teuchos::RCP<Discret::Discretization> artdis,
-    Teuchos::RCP<Discret::Discretization> artsearchdis, const bool evaluate_on_lateral_surface,
+    Teuchos::RCP<Core::FE::Discretization> contdis, Teuchos::RCP<Core::FE::Discretization> artdis,
+    Teuchos::RCP<Core::FE::Discretization> artsearchdis, const bool evaluate_on_lateral_surface,
     const std::vector<int> artEleGIDs, std::set<int>& elecolset, std::set<int>& nodecolset)
 {
   // this map will be filled
@@ -432,7 +432,7 @@ Core::LinAlg::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(Core::Elements::E
  | get nodal positions                                 kremheller 10/19 |
  *----------------------------------------------------------------------*/
 std::map<int, Core::LinAlg::Matrix<3, 1>> POROFLUIDMULTIPHASE::UTILS::GetNodalPositions(
-    Teuchos::RCP<Discret::Discretization> dis, const Epetra_Map* nodemap)
+    Teuchos::RCP<Core::FE::Discretization> dis, const Epetra_Map* nodemap)
 {
   std::map<int, Core::LinAlg::Matrix<3, 1>> positions;
   for (int lid = 0; lid < nodemap->NumMyElements(); ++lid)
@@ -453,7 +453,7 @@ std::map<int, Core::LinAlg::Matrix<3, 1>> POROFLUIDMULTIPHASE::UTILS::GetNodalPo
  | get maximum nodal distance                          kremheller 05/18 |
  *----------------------------------------------------------------------*/
 double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
-    Core::Elements::Element* ele, Teuchos::RCP<Discret::Discretization> dis)
+    Core::Elements::Element* ele, Teuchos::RCP<Core::FE::Discretization> dis)
 {
   double maxdist = 0.0;
 

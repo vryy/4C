@@ -29,7 +29,7 @@ valves with k_p -> 0
 #include "4C_config.hpp"
 
 #include "4C_cardiovascular0d.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_inpar_cardiovascular0d.hpp"
 
 #include <Epetra_FECrsMatrix.h>
@@ -42,10 +42,10 @@ valves with k_p -> 0
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -64,7 +64,7 @@ namespace UTILS
     takes care of the Cardiovascular0D IDs.
     */
 
-    Cardiovascular0DArterialProxDist(Teuchos::RCP<Discret::Discretization>
+    Cardiovascular0DArterialProxDist(Teuchos::RCP<Core::FE::Discretization>
                                          discr,  ///< discretization where Cardiovascular0D lives on
         const std::string& conditionname,  ///< Name of condition to create Cardiovascular0D from
         std::vector<int>& curID            ///< current ID

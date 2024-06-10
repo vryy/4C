@@ -17,14 +17,14 @@ Fluid-Poro-Coupling Matrixes!
 #include "4C_adapter_str_fpsiwrapper.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_discretization_condition_selector.hpp"
-#include "4C_discretization_fem_general_assemblestrategy.hpp"
+#include "4C_fem_condition_selector.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fpsi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fpsi.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_sparsematrix.hpp"
@@ -108,10 +108,10 @@ void FPSI::FpsiCoupling::setup_interface_coupling()
 {
   const int ndim = Global::Problem::Instance()->NDim();
 
-  Teuchos::RCP<Discret::Discretization> fluiddis = fluid_field()->discretization();
-  Teuchos::RCP<Discret::Discretization> porofluiddis =
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = fluid_field()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> porofluiddis =
       poro_field()->fluid_field()->discretization();
-  Teuchos::RCP<Discret::Discretization> porostructdis =
+  Teuchos::RCP<Core::FE::Discretization> porostructdis =
       poro_field()->structure_field()->discretization();
 
   {

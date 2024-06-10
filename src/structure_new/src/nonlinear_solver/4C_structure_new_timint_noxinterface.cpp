@@ -13,8 +13,8 @@
 
 #include "4C_structure_new_timint_noxinterface.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
@@ -650,7 +650,7 @@ void STR::TimeInt::NoxInterface::get_dofs_from_elements(
 {
   check_init_setup();
 
-  Teuchos::RCP<const Discret::Discretization> discret_ptr = gstate_ptr_->get_discret();
+  Teuchos::RCP<const Core::FE::Discretization> discret_ptr = gstate_ptr_->get_discret();
 
   for (int egid : my_ele_gids)
   {

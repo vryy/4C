@@ -14,15 +14,15 @@
 #include "4C_ale_meshsliding.hpp"
 #include "4C_ale_resulttest.hpp"
 #include "4C_ale_utils_mapextractor.hpp"
-#include "4C_discretization_condition_locsys.hpp"
-#include "4C_discretization_condition_periodic.hpp"
+#include "4C_fem_condition_locsys.hpp"
+#include "4C_fem_condition_periodic.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ale.hpp"
 #include "4C_inpar_fsi.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_sparseoperator.hpp"
@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ALE::Ale::Ale(Teuchos::RCP<Discret::Discretization> actdis,
+ALE::Ale::Ale(Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : discret_(actdis),
@@ -850,7 +850,7 @@ bool ALE::Ale::evaluate_element_quality()
 ////////////////////////////////////////////////////////////////////////////////
 
 /*----------------------------------------------------------------------------*/
-ALE::AleLinear::AleLinear(Teuchos::RCP<Discret::Discretization> actdis,
+ALE::AleLinear::AleLinear(Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params_in,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : Ale(actdis, solver, params_in, output), validsysmat_(false), updateeverystep_(false)

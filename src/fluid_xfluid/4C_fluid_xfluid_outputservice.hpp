@@ -24,10 +24,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -232,9 +232,10 @@ namespace FLD
 
    private:
     /// Gmsh output function for elements without an Core::Geo::Cut::ElementHandle
-    void gmsh_output_element(Discret::Discretization& discret,  ///< background fluid discretization
-        std::ofstream& vel_f,                                   ///< output file stream for velocity
-        std::ofstream& press_f,                                 ///< output file stream for pressure
+    void gmsh_output_element(
+        Core::FE::Discretization& discret,      ///< background fluid discretization
+        std::ofstream& vel_f,                   ///< output file stream for velocity
+        std::ofstream& press_f,                 ///< output file stream for pressure
         std::ofstream& acc_f,                   ///< output file stream for acceleration
         Core::Elements::Element* actele,        ///< element
         std::vector<int>& nds,                  ///< vector holding the nodal dofsets
@@ -246,7 +247,7 @@ namespace FLD
 
     /// Gmsh output function for volumecells
     void gmsh_output_volume_cell(
-        Discret::Discretization& discret,          ///< background fluid discretization
+        Core::FE::Discretization& discret,         ///< background fluid discretization
         std::ofstream& vel_f,                      ///< output file stream for velocity
         std::ofstream& press_f,                    ///< output file stream for pressure
         std::ofstream& acc_f,                      ///< output file stream for acceleration
@@ -260,7 +261,7 @@ namespace FLD
 
     /// Gmsh output function for boundarycells
     void gmsh_output_boundary_cell(
-        Discret::Discretization& discret,                 ///< background fluid discretization
+        Core::FE::Discretization& discret,                ///< background fluid discretization
         std::ofstream& bound_f,                           ///< output file stream for boundary mesh
         Core::Geo::Cut::VolumeCell* vc,                   ///< volumecell
         const Teuchos::RCP<Core::Geo::CutWizard>& wizard  ///< cut wizard

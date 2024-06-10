@@ -25,11 +25,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declaration ...
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -204,7 +203,7 @@ namespace STR
       BrownDynStateData brown_dyn_state_data_;
 
       //! casted pointer ( necessary due to need of column information )
-      Teuchos::RCP<Discret::Discretization> discret_ptr_;
+      Teuchos::RCP<Core::FE::Discretization> discret_ptr_;
 
     };  // class BrownianDyn
   }     // namespace MODELEVALUATOR

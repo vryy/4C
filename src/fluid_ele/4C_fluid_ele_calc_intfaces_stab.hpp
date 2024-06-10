@@ -25,7 +25,7 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_parameter_intface.hpp"
 #include "4C_fluid_ele_parameter_std.hpp"
@@ -75,13 +75,13 @@ namespace Discret
           Discret::ELEMENTS::FluidEleParameterTimInt&
               fldparatimint,  ///< time-integration parameter
           Discret::ELEMENTS::FluidEleParameterIntFace&
-              fldintfacepara,                       ///< general parameter for internal face
-          Teuchos::ParameterList& params,           ///< parameter list
-          Discret::Discretization& discretization,  ///< discretization
-          std::vector<int>& patchlm,                ///< patch local map
-          std::vector<int>& lm_masterToPatch,       ///< local map between master dofs and patchlm
-          std::vector<int>& lm_slaveToPatch,        ///< local map between slave dofs and patchlm
-          std::vector<int>& lm_faceToPatch,         ///< local map between face dofs and patchlm
+              fldintfacepara,                        ///< general parameter for internal face
+          Teuchos::ParameterList& params,            ///< parameter list
+          Core::FE::Discretization& discretization,  ///< discretization
+          std::vector<int>& patchlm,                 ///< patch local map
+          std::vector<int>& lm_masterToPatch,        ///< local map between master dofs and patchlm
+          std::vector<int>& lm_slaveToPatch,         ///< local map between slave dofs and patchlm
+          std::vector<int>& lm_faceToPatch,          ///< local map between face dofs and patchlm
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&
@@ -175,13 +175,13 @@ namespace Discret
           Discret::ELEMENTS::FluidEleParameterTimInt&
               fldparatimint,  ///< time-integration parameter
           Discret::ELEMENTS::FluidEleParameterIntFace&
-              fldintfacepara,                       ///< general parameter for internal face
-          Teuchos::ParameterList& params,           ///< parameter list
-          Discret::Discretization& discretization,  ///< discretization
-          std::vector<int>& patchlm,                ///< patch local map
-          std::vector<int>& lm_masterToPatch,       ///< local map between master dofs and patchlm
-          std::vector<int>& lm_slaveToPatch,        ///< local map between slave dofs and patchlm
-          std::vector<int>& lm_faceToPatch,         ///< local map between face dofs and patchlm
+              fldintfacepara,                        ///< general parameter for internal face
+          Teuchos::ParameterList& params,            ///< parameter list
+          Core::FE::Discretization& discretization,  ///< discretization
+          std::vector<int>& patchlm,                 ///< patch local map
+          std::vector<int>& lm_masterToPatch,        ///< local map between master dofs and patchlm
+          std::vector<int>& lm_slaveToPatch,         ///< local map between slave dofs and patchlm
+          std::vector<int>& lm_faceToPatch,          ///< local map between face dofs and patchlm
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&

@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_pack_buffer.hpp"
-#include "4C_discretization_fem_general_cell_type.hpp"
+#include "4C_fem_general_cell_type.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_utils_exceptions.hpp"
 

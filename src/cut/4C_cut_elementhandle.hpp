@@ -15,7 +15,7 @@
 #include "4C_config.hpp"
 
 #include "4C_cut_element.hpp"
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

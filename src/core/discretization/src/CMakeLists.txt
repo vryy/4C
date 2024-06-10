@@ -1,5 +1,0 @@
-add_subdirectory(condition)
-add_subdirectory(dofset)
-add_subdirectory(fem_general)
-add_subdirectory(geometric_search)
-add_subdirectory(geometry)

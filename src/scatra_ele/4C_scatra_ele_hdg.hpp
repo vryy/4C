@@ -15,7 +15,7 @@ of the usual Lagrangian polynomials for standard transport elements
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_polynomial.hpp"
+#include "4C_fem_general_utils_polynomial.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_scatra_ele.hpp"
 
@@ -28,10 +28,13 @@ namespace Input
   class LineDefinition;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class ScaTraHDGType : public TransportType
@@ -267,7 +270,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -275,7 +278,7 @@ namespace Discret
 
       //@}
 
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1) override
@@ -548,7 +551,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -570,7 +573,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -607,7 +610,7 @@ namespace Discret
       \param condstring (in): Name of condition to be evaluated
       \param condstring (in):  List of parameters for use at element level
       */
-      void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
+      void LocationVector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
           const std::string& condstring, Teuchos::ParameterList& params) const override;
 
       /*!
@@ -636,7 +639,7 @@ namespace Discret
                              matches dofs in lm.
 
       */
-      void LocationVector(const Discretization& dis, std::vector<int>& lm,
+      void LocationVector(const Core::FE::Discretization& dis, std::vector<int>& lm,
           std::vector<int>& lmowner, std::vector<int>& lmstride) const override;
 
      private:
@@ -831,7 +834,7 @@ namespace Discret
       \note All dofs shared by master and slave element are contained only once. Dofs from interface
       nodes are also included.
       */
-      void PatchLocationVector(Discret::Discretization& discretization,  //!< discretization
+      void PatchLocationVector(Core::FE::Discretization& discretization,  //!< discretization
           std::vector<int>& nds_master,        //!< nodal dofset w.r.t master parent element
           std::vector<int>& nds_slave,         //!< nodal dofset w.r.t slave parent element
           std::vector<int>& patchlm,           //!< local map for gdof ids for patch of elements
@@ -883,7 +886,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -905,7 +908,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;

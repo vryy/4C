@@ -10,11 +10,11 @@
 
 #include "4C_scatra_ele_calc_cardiac_monodomain.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_cardiac_monodomain.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_myocard.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
@@ -311,7 +311,7 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,
     probdim>::extract_element_and_node_values(Core::Elements::Element* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la)
 {
   my::extract_element_and_node_values(ele, params, discretization, la);

@@ -52,8 +52,8 @@ namespace FLD
         const Teuchos::RCP<const Epetra_Map>& embfluiddofrowmap);
 
     /// setup map extractors for dirichlet maps & velocity/pressure maps
-    void SetupMapExtractors(const Teuchos::RCP<Discret::Discretization>& xfluiddiscret,
-        const Teuchos::RCP<Discret::Discretization>& embfluiddiscret, const double& time);
+    void SetupMapExtractors(const Teuchos::RCP<Core::FE::Discretization>& xfluiddiscret,
+        const Teuchos::RCP<Core::FE::Discretization>& embfluiddiscret, const double& time);
 
     /// build merged fluid dirichlet map extractor
     void create_merged_dbc_map_extractor(

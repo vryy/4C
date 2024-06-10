@@ -9,11 +9,11 @@
  *----------------------------------------------------------------------*/
 #include "4C_fpsi_dyn.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fpsi.hpp"
 #include "4C_fpsi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fpsi.hpp"
-#include "4C_lib_discret.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

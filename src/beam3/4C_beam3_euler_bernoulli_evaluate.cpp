@@ -10,12 +10,12 @@
 
 #include "4C_beam3_euler_bernoulli.hpp"
 #include "4C_beam3_spatial_discretization_utils.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_largerotations.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_browniandyn.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -31,7 +31,7 @@ using FAD = Sacado::Fad::DFad<double>;
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -239,7 +239,7 @@ int Discret::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 /*-----------------------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

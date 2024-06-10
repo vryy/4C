@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elementtype.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_shell7p_ele_calc_interface.hpp"
@@ -44,7 +44,7 @@ namespace Discret::ELEMENTS
 
     [[nodiscard]] std::string Name() const override { return "Shell7pScatraType"; }
 
-    int Initialize(Discret::Discretization& dis) override;
+    int Initialize(Core::FE::Discretization& dis) override;
 
     void nodal_block_information(
         Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -126,13 +126,13 @@ namespace Discret::ELEMENTS
 
     //! @name Evaluation
     //! @{
-    int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
         Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseVector& elevec2,
         Core::LinAlg::SerialDenseVector& elevec3) override;
 
-    int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         Core::Conditions::Condition& condition, std::vector<int>& la,
         Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseMatrix* elemat1) override;

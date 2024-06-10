@@ -25,11 +25,10 @@ to)
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace FLD
 {
@@ -40,7 +39,7 @@ namespace FLD
     \brief Standard Constructor
 
     */
-    TransferTurbulentInflowCondition(Teuchos::RCP<Discret::Discretization> dis,
+    TransferTurbulentInflowCondition(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps);
 
     /*!
@@ -98,7 +97,7 @@ namespace FLD
     bool active_;
 
     //! the discretisation
-    Teuchos::RCP<Discret::Discretization> dis_;
+    Teuchos::RCP<Core::FE::Discretization> dis_;
 
     //! info on DIirchlet boundary
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
@@ -119,7 +118,7 @@ namespace FLD
     \brief Standard Constructor
 
     */
-    TransferTurbulentInflowConditionXW(Teuchos::RCP<Discret::Discretization> dis,
+    TransferTurbulentInflowConditionXW(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps);
 
 
@@ -150,7 +149,7 @@ namespace FLD
     \brief Standard Constructor
 
     */
-    TransferTurbulentInflowConditionNodal(Teuchos::RCP<Discret::Discretization> dis,
+    TransferTurbulentInflowConditionNodal(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps);
 
 

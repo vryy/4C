@@ -13,8 +13,8 @@
 #include "4C_config_trilinos_version.hpp"
 
 #include "4C_comm_utils.hpp"
-#include "4C_discretization_fem_general_element_definition.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_general_element_definition.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_validconditions.hpp"

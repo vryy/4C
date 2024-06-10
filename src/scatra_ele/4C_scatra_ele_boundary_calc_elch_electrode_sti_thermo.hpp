@@ -16,11 +16,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
+
 namespace Discret
 {
-  // forward declaration
-  class Discretization;
-
   namespace ELEMENTS
   {
     // class implementation
@@ -104,7 +106,7 @@ namespace Discret
       void evaluate_s2_i_coupling_od(
           const Core::Elements::FaceElement* ele,        ///< current boundary element
           Teuchos::ParameterList& params,                ///< parameter list
-          Discret::Discretization& discretization,       ///< discretization
+          Core::FE::Discretization& discretization,      ///< discretization
           Core::Elements::Element::LocationArray& la,    ///< location array
           Core::LinAlg::SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
           ) override;
@@ -112,7 +114,7 @@ namespace Discret
       //! evaluate action
       int evaluate_action(Core::Elements::FaceElement* ele,  //!< boundary element
           Teuchos::ParameterList& params,                    //!< parameter list
-          Discret::Discretization& discretization,           //!< discretization
+          Core::FE::Discretization& discretization,          //!< discretization
           ScaTra::BoundaryAction action,                     //!< action
           Core::Elements::Element::LocationArray& la,        //!< location array
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,   //!< element matrix 1
@@ -123,8 +125,8 @@ namespace Discret
           ) override;
 
       //! extract nodal state variables associated with boundary element
-      void extract_node_values(const Discret::Discretization& discretization,  //!< discretization
-          Core::Elements::Element::LocationArray& la                           //!< location array
+      void extract_node_values(const Core::FE::Discretization& discretization,  //!< discretization
+          Core::Elements::Element::LocationArray& la                            //!< location array
           ) override;
 
       //! evaluate factor F/RT

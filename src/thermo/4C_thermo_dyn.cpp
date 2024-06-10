@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 void thr_dyn_drt()
 {
   // access the discretization
-  Teuchos::RCP<Discret::Discretization> thermodis = Teuchos::null;
+  Teuchos::RCP<Core::FE::Discretization> thermodis = Teuchos::null;
   thermodis = Global::Problem::Instance()->GetDis("thermo");
 
   // set degrees of freedom in the discretization

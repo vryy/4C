@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-FLD::TimIntPoroGenAlpha::TimIntPoroGenAlpha(const Teuchos::RCP<Discret::Discretization>& actdis,
+FLD::TimIntPoroGenAlpha::TimIntPoroGenAlpha(const Teuchos::RCP<Core::FE::Discretization>& actdis,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)

@@ -13,15 +13,15 @@
 
 #include "4C_comm_utils.hpp"
 #include "4C_contact_constitutivelaw_bundle.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_discretization_faces.hpp"
+#include "4C_fem_discretization_hdg.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_problemtype.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
-#include "4C_lib_discret_faces.hpp"
-#include "4C_lib_discret_hdg.hpp"
 #include "4C_mat_materialdefinition.hpp"
 #include "4C_particle_engine_particlereader.hpp"
 #include "4C_rebalance_graph_based.hpp"
@@ -246,7 +246,7 @@ Teuchos::RCP<const Teuchos::ParameterList> Global::Problem::getParameterList() c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::Problem::AddDis(const std::string& name, Teuchos::RCP<Discret::Discretization> dis)
+void Global::Problem::AddDis(const std::string& name, Teuchos::RCP<Core::FE::Discretization> dis)
 {
   // safety checks
   if (dis == Teuchos::null) FOUR_C_THROW("Received Teuchos::null.");
@@ -264,7 +264,7 @@ void Global::Problem::AddDis(const std::string& name, Teuchos::RCP<Discret::Disc
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization> Global::Problem::GetDis(const std::string& name) const
+Teuchos::RCP<Core::FE::Discretization> Global::Problem::GetDis(const std::string& name) const
 {
   auto iter = discretizationmap_.find(name);
 

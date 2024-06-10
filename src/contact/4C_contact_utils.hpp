@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -22,11 +22,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Nodes
 {
@@ -89,7 +88,7 @@ namespace CONTACT
     /// Find the solid to solid contact conditions and combine them to contact condition groups
     int GetContactConditionGroups(
         std::vector<std::vector<Core::Conditions::Condition*>>& ccond_grps,
-        const Discret::Discretization& discret_wrapper, const bool& throw_error = true);
+        const Core::FE::Discretization& discret_wrapper, const bool& throw_error = true);
 
     /// Combine the solid to solid contact conditions to contact condition groups
     void GetContactConditionGroups(
@@ -150,7 +149,7 @@ namespace CONTACT
        *                              contain at least one DBC slave node
        *
        *  \author hiermeier \date 01/18 */
-      static void detect_dbc_slave_nodes_and_elements(const Discret::Discretization& str_discret,
+      static void detect_dbc_slave_nodes_and_elements(const Core::FE::Discretization& str_discret,
           const std::vector<std::vector<Core::Conditions::Condition*>>& ccond_grps,
           std::set<const Core::Nodes::Node*>& dbc_slave_nodes,
           std::set<const Core::Elements::Element*>& dbc_slave_eles);
@@ -158,7 +157,7 @@ namespace CONTACT
      private:
       static void detect_dbc_slave_nodes(
           std::map<const Core::Nodes::Node*, int>& dbc_slave_node_map,
-          const Discret::Discretization& str_discret,
+          const Core::FE::Discretization& str_discret,
           const std::vector<const Core::Conditions::Condition*>& sl_conds);
 
       static void detect_dbc_slave_elements(

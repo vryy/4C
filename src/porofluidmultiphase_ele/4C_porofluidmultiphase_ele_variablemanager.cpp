@@ -9,8 +9,8 @@
 
 #include "4C_porofluidmultiphase_ele_variablemanager.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_mat_fluidporo_singlephase.hpp"
 #include "4C_porofluidmultiphase_ele_calc_utils.hpp"
 #include "4C_porofluidmultiphase_ele_parameter.hpp"
@@ -138,7 +138,7 @@ Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
 template <int nsd, int nen>
 void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhi<nsd,
     nen>::extract_element_and_node_values(const Core::Elements::Element& ele,
-    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // extract local values from the global vectors
@@ -220,7 +220,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhiGradPhi<nsd, nen>::E
 template <int nsd, int nen>
 void Discret::ELEMENTS::PoroFluidManager::VariableManagerInstat<nsd,
     nen>::extract_element_and_node_values(const Core::Elements::Element& ele,
-    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // extract local values from the global vectors
@@ -278,7 +278,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerInstat<nsd, nen>::Evalu
 template <int nsd, int nen>
 void Discret::ELEMENTS::PoroFluidManager::VariableManagerStruct<nsd,
     nen>::extract_element_and_node_values(const Core::Elements::Element& ele,
-    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   if (dofsetnum != 0)
@@ -365,7 +365,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerStruct<nsd, nen>::Evalu
 template <int nsd, int nen>
 void Discret::ELEMENTS::PoroFluidManager::VariableManagerScalar<nsd,
     nen>::extract_element_and_node_values(const Core::Elements::Element& ele,
-    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // call internal class
@@ -425,7 +425,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerScalar<nsd, nen>::Evalu
 template <int nsd, int nen>
 void Discret::ELEMENTS::PoroFluidManager::VariableManagerMaximumNodalVolFracValue<nsd,
     nen>::extract_element_and_node_values(const Core::Elements::Element& ele,
-    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // call internal class

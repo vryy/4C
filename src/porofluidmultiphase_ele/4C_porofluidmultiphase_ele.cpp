@@ -10,7 +10,7 @@
 #include "4C_porofluidmultiphase_ele.hpp"
 
 #include "4C_comm_utils_factory.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_fluid_ele_nullspace.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
@@ -174,7 +174,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::PoroFluidMultiPhaseBoun
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::PoroFluidMultiPhaseType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::PoroFluidMultiPhaseType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

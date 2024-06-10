@@ -18,9 +18,9 @@ algorithms
 #include "4C_contact_node.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_matchingoctree.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_ehl_partitioned.hpp"
 #include "4C_ehl_utils.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_gmsh.hpp"
@@ -58,7 +58,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
 
   // 3.- Create the two uncoupled subproblems.
   // access the structural discretization
-  Teuchos::RCP<Discret::Discretization> structdis =
+  Teuchos::RCP<Core::FE::Discretization> structdis =
       Global::Problem::Instance()->GetDis(struct_disname);
 
   // set moving grid
@@ -160,8 +160,8 @@ void EHL::Base::setup_discretizations(const Epetra_Comm& comm, const std::string
   Global::Problem* problem = Global::Problem::Instance();
 
   // 1.-Initialization.
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis(struct_disname);
-  Teuchos::RCP<Discret::Discretization> lubricationdis = problem->GetDis(lubrication_disname);
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis(struct_disname);
+  Teuchos::RCP<Core::FE::Discretization> lubricationdis = problem->GetDis(lubrication_disname);
   if (!structdis->Filled()) structdis->fill_complete();
   if (!lubricationdis->Filled()) lubricationdis->fill_complete();
 
@@ -384,7 +384,7 @@ void EHL::Base::add_couette_force(
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
   hinv_relV->Multiply(1., *h_inv, *relVel, 0.);
 
-  Discret::Discretization& lub_dis = *lubrication_->LubricationField()->discretization();
+  Core::FE::Discretization& lub_dis = *lubrication_->LubricationField()->discretization();
   Teuchos::RCP<Epetra_Vector> visc_vec =
       Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->dof_row_map(1)));
   for (int i = 0; i < lub_dis.NodeRowMap()->NumMyElements(); ++i)
@@ -589,8 +589,8 @@ void EHL::Base::setup_field_coupling(
     const std::string struct_disname, const std::string lubrication_disname)
 {
   Global::Problem* problem = Global::Problem::Instance();
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis(struct_disname);
-  Teuchos::RCP<Discret::Discretization> lubricationdis = problem->GetDis(lubrication_disname);
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis(struct_disname);
+  Teuchos::RCP<Core::FE::Discretization> lubricationdis = problem->GetDis(lubrication_disname);
 
   if (structdis.is_null()) FOUR_C_THROW("structure dis does not exist");
   if (lubricationdis.is_null()) FOUR_C_THROW("lubrication dis does not exist");

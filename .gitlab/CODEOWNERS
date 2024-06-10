@@ -108,7 +108,7 @@ contact_constitutivelaw/   @baci/team_contact
 
 core/*                     @baci/team_infrastructure
 core/coupling/             @baci/team_discretization
-core/discretization/       @baci/team_discretization
+core/fem/                  @baci/team_discretization
 core/linalg/               @baci/team_solvers
 core/linear_solver/        @baci/team_solvers
 core/rebalance/            @baci/team_discretization

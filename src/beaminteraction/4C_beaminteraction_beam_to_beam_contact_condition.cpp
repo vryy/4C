@@ -13,8 +13,8 @@
 #include "4C_beaminteraction_beam_to_beam_contact_pair.hpp"
 #include "4C_beaminteraction_contact_pair.hpp"
 #include "4C_beaminteraction_contact_params.hpp"
-#include "4C_discretization_condition.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_condition.hpp"
+#include "4C_fem_discretization.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -36,7 +36,7 @@ BEAMINTERACTION::BeamToBeamContactCondition::BeamToBeamContactCondition(
  *
  */
 void BEAMINTERACTION::BeamToBeamContactCondition::BuildIdSets(
-    const Teuchos::RCP<const Discret::Discretization>& discretization)
+    const Teuchos::RCP<const Core::FE::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
   BeamInteractionConditionBase::BuildIdSets(discretization);

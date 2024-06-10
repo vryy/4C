@@ -97,7 +97,7 @@ namespace Immersed
     Teuchos::RCP<Epetra_Vector> initial_guess() override;
 
     /// get immersed nodes and determine their dofs
-    void build_immersed_dirich_map(Teuchos::RCP<Discret::Discretization> dis,
+    void build_immersed_dirich_map(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Epetra_Map>& dirichmap,
         const Teuchos::RCP<const Epetra_Map>& dirichmap_original);
 
@@ -230,8 +230,8 @@ namespace Immersed
 
     //! @name pointer to discretizations
     //@{
-    Teuchos::RCP<Discret::Discretization> fluiddis_;
-    Teuchos::RCP<Discret::Discretization> structdis_;
+    Teuchos::RCP<Core::FE::Discretization> fluiddis_;
+    Teuchos::RCP<Core::FE::Discretization> structdis_;
     //@}
 
     /// pointer to immersed structure adapter

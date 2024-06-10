@@ -10,8 +10,8 @@
 
 #include "4C_create_rtdfiles_utils.hpp"
 
-#include "4C_discretization_fem_general_cell_type_traits.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_general_cell_type_traits.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_io_dat_file_utils.hpp"
 #include "4C_io_linedefinition.hpp"

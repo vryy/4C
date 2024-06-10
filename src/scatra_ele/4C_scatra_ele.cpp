@@ -9,12 +9,12 @@
 #include "4C_scatra_ele.hpp"
 
 #include "4C_comm_utils_factory.hpp"
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_fluid_ele_nullspace.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_elasthyper.hpp"
 #include "4C_mat_elchmat.hpp"
 #include "4C_mat_list.hpp"
@@ -244,7 +244,7 @@ void Discret::ELEMENTS::TransportType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::TransportType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::TransportType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

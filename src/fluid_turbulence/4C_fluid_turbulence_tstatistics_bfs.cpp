@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 */
 /*----------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Discret::Discretization> actdis,
+FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::ParameterList& params, const std::string& statistics_outfilename,
     const std::string& geotype)
     : discret_(actdis),

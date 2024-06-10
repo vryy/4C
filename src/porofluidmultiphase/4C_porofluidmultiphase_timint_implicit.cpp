@@ -10,8 +10,8 @@
 
 #include "4C_porofluidmultiphase_timint_implicit.hpp"
 
-#include "4C_discretization_fem_general_assemblestrategy.hpp"
-#include "4C_discretization_fem_general_l2_projection.hpp"
+#include "4C_fem_general_assemblestrategy.hpp"
+#include "4C_fem_general_l2_projection.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io.hpp"
@@ -41,7 +41,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                     (public) vuong 08/16 |
  *----------------------------------------------------------------------*/
-POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<Discret::Discretization> actdis,
+POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
     const Teuchos::ParameterList& poroparams,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)

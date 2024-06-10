@@ -19,10 +19,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace UTILS
 {
@@ -42,14 +42,14 @@ class Cardiovascular0DResultTest : public Core::UTILS::ResultTest
 {
  public:
   Cardiovascular0DResultTest(
-      UTILS::Cardiovascular0DManager& cardvasc0dman, Teuchos::RCP<Discret::Discretization> discr);
+      UTILS::Cardiovascular0DManager& cardvasc0dman, Teuchos::RCP<Core::FE::Discretization> discr);
 
   void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
 
 
  private:
-  Teuchos::RCP<Discret::Discretization> actdisc_;  ///< standard discretization
+  Teuchos::RCP<Core::FE::Discretization> actdisc_;  ///< standard discretization
 
   const Teuchos::RCP<Epetra_Vector> cardvasc0d_dof_;
 

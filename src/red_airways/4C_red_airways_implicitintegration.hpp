@@ -15,9 +15,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -62,7 +62,7 @@ namespace Airway
     \brief Standard Constructor
 
     */
-    RedAirwayImplicitTimeInt(Teuchos::RCP<Discret::Discretization> dis,
+    RedAirwayImplicitTimeInt(Teuchos::RCP<Core::FE::Discretization> dis,
         std::unique_ptr<Core::LinAlg::Solver> solver, Teuchos::ParameterList& params,
         Core::IO::DiscretizationWriter& output);
 
@@ -182,7 +182,7 @@ namespace Airway
     \brief Assembling AIRWAY_ACINUS_DEP Vector for getting pext of nearest acinus
 
     */
-    void compute_nearest_acinus(Teuchos::RCP<Discret::Discretization const> search_discret,
+    void compute_nearest_acinus(Teuchos::RCP<Core::FE::Discretization const> search_discret,
         std::set<int>* elecolset, std::set<int>* nodecolset,
         Teuchos::RCP<Epetra_Vector> airway_acinus_dep);
 
@@ -246,7 +246,7 @@ namespace Airway
     {
       return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(massmat_);
     }
-    Teuchos::RCP<Discret::Discretization> discretization() { return discret_; }
+    Teuchos::RCP<Core::FE::Discretization> discretization() { return discret_; }
 
     double Dt() const { return dta_; }
     double Time() const { return time_; }
@@ -293,7 +293,7 @@ namespace Airway
    protected:
     //! @name general algorithm parameters
     //! reduced dimensional airway network discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
     std::unique_ptr<Core::LinAlg::Solver> solver_;
     Teuchos::ParameterList params_;
     Core::IO::DiscretizationWriter& output_;

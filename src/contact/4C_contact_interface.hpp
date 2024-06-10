@@ -1573,8 +1573,8 @@ namespace CONTACT
     ghosting.
 
     If we have arrived at the final parallel distribution, we have to ask the underlying
-    Discret::Discretization to assign degrees of freedom. Since this is very expensive, let's do
-    this only if requested by the user/algorithm.
+    Core::FE::Discretization to assign degrees of freedom. Since this is very expensive,
+    let's do this only if requested by the user/algorithm.
 
     \sa extend_interface_ghosting_safely()
 

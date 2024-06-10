@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_inpar_elch.hpp"
 #include "4C_scatra_ele_action.hpp"
@@ -125,7 +125,7 @@ namespace Discret
 
       //! setup element evaluation
       int SetupCalc(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization);
+          Core::FE::Discretization& discretization);
 
       /*!
        * @brief This method extracts the displacement values if ALE is activated
@@ -135,7 +135,7 @@ namespace Discret
        * @param[in] la              location array
        */
       void extract_displacement_values(Core::Elements::FaceElement* ele,
-          const Discret::Discretization& discretization,
+          const Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la);
 
       /*!
@@ -149,12 +149,12 @@ namespace Discret
        */
       template <Core::FE::CellType parentdistype>
       void extract_displacement_values(Core::Elements::FaceElement* ele,
-          const Discret::Discretization& discretization,
+          const Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la);
 
       //! Evaluate the element (using location array)
       int Evaluate(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -163,7 +163,7 @@ namespace Discret
 
       //! evaluate action
       virtual int evaluate_action(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, ScaTra::BoundaryAction action,
+          Core::FE::Discretization& discretization, ScaTra::BoundaryAction action,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -173,7 +173,7 @@ namespace Discret
 
       //! evaluate Neumann boundary condition
       int evaluate_neumann(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+          Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
           Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1,
           const double scalar) override;
 
@@ -315,7 +315,7 @@ namespace Discret
       virtual void evaluate_s2_i_coupling(
           const Core::Elements::FaceElement* ele,          ///< current boundary element
           Teuchos::ParameterList& params,                  ///< parameter list
-          Discret::Discretization& discretization,         ///< discretization
+          Core::FE::Discretization& discretization,        ///< discretization
           Core::Elements::Element::LocationArray& la,      ///< location array
           Core::LinAlg::SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
           Core::LinAlg::SerialDenseMatrix& emastermatrix,  ///< element matrix for master side
@@ -326,7 +326,7 @@ namespace Discret
       virtual void evaluate_nodal_size(
           const Core::Elements::FaceElement* ele,      ///< current boundary element
           Teuchos::ParameterList& params,              ///< parameter list
-          Discret::Discretization& discretization,     ///< discretization
+          Core::FE::Discretization& discretization,    ///< discretization
           Core::Elements::Element::LocationArray& la,  ///< location array
           Core::LinAlg::SerialDenseVector& nodalsize   ///< elemental size projected to nodes
       );
@@ -343,7 +343,8 @@ namespace Discret
        * @param[out] eslaveresidual  element residual due to capacitive flux at slave side
        * @param[out] emasterresidual element residual due to capacitive flux at master side
        */
-      virtual void evaluate_s2_i_coupling_capacitance(const Discret::Discretization& discretization,
+      virtual void evaluate_s2_i_coupling_capacitance(
+          const Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix,
           Core::LinAlg::SerialDenseVector& eslaveresidual,
@@ -357,13 +358,13 @@ namespace Discret
       virtual void evaluate_s2_i_coupling_od(
           const Core::Elements::FaceElement* ele,        ///< current boundary element
           Teuchos::ParameterList& params,                ///< parameter list
-          Discret::Discretization& discretization,       ///< discretization
+          Core::FE::Discretization& discretization,      ///< discretization
           Core::Elements::Element::LocationArray& la,    ///< location array
           Core::LinAlg::SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
       );
 
       virtual void evaluate_s2_i_coupling_capacitance_od(Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix)
       {
@@ -372,8 +373,8 @@ namespace Discret
 
       //! extract nodal state variables associated with boundary element
       virtual void extract_node_values(
-          const Discret::Discretization& discretization,  //!< discretization
-          Core::Elements::Element::LocationArray& la      //!< location array
+          const Core::FE::Discretization& discretization,  //!< discretization
+          Core::Elements::Element::LocationArray& la       //!< location array
       );
 
       /*!
@@ -386,8 +387,9 @@ namespace Discret
        * @param nds             number of relevant dofset
        */
       void extract_node_values(Core::LinAlg::Matrix<nen_, 1>& estate,
-          const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
-          const std::string& statename = "phinp", const int& nds = 0) const;
+          const Core::FE::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la, const std::string& statename = "phinp",
+          const int& nds = 0) const;
 
       /*!
        * @brief extract nodal state variables associated with boundary element
@@ -399,8 +401,9 @@ namespace Discret
        * @param nds             number of relevant dofset
        */
       void extract_node_values(std::vector<Core::LinAlg::Matrix<nen_, 1>>& estate,
-          const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
-          const std::string& statename = "phinp", const int& nds = 0) const;
+          const Core::FE::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la, const std::string& statename = "phinp",
+          const int& nds = 0) const;
 
       //! calculate boundary integral, i.e., surface area of boundary element
       void calc_boundary_integral(
@@ -418,7 +421,7 @@ namespace Discret
       void evaluate_kedem_katchalsky(
           const Core::Elements::FaceElement* ele,      ///< current boundary element
           Teuchos::ParameterList& params,              ///< parameter list
-          Discret::Discretization& discretization,     ///< discretization
+          Core::FE::Discretization& discretization,    ///< discretization
           Core::Elements::Element::LocationArray& la,  ///< location array
           Core::LinAlg::SerialDenseMatrix& elemat1,    ///< element matrix for slave side
           Core::LinAlg::SerialDenseVector& elevec1     ///< element residual for slave side
@@ -436,7 +439,7 @@ namespace Discret
       void evaluate_surface_permeability(
           const Core::Elements::FaceElement* ele,      ///< current boundary element
           Teuchos::ParameterList& params,              ///< parameter list
-          Discret::Discretization& discretization,     ///< discretization
+          Core::FE::Discretization& discretization,    ///< discretization
           Core::Elements::Element::LocationArray& la,  ///< location array
           Core::LinAlg::SerialDenseMatrix& elemat1,    ///< element matrix for slave side
           Core::LinAlg::SerialDenseVector& elevec1     ///< element residual for slave side
@@ -456,7 +459,7 @@ namespace Discret
       virtual double fac_for_ref_conc(const int iquad,  ///< current boundary integration point
           const Core::Elements::FaceElement* bele,      ///< current boundary element
           Teuchos::ParameterList& params,               ///< parameter list
-          Discret::Discretization& discretization       ///< discretization
+          Core::FE::Discretization& discretization      ///< discretization
       )
       {
         return 1.0;
@@ -490,7 +493,7 @@ namespace Discret
 
       //! calculate potential Neumann inflow terms
       virtual void neumann_inflow(const Core::Elements::FaceElement* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& emat,
           Core::LinAlg::SerialDenseVector& erhs);
 
@@ -517,7 +520,8 @@ namespace Discret
       */
       template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
       void weak_dirichlet(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Teuchos::RCP<const Core::Mat::Material> material,
+          Core::FE::Discretization& discretization,
+          Teuchos::RCP<const Core::Mat::Material> material,
           Core::LinAlg::SerialDenseMatrix& elemat_epetra,
           Core::LinAlg::SerialDenseVector& elevec_epetra);
 
@@ -529,7 +533,7 @@ namespace Discret
       void reinit_characteristic_galerkin_boundary(
           Core::Elements::FaceElement* ele,                  //!< transport element
           Teuchos::ParameterList& params,                    //!< parameter list
-          Discret::Discretization& discretization,           //!< discretization
+          Core::FE::Discretization& discretization,          //!< discretization
           Teuchos::RCP<const Core::Mat::Material> material,  //!< material
           Core::LinAlg::SerialDenseMatrix& elemat_epetra,    //!< ele sysmat
           Core::LinAlg::SerialDenseVector& elevec_epetra     //!< ele rhs
@@ -537,14 +541,14 @@ namespace Discret
 
       //! evaluate Robin boundary condition
       virtual void calc_robin_boundary(Core::Elements::FaceElement* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la,  ///< location array
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra, const double scalar);
 
       //! evaluate integral of all positive fluxes on s2i condition
       virtual void calc_s2_i_coupling_flux(const Core::Elements::FaceElement* ele,
-          const Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          const Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& scalars)
       {
         FOUR_C_THROW("Evaluation of coupling flux not implemented in base class.");

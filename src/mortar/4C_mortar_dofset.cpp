@@ -9,7 +9,7 @@
 
 #include "4C_mortar_dofset.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_mortar_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -23,7 +23,7 @@ Mortar::DofSet::DofSet() : Core::DOFSets::DofSet() {}
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
 int Mortar::DofSet::assign_degrees_of_freedom(
-    const Discret::Discretization& dis, const unsigned dspos, const int start)
+    const Core::FE::Discretization& dis, const unsigned dspos, const int start)
 {
   // first, we call the standard assign_degrees_of_freedom from the base class
   const int count = Core::DOFSets::DofSet::assign_degrees_of_freedom(dis, dspos, start);

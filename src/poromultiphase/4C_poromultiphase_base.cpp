@@ -11,11 +11,11 @@
 #include "4C_adapter_porofluidmultiphase_wrapper.hpp"
 #include "4C_adapter_str_factory.hpp"
 #include "4C_adapter_str_structure_new.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_porofluidmultiphase.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_porofluidmultiphase_utils.hpp"
 
@@ -49,7 +49,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
 
   // Create the two uncoupled subproblems.
   // access the structural discretization
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis(struct_disname);
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis(struct_disname);
 
   // build structural time integrator
   Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase =
@@ -71,7 +71,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
   // -------------------------------------------------------------------
   // access the fluid discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<Discret::Discretization> fluiddis =
+  Teuchos::RCP<Core::FE::Discretization> fluiddis =
       Global::Problem::Instance()->GetDis(fluid_disname);
 
   // -------------------------------------------------------------------

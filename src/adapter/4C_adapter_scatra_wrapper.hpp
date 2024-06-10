@@ -44,7 +44,7 @@ namespace Adapter
 
    protected:
     //! return discretization
-    Teuchos::RCP<Discret::Discretization> discretization() const override
+    Teuchos::RCP<Core::FE::Discretization> discretization() const override
     {
       return scatra_timint_->discretization();
     };

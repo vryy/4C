@@ -14,7 +14,7 @@ equations
 #include "4C_cut_base.hpp"
 #include "4C_cut_base_boundarycell.hpp"
 #include "4C_cut_tolerance.hpp"
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
 
 #include <cmath>
 #include <iostream>

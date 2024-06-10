@@ -30,7 +30,7 @@ namespace CONSTRAINTS
     \brief Standard Constructor
     */
     MPConstraint(
-        Teuchos::RCP<Discret::Discretization> discr,  ///< discretization constraint lives on
+        Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname,  ///< Name of condition to create constraint from
         int& minID,                        ///< minimum constraint or monitor ID so far
         int& maxID                         ///< maximum constraint or monitor ID so far
@@ -40,7 +40,7 @@ namespace CONSTRAINTS
         \brief Alternative Constructor
     */
     MPConstraint(
-        Teuchos::RCP<Discret::Discretization> discr,  ///< discretization constraint lives on
+        Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname  ///< Name of condition to create constraint from
     );
 
@@ -95,11 +95,11 @@ namespace CONSTRAINTS
 
 
     //! additional discretization consisting of constraint elements
-    std::map<int, Teuchos::RCP<Discret::Discretization>> constraintdis_;
+    std::map<int, Teuchos::RCP<Core::FE::Discretization>> constraintdis_;
 
     //! Evaluate constraint discretization and assemble the results
     virtual void evaluate_constraint(
-        Teuchos::RCP<Discret::Discretization> disc,  ///< discretization to evaluate
+        Teuchos::RCP<Core::FE::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Core::LinAlg::SparseOperator>
@@ -117,8 +117,8 @@ namespace CONSTRAINTS
         ) = 0;
 
     //! creating a new discretization based on conditions containing constraint elements
-    virtual std::map<int, Teuchos::RCP<Discret::Discretization>>
-    create_discretization_from_condition(Teuchos::RCP<Discret::Discretization> actdisc,
+    virtual std::map<int, Teuchos::RCP<Core::FE::Discretization>>
+    create_discretization_from_condition(Teuchos::RCP<Core::FE::Discretization> actdisc,
         std::vector<Core::Conditions::Condition*>
             constrcond,                   ///< conditions as discretization basis
         const std::string& discret_name,  ///< name of new discretization
@@ -128,9 +128,9 @@ namespace CONSTRAINTS
 
     //    /// find col node map so that we can evaluate the constraint elements
     //    Teuchos::RCP<Epetra_Map> ComputeNodeColMap(
-    //             const Teuchos::RCP<Discret::Discretization> sourcedis,  ///< standard
+    //             const Teuchos::RCP<Core::FE::Discretization> sourcedis,  ///< standard
     //             discretization we want to redistribute const
-    //             Teuchos::RCP<Discret::Discretization> constraintdis
+    //             Teuchos::RCP<Core::FE::Discretization> constraintdis
     //             ///< constraint discretization prescribing ghosting ) const;
 
   };  // class

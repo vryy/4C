@@ -12,7 +12,7 @@ four_c_add_library(
   4C_create_rtdfiles_wrapper.hpp
   )
 
-four_c_add_dependency(create_rtdfiles config lib)
+four_c_add_dependency(create_rtdfiles config core)
 # the create_rtdfiles executable
 add_executable(create_rtd EXCLUDE_FROM_ALL ${OBJS_CREATERTD_MAIN})
 target_link_libraries(create_rtd PRIVATE create_rtdfiles_objs)

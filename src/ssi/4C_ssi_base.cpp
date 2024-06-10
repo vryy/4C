@@ -15,7 +15,7 @@
 #include "4C_adapter_str_structure_new.hpp"
 #include "4C_contact_nitsche_strategy_ssi.hpp"
 #include "4C_coupling_volmortar.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_data_read.hpp"
 #include "4C_inpar_ssi.hpp"
@@ -661,7 +661,7 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
   if (redistribution_type == SSI::RedistributionType::match and !is_sca_tra_manifold())
   {
     // first we bin the scatra discretization
-    std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+    std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
     dis.push_back(scatradis);
     Core::Rebalance::RebalanceDiscretizationsByBinning(dis, false);
 
@@ -674,7 +674,7 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
   else if (redistribution_type == SSI::RedistributionType::binning)
   {
     // create vector of discr.
-    std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+    std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
     dis.push_back(structdis);
     dis.push_back(scatradis);
 

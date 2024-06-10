@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io_domainreader.hpp"
-#include "4C_lib_discret.hpp"
 
 #include <Epetra_SerialComm.h>
 
@@ -29,11 +29,11 @@ namespace
    public:
     DomainReaderTest()
     {
-      testdis_ = Teuchos::rcp(new Discret::Discretization("dummy", testreader_.Comm(), 3));
+      testdis_ = Teuchos::rcp(new Core::FE::Discretization("dummy", testreader_.Comm(), 3));
     }
 
    protected:
-    Teuchos::RCP<Discret::Discretization> testdis_;
+    Teuchos::RCP<Core::FE::Discretization> testdis_;
     DatFileReaderStub testreader_;
   };
 

@@ -96,7 +96,7 @@ void STR::TimeInt::Base::Setup()
    * unfortunately this wasn't considered during the implementation of the
    * discretization routines. Therefore many methods need a slight modification
    * (most times adding a "const" should fix the problem).          hiermeier */
-  Teuchos::RCP<Discret::Discretization> discret_ptr = data_global_state().get_discret();
+  Teuchos::RCP<Core::FE::Discretization> discret_ptr = data_global_state().get_discret();
   dbc_ptr_->Init(discret_ptr, data_global_state().get_freact_np(), Teuchos::rcp(this, false));
   dbc_ptr_->Setup();
 
@@ -406,8 +406,8 @@ void STR::TimeInt::Base::get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<d
   // at some point we have to create a copy
   *step = dataglobalstate_->get_step_n();
   *time = dataglobalstate_->get_time_n();
-  Teuchos::RCP<const Discret::Discretization> discret_ptr =
-      Teuchos::rcp_dynamic_cast<const Discret::Discretization>(dataglobalstate_->get_discret());
+  Teuchos::RCP<const Core::FE::Discretization> discret_ptr =
+      Teuchos::rcp_dynamic_cast<const Core::FE::Discretization>(dataglobalstate_->get_discret());
   *elementdata = *(discret_ptr->PackMyElements());
   *nodedata = *(discret_ptr->PackMyNodes());
 
@@ -961,7 +961,7 @@ void STR::TimeInt::Base::read_restart(const int stepn)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization> STR::TimeInt::Base::discretization()
+Teuchos::RCP<Core::FE::Discretization> STR::TimeInt::Base::discretization()
 {
   check_init();
   return dataglobalstate_->get_discret();

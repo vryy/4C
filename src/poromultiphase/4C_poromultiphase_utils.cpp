@@ -9,8 +9,8 @@
 #include "4C_poromultiphase_utils.hpp"
 
 #include "4C_adapter_poromultiphase.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_bio.hpp"
 #include "4C_poroelast_utils.hpp"
@@ -37,14 +37,14 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
   Global::Problem* problem = Global::Problem::Instance();
 
   // 1.-Initialization.
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis(struct_disname);
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis(struct_disname);
 
   // possible interaction partners [artelegid; contelegid_1, ... contelegid_n]
   std::map<int, std::set<int>> nearbyelepairs;
 
   if (Global::Problem::Instance()->DoesExistDis("artery"))
   {
-    Teuchos::RCP<Discret::Discretization> arterydis = Teuchos::null;
+    Teuchos::RCP<Core::FE::Discretization> arterydis = Teuchos::null;
     arterydis = Global::Problem::Instance()->GetDis("artery");
 
     // get coupling method
@@ -89,7 +89,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
     if (!arterydis->Filled()) arterydis->fill_complete();
   }
 
-  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis(fluid_disname);
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis(fluid_disname);
   if (!structdis->Filled()) structdis->fill_complete();
   if (!fluiddis->Filled()) fluiddis->fill_complete();
 
@@ -142,8 +142,8 @@ void POROMULTIPHASE::UTILS::assign_material_pointers(
 {
   Global::Problem* problem = Global::Problem::Instance();
 
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis(struct_disname);
-  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis(fluid_disname);
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis(struct_disname);
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis(fluid_disname);
 
   PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);
 }

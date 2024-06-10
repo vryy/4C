@@ -22,10 +22,10 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  | forward declarations                                    vuong 09/14 |
  *---------------------------------------------------------------------*/
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -67,12 +67,12 @@ namespace Core::VolMortar
       //! assign material of discretization B
       virtual void AssignMaterial2To1(const Core::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele1, const std::vector<int>& ids_2,
-          Teuchos::RCP<Discret::Discretization> dis1, Teuchos::RCP<Discret::Discretization> dis2);
+          Teuchos::RCP<Core::FE::Discretization> dis1, Teuchos::RCP<Core::FE::Discretization> dis2);
 
       //! assign material of discretization B
       virtual void AssignMaterial1To2(const Core::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele2, const std::vector<int>& ids_1,
-          Teuchos::RCP<Discret::Discretization> dis1, Teuchos::RCP<Discret::Discretization> dis2);
+          Teuchos::RCP<Core::FE::Discretization> dis1, Teuchos::RCP<Core::FE::Discretization> dis2);
     };
   }  // namespace UTILS
 }  // namespace Core::VolMortar

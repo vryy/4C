@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 
 template <class so3_ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Poro<so3_ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   if (scatra_coupling_)
   {
@@ -97,7 +97,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::pre_evaluate(Teuchos::Paramet
 
 template <class so3_ele, Core::FE::CellType distype>
 int Discret::ELEMENTS::So3Poro<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -164,7 +164,7 @@ int Discret::ELEMENTS::So3Poro<so3_ele, distype>::Evaluate(Teuchos::ParameterLis
 
 template <class so3_ele, Core::FE::CellType distype>
 int Discret::ELEMENTS::So3Poro<so3_ele, distype>::my_evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -1330,7 +1330,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::compute_porosity_and_lineariz
 
 template <class so3_ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Poro<so3_ele, distype>::extract_values_from_global_vector(
-    const Discret::Discretization& discretization, const int& dofset, const std::vector<int>& lm,
+    const Core::FE::Discretization& discretization, const int& dofset, const std::vector<int>& lm,
     Core::LinAlg::Matrix<numdim_, numnod_>* matrixtofill,
     Core::LinAlg::Matrix<numnod_, 1>* vectortofill, const std::string& state)
 {

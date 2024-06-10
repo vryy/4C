@@ -19,10 +19,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace STR
 {
@@ -51,10 +51,10 @@ namespace STR
 
     /// setup the whole thing
     void Setup(
-        const Discret::Discretization& dis, const Epetra_Map& fullmap, bool overlapping = false);
+        const Core::FE::Discretization& dis, const Epetra_Map& fullmap, bool overlapping = false);
 
     /// get all element gids those nodes are touched by any condition
-    Teuchos::RCP<std::set<int>> conditioned_element_map(const Discret::Discretization& dis) const;
+    Teuchos::RCP<std::set<int>> conditioned_element_map(const Core::FE::Discretization& dis) const;
 
     MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
     MAP_EXTRACTOR_VECTOR_METHODS(FSICond, cond_fsi)

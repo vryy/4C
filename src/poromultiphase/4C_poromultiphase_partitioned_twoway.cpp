@@ -12,9 +12,9 @@
 #include "4C_adapter_art_net.hpp"
 #include "4C_adapter_porofluidmultiphase_wrapper.hpp"
 #include "4C_adapter_str_wrapper.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 
 FOUR_C_NAMESPACE_OPEN

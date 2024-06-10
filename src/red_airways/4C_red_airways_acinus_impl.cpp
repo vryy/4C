@@ -15,11 +15,11 @@
 
 #include "4C_red_airways_acinus_impl.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_gder2.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_gder2.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_maxwell_0d_acinus.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_red_airways_elem_params.hpp"
@@ -123,7 +123,7 @@ void Sysmat(Discret::ELEMENTS::RedAcinus* ele, Core::LinAlg::SerialDenseVector& 
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -226,7 +226,7 @@ int Discret::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Pa
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<const Core::Mat::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
@@ -283,7 +283,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Pa
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
@@ -692,7 +692,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 
 {
@@ -800,7 +800,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::AcinusImpl<distype>::CalcElemVolume(RedAcinus* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 
 {
@@ -827,7 +827,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::CalcElemVolume(RedAcinus* ele,
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
@@ -957,7 +957,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::AcinusImpl<distype>::get_junction_volume_mix(RedAcinus* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
@@ -997,7 +997,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::get_junction_volume_mix(RedAcinus* 
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::AcinusImpl<distype>::update_scatra(RedAcinus* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
@@ -1033,7 +1033,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::update_scatra(RedAcinus* ele,
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(RedAcinus* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
   Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
@@ -1080,7 +1080,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(RedAcinus* ele,
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::AcinusImpl<distype>::eval_nodal_essential_values(RedAcinus* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseVector& nodal_surface, Core::LinAlg::SerialDenseVector& nodal_volume,
     Core::LinAlg::SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)

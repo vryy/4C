@@ -27,10 +27,10 @@ FOUR_C_NAMESPACE_OPEN
 
 // Forward declaration
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -100,8 +100,8 @@ namespace Adapter
      * other.
      *
      */
-    virtual void Evaluate(Teuchos::RCP<const Discret::Discretization> discretization1,
-        Teuchos::RCP<const Discret::Discretization> discretization2,
+    virtual void Evaluate(Teuchos::RCP<const Core::FE::Discretization> discretization1,
+        Teuchos::RCP<const Core::FE::Discretization> discretization2,
         Teuchos::RCP<const Epetra_Vector> fluid_vel,
         Teuchos::RCP<const Epetra_Vector> beam_vel) = 0;
 

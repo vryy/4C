@@ -10,9 +10,9 @@
 
 #include "4C_w1_poro_p1_eletypes.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_ele_nullspace.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_w1_poro_p1.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -83,7 +83,7 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::WallQuad4PoroP1Type::ComputeN
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
-int Discret::ELEMENTS::WallQuad4PoroP1Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::WallQuad4PoroP1Type::Initialize(Core::FE::Discretization& dis)
 {
   Discret::ELEMENTS::Wall1Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
@@ -164,7 +164,7 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::WallQuad9PoroP1Type::ComputeN
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
-int Discret::ELEMENTS::WallQuad9PoroP1Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::WallQuad9PoroP1Type::Initialize(Core::FE::Discretization& dis)
 {
   Discret::ELEMENTS::Wall1Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
@@ -246,7 +246,7 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::WallTri3PoroP1Type::ComputeNu
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
-int Discret::ELEMENTS::WallTri3PoroP1Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::WallTri3PoroP1Type::Initialize(Core::FE::Discretization& dis)
 {
   Discret::ELEMENTS::Wall1Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)

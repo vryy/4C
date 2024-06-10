@@ -50,7 +50,7 @@ namespace Discret
 
       //! evaluate the element
       int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -59,7 +59,7 @@ namespace Discret
 
       //! evaluate action
       int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::FE::Discretization& discretization, const ScaTra::Action& action,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -108,10 +108,10 @@ namespace Discret
 
       //! Correction for additional flux terms / currents across Dirichlet boundaries
       virtual void correction_for_flux_across_dc(
-          Discret::Discretization& discretization,  //!< discretization
-          const std::vector<int>& lm,               //!< location vector
-          Core::LinAlg::SerialDenseMatrix& emat,    //!< element matrix to calculate
-          Core::LinAlg::SerialDenseVector& erhs     //!< element rhs to calculate
+          Core::FE::Discretization& discretization,  //!< discretization
+          const std::vector<int>& lm,                //!< location vector
+          Core::LinAlg::SerialDenseMatrix& emat,     //!< element matrix to calculate
+          Core::LinAlg::SerialDenseVector& erhs      //!< element rhs to calculate
           ) = 0;
 
       //! finite difference check for debugging purposes
@@ -167,7 +167,7 @@ namespace Discret
       //! process an electrode boundary kinetics point condition
       void calc_elch_boundary_kinetics_point(Core::Elements::Element* ele,  ///< current element
           Teuchos::ParameterList& params,                                   ///< parameter list
-          Discret::Discretization& discretization,                          ///< discretization
+          Core::FE::Discretization& discretization,                         ///< discretization
           std::vector<int>& lm,                                             ///< location vector
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,                  ///< element matrix
           Core::LinAlg::SerialDenseVector& elevec1_epetra,  ///< element right-hand side vector

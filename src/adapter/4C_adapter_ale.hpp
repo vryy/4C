@@ -25,11 +25,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-  class ResultTest;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::IO
 {
@@ -109,10 +108,10 @@ namespace Adapter
     virtual Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() = 0;
 
     //! direct access to discretization
-    virtual Teuchos::RCP<const Discret::Discretization> discretization() const = 0;
+    virtual Teuchos::RCP<const Core::FE::Discretization> discretization() const = 0;
 
     /// writing access to discretization
-    virtual Teuchos::RCP<Discret::Discretization> write_access_discretization() = 0;
+    virtual Teuchos::RCP<Core::FE::Discretization> write_access_discretization() = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
     virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor(
@@ -253,8 +252,8 @@ namespace Adapter
    public:
     //! constructor
     explicit AleBaseAlgorithm(
-        const Teuchos::ParameterList& prbdyn,         ///< the problem's parameter list
-        Teuchos::RCP<Discret::Discretization> actdis  ///< pointer to discretization
+        const Teuchos::ParameterList& prbdyn,          ///< the problem's parameter list
+        Teuchos::RCP<Core::FE::Discretization> actdis  ///< pointer to discretization
     );
 
     //! virtual destructor to support polymorph destruction
@@ -270,7 +269,7 @@ namespace Adapter
      *  values specified in given problem-dependent ParameterList.
      */
     void setup_ale(const Teuchos::ParameterList& prbdyn,  ///< the problem's parameter list
-        Teuchos::RCP<Discret::Discretization> actdis      ///< pointer to discretization
+        Teuchos::RCP<Core::FE::Discretization> actdis     ///< pointer to discretization
     );
 
     //! ALE field solver

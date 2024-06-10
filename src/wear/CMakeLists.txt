@@ -12,7 +12,6 @@ set(_dependencies
     fsi
     global_data
     inpar
-    lib
     mortar
     nurbs_discret
     so3

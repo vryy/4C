@@ -7,8 +7,8 @@
 
 #include "4C_shell7p_ele_calc_eas.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -197,7 +197,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::reset_to_last_converged(
 template <Core::FE::CellType distype>
 double Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_internal_energy(
     Core::Elements::Element& ele, Mat::So3Material& solid_material,
-    const Discret::Discretization& discretization,
+    const Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params)
 {
@@ -326,7 +326,7 @@ double Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_internal_energy(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_stresses_strains(
     Core::Elements::Element& ele, Mat::So3Material& solid_material, const ShellStressIO& stressIO,
-    const ShellStrainIO& strainIO, const Discret::Discretization& discretization,
+    const ShellStrainIO& strainIO, const Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params)
 {
@@ -463,7 +463,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_stresses_strains(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_stiffness_mass(
     Core::Elements::Element& ele, Mat::So3Material& solid_material,
-    const Discret::Discretization& discretization,
+    const Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
     Core::LinAlg::SerialDenseMatrix* stiffness_matrix, Core::LinAlg::SerialDenseMatrix* mass_matrix)
@@ -705,7 +705,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Recover(Core::Elements::Element& ele,
-    const Discret::Discretization& discretization, const std::vector<int>& dof_index_array,
+    const Core::FE::Discretization& discretization, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params, STR::ELEMENTS::ParamsInterface& interface_ptr)
 {
   Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
@@ -760,7 +760,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Recover(Core::Elements::Elem
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Update(Core::Elements::Element& ele,
-    Mat::So3Material& solid_material, const Discret::Discretization& discretization,
+    Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params)
 {

@@ -7,7 +7,6 @@ set(_dependencies
     core
     global_data
     inpar
-    lib
     particle_algorithm
     particle_wall
     solver_nonlin_nox

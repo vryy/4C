@@ -30,7 +30,7 @@ namespace ScaTra
   {
    public:
     /// Standard Constructor
-    ScaTraTimIntPoroMulti(Teuchos::RCP<Discret::Discretization> dis,
+    ScaTraTimIntPoroMulti(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -101,7 +101,7 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntPoroMultiOST(Teuchos::RCP<Discret::Discretization> dis,
+    ScaTraTimIntPoroMultiOST(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -122,7 +122,7 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntPoroMultiBDF2(Teuchos::RCP<Discret::Discretization> dis,
+    ScaTraTimIntPoroMultiBDF2(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -143,7 +143,7 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntPoroMultiGenAlpha(Teuchos::RCP<Discret::Discretization> dis,
+    ScaTraTimIntPoroMultiGenAlpha(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -164,7 +164,7 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntPoroMultiStationary(Teuchos::RCP<Discret::Discretization> dis,
+    ScaTraTimIntPoroMultiStationary(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,

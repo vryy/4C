@@ -15,8 +15,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_inpar_lubrication.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
 #include <Epetra_Map.h>
@@ -85,8 +85,8 @@ namespace LUBRICATION
     /*========================================================================*/
 
     //! Standard Constructor
-    TimIntImpl(Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::LinAlg::Solver> solver,
-        Teuchos::RCP<Teuchos::ParameterList> params,
+    TimIntImpl(Teuchos::RCP<Core::FE::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
@@ -199,7 +199,7 @@ namespace LUBRICATION
     bool IsIncremental() { return incremental_; }
 
     //! return discretization
-    Teuchos::RCP<Discret::Discretization> discretization() { return discret_; }
+    Teuchos::RCP<Core::FE::Discretization> discretization() { return discret_; }
 
     //! output solution and restart data to file
     virtual void Output(const int num = 0);
@@ -449,7 +449,7 @@ namespace LUBRICATION
     /*========================================================================*/
 
     //! the lubrication discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! the discretization writer
     Teuchos::RCP<Core::IO::DiscretizationWriter> output_;

@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
  *----------------------------------------------------------------------*/
-CONTACT::MtManager::MtManager(Discret::Discretization& discret, double alphaf)
+CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
     : Mortar::ManagerBase()
 {
   // overwrite base class communicator
@@ -361,7 +361,7 @@ CONTACT::MtManager::MtManager(Discret::Discretization& discret, double alphaf)
  |  read and check input parameters (public)                  popp 04/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::MtManager::read_and_check_input(
-    Teuchos::ParameterList& mtparams, const Discret::Discretization& discret)
+    Teuchos::ParameterList& mtparams, const Core::FE::Discretization& discret)
 {
   // read parameter lists from Global::Problem
   const Teuchos::ParameterList& mortar = Global::Problem::Instance()->mortar_coupling_params();

@@ -13,8 +13,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_condition.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_condition.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_inpar_cardiovascular0d.hpp"
 
 #include <Epetra_FECrsMatrix.h>
@@ -26,11 +26,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -59,7 +58,7 @@ namespace UTILS
     takes care of the Cardiovascular0D IDs.
     */
 
-    Cardiovascular0D(Teuchos::RCP<Discret::Discretization>
+    Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization>
                          discr,            ///< discretization where Cardiovascular0D lives on
         const std::string& conditionname,  ///< Name of condition to create Cardiovascular0D from
         std::vector<int>& curID            ///< current ID
@@ -69,7 +68,7 @@ namespace UTILS
     \brief Constructor of a Cardiovascular0D based on a conditions with a given name.
     */
 
-    Cardiovascular0D(Teuchos::RCP<Discret::Discretization>
+    Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization>
                          discr,  ///< discretization where Cardiovascular0D funtion lives on
         const std::string&
             CondName  ///< Name of condition to create Cardiovascular0D functions from
@@ -144,7 +143,7 @@ namespace UTILS
     );
 
    protected:
-    Teuchos::RCP<Discret::Discretization> actdisc_;  ///< standard discretization
+    Teuchos::RCP<Core::FE::Discretization> actdisc_;  ///< standard discretization
     std::vector<Core::Conditions::Condition*>
         cardiovascular0dcond_;  ///< 0D cardiovascular conditions
     std::vector<Core::Conditions::Condition*>

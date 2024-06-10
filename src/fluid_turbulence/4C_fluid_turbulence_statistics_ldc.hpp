@@ -39,8 +39,8 @@ output.
 
 #include "4C_config.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_inpar_fluid.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 
 #include <Epetra_MpiComm.h>
@@ -68,7 +68,7 @@ namespace FLD
     o Allocate distributed vector for squares
 
     */
-    TurbulenceStatisticsLdc(Teuchos::RCP<Discret::Discretization> actdis,
+    TurbulenceStatisticsLdc(Teuchos::RCP<Core::FE::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename);
 
     /*!
@@ -162,7 +162,7 @@ namespace FLD
     double x3max_;
 
     //! The discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! parameter list
     Teuchos::ParameterList& params_;

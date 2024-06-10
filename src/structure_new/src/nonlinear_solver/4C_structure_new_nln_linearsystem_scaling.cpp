@@ -11,8 +11,8 @@
 
 #include "4C_structure_new_nln_linearsystem_scaling.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -43,7 +43,7 @@ STR::Nln::LinSystem::StcScaling::StcScaling(
   Teuchos::ParameterList p;
 
   // get discretization
-  Teuchos::RCP<Discret::Discretization> discret = GState.get_discret();
+  Teuchos::RCP<Core::FE::Discretization> discret = GState.get_discret();
 
   // action for elements
   discret->set_state("displacement", GState.get_dis_np());

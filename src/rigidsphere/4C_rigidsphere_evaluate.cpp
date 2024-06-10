@@ -9,13 +9,13 @@
 /*----------------------------------------------------------------------------*/
 
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_discretization_geometric_search_bounding_volume.hpp"
-#include "4C_discretization_geometric_search_params.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_integration.hpp"
+#include "4C_fem_geometric_search_bounding_volume.hpp"
+#include "4C_fem_geometric_search_params.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_browniandyn.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_stvenantkirchhoff.hpp"
@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public) meier 02/14|
  *----------------------------------------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -335,7 +335,7 @@ int Discret::ELEMENTS::Rigidsphere::how_many_random_numbers_i_need()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Rigidsphere::GetBoundingVolume(
-    const Discret::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
     const Core::GeometricSearch::GeometricSearchParams& params) const
 {
   // Get the element displacements.

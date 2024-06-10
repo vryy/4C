@@ -5,11 +5,11 @@
 \level 3
 */
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_shell7p_line.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 int Discret::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

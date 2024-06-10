@@ -10,9 +10,9 @@
 /*----------------------------------------------------------------------*/
 #include "4C_nurbs_discret_apply_nurbs_initial_condition.hpp"
 
-#include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -72,7 +72,7 @@ namespace
   \date 04/09
   */
 
-  void apply_nurbs_initial_condition_solve(Discret::Discretization& dis,
+  void apply_nurbs_initial_condition_solve(Core::FE::Discretization& dis,
       Core::LinAlg::Solver& solver, const Core::UTILS::FunctionOfSpaceTime& start_function,
       Teuchos::RCP<Epetra_Vector> initialvals)
   {
@@ -557,7 +557,7 @@ namespace
    of a separate solver!
 */
 /*----------------------------------------------------------------------*/
-void Discret::Nurbs::apply_nurbs_initial_condition(Discret::Discretization& dis,
+void Discret::Nurbs::apply_nurbs_initial_condition(Core::FE::Discretization& dis,
     const Teuchos::ParameterList& solverparams,
     const Core::UTILS::FunctionOfSpaceTime& start_function, Teuchos::RCP<Epetra_Vector> initialvals)
 {

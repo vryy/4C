@@ -9,9 +9,9 @@
 
 #include "4C_elemag_ele_boundary_calc.hpp"
 
-#include "4C_discretization_fem_general_node.hpp"
 #include "4C_elemag_ele.hpp"
 #include "4C_elemag_ele_action.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -113,7 +113,7 @@ Discret::ELEMENTS::ElemagBoundaryImpl<distype>::ElemagBoundaryImpl()
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate_neumann(
     Discret::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseMatrix* elemat1_epetra)
 {
@@ -124,7 +124,7 @@ int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate_neumann(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(Discret::ELEMENTS::ElemagBoundary* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,

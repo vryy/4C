@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_mat_cnst_1d_art.hpp"
 #include "4C_scatra_ele_calc.hpp"
 
@@ -48,13 +48,14 @@ namespace Discret
           const int numdofpernode, const int numscal, const std::string& disname);
 
       /// Setup element evaluation
-      int SetupCalc(Core::Elements::Element* ele, Discret::Discretization& discretization) override;
+      int SetupCalc(
+          Core::Elements::Element* ele, Core::FE::Discretization& discretization) override;
 
      protected:
       //! extract element based or nodal values
       //  return extracted values of phinp
       void extract_element_and_node_values(Core::Elements::Element* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la) override;
 
       //! evaluate shape functions and their derivatives at current integration point

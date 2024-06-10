@@ -14,11 +14,11 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element_integration_select.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
-#include "4C_discretization_geometry_position_array.hpp"
+#include "4C_fem_general_element_integration_select.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_geometry_position_array.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_parameter_std.hpp"
@@ -43,7 +43,7 @@ namespace FLD
   // this routine is supposed to move to fluid_ele_calc_general_service.cpp and use the methods
   // provided there move it if you are using it in a similar way as calc_channel_statistics
   template <int iel>
-  void f3_calc_loma_means(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+  void f3_calc_loma_means(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
       std::vector<double>& velocitypressure, std::vector<double>& temperature,
       Teuchos::ParameterList& params, const double eosfac)
   {
@@ -452,7 +452,7 @@ namespace FLD
   // this routine is supposed to move to fluid_ele_calc_general_service.cpp and use the methods
   // provided there move it if you are using it in a similar way as calc_channel_statistics
   template <int iel>
-  void f3_calc_scatra_means(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+  void f3_calc_scatra_means(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
       std::vector<double>& velocitypressure, std::vector<double>& scalar,
       Teuchos::ParameterList& params)
   {
@@ -3053,7 +3053,7 @@ namespace FLD
   */
   template <Core::FE::CellType DISTYPE>
   void ElementNodeNormal(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-      Discret::Discretization& discretization, std::vector<int>& lm,
+      Core::FE::Discretization& discretization, std::vector<int>& lm,
       Core::LinAlg::SerialDenseVector& elevec1)
   {
     // this evaluates the node normals using the volume integral in Wall

@@ -9,7 +9,7 @@
 
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_IntVector.h>
@@ -572,7 +572,7 @@ bool Core::LinAlg::split_vector(const Epetra_Map& xmap, const Epetra_Vector& x,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::LinAlg::ComputeDofMapsFromNodeMaps(const int dofset_id,
-    const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps, const Discret::Discretization& discret,
+    const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps, const Core::FE::Discretization& discret,
     std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps)
 {
   dof_maps.reserve(dof_maps.size() + node_maps.size());
@@ -583,7 +583,7 @@ void Core::LinAlg::ComputeDofMapsFromNodeMaps(const int dofset_id,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> Core::LinAlg::ComputeDofMapFromNodeMap(
-    const int dofset_id, const Epetra_Map& node_map, const Discret::Discretization& discret)
+    const int dofset_id, const Epetra_Map& node_map, const Core::FE::Discretization& discret)
 {
   std::set<int> dof_set;
   std::vector<int> dof_vec;

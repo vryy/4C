@@ -8,12 +8,12 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_elements_paramsinterface.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Integrate a Line Neumann boundary condition (public)      popp 06/13|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -491,7 +491,7 @@ double Discret::ELEMENTS::Wall1Line::w1_substitution(const Core::LinAlg::SerialD
 
 /*======================================================================*/
 int Discret::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
     Core::LinAlg::SerialDenseVector& elevector3)
@@ -666,7 +666,7 @@ int Discret::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
  * Evaluate method on mutliple dofsets                       vuong 11/12*
  * ---------------------------------------------------------------------*/
 int Discret::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
     Core::LinAlg::SerialDenseVector& elevector3)

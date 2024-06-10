@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_dofset.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_dofset.hpp"
 
 #include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
@@ -69,7 +69,7 @@ namespace CONSTRAINTS
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     virtual int assign_degrees_of_freedom(
-        const Teuchos::RCP<Discret::Discretization> dis, const int ndofs, const int start);
+        const Teuchos::RCP<Core::FE::Discretization> dis, const int ndofs, const int start);
 
     //@}
 

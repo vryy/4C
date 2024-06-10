@@ -14,8 +14,8 @@
 #include "4C_config.hpp"
 
 #include "4C_contact_paramsinterface.hpp"  // base class of the ContactData class
-#include "4C_inpar_browniandyn.hpp"        // enums
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_inpar_browniandyn.hpp"                       // enums
 #include "4C_structure_new_elements_paramsinterface.hpp"  // base class of the Data class
 #include "4C_structure_new_enum_lists.hpp"
 #include "4C_structure_new_gauss_point_data_output_manager.hpp"
@@ -1349,7 +1349,7 @@ namespace STR
 
       //! get specified time curve number of imposed Dirichlet BCs
       void resize_random_force_m_vector(
-          Teuchos::RCP<Discret::Discretization> discret_ptr, int maxrandnumelement);
+          Teuchos::RCP<Core::FE::Discretization> discret_ptr, int maxrandnumelement);
 
       //! get mutable random force vector
       Teuchos::RCP<Epetra_MultiVector>& get_random_forces()

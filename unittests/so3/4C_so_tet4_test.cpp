@@ -8,8 +8,8 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_so3_tet4.hpp"
 
 #include <Epetra_SerialComm.h>
@@ -25,7 +25,7 @@ namespace
     {
       // create a discretization, that creates node to element pointers and keeps the nodes alive
       testdis_ = Teuchos::rcp(
-          new Discret::Discretization("dummy", Teuchos::rcp(new Epetra_SerialComm), 3));
+          new Core::FE::Discretization("dummy", Teuchos::rcp(new Epetra_SerialComm), 3));
 
       // create 4 nodes
       const std::array<int, 4> nodeids = {0, 1, 2, 3};
@@ -56,7 +56,7 @@ namespace
       Global::Problem::Done();
     }
     //! dummy discretization for holding element and node pointers
-    Teuchos::RCP<Discret::Discretization> testdis_;
+    Teuchos::RCP<Core::FE::Discretization> testdis_;
     //! the tet4 element to be tested
     Teuchos::RCP<Discret::ELEMENTS::SoTet4> testele_;
     //! a copy of the tet element to test the copy constructor

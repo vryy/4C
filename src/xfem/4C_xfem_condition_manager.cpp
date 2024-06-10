@@ -26,10 +26,10 @@ FOUR_C_NAMESPACE_OPEN
 // constructor
 XFEM::ConditionManager::ConditionManager(
     const std::map<std::string, int>& dofset_coupling_map,  ///< ???
-    Teuchos::RCP<Discret::Discretization>& bg_dis,          ///< background discretization
-    std::vector<Teuchos::RCP<Discret::Discretization>>&
+    Teuchos::RCP<Core::FE::Discretization>& bg_dis,         ///< background discretization
+    std::vector<Teuchos::RCP<Core::FE::Discretization>>&
         meshcoupl_dis,  ///< mesh coupling discretizations
-    std::vector<Teuchos::RCP<Discret::Discretization>>&
+    std::vector<Teuchos::RCP<Core::FE::Discretization>>&
         levelsetcoupl_dis,  ///< levelset coupling discretizations
     const double time,      ///< time
     const int step          ///< time step
@@ -82,7 +82,7 @@ XFEM::ConditionManager::ConditionManager(
 
 
 void XFEM::ConditionManager::CreateCouplings(
-    std::vector<Teuchos::RCP<Discret::Discretization>>& coupl_dis,  ///< coupling discretizations
+    std::vector<Teuchos::RCP<Core::FE::Discretization>>& coupl_dis,  ///< coupling discretizations
     const std::vector<std::string>&
         conditions_to_check,   ///< conditions for which coupling objects shall be created
     bool create_mesh_coupling  ///< create mesh coupling or level-set coupling object
@@ -118,7 +118,7 @@ void XFEM::ConditionManager::CreateCouplings(
   }
 }
 
-void XFEM::ConditionManager::GetCouplingIds(const Discret::Discretization& cond_dis,
+void XFEM::ConditionManager::GetCouplingIds(const Core::FE::Discretization& cond_dis,
     const std::string& condition_name, std::set<int>& coupling_ids)
 {
   // get all conditions of this type, if several conditions with different coupling ids
@@ -273,14 +273,14 @@ void XFEM::ConditionManager::SetTimeAndStep(const double time, const int step)
 
 
 void XFEM::ConditionManager::create_new_level_set_coupling(const std::string& cond_name,
-    Teuchos::RCP<Discret::Discretization> cond_dis, const int coupling_id)
+    Teuchos::RCP<Core::FE::Discretization> cond_dis, const int coupling_id)
 {
   AddLevelSetCoupling(cond_name, cond_dis, coupling_id);
 }
 
 
 void XFEM::ConditionManager::create_new_mesh_coupling(const std::string& cond_name,
-    Teuchos::RCP<Discret::Discretization>
+    Teuchos::RCP<Core::FE::Discretization>
         cond_dis,  ///< discretization from which the cutter discretization can be derived
     const int coupling_id)
 {
@@ -348,7 +348,7 @@ void XFEM::ConditionManager::create()
   // loop all mesh coupling objects
   for (int mc = 0; mc < (int)mesh_coupl_.size(); mc++)
   {
-    Teuchos::RCP<Discret::Discretization> mc_cutdis = mesh_coupl_[mc]->GetCutterDis();
+    Teuchos::RCP<Core::FE::Discretization> mc_cutdis = mesh_coupl_[mc]->GetCutterDis();
     if (mc_cutdis == Teuchos::null) FOUR_C_THROW("cutter dis is Teuchos::null");
 
     // set current number of global coupling sides as start index for global id this coupling object
@@ -911,7 +911,7 @@ void XFEM::ConditionManager::get_interface_slave_material(
 }
 
 bool XFEM::ConditionManager::initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
-    Teuchos::RCP<Discret::Discretization> fluiddis,
+    Teuchos::RCP<Core::FE::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)
 {

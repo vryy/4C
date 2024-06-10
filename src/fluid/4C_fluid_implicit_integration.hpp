@@ -26,10 +26,10 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_timint.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_turbulence.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -45,12 +45,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
   class DiscretizationFaces;
-  class ResultTest;
-}  // namespace Discret
+}  // namespace Core::FE
 namespace Core::IO
 {
   class DiscretizationWriter;
@@ -111,7 +110,7 @@ namespace FLD
     \brief Standard Constructor
 
     */
-    FluidImplicitTimeInt(const Teuchos::RCP<Discret::Discretization>& actdis,
+    FluidImplicitTimeInt(const Teuchos::RCP<Core::FE::Discretization>& actdis,
         const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
@@ -810,7 +809,7 @@ namespace FLD
     */
     void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
-        Teuchos::RCP<Discret::Discretization> scatradis, int dofset) override;
+        Teuchos::RCP<Core::FE::Discretization> scatradis, int dofset) override;
 
     /*!
     \brief set scalar fields
@@ -818,7 +817,7 @@ namespace FLD
     */
     void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp, const double thermpressnp,
         Teuchos::RCP<const Epetra_Vector> scatraresidual,
-        Teuchos::RCP<Discret::Discretization> scatradis, const int whichscalar = -1) override;
+        Teuchos::RCP<Core::FE::Discretization> scatradis, const int whichscalar = -1) override;
 
     /*!
     \brief set velocity field obtained by separate computation
@@ -1354,7 +1353,7 @@ namespace FLD
     enum Inpar::FLUID::MeshTying msht_;
 
     /// face discretization (only initialized for edge-based stabilization)
-    Teuchos::RCP<Discret::DiscretizationFaces> facediscret_;
+    Teuchos::RCP<Core::FE::DiscretizationFaces> facediscret_;
 
     //@}
 

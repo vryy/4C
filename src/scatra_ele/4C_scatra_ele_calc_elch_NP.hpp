@@ -74,10 +74,10 @@ namespace Discret
 
       //! Correction for additional flux terms / currents across Dirichlet boundaries
       void correction_for_flux_across_dc(
-          Discret::Discretization& discretization,  //!< discretization
-          const std::vector<int>& lm,               //!< location vector
-          Core::LinAlg::SerialDenseMatrix& emat,    //!< element matrix to calculate
-          Core::LinAlg::SerialDenseVector& erhs     //!< element rhs to calculate
+          Core::FE::Discretization& discretization,  //!< discretization
+          const std::vector<int>& lm,                //!< location vector
+          Core::LinAlg::SerialDenseMatrix& emat,     //!< element matrix to calculate
+          Core::LinAlg::SerialDenseVector& erhs      //!< element rhs to calculate
           ) override;
 
       /*========================================================================*/

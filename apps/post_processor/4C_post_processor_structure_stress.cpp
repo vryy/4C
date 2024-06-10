@@ -9,9 +9,9 @@
 
 
 
-#include "4C_discretization_fem_general_utils_gauss_point_postprocess.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_gauss_point_postprocess.hpp"
 #include "4C_io_legacy_table.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_post_common.hpp"
@@ -114,7 +114,7 @@ struct WriteNodalStressStep : public SpecialFieldInterface
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
     const Epetra_Map* noderowmap = dis->NodeRowMap();
 
     Teuchos::ParameterList p;
@@ -151,7 +151,7 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
     using namespace FourC;
 
     FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
-    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
@@ -187,7 +187,7 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
     using namespace FourC;
 
     FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
-    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
@@ -234,7 +234,7 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
     const Epetra_Map* noderowmap = dis->NodeRowMap();
 
     Teuchos::ParameterList p;
@@ -399,7 +399,7 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
     const Epetra_Map* noderowmap = dis->NodeRowMap();
 
     Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
@@ -515,7 +515,7 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
 
     Epetra_MultiVector element_stress(*dis->ElementRowMap(), 6, true);
 

@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimInt(ioparams, tdynparams, xparams, actdis, solver, output),
       pred_(Core::UTILS::IntegralValue<Inpar::THR::PredEnum>(tdynparams, "PREDICT")),

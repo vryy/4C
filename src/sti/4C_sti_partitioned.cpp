@@ -10,7 +10,7 @@
 #include "4C_sti_partitioned.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 

@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_cell_type_traits.hpp"
+#include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_inpar_structure.hpp"
 
 #include <memory>

@@ -5,11 +5,11 @@
 
 
 *----------------------------------------------------------------------*/
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -544,7 +544,7 @@ int Discret::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoWeg6::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -1147,7 +1147,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_lumpmass(Core::LinAlg::Matrix<NUMDOF_WEG6, 
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 04/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoWeg6Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoWeg6Type::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

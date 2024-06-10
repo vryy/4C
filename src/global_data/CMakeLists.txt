@@ -7,7 +7,6 @@ set(_dependencies
     core
     global_legacy_module
     inpar
-    lib
     mat
     particle_engine
     )

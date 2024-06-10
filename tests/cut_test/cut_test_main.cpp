@@ -10,7 +10,7 @@
 
 #include "4C_cut_element.hpp"
 #include "4C_cut_mesh.hpp"
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_global_data.hpp"
 
 #include <fenv.h>

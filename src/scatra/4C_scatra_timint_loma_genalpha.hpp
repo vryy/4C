@@ -27,7 +27,7 @@ namespace ScaTra
   {
    public:
     /// Standard Constructor
-    TimIntLomaGenAlpha(Teuchos::RCP<Discret::Discretization> dis,
+    TimIntLomaGenAlpha(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,

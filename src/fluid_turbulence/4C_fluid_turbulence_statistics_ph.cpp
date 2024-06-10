@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 //----------------------------------------------------------------------
 // constructor
 //----------------------------------------------------------------------
-FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Discret::Discretization> actdis,
+FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::ParameterList& params, const std::string& statistics_outfilename)
     : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
 {

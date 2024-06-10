@@ -9,15 +9,15 @@
 
 #include "4C_scatra_ele_calc_cardiac_monodomain_hdg.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_fiber_node.hpp"
-#include "4C_discretization_fem_general_fiber_node_holder.hpp"
-#include "4C_discretization_fem_general_fiber_node_utils.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_discretization_fem_general_utils_polynomial.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_fiber_node.hpp"
+#include "4C_fem_general_fiber_node_holder.hpp"
+#include "4C_fem_general_fiber_node_utils.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_polynomial.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_myocard.hpp"
@@ -462,7 +462,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
     probdim>::get_material_internal_state(const Core::Elements::Element*
                                               ele,  //!< the element we are dealing with
-    Teuchos::ParameterList& params, Discret::Discretization& discretization)
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization)
 {
   // NOTE: add integral values only for elements which are NOT ghosted!
   if (ele->Owner() == discretization.Comm().MyPID())
@@ -504,7 +504,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
     probdim>::set_material_internal_state(const Core::Elements::Element*
                                               ele,  //!< the element we are dealing with
-    Teuchos::ParameterList& params, Discret::Discretization& discretization)
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization)
 {
   // NOTE: add integral values only for elements which are NOT ghosted!
   if (ele->Owner() == discretization.Comm().MyPID())

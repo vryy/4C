@@ -10,9 +10,9 @@
 
 #include "4C_linear_solver_method_parameters.hpp"
 
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_lib_discret.hpp"
-#include "4C_lib_discret_nullspace.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_discretization_nullspace.hpp"
+#include "4C_fem_general_elementtype.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Xpetra_EpetraIntMultiVector.hpp>
@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 //----------------------------------------------------------------------------------
 
 void Core::LinearSolver::Parameters::compute_solver_parameters(
-    Discret::Discretization& dis, Teuchos::ParameterList& solverlist)
+    Core::FE::Discretization& dis, Teuchos::ParameterList& solverlist)
 {
   Teuchos::RCP<Epetra_Map> nullspaceMap =
       solverlist.get<Teuchos::RCP<Epetra_Map>>("null space: map", Teuchos::null);
@@ -95,7 +95,7 @@ void Core::LinearSolver::Parameters::compute_solver_parameters(
       nullspaceMap = Teuchos::rcp(new Epetra_Map(*dis.dof_row_map()));
     }
 
-    auto nullspace = Discret::ComputeNullSpace(dis, numdf, dimns, nullspaceMap);
+    auto nullspace = Core::FE::ComputeNullSpace(dis, numdf, dimns, nullspaceMap);
 
     solverlist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
     solverlist.set("null space: vectors", nullspace->Values());

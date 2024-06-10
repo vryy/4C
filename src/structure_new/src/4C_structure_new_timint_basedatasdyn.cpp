@@ -14,8 +14,8 @@
 #include "4C_structure_new_timint_basedatasdyn.hpp"
 
 #include "4C_beaminteraction_periodic_boundingbox.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_new_utils.hpp"
 
@@ -109,7 +109,7 @@ STR::TimeInt::BaseDataSDyn::BaseDataSDyn()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataSDyn::Init(const Teuchos::RCP<Discret::Discretization> discret,
+void STR::TimeInt::BaseDataSDyn::Init(const Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     const Teuchos::RCP<std::set<enum Inpar::STR::ModelType>> modeltypes,
     const Teuchos::RCP<std::set<enum Inpar::STR::EleTech>> eletechs,

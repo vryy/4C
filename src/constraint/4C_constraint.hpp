@@ -14,7 +14,7 @@ Thomas Kloeppel
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
@@ -23,10 +23,10 @@ Thomas Kloeppel
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -60,7 +60,8 @@ namespace CONSTRAINTS
     takes care of the constraint IDs.
     */
 
-    Constraint(Teuchos::RCP<Discret::Discretization> discr,  ///< discretization constraint lives on
+    Constraint(
+        Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname,  ///< Name of condition to creat constraint from
         int& minID,                        ///< minimum constraint or monitor ID so far
         int& maxID                         ///< maximum constraint or monitor ID so far
@@ -70,7 +71,8 @@ namespace CONSTRAINTS
     \brief Constructor of a constraint based on a conditions with a given name.
     */
 
-    Constraint(Teuchos::RCP<Discret::Discretization> discr,  ///< discretization constraint lives on
+    Constraint(
+        Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname  ///< Name of condition to create constraints from
     );
 
@@ -119,7 +121,7 @@ namespace CONSTRAINTS
     std::vector<int> GetActiveCondID();
 
    protected:
-    Teuchos::RCP<Discret::Discretization> actdisc_;  ///< standard discretization
+    Teuchos::RCP<Core::FE::Discretization> actdisc_;  ///< standard discretization
     std::vector<Core::Conditions::Condition*>
         constrcond_;         ///< conditions, that define the constraint (all of the same kind)
     ConstrType constrtype_;  ///< constraint type

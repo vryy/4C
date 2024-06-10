@@ -11,7 +11,7 @@
 
 #include "4C_adapter_structure_scatra_ele.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_membrane_scatra.hpp"
 #include "4C_shell7p_ele_scatra.hpp"
 #include "4C_so3_scatra.hpp"

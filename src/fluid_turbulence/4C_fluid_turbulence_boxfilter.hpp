@@ -34,9 +34,9 @@ References are
 
 #include "4C_config.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_scatra.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
 #include <Epetra_Vector.h>
@@ -56,7 +56,7 @@ namespace FLD
     \brief Standard Constructor (public)
 
     */
-    Boxfilter(Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params);
+    Boxfilter(Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params);
 
     /*!
     \brief Destructor
@@ -64,9 +64,9 @@ namespace FLD
     */
     virtual ~Boxfilter() = default;
 
-    void AddScatra(Teuchos::RCP<Discret::Discretization> scatradis);
+    void AddScatra(Teuchos::RCP<Core::FE::Discretization> scatradis);
 
-    void initialize_vreman_scatra(Teuchos::RCP<Discret::Discretization> scatradis);
+    void initialize_vreman_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis);
 
     /*!
     \brief Perform box filter operation, compare filtered quantities
@@ -640,7 +640,7 @@ namespace FLD
     //! @name input arguments of the constructor
     //
     //! the discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
     //! parameterlist including time params, stabilization params and turbulence sublist
     Teuchos::ParameterList& params_;
     //! flag for physical type of fluid flow
@@ -675,7 +675,7 @@ namespace FLD
 
     //! @name special scatra variables
     //! the discretization
-    Teuchos::RCP<Discret::Discretization> scatradiscret_;
+    Teuchos::RCP<Core::FE::Discretization> scatradiscret_;
     //@}
 
     //! @name vectors used for filtering (for dynamic Smagorinsky model)

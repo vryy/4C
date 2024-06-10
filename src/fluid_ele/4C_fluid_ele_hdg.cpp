@@ -11,12 +11,12 @@
 
 #include "4C_fluid_ele_hdg.hpp"
 
+#include "4C_fem_discretization_faces.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_factory.hpp"
 #include "4C_fluid_ele_interface.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret_faces.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -78,9 +78,9 @@ void Discret::ELEMENTS::FluidHDGType::nodal_block_information(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::FluidHDGType::ComputeNullSpace(
-    Discret::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+    Core::FE::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  if (Discret::DiscretizationFaces* facedis = dynamic_cast<Discret::DiscretizationFaces*>(&dis))
+  if (Core::FE::DiscretizationFaces* facedis = dynamic_cast<Core::FE::DiscretizationFaces*>(&dis))
   {
     const Epetra_Map* rowmap = dis.dof_row_map();
     const int lrows = rowmap->NumMyElements();
@@ -252,7 +252,7 @@ bool Discret::ELEMENTS::FluidHDG::ReadElement(
 |  evaluate the element (public)                      kronbichler 05/13|
 *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::FluidHDG::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)

@@ -38,10 +38,10 @@ namespace Core::IO
   class DiscretizationWriter;
   class DiscretizationReader;
 }  // namespace Core::IO
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 namespace Core::Geo
 {
   namespace MeshFree
@@ -90,8 +90,8 @@ namespace BEAMINTERACTION
       virtual ~Generic() = default;
 
       //! initialize the class variables
-      virtual void Init(Teuchos::RCP<Discret::Discretization> const& ia_discret,
-          Teuchos::RCP<Discret::Discretization> const& bindis,
+      virtual void Init(Teuchos::RCP<Core::FE::Discretization> const& ia_discret,
+          Teuchos::RCP<Core::FE::Discretization> const& bindis,
           Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> const& gstate,
           Teuchos::RCP<STR::TimeInt::BaseDataIO> const& gio_ptr,
           Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
@@ -202,15 +202,15 @@ namespace BEAMINTERACTION
       //! @name internal accessors
       //! @{
       //! Returns the (structural) discretization
-      Discret::Discretization& Discret();
-      Teuchos::RCP<Discret::Discretization>& DiscretPtr();
-      Teuchos::RCP<const Discret::Discretization> DiscretPtr() const;
-      Discret::Discretization const& Discret() const;
+      Core::FE::Discretization& Discret();
+      Teuchos::RCP<Core::FE::Discretization>& DiscretPtr();
+      Teuchos::RCP<const Core::FE::Discretization> DiscretPtr() const;
+      Core::FE::Discretization const& Discret() const;
 
-      Discret::Discretization& BinDiscret();
-      Teuchos::RCP<Discret::Discretization>& BinDiscretPtr();
-      Teuchos::RCP<const Discret::Discretization> BinDiscretPtr() const;
-      Discret::Discretization const& BinDiscret() const;
+      Core::FE::Discretization& BinDiscret();
+      Teuchos::RCP<Core::FE::Discretization>& BinDiscretPtr();
+      Teuchos::RCP<const Core::FE::Discretization> BinDiscretPtr() const;
+      Core::FE::Discretization const& BinDiscret() const;
 
       //! Returns the global state data container
       STR::TimeInt::BaseDataGlobalState& GState();
@@ -253,10 +253,10 @@ namespace BEAMINTERACTION
 
      private:
       //! pointer to the interaction discretization
-      Teuchos::RCP<Discret::Discretization> discret_ptr_;
+      Teuchos::RCP<Core::FE::Discretization> discret_ptr_;
 
       //! pointer to the interaction discretization
-      Teuchos::RCP<Discret::Discretization> bindis_ptr_;
+      Teuchos::RCP<Core::FE::Discretization> bindis_ptr_;
 
       //! pointer to the global state data container
       Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;

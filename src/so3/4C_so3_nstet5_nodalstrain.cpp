@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::NStet5Type::element_deformation_gradient(Discret::Discretization& dis)
+void Discret::ELEMENTS::NStet5Type::element_deformation_gradient(Core::FE::Discretization& dis)
 {
   // current displacement
   Teuchos::RCP<const Epetra_Vector> disp = dis.GetState("displacement");
@@ -74,7 +74,7 @@ void Discret::ELEMENTS::NStet5Type::element_deformation_gradient(Discret::Discre
 /*----------------------------------------------------------------------*
  |  pre-evaluation of elements (public)                        gee 03/12|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::NStet5Type::pre_evaluate(Discret::Discretization& dis,
+void Discret::ELEMENTS::NStet5Type::pre_evaluate(Core::FE::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -392,7 +392,7 @@ void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseM
     Core::LinAlg::SerialDenseVector* force, std::map<int, Core::Nodes::Node*>& adjnode,
     std::vector<Discret::ELEMENTS::NStet5*>& adjele, std::map<int, std::vector<int>>& adjsubele,
     std::vector<int>& lm, std::vector<std::vector<std::vector<int>>>& lmlm,
-    const Epetra_Vector& disp, Discret::Discretization& dis, std::vector<double>* nodalstress,
+    const Epetra_Vector& disp, Core::FE::Discretization& dis, std::vector<double>* nodalstress,
     std::vector<double>* nodalstrain, const Inpar::STR::StressType iostress,
     const Inpar::STR::StrainType iostrain)
 {

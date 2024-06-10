@@ -10,7 +10,7 @@
 
 #include "4C_inpar_ssti.hpp"
 
-#include "4C_discretization_condition_definition.hpp"
+#include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_linalg_equilibrate.hpp"

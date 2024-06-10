@@ -14,7 +14,7 @@
 #include "4C_config.hpp"
 
 #include "4C_beaminteraction_conditions.hpp"
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_RCP.hpp>
@@ -49,7 +49,7 @@ namespace BEAMINTERACTION
      *
      * The BuildIdSets method from the base class is called to build the beam IDs.
      */
-    void BuildIdSets(const Teuchos::RCP<const Discret::Discretization>& discretization) override;
+    void BuildIdSets(const Teuchos::RCP<const Core::FE::Discretization>& discretization) override;
 
     /**
      * \brief Check if a combination of beam and beam id is in this condition.

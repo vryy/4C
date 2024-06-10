@@ -200,8 +200,8 @@ namespace FSI
         std::map<int, std::list<int>>* inverseNodeOwner,
         std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
         std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
-        Teuchos::RCP<Discret::Discretization> structuredis,
-        Teuchos::RCP<Discret::Discretization> fluiddis,
+        Teuchos::RCP<Core::FE::Discretization> structuredis,
+        Teuchos::RCP<Core::FE::Discretization> fluiddis,
         const Inpar::FSI::Redistribute domain) override;
 
 
@@ -210,8 +210,8 @@ namespace FSI
      * The relation is saved in the map \c fluidToStructureMap as fluidnode -- structurenode and
      * in the map \c structureToFluidMap as structurenode -- fluidnode.
      */
-    void create_interface_mapping(Teuchos::RCP<Discret::Discretization> structuredis,
-        Teuchos::RCP<Discret::Discretization> fluiddis,
+    void create_interface_mapping(Teuchos::RCP<Core::FE::Discretization> structuredis,
+        Teuchos::RCP<Core::FE::Discretization> fluiddis,
         std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
         std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
         std::map<int, std::vector<int>>& fluidToStructureMap,

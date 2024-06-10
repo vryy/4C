@@ -13,8 +13,8 @@
 /*----------------------------------------------------------------------*/
 #include "4C_adapter_fld_poro.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_fem_general_assemblestrategy.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_implicit_integration.hpp"
@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-Adapter::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+Adapter::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Discretization> dis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : Adapter::FluidFPSI::FluidFPSI(fluid, dis, solver, params, output, isale, dirichletcond)

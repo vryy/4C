@@ -13,7 +13,7 @@
 #include "4C_config.hpp"
 
 #include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"
-#include "4C_discretization_condition_definition.hpp"
+#include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_mat_materialdefinition.hpp"
 

@@ -34,7 +34,7 @@ void THR::TimIntOneStepTheta::VerifyCoeff()
  *----------------------------------------------------------------------*/
 THR::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(ioparams, tdynparams, xparams, actdis, solver, output),
       theta_(tdynparams.sublist("ONESTEPTHETA").get<double>("THETA")),

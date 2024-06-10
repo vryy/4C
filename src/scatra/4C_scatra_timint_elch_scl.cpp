@@ -12,7 +12,7 @@
 #include "4C_comm_utils_gid_vector.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ScaTra::ScaTraTimIntElchSCL::ScaTraTimIntElchSCL(Teuchos::RCP<Discret::Discretization> dis,
+ScaTra::ScaTraTimIntElchSCL::ScaTraTimIntElchSCL(Teuchos::RCP<Core::FE::Discretization> dis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,

@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_fiber_node_holder.hpp"
-#include "4C_discretization_fem_general_utils_polynomial.hpp"
+#include "4C_fem_general_fiber_node_holder.hpp"
+#include "4C_fem_general_utils_polynomial.hpp"
 #include "4C_scatra_ele_calc_hdg.hpp"
 #include "4C_scatra_ele_hdg.hpp"
 
@@ -51,7 +51,7 @@ namespace Discret
 
       //! evaluate the element
       int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::FE::Discretization& discretization, const ScaTra::Action& action,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -110,11 +110,11 @@ namespace Discret
 
       //! get material internal state for output
       void get_material_internal_state(const Core::Elements::Element* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization) override;
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization) override;
 
       //! set material internal state after restart
       void set_material_internal_state(const Core::Elements::Element* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization) override;
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization) override;
 
       //! project material field
       int project_material_field(const Core::Elements::Element* ele) override;

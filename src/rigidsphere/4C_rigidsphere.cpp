@@ -12,14 +12,14 @@
 
 #include "4C_beaminteraction_link_pinjointed.hpp"
 #include "4C_comm_utils_factory.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_largerotations.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_browniandyn.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
@@ -234,7 +234,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Rigidspher
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      meier 05/12|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::RigidsphereType::Initialize(Discret::Discretization& dis) { return 0; }
+int Discret::ELEMENTS::RigidsphereType::Initialize(Core::FE::Discretization& dis) { return 0; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

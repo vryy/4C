@@ -6,7 +6,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_largerotations.hpp"
+#include "4C_fem_general_largerotations.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
 #include <Teuchos_RCP.hpp>

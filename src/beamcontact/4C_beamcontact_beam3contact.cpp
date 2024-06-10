@@ -16,11 +16,11 @@
 #include "4C_beaminteraction_beam_to_beam_contact_defines.hpp"
 #include "4C_beaminteraction_beam_to_beam_contact_tangentsmoothing.hpp"
 #include "4C_beaminteraction_beam_to_beam_contact_utils.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_beamcontact.hpp"
 #include "4C_inpar_contact.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_structure_timint_impl.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
-    const Discret::Discretization& pdiscret, const Discret::Discretization& cdiscret,
+    const Core::FE::Discretization& pdiscret, const Core::FE::Discretization& cdiscret,
     const std::map<int, int>& dofoffsetmap, Core::Elements::Element* element1,
     Core::Elements::Element* element2, Teuchos::ParameterList& beamcontactparams)
     : pdiscret_(pdiscret),

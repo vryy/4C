@@ -9,8 +9,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elementtype.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_mat_material_factory.hpp"
@@ -32,11 +32,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
+
 namespace Discret
 {
-  // forward declarations
-  class Discretization;
-
   namespace ELEMENTS
   {
     class SoTet4avType : public Core::Elements::ElementType
@@ -53,7 +55,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override;
+      int Initialize(Core::FE::Discretization& dis) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -293,7 +295,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -314,7 +316,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;

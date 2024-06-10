@@ -9,9 +9,9 @@
 
 #include "4C_truss3_scatra.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_lin_elast_1D.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 
@@ -344,7 +344,7 @@ double Discret::ELEMENTS::Truss3Scatra::project_scalar_to_gauss_point(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Discret::ELEMENTS::Truss3Scatra::extract_elemental_variables(LocationArray& la,
-    const Discret::Discretization& discretization, const Teuchos::ParameterList& params,
+    const Core::FE::Discretization& discretization, const Teuchos::ParameterList& params,
     std::map<std::string, std::vector<double>>& ele_state)
 {
   // add displacements

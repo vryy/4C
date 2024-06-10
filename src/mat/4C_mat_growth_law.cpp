@@ -15,8 +15,8 @@ factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\par
 #include "4C_mat_growth_law.hpp"
 
 #include "4C_comm_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_growth.hpp"
 #include "4C_mat_service.hpp"

@@ -21,8 +21,8 @@
 #include "4C_art_net_art_junction.hpp"
 #include "4C_art_net_art_write_gnuplot.hpp"
 #include "4C_art_net_timint.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_utils_function.hpp"
@@ -52,7 +52,7 @@ namespace Arteries
     \brief Standard Constructor
 
     */
-    ArtNetExplicitTimeInt(Teuchos::RCP<Discret::Discretization> dis, const int linsolvernumber,
+    ArtNetExplicitTimeInt(Teuchos::RCP<Core::FE::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
         Core::IO::DiscretizationWriter& output);
 

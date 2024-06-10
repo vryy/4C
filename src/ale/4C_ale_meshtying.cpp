@@ -32,7 +32,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-ALE::Meshtying::Meshtying(Teuchos::RCP<Discret::Discretization> dis, Core::LinAlg::Solver& solver,
+ALE::Meshtying::Meshtying(Teuchos::RCP<Core::FE::Discretization> dis, Core::LinAlg::Solver& solver,
     int msht, int nsd, const UTILS::MapExtractor* surfacesplitter)
     : discret_(dis),
       solver_(solver),

@@ -11,8 +11,8 @@
 
 #include "4C_post_processor_single_field_writers.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_post_common.hpp"
 
 #include <string>
@@ -371,7 +371,7 @@ void PoroFluidMultiPhaseFilter::WriteAllResults(PostField* field)
   using namespace FourC;
 
   // compute maximum number of dofs per node on poro fluid discretization
-  const Discret::Discretization& discret = *field->discretization();
+  const Core::FE::Discretization& discret = *field->discretization();
   int mynumdofpernode(-1);
   for (int inode = 0; inode < discret.NumMyRowNodes(); ++inode)
   {
@@ -420,7 +420,7 @@ void ScaTraFilter::WriteAllResults(PostField* field)
   using namespace FourC;
 
   // compute maximum number of dofs per node on scatra discretization
-  const Discret::Discretization& discret = *field->discretization();
+  const Core::FE::Discretization& discret = *field->discretization();
   int mynumdofpernode(-1);
   for (int inode = 0; inode < discret.NumMyRowNodes(); ++inode)
   {
@@ -507,7 +507,7 @@ void ScaTraFilter::WriteAllResults(PostField* field)
 void ElchFilter::WriteAllResults(PostField* field)
 {
   // extract numbers of dofs per node on scatra discretization
-  const Discret::Discretization& discret = *field->discretization();
+  const Core::FE::Discretization& discret = *field->discretization();
   std::set<int> mynumdofpernodeset;
   for (int inode = 0; inode < discret.NumMyRowNodes(); ++inode)
     mynumdofpernodeset.insert(discret.NumDof(discret.lRowNode(inode)));

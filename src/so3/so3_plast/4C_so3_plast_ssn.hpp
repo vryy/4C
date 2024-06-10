@@ -15,8 +15,8 @@
  *----------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_so3_plast_ssn_eletypes.hpp"
@@ -27,10 +27,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                          seitz 07/13 |
  *----------------------------------------------------------------------*/
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace UTILS
   {
     struct PlastSsnData;
@@ -236,7 +239,7 @@ namespace Discret
       int Evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          Discret::Discretization& discretization,  //!< pointer to discretization for de-assembly
+          Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
           Core::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           Core::LinAlg::SerialDenseMatrix&
               elemat1_epetra,  //!< (stiffness-)matrix to be filled by element.
@@ -264,7 +267,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -1138,7 +1141,7 @@ namespace Discret
           Core::FE::shape_function_deriv1<distype>(xi, set_deriv_shape_function());
       }
 
-      void get_nurbs_ele_info(Discret::Discretization* dis = nullptr);
+      void get_nurbs_ele_info(Core::FE::Discretization* dis = nullptr);
 
 
     };  // class So3Plast

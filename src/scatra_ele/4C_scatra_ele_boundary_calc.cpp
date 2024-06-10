@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_boundary_calc.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_fourieriso.hpp"
@@ -61,7 +61,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCal
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::SetupCalc(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization)
+    Core::FE::Discretization& discretization)
 {
   // get node coordinates
   Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
@@ -90,7 +90,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::SetupCalc(
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Evaluate(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -117,7 +117,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Evaluate(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_displacement_values(
-    Core::Elements::FaceElement* ele, const Discret::Discretization& discretization,
+    Core::Elements::FaceElement* ele, const Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la)
 {
   switch (ele->parent_element()->Shape())
@@ -168,7 +168,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_displac
 template <Core::FE::CellType distype, int probdim>
 template <Core::FE::CellType parentdistype>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_displacement_values(
-    Core::Elements::FaceElement* ele, const Discret::Discretization& discretization,
+    Core::Elements::FaceElement* ele, const Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la)
 {
   // get additional state vector for ALE case: grid displacement
@@ -236,7 +236,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_displac
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, ScaTra::BoundaryAction action,
+    Core::FE::Discretization& discretization, ScaTra::BoundaryAction action,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -493,7 +493,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_neumann(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1,
     const double scalar)
 {
@@ -617,7 +617,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_normal_vec
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::neumann_inflow(
     const Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs)
 {
   // get location vector associated with primary dofset
@@ -1120,7 +1120,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_coupling(
     const Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& eslavematrix, Core::LinAlg::SerialDenseMatrix& emastermatrix,
     Core::LinAlg::SerialDenseVector& eslaveresidual)
 {
@@ -1389,7 +1389,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calculate_det_f_of_p
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_coupling_od(
     const Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& eslavematrix)
 {
   // extract local nodal values on present and opposite side of scatra-scatra interface
@@ -1516,7 +1516,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_node_values(
-    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // extract nodal state variables associated with time t_{n+1} or t_{n+alpha_f}
   extract_node_values(ephinp_, discretization, la);
@@ -1526,7 +1526,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_node_va
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_node_values(
-    Core::LinAlg::Matrix<nen_, 1>& estate, const Discret::Discretization& discretization,
+    Core::LinAlg::Matrix<nen_, 1>& estate, const Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, const std::string& statename, const int& nds) const
 {
   // initialize matrix vector
@@ -1544,7 +1544,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_node_va
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_node_values(
     std::vector<Core::LinAlg::Matrix<nen_, 1>>& estate,
-    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     const std::string& statename, const int& nds) const
 {
   // extract global state vector from discretization
@@ -1624,7 +1624,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_mat_mass(
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boundary(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra, const double scalar)
 {
@@ -1743,7 +1743,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boun
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surface_permeability(
     const Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
   //////////////////////////////////////////////////////////////////////
@@ -1881,7 +1881,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_katchalsky(
     const Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
   // safety checks
@@ -2111,7 +2111,7 @@ template <Core::FE::CellType distype, int probdim>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Teuchos::RCP<const Core::Mat::Material> material,
+    Core::FE::Discretization& discretization, Teuchos::RCP<const Core::Mat::Material> material,
     Core::LinAlg::SerialDenseMatrix& elemat_epetra, Core::LinAlg::SerialDenseVector& elevec_epetra)
 {
   //------------------------------------------------------------------------
@@ -2830,7 +2830,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
     probdim>::reinit_characteristic_galerkin_boundary(Core::Elements::FaceElement*
                                                           ele,  //!< transport element
     Teuchos::ParameterList& params,                             //!< parameter list
-    Discret::Discretization& discretization,                    //!< discretization
+    Core::FE::Discretization& discretization,                   //!< discretization
     Teuchos::RCP<const Core::Mat::Material> material,           //!< material
     Core::LinAlg::SerialDenseMatrix& elemat_epetra,             //!< ele sysmat
     Core::LinAlg::SerialDenseVector& elevec_epetra              //!< ele rhs
@@ -3115,7 +3115,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_nodal_size(
     const Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseVector& nodalsize)
 {
   // integration points and weights

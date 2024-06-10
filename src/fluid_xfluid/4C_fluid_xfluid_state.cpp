@@ -11,11 +11,11 @@
 #include "4C_fluid_xfluid_state.hpp"
 
 #include "4C_cut_cutwizard.hpp"
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_xfem_condition_manager.hpp"
@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 FLD::XFluidState::CouplingState::CouplingState(
     const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
-    const Teuchos::RCP<Discret::Discretization>& slavediscret_mat,
-    const Teuchos::RCP<Discret::Discretization>& slavediscret_rhs)
+    const Teuchos::RCP<Core::FE::Discretization>& slavediscret_mat,
+    const Teuchos::RCP<Core::FE::Discretization>& slavediscret_rhs)
     : is_active_(true)
 {
   if (slavediscret_mat == Teuchos::null)
@@ -357,7 +357,7 @@ void FLD::XFluidState::zero_system_matrix_and_rhs()
  |  Set dirichlet- and velocity/pressure-map extractor      kruse 08/14 |
  *----------------------------------------------------------------------*/
 void FLD::XFluidState::SetupMapExtractors(
-    const Teuchos::RCP<Discret::Discretization>& xfluiddiscret, const double& time)
+    const Teuchos::RCP<Core::FE::Discretization>& xfluiddiscret, const double& time)
 {
   // create dirichlet map extractor
   Teuchos::ParameterList eleparams;

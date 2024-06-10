@@ -15,7 +15,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_shapevalues_hdg.hpp"
+#include "4C_fem_general_utils_shapevalues_hdg.hpp"
 #include "4C_fluid_ele_hdg.hpp"
 #include "4C_fluid_ele_interface.hpp"
 #include "4C_inpar_fluid.hpp"
@@ -48,7 +48,7 @@ namespace Discret
 
 
       int integrate_shape_function(Discret::ELEMENTS::Fluid* ele,
-          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           const Core::FE::GaussIntegration& intpoints) override
       {
@@ -57,7 +57,7 @@ namespace Discret
       }
 
       int integrate_shape_function_xfem(Discret::ELEMENTS::Fluid* ele,
-          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           const std::vector<Core::FE::GaussIntegration>& intpoints,
           const Core::Geo::Cut::plain_volumecell_set& cells) override
@@ -72,7 +72,7 @@ namespace Discret
         Interface function for supporting methods of the element
        */
       int EvaluateService(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -82,7 +82,7 @@ namespace Discret
         \brief calculate dissipation of various terms (evaluation of turbulence models)
       */
       virtual int calc_dissipation(Fluid* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat)
       {
         FOUR_C_THROW("Not implemented!");
@@ -94,11 +94,11 @@ namespace Discret
           general function to compute the error (analytical solution) for particular problem type
        */
       virtual int compute_error(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec);
 
       int compute_error(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec,
           const Core::FE::GaussIntegration&) override
       {
@@ -107,30 +107,30 @@ namespace Discret
 
       /// projection of function field
       virtual int ProjectField(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2);
 
       /*! \brief Interpolates an HDG solution to the element nodes for output
        */
       virtual int interpolate_solution_to_nodes(Discret::ELEMENTS::Fluid* ele,
-          Discret::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1);
+          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1);
 
       /*! \brief Interpolates an HDG solution for homogeneous isotropic turbulence postprocessing
        */
       virtual int interpolate_solution_for_hit(Discret::ELEMENTS::Fluid* ele,
-          Discret::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1);
+          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1);
 
       /*! \brief Project force from equidistant points on interior node dof vector
        */
       virtual int project_force_on_dof_vec_for_hit(Discret::ELEMENTS::Fluid* ele,
-          Discret::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2);
 
       /*! \brief Project initial field for hit
        */
       virtual int project_initial_field_for_hit(Discret::ELEMENTS::Fluid* ele,
-          Discret::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3);
       /*!
       \brief Initialize the shape functions and solver to the given element (degree is runtime
@@ -142,7 +142,7 @@ namespace Discret
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      int Evaluate(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+      int Evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -151,7 +151,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       /// Evaluate the element at specified gauss points
-      int Evaluate(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+      int Evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -161,7 +161,7 @@ namespace Discret
           const Core::FE::GaussIntegration& intpoints, bool offdiag = false) override;
 
       int compute_error_interface(Discret::ELEMENTS::Fluid* ele,     ///< fluid element
-          Discret::Discretization& dis,                              ///< background discretization
+          Core::FE::Discretization& dis,                             ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           Teuchos::RCP<Core::Mat::Material>& mat,                    ///< material
@@ -179,7 +179,7 @@ namespace Discret
       }
 
       /// Evaluate the XFEM cut element
-      int EvaluateXFEM(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+      int EvaluateXFEM(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -195,7 +195,7 @@ namespace Discret
 
 
       void element_xfem_interface_hybrid_lm(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
-          Discret::Discretization& dis,                              ///< background discretization
+          Core::FE::Discretization& dis,                             ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           const std::vector<Core::FE::GaussIntegration>& intpoints,  ///< element gauss points
@@ -222,7 +222,7 @@ namespace Discret
       }
 
       void element_xfem_interface_nit(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
-          Discret::Discretization& dis,                               ///< background discretization
+          Core::FE::Discretization& dis,                              ///< background discretization
           const std::vector<int>& lm,                                 ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,   ///< XFEM condition manager
           const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
@@ -246,7 +246,7 @@ namespace Discret
         return;
       }
 
-      void calculate_continuity_xfem(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& dis,
+      void calculate_continuity_xfem(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& dis,
           const std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra,
           const Core::FE::GaussIntegration& intpoints) override
       {
@@ -254,7 +254,7 @@ namespace Discret
         return;
       }
 
-      void calculate_continuity_xfem(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& dis,
+      void calculate_continuity_xfem(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& dis,
           const std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra) override
       {
         FOUR_C_THROW("Not implemented!");
@@ -410,12 +410,12 @@ namespace Discret
 
       /// reads from global vectors
       void read_global_vectors(const Core::Elements::Element& ele,
-          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::FE::Discretization& discretization, const std::vector<int>& lm,
           const bool updateLocally);
 
       // writes the updated solution vector to the secondary vector stored in the discretization
       void update_secondary_solution(const Core::Elements::Element& ele,
-          Discret::Discretization& discretization, const Core::LinAlg::SerialDenseVector& updateG,
+          Core::FE::Discretization& discretization, const Core::LinAlg::SerialDenseVector& updateG,
           const Core::LinAlg::SerialDenseVector& updateUp);
 
       void evaluate_velocity(const int startfunc, const Inpar::FLUID::InitialField initfield,

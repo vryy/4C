@@ -23,10 +23,13 @@ Pack, Unpack, NumDofPerNode etc.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class FluidPoroEleType : public FluidType
@@ -48,7 +51,7 @@ namespace Discret
           override;
 
       //! pre-evaluation
-      void pre_evaluate(Discret::Discretization& dis, Teuchos::ParameterList& p,
+      void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
           Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
           Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
           Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -199,7 +202,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -327,7 +330,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -369,7 +372,7 @@ namespace Discret
       \param condstring (in) : Name of condition to be evaluated
       \param params (in)     : List of parameters for use at element level
       */
-      void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
+      void LocationVector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
           const std::string& condstring, Teuchos::ParameterList& params) const override;
 
      private:

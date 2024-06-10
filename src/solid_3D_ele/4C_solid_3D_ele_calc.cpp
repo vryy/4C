@@ -8,8 +8,8 @@ formulation
 
 #include "4C_solid_3D_ele_calc.hpp"
 
-#include "4C_discretization_fem_general_cell_type.hpp"
-#include "4C_discretization_fem_general_cell_type_traits.hpp"
+#include "4C_fem_general_cell_type.hpp"
+#include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based.hpp"
@@ -98,7 +98,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Unpack(
 template <Core::FE::CellType celltype, typename ElementFormulation>
 void Discret::ELEMENTS::SolidEleCalc<celltype,
     ElementFormulation>::evaluate_nonlinear_force_stiffness_mass(const Core::Elements::Element& ele,
-    Mat::So3Material& solid_material, const Discret::Discretization& discretization,
+    Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector* force_vector,
     Core::LinAlg::SerialDenseMatrix* stiffness_matrix, Core::LinAlg::SerialDenseMatrix* mass_matrix)
@@ -184,7 +184,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype,
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
 void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Recover(
-    const Core::Elements::Element& ele, const Discret::Discretization& discretization,
+    const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
 }
@@ -192,7 +192,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Recover(
 template <Core::FE::CellType celltype, typename ElementFormulation>
 void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Update(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
-    const Discret::Discretization& discretization, const std::vector<int>& lm,
+    const Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
   const ElementNodes<celltype> nodal_coordinates =
@@ -223,7 +223,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Update(
 template <Core::FE::CellType celltype, typename ElementFormulation>
 double Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::calculate_internal_energy(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
-    const Discret::Discretization& discretization, const std::vector<int>& lm,
+    const Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
   const ElementNodes<celltype> nodal_coordinates =
@@ -259,7 +259,7 @@ double Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::calculate_
 template <Core::FE::CellType celltype, typename ElementFormulation>
 void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::CalculateStress(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material, const StressIO& stressIO,
-    const StrainIO& strainIO, const Discret::Discretization& discretization,
+    const StrainIO& strainIO, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;
@@ -304,7 +304,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::CalculateStr
 template <Core::FE::CellType celltype, typename ElementFormulation>
 void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::UpdatePrestress(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
-    const Discret::Discretization& discretization, const std::vector<int>& lm,
+    const Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
   const ElementNodes<celltype> nodal_coordinates =

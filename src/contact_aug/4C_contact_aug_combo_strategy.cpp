@@ -122,7 +122,7 @@ void CONTACT::Aug::ComboStrategy::create_strategy_linear_solvers(
   if (not cparams_interface)
     FOUR_C_THROW("You have to provide a pointer to the CONTACT::ParamsInterface!");
 
-  Discret::Discretization* str_discret = cparams_interface->Get<Discret::Discretization>();
+  Core::FE::Discretization* str_discret = cparams_interface->Get<Core::FE::Discretization>();
 
   strat_lin_solvers.push_back(STR::SOLVER::Factory::build_meshtying_contact_lin_solver(
       *str_discret, strategy.Type(), strategy.SystemType(), ls_id));

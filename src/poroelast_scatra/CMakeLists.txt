@@ -8,7 +8,6 @@ set(_dependencies
     fluid_ele
     global_data
     inpar
-    lib
     mat
     poroelast
     scatra

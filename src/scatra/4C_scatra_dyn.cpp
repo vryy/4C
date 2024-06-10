@@ -11,8 +11,8 @@
 #include "4C_scatra_dyn.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_scatra_algorithm.hpp"
@@ -149,7 +149,7 @@ void scatra_dyn(int restart)
       if (scatradis->GetCondition("ScatraHeteroReactionSlave") != nullptr)
       {
         // create vector of discr.
-        std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+        std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
         dis.push_back(scatradis);
 
         Core::Rebalance::RebalanceDiscretizationsByBinning(dis, false);
@@ -278,7 +278,7 @@ void scatra_dyn(int restart)
       if (fieldcoupling == Inpar::ScaTra::coupling_volmortar)
       {
         // create vector of discr.
-        std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+        std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
         dis.push_back(fluiddis);
         dis.push_back(scatradis);
 

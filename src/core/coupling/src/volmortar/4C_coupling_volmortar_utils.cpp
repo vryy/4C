@@ -10,8 +10,8 @@
 #include "4C_coupling_volmortar_utils.hpp"
 
 #include "4C_coupling_volmortar.hpp"
-#include "4C_discretization_fem_general_element_center.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element_center.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 void Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
     const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele1,
-    const std::vector<int>& ids_2, Teuchos::RCP<Discret::Discretization> dis1,
-    Teuchos::RCP<Discret::Discretization> dis2)
+    const std::vector<int>& ids_2, Teuchos::RCP<Core::FE::Discretization> dis1,
+    Teuchos::RCP<Core::FE::Discretization> dis2)
 {
   if (ele1 == nullptr) FOUR_C_THROW("ERROR: Got nullptr pointer for AssignMaterial for element!");
 
@@ -63,8 +63,8 @@ void Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
  *----------------------------------------------------------------------*/
 void Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
     const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele2,
-    const std::vector<int>& ids_1, Teuchos::RCP<Discret::Discretization> dis1,
-    Teuchos::RCP<Discret::Discretization> dis2)
+    const std::vector<int>& ids_1, Teuchos::RCP<Core::FE::Discretization> dis1,
+    Teuchos::RCP<Core::FE::Discretization> dis2)
 {
   if (ele2 == nullptr) FOUR_C_THROW("ERROR: Got nullptr pointer for AssignMaterial for element!");
 

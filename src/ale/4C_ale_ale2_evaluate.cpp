@@ -10,10 +10,10 @@
 
 /*----------------------------------------------------------------------------*/
 #include "4C_ale_ale2.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_mat_elasthyper.hpp"
 #include "4C_mat_stvenantkirchhoff.hpp"
@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -171,7 +171,7 @@ int Discret::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Ale2::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -756,7 +756,7 @@ void Discret::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::static_ke_laplace(Discret::Discretization& dis, std::vector<int>& lm,
+void Discret::ELEMENTS::Ale2::static_ke_laplace(Core::FE::Discretization& dis, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix* sys_mat, Core::LinAlg::SerialDenseVector& residual,
     std::vector<double>& displacements, const bool spatialconfiguration)
 {

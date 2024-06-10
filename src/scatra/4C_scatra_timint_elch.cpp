@@ -37,7 +37,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ScaTra::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<Discret::Discretization> dis,
+ScaTra::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<Core::FE::Discretization> dis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -3164,7 +3164,7 @@ void ScaTra::ScalarHandlerElch::Setup(const ScaTraTimIntImpl* const scatratimint
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 int ScaTra::ScalarHandlerElch::NumScalInCondition(const Core::Conditions::Condition& condition,
-    const Teuchos::RCP<const Discret::Discretization>& discret) const
+    const Teuchos::RCP<const Core::FE::Discretization>& discret) const
 {
   check_is_setup();
   // for now only equal dof numbers are supported

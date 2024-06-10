@@ -12,8 +12,8 @@
 #include "4C_contact_coupling3d.hpp"
 #include "4C_contact_node.hpp"
 #include "4C_contact_paramsinterface.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -2102,7 +2102,7 @@ void CONTACT::Aug::Interface::split_into_far_and_close_sets(std::vector<int>& cl
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> CONTACT::Aug::Interface::collect_row_node_owners(
-    const Discret::Discretization& structure_dis) const
+    const Core::FE::Discretization& structure_dis) const
 {
   Teuchos::RCP<Epetra_Map> smnodemap_ptr = Core::LinAlg::MergeMap(snoderowmap_, mnoderowmap_);
 

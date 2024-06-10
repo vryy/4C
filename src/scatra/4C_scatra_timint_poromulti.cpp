@@ -9,8 +9,8 @@
 
 #include "4C_scatra_timint_poromulti.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_poromultiphase_scatra_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                             vuong  08/16 |
  *----------------------------------------------------------------------*/
-ScaTra::ScaTraTimIntPoroMulti::ScaTraTimIntPoroMulti(Teuchos::RCP<Discret::Discretization> dis,
+ScaTra::ScaTraTimIntPoroMulti::ScaTraTimIntPoroMulti(Teuchos::RCP<Core::FE::Discretization> dis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -243,7 +243,7 @@ void ScaTra::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
  |  Constructor (public)                                    vuong  08/16 |
  *----------------------------------------------------------------------*/
 ScaTra::ScaTraTimIntPoroMultiOST::ScaTraTimIntPoroMultiOST(
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -287,7 +287,7 @@ void ScaTra::ScaTraTimIntPoroMultiOST::Update()
  |  Constructor (public)                                    vuong  08/16 |
  *----------------------------------------------------------------------*/
 ScaTra::ScaTraTimIntPoroMultiBDF2::ScaTraTimIntPoroMultiBDF2(
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -332,7 +332,7 @@ void ScaTra::ScaTraTimIntPoroMultiBDF2::Update()
  |  Constructor (public)                                    vuong  08/16 |
  *----------------------------------------------------------------------*/
 ScaTra::ScaTraTimIntPoroMultiGenAlpha::ScaTraTimIntPoroMultiGenAlpha(
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -376,7 +376,7 @@ void ScaTra::ScaTraTimIntPoroMultiGenAlpha::Update()
  |  Constructor (public)                                    vuong  08/16 |
  *----------------------------------------------------------------------*/
 ScaTra::ScaTraTimIntPoroMultiStationary::ScaTraTimIntPoroMultiStationary(
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,

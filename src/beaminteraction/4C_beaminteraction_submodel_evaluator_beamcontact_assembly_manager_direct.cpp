@@ -15,7 +15,7 @@ be directly assembled into the global matrices.
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_contact_pair.hpp"
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
@@ -38,7 +38,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::evaluate_force_stiff(
-    Teuchos::RCP<Discret::Discretization> discret,
+    Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
     Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat)
 {

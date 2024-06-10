@@ -12,11 +12,11 @@
 
 #include "4C_cut_boundarycell.hpp"
 #include "4C_cut_volumecell.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_xfem_condition_manager.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -1048,7 +1048,7 @@ double XFEM::UTILS::Evaluate_Full_Traction(const double &intraction, const doubl
 }
 
 void XFEM::UTILS::EvaluteStateatGP(const Core::Elements::Element *sele,
-    const Core::LinAlg::Matrix<3, 1> &selexsi, const Discret::Discretization &discret,
+    const Core::LinAlg::Matrix<3, 1> &selexsi, const Core::FE::Discretization &discret,
     const std::string &state, Core::LinAlg::Matrix<3, 1> &vel_s)
 {
   vel_s.Clear();

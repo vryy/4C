@@ -8,10 +8,10 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_gridgenerator.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_parameter_base.hpp"
@@ -50,14 +50,14 @@ namespace
       CreateMaterialInGlobalProblem();
       comm_ = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
       Core::IO::cout.setup(false, false, false, Core::IO::standard, comm_, 0, 0, "dummyFilePrefix");
-      testdis_ = Teuchos::rcp(new Discret::Discretization("dummy", comm_, 3));
+      testdis_ = Teuchos::rcp(new Core::FE::Discretization("dummy", comm_, 3));
     }
 
     void TearDown() override { Core::IO::cout.close(); }
 
    public:
     Core::IO::GridGenerator::RectangularCuboidInputs inputData_{};
-    Teuchos::RCP<Discret::Discretization> testdis_;
+    Teuchos::RCP<Core::FE::Discretization> testdis_;
     Teuchos::RCP<Epetra_Comm> comm_;
   };
 

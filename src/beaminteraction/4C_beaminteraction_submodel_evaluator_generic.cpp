@@ -43,8 +43,8 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Generic()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
-    Teuchos::RCP<Discret::Discretization> const& ia_discret,
-    Teuchos::RCP<Discret::Discretization> const& bindis,
+    Teuchos::RCP<Core::FE::Discretization> const& ia_discret,
+    Teuchos::RCP<Core::FE::Discretization> const& bindis,
     Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> const& gstate,
     Teuchos::RCP<STR::TimeInt::BaseDataIO> const& gio_ptr,
     Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
@@ -84,7 +84,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::check_init() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Discret::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Discret()
+Core::FE::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Discret()
 {
   check_init();
   return *discret_ptr_;
@@ -92,7 +92,7 @@ Discret::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Discret()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::DiscretPtr()
+Teuchos::RCP<Core::FE::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::DiscretPtr()
 {
   check_init();
   return discret_ptr_;
@@ -100,7 +100,7 @@ Teuchos::RCP<Discret::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Gener
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Discret::Discretization>
+Teuchos::RCP<const Core::FE::Discretization>
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::DiscretPtr() const
 {
   check_init();
@@ -109,7 +109,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::DiscretPtr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Discret::Discretization const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Discret() const
+Core::FE::Discretization const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Discret() const
 {
   check_init();
   return *discret_ptr_;
@@ -117,7 +117,7 @@ Discret::Discretization const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Disc
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Discret::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscret()
+Core::FE::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscret()
 {
   check_init();
   return *bindis_ptr_;
@@ -125,7 +125,7 @@ Discret::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscret
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr()
+Teuchos::RCP<Core::FE::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr()
 {
   check_init();
   return bindis_ptr_;
@@ -133,7 +133,7 @@ Teuchos::RCP<Discret::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Gener
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Discret::Discretization>
+Teuchos::RCP<const Core::FE::Discretization>
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr() const
 {
   check_init();
@@ -142,7 +142,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Discret::Discretization const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscret() const
+Core::FE::Discretization const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscret() const
 {
   check_init();
   return *bindis_ptr_;

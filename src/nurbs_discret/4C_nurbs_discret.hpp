@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_discret.hpp"
-#include "4C_lib_utils_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_discretization_utils.hpp"
 #include "4C_nurbs_discret_control_point.hpp"
 #include "4C_nurbs_discret_knotvector.hpp"
 
@@ -42,7 +42,7 @@ namespace Discret
     derived from the node class and are hence managed by the original discretisation
 
     */
-    class NurbsDiscretization : public Discret::Discretization
+    class NurbsDiscretization : public Core::FE::Discretization
     {
      public:
       /*!
@@ -162,7 +162,7 @@ namespace Discret
 
   namespace UTILS
   {
-    class DbcNurbs : public Discret::UTILS::Dbc
+    class DbcNurbs : public Core::FE::UTILS::Dbc
     {
       using Dbc::do_dirichlet_condition;
 
@@ -172,12 +172,12 @@ namespace Discret
 
 
      protected:
-      void evaluate(const Teuchos::ParameterList& params, const Discret::Discretization& discret,
+      void evaluate(const Teuchos::ParameterList& params, const Core::FE::Discretization& discret,
           double time, const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
           Teuchos::RCP<std::set<int>>* dbcgids) const override;
 
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
+          const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
           double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const override;

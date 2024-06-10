@@ -11,7 +11,7 @@
 
 #include "4C_so3_scatra.hpp"
 
-#include "4C_discretization_fem_general_element_integration_select.hpp"
+#include "4C_fem_general_element_integration_select.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ssi.hpp"
 #include "4C_io_linedefinition.hpp"

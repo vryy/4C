@@ -16,7 +16,7 @@ interface
 #include "4C_contact_interface.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_io.hpp"
@@ -58,7 +58,7 @@ CONTACT::LagrangeStrategyPoro::LagrangeStrategyPoro(
 void CONTACT::LagrangeStrategyPoro::DoReadRestart(Core::IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
-  Teuchos::RCP<Discret::Discretization> discret = Global::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> discret = Global::Problem::Instance()->GetDis("structure");
   if (discret == Teuchos::null) FOUR_C_THROW("didn't get my discretization");
 
   Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*discret->DofColMap(), true));
@@ -1352,7 +1352,7 @@ void CONTACT::LagrangeStrategyPoro::set_state(
       for (int i = 0; i < (int)interface_.size(); ++i)
       {
         // interface_[i]->set_state(statename, vec);
-        Discret::Discretization& idiscret_ = interface_[i]->Discret();
+        Core::FE::Discretization& idiscret_ = interface_[i]->Discret();
 
         switch (statetype)
         {
@@ -1474,7 +1474,7 @@ void CONTACT::LagrangeStrategyPoro::set_state(
  | Assign generell poro contact state!                          ager 10/14|
  *------------------------------------------------------------------------*/
 void CONTACT::LagrangeStrategyPoro::SetParentState(const std::string& statename,
-    const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Discret::Discretization> dis)
+    const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Core::FE::Discretization> dis)
 {
   if (statename == "displacement")
   {
@@ -1484,7 +1484,7 @@ void CONTACT::LagrangeStrategyPoro::SetParentState(const std::string& statename,
     // set state on interfaces
     for (int i = 0; i < (int)interface_.size(); ++i)
     {
-      Discret::Discretization& idiscret_ = interface_[i]->Discret();
+      Core::FE::Discretization& idiscret_ = interface_[i]->Discret();
 
       if (poroslave_)
       {

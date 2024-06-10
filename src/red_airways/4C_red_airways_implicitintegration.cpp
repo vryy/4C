@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------*/
 #include "4C_red_airways_implicitintegration.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_mapextractor.hpp"
@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                    ismail 01/10|
  *----------------------------------------------------------------------*/
 Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
-    Teuchos::RCP<Discret::Discretization> actdis, std::unique_ptr<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::FE::Discretization> actdis, std::unique_ptr<Core::LinAlg::Solver> solver,
     Teuchos::ParameterList& params,
     Core::IO::DiscretizationWriter& output)
     :  // Call constructor for "nontrivial" objects
@@ -541,7 +541,7 @@ void Airway::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
  |                                                                roth 02/2016 |
  *-----------------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
-    Teuchos::RCP<Discret::Discretization const> search_discret, std::set<int>* elecolset,
+    Teuchos::RCP<Core::FE::Discretization const> search_discret, std::set<int>* elecolset,
     std::set<int>* nodecolset, Teuchos::RCP<Epetra_Vector> airway_acinus_dep)
 {
   // Loop over all airways contained on this proc

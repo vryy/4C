@@ -18,7 +18,7 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter_mortar.hpp"
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
@@ -32,10 +32,10 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 10/14 |
  *---------------------------------------------------------------------*/
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -74,12 +74,12 @@ namespace Adapter
     \brief initialize routine
 
     */
-    virtual void Setup(Teuchos::RCP<Discret::Discretization> masterdis,
-        Teuchos::RCP<Discret::Discretization> slavedis, std::vector<int> coupleddof,
+    virtual void Setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
+        Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond);
 
-    virtual void SetupSpringDashpot(Teuchos::RCP<Discret::Discretization> masterdis,
-        Teuchos::RCP<Discret::Discretization> slavedis,
+    virtual void SetupSpringDashpot(Teuchos::RCP<Core::FE::Discretization> masterdis,
+        Teuchos::RCP<Core::FE::Discretization> slavedis,
         Teuchos::RCP<Core::Conditions::Condition> spring, const int coupling_id,
         const Epetra_Comm& comm);
 
@@ -144,8 +144,8 @@ namespace Adapter
     \brief Read Mortar Condition
 
     */
-    virtual void read_mortar_condition(Teuchos::RCP<Discret::Discretization> masterdis,
-        Teuchos::RCP<Discret::Discretization> slavedis, std::vector<int> coupleddof,
+    virtual void read_mortar_condition(Teuchos::RCP<Core::FE::Discretization> masterdis,
+        Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
         std::map<int, Core::Nodes::Node*>& mastergnodes,
         std::map<int, Core::Nodes::Node*>& slavegnodes,
@@ -156,8 +156,8 @@ namespace Adapter
     \brief Add Mortar Nodes
 
     */
-    virtual void add_mortar_nodes(Teuchos::RCP<Discret::Discretization> masterdis,
-        Teuchos::RCP<Discret::Discretization> slavedis, std::vector<int> coupleddof,
+    virtual void add_mortar_nodes(Teuchos::RCP<Core::FE::Discretization> masterdis,
+        Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         Teuchos::ParameterList& input, std::map<int, Core::Nodes::Node*>& mastergnodes,
         std::map<int, Core::Nodes::Node*>& slavegnodes,
         std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
@@ -168,8 +168,8 @@ namespace Adapter
     \brief Add Mortar Elements
 
     */
-    virtual void add_mortar_elements(Teuchos::RCP<Discret::Discretization> masterdis,
-        Teuchos::RCP<Discret::Discretization> slavedis, Teuchos::ParameterList& input,
+    virtual void add_mortar_elements(Teuchos::RCP<Core::FE::Discretization> masterdis,
+        Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
         std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
         std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements,
         Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof);
@@ -179,7 +179,7 @@ namespace Adapter
            store maps as internal variable and do parallel redist.
 
     */
-    virtual void complete_interface(Teuchos::RCP<Discret::Discretization> masterdis,
+    virtual void complete_interface(Teuchos::RCP<Core::FE::Discretization> masterdis,
         Teuchos::RCP<CONTACT::Interface>& interface);
 
     /*!
@@ -192,8 +192,8 @@ namespace Adapter
     \brief create strategy object if required
 
     */
-    virtual void create_strategy(Teuchos::RCP<Discret::Discretization> masterdis,
-        Teuchos::RCP<Discret::Discretization> slavedis, Teuchos::ParameterList& input,
+    virtual void create_strategy(Teuchos::RCP<Core::FE::Discretization> masterdis,
+        Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
         int numcoupleddof);
 
     /*!

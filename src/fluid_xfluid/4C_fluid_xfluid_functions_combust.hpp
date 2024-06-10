@@ -22,10 +22,13 @@ namespace Core::UTILS
   class FunctionManager;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   // namespace UTILS
 
   namespace UTILS

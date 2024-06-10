@@ -12,8 +12,8 @@
 #include "4C_fbi_fluid_assembly_strategy.hpp"
 
 #include "4C_beam3_base.hpp"
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -25,8 +25,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 
-void FBI::UTILS::FBIAssemblyStrategy::Assemble(const Discret::Discretization& discretization1,
-    const Discret::Discretization& discretization2, std::vector<int> const& elegid,
+void FBI::UTILS::FBIAssemblyStrategy::Assemble(const Core::FE::Discretization& discretization1,
+    const Core::FE::Discretization& discretization2, std::vector<int> const& elegid,
     std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
     std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
     Teuchos::RCP<Epetra_FEVector>& f1, Teuchos::RCP<Epetra_FEVector>& f2,

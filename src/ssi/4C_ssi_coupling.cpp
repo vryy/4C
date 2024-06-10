@@ -14,10 +14,10 @@
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
 #include "4C_coupling_volmortar_utils.hpp"
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_dofset_definedmapping_wrapper.hpp"
-#include "4C_discretization_dofset_gidbased_wrapper.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_dofset_definedmapping_wrapper.hpp"
+#include "4C_fem_dofset_gidbased_wrapper.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 
@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::Init(const int ndim,
-    Teuchos::RCP<Discret::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
+    Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);
 
@@ -101,8 +101,8 @@ void SSI::SSICouplingMatchingVolume::Setup()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::assign_material_pointers(
-    Teuchos::RCP<Discret::Discretization> structdis,
-    Teuchos::RCP<Discret::Discretization> scatradis)
+    Teuchos::RCP<Core::FE::Discretization> structdis,
+    Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
   const int numelements = scatradis->NumMyColElements();
 
@@ -121,8 +121,9 @@ void SSI::SSICouplingMatchingVolume::assign_material_pointers(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolume::set_mechanical_stress_state(Discret::Discretization& scatradis,
-    Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds)
+void SSI::SSICouplingMatchingVolume::set_mechanical_stress_state(
+    Core::FE::Discretization& scatradis, Teuchos::RCP<const Epetra_Vector> stress_state,
+    unsigned nds)
 {
   scatradis.set_state(nds, "mechanicalStressState", stress_state);
 }
@@ -151,7 +152,7 @@ void SSI::SSICouplingMatchingVolume::set_velocity_fields(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::SetScalarField(
-    Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+    Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
   dis.set_state(nds, "scalarfield", phi);
 }
@@ -159,7 +160,7 @@ void SSI::SSICouplingMatchingVolume::SetScalarField(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::SetScalarFieldMicro(
-    Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+    Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
   dis.set_state(nds, "MicroCon", phi);
 }
@@ -167,7 +168,7 @@ void SSI::SSICouplingMatchingVolume::SetScalarFieldMicro(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::SetTemperatureField(
-    Discret::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp)
+    Core::FE::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp)
 {
   structdis.set_state(2, "tempfield", temp);
 }
@@ -175,7 +176,7 @@ void SSI::SSICouplingMatchingVolume::SetTemperatureField(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::SetTemperatureField(
-    Discret::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp)
+    Core::FE::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp)
 {
   structdis.set_state(2, "tempfield", temp);
 }
@@ -183,7 +184,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetTemperatureField(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
-    Teuchos::RCP<Discret::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
+    Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);
 
@@ -260,8 +261,8 @@ void SSI::SSICouplingNonMatchingBoundary::Setup()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::assign_material_pointers(
-    Teuchos::RCP<Discret::Discretization> structdis,
-    Teuchos::RCP<Discret::Discretization> scatradis)
+    Teuchos::RCP<Core::FE::Discretization> structdis,
+    Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
   // nothing to do in this case, since
   // transferring scalar state to structure discretization not implemented for
@@ -294,7 +295,7 @@ void SSI::SSICouplingNonMatchingBoundary::set_velocity_fields(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::SetScalarField(
-    Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+    Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
   FOUR_C_THROW(
       "transferring scalar state to structure discretization not implemented for "
@@ -304,7 +305,7 @@ void SSI::SSICouplingNonMatchingBoundary::SetScalarField(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::SetScalarFieldMicro(
-    Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+    Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
   FOUR_C_THROW("transferring micro scalar state to structure discretization not implemented.");
 }
@@ -312,7 +313,7 @@ void SSI::SSICouplingNonMatchingBoundary::SetScalarFieldMicro(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
-    Teuchos::RCP<Discret::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
+    Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);
 
@@ -380,8 +381,8 @@ void SSI::SSICouplingNonMatchingVolume::Setup()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::assign_material_pointers(
-    Teuchos::RCP<Discret::Discretization> structdis,
-    Teuchos::RCP<Discret::Discretization> scatradis)
+    Teuchos::RCP<Core::FE::Discretization> structdis,
+    Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
   volcoupl_structurescatra_->AssignMaterials(
       structdis, scatradis, Global::Problem::Instance()->VolmortarParams());
@@ -412,7 +413,7 @@ void SSI::SSICouplingNonMatchingVolume::set_velocity_fields(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::SetScalarField(
-    Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+    Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
   dis.set_state(nds, "scalarfield", volcoupl_structurescatra_->apply_vector_mapping12(phi));
 }
@@ -420,7 +421,7 @@ void SSI::SSICouplingNonMatchingVolume::SetScalarField(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::SetScalarFieldMicro(
-    Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+    Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
   FOUR_C_THROW("transferring micro scalar state to structure discretization not implemented.");
 }
@@ -428,7 +429,7 @@ void SSI::SSICouplingNonMatchingVolume::SetScalarFieldMicro(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
-    Teuchos::RCP<Discret::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
+    Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);
 
@@ -579,8 +580,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Setup()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::assign_material_pointers(
-    Teuchos::RCP<Discret::Discretization> structdis,
-    Teuchos::RCP<Discret::Discretization> scatradis)
+    Teuchos::RCP<Core::FE::Discretization> structdis,
+    Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
 }
 
@@ -608,7 +609,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::set_velocity_fields(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::SetScalarField(
-    Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+    Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
   dis.set_state(nds, "scalarfield", phi);
 }
@@ -616,7 +617,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetScalarField(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::SetScalarFieldMicro(
-    Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+    Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
   FOUR_C_THROW("transferring micro scalar state to structure discretization not implemented.");
 }

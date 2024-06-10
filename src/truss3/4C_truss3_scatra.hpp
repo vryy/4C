@@ -90,7 +90,7 @@ namespace Discret
 
      protected:
       void extract_elemental_variables(LocationArray& la,
-          const Discret::Discretization& discretization, const Teuchos::ParameterList& params,
+          const Core::FE::Discretization& discretization, const Teuchos::ParameterList& params,
           std::map<std::string, std::vector<double>>& ele_state) override;
 
       void energy(const std::map<std::string, std::vector<double>>& ele_state,

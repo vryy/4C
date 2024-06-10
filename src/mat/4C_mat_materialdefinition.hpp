@@ -24,10 +24,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Input
 {
@@ -54,12 +54,12 @@ namespace Mat
   /// section that describes digestible materials, (b) read a DAT file and create
   /// Mat::PAR::Material objects for each line in this section and (c) write the DAT
   /// file section filled with all corresponding materials from a given
-  /// Discret::Discretization.
+  /// Core::FE::Discretization.
   ///
   /// So this is quite sophisticated internal stuff here. If you want to
   /// introduce a new material to 4C, all you have to do is add an
   /// appropriate definition in ValidMaterials(). This will take care of the
-  /// reading part and you will get your Discret::Discretization filled with proper
+  /// reading part and you will get your Core::FE::Discretization filled with proper
   /// Discret::Material objects.
   ///
   /// \author bborn
@@ -68,7 +68,7 @@ namespace Mat
   {
    public:
     /// construction of a material definition
-    MaterialDefinition(std::string materialname,  ///< name of materials in Discret::Discretization
+    MaterialDefinition(std::string materialname,  ///< name of materials in Core::FE::Discretization
         std::string description,                  ///< description of material type
         Core::Materials::MaterialType mattype     ///< type of materials to be build
     );
@@ -85,7 +85,7 @@ namespace Mat
 
     /// print my DAT file section and possible materials from the discretization
     std::ostream& Print(std::ostream& stream,  ///< the output stream
-        const Discret::Discretization* dis = nullptr);
+        const Core::FE::Discretization* dis = nullptr);
 
     /// my material name
     std::string Name() const { return materialname_; }

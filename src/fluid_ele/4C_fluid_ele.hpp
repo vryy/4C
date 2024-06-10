@@ -22,8 +22,8 @@ of errors, turbulence statistics etc.).
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 #include <Teuchos_RCP.hpp>
@@ -35,10 +35,14 @@ namespace FLD
 {
   class TDSEleData;
 }
-namespace Discret
+
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class FluidEleParameter;
@@ -73,7 +77,7 @@ namespace Discret
           override;
 
       /// pre-evaluation
-      void pre_evaluate(Discret::Discretization& dis, Teuchos::ParameterList& p,
+      void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
           Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
           Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
           Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -294,7 +298,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -313,7 +317,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -600,7 +604,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -622,7 +626,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -670,7 +674,7 @@ namespace Discret
       \param condstring (in) : Name of condition to be evaluated
       \param params (in)     : List of parameters for use at element level
       */
-      void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
+      void LocationVector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
           const std::string& condstring, Teuchos::ParameterList& params) const override;
 
      protected:
@@ -730,7 +734,7 @@ namespace Discret
       }
 
       /// pre-evaluation
-      void pre_evaluate(Discret::Discretization& dis, Teuchos::ParameterList& p,
+      void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
           Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
           Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
           Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -880,7 +884,7 @@ namespace Discret
       \note All dofs shared by master and slave element are contained only once. Dofs from interface
       nodes are also included.
       */
-      void PatchLocationVector(Discret::Discretization& discretization,  ///< discretization
+      void PatchLocationVector(Core::FE::Discretization& discretization,  ///< discretization
           std::vector<int>& nds_master,        ///< nodal dofset w.r.t master parent element
           std::vector<int>& nds_slave,         ///< nodal dofset w.r.t slave parent element
           std::vector<int>& patchlm,           ///< local map for gdof ids for patch of elements
@@ -901,7 +905,7 @@ namespace Discret
       \note All dofs shared by master and slave element are contained only once. Dofs from interface
       nodes are also included.
       */
-      void PatchLocationVector(Discret::Discretization& discretization,  ///< discretization
+      void PatchLocationVector(Core::FE::Discretization& discretization,  ///< discretization
           std::vector<int>& nds_master,        ///< nodal dofset w.r.t master parent element
           std::vector<int>& nds_slave,         ///< nodal dofset w.r.t slave parent element
           std::vector<int>& patchlm,           ///< local map for gdof ids for patch of elements
@@ -955,7 +959,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -977,7 +981,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;

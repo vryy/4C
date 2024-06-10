@@ -15,7 +15,7 @@ functions for the traction.
 #include "4C_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"
 #include "4C_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_geometry_pair_element.hpp"
 #include "4C_geometry_pair_element_evaluation_functions.hpp"
 #include "4C_geometry_pair_line_to_volume.hpp"
@@ -43,7 +43,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
-    mortar>::evaluate_and_assemble_mortar_contributions(const Discret::Discretization& discret,
+    mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_G_B,
     Core::LinAlg::SparseMatrix& global_G_S, Core::LinAlg::SparseMatrix& global_FB_L,
     Core::LinAlg::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,

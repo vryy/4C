@@ -37,7 +37,7 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
   using namespace FourC;
 
   // initialize proc0map_ correctly
-  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
   const Epetra_Map* noderowmap = dis->NodeRowMap();
   proc0map_ = Core::LinAlg::AllreduceEMap(*noderowmap, 0);
 
@@ -336,7 +336,7 @@ void EnsightWriter::write_geo_file_one_time_step(std::ofstream& file,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> EnsightWriter::write_coordinates(
-    std::ofstream& geofile, const Teuchos::RCP<Discret::Discretization> dis)
+    std::ofstream& geofile, const Teuchos::RCP<Core::FE::Discretization> dis)
 {
   using namespace FourC;
 
@@ -383,7 +383,8 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::write_coordinates(
   | write node connectivity for every element                  gjb 12/07 |
   *----------------------------------------------------------------------*/
 void EnsightWriter::write_cells(std::ofstream& geofile,
-    const Teuchos::RCP<Discret::Discretization> dis, const Teuchos::RCP<Epetra_Map>& proc0map) const
+    const Teuchos::RCP<Core::FE::Discretization> dis,
+    const Teuchos::RCP<Epetra_Map>& proc0map) const
 {
   using namespace FourC;
 
@@ -593,7 +594,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
  \date 12/07
 */
 void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
-    const Teuchos::RCP<Discret::Discretization> dis, const std::vector<int>& nodevector,
+    const Teuchos::RCP<Core::FE::Discretization> dis, const std::vector<int>& nodevector,
     const Teuchos::RCP<Epetra_Map> proc0map) const
 {
   using namespace FourC;
@@ -683,7 +684,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
  * \date 01/08
  */
 EnsightWriter::NumElePerDisType EnsightWriter::get_num_ele_per_dis_type(
-    const Teuchos::RCP<Discret::Discretization> dis) const
+    const Teuchos::RCP<Core::FE::Discretization> dis) const
 {
   using namespace FourC;
 
@@ -775,7 +776,7 @@ int EnsightWriter::get_num_sub_ele(const Core::FE::CellType distype) const
  * \brief parse all elements and get the global ids of the elements for each distype
  */
 EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
-    const Teuchos::RCP<Discret::Discretization> dis, NumElePerDisType numeleperdistype) const
+    const Teuchos::RCP<Core::FE::Discretization> dis, NumElePerDisType numeleperdistype) const
 {
   using namespace FourC;
 
@@ -1506,7 +1507,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
   write(file, field_->field_pos() + 1);
   write(file, "coordinates");
 
-  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
   const Epetra_Map* nodemap = dis->NodeRowMap();  // local node row map
   const int numnp = nodemap->NumGlobalElements();
 
@@ -1814,7 +1815,7 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
   write(file, "part");
   write(file, field_->field_pos() + 1);
 
-  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
   const Epetra_Map* elementmap = dis->ElementRowMap();  // local node row map
 
   const Teuchos::RCP<Epetra_Vector> data = result.read_result(groupname);
@@ -2338,7 +2339,7 @@ std::string EnsightWriter::get_file_section_string_from_filesets(
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstream& geofile,
-    const Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
+    const Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
 {
   using namespace FourC;
 

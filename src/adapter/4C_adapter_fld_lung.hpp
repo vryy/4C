@@ -17,7 +17,7 @@ parenchyma balloon
 #include "4C_config.hpp"
 
 #include "4C_adapter_fld_fluid_fsi.hpp"
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
@@ -41,7 +41,7 @@ namespace Adapter
   {
    public:
     /// Constructor
-    FluidLung(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+    FluidLung(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 

@@ -12,7 +12,7 @@
 #include "4C_art_net_artery.hpp"
 #include "4C_art_net_explicitintegration.hpp"
 #include "4C_art_net_impl_stationary.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_scatra_ele.hpp"
@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  | create algorithm                                                      |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Adapter::ArtNet> Arteries::UTILS::CreateAlgorithm(
-    Inpar::ArtDyn::TimeIntegrationScheme timintscheme, Teuchos::RCP<Discret::Discretization> dis,
+    Inpar::ArtDyn::TimeIntegrationScheme timintscheme, Teuchos::RCP<Core::FE::Discretization> dis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
     const Teuchos::ParameterList& artparams, Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
@@ -67,8 +67,8 @@ void Arteries::UTILS::assign_material_pointers(
 {
   Global::Problem* problem = Global::Problem::Instance();
 
-  Teuchos::RCP<Discret::Discretization> arterydis = problem->GetDis(artery_disname);
-  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis(scatra_disname);
+  Teuchos::RCP<Core::FE::Discretization> arterydis = problem->GetDis(artery_disname);
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis(scatra_disname);
 
   SetMaterialPointersMatchingGrid(arterydis, scatradis);
 }
@@ -77,8 +77,8 @@ void Arteries::UTILS::assign_material_pointers(
  | reset Material pointers after redistribution        kremheller 03/18 |
  *----------------------------------------------------------------------*/
 void Arteries::UTILS::SetMaterialPointersMatchingGrid(
-    Teuchos::RCP<const Discret::Discretization> sourcedis,
-    Teuchos::RCP<const Discret::Discretization> targetdis)
+    Teuchos::RCP<const Core::FE::Discretization> sourcedis,
+    Teuchos::RCP<const Core::FE::Discretization> targetdis)
 {
   const int numelements = targetdis->NumMyColElements();
 

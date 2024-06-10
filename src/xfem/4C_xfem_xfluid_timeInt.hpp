@@ -37,10 +37,10 @@ namespace Core::Communication
   class PackBuffer;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Nodes
 {
@@ -83,7 +83,7 @@ namespace XFEM
     explicit XFluidTimeInt(
         const bool is_newton_increment_transfer,  /// monolithic newton increment transfer or time
                                                   /// step transfer?
-        const Teuchos::RCP<Discret::Discretization>& dis,               /// discretization
+        const Teuchos::RCP<Core::FE::Discretization>& dis,              /// discretization
         const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,  /// condition manager
         const Teuchos::RCP<Core::Geo::CutWizard>& wizard_old,           /// cut wizard at t^n
         const Teuchos::RCP<Core::Geo::CutWizard>& wizard_new,           /// cut wizard at t^(n+1)
@@ -273,7 +273,7 @@ namespace XFEM
     const bool is_newton_increment_transfer_;  /// monolithic newton increment transfer or time step
                                                /// transfer?
 
-    Teuchos::RCP<Discret::Discretization> dis_;  /// background  discretization
+    Teuchos::RCP<Core::FE::Discretization> dis_;  /// background  discretization
 
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;  /// condition manager
 

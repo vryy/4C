@@ -13,13 +13,13 @@
 #include "4C_beam3_spatial_discretization_utils.hpp"
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"
 #include "4C_beaminteraction_periodic_boundingbox.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_largerotations.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
@@ -37,7 +37,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public) meier 01/16|
  *----------------------------------------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1,  // stiffness matrix
     Core::LinAlg::SerialDenseMatrix& elemat2,  // mass matrix
     Core::LinAlg::SerialDenseVector& elevec1,  // internal forces
@@ -2068,7 +2068,7 @@ void Discret::ELEMENTS::Beam3k::calculate_mass_matrix_contributions_analytic_wk(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

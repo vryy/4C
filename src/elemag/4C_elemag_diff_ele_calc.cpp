@@ -11,13 +11,13 @@
 
 #include "4C_elemag_diff_ele_calc.hpp"
 
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
 #include "4C_elemag_ele_action.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_discretization_hdg.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
-#include "4C_lib_discret_hdg.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_electromagnetic.hpp"
@@ -42,7 +42,7 @@ Discret::ELEMENTS::ElemagDiffEleCalc<distype>::ElemagDiffEleCalc()
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(Discret::ELEMENTS::Elemag* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -60,7 +60,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(Discret::ELEMENTS::E
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(Discret::ELEMENTS::Elemag* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix&,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -74,9 +74,9 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(Discret::ELEMENTS::E
   EleMag::Action action;
   if (params.get<bool>("hdg_action", false))
   {
-    switch (Teuchos::getIntegralValue<Discret::HDGAction>(params, "action"))
+    switch (Teuchos::getIntegralValue<Core::FE::HDGAction>(params, "action"))
     {
-      case Discret::HDGAction::project_dirich_field:
+      case Core::FE::HDGAction::project_dirich_field:
         action = EleMag::Action::project_dirich_field;
         break;
       default:
@@ -341,7 +341,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::InitializeShapes(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::read_global_vectors(
-    Core::Elements::Element* ele, Discret::Discretization& discretization,
+    Core::Elements::Element* ele, Core::FE::Discretization& discretization,
     const std::vector<int>& lm)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::ElemagDiffEleCalc::read_global_vectors");
@@ -372,7 +372,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::read_global_vectors(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::fill_restart_vectors(
-    Core::Elements::Element* ele, Discret::Discretization& discretization)
+    Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
   // sort this back to the interior values vector
   int size = shapes_->ndofs_ * nsd_;
@@ -422,7 +422,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::fill_restart_vectors(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::element_init_from_restart(
-    Core::Elements::Element* ele, Discret::Discretization& discretization)
+    Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
   Discret::ELEMENTS::ElemagDiff* elemagele = dynamic_cast<Discret::ELEMENTS::ElemagDiff*>(ele);
   unsigned int size = shapes_->ndofs_ * nsd_;
@@ -1392,7 +1392,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes(
-    Discret::ELEMENTS::ElemagDiff* ele, Discret::Discretization& discretization,
+    Discret::ELEMENTS::ElemagDiff* ele, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::ElemagDiffEleCalc::interpolate_solution_to_nodes");
@@ -1785,7 +1785,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::update_interior_variables_an
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
-    Discret::Discretization& discretization, Discret::ELEMENTS::ElemagDiff* ele,
+    Core::FE::Discretization& discretization, Discret::ELEMENTS::ElemagDiff* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat, int face,
     Core::LinAlg::SerialDenseMatrix& elemat, int indexstart,
     Core::LinAlg::SerialDenseVector& elevec1)
@@ -2440,7 +2440,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::Symmetrify(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeMatrices(
-    Discret::Discretization& discretization, const Teuchos::RCP<Core::Mat::Material>& mat,
+    Core::FE::Discretization& discretization, const Teuchos::RCP<Core::Mat::Material>& mat,
     Discret::ELEMENTS::ElemagDiff& ele, double dt, Inpar::EleMag::DynamicType dyna,
     const double tau)
 {

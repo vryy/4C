@@ -13,7 +13,7 @@
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_cut_output.hpp"
 #include "4C_cut_volumecell.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*------------------------------------------------------------------------------------------------*
  * basic CUT parallel constructor                                                    schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-Core::Geo::Cut::Parallel::Parallel(const Teuchos::RCP<Discret::Discretization>& discret,
+Core::Geo::Cut::Parallel::Parallel(const Teuchos::RCP<Core::FE::Discretization>& discret,
     Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::ParentIntersection& parentintersection)
     : discret_(discret),
       myrank_(discret_->Comm().MyPID()),

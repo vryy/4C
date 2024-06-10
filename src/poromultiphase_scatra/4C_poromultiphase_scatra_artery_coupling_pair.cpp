@@ -9,14 +9,14 @@
 
 #include "4C_poromultiphase_scatra_artery_coupling_pair.hpp"
 
-#include "4C_discretization_fem_general_element_integration_select.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_discretization_geometry_coordinate_system_utils.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element_integration_select.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_integration.hpp"
+#include "4C_fem_geometry_coordinate_system_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_cnst_1d_art.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
 #include "4C_porofluidmultiphase_ele_parameter.hpp"
@@ -780,8 +780,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distypeArt, Core::FE::CellType distypeCont, int dim>
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::ResetState(Teuchos::RCP<Discret::Discretization> contdis,
-    Teuchos::RCP<Discret::Discretization> artdis)
+    dim>::ResetState(Teuchos::RCP<Core::FE::Discretization> contdis,
+    Teuchos::RCP<Core::FE::Discretization> artdis)
 {
   if (!ispreevaluated_) FOUR_C_THROW("MeshTying Pair has not yet been pre-evaluated");
 
@@ -1083,7 +1083,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distypeArt, Core::FE::CellType distypeCont, int dim>
 double PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::ApplyMeshMovement(const bool firstcall, Teuchos::RCP<Discret::Discretization> contdis)
+    dim>::ApplyMeshMovement(const bool firstcall, Teuchos::RCP<Core::FE::Discretization> contdis)
 {
   // nodal displacement values for ALE
   Core::LinAlg::Matrix<numdim_, numnodescont_> edispnp(true);
@@ -2080,7 +2080,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distypeArt, Core::FE::CellType distypeCont, int dim>
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::extract_solid_vel(Teuchos::RCP<Discret::Discretization> contdis)
+    dim>::extract_solid_vel(Teuchos::RCP<Core::FE::Discretization> contdis)
 {
   // no need for this
   if (evaluate_in_ref_config_) return;

@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 #include "4C_scatra_resulttest.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"

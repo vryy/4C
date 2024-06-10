@@ -24,15 +24,15 @@
 #include "4C_contact_meshtying_abstract_strategy.hpp"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "4C_contact_meshtying_contact_bridge.hpp"
 #include "4C_contact_meshtying_manager.hpp"
-#include "4C_discretization_condition_locsys.hpp"
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_locsys.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization_nullspace.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_beamcontact.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_wear.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret_nullspace.hpp"
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_multiply.hpp"
@@ -63,7 +63,7 @@ FOUR_C_NAMESPACE_OPEN
 /* constructor */
 STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization> actdis,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimInt(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
@@ -138,7 +138,7 @@ STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntImpl::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // call Init() in base class
   STR::TimInt::Init(timeparams, sdynparams, xparams, actdis, solver);
@@ -813,7 +813,7 @@ void STR::TimIntImpl::update_krylov_space_projection()
 
   Teuchos::RCP<Epetra_Map> nullspaceMap = Teuchos::rcp(new Epetra_Map(*discret_->dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> nullspace =
-      Discret::ComputeNullSpace(*discret_, 3, 6, nullspaceMap);
+      Core::FE::ComputeNullSpace(*discret_, 3, 6, nullspaceMap);
   if (nullspace == Teuchos::null) FOUR_C_THROW("nullspace not successfully computed");
 
   // sort vector of nullspace data into kernel vector c_

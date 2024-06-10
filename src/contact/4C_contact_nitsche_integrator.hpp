@@ -13,8 +13,8 @@
 #include "4C_config.hpp"
 
 #include "4C_contact_integrator.hpp"
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_mortar_element.hpp"
 #include "4C_utils_pairedvector.hpp"
 

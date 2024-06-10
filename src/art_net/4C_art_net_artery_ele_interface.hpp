@@ -15,7 +15,7 @@
 
 #include "4C_art_net_artery.hpp"
 #include "4C_art_net_artery_ele_action.hpp"
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
@@ -30,9 +30,13 @@ namespace Core::Elements
   class Element;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
+
+namespace Discret
+{
 
   namespace ELEMENTS
   {
@@ -49,7 +53,7 @@ namespace Discret
 
       //! evaluate the element
       virtual int Evaluate(Artery* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -59,7 +63,7 @@ namespace Discret
 
       //! evaluate service (other quantities apart from rhs and matrix)
       virtual int EvaluateService(Artery* ele, const Arteries::Action action,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -70,7 +74,7 @@ namespace Discret
 
       //! evaluate scalar transport (only lin-exp formulation uses this)
       virtual int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,

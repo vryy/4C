@@ -13,9 +13,9 @@
 #include "4C_contact_interface.hpp"
 #include "4C_contact_nitsche_utils.hpp"
 #include "4C_contact_paramsinterface.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_so3_plast_ssn.hpp"
 
@@ -143,7 +143,7 @@ void CONTACT::NitscheStrategy::set_state(
 void CONTACT::NitscheStrategy::SetParentState(
     const enum Mortar::StateType& statename, const Epetra_Vector& vec)
 {
-  Teuchos::RCP<Discret::Discretization> dis = Global::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> dis = Global::Problem::Instance()->GetDis("structure");
   if (dis == Teuchos::null) FOUR_C_THROW("didn't get my discretization");
   if (statename == Mortar::state_new_displacement || statename == Mortar::state_svelocity)
   {
@@ -153,7 +153,7 @@ void CONTACT::NitscheStrategy::SetParentState(
     // set state on interfaces
     for (const auto& interface : interface_)
     {
-      Discret::Discretization& idiscret = interface->Discret();
+      Core::FE::Discretization& idiscret = interface->Discret();
 
       for (int j = 0; j < interface->Discret().ElementColMap()->NumMyElements(); ++j)
       {
@@ -432,7 +432,7 @@ void CONTACT::NitscheStrategy::evaluate_reference_state()
  *---------------------------------------------------------------------------------------------*/
 void CONTACT::NitscheStrategy::reconnect_parent_elements()
 {
-  Teuchos::RCP<Discret::Discretization> voldis = Global::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> voldis = Global::Problem::Instance()->GetDis("structure");
 
   for (const auto& contact_interface : ContactInterfaces())
   {

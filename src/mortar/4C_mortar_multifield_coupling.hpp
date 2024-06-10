@@ -25,10 +25,11 @@ namespace Core::LinAlg
   class SparseMatrix;
   class BlockSparseMatrixBase;
 }  // namespace Core::LinAlg
-namespace Discret
+
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Mortar
 {
@@ -40,9 +41,9 @@ namespace Mortar
 
 
     /// add a new discretization to perform coupling on
-    void PushBackCoupling(const Teuchos::RCP<Discret::Discretization>& dis,  ///< discretization
-        const int nodeset,                                                   ///< nodeset to couple
-        const std::vector<int> dofs_to_couple                                ///< dofs to couple
+    void PushBackCoupling(const Teuchos::RCP<Core::FE::Discretization>& dis,  ///< discretization
+        const int nodeset,                                                    ///< nodeset to couple
+        const std::vector<int> dofs_to_couple                                 ///< dofs to couple
     );
 
     /// Perform condensation in all blocks of the matrix

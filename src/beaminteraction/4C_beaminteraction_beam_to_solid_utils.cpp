@@ -17,7 +17,7 @@
 #include "4C_beaminteraction_beam_to_solid_surface_contact_params.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_contact_pair.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
+#include "4C_fem_general_largerotations.hpp"
 #include "4C_geometry_pair.hpp"
 #include "4C_geometry_pair_element.hpp"
 #include "4C_geometry_pair_element_evaluation_functions.hpp"
@@ -166,7 +166,7 @@ std::pair<unsigned int, unsigned int> BEAMINTERACTION::MortarShapeFunctionsToNum
 /**
  *
  */
-void BEAMINTERACTION::GetBeamTriadInterpolationScheme(const Discret::Discretization& discret,
+void BEAMINTERACTION::GetBeamTriadInterpolationScheme(const Core::FE::Discretization& discret,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector,
     const Core::Elements::Element* ele,
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double>& triad_interpolation_scheme,
@@ -742,7 +742,7 @@ void BEAMINTERACTION::CheckPlaneRotations(
  */
 template <typename beam, typename other, typename mortar>
 void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::BeamContactPair* pair,
-    const Discret::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
+    const Core::FE::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
     Core::LinAlg::SparseMatrix& global_G_B, Core::LinAlg::SparseMatrix& global_G_S,
     Core::LinAlg::SparseMatrix& global_FB_L, Core::LinAlg::SparseMatrix& global_FS_L,
     Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
@@ -885,7 +885,7 @@ namespace BEAMINTERACTION
 
 #define initialize_template_assemble_local_mortar_contributions(beam, other, mortar)             \
   template void AssembleLocalMortarContributions<beam, other, mortar>(                           \
-      const BEAMINTERACTION::BeamContactPair*, const Discret::Discretization&,                   \
+      const BEAMINTERACTION::BeamContactPair*, const Core::FE::Discretization&,                  \
       const BeamToSolidMortarManager*, Core::LinAlg::SparseMatrix&, Core::LinAlg::SparseMatrix&, \
       Core::LinAlg::SparseMatrix&, Core::LinAlg::SparseMatrix&, Epetra_FEVector&,                \
       Epetra_FEVector&, Epetra_FEVector&,                                                        \

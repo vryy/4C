@@ -10,11 +10,11 @@
 
 #include "4C_elch_moving_boundary_algorithm.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_elch.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_scatra_timint_elch.hpp"
 
@@ -328,8 +328,8 @@ void ElCh::MovingBoundaryAlgorithm::compute_interface_vectors(
   fluxnp_ = ScaTraField()->CalcFluxAtBoundary(false);
 
   // access discretizations
-  Teuchos::RCP<Discret::Discretization> fluiddis = fluid_field()->discretization();
-  Teuchos::RCP<Discret::Discretization> scatradis = ScaTraField()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = fluid_field()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> scatradis = ScaTraField()->discretization();
 
   // no support for multiple reactions at the interface !
   // id of the reacting species

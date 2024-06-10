@@ -12,8 +12,8 @@
 #include "4C_elemag_resulttest.hpp"
 
 #include "4C_elemag_timeint.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

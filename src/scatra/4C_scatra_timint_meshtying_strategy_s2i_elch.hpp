@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_scatra_timint_elch.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
 
@@ -132,9 +132,9 @@ namespace ScaTra
 
    private:
     //! evaluate and assemble interface linearizations and residuals
-    void evaluate_condition(const Discret::Discretization& idiscret,  //!< interface discretization
-        Mortar::IntCell& cell,                                        //!< mortar integration cell
-        Mortar::Element& slaveelement,                                //!< slave-side mortar element
+    void evaluate_condition(const Core::FE::Discretization& idiscret,  //!< interface discretization
+        Mortar::IntCell& cell,                                         //!< mortar integration cell
+        Mortar::Element& slaveelement,                      //!< slave-side mortar element
         Mortar::Element& masterelement,                     //!< master-side mortar element
         Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
         Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
@@ -197,19 +197,19 @@ namespace ScaTra
 
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types
-    void Evaluate(const Discret::Discretization& idiscret,  //!< interface discretization
-        Mortar::IntCell& cell,                              //!< mortar integration cell
-        Mortar::Element& slaveelement,                      //!< slave-side mortar element
-        Mortar::Element& masterelement,                     //!< master-side mortar element
-        Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
-        const Teuchos::ParameterList& params,               //!< parameter list
-        Core::LinAlg::SerialDenseMatrix& cellmatrix1,       //!< cell matrix 1
-        Core::LinAlg::SerialDenseMatrix& cellmatrix2,       //!< cell matrix 2
-        Core::LinAlg::SerialDenseMatrix& cellmatrix3,       //!< cell matrix 3
-        Core::LinAlg::SerialDenseMatrix& cellmatrix4,       //!< cell matrix 4
-        Core::LinAlg::SerialDenseVector& cellvector1,       //!< cell vector 1
-        Core::LinAlg::SerialDenseVector& cellvector2        //!< cell vector 2
+    void Evaluate(const Core::FE::Discretization& idiscret,  //!< interface discretization
+        Mortar::IntCell& cell,                               //!< mortar integration cell
+        Mortar::Element& slaveelement,                       //!< slave-side mortar element
+        Mortar::Element& masterelement,                      //!< master-side mortar element
+        Core::Elements::Element::LocationArray& la_slave,    //!< slave-side location array
+        Core::Elements::Element::LocationArray& la_master,   //!< master-side location array
+        const Teuchos::ParameterList& params,                //!< parameter list
+        Core::LinAlg::SerialDenseMatrix& cellmatrix1,        //!< cell matrix 1
+        Core::LinAlg::SerialDenseMatrix& cellmatrix2,        //!< cell matrix 2
+        Core::LinAlg::SerialDenseMatrix& cellmatrix3,        //!< cell matrix 3
+        Core::LinAlg::SerialDenseMatrix& cellmatrix4,        //!< cell matrix 4
+        Core::LinAlg::SerialDenseVector& cellvector1,        //!< cell vector 1
+        Core::LinAlg::SerialDenseVector& cellvector2         //!< cell vector 2
         ) override;
 
    private:
@@ -231,7 +231,7 @@ namespace ScaTra
 
     //! evaluate and assemble off-diagonal interface linearizations
     void evaluate_condition_od(
-        const Discret::Discretization& idiscret,            //!< interface discretization
+        const Core::FE::Discretization& idiscret,           //!< interface discretization
         Mortar::IntCell& cell,                              //!< mortar integration cell
         Mortar::Element& slaveelement,                      //!< slave-side mortar element
         Mortar::Element& masterelement,                     //!< master-side mortar element
@@ -245,7 +245,8 @@ namespace ScaTra
     );
 
     //! extract nodal state variables associated with mortar integration cell
-    void extract_node_values(const Discret::Discretization& idiscret,  //!< interface discretization
+    void extract_node_values(
+        const Core::FE::Discretization& idiscret,          //!< interface discretization
         Core::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
         Core::Elements::Element::LocationArray& la_master  //!< master-side location array
         ) override;
@@ -274,19 +275,19 @@ namespace ScaTra
 
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types
-    void Evaluate(const Discret::Discretization& idiscret,  //!< interface discretization
-        Mortar::IntCell& cell,                              //!< mortar integration cell
-        Mortar::Element& slaveelement,                      //!< slave-side mortar element
-        Mortar::Element& masterelement,                     //!< master-side mortar element
-        Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
-        const Teuchos::ParameterList& params,               //!< parameter list
-        Core::LinAlg::SerialDenseMatrix& cellmatrix1,       //!< cell matrix 1
-        Core::LinAlg::SerialDenseMatrix& cellmatrix2,       //!< cell matrix 2
-        Core::LinAlg::SerialDenseMatrix& cellmatrix3,       //!< cell matrix 3
-        Core::LinAlg::SerialDenseMatrix& cellmatrix4,       //!< cell matrix 4
-        Core::LinAlg::SerialDenseVector& cellvector1,       //!< cell vector 1
-        Core::LinAlg::SerialDenseVector& cellvector2        //!< cell vector 2
+    void Evaluate(const Core::FE::Discretization& idiscret,  //!< interface discretization
+        Mortar::IntCell& cell,                               //!< mortar integration cell
+        Mortar::Element& slaveelement,                       //!< slave-side mortar element
+        Mortar::Element& masterelement,                      //!< master-side mortar element
+        Core::Elements::Element::LocationArray& la_slave,    //!< slave-side location array
+        Core::Elements::Element::LocationArray& la_master,   //!< master-side location array
+        const Teuchos::ParameterList& params,                //!< parameter list
+        Core::LinAlg::SerialDenseMatrix& cellmatrix1,        //!< cell matrix 1
+        Core::LinAlg::SerialDenseMatrix& cellmatrix2,        //!< cell matrix 2
+        Core::LinAlg::SerialDenseMatrix& cellmatrix3,        //!< cell matrix 3
+        Core::LinAlg::SerialDenseMatrix& cellmatrix4,        //!< cell matrix 4
+        Core::LinAlg::SerialDenseVector& cellvector1,        //!< cell vector 1
+        Core::LinAlg::SerialDenseVector& cellvector2         //!< cell vector 2
         ) override;
 
    private:
@@ -306,9 +307,9 @@ namespace ScaTra
     );
 
     //! evaluate and assemble interface linearizations and residuals
-    void evaluate_condition(const Discret::Discretization& idiscret,  //!< interface discretization
-        Mortar::IntCell& cell,                                        //!< mortar integration cell
-        Mortar::Element& slaveelement,                                //!< slave-side mortar element
+    void evaluate_condition(const Core::FE::Discretization& idiscret,  //!< interface discretization
+        Mortar::IntCell& cell,                                         //!< mortar integration cell
+        Mortar::Element& slaveelement,                      //!< slave-side mortar element
         Mortar::Element& masterelement,                     //!< master-side mortar element
         Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
         Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
@@ -320,7 +321,7 @@ namespace ScaTra
 
     //! evaluate and assemble off-diagonal interface linearizations
     void evaluate_condition_od(
-        const Discret::Discretization& idiscret,            //!< interface discretization
+        const Core::FE::Discretization& idiscret,           //!< interface discretization
         Mortar::IntCell& cell,                              //!< mortar integration cell
         Mortar::Element& slaveelement,                      //!< slave-side mortar element
         Mortar::Element& masterelement,                     //!< master-side mortar element
@@ -334,7 +335,8 @@ namespace ScaTra
     );
 
     //! extract nodal state variables associated with mortar integration cell
-    void extract_node_values(const Discret::Discretization& idiscret,  //!< interface discretization
+    void extract_node_values(
+        const Core::FE::Discretization& idiscret,          //!< interface discretization
         Core::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
         Core::Elements::Element::LocationArray& la_master  //!< master-side location array
         ) override;

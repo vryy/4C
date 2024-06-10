@@ -10,10 +10,10 @@
 
 #include "4C_scatra_ele_calc_loma.hpp"
 
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
-#include "4C_discretization_geometry_position_array.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_geometry_position_array.hpp"
 #include "4C_inpar_fluid.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_sutherland.hpp"
 #include "4C_mat_thermostvenantkirchhoff.hpp"
 #include "4C_nurbs_discret_nurbs_utils.hpp"

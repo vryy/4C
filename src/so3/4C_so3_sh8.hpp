@@ -19,11 +19,13 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 struct _SOH8_DATA;
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
+
 namespace Discret
 {
-  // forward declarations
-  class Discretization;
-
   namespace ELEMENTS
   {
     class SoSh8Type : public SoHex8Type
@@ -40,7 +42,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override;
+      int Initialize(Core::FE::Discretization& dis) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -179,7 +181,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -274,7 +276,7 @@ namespace Discret
       //! Calculate the STC matrix
       virtual void do_calc_stc_matrix(Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1,
           const Inpar::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
-          Discret::Discretization& discretization, bool calcinverse);
+          Core::FE::Discretization& discretization, bool calcinverse);
 
       //! Find parametric co-ordinate which directs in enforced thickness direction
       ThicknessDirection sosh8_enfthickdir(Core::LinAlg::Matrix<NUMDIM_SOH8, 1>&

@@ -9,10 +9,10 @@
 #include "4C_elch_dyn.hpp"
 
 #include "4C_ale_utils_clonestrategy.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_elch_algorithm.hpp"
 #include "4C_elch_moving_boundary_algorithm.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_elch.hpp"
 #include "4C_inpar_validparameters.hpp"
@@ -161,7 +161,7 @@ void elch_dyn(int restart)
       // support for turbulent flow statistics
       const auto& fdyn = (problem->FluidDynamicParams());
 
-      Teuchos::RCP<Discret::Discretization> aledis = problem->GetDis("ale");
+      Teuchos::RCP<Core::FE::Discretization> aledis = problem->GetDis("ale");
       if (!aledis->Filled()) aledis->fill_complete(false, false, false);
       // is ALE needed or not?
       const auto withale = Core::UTILS::IntegralValue<Inpar::ElCh::ElchMovingBoundary>(

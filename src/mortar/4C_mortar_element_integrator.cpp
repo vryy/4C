@@ -7,7 +7,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_mortar_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN

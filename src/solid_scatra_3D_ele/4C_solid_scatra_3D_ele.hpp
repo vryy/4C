@@ -13,8 +13,8 @@ Pack, Unpack, NumDofPerNode etc.
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_solid_3D_ele_calc_eas.hpp"
 #include "4C_solid_scatra_3D_ele_calc_lib_nitsche.hpp"
@@ -102,13 +102,13 @@ namespace Discret::ELEMENTS
     bool ReadElement(const std::string& eletype, const std::string& celltype,
         Input::LineDefinition* linedef) override;
 
-    int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
         Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseVector& elevec2,
         Core::LinAlg::SerialDenseVector& elevec3) override;
 
-    int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         Core::Conditions::Condition& condition, std::vector<int>& lm,
         Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;

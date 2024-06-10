@@ -25,7 +25,7 @@ namespace LUBRICATION
   {
    public:
     /// Standard Constructor
-    TimIntStationary(Teuchos::RCP<Discret::Discretization> dis,
+    TimIntStationary(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);

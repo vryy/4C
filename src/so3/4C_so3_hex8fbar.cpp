@@ -10,9 +10,9 @@
 
 #include "4C_so3_hex8fbar.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_so3_nullspace.hpp"
 #include "4C_so3_prestress.hpp"
 #include "4C_so3_prestress_service.hpp"

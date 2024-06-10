@@ -44,7 +44,7 @@ namespace Adapter
     /// second constructor (special version for turbulent flows with separate inflow
     /// section for generation of turbulent inflow profiles)
     explicit FluidBaseAlgorithm(
-        const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<Discret::Discretization> discret);
+        const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<Core::FE::Discretization> discret);
 
     /// virtual destructor to support polymorph destruction
     virtual ~FluidBaseAlgorithm() = default;
@@ -76,7 +76,7 @@ namespace Adapter
     /// values specified in given problem-dependent Turbulent Inflow ParameterList)
     /// separate discretization for inflow generation
     void setup_inflow_fluid(
-        const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<Discret::Discretization> discret);
+        const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<Core::FE::Discretization> discret);
 
     //! set parameters in list required for all schemes
     void set_general_parameters(const Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams,

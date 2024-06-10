@@ -23,9 +23,9 @@ namespace ScaTra
   {
    public:
     /// Standard Constructor
-    TimIntOneStepTheta(Teuchos::RCP<Discret::Discretization> actdis,  //!< discretization
-        Teuchos::RCP<Core::LinAlg::Solver> solver,                    //!< linear solver
-        Teuchos::RCP<Teuchos::ParameterList> params,                  //!< parameter list
+    TimIntOneStepTheta(Teuchos::RCP<Core::FE::Discretization> actdis,  //!< discretization
+        Teuchos::RCP<Core::LinAlg::Solver> solver,                     //!< linear solver
+        Teuchos::RCP<Teuchos::ParameterList> params,                   //!< parameter list
         Teuchos::RCP<Teuchos::ParameterList> extraparams,     //!< supplementary parameter list
         Teuchos::RCP<Core::IO::DiscretizationWriter> output,  //!< output writer
         const int probnum = 0                                 //!< global problem number

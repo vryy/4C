@@ -201,8 +201,8 @@ namespace FSI
         std::map<int, std::list<int>>* inverseNodeOwner,
         std::map<int, Core::Nodes::Node*>* structurenodesPtr,
         std::map<int, Core::Nodes::Node*>* fluidgnodesPtr,
-        Teuchos::RCP<Discret::Discretization> structuredis,
-        Teuchos::RCP<Discret::Discretization> fluiddis,
+        Teuchos::RCP<Core::FE::Discretization> structuredis,
+        Teuchos::RCP<Core::FE::Discretization> fluiddis,
         const Inpar::FSI::Redistribute domain) override;
 
    protected:

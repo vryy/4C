@@ -11,9 +11,9 @@
 #include "4C_fluid_turbulence_statistics_hit.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_par_bundle.hpp"
 
@@ -31,7 +31,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | constructor                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  TurbulenceStatisticsHit::TurbulenceStatisticsHit(Teuchos::RCP<Discret::Discretization> actdis,
+  TurbulenceStatisticsHit::TurbulenceStatisticsHit(Teuchos::RCP<Core::FE::Discretization> actdis,
       Teuchos::ParameterList& params, const std::string& statistics_outfilename, const bool forced)
       : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
   {
@@ -1715,7 +1715,7 @@ namespace FLD
    | constructor                                         bk 03/15 |
    *--------------------------------------------------------------*/
   TurbulenceStatisticsHitHDG::TurbulenceStatisticsHitHDG(
-      Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params,
+      Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params,
       const std::string& statistics_outfilename, const bool forced)
       : TurbulenceStatisticsHit(actdis, params, statistics_outfilename, forced)
   {

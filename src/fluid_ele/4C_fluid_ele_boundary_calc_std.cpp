@@ -11,7 +11,7 @@
 
 #include "4C_fluid_ele_boundary_calc_std.hpp"
 
-#include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_fem_general_elementtype.hpp"
 #include "4C_fluid_ele_parameter_std.hpp"
 
 FOUR_C_NAMESPACE_OPEN

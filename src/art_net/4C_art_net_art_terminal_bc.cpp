@@ -9,9 +9,9 @@
 
 #include "4C_art_net_art_terminal_bc.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
 
@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<Discret::Discretization> actdis,
+void Arteries::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<Core::FE::Discretization> actdis,
     const Core::Conditions::Condition* condition, Teuchos::ParameterList& params)
 {
   // define BC name std::string (e.g: BC   = "flow")
@@ -537,7 +537,7 @@ void Arteries::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<Discret::Discretiza
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::UTILS::SolveReflectiveTerminal(Teuchos::RCP<Discret::Discretization> actdis,
+void Arteries::UTILS::SolveReflectiveTerminal(Teuchos::RCP<Core::FE::Discretization> actdis,
     const Core::Conditions::Condition* condition, Teuchos::ParameterList& params)
 {
   // Define the reflection cooficient
@@ -614,7 +614,7 @@ void Arteries::UTILS::SolveReflectiveTerminal(Teuchos::RCP<Discret::Discretizati
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Discret::Discretization> actdis,
+void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretization> actdis,
     const Core::Conditions::Condition* condition, Teuchos::ParameterList& params)
 {
   // define BC windkessel inigration type std::string (e.g: BC   = "flow")

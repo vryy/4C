@@ -21,9 +21,10 @@
 #include "4C_cut_position.hpp"
 #include "4C_cut_sidehandle.hpp"
 #include "4C_cut_volumecell.hpp"
-#include "4C_discretization_condition_selector.hpp"
-#include "4C_discretization_fem_general_element_integration_select.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_condition_selector.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element_integration_select.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_factory.hpp"
 #include "4C_fluid_ele_interface.hpp"
@@ -31,7 +32,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_xfem_condition_manager.hpp"
 #include "4C_xfem_dofset.hpp"
 
@@ -48,7 +48,7 @@ FOUR_C_NAMESPACE_OPEN
 XFEM::XFluidTimeInt::XFluidTimeInt(
     const bool is_newton_increment_transfer,  /// monolithic newton increment transfer or time step
                                               /// transfer?
-    const Teuchos::RCP<Discret::Discretization>& dis,               /// discretization
+    const Teuchos::RCP<Core::FE::Discretization>& dis,              /// discretization
     const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,  /// condition manager
     const Teuchos::RCP<Core::Geo::CutWizard>& wizard_old,           /// cut wizard at t^n
     const Teuchos::RCP<Core::Geo::CutWizard>& wizard_new,           /// cut wizard at t^(n+1)
@@ -1869,7 +1869,7 @@ bool XFEM::XFluidTimeInt::within_space_time_side(
 )
 {
   // get the right cutter discretization for the given side
-  Teuchos::RCP<Discret::Discretization> cutter_dis = condition_manager_->GetCutterDis(coup_sid);
+  Teuchos::RCP<Core::FE::Discretization> cutter_dis = condition_manager_->GetCutterDis(coup_sid);
 
   std::string state_new = "idispnp";
   std::string state_old = "";

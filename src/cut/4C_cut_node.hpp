@@ -323,7 +323,7 @@ namespace Core::Geo
       //! @name private class variables
       /*========================================================================*/
 
-      int nid_;       ///< node's id (the same as in  Discret::Discretization)
+      int nid_;       ///< node's id (the same as in  Core::FE::Discretization)
       Point* point_;  ///< pointer to the Core::Geo::Cut::Point which defines the node
       double lsv_;    ///< levelset value if it is a levelset cut
 

@@ -15,7 +15,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_shape_function_type.hpp"
+#include "4C_fem_general_shape_function_type.hpp"
 #include "4C_io_hdf.hpp"
 #include "4C_io_legacy_types.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
@@ -37,10 +37,10 @@ namespace LinAlg
 {
   class SerialDenseMatrix;
 }
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 enum class ShapeFunctionType;
 
@@ -76,7 +76,7 @@ namespace Core::IO
   {
    public:
     /// construct reader for a given discretization to read a particular time step
-    DiscretizationReader(Teuchos::RCP<Discret::Discretization> dis,
+    DiscretizationReader(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::IO::InputControl> input, int step);
 
     /// destructor
@@ -209,7 +209,7 @@ namespace Core::IO
 
 
     //! my discretization
-    Teuchos::RCP<Discret::Discretization> dis_;
+    Teuchos::RCP<Core::FE::Discretization> dis_;
 
     /// my input control file
     Teuchos::RCP<Core::IO::InputControl> input_;
@@ -244,7 +244,7 @@ namespace Core::IO
      * @param[in] output_control        output control file
      * @param[in] shape_function_type   shape function type of the underlying fe discretization
      */
-    DiscretizationWriter(Teuchos::RCP<Discret::Discretization> dis,
+    DiscretizationWriter(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<OutputControl> output_control,
         const Core::FE::ShapeFunctionType shape_function_type);
 
@@ -405,7 +405,7 @@ namespace Core::IO
     virtual void SetOutput(Teuchos::RCP<OutputControl> output);
 
     /// access discretization
-    const Discret::Discretization& GetDiscret() const;
+    const Core::FE::Discretization& GetDiscret() const;
 
    protected:
     /// empty constructor (only used for the construction of derived classes)
@@ -429,7 +429,7 @@ namespace Core::IO
     virtual void create_result_file(const int step);
 
     //! my discretization
-    Teuchos::RCP<Discret::Discretization> dis_;
+    Teuchos::RCP<Core::FE::Discretization> dis_;
 
     int step_;
     double time_;

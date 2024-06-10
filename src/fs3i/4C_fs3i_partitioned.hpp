@@ -27,11 +27,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 namespace Adapter
 {
   class Coupling;
@@ -92,8 +91,8 @@ namespace FS3I
 
     /// create a volmortar object
     Teuchos::RCP<Core::Adapter::MortarVolCoupl> create_vol_mortar_object(
-        Teuchos::RCP<Discret::Discretization> masterdis,
-        Teuchos::RCP<Discret::Discretization> slavedis);
+        Teuchos::RCP<Core::FE::Discretization> masterdis,
+        Teuchos::RCP<Core::FE::Discretization> slavedis);
 
     //! set-up of FSI and ScaTra systems
     void SetupSystem() override;

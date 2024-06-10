@@ -10,12 +10,12 @@
 /*----------------------------------------------------------------------*/
 
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_boundary_calc.hpp"
 #include "4C_fluid_ele_boundary_factory.hpp"
 #include "4C_fluid_ele_boundary_parent_calc.hpp"
-#include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -116,7 +116,7 @@ int Discret::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a surface/line Neumann boundary condition       gjb 01/09 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::FluidBoundary::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -127,8 +127,9 @@ int Discret::ELEMENTS::FluidBoundary::evaluate_neumann(Teuchos::ParameterList& p
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element                (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidBoundary::LocationVector(const Discretization& dis, LocationArray& la,
-    bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const
+void Discret::ELEMENTS::FluidBoundary::LocationVector(const Core::FE::Discretization& dis,
+    LocationArray& la, bool doDirichlet, const std::string& condstring,
+    Teuchos::ParameterList& params) const
 {
   // get the action required
   const FLD::BoundaryAction act = Core::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");

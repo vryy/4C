@@ -20,7 +20,7 @@
 // dependent on distype
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_thermo_ele_impl_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -28,10 +28,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                           dano 11/12 |
  *----------------------------------------------------------------------*/
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     //! A C++ version of a 3 dimensional solid element with modifications for
@@ -175,7 +178,7 @@ namespace Discret
       int Evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          Discret::Discretization& discretization,  //!< pointer to discretization for de-assembly
+          Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
           Core::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           Core::LinAlg::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.
@@ -191,7 +194,7 @@ namespace Discret
       void pre_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          Discret::Discretization& discretization,    //!< pointer to discretization for de-assembly
+          Core::FE::Discretization& discretization,   //!< pointer to discretization for de-assembly
           Core::Elements::Element::LocationArray& la  //!< location array for de-assembly
       );
 
@@ -199,7 +202,7 @@ namespace Discret
 
       //! init the inverse of the jacobian and its determinant in the material
       //! configuration
-      void init_jacobian_mapping_special_for_nurbs(Discret::Discretization& dis);
+      void init_jacobian_mapping_special_for_nurbs(Core::FE::Discretization& dis);
 
       //@}
 
@@ -250,7 +253,7 @@ namespace Discret
       int evaluate_coupl_with_thr(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          Discret::Discretization& discretization,  //!< pointer to discretization for de-assembly
+          Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
           Core::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           Core::LinAlg::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.
@@ -282,7 +285,7 @@ namespace Discret
       //! Calculate nonlinear stiffness and mass matrix with temperature fraction
       virtual void nln_stifffint_tsi(
           Core::Elements::Element::LocationArray& la,  //!< location array
-          Discret::Discretization& discretization,     ///< discretisation to extract knot vector
+          Core::FE::Discretization& discretization,    ///< discretisation to extract knot vector
           std::vector<double>& disp,                   //!< current displacements
           std::vector<double>& temp,                   //!< current temperature
           Core::LinAlg::Matrix<numdofperelement_, numdofperelement_>*
@@ -295,9 +298,9 @@ namespace Discret
 
       //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
       virtual void nln_kd_t_tsi(Core::Elements::Element::LocationArray& la,
-          Discret::Discretization& discretization,  ///< discretisation to extract knot vector
-          std::vector<double>& disp,                //!< (i): current displacement
-          std::vector<double>& temp,                //!< current temperature
+          Core::FE::Discretization& discretization,  ///< discretisation to extract knot vector
+          std::vector<double>& disp,                 //!< (i): current displacement
+          std::vector<double>& temp,                 //!< current temperature
           Core::LinAlg::Matrix<numdofperelement_, nen_>*
               stiffmatrix_kdT,  //!< (o): mechanical thermal stiffness term at current gp
           Teuchos::ParameterList& params);

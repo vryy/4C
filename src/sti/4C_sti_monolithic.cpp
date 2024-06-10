@@ -12,7 +12,7 @@
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_discretization_fem_general_assemblestrategy.hpp"
+#include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_equilibrate.hpp"
@@ -1234,7 +1234,7 @@ void STI::Monolithic::compute_null_space_if_necessary(Teuchos::ParameterList& so
         Teuchos::rcp(new std::vector<double>(dimns * dof_row_map()->NumMyElements(), 0.));
 
     // compute null space modes associated with scatra field
-    const Discret::Discretization& scatradis = *ScaTraField()->discretization();
+    const Core::FE::Discretization& scatradis = *ScaTraField()->discretization();
     std::vector<double*> modes_scatra(numdofpernode_scatra);
     for (int i = 0; i < numdofpernode_scatra; ++i)
       modes_scatra[i] = &((*ns)[i * dof_row_map()->NumMyElements()]);
@@ -1246,7 +1246,7 @@ void STI::Monolithic::compute_null_space_if_necessary(Teuchos::ParameterList& so
     }
 
     // compute null space modes associated with thermo field
-    const Discret::Discretization& thermodis = *ThermoField()->discretization();
+    const Core::FE::Discretization& thermodis = *ThermoField()->discretization();
     std::vector<double*> modes_thermo(numdofpernode_thermo);
     for (int i = 0; i < numdofpernode_thermo; ++i)
       modes_thermo[i] = &((*ns)[(numdofpernode_scatra + i) * dof_row_map()->NumMyElements()]);

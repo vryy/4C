@@ -22,12 +22,12 @@
 #include "4C_contact_interface.hpp"
 #include "4C_contact_node.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_discretization_condition_locsys.hpp"
-#include "4C_discretization_fem_general_assemblestrategy.hpp"
+#include "4C_fem_condition_locsys.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_solver.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_multiply.hpp"
@@ -1900,7 +1900,7 @@ void EHL::Monolithic::LinCouetteForceDisp(Teuchos::RCP<Core::LinAlg::SparseMatri
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dd)
 {
   const int ndim = Global::Problem::Instance()->NDim();
-  Discret::Discretization& lub_dis = *lubrication_->LubricationField()->discretization();
+  Core::FE::Discretization& lub_dis = *lubrication_->LubricationField()->discretization();
   Teuchos::RCP<Epetra_Vector> visc_vec =
       Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->dof_row_map(1)));
   for (int i = 0; i < lub_dis.NodeRowMap()->NumMyElements(); ++i)
@@ -2060,7 +2060,7 @@ void EHL::Monolithic::LinCouetteForcePres(Teuchos::RCP<Core::LinAlg::SparseMatri
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
   hinv_relV->Multiply(1., *h_inv, *relVel, 0.);
 
-  Discret::Discretization& lub_dis = *lubrication_->LubricationField()->discretization();
+  Core::FE::Discretization& lub_dis = *lubrication_->LubricationField()->discretization();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dVisc_dp =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(lub_dis.dof_row_map(1)), 81));
 

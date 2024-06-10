@@ -11,8 +11,8 @@
 
 #include "4C_contact_element.hpp"
 #include "4C_contact_node.hpp"
-#include "4C_discretization_geometry_reference_config_utils.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_geometry_reference_config_utils.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor UnbiasedSelfBinaryTree (public)                   schmidt 01/19|
  *----------------------------------------------------------------------*/
-CONTACT::UnbiasedSelfBinaryTree::UnbiasedSelfBinaryTree(Discret::Discretization& discret,
+CONTACT::UnbiasedSelfBinaryTree::UnbiasedSelfBinaryTree(Core::FE::Discretization& discret,
     const Teuchos::ParameterList& iparams, Teuchos::RCP<Epetra_Map> elements, int dim, double eps)
     : SelfBinaryTree(discret, iparams, elements, dim, eps),
       two_half_pass_(iparams.get<bool>("Two_half_pass")),

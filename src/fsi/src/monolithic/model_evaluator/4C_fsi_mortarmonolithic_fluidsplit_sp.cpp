@@ -20,6 +20,7 @@ in saddle-point formulation with Lagrange multipliers discretized on the fluid i
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_debugwriter.hpp"
 #include "4C_fsi_statustest.hpp"
@@ -27,7 +28,6 @@ in saddle-point formulation with Lagrange multipliers discretized on the fluid i
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_matrixtransform.hpp"
@@ -1370,8 +1370,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::create_node_owner_relationship(
     std::map<int, int>* nodeOwner, std::map<int, std::list<int>>* inverseNodeOwner,
     std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
     std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
-    Teuchos::RCP<Discret::Discretization> structuredis,
-    Teuchos::RCP<Discret::Discretization> fluiddis, const Inpar::FSI::Redistribute domain)
+    Teuchos::RCP<Core::FE::Discretization> structuredis,
+    Teuchos::RCP<Core::FE::Discretization> fluiddis, const Inpar::FSI::Redistribute domain)
 {
   FOUR_C_THROW("Not implemented, yet.");
 }

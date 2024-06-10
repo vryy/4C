@@ -48,7 +48,7 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   }
 
   // 1. Access the discretization
-  Teuchos::RCP<Discret::Discretization> actdis = Teuchos::null;
+  Teuchos::RCP<Core::FE::Discretization> actdis = Teuchos::null;
   actdis = Global::Problem::Instance()->GetDis("red_airway");
 
   // Set degrees of freedom in the discretization
@@ -189,7 +189,7 @@ void redairway_tissue_dyn()
 {
   const Teuchos::ParameterList& rawdyn =
       Global::Problem::Instance()->red_airway_tissue_dynamic_params();
-  Teuchos::RCP<Discret::Discretization> actdis = Global::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> actdis = Global::Problem::Instance()->GetDis("structure");
   Teuchos::RCP<Airway::RedAirwayTissue> redairway_tissue =
       Teuchos::rcp(new Airway::RedAirwayTissue(actdis->Comm(), rawdyn));
 

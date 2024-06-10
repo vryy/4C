@@ -14,7 +14,7 @@
 
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_ssi_base.hpp"
 
@@ -45,7 +45,7 @@ namespace SSI
     //! \param ndim                        dimension of the problem
     //! \param structdis                   underlying structure discretization
     //! \param ssi_base                    underlying scatra-structure time integrator
-    virtual void Init(const int ndim, Teuchos::RCP<Discret::Discretization> structdis,
+    virtual void Init(const int ndim, Teuchos::RCP<Core::FE::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) = 0;
 
     //! \brief setup this class
@@ -56,14 +56,14 @@ namespace SSI
     //!
     //! \param structdis   underlying structure discretization
     //! \param scatradis   underlying scatra discretization
-    virtual void assign_material_pointers(Teuchos::RCP<Discret::Discretization> structdis,
-        Teuchos::RCP<Discret::Discretization> scatradis) = 0;
+    virtual void assign_material_pointers(Teuchos::RCP<Core::FE::Discretization> structdis,
+        Teuchos::RCP<Core::FE::Discretization> scatradis) = 0;
 
     //!
     //! \param scatradis      underlying scatra discretization
     //! \param stress_state   mechanical stress state vector to set
     //! \param nds            number of dofset to write state on
-    virtual void set_mechanical_stress_state(Discret::Discretization& scatradis,
+    virtual void set_mechanical_stress_state(Core::FE::Discretization& scatradis,
         Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds) = 0;
 
     //! \brief set structure mesh displacement on other field
@@ -87,7 +87,7 @@ namespace SSI
     //! \param phi    scalar field solution
     //! \param nds    number of dofset to write state on
     virtual void SetScalarField(
-        Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) = 0;
+        Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) = 0;
 
     //! \brief set micro soultion of scatra field other field
     //!
@@ -95,11 +95,11 @@ namespace SSI
     //! \param phi     micro scatra solution
     //! \param nds     number of dofset to write micro scatra solution on
     virtual void SetScalarFieldMicro(
-        Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) = 0;
+        Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) = 0;
 
     //! set temperature field on structure field
     virtual void SetTemperatureField(
-        Discret::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) = 0;
+        Core::FE::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) = 0;
   };
 
   //! solid-scatra coupling for matching volume meshes
@@ -107,15 +107,15 @@ namespace SSI
   {
    public:
     SSICouplingMatchingVolume() : issetup_(false), isinit_(false){};
-    void Init(const int ndim, Teuchos::RCP<Discret::Discretization> structdis,
+    void Init(const int ndim, Teuchos::RCP<Core::FE::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
     void Setup() override;
 
-    void assign_material_pointers(Teuchos::RCP<Discret::Discretization> structdis,
-        Teuchos::RCP<Discret::Discretization> scatradis) override;
+    void assign_material_pointers(Teuchos::RCP<Core::FE::Discretization> structdis,
+        Teuchos::RCP<Core::FE::Discretization> scatradis) override;
 
-    void set_mechanical_stress_state(Discret::Discretization& scatradis,
+    void set_mechanical_stress_state(Core::FE::Discretization& scatradis,
         Teuchos::RCP<const Epetra_Vector> stress_statetemp, unsigned nds) override;
 
     void set_mesh_disp(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
@@ -124,14 +124,14 @@ namespace SSI
     void set_velocity_fields(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
-    void SetScalarField(
-        Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+    void SetScalarField(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
+        unsigned nds) override;
 
-    void SetScalarFieldMicro(
-        Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+    void SetScalarFieldMicro(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
+        unsigned nds) override;
 
     void SetTemperatureField(
-        Discret::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override;
+        Core::FE::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override;
 
    private:
     //! flag indicating if class is setup
@@ -176,15 +176,15 @@ namespace SSI
           extractor_(Teuchos::null),
           issetup_(false),
           isinit_(false){};
-    void Init(const int ndim, Teuchos::RCP<Discret::Discretization> structdis,
+    void Init(const int ndim, Teuchos::RCP<Core::FE::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
     void Setup() override;
 
-    void assign_material_pointers(Teuchos::RCP<Discret::Discretization> structdis,
-        Teuchos::RCP<Discret::Discretization> scatradis) override;
+    void assign_material_pointers(Teuchos::RCP<Core::FE::Discretization> structdis,
+        Teuchos::RCP<Core::FE::Discretization> scatradis) override;
 
-    void set_mechanical_stress_state(Discret::Discretization& scatradis,
+    void set_mechanical_stress_state(Core::FE::Discretization& scatradis,
         Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds) override
     {
       FOUR_C_THROW("only implemented for 'SSICouplingMatchingVolume'");
@@ -196,14 +196,14 @@ namespace SSI
     void set_velocity_fields(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
-    void SetScalarField(
-        Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+    void SetScalarField(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
+        unsigned nds) override;
 
-    void SetScalarFieldMicro(
-        Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+    void SetScalarFieldMicro(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
+        unsigned nds) override;
 
     void SetTemperatureField(
-        Discret::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override
+        Core::FE::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override
     {
       FOUR_C_THROW("only for matching nodes");
     };
@@ -226,10 +226,10 @@ namespace SSI
     int problem_dimension_;
 
     //! pointer to structdis_
-    Teuchos::RCP<Discret::Discretization> structdis_;
+    Teuchos::RCP<Core::FE::Discretization> structdis_;
 
     //! pointer to scatradis_
-    Teuchos::RCP<Discret::Discretization> scatradis_;
+    Teuchos::RCP<Core::FE::Discretization> scatradis_;
 
    protected:
     //! returns true if Setup() was called and is still valid
@@ -264,15 +264,15 @@ namespace SSI
    public:
     SSICouplingNonMatchingVolume()
         : volcoupl_structurescatra_(Teuchos::null), issetup_(false), isinit_(false){};
-    void Init(const int ndim, Teuchos::RCP<Discret::Discretization> structdis,
+    void Init(const int ndim, Teuchos::RCP<Core::FE::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
     void Setup() override;
 
-    void assign_material_pointers(Teuchos::RCP<Discret::Discretization> structdis,
-        Teuchos::RCP<Discret::Discretization> scatradis) override;
+    void assign_material_pointers(Teuchos::RCP<Core::FE::Discretization> structdis,
+        Teuchos::RCP<Core::FE::Discretization> scatradis) override;
 
-    void set_mechanical_stress_state(Discret::Discretization& scatradis,
+    void set_mechanical_stress_state(Core::FE::Discretization& scatradis,
         Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds) override
     {
       FOUR_C_THROW("only implemented for 'SSICouplingMatchingVolume'");
@@ -284,14 +284,14 @@ namespace SSI
     void set_velocity_fields(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
-    void SetScalarField(
-        Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+    void SetScalarField(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
+        unsigned nds) override;
 
-    void SetScalarFieldMicro(
-        Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+    void SetScalarFieldMicro(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
+        unsigned nds) override;
 
     void SetTemperatureField(
-        Discret::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override
+        Core::FE::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override
     {
       FOUR_C_THROW("only for matching nodes");
     };
@@ -339,16 +339,16 @@ namespace SSI
   {
    public:
     SSICouplingMatchingVolumeAndBoundary() : issetup_(false), isinit_(false){};
-    void Init(const int ndim, Teuchos::RCP<Discret::Discretization> structdis,
+    void Init(const int ndim, Teuchos::RCP<Core::FE::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
     void Setup() override;
 
 
-    void assign_material_pointers(Teuchos::RCP<Discret::Discretization> structdis,
-        Teuchos::RCP<Discret::Discretization> scatradis) override;
+    void assign_material_pointers(Teuchos::RCP<Core::FE::Discretization> structdis,
+        Teuchos::RCP<Core::FE::Discretization> scatradis) override;
 
-    void set_mechanical_stress_state(Discret::Discretization& scatradis,
+    void set_mechanical_stress_state(Core::FE::Discretization& scatradis,
         Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds) override
     {
       FOUR_C_THROW("only implemented for 'SSICouplingMatchingVolume'");
@@ -360,14 +360,14 @@ namespace SSI
     void set_velocity_fields(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
-    void SetScalarField(
-        Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+    void SetScalarField(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
+        unsigned nds) override;
 
-    void SetScalarFieldMicro(
-        Discret::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+    void SetScalarFieldMicro(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
+        unsigned nds) override;
 
     void SetTemperatureField(
-        Discret::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override;
+        Core::FE::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override;
 
    private:
     //! flag indicating if class is setup

@@ -15,10 +15,10 @@ Discret::ELEMENTS::RedInterAcinarDep::Evaluate() with the corresponding action.
 
 #include "4C_red_airways_interacinardep_impl.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_red_airways_evaluation_data.hpp"
 #include "4C_utils_function.hpp"
@@ -70,7 +70,7 @@ Discret::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -100,7 +100,7 @@ int Discret::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep* 
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& n_intr_acn_l, Teuchos::RCP<const Core::Mat::Material> material)
 {
   Discret::ReducedLung::EvaluationData& evaluation_data =
@@ -154,7 +154,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::sysmat(std::vector<double>&
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcinarDep* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();

@@ -13,8 +13,8 @@
 
 #include "4C_binstrategy_utils.hpp"
 #include "4C_comm_utils_factory.hpp"
-#include "4C_discretization_dofset_independent.hpp"
-#include "4C_discretization_geometry_intersection_math.hpp"
+#include "4C_fem_dofset_independent.hpp"
+#include "4C_fem_geometry_intersection_math.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_binningstrategy.hpp"
 #include "4C_io.hpp"
@@ -196,7 +196,7 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization()
       Teuchos::RCP<Epetra_Comm> com =
           Teuchos::rcp(Global::Problem::Instance()->GetDis("structure")->Comm().Clone());
       boxdiscret_ = Teuchos::rcp(
-          new Discret::Discretization("boundingbox", com, Global::Problem::Instance()->NDim()));
+          new Core::FE::Discretization("boundingbox", com, Global::Problem::Instance()->NDim()));
     }
     else
     {

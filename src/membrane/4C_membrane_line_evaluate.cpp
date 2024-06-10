@@ -8,7 +8,7 @@
 \brief Nonlinear Membrane Finite Element line evaluation
 
 *----------------------------------------------------------------------*/
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_global_data.hpp"
 #include "4C_membrane.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

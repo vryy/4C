@@ -9,7 +9,7 @@
 
 #include "4C_constraint_monitor.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 
 #include <iostream>
@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-CONSTRAINTS::Monitor::Monitor(Teuchos::RCP<Discret::Discretization> discr,
+CONSTRAINTS::Monitor::Monitor(Teuchos::RCP<Core::FE::Discretization> discr,
     const std::string& conditionname, int& minID, int& maxID)
     : actdisc_(discr)
 {

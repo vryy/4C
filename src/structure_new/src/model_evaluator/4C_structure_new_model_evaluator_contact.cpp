@@ -111,7 +111,7 @@ void STR::MODELEVALUATOR::Contact::post_setup(Teuchos::ParameterList& cparams)
         "OUTPUT_FILE_NAME", global_in_output().get_output_ptr()->Output()->FileName());
     plot_params.set<std::string>(
         "INPUT_FILE_NAME", global_in_output().get_output_ptr()->Output()->InputFileName());
-    plot_params.set<const Discret::Discretization*>(
+    plot_params.set<const Core::FE::Discretization*>(
         "DISCRETIZATION", global_state().get_discret().get());
     plot_params.set<STR::MODELEVALUATOR::Contact*>("MODELEVALUATOR", this);
 

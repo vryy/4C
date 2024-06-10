@@ -8,7 +8,7 @@
  *----------------------------------------------------------------------*/
 
 
-#include "4C_discretization_geometry_position_array.hpp"
+#include "4C_fem_geometry_position_array.hpp"
 #include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_action.hpp"
@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_od(Core::Elements::Element* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -63,7 +63,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_od(Core::Elemen
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateActionOD(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, const ScaTra::Action& action,
+    Core::FE::Discretization& discretization, const ScaTra::Action& action,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,

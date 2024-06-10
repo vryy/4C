@@ -16,7 +16,7 @@
 #include "4C_contact_tsi_interface.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_thermo.hpp"
 #include "4C_io.hpp"
@@ -58,7 +58,7 @@ void CONTACT::LagrangeStrategyTsi::set_state(
     {
       for (int j = 0; j < (int)interface_.size(); ++j)
       {
-        Discret::Discretization& idiscr = interface_[j]->Discret();
+        Core::FE::Discretization& idiscr = interface_[j]->Discret();
         Teuchos::RCP<Epetra_Vector> global =
             Teuchos::rcp(new Epetra_Vector(*idiscr.DofColMap(), false));
         Core::LinAlg::Export(vec, *global);
@@ -81,7 +81,7 @@ void CONTACT::LagrangeStrategyTsi::set_state(
     {
       for (int j = 0; j < (int)interface_.size(); ++j)
       {
-        Discret::Discretization& idiscr = interface_[j]->Discret();
+        Core::FE::Discretization& idiscr = interface_[j]->Discret();
 
         Teuchos::RCP<Epetra_Vector> global =
             Teuchos::rcp(new Epetra_Vector(*idiscr.DofColMap(), false));

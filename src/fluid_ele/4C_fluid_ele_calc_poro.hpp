@@ -84,7 +84,7 @@ namespace Discret
         calculated
 
        */
-      int Evaluate(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+      int Evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -108,7 +108,7 @@ namespace Discret
         \param intpoints        (i) Gaussian integration points
 
        */
-      virtual int Evaluate(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+      virtual int Evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -135,7 +135,7 @@ namespace Discret
 
        */
       virtual int evaluate_od(Discret::ELEMENTS::Fluid* ele,
-          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -150,7 +150,7 @@ namespace Discret
           Interface function for supporting methods of the element
        */
       int EvaluateService(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -906,8 +906,8 @@ namespace Discret
       void pre_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          Discret::ELEMENTS::Fluid* ele,           //!< fluid element
-          Discret::Discretization& discretization  //!< pointer to discretization for de-assembly
+          Discret::ELEMENTS::Fluid* ele,            //!< fluid element
+          Core::FE::Discretization& discretization  //!< pointer to discretization for de-assembly
       );
 
       //! computation of material derivatives
@@ -955,7 +955,7 @@ namespace Discret
 
       virtual int compute_volume(Teuchos::ParameterList& params,  //!< paramters
           Discret::ELEMENTS::Fluid* ele,                          //!< current fluid element
-          Discret::Discretization& discretization,                //!< fluid discretization
+          Core::FE::Discretization& discretization,               //!< fluid discretization
           std::vector<int>& lm,                     //!< location vector for DOF management
           Core::LinAlg::SerialDenseVector& elevec1  //!< reference to element vector to be filled
       );
@@ -982,11 +982,11 @@ namespace Discret
           general function to compute the error (analytical solution) for particular problem type
        */
       int compute_error(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec) override;
 
       int compute_error(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
           const Core::FE::GaussIntegration& intpoints2) override;
 

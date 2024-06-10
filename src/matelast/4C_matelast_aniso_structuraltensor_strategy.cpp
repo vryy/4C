@@ -9,7 +9,7 @@ materials
 
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
 
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_service.hpp"

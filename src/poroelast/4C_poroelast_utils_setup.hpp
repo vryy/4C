@@ -14,9 +14,9 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_dofset_gidbased_wrapper.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_dofset_gidbased_wrapper.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_poroelast_utils.hpp"
 #include "4C_poroelast_utils_setup.hpp"
@@ -39,13 +39,13 @@ namespace PoroElast
       const bool matchinggrid = Core::UTILS::IntegralValue<bool>(porodyn, "MATCHINGGRID");
 
       // access the structure discretization, make sure it is filled
-      Teuchos::RCP<Discret::Discretization> structdis;
+      Teuchos::RCP<Core::FE::Discretization> structdis;
       structdis = problem->GetDis("structure");
       // set degrees of freedom in the discretization
       if (!structdis->Filled() or !structdis->HaveDofs()) structdis->fill_complete();
 
       // access the fluid discretization
-      Teuchos::RCP<Discret::Discretization> fluiddis;
+      Teuchos::RCP<Core::FE::Discretization> fluiddis;
       fluiddis = problem->GetDis("porofluid");
       if (!fluiddis->Filled()) fluiddis->fill_complete();
 

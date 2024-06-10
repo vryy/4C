@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /* constructor */
 STR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization> actdis,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
@@ -44,7 +44,7 @@ STR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // call Init() in base class
   STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);

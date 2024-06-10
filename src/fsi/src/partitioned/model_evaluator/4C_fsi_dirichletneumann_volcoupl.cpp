@@ -19,10 +19,10 @@
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_geometry_searchtree.hpp"
-#include "4C_discretization_geometry_searchtree_service.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_geometry_searchtree.hpp"
+#include "4C_fem_geometry_searchtree_service.hpp"
 #include "4C_fsi_debugwriter.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fsi.hpp"
@@ -602,7 +602,7 @@ void FSI::VolCorrector::init_dop_normals()
  |  Calculate Dops for background mesh                       farah 05/16|
  *----------------------------------------------------------------------*/
 std::map<int, Core::LinAlg::Matrix<9, 2>> FSI::VolCorrector::calc_background_dops(
-    Teuchos::RCP<Discret::Discretization> searchdis)
+    Teuchos::RCP<Core::FE::Discretization> searchdis)
 {
   std::map<int, Core::LinAlg::Matrix<9, 2>> currentKDOPs;
 

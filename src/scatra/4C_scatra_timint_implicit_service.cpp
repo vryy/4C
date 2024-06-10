@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "4C_coupling_adapter.hpp"
-#include "4C_discretization_fem_general_utils_superconvergent_patch_recovery.hpp"
+#include "4C_fem_general_utils_superconvergent_patch_recovery.hpp"
 #include "4C_fluid_rotsym_periodicbc_utils.hpp"
 #include "4C_fluid_turbulence_dyn_smag.hpp"
 #include "4C_fluid_turbulence_dyn_vreman.hpp"
@@ -2416,7 +2416,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_initial_time_derivative(
 void ScaTra::OutputScalarsStrategyBase::prepare_evaluate(
     const ScaTraTimIntImpl* const scatratimint, Teuchos::ParameterList& eleparams)
 {
-  const Teuchos::RCP<Discret::Discretization>& discret = scatratimint->discret_;
+  const Teuchos::RCP<Core::FE::Discretization>& discret = scatratimint->discret_;
 
   // add state vector to discretization
   discret->set_state("phinp", scatratimint->phinp_);
@@ -2848,7 +2848,7 @@ void ScaTra::OutputDomainIntegralStrategy::evaluate_integrals_and_print_results(
 
   // extract conditions for computation of domain or boundary integrals
   std::vector<Core::Conditions::Condition*> conditions;
-  Teuchos::RCP<Discret::Discretization> discret = scatratimint->discretization();
+  Teuchos::RCP<Core::FE::Discretization> discret = scatratimint->discretization();
   const int myrank = discret->Comm().MyPID();
   discret->GetCondition(condstring, conditions);
 
@@ -3018,7 +3018,7 @@ void ScaTra::OutputScalarsStrategyDomainAndCondition::evaluate_integrals(
 void ScaTra::ScalarHandler::Setup(const ScaTraTimIntImpl* const scatratimint)
 {
   // save reference to discretization for convenience
-  const Teuchos::RCP<Discret::Discretization>& discret = scatratimint->discretization();
+  const Teuchos::RCP<Core::FE::Discretization>& discret = scatratimint->discretization();
 
   // initialize set of all number of dofs per node on this proc
   std::set<int> mynumdofpernode;
@@ -3061,7 +3061,7 @@ void ScaTra::ScalarHandler::Setup(const ScaTraTimIntImpl* const scatratimint)
  *-------------------------------------------------------------------------*/
 int ScaTra::ScalarHandler::num_dof_per_node_in_condition(
     const Core::Conditions::Condition& condition,
-    const Teuchos::RCP<const Discret::Discretization>& discret) const
+    const Teuchos::RCP<const Core::FE::Discretization>& discret) const
 {
   check_is_setup();
 

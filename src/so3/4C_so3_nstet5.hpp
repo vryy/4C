@@ -12,8 +12,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elementtype.hpp"
 #include "4C_inpar_structure.hpp"
 
 // #define PUSO_NSTET5              ///< run the Puso&Solberg style 5-node tet
@@ -27,9 +27,14 @@ namespace Core::LinAlg
   class SerialDenseVector;
   class SerialDenseMatrix;
 }  // namespace Core::LinAlg
-namespace Discret
+
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
+
+namespace Discret
+{
 
   namespace ELEMENTS
   {
@@ -60,9 +65,9 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override;
+      int Initialize(Core::FE::Discretization& dis) override;
 
-      void pre_evaluate(Discret::Discretization& dis, Teuchos::ParameterList& p,
+      void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
           Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
           Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
           Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -114,7 +119,7 @@ namespace Discret
 
       void init_elementsand_maps(std::map<int, Discret::ELEMENTS::NStet5*>& elecids,
           std::map<int, Core::Nodes::Node*>& noderids, const int myrank, const int numproc,
-          Discret::Discretization& dis);
+          Core::FE::Discretization& dis);
 
       void init_adjacency(std::map<int, Discret::ELEMENTS::NStet5*>& elecids,
           std::map<int, Core::Nodes::Node*>& noderids,
@@ -123,17 +128,17 @@ namespace Discret
           std::map<int, std::vector<int>>& adjlm,
           std::map<int, std::map<int, std::vector<int>>>& adjsubele,
           std::map<int, std::vector<std::vector<std::vector<int>>>>& adjlmlm,
-          Discret::Discretization& dis);
+          Core::FE::Discretization& dis);
 
 
-      void element_deformation_gradient(Discret::Discretization& dis);
+      void element_deformation_gradient(Core::FE::Discretization& dis);
 
       void nodal_integration(Core::LinAlg::SerialDenseMatrix* stiff,
           Core::LinAlg::SerialDenseVector* force, std::map<int, Core::Nodes::Node*>& adjnode,
           std::vector<Discret::ELEMENTS::NStet5*>& adjele,
           std::map<int, std::vector<int>>& adjsubele, std::vector<int>& lm,
           std::vector<std::vector<std::vector<int>>>& lmlm, const Epetra_Vector& disp,
-          Discret::Discretization& dis, std::vector<double>* nodalstress,
+          Core::FE::Discretization& dis, std::vector<double>* nodalstress,
           std::vector<double>* nodalstrain, const Inpar::STR::StressType iostress,
           const Inpar::STR::StrainType iostrain);
 
@@ -345,7 +350,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -366,7 +371,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;

@@ -11,8 +11,8 @@
 
 #include "4C_linear_solver_preconditioner_linalg.hpp"
 
-#include "4C_discretization_fem_general_node.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 
@@ -41,7 +41,7 @@ Core::LinAlg::Preconditioner::Preconditioner(Teuchos::RCP<Solver> solver)
  *----------------------------------------------------------------------*/
 void Core::LinAlg::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
     Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex,
-    Teuchos::RCP<Discret::Discretization> fdis, Teuchos::RCP<Epetra_Map> inodes,
+    Teuchos::RCP<Core::FE::Discretization> fdis, Teuchos::RCP<Epetra_Map> inodes,
     bool structuresplit)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::Preconditioner::Setup");

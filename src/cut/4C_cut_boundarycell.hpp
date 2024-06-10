@@ -14,8 +14,8 @@
 
 #include "4C_cut_kernel.hpp"
 #include "4C_cut_tolerance.hpp"
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

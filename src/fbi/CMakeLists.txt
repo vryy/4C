@@ -13,7 +13,6 @@ set(_dependencies
     geometry_pair
     global_data
     inpar
-    lib
     )
 
 four_c_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

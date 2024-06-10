@@ -9,10 +9,10 @@
 */
 /*-----------------------------------------------------------*/
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_boundary_parent_calc.hpp"
 #include "4C_fluid_ele_xwall.hpp"
-#include "4C_lib_discret.hpp"
 
 
 FOUR_C_NAMESPACE_OPEN
@@ -79,7 +79,7 @@ void Discret::ELEMENTS::FluidXWallBoundary::Print(std::ostream& os) const
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis,
+void Discret::ELEMENTS::FluidXWallBoundary::LocationVector(const Core::FE::Discretization& dis,
     LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {

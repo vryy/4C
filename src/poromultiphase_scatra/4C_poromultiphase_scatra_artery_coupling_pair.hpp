@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_inpar_bio.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -32,10 +32,10 @@ class Epetra_MultiVector;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -112,8 +112,8 @@ namespace PoroMultiPhaseScaTra
     virtual bool DiamFunctionActive() = 0;
 
     //! reset state
-    virtual void ResetState(Teuchos::RCP<Discret::Discretization> contdis,
-        Teuchos::RCP<Discret::Discretization> artdis) = 0;
+    virtual void ResetState(Teuchos::RCP<Core::FE::Discretization> contdis,
+        Teuchos::RCP<Core::FE::Discretization> artdis) = 0;
 
     /**
      * Setup the porofluid-managers and the materials for later evaluation
@@ -137,7 +137,7 @@ namespace PoroMultiPhaseScaTra
 
     //! apply mesh movement on artery element
     virtual double ApplyMeshMovement(
-        const bool firstcall, Teuchos::RCP<Discret::Discretization> contdis) = 0;
+        const bool firstcall, Teuchos::RCP<Core::FE::Discretization> contdis) = 0;
 
     //! set segment id
     virtual void SetSegmentID(const int& segmentid) = 0;
@@ -191,8 +191,8 @@ namespace PoroMultiPhaseScaTra
     bool DiamFunctionActive() override { return diam_funct_active_; }
 
     //! reset state
-    void ResetState(Teuchos::RCP<Discret::Discretization> contdis,
-        Teuchos::RCP<Discret::Discretization> artdis) override;
+    void ResetState(Teuchos::RCP<Core::FE::Discretization> contdis,
+        Teuchos::RCP<Core::FE::Discretization> artdis) override;
 
     /**
      * Setup the porofluid-managers and the materials for later evaluation
@@ -236,7 +236,7 @@ namespace PoroMultiPhaseScaTra
 
     //! apply mesh movement on artery element
     double ApplyMeshMovement(
-        const bool firstcall, Teuchos::RCP<Discret::Discretization> contdis) override;
+        const bool firstcall, Teuchos::RCP<Core::FE::Discretization> contdis) override;
 
     //! set segment id
     void SetSegmentID(const int& segmentid) override;
@@ -269,7 +269,7 @@ namespace PoroMultiPhaseScaTra
     void pre_evaluate_node_to_point_coupling();
 
     //! extract velocity of solid phase
-    void extract_solid_vel(Teuchos::RCP<Discret::Discretization> contdis);
+    void extract_solid_vel(Teuchos::RCP<Core::FE::Discretization> contdis);
 
     //! recompute if deformable arteries are assumed
     void recompute_eta_and_xi_in_deformed_configuration(const std::vector<double>& segmentlengths,

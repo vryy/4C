@@ -11,7 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_mortar_base_binarytree.hpp"
 
 #include <Epetra_Map.h>
@@ -19,11 +19,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace CONTACT
 {
@@ -65,7 +64,7 @@ namespace CONTACT
     \param treenodes      references to tree nodes storage scheme
 
     */
-    SelfBinaryTreeNode(SelfBinaryTreeNodeType type, Discret::Discretization& discret,
+    SelfBinaryTreeNode(SelfBinaryTreeNodeType type, Core::FE::Discretization& discret,
         Teuchos::RCP<SelfBinaryTreeNode> parent, std::vector<int> elelist,
         const Core::LinAlg::SerialDenseMatrix& dopnormals,
         const Core::LinAlg::SerialDenseMatrix& samplevectors, const int& kdop, const int& dim,
@@ -512,7 +511,7 @@ namespace CONTACT
     \param dim (in):        The problem dimension
 
     */
-    SelfBinaryTree(Discret::Discretization& discret, const Teuchos::ParameterList& iparams,
+    SelfBinaryTree(Core::FE::Discretization& discret, const Teuchos::ParameterList& iparams,
         Teuchos::RCP<Epetra_Map> elements, int dim, double eps);
 
 

@@ -12,10 +12,10 @@
 #include "4C_io_domainreader.hpp"
 
 #include "4C_comm_parobject.hpp"
-#include "4C_discretization_fem_general_element_definition.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element_definition.hpp"
 #include "4C_io_gridgenerator.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_print.hpp"
 #include "4C_utils_string.hpp"
@@ -34,7 +34,7 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  DomainReader::DomainReader(Teuchos::RCP<Discret::Discretization> dis,
+  DomainReader::DomainReader(Teuchos::RCP<Core::FE::Discretization> dis,
       const Core::IO::DatFileReader& reader, std::string sectionname)
       : name_(dis->Name()),
         reader_(reader),

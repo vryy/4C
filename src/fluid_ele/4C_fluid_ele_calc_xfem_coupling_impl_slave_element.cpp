@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "4C_cut_position.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_fluid_ele_calc_xfem_coupling_impl.hpp"
 #include "4C_xfem_interface_utils.hpp"
 
@@ -29,8 +29,8 @@ namespace Discret
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::AddSlaveEleDisp(
-          const Discret::Discretization& slavedis,  ///< coupling slave discretization
-          const std::vector<int>& lm                ///< local map
+          const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
+          const std::vector<int>& lm                 ///< local map
       )
       {
         std::vector<double> mymatrix(lm.size());
@@ -43,9 +43,9 @@ namespace Discret
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::AddSlaveEleDisp(
-          const Discret::Discretization& slavedis,  ///< coupling slave discretization
-          const std::vector<int>& lm,               ///< local map
-          std::vector<double>& mymatrix             ///< slave element displacement vector
+          const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
+          const std::vector<int>& lm,                ///< local map
+          std::vector<double>& mymatrix              ///< slave element displacement vector
       )
       {
         // leave, if displacements are not set
@@ -85,8 +85,8 @@ namespace Discret
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::SetSlaveState(
-          const Discret::Discretization& slavedis,  ///< coupling slave discretization
-          const std::vector<int>& lm                ///< local map
+          const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
+          const std::vector<int>& lm                 ///< local map
       )
       {
         // get state of the global vector
@@ -118,8 +118,8 @@ namespace Discret
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::SetSlaveStaten(
-          const Discret::Discretization& slavedis,  ///< coupling slave discretization
-          const std::vector<int>& lm                ///< local map
+          const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
+          const std::vector<int>& lm                 ///< local map
       )
       {
         // get state of the global vector
@@ -235,9 +235,9 @@ namespace Discret
           unsigned int slave_numdof>
       void
       SlaveElementRepresentation<distype, slave_distype, slave_numdof>::set_interface_jump_statenp(
-          const Discret::Discretization& cutterdis,  ///< cutter discretization
-          const std::string state,                   ///< state
-          const std::vector<int>& lm                 ///< local map
+          const Core::FE::Discretization& cutterdis,  ///< cutter discretization
+          const std::string state,                    ///< state
+          const std::vector<int>& lm                  ///< local map
       )
       {
         // get state of the global vector
@@ -269,9 +269,9 @@ namespace Discret
           unsigned int slave_numdof>
       void
       SlaveElementRepresentation<distype, slave_distype, slave_numdof>::set_interface_jump_staten(
-          const Discret::Discretization& cutterdis,  ///< cutter discretization
-          const std::string state,                   ///< state
-          const std::vector<int>& lm                 ///< local map
+          const Core::FE::Discretization& cutterdis,  ///< cutter discretization
+          const std::string state,                    ///< state
+          const std::vector<int>& lm                  ///< local map
       )
       {
         // get state of the global vector

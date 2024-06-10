@@ -119,7 +119,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::
 template <typename scalar_type, typename beam, typename surface>
 std::vector<int>
 BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::get_pair_gid(
-    const Discret::Discretization& discret) const
+    const Core::FE::Discretization& discret) const
 {
   // Get the beam centerline GIDs.
   Core::LinAlg::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;

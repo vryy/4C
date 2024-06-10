@@ -23,10 +23,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace FLD
 {
@@ -93,7 +93,7 @@ namespace FLD
     Inpar::FLUID::ForcingType forcing_type_;
 
     //! fluid discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! state vector of volume force to be computed
     Teuchos::RCP<Epetra_Vector> forcing_;
@@ -206,7 +206,7 @@ namespace FLD
 
    private:
     //! fluid discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! state vector of volume force to be computed
     Teuchos::RCP<Epetra_Vector> forcing_;

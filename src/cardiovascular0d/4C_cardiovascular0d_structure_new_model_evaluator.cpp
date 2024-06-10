@@ -11,9 +11,9 @@
 
 #include "4C_cardiovascular0d_structure_new_model_evaluator.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -46,7 +46,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
 {
   check_init();
 
-  Teuchos::RCP<Discret::Discretization> dis = discret_ptr();
+  Teuchos::RCP<Core::FE::Discretization> dis = discret_ptr();
 
   // setup the displacement pointer
   disnp_ptr_ = global_state().get_dis_np();

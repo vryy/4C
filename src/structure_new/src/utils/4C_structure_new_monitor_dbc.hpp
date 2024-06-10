@@ -14,7 +14,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
 #include <Epetra_Map.h>
@@ -25,10 +25,10 @@ namespace Core::IO
 {
   class DiscretizationWriter;
 }
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 namespace STR
 {
   class Dbc;
@@ -70,7 +70,8 @@ namespace STR
 
     /// initialize class members
     void Init(const Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_ptr,
-        Discret::Discretization& discret, STR::TimeInt::BaseDataGlobalState& gstate, STR::Dbc& dbc);
+        Core::FE::Discretization& discret, STR::TimeInt::BaseDataGlobalState& gstate,
+        STR::Dbc& dbc);
 
     /// setup new class members
     void Setup();
@@ -82,13 +83,13 @@ namespace STR
     int get_unique_id(int tagged_id, Core::Conditions::GeometryType gtype) const;
 
     void create_reaction_force_condition(
-        const Core::Conditions::Condition& tagged_cond, Discret::Discretization& discret) const;
+        const Core::Conditions::Condition& tagged_cond, Core::FE::Discretization& discret) const;
 
     void get_tagged_condition(std::vector<const Core::Conditions::Condition*>& tagged_conds,
         const std::string& cond_name, const std::string& tag_name,
-        const Discret::Discretization& discret) const;
+        const Core::FE::Discretization& discret) const;
 
-    void create_reaction_maps(const Discret::Discretization& discret,
+    void create_reaction_maps(const Core::FE::Discretization& discret,
         const Core::Conditions::Condition& rcond, Teuchos::RCP<Epetra_Map>* react_maps) const;
 
     void read_results_prior_restart_step_and_write_to_file(
@@ -136,7 +137,7 @@ namespace STR
     inline void throw_if_not_setup() const { FOUR_C_ASSERT(issetup_, "Call Setup() first!"); }
 
    private:
-    Discret::Discretization* discret_ptr_ = nullptr;
+    Core::FE::Discretization* discret_ptr_ = nullptr;
     STR::TimeInt::BaseDataGlobalState* gstate_ptr_ = nullptr;
     STR::Dbc* dbc_ptr_ = nullptr;
 

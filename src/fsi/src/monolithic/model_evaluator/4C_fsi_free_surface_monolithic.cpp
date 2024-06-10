@@ -15,6 +15,7 @@
 #include "4C_ale_utils_mapextractor.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_monolithic_linearsystem.hpp"
 #include "4C_fsi_nox_newton.hpp"
@@ -24,7 +25,6 @@
 #include "4C_inpar_fsi.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linear_solver_preconditioner_linalg.hpp"
 

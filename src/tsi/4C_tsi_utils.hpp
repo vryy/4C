@@ -19,10 +19,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -68,8 +68,8 @@ namespace TSI
     void SetupTSI(const Epetra_Comm& comm);
 
 
-    void SetMaterialPointersMatchingGrid(Teuchos::RCP<const Discret::Discretization> sourcedis,
-        Teuchos::RCP<const Discret::Discretization> targetdis);
+    void SetMaterialPointersMatchingGrid(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
+        Teuchos::RCP<const Core::FE::Discretization> targetdis);
 
     //! strategy for material assignment for non matching meshes with TSI
 
@@ -98,14 +98,14 @@ namespace TSI
       //! assignment of thermo material to structure material
       void AssignMaterial2To1(const Core::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele1, const std::vector<int>& ids_2,
-          Teuchos::RCP<Discret::Discretization> dis1,
-          Teuchos::RCP<Discret::Discretization> dis2) override;
+          Teuchos::RCP<Core::FE::Discretization> dis1,
+          Teuchos::RCP<Core::FE::Discretization> dis2) override;
 
       //! assignment of structure material to thermo material
       void AssignMaterial1To2(const Core::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele2, const std::vector<int>& ids_1,
-          Teuchos::RCP<Discret::Discretization> dis1,
-          Teuchos::RCP<Discret::Discretization> dis2) override;
+          Teuchos::RCP<Core::FE::Discretization> dis1,
+          Teuchos::RCP<Core::FE::Discretization> dis2) override;
     };
 
   }  // namespace UTILS

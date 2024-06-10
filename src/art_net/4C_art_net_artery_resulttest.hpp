@@ -21,10 +21,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Arteries
 {
@@ -63,7 +63,7 @@ namespace Arteries
 
    private:
     /// Teuchos::RCP to scalar transport discretization
-    Teuchos::RCP<Discret::Discretization> dis_;
+    Teuchos::RCP<Core::FE::Discretization> dis_;
     /// Teuchos::RCP to solution vector
     Teuchos::RCP<const Epetra_Vector> mysol_;
     /// Teuchos::RCP to element volumetric flow

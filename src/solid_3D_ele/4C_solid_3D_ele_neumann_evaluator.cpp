@@ -7,9 +7,9 @@
 
 #include "4C_solid_3D_ele_neumann_evaluator.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_global_data.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_3D_ele_calc_lib_integration.hpp"
@@ -18,7 +18,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 void Discret::ELEMENTS::EvaluateNeumannByElement(Core::Elements::Element& element,
-    const Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    const Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     const std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& element_force_vector,
     double total_time)
 {
@@ -70,7 +70,7 @@ void Discret::ELEMENTS::EvaluateNeumannByElement(Core::Elements::Element& elemen
 
 template <Core::FE::CellType celltype>
 void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
-    const Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    const Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     const std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& element_force_vector,
     double total_time)
 {

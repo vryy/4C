@@ -11,8 +11,8 @@
 
 #include "4C_fluid_discret_extractor.hpp"
 
-#include "4C_discretization_condition_periodic.hpp"
-#include "4C_discretization_dofset_transparent.hpp"
+#include "4C_fem_condition_periodic.hpp"
+#include "4C_fem_dofset_transparent.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_rebalance_graph_based.hpp"
@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  | Constructor (public)                                  rasthofer 05/11|
  *----------------------------------------------------------------------*/
 FLD::FluidDiscretExtractor::FluidDiscretExtractor(
-    Teuchos::RCP<Discret::Discretization> actdis, const std::string& condition, bool yescondition)
+    Teuchos::RCP<Core::FE::Discretization> actdis, const std::string& condition, bool yescondition)
     : parentdiscret_(actdis)
 {
   // get condition, i.e., do we have nodes that belong to a separate section of the domain
@@ -58,11 +58,11 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         childdiscret_ = Teuchos::rcp(new XFEM::DiscretizationXWall(
             (std::string) "inflow", Teuchos::rcp(parentdiscret_->Comm().Clone()), actdis->n_dim()));
       else
-        childdiscret_ = Teuchos::rcp(new Discret::Discretization(
+        childdiscret_ = Teuchos::rcp(new Core::FE::Discretization(
             (std::string) "inflow", Teuchos::rcp(parentdiscret_->Comm().Clone()), actdis->n_dim()));
     }
     else  // dummy discretization
-      childdiscret_ = Teuchos::rcp(new Discret::Discretization(
+      childdiscret_ = Teuchos::rcp(new Core::FE::Discretization(
           (std::string) "none", Teuchos::rcp(parentdiscret_->Comm().Clone()), actdis->n_dim()));
 
     // get set of ids of all child nodes

@@ -20,20 +20,22 @@ Pack, Unpack, NumDofPerNode etc.
  *----------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
+
 namespace Discret
 {
-  // forward declarations
-  class Discretization;
-
   namespace ELEMENTS
   {
     // forward declarations
@@ -310,7 +312,7 @@ namespace Discret
       //!                         the controlling method does not expect the element
       //!                         to fill this vector
       //! \return 0 if successful, negative otherwise
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -328,7 +330,7 @@ namespace Discret
       //! \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       //!
       //! \return 0 if successful, negative otherwise
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1) override;
@@ -558,7 +560,7 @@ namespace Discret
       //!                         the controlling method does not expect the element
       //!                         to fill this vector
       //! \return 0 if successful, negative otherwise
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -580,7 +582,7 @@ namespace Discret
       //! \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       //!
       //! \return 0 if successful, negative otherwise
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1) override;

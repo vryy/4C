@@ -8,7 +8,7 @@
 #include "4C_solid_poro_3D_ele.hpp"
 
 #include "4C_comm_utils_factory.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
 #include "4C_mat_structporo.hpp"
 #include "4C_so3_line.hpp"

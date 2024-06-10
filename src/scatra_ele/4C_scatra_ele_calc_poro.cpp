@@ -10,11 +10,11 @@
 
 #include "4C_scatra_ele_calc_poro.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_scatra.hpp"
 #include "4C_mat_structporo.hpp"
@@ -68,7 +68,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
 // int Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::Evaluate(
 //  Core::Elements::Element*              ele,
 //  Teuchos::ParameterList&    params,
-//  Discret::Discretization&       discretization,
+//  Core::FE::Discretization&       discretization,
 //  const std::vector<int>&    lm,
 //  Core::LinAlg::SerialDenseMatrix&  elemat1_epetra,
 //  Core::LinAlg::SerialDenseMatrix&  elemat2_epetra,
@@ -137,7 +137,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::evaluate_action(Core::Elements::Element* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     const ScaTra::Action& action, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -197,7 +197,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::read_element_coordinates(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   extract_element_and_node_values_poro(ele, params, discretization, la);
 
@@ -212,7 +212,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_val
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_values_poro(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // get number of dofset associated with velocity related dofs
   const int ndsvel = my::scatrapara_->NdsVel();

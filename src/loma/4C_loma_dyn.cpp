@@ -12,8 +12,8 @@
 
 #include "4C_loma_dyn.hpp"
 
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_loma_algorithm.hpp"
@@ -45,8 +45,8 @@ void loma_dyn(int restart)
   Global::Problem* problem = Global::Problem::Instance();
 
   // access fluid and (typically empty) scatra discretization
-  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis("fluid");
-  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis("scatra");
 
   // ensure that all dofs are assigned in the right order such that
   // dof numbers are created with fluid dof < scatra/elch dof

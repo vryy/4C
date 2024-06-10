@@ -8,14 +8,14 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elements_jacobian.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elements_jacobian.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
@@ -39,7 +39,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -644,7 +644,7 @@ int Discret::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 
 int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

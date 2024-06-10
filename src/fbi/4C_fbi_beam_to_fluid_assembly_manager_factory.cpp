@@ -14,8 +14,8 @@ constraint discretization approach
 #include "4C_fbi_fluid_assembly_strategy.hpp"
 #include "4C_fbi_partitioned_penaltycoupling_assembly_manager_direct.hpp"
 #include "4C_fbi_partitioned_penaltycoupling_assembly_manager_indirect.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_inpar_fbi.hpp"
-#include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 /**
@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
  */
 Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
 BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
-    Teuchos::RCP<const Discret::Discretization> discretization1,
-    Teuchos::RCP<const Discret::Discretization> discretization2,
+    Teuchos::RCP<const Core::FE::Discretization> discretization1,
+    Teuchos::RCP<const Core::FE::Discretization> discretization2,
     std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> interaction_pairs,
     const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr,
     Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy)

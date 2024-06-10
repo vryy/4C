@@ -105,7 +105,7 @@ namespace Adapter
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
     // access to embedded discretization
-    const Teuchos::RCP<Discret::Discretization>& discretization() override;
+    const Teuchos::RCP<Core::FE::Discretization>& discretization() override;
 
     // return discretization writer of embedded fluid discretization (for special purpose output)
     const Teuchos::RCP<Core::IO::DiscretizationWriter>& DiscWriter() override { return output_; }

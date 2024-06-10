@@ -9,8 +9,8 @@
 /*--------------------------------------------------------------------------*/
 #include "4C_scatra_ele_calc_elch_NP.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
 #include "4C_scatra_ele_parameter_timint.hpp"
@@ -945,7 +945,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_laplace(
  *------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::correction_for_flux_across_dc(
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs)
 {
   if ((myelch::elchparams_->EquPot() == Inpar::ElCh::equpot_enc_pde) or

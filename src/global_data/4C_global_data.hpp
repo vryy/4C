@@ -15,7 +15,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_shape_function_type.hpp"
+#include "4C_fem_general_shape_function_type.hpp"
 #include "4C_io_walltime_based_restart.hpp"
 #include "4C_legacy_enum_definitions_problem_type.hpp"
 #include "4C_utils_function_manager.hpp"
@@ -68,11 +68,10 @@ namespace Core::IO
 {
   class DatFileReader;
 }
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
-
+}  // namespace Core::FE
 namespace Global
 {
   /*!
@@ -478,7 +477,7 @@ namespace Global
     /// @name Discretizations
 
     /// get access to a particular discretization
-    Teuchos::RCP<Discret::Discretization> GetDis(const std::string& name) const;
+    Teuchos::RCP<Core::FE::Discretization> GetDis(const std::string& name) const;
 
     auto DiscretizationRange() { return std_20::ranges::views::all(discretizationmap_); }
 
@@ -494,7 +493,7 @@ namespace Global
     bool DoesExistDis(const std::string& name) const;
 
     /// add a discretization to the global problem
-    void AddDis(const std::string& name, Teuchos::RCP<Discret::Discretization> dis);
+    void AddDis(const std::string& name, Teuchos::RCP<Core::FE::Discretization> dis);
 
 
     //@}
@@ -587,7 +586,7 @@ namespace Global
     int restartstep_;
 
     /// discretizations of this problem
-    std::map<std::string, Teuchos::RCP<Discret::Discretization>> discretizationmap_;
+    std::map<std::string, Teuchos::RCP<Core::FE::Discretization>> discretizationmap_;
 
     /// material bundle
     Teuchos::RCP<Mat::PAR::Bundle> materials_;

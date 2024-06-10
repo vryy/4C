@@ -22,10 +22,10 @@ surface meshes
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -65,7 +65,7 @@ namespace Core::Geo
      public:
       /// constructor
       explicit BackMesh(
-          const Teuchos::RCP<Discret::Discretization>& backdis, Core::Geo::CutWizard* wizard)
+          const Teuchos::RCP<Core::FE::Discretization>& backdis, Core::Geo::CutWizard* wizard)
           : wizard_(wizard),
             back_discret_(backdis),
             back_disp_col_(Teuchos::null),
@@ -79,11 +79,11 @@ namespace Core::Geo
       void Init(const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
           const Teuchos::RCP<const Epetra_Vector>& back_levelset_col);
 
-      const Teuchos::RCP<Discret::Discretization>& GetPtr() { return back_discret_; }
+      const Teuchos::RCP<Core::FE::Discretization>& GetPtr() { return back_discret_; }
 
-      Discret::Discretization& Get() { return *back_discret_; }
+      Core::FE::Discretization& Get() { return *back_discret_; }
 
-      const Discret::Discretization& Get() const { return *back_discret_; }
+      const Core::FE::Discretization& Get() const { return *back_discret_; }
 
       virtual int NumMyColElements() const;
 
@@ -115,7 +115,7 @@ namespace Core::Geo
 
      private:
       /// background discretization
-      Teuchos::RCP<Discret::Discretization> back_discret_;
+      Teuchos::RCP<Core::FE::Discretization> back_discret_;
 
       /// col vector holding background ALE displacements for backdis
       Teuchos::RCP<const Epetra_Vector> back_disp_col_;
@@ -132,7 +132,7 @@ namespace Core::Geo
     {
      public:
       //! ctor
-      CutterMesh(Teuchos::RCP<Discret::Discretization> cutterdis,
+      CutterMesh(Teuchos::RCP<Core::FE::Discretization> cutterdis,
           Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
           : cutterdis_(cutterdis), cutter_disp_col_(cutter_disp_col), start_ele_gid_(start_ele_gid)
       {
@@ -141,7 +141,7 @@ namespace Core::Geo
       //---------------------------------discretization-----------------------------
 
       //! @name cutter discretization
-      Teuchos::RCP<Discret::Discretization> cutterdis_;  ///< cutter discretization
+      Teuchos::RCP<Core::FE::Discretization> cutterdis_;  ///< cutter discretization
       //@}
 
       //---------------------------------state vectors ----------------------------
@@ -162,7 +162,7 @@ namespace Core::Geo
     /*!
     \brief Constructor
     */
-    CutWizard(const Teuchos::RCP<Discret::Discretization>& backdis);
+    CutWizard(const Teuchos::RCP<Core::FE::Discretization>& backdis);
 
 
     /*!
@@ -196,17 +196,17 @@ namespace Core::Geo
         int level_set_sid       //!< global id for level-set side
     );
 
-    void AddCutterState(const int mc_idx, Teuchos::RCP<Discret::Discretization> cutter_dis,
+    void AddCutterState(const int mc_idx, Teuchos::RCP<Core::FE::Discretization> cutter_dis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col);
 
-    void AddCutterState(const int mc_idx, Teuchos::RCP<Discret::Discretization> cutter_dis,
+    void AddCutterState(const int mc_idx, Teuchos::RCP<Core::FE::Discretization> cutter_dis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid);
 
     // Find marked background-boundary sides.
     //  Extract these sides and create boundary cell for these!
     void set_marked_condition_sides(
         // const int mc_idx,
-        Teuchos::RCP<Discret::Discretization> cutter_dis,
+        Teuchos::RCP<Core::FE::Discretization> cutter_dis,
         // Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
         const int start_ele_gid);
 
@@ -251,7 +251,7 @@ namespace Core::Geo
     bool HasLSCuttingSide(int sid);
 
     //! update the coordinates of the cut boundary cells
-    void update_boundary_cell_coords(Teuchos::RCP<Discret::Discretization> cutterdis,
+    void update_boundary_cell_coords(Teuchos::RCP<Core::FE::Discretization> cutterdis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid);
 
     //! Cubaturedegree for creating of integrationpoints on boundarycells
@@ -296,7 +296,7 @@ namespace Core::Geo
 
     //! Add all cutting side elements of given cutter discretization with given displacement field
     //! to the intersection class
-    void add_mesh_cutting_side(Teuchos::RCP<Discret::Discretization> cutterdis,
+    void add_mesh_cutting_side(Teuchos::RCP<Core::FE::Discretization> cutterdis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
         const int start_ele_gid = 0  ///< global start index for element id numbering
     );

@@ -11,9 +11,9 @@
 #include "4C_pasi_dyn.hpp"
 
 #include "4C_comm_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_pasi.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_pasi_partitioned_onewaycoup.hpp"
 #include "4C_pasi_partitioned_twowaycoup.hpp"
 #include "4C_pasi_utils.hpp"

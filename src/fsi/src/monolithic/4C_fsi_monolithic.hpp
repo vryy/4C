@@ -115,15 +115,15 @@ namespace FSI
 
     //! create time integrator for structure field
     virtual void create_structure_time_integrator(
-        const Teuchos::ParameterList& timeparams,        ///< time integration parameters
-        Teuchos::RCP<Discret::Discretization> structdis  ///< discretization of structure field
+        const Teuchos::ParameterList& timeparams,         ///< time integration parameters
+        Teuchos::RCP<Core::FE::Discretization> structdis  ///< discretization of structure field
     );
 
     //! create time integrators for fluid and ale field
     virtual void create_fluid_and_ale_time_integrator(
-        const Teuchos::ParameterList& timeparams,        ///< time integration parameters
-        Teuchos::RCP<Discret::Discretization> fluiddis,  ///< discretization of fluid field
-        Teuchos::RCP<Discret::Discretization> aledis     ///< discretization of ALE field
+        const Teuchos::ParameterList& timeparams,         ///< time integration parameters
+        Teuchos::RCP<Core::FE::Discretization> fluiddis,  ///< discretization of fluid field
+        Teuchos::RCP<Core::FE::Discretization> aledis     ///< discretization of ALE field
     );
 
     //! @name Time loop building blocks
@@ -1120,8 +1120,8 @@ namespace FSI
         std::map<int, std::list<int>>* inverseNodeOwner,
         std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
         std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
-        Teuchos::RCP<Discret::Discretization> structuredis,  ///< structure discretization
-        Teuchos::RCP<Discret::Discretization> fluiddis,      ///< fluid discretization
+        Teuchos::RCP<Core::FE::Discretization> structuredis,  ///< structure discretization
+        Teuchos::RCP<Core::FE::Discretization> fluiddis,      ///< fluid discretization
         const Inpar::FSI::Redistribute domain) = 0;
 
     /*! \brief Find neighboring node of the opposing field for each node at the interface
@@ -1129,8 +1129,8 @@ namespace FSI
      * The relation is saved in the map \c fluidToStructureMap as fluidnode -- structurenode and
      * in the map \c structureToFluidMap as structurenode -- fluidnode.
      */
-    virtual void create_interface_mapping(Teuchos::RCP<Discret::Discretization> structuredis,
-        Teuchos::RCP<Discret::Discretization> fluiddis,
+    virtual void create_interface_mapping(Teuchos::RCP<Core::FE::Discretization> structuredis,
+        Teuchos::RCP<Core::FE::Discretization> fluiddis,
         std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
         std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
         std::map<int, std::vector<int>>& fluidToStructureMap,
@@ -1153,8 +1153,8 @@ namespace FSI
         std::map<int, std::vector<int>>& insertedEdges,
         std::map<int, std::vector<int>>& fluidToStructureMap,
         std::map<int, std::vector<int>>& structureToFluidMap,
-        Teuchos::RCP<Discret::Discretization> structuredis,  ///< structure discretization
-        Teuchos::RCP<Discret::Discretization> fluiddis);     ///< fluid discretization);
+        Teuchos::RCP<Core::FE::Discretization> structuredis,  ///< structure discretization
+        Teuchos::RCP<Core::FE::Discretization> fluiddis);     ///< fluid discretization);
 
     /*! \brief Build weighted graph to influence distribution made by ZOLTAN
      *
@@ -1252,7 +1252,7 @@ namespace FSI
     virtual void find_node_related_to_dof(
         std::map<int, Core::Nodes::Node*>* nodes,  ///< map of nodes with their global ids
         int gdofid,                                ///<  global id of dof
-        Teuchos::RCP<Discret::Discretization> discretization,  ///< discretization
+        Teuchos::RCP<Core::FE::Discretization> discretization,  ///< discretization
         int* re  ///< pointer to array with global id of node related to gdofid and owner id of node
     );
 

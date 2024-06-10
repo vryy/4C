@@ -10,9 +10,9 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
@@ -109,7 +109,7 @@ namespace STR::UTILS::Shell
      * @param dis (in) : Reference to the discretization
      */
     void SetupShellElementDirectors(
-        const Core::Elements::ElementType& eletype, const Discret::Discretization& dis);
+        const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis);
 
     /*!
      * @brief Sets the nodal directors for one element
@@ -138,7 +138,7 @@ namespace STR::UTILS::Shell
      * @param director_map (in/out) : Nodal director map
      */
     void AverageDirectorsAtNodes(const Core::Elements::ElementType& eletype,
-        const Discret::Discretization& dis, std::map<int, std::vector<double>>& director_map);
+        const Core::FE::Discretization& dis, std::map<int, std::vector<double>>& director_map);
 
     /*!
      * @brief Export map of nodal directors from nodal row map to nodal column map
@@ -148,7 +148,7 @@ namespace STR::UTILS::Shell
      * @param director_map (in) : Nodal director map
      */
     void ExportDirectorMapFromRowToColMap(const Core::Elements::ElementType& eletype,
-        const Discret::Discretization& dis, std::map<int, std::vector<double>>& director_map);
+        const Core::FE::Discretization& dis, std::map<int, std::vector<double>>& director_map);
 
   }  // namespace Director
 

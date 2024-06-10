@@ -11,7 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_porofluidmultiphase_ele_action.hpp"
 
@@ -26,10 +26,14 @@ namespace Mat
 {
   class Material;
 }
-namespace Discret
+
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class PoroFluidMultiPhaseEleParameter;
@@ -114,7 +118,7 @@ namespace Discret
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
         virtual void extract_element_and_node_values(const Core::Elements::Element& ele,
-            const Discret::Discretization& discretization,
+            const Core::FE::Discretization& discretization,
             Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
             const int dofsetnum = 0) = 0;
 
@@ -302,7 +306,7 @@ namespace Discret
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
         void extract_element_and_node_values(const Core::Elements::Element& ele,
-            const Discret::Discretization& discretization,
+            const Core::FE::Discretization& discretization,
             Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
             const int dofsetnum = 0) override;
 
@@ -482,7 +486,7 @@ namespace Discret
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
         void extract_element_and_node_values(const Core::Elements::Element& ele,
-            const Discret::Discretization& discretization,
+            const Core::FE::Discretization& discretization,
             Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
             const int dofsetnum = 0) override;
 
@@ -555,7 +559,7 @@ namespace Discret
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
         void extract_element_and_node_values(const Core::Elements::Element& ele,
-            const Discret::Discretization& discretization,
+            const Core::FE::Discretization& discretization,
             Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
             const int dofsetnum = 0) override;
 
@@ -642,7 +646,7 @@ namespace Discret
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
         void extract_element_and_node_values(const Core::Elements::Element& ele,
-            const Discret::Discretization& discretization,
+            const Core::FE::Discretization& discretization,
             Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
             const int dofsetnum = 0) override;
 
@@ -714,7 +718,7 @@ namespace Discret
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
         void extract_element_and_node_values(const Core::Elements::Element& ele,
-            const Discret::Discretization& discretization,
+            const Core::FE::Discretization& discretization,
             Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
             const int dofsetnum = 0) override;
 

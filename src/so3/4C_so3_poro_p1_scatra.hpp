@@ -15,16 +15,19 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_pack_buffer.hpp"
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_so3_poro_p1.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     /*!

@@ -14,12 +14,12 @@
 
 #include "4C_beam3_euler_bernoulli.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_cardiovascular0d.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method.hpp"
@@ -43,7 +43,7 @@ STR::SOLVER::Factory::Factory()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::build_lin_solvers(
     const std::set<enum Inpar::STR::ModelType>& modeltypes, const Teuchos::ParameterList& sdyn,
-    Discret::Discretization& actdis) const
+    Core::FE::Discretization& actdis) const
 {
   // create a new standard map
   Teuchos::RCP<LinSolMap> linsolvers = Teuchos::rcp(new LinSolMap());
@@ -98,7 +98,7 @@ Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::build_lin_so
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_structure_lin_solver(
-    const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis) const
+    const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const
 {
   // get the linear solver number used for structural problems
   const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -184,7 +184,7 @@ Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_structure_lin_sol
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_meshtying_contact_lin_solver(
-    Discret::Discretization& actdis) const
+    Core::FE::Discretization& actdis) const
 {
   const Teuchos::ParameterList& mcparams = Global::Problem::Instance()->contact_dynamic_params();
 
@@ -203,7 +203,7 @@ Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_meshtying_contact
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_meshtying_contact_lin_solver(
-    Discret::Discretization& actdis, enum Inpar::CONTACT::SolvingStrategy sol_type,
+    Core::FE::Discretization& actdis, enum Inpar::CONTACT::SolvingStrategy sol_type,
     enum Inpar::CONTACT::SystemType sys_type, const int lin_solver_id)
 {
   Teuchos::RCP<Core::LinAlg::Solver> linsolver = Teuchos::null;
@@ -329,7 +329,7 @@ Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_meshtying_contact
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_lag_pen_constraint_lin_solver(
-    const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis) const
+    const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const
 {
   Teuchos::RCP<Core::LinAlg::Solver> linsolver = Teuchos::null;
 
@@ -416,7 +416,7 @@ Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_lag_pen_constrain
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_cardiovascular0_d_lin_solver(
-    const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis) const
+    const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const
 {
   Teuchos::RCP<Core::LinAlg::Solver> linsolver = Teuchos::null;
 
@@ -484,7 +484,7 @@ Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_cardiovascular0_d
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
 STR::SOLVER::build_lin_solvers(const std::set<enum Inpar::STR::ModelType>& modeltypes,
-    const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis)
+    const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis)
 {
   Factory factory;
   return factory.build_lin_solvers(modeltypes, sdyn, actdis);

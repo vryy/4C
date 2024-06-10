@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
@@ -29,13 +29,15 @@ namespace Core::LinAlg
   class SparseMatrix;
 }
 
-
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
   class DiscretizationFaces;
+}  // namespace Core::FE
 
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class ScaTraHDGIntFace;
@@ -59,11 +61,11 @@ namespace Discret
       virtual ~ScaTraHDGIntFaceImplInterface() = default;
       //! Assemble internal faces integrals using data from both parent elements
       virtual void assemble_internal_faces_using_neighbor_data(
-          Discret::ELEMENTS::ScaTraHDGIntFace* intface,  //!< internal face element
-          std::vector<int>& nds_master,                  //!< nodal dofset w.r.t. master element
-          std::vector<int>& nds_slave,                   //!< nodal dofset w.r.t. slave element
-          Teuchos::ParameterList& params,                //!< parameter list
-          Discret::DiscretizationFaces& discretization,  //!< faces discretization
+          Discret::ELEMENTS::ScaTraHDGIntFace* intface,   //!< internal face element
+          std::vector<int>& nds_master,                   //!< nodal dofset w.r.t. master element
+          std::vector<int>& nds_slave,                    //!< nodal dofset w.r.t. slave element
+          Teuchos::ParameterList& params,                 //!< parameter list
+          Core::FE::DiscretizationFaces& discretization,  //!< faces discretization
           Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  //!< systemmatrix
           Teuchos::RCP<Epetra_Vector> systemvector                //!< systemvector
           ) = 0;
@@ -72,7 +74,7 @@ namespace Discret
       virtual int evaluate_internal_faces(
           Discret::ELEMENTS::ScaTraHDGIntFace* intface,  //!< internal face element
           Teuchos::ParameterList& params,                //!< parameter list
-          Discret::Discretization& discretization,       //!< discretization
+          Core::FE::Discretization& discretization,      //!< discretization
           std::vector<int>& patchlm,                     //!< patch local map
           std::vector<int>& lm_masterToPatch,  //!< local map between master dofs and patchlm
           std::vector<int>& lm_slaveToPatch,   //!< local map between slave dofs and patchlm
@@ -128,11 +130,11 @@ namespace Discret
 
       //! Assemble internal faces integrals using data from both parent elements
       void assemble_internal_faces_using_neighbor_data(
-          Discret::ELEMENTS::ScaTraHDGIntFace* intface,  //!< internal face element
-          std::vector<int>& nds_master,                  //!< nodal dofset w.r.t. master element
-          std::vector<int>& nds_slave,                   //!< nodal dofset w.r.t. slave element
-          Teuchos::ParameterList& params,                //!< parameter list
-          Discret::DiscretizationFaces& discretization,  //!< faces discretization
+          Discret::ELEMENTS::ScaTraHDGIntFace* intface,   //!< internal face element
+          std::vector<int>& nds_master,                   //!< nodal dofset w.r.t. master element
+          std::vector<int>& nds_slave,                    //!< nodal dofset w.r.t. slave element
+          Teuchos::ParameterList& params,                 //!< parameter list
+          Core::FE::DiscretizationFaces& discretization,  //!< faces discretization
           Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  //!< systemmatrix
           Teuchos::RCP<Epetra_Vector> systemvector                //!< systemvector
           ) override;
@@ -141,7 +143,7 @@ namespace Discret
       int evaluate_internal_faces(
           Discret::ELEMENTS::ScaTraHDGIntFace* intface,  //!< internal face element
           Teuchos::ParameterList& params,                //!< parameter list
-          Discret::Discretization& discretization,       //!< discretization
+          Core::FE::Discretization& discretization,      //!< discretization
           std::vector<int>& patchlm,                     //!< patch local map
           std::vector<int>& lm_masterToPatch,  //!< local map between master dofs and patchlm
           std::vector<int>& lm_slaveToPatch,   //!< local map between slave dofs and patchlm

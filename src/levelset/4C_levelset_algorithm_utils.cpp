@@ -10,7 +10,7 @@
  *------------------------------------------------------------------------------------------------*/
 
 
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"

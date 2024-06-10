@@ -11,8 +11,8 @@
 
 #include "4C_adapter_fld_fluid_immersed.hpp"
 #include "4C_adapter_str_fsiwrapper_immersed.hpp"
-#include "4C_discretization_geometry_searchtree.hpp"
-#include "4C_discretization_geometry_searchtree_service.hpp"
+#include "4C_fem_geometry_searchtree.hpp"
+#include "4C_fem_geometry_searchtree_service.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_global_data.hpp"
 #include "4C_immersed_problem_fsi_partitioned_immersed.hpp"
@@ -451,7 +451,7 @@ Teuchos::RCP<Epetra_Vector> Immersed::ImmersedPartitionedFSIDirichletNeumann::in
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Immersed::ImmersedPartitionedFSIDirichletNeumann::build_immersed_dirich_map(
-    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Epetra_Map>& dirichmap,
+    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Epetra_Map>& dirichmap,
     const Teuchos::RCP<const Epetra_Map>& dirichmap_original)
 {
   const Epetra_Map* elecolmap = dis->ElementColMap();

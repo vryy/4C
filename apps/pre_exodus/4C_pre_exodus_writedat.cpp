@@ -11,8 +11,8 @@ Here is everything related with writing a dat-file
 /*----------------------------------------------------------------------*/
 #include "4C_pre_exodus_writedat.hpp"
 
-#include "4C_discretization_condition_definition.hpp"
-#include "4C_discretization_fem_general_cell_type_traits.hpp"
+#include "4C_fem_condition_definition.hpp"
+#include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_inpar_validconditions.hpp"
 #include "4C_pre_exodus_reader.hpp"
 

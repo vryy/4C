@@ -11,9 +11,9 @@
 #include "4C_art_net_artery.hpp"
 #include "4C_art_net_artery_ele_action.hpp"
 #include "4C_art_net_artery_ele_factory.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_inpar_bio.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_cnst_1d_art.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  //evaluate the element (public)                            ismail 06/09
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -82,7 +82,7 @@ int Discret::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
 
 
 int Discret::ELEMENTS::Artery::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -95,7 +95,7 @@ int Discret::ELEMENTS::Artery::evaluate_neumann(Teuchos::ParameterList& params,
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Artery::evaluate_dirichlet(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1)
 {
   return 0;

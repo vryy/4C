@@ -12,9 +12,9 @@
 #include "4C_comm_parobjectfactory.hpp"
 
 #include "4C_comm_parobject.hpp"
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elementtype.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -211,7 +211,7 @@ void Core::Communication::ParObjectFactory::finalize_registration()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Communication::ParObjectFactory::initialize_elements(Discret::Discretization& dis)
+void Core::Communication::ParObjectFactory::initialize_elements(Core::FE::Discretization& dis)
 {
   finalize_registration();
 
@@ -256,7 +256,7 @@ void Core::Communication::ParObjectFactory::initialize_elements(Discret::Discret
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Communication::ParObjectFactory::pre_evaluate(Discret::Discretization& dis,
+void Core::Communication::ParObjectFactory::pre_evaluate(Core::FE::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,

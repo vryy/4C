@@ -8,11 +8,11 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_geometry_position_array.hpp"
+#include "4C_fem_discretization.hpp"  // for time curve in body force
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_geometry_position_array.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"  // consistency check of formulation and material
-#include "4C_lib_discret.hpp"  // for time curve in body force
 #include "4C_mat_elchmat.hpp"
 #include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_scatra_ele.hpp"
@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, const ScaTra::Action& action,
+    Core::FE::Discretization& discretization, const ScaTra::Action& action,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -324,7 +324,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_kinetics_point(
     Core::Elements::Element* ele,                     ///< current element
     Teuchos::ParameterList& params,                   ///< parameter list
-    Discret::Discretization& discretization,          ///< discretization
+    Core::FE::Discretization& discretization,         ///< discretization
     std::vector<int>& lm,                             ///< location vector
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  ///< element matrix
     Core::LinAlg::SerialDenseVector& elevec1_epetra,  ///< element right-hand side vector

@@ -12,18 +12,18 @@
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_comm_utils.hpp"
-#include "4C_discretization_dofset_independent.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_elemag_ele.hpp"
 #include "4C_elemag_timeint.hpp"
 #include "4C_elemag_utils_clonestrategy.hpp"
+#include "4C_fem_discretization_hdg.hpp"
+#include "4C_fem_dofset_independent.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_elemag.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret_hdg.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_scatra_timint_stat.hpp"
 #include "4C_scatra_timint_stat_hdg.hpp"
@@ -54,10 +54,12 @@ void electromagnetics_drt()
   const Teuchos::ParameterList& elemagparams = problem->electromagnetic_params();
 
   // declare discretization and check their existence
-  Teuchos::RCP<Discret::DiscretizationHDG> elemagdishdg =
-      Teuchos::rcp_dynamic_cast<Discret::DiscretizationHDG>(problem->GetDis("elemag"));
+  Teuchos::RCP<Core::FE::DiscretizationHDG> elemagdishdg =
+      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationHDG>(problem->GetDis("elemag"));
   if (elemagdishdg == Teuchos::null)
-    FOUR_C_THROW("Failed to cast Discret::Discretization to Discret::DiscretizationHDG.");
+    FOUR_C_THROW(
+        "Failed to cast Core::FE::Discretization to "
+        "Core::FE::DiscretizationHDG.");
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   elemagdishdg->PrintFaces(std::cout);
@@ -180,12 +182,12 @@ void electromagnetics_drt()
       {
         Teuchos::RCP<Epetra_Comm> newcomm = Teuchos::rcp(elemagdishdg->Comm().Clone());
 
-        Teuchos::RCP<Discret::Discretization> scatradis;
+        Teuchos::RCP<Core::FE::Discretization> scatradis;
 
         if (ishdg)
         {
           scatradis = Teuchos::rcp(
-              new Discret::DiscretizationHDG((std::string) "scatra", newcomm, problem->NDim()));
+              new Core::FE::DiscretizationHDG((std::string) "scatra", newcomm, problem->NDim()));
 
           scatradis->fill_complete();
 
@@ -196,7 +198,7 @@ void electromagnetics_drt()
         else
         {
           scatradis = Teuchos::rcp(
-              new Discret::Discretization((std::string) "scatra", newcomm, problem->NDim()));
+              new Core::FE::Discretization((std::string) "scatra", newcomm, problem->NDim()));
           scatradis->fill_complete();
 
           Core::FE::CloneDiscretization<
@@ -211,7 +213,7 @@ void electromagnetics_drt()
 
         // This is necessary to have the dirichlet conditions done also in the scatra problmem. It
         // might be necessary to rethink how things are handled inside the
-        // Discret::UTILS::DbcHDG::do_dirichlet_condition.
+        // Core::FE::UTILS::DbcHDG::do_dirichlet_condition.
         problem->SetProblemType(Core::ProblemType::scatra);
 
         // access the problem-specific parameter list

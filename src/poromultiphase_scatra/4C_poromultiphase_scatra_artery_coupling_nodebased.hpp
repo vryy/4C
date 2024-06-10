@@ -41,8 +41,8 @@ namespace PoroMultiPhaseScaTra
   {
    public:
     //! create using a Epetra_Comm
-    PoroMultiPhaseScaTraArtCouplNodeBased(Teuchos::RCP<Discret::Discretization> arterydis,
-        Teuchos::RCP<Discret::Discretization> contdis,
+    PoroMultiPhaseScaTraArtCouplNodeBased(Teuchos::RCP<Core::FE::Discretization> arterydis,
+        Teuchos::RCP<Core::FE::Discretization> contdis,
         const Teuchos::ParameterList& meshtyingparams, const std::string& condname,
         const std::string& artcoupleddofname, const std::string& contcoupleddofname);
 
@@ -129,7 +129,7 @@ namespace PoroMultiPhaseScaTra
      * @param[in]   coupleddofs vector with DOFs to couple
      */
     void setup_map_extractor(Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mapextractor,
-        Teuchos::RCP<Discret::Discretization> dis, const std::vector<int>& coupleddofs);
+        Teuchos::RCP<Core::FE::Discretization> dis, const std::vector<int>& coupleddofs);
 
     /*!
      * @brief check if dirichlet BC is defined on coupled dofs, which is not possible
@@ -137,7 +137,7 @@ namespace PoroMultiPhaseScaTra
      * @param[in]   dis discretizatiom
      * @param[in]   coupleddofmap map with coupled DOFs
      */
-    void check_dbc_on_coupled_dofs(Teuchos::RCP<Discret::Discretization> dis,
+    void check_dbc_on_coupled_dofs(Teuchos::RCP<Core::FE::Discretization> dis,
         const Teuchos::RCP<const Epetra_Map>& coupleddofmap);
 
     //! name of the condition

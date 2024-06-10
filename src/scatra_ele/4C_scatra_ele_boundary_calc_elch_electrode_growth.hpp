@@ -47,7 +47,7 @@ namespace Discret
       //! evaluate action
       int evaluate_action(Core::Elements::FaceElement* ele,  //!< boundary element
           Teuchos::ParameterList& params,                    //!< parameter list
-          Discret::Discretization& discretization,           //!< discretization
+          Core::FE::Discretization& discretization,          //!< discretization
           ScaTra::BoundaryAction action,                     //!< action
           Core::Elements::Element::LocationArray& la,        //!< location array
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,   //!< element matrix 1
@@ -62,7 +62,7 @@ namespace Discret
       void evaluate_min_max_overpotential(
           const Core::Elements::FaceElement* ele,     //!< current boundary element
           Teuchos::ParameterList& params,             //!< parameter list
-          Discret::Discretization& discretization,    //!< discretization
+          Core::FE::Discretization& discretization,   //!< discretization
           Core::Elements::Element::LocationArray& la  //!< location array
       );
 
@@ -78,7 +78,7 @@ namespace Discret
        * @param[out] eslaveresidual  element residual for slave side
        */
       void evaluate_s2_i_coupling(const Core::Elements::FaceElement* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix,
           Core::LinAlg::SerialDenseVector& eslaveresidual) override;
@@ -88,7 +88,7 @@ namespace Discret
       void evaluate_s2_i_coupling_growth_growth(
           const Core::Elements::FaceElement* ele,          ///< current boundary element
           Teuchos::ParameterList& params,                  ///< parameter list
-          Discret::Discretization& discretization,         ///< discretization
+          Core::FE::Discretization& discretization,        ///< discretization
           Core::Elements::Element::LocationArray& la,      ///< location array
           Core::LinAlg::SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
           Core::LinAlg::SerialDenseVector& eslaveresidual  ///< element residual for slave side
@@ -99,7 +99,7 @@ namespace Discret
       void evaluate_s2_i_coupling_growth_scatra(
           const Core::Elements::FaceElement* ele,         ///< current boundary element
           Teuchos::ParameterList& params,                 ///< parameter list
-          Discret::Discretization& discretization,        ///< discretization
+          Core::FE::Discretization& discretization,       ///< discretization
           Core::Elements::Element::LocationArray& la,     ///< location array
           Core::LinAlg::SerialDenseMatrix& eslavematrix,  ///< element matrix for slave side
           Core::LinAlg::SerialDenseMatrix& emastermatrix  ///< element matrix for master side
@@ -110,14 +110,14 @@ namespace Discret
       void evaluate_s2_i_coupling_scatra_growth(
           const Core::Elements::FaceElement* ele,        ///< current boundary element
           Teuchos::ParameterList& params,                ///< parameter list
-          Discret::Discretization& discretization,       ///< discretization
+          Core::FE::Discretization& discretization,      ///< discretization
           Core::Elements::Element::LocationArray& la,    ///< location array
           Core::LinAlg::SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
       );
 
       //! extract nodal state variables associated with boundary element
-      void extract_node_values(const Discret::Discretization& discretization,  //!< discretization
-          Core::Elements::Element::LocationArray& la                           //!< location array
+      void extract_node_values(const Core::FE::Discretization& discretization,  //!< discretization
+          Core::Elements::Element::LocationArray& la                            //!< location array
           ) override;
 
       /*!

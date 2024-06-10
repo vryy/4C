@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 #include "4C_inpar_scatra.hpp"
 
-#include "4C_discretization_condition_definition.hpp"
+#include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_bio.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_s2i.hpp"

@@ -15,8 +15,8 @@
 #include "4C_adapter_str_fpsiwrapper.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
 #include "4C_coupling_volmortar_utils.hpp"
-#include "4C_discretization_dofset_gidbased_wrapper.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_dofset_gidbased_wrapper.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_poroelast_base.hpp"
@@ -74,9 +74,9 @@ PoroElastScaTra::PoroScatraBase::PoroScatraBase(
   }
 
   // the problem is two way coupled, thus each discretization must know the other discretization
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis("structure");
-  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis("porofluid");
-  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis("porofluid");
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis("scatra");
   setup_coupling(structdis, fluiddis, scatradis);
   // Create the two uncoupled subproblems.
   // 1. poro problem
@@ -230,8 +230,9 @@ void PoroElastScaTra::PoroScatraBase::set_mesh_disp()
  |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraBase::replace_dof_sets(
-    Teuchos::RCP<Discret::Discretization> structdis, Teuchos::RCP<Discret::Discretization> fluiddis,
-    Teuchos::RCP<Discret::Discretization> scatradis)
+    Teuchos::RCP<Core::FE::Discretization> structdis,
+    Teuchos::RCP<Core::FE::Discretization> fluiddis,
+    Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
   if (matchinggrid_)
   {
@@ -280,8 +281,9 @@ void PoroElastScaTra::PoroScatraBase::replace_dof_sets(
  |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraBase::setup_coupling(
-    Teuchos::RCP<Discret::Discretization> structdis, Teuchos::RCP<Discret::Discretization> fluiddis,
-    Teuchos::RCP<Discret::Discretization> scatradis)
+    Teuchos::RCP<Core::FE::Discretization> structdis,
+    Teuchos::RCP<Core::FE::Discretization> fluiddis,
+    Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
   if (not matchinggrid_)
   {

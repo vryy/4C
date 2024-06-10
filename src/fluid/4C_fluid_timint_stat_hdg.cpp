@@ -11,7 +11,8 @@
 
 #include "4C_fluid_timint_stat_hdg.hpp"
 
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_fem_discretization_hdg.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_hdg.hpp"
 #include "4C_fluid_ele_hdg_weak_comp.hpp"
@@ -22,7 +23,6 @@
 #include "4C_fluid_volumetric_surfaceFlow_condition.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret_hdg.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                      als 01/18 |    // TODO als fix
  fluid_timint_stat_hdg because it is not working
  *----------------------------------------------------------------------*/
-FLD::TimIntStationaryHDG::TimIntStationaryHDG(const Teuchos::RCP<Discret::Discretization>& actdis,
+FLD::TimIntStationaryHDG::TimIntStationaryHDG(const Teuchos::RCP<Core::FE::Discretization>& actdis,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
@@ -47,7 +47,7 @@ FLD::TimIntStationaryHDG::TimIntStationaryHDG(const Teuchos::RCP<Discret::Discre
  *----------------------------------------------------------------------*/
 void FLD::TimIntStationaryHDG::Init()
 {
-  Discret::DiscretizationHDG* hdgdis = dynamic_cast<Discret::DiscretizationHDG*>(discret_.get());
+  Core::FE::DiscretizationHDG* hdgdis = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   int elementndof = hdgdis->NumMyRowElements() > 0

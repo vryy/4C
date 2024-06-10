@@ -11,8 +11,8 @@
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_discretization_fem_general_assemblestrategy.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_sparseoperator.hpp"

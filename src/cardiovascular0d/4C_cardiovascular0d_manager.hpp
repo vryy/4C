@@ -30,12 +30,10 @@ namespace Core::IO
   class DiscretizationReader;
 }
 
-
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-  class Structure;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -64,8 +62,8 @@ namespace UTILS
       \brief Constructor of cardiovascular0d manager
     */
     Cardiovascular0DManager(
-        Teuchos::RCP<Discret::Discretization> disc,  ///< standard discretization
-        Teuchos::RCP<const Epetra_Vector> disp,      ///< current displacement
+        Teuchos::RCP<Core::FE::Discretization> disc,  ///< standard discretization
+        Teuchos::RCP<const Epetra_Vector> disp,       ///< current displacement
         Teuchos::ParameterList
             strparams,  ///<  parameterlist from structural time integration algorithm
         Teuchos::ParameterList cv0dparams,  ///<  parameterlist from cardiovascular0d
@@ -331,7 +329,7 @@ namespace UTILS
     Cardiovascular0DManager(const Cardiovascular0DManager& old);
 
 
-    Teuchos::RCP<Discret::Discretization>
+    Teuchos::RCP<Core::FE::Discretization>
         actdisc_;  ///< discretization where elements of cardiovascular0d boundary live in
     int myrank_;   ///< processor
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs

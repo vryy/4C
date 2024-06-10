@@ -10,9 +10,9 @@
  *---------------------------------------------------------------------------*/
 #include "4C_particle_interaction_sph_density.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_particle_engine_container.hpp"
 #include "4C_particle_engine_interface.hpp"
 #include "4C_particle_interaction_material_handler.hpp"

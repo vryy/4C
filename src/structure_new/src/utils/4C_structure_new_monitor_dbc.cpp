@@ -11,14 +11,14 @@
 
 #include "4C_structure_new_monitor_dbc.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_geometry_element_volume.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_geometry_element_volume.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_every_iteration_writer.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_structure_new_dbc.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MonitorDbc::Init(const Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_ptr,
-    Discret::Discretization& discret, STR::TimeInt::BaseDataGlobalState& gstate, STR::Dbc& dbc)
+    Core::FE::Discretization& discret, STR::TimeInt::BaseDataGlobalState& gstate, STR::Dbc& dbc)
 {
   issetup_ = false;
   isinit_ = false;
@@ -70,7 +70,7 @@ void STR::MonitorDbc::Init(const Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_ptr,
  *----------------------------------------------------------------------------*/
 void STR::MonitorDbc::get_tagged_condition(
     std::vector<const Core::Conditions::Condition*>& tagged_conds, const std::string& cond_name,
-    const std::string& tag_name, const Discret::Discretization& discret) const
+    const std::string& tag_name, const Core::FE::Discretization& discret) const
 {
   tagged_conds.clear();
 
@@ -107,7 +107,7 @@ int STR::MonitorDbc::get_unique_id(int tagged_id, Core::Conditions::GeometryType
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MonitorDbc::create_reaction_force_condition(
-    const Core::Conditions::Condition& tagged_cond, Discret::Discretization& discret) const
+    const Core::Conditions::Condition& tagged_cond, Core::FE::Discretization& discret) const
 {
   const int new_id = get_unique_id(tagged_cond.Id(), tagged_cond.GType());
 
@@ -118,7 +118,7 @@ void STR::MonitorDbc::create_reaction_force_condition(
   rcond_ptr->parameters().Add("onoff", (tagged_cond.parameters().Get<std::vector<int>>("onoff")));
   rcond_ptr->SetNodes(*tagged_cond.GetNodes());
 
-  dynamic_cast<Discret::Discretization&>(discret).SetCondition("ReactionForce", rcond_ptr);
+  dynamic_cast<Core::FE::Discretization&>(discret).SetCondition("ReactionForce", rcond_ptr);
 }
 
 /*----------------------------------------------------------------------------*
@@ -184,7 +184,7 @@ void STR::MonitorDbc::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::create_reaction_maps(const Discret::Discretization& discret,
+void STR::MonitorDbc::create_reaction_maps(const Core::FE::Discretization& discret,
     const Core::Conditions::Condition& rcond, Teuchos::RCP<Epetra_Map>* react_maps) const
 {
   const auto* onoff = &rcond.parameters().Get<std::vector<int>>("onoff");
@@ -427,8 +427,8 @@ void STR::MonitorDbc::get_area(double area[], const Core::Conditions::Condition*
     return;
   }
 
-  const Discret::Discretization& discret =
-      dynamic_cast<const Discret::Discretization&>(*discret_ptr_);
+  const Core::FE::Discretization& discret =
+      dynamic_cast<const Core::FE::Discretization&>(*discret_ptr_);
 
   enum AreaType : int
   {

@@ -30,11 +30,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | forward declarations                                      dano 02/12 |
  *----------------------------------------------------------------------*/
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
-
+}  // namespace Core::FE
 namespace CONTACT
 {
   class LagrangeStrategyTsi;
@@ -121,7 +120,7 @@ namespace TSI
     //! communicate displacement vector to thermal field to enable their
     //! visualisation on the deformed body
     void output_deformation_in_thr(
-        Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<Discret::Discretization> structdis);
+        Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<Core::FE::Discretization> structdis);
 
     //@}
 

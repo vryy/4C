@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_post_vtk_writer.hpp"
 
 #include <map>
@@ -27,11 +27,13 @@ FOUR_C_NAMESPACE_OPEN
 class PostField;
 class PostResult;
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
 
 namespace Discret
 {
-  class Discretization;
-
   namespace ELEMENTS
   {
     class Beam3Base;

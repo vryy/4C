@@ -8,10 +8,10 @@
 
 #include "4C_ssti_dyn.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ssti.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_ssti_algorithm.hpp"
 #include "4C_ssti_monolithic.hpp"
 #include "4C_ssti_utils.hpp"

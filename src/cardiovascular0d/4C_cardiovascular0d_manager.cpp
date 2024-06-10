@@ -18,7 +18,7 @@
 #include "4C_cardiovascular0d_respiratory_syspulperiphcirculation.hpp"
 #include "4C_cardiovascular0d_resulttest.hpp"
 #include "4C_cardiovascular0d_syspulcirculation.hpp"
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_linalg_mapextractor.hpp"
@@ -41,10 +41,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 11/13|
  *----------------------------------------------------------------------*/
-UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<Discret::Discretization> discr,
-    Teuchos::RCP<const Epetra_Vector> disp, Teuchos::ParameterList strparams,
-    Teuchos::ParameterList cv0dparams, Core::LinAlg::Solver& solver,
-    Teuchos::RCP<ModelOrderRed::ProperOrthogonalDecomposition> mor)
+UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
+    Teuchos::RCP<Core::FE::Discretization> discr, Teuchos::RCP<const Epetra_Vector> disp,
+    Teuchos::ParameterList strparams, Teuchos::ParameterList cv0dparams,
+    Core::LinAlg::Solver& solver, Teuchos::RCP<ModelOrderRed::ProperOrthogonalDecomposition> mor)
     : actdisc_(discr),
       myrank_(actdisc_->Comm().MyPID()),
       dbcmaps_(Teuchos::rcp(new Core::LinAlg::MapExtractor())),
@@ -574,7 +574,7 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
   std::vector<Core::Conditions::Condition*> surfneumcond;
   std::vector<Core::Conditions::Condition*> cardvasc0dstructcoupcond;
   std::vector<int> tmp;
-  Teuchos::RCP<Discret::Discretization> structdis =
+  Teuchos::RCP<Core::FE::Discretization> structdis =
       Global::Problem::Instance()->GetDis("structure");
   if (structdis == Teuchos::null) FOUR_C_THROW("No structure discretization available!");
 

@@ -16,10 +16,10 @@
 #include "4C_adapter_fld_base_algorithm.hpp"
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_adapter_str_poro_wrapper.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_xfluid.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_poroelast_monolithic.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -57,7 +57,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
   {
     // ask base algorithm for the structural time integrator
     // access the structural discretization
-    Teuchos::RCP<Discret::Discretization> structdis =
+    Teuchos::RCP<Core::FE::Discretization> structdis =
         Global::Problem::Instance()->GetDis("structure");
     Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure =
         Teuchos::rcp(new Adapter::StructureBaseAlgorithm(

@@ -11,12 +11,12 @@
 
 #include "4C_fluid_timint.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_visualization_parameters.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 #include <Epetra_Map.h>
@@ -25,7 +25,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-FLD::TimInt::TimInt(const Teuchos::RCP<Discret::Discretization>& discret,
+FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<Core::IO::DiscretizationWriter>& output)

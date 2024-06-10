@@ -14,7 +14,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_inpar_beaminteraction.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -27,10 +27,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Forward declarations.
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -93,7 +93,7 @@ namespace BEAMINTERACTION
      * \brief Build the ID sets for this condition. The ID sets will be used to check if an element
      * is in this condition.
      */
-    virtual void BuildIdSets(const Teuchos::RCP<const Discret::Discretization>& discretization);
+    virtual void BuildIdSets(const Teuchos::RCP<const Core::FE::Discretization>& discretization);
 
     /**
      * \brief Set the displacement state.
@@ -101,7 +101,7 @@ namespace BEAMINTERACTION
      * @param discret (in) discretization.
      * @param beaminteraction_data_state (in) Datastate of the beaminteraction model evaluator.
      */
-    virtual void set_state(const Teuchos::RCP<const Discret::Discretization>& discret,
+    virtual void set_state(const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
             beaminteraction_data_state)
     {
@@ -111,7 +111,7 @@ namespace BEAMINTERACTION
      * \brief Setup geometry data.
      * @param discret (in) discretization.
      */
-    virtual void Setup(const Teuchos::RCP<const Discret::Discretization>& discret);
+    virtual void Setup(const Teuchos::RCP<const Core::FE::Discretization>& discret);
 
     /**
      * \brief Clear not reusable data.
@@ -130,7 +130,7 @@ namespace BEAMINTERACTION
      * @return Pointer to created assembly manager.
      */
     virtual Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager>
-    create_indirect_assembly_manager(const Teuchos::RCP<const Discret::Discretization>& discret)
+    create_indirect_assembly_manager(const Teuchos::RCP<const Core::FE::Discretization>& discret)
     {
       return Teuchos::null;
     };
@@ -169,13 +169,14 @@ namespace BEAMINTERACTION
      * @param discret (in) pointer to the discretization
      * @param params (in) Pointer beam contact parameters.
      */
-    void set_beam_interaction_conditions(const Teuchos::RCP<const Discret::Discretization>& discret,
+    void set_beam_interaction_conditions(
+        const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<const BeamContactParams>& params_ptr);
 
     /**
      * \brief Build the ID sets on all contained beam interaction conditions.
      */
-    void BuildIdSets(Teuchos::RCP<Discret::Discretization> discretization);
+    void BuildIdSets(Teuchos::RCP<Core::FE::Discretization> discretization);
 
     /**
      * \brief Set the displacement state.
@@ -183,7 +184,7 @@ namespace BEAMINTERACTION
      * @param discret (in) discretization.
      * @param beaminteraction_data_state (in) Datastate of the beaminteraction model evaluator.
      */
-    virtual void set_state(const Teuchos::RCP<const Discret::Discretization>& discret,
+    virtual void set_state(const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
             beaminteraction_data_state);
 
@@ -191,7 +192,7 @@ namespace BEAMINTERACTION
      * \brief Setup data in the conditions.
      * @param discret (in) discretization.
      */
-    virtual void Setup(const Teuchos::RCP<const Discret::Discretization>& discret);
+    virtual void Setup(const Teuchos::RCP<const Core::FE::Discretization>& discret);
 
     /**
      * \brief Clear not reusable data in the conditions.
@@ -217,7 +218,7 @@ namespace BEAMINTERACTION
      * interaction submodel evaluator.
      */
     void create_indirect_assembly_managers(
-        const Teuchos::RCP<const Discret::Discretization>& discret,
+        const Teuchos::RCP<const Core::FE::Discretization>& discret,
         std::vector<Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>&
             assembly_managers);
 

@@ -15,10 +15,10 @@
 
 #include "4C_adapter_fld_fluid_fsi.hpp"
 #include "4C_adapter_str_fsiwrapper.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_fsi_monolithic.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_scatra.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_scatra_algorithm.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 

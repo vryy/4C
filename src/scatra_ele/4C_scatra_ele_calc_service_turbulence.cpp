@@ -8,11 +8,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fluid.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_scatra_ele.hpp"
@@ -187,7 +187,7 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_density(
   if (material->MaterialType() == Core::Materials::m_scatra)
   {
     // access fluid discretization
-    Teuchos::RCP<Discret::Discretization> fluiddis = Teuchos::null;
+    Teuchos::RCP<Core::FE::Discretization> fluiddis = Teuchos::null;
     fluiddis = Global::Problem::Instance()->GetDis("fluid");
     // get corresponding fluid element (it has the same global ID as the scatra element)
     Core::Elements::Element* fluidele = fluiddis->gElement(ele->Id());
@@ -1404,7 +1404,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     Teuchos::ParameterList& params,             //!< parameter list
     Core::Elements::Element* ele,               //!< pointer to element
-    Discret::Discretization& discretization,    //!< scatra discretization
+    Core::FE::Discretization& discretization,   //!< scatra discretization
     Core::Elements::Element::LocationArray& la  //!< location array
 )
 {

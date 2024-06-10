@@ -7,8 +7,8 @@ implementation
 */
 #include "4C_solid_poro_3D_ele_calc_pressure_based.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_3D_ele_calc_lib_integration.hpp"
@@ -36,7 +36,7 @@ template <Core::FE::CellType celltype>
 void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_force_stiffness(
     const Core::Elements::Element& ele, Mat::StructPoro& porostructmat,
     Mat::FluidPoroMultiPhase& porofluidmat, const Inpar::STR::KinemType& kinematictype,
-    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
     Core::LinAlg::SerialDenseMatrix* stiffness_matrix)
 {
@@ -156,7 +156,7 @@ template <Core::FE::CellType celltype>
 void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroelast(
     const Core::Elements::Element& ele, Mat::StructPoro& porostructmat,
     Mat::FluidPoroMultiPhase& porofluidmat, const Inpar::STR::KinemType& kinematictype,
-    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& stiffness_matrix)
 {
   // get primary variables of multiphase porous medium flow
@@ -234,7 +234,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroel
 
 template <Core::FE::CellType celltype>
 void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::CouplingStress(
-    const Core::Elements::Element& ele, const Discret::Discretization& discretization,
+    const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
   auto iocouplingstress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(

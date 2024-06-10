@@ -17,10 +17,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     /*!
@@ -148,7 +151,7 @@ namespace Discret
       int Evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          Discret::Discretization& discretization,  //!< pointer to discretization for de-assembly
+          Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
           Core::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           Core::LinAlg::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.
@@ -167,7 +170,7 @@ namespace Discret
       void pre_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          Discret::Discretization& discretization,    //!< pointer to discretization for de-assembly
+          Core::FE::Discretization& discretization,   //!< pointer to discretization for de-assembly
           Core::Elements::Element::LocationArray& la  //!< location array for de-assembly
           ) override;
 
@@ -189,7 +192,7 @@ namespace Discret
       int my_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          Discret::Discretization& discretization,  //!< pointer to discretization for de-assembly
+          Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
           Core::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           Core::LinAlg::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.

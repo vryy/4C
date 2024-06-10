@@ -13,10 +13,10 @@
 
 #include "4C_red_airways_air_blood_scatraLine3_impl.hpp"
 
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_gder2.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_gder2.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_par_bundle.hpp"
@@ -64,7 +64,7 @@ Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::RedAirBloodScatraLine3Im
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Evaluate(RedAirBloodScatraLine3* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -80,7 +80,7 @@ int Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Evaluate(RedAirBlood
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(RedAirBloodScatraLine3* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<const Core::Mat::Material> material)
 {
   ReducedLung::EvaluationData& evaluation_data = ReducedLung::EvaluationData::get();
@@ -104,7 +104,7 @@ void Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(RedAirBlood
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::GetCoupledValues(
     RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
 }

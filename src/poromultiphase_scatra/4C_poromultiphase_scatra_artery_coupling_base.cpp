@@ -9,8 +9,8 @@
 
 #include "4C_poromultiphase_scatra_artery_coupling_base.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 #include <Teuchos_ParameterListExceptions.hpp>
@@ -21,9 +21,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtCouplBase(
-    Teuchos::RCP<Discret::Discretization> arterydis, Teuchos::RCP<Discret::Discretization> contdis,
-    const Teuchos::ParameterList& couplingparams, const std::string& condname,
-    const std::string& artcoupleddofname, const std::string& contcoupleddofname)
+    Teuchos::RCP<Core::FE::Discretization> arterydis,
+    Teuchos::RCP<Core::FE::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
+    const std::string& condname, const std::string& artcoupleddofname,
+    const std::string& contcoupleddofname)
     : arterydis_(arterydis),
       contdis_(contdis),
       myrank_(arterydis->Comm().MyPID()),

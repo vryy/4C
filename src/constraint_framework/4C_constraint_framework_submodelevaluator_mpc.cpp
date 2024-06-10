@@ -15,10 +15,10 @@
 
 #include "4C_beam3_base.hpp"
 #include "4C_constraint_framework_equation_mpc.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_mpc_rve.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -31,7 +31,7 @@
  *----------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_OPEN
 CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointConstraintManager(
-    Teuchos::RCP<const Discret::Discretization> disc_ptr, Core::LinAlg::SparseMatrix* st_ptr)
+    Teuchos::RCP<const Core::FE::Discretization> disc_ptr, Core::LinAlg::SparseMatrix* st_ptr)
 {
   discret_ptr_ = disc_ptr;
   stiff_ptr_ = st_ptr;

@@ -7,7 +7,7 @@
 
 #include "4C_solid_3D_ele_utils.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"

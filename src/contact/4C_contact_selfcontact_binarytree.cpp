@@ -12,7 +12,7 @@
 
 #include "4C_contact_element.hpp"
 #include "4C_contact_node.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 
@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor BinaryTreeNode for self contact (public)             popp 11/09|
  *----------------------------------------------------------------------*/
 CONTACT::SelfBinaryTreeNode::SelfBinaryTreeNode(SelfBinaryTreeNodeType type,
-    Discret::Discretization& discret, Teuchos::RCP<SelfBinaryTreeNode> parent,
+    Core::FE::Discretization& discret, Teuchos::RCP<SelfBinaryTreeNode> parent,
     std::vector<int> elelist, const Core::LinAlg::SerialDenseMatrix& dopnormals,
     const Core::LinAlg::SerialDenseMatrix& samplevectors, const int& kdop, const int& dim,
     const int& nvectors, const int layer, const bool nonsmoothsurf,
@@ -424,7 +424,7 @@ void CONTACT::SelfDualEdge::calculate_costs()
 /*----------------------------------------------------------------------*
  |  ctor SelfBinaryTree (public)                              popp 11/09|
  *----------------------------------------------------------------------*/
-CONTACT::SelfBinaryTree::SelfBinaryTree(Discret::Discretization& discret,
+CONTACT::SelfBinaryTree::SelfBinaryTree(Core::FE::Discretization& discret,
     const Teuchos::ParameterList& iparams, Teuchos::RCP<Epetra_Map> elements, int dim, double eps)
     : Mortar::BaseBinaryTree(discret, dim, eps),
       elements_(elements),

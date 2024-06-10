@@ -18,10 +18,10 @@ to disk
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 namespace Core::Elements
 {
   class Element;
@@ -52,7 +52,7 @@ namespace Core::IO
      *   included.
      */
     DiscretizationVisualizationWriterMesh(
-        const Teuchos::RCP<const Discret::Discretization>& discretization,
+        const Teuchos::RCP<const Core::FE::Discretization>& discretization,
         VisualizationParameters parameters,
         std::function<bool(const Core::Elements::Element* element)> element_filter =
             [](const Core::Elements::Element*) { return true; });
@@ -170,7 +170,7 @@ namespace Core::IO
 
    private:
     //! discretization containing elements of which geometry and result data shall be visualized
-    Teuchos::RCP<const Discret::Discretization> discretization_;
+    Teuchos::RCP<const Core::FE::Discretization> discretization_;
 
     //! The actual visualization writer object that additionally stores the geometry and result data
     Teuchos::RCP<VisualizationManager> visualization_manager_;
@@ -191,7 +191,7 @@ namespace Core::IO
    * @param element_predicate (in) A predicate function which returns whether a given element
    * should be included in the output.
    */
-  void append_element_ghosting_information(const Discret::Discretization& discretization,
+  void append_element_ghosting_information(const Core::FE::Discretization& discretization,
       VisualizationManager& visualization_manager,
       const std::function<bool(const Core::Elements::Element* ele)>& element_predicate);
 

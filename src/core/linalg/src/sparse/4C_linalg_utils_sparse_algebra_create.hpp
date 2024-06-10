@@ -11,7 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_dofset_interface.hpp"
+#include "4C_fem_dofset_interface.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 
 #include <Epetra_Comm.h>
@@ -102,7 +102,7 @@ namespace Core::LinAlg
       \date 02/08
      */
   void CreateMapExtractorFromDiscretization(
-      const Discret::Discretization& dis, int ndim, Core::LinAlg::MultiMapExtractor& extractor);
+      const Core::FE::Discretization& dis, int ndim, Core::LinAlg::MultiMapExtractor& extractor);
 
   /*!
     \brief Creates MapExtractor to split dofs at certain position
@@ -123,7 +123,7 @@ namespace Core::LinAlg
     \author u.kue
     \date 02/08
    */
-  void CreateMapExtractorFromDiscretization(const Discret::Discretization& dis,
+  void CreateMapExtractorFromDiscretization(const Core::FE::Discretization& dis,
       const Core::DOFSets::DofSetInterface& dofset, int ndim,
       Core::LinAlg::MapExtractor& extractor);
 
@@ -145,7 +145,7 @@ namespace Core::LinAlg
     \author schott
     \date 12/11
    */
-  void CreateMapExtractorFromDiscretization(const Discret::Discretization& dis, int ndim_field1,
+  void CreateMapExtractorFromDiscretization(const Core::FE::Discretization& dis, int ndim_field1,
       int ndim_field2, Core::LinAlg::MultiMapExtractor& extractor);
 
 }  // namespace Core::LinAlg

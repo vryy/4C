@@ -12,7 +12,7 @@ thereby builds the bridge between the xfluid class and the cut-library
 
 #include "4C_xfem_coupling_base.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
 #include "4C_fluid_ele_parameter_xfem.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_utils_function.hpp"
@@ -62,10 +62,10 @@ Inpar::XFEM::EleCouplingCondType XFEM::CondType_stringToEnum(const std::string& 
  * constructor
  *--------------------------------------------------------------------------*/
 XFEM::CouplingBase::CouplingBase(
-    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<Discret::Discretization>&
+    Teuchos::RCP<Core::FE::Discretization>&
         cond_dis,           ///< full discretization from which the cutter discretization is derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time

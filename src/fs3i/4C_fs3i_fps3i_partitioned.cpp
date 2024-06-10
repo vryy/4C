@@ -16,8 +16,8 @@
 
 #include "4C_adapter_fld_poro.hpp"
 #include "4C_adapter_str_fpsiwrapper.hpp"
-#include "4C_discretization_condition_selector.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_condition_selector.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fpsi_monolithic_plain.hpp"
@@ -135,10 +135,10 @@ void FS3I::PartFPS3I::Init()
   // and poro-based scalar transport and get material map for fluid
   // and scalar transport elements
   //---------------------------------------------------------------------
-  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis("fluid");
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis("structure");
-  Teuchos::RCP<Discret::Discretization> fluidscatradis = problem->GetDis("scatra1");
-  Teuchos::RCP<Discret::Discretization> structscatradis = problem->GetDis("scatra2");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> fluidscatradis = problem->GetDis("scatra1");
+  Teuchos::RCP<Core::FE::Discretization> structscatradis = problem->GetDis("scatra2");
 
   // determine type of scalar transport
   const Inpar::ScaTra::ImplType impltype_fluid =
@@ -334,7 +334,7 @@ void FS3I::PartFPS3I::Setup()
   CheckFS3IInputs();
 
   // in case of FPS3I we have to handle the conductivity, too
-  Teuchos::RCP<Discret::Discretization> dis = scatravec_[0]->ScaTraField()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> dis = scatravec_[0]->ScaTraField()->discretization();
   std::vector<Core::Conditions::Condition*> coupcond;
   dis->GetCondition("ScaTraCoupling", coupcond);
   double myconduct = coupcond[0]->parameters().Get<double>(
@@ -404,8 +404,8 @@ void FS3I::PartFPS3I::redistribute_interface()
         problem->GetDis("scatra2"), Teuchos::null, "", *Fluid_PoroFluid_InterfaceMap);
   }
 
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis("structure");
-  Teuchos::RCP<Discret::Discretization> structscatradis = problem->GetDis("scatra2");
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> structscatradis = problem->GetDis("scatra2");
 
   // after redistributing the interface we have to fix the material pointers of the structure-scatra
   // discretisation
@@ -432,7 +432,7 @@ void FS3I::PartFPS3I::SetupSystem()
   {
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
     const int numscal = currscatra->ScaTraField()->NumScal();
-    Teuchos::RCP<Discret::Discretization> currdis = currscatra->ScaTraField()->discretization();
+    Teuchos::RCP<Core::FE::Discretization> currdis = currscatra->ScaTraField()->discretization();
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mapex =
         Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
     Core::Conditions::MultiConditionSelector mcs;
@@ -503,7 +503,7 @@ void FS3I::PartFPS3I::SetupSystem()
   // defined for both discretizations
   check_interface_dirichlet_bc();
   // scatra solver
-  Teuchos::RCP<Discret::Discretization> firstscatradis =
+  Teuchos::RCP<Core::FE::Discretization> firstscatradis =
       (scatravec_[0])->ScaTraField()->discretization();
 #ifdef SCATRABLOCKMATRIXMERGE
   Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = Teuchos::rcp(new Teuchos::ParameterList);

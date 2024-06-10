@@ -11,7 +11,7 @@
 #include "4C_cut_side.hpp"
 #include "4C_cut_tetmeshintersection.hpp"
 #include "4C_cut_volumecell.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 
 #include <iostream>
 #include <list>

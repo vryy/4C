@@ -9,8 +9,8 @@
 
 #include "4C_porofluidmultiphase_ele_boundary_calc.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_global_data.hpp"  // for curves and functions
 #include "4C_porofluidmultiphase_ele_action.hpp"
 #include "4C_porofluidmultiphase_ele_parameter.hpp"
@@ -68,7 +68,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::PoroFluidMultiPh
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::setup_calc(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization)
+    Core::FE::Discretization& discretization)
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   Core::Geo::fillInitialPositionArray<distype, nsd_ + 1, Core::LinAlg::Matrix<nsd_ + 1, nen_>>(
@@ -83,7 +83,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::setup_calc(
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec)
 {
@@ -112,7 +112,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
     distype>::extract_element_and_node_values(Core::Elements::Element* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la)
 {
   // get additional state vector for ALE case: grid displacement
@@ -149,7 +149,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_action(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, POROFLUIDMULTIPHASE::BoundaryAction action,
+    Core::FE::Discretization& discretization, POROFLUIDMULTIPHASE::BoundaryAction action,
     Core::Elements::Element::LocationArray& la,
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec)
@@ -180,7 +180,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_act
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neumann(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1)
 {
   // integration points and weights

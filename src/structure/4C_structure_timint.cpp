@@ -18,7 +18,9 @@
 #include "4C_constraint_solver.hpp"
 #include "4C_constraint_springdashpot_manager.hpp"
 #include "4C_contact_meshtying_contact_bridge.hpp"
-#include "4C_discretization_condition_locsys.hpp"
+#include "4C_fem_condition_locsys.hpp"
+#include "4C_fem_discretization_faces.hpp"
+#include "4C_fem_discretization_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_beamcontact.hpp"
 #include "4C_inpar_contact.hpp"
@@ -27,8 +29,6 @@
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret_faces.hpp"
-#include "4C_lib_utils_discret.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -74,7 +74,7 @@ void STR::TimInt::Logo()
 /* constructor */
 STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization> actdis,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : discret_(actdis),
@@ -177,7 +177,7 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // invalidate setup
   set_is_setup(false);
@@ -2348,7 +2348,8 @@ void STR::TimInt::determine_stress_strain()
 
     Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix = Teuchos::null;
     Teuchos::RCP<Epetra_Vector> system_vector = Teuchos::null;
-    Discret::UTILS::Evaluate(*discret_, p, system_matrix, system_vector, discret_->ElementRowMap());
+    Core::FE::UTILS::Evaluate(
+        *discret_, p, system_matrix, system_vector, discret_->ElementRowMap());
     discret_->ClearState();
   }
 }

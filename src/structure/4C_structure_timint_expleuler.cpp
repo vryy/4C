@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /* Constructor */
 STR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization> actdis,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntExpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
@@ -48,7 +48,7 @@ STR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntExplEuler::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // call Init() in base class
   STR::TimIntExpl::Init(timeparams, sdynparams, xparams, actdis, solver);

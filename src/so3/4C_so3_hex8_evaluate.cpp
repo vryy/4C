@@ -8,16 +8,16 @@
 
 *----------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_elements_jacobian.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_gauss_point_extrapolation.hpp"
-#include "4C_discretization_fem_general_utils_gauss_point_postprocess.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_elements_jacobian.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_gauss_point_extrapolation.hpp"
+#include "4C_fem_general_utils_gauss_point_postprocess.hpp"
+#include "4C_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_fluid_ele_parameter_timint.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -59,7 +59,7 @@ using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -1280,7 +1280,7 @@ int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -2716,7 +2716,7 @@ void Discret::ELEMENTS::SoHex8::soh8_recover_from_eas_backup_state()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 04/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex8Type::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

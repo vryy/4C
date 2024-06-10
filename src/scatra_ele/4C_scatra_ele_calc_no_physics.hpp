@@ -47,7 +47,7 @@ namespace Discret
 
       //! evaluate the element
       int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::FE::Discretization& discretization, const ScaTra::Action& action,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

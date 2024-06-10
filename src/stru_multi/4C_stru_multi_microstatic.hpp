@@ -30,10 +30,10 @@ FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -239,7 +239,7 @@ namespace MultiScale
     MicroStatic operator=(const MicroStatic& old);
     MicroStatic(const MicroStatic& old);
 
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
     Teuchos::RCP<Core::LinAlg::Solver> solver_;
     int myrank_;
     int maxentriesperrow_;

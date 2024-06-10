@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_cell_type_traits.hpp"
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_cell_type_traits.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_inpar_poro.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_solid_3D_ele_factory_lib.hpp"

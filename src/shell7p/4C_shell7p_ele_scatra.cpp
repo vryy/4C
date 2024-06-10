@@ -7,8 +7,8 @@
 #include "4C_shell7p_ele_scatra.hpp"
 
 #include "4C_comm_utils_factory.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_shell7p_ele_factory.hpp"
 #include "4C_shell7p_ele_interface_serializable.hpp"
@@ -162,7 +162,7 @@ void Discret::ELEMENTS::Shell7pScatraType::setup_element_definition(
                             .Build();
 }
 
-int Discret::ELEMENTS::Shell7pScatraType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::Shell7pScatraType::Initialize(Core::FE::Discretization& dis)
 {
   STR::UTILS::Shell::Director::SetupShellElementDirectors(*this, dis);
 

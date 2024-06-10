@@ -21,11 +21,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
+
 namespace Discret
 {
-  // forward declarations
-  class Discretization;
-
   namespace ELEMENTS
   {
     /*----------------------------------------------------------------------*
@@ -45,7 +47,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override;
+      int Initialize(Core::FE::Discretization& dis) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -75,7 +77,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override;
+      int Initialize(Core::FE::Discretization& dis) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -105,7 +107,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override;
+      int Initialize(Core::FE::Discretization& dis) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -134,7 +136,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override;
+      int Initialize(Core::FE::Discretization& dis) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -163,7 +165,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override;
+      int Initialize(Core::FE::Discretization& dis) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -192,7 +194,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override;
+      int Initialize(Core::FE::Discretization& dis) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)

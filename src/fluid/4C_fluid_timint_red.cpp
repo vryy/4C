@@ -12,7 +12,7 @@
 #include "4C_fluid_timint_red.hpp"
 
 #include "4C_adapter_art_net.hpp"
-#include "4C_discretization_condition_locsys.hpp"
+#include "4C_fem_condition_locsys.hpp"
 #include "4C_fluid_coupling_red_models.hpp"
 #include "4C_fluid_meshtying.hpp"
 #include "4C_fluid_volumetric_surfaceFlow_condition.hpp"
@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntRedModels::TimIntRedModels(const Teuchos::RCP<Discret::Discretization>& actdis,
+FLD::TimIntRedModels::TimIntRedModels(const Teuchos::RCP<Core::FE::Discretization>& actdis,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)

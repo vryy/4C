@@ -14,13 +14,13 @@
 #include "4C_config.hpp"
 
 #include "4C_beam3_spatial_discretization_utils.hpp"
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_inpar_beaminteraction.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_utils_local_newton.hpp"
 
 #include <Epetra_Vector.h>
@@ -164,14 +164,14 @@ namespace Discret
        *  \author grill
        *  \date 07/16 */
       std::vector<int> GetAdditiveDofGIDs(
-          const Discret::Discretization& discret, const Core::Nodes::Node& node) const;
+          const Core::FE::Discretization& discret, const Core::Nodes::Node& node) const;
 
       /** \brief return GIDs of all non-additive, i.e. rotation pseudo vector DoFs for a given node
        *
        *  \author grill
        *  \date 07/16 */
       std::vector<int> GetRotVecDofGIDs(
-          const Discret::Discretization& discret, const Core::Nodes::Node& node) const;
+          const Core::FE::Discretization& discret, const Core::Nodes::Node& node) const;
 
       /** \brief add indices of those DOFs of a given node that are positions
        *
@@ -698,7 +698,7 @@ namespace Discret
        * @return bounding volume of the respective element
        */
       Core::GeometricSearch::BoundingVolume GetBoundingVolume(
-          const Discret::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+          const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
           const Core::GeometricSearch::GeometricSearchParams& params) const override;
 
      private:

@@ -11,11 +11,11 @@
 #include "4C_beam3_reissner.hpp"
 #include "4C_beam3_spatial_discretization_utils.hpp"
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_largerotations.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_beam_elasthyper.hpp"
@@ -37,7 +37,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public) cyron 01/08|
  *----------------------------------------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1,  // nonlinear stiffness matrix
     Core::LinAlg::SerialDenseMatrix& elemat2,  // nonlinear mass matrix
     Core::LinAlg::SerialDenseVector& elevec1,  // nonlinear internal (elastic) forces
@@ -552,7 +552,7 @@ int Discret::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public) cyron 03/08|
  *----------------------------------------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Beam3r::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

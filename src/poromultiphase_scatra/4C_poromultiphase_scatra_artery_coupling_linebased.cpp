@@ -10,7 +10,7 @@
 
 #include "4C_poromultiphase_scatra_artery_coupling_linebased.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -27,9 +27,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::PoroMultiPhaseScaTraArtCouplLineBased(
-    Teuchos::RCP<Discret::Discretization> arterydis, Teuchos::RCP<Discret::Discretization> contdis,
-    const Teuchos::ParameterList& couplingparams, const std::string& condname,
-    const std::string& artcoupleddofname, const std::string& contcoupleddofname)
+    Teuchos::RCP<Core::FE::Discretization> arterydis,
+    Teuchos::RCP<Core::FE::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
+    const std::string& condname, const std::string& artcoupleddofname,
+    const std::string& contcoupleddofname)
     : PoroMultiPhaseScaTraArtCouplNonConforming(
           arterydis, contdis, couplingparams, condname, artcoupleddofname, contcoupleddofname),
       maxnumsegperartele_(Global::Problem::Instance()
@@ -737,7 +738,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::find_free_hang
               << std::endl;
   }
   // get fully-overlapping discretization
-  Teuchos::RCP<Discret::Discretization> artconncompdis =
+  Teuchos::RCP<Core::FE::Discretization> artconncompdis =
       POROFLUIDMULTIPHASE::UTILS::CreateFullyOverlappingArteryDiscretization(
           arterydis_, "conn_comp_dis", true);
 
@@ -858,7 +859,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::find_free_hang
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::depth_first_search_util(
     Core::Nodes::Node* actnode, Teuchos::RCP<Epetra_IntVector> visited,
-    Teuchos::RCP<Discret::Discretization> artconncompdis,
+    Teuchos::RCP<Core::FE::Discretization> artconncompdis,
     Teuchos::RCP<const Epetra_Vector> ele_diams_artery_full_overlap,
     std::vector<int>& this_connected_comp)
 {

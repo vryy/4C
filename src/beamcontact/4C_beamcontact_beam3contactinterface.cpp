@@ -13,14 +13,14 @@
 #include "4C_beamcontact_beam3contact.hpp"
 #include "4C_beamcontact_beam3contactnew.hpp"
 #include "4C_beaminteraction_beam_to_beam_contact_defines.hpp"
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_inpar_beamcontact.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Impl(
-    const int numnodes, const int numnodalvalues, const Discret::Discretization& pdiscret,
-    const Discret::Discretization& cdiscret, const std::map<int, int>& dofoffsetmap,
+    const int numnodes, const int numnodalvalues, const Core::FE::Discretization& pdiscret,
+    const Core::FE::Discretization& cdiscret, const std::map<int, int>& dofoffsetmap,
     Core::Elements::Element* element1, Core::Elements::Element* element2,
     Teuchos::ParameterList& beamcontactparams)
 {

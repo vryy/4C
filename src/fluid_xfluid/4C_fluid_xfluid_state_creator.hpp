@@ -24,11 +24,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Geo
 {
@@ -103,7 +102,7 @@ namespace FLD
     /// create a state-object after a cut (XFEM fluid with embedded fluid mesh)
     Teuchos::RCP<XFluidFluidState> Create(const Teuchos::RCP<XFEM::DiscretizationXFEM>&
                                               xdiscret,  //!< xfluid background discretization
-        const Teuchos::RCP<Discret::Discretization>&
+        const Teuchos::RCP<Core::FE::Discretization>&
             embfluiddiscret,  //!< embedded fluid discretization
         Teuchos::RCP<const Epetra_Vector>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis

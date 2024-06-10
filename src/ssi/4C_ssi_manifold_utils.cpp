@@ -13,8 +13,8 @@
 #include "4C_comm_utils_gid_vector.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_fem_general_assemblestrategy.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_ssi.hpp"
@@ -34,8 +34,8 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(
-    Teuchos::RCP<Discret::Discretization> manifolddis,
-    Teuchos::RCP<Discret::Discretization> scatradis,
+    Teuchos::RCP<Core::FE::Discretization> manifolddis,
+    Teuchos::RCP<Core::FE::Discretization> scatradis,
     Core::Conditions::Condition* condition_manifold,
     Core::Conditions::Condition* condition_kinetics, const int ndof_per_node)
     : condition_kinetics_(condition_kinetics),
@@ -822,7 +822,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::un_complete_matrices_if_necessary(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::ManifoldMeshTyingStrategyBase::ManifoldMeshTyingStrategyBase(
-    Teuchos::RCP<Discret::Discretization> scatra_manifold_dis,
+    Teuchos::RCP<Core::FE::Discretization> scatra_manifold_dis,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps, const bool is_manifold_meshtying)
     : is_manifold_meshtying_(is_manifold_meshtying),
       condensed_dof_map_(Teuchos::null),
@@ -865,7 +865,7 @@ SSI::ManifoldMeshTyingStrategyBase::ManifoldMeshTyingStrategyBase(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::ManifoldMeshTyingStrategySparse::ManifoldMeshTyingStrategySparse(
-    Teuchos::RCP<Discret::Discretization> scatra_manifold_dis,
+    Teuchos::RCP<Core::FE::Discretization> scatra_manifold_dis,
     Teuchos::RCP<UTILS::SSIMaps> ssi_maps, const bool is_manifold_meshtying)
     : ManifoldMeshTyingStrategyBase(scatra_manifold_dis, ssi_maps, is_manifold_meshtying)
 {
@@ -874,7 +874,7 @@ SSI::ManifoldMeshTyingStrategySparse::ManifoldMeshTyingStrategySparse(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::ManifoldMeshTyingStrategyBlock::ManifoldMeshTyingStrategyBlock(
-    Teuchos::RCP<Discret::Discretization> scatra_manifold_dis,
+    Teuchos::RCP<Core::FE::Discretization> scatra_manifold_dis,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps, const bool is_manifold_meshtying)
     : ManifoldMeshTyingStrategyBase(scatra_manifold_dis, ssi_maps, is_manifold_meshtying),
       condensed_block_dof_map_(Teuchos::null),
@@ -1376,7 +1376,7 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_scatra_manifold_mat
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<SSI::ManifoldMeshTyingStrategyBase> SSI::BuildManifoldMeshTyingStrategy(
-    Teuchos::RCP<Discret::Discretization> scatra_manifold_dis,
+    Teuchos::RCP<Core::FE::Discretization> scatra_manifold_dis,
     Teuchos::RCP<UTILS::SSIMaps> ssi_maps, const bool is_manifold_meshtying,
     Core::LinAlg::MatrixType matrixtype_manifold)
 {

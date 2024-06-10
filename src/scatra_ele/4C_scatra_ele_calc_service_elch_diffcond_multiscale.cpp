@@ -8,8 +8,8 @@ multi-scale framework
 
 */
 /*--------------------------------------------------------------------------*/
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_mat_elchmat.hpp"
 #include "4C_mat_elchphase.hpp"
@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
     probdim>::calculate_electrode_soc_and_c_rate(const Core::Elements::Element* const& ele,
-    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseVector& scalars)
 {
   // safety check
@@ -84,7 +84,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
     probdim>::calculate_mean_electrode_concentration(const Core::Elements::Element* const& ele,
-    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseVector& conc)
 {
   // safety check
@@ -175,7 +175,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::c
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::evaluate_action(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, const ScaTra::Action& action,
+    Core::FE::Discretization& discretization, const ScaTra::Action& action,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,

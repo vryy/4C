@@ -75,7 +75,7 @@ for gas exchange in the human lungs", J Theor biol (2006)
 #include "4C_config.hpp"
 
 #include "4C_cardiovascular0d.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_inpar_cardiovascular0d.hpp"
 
 #include <Epetra_FECrsMatrix.h>
@@ -88,10 +88,10 @@ for gas exchange in the human lungs", J Theor biol (2006)
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -111,7 +111,7 @@ namespace UTILS
     */
 
     CardiovascularRespiratory0DSysPulPeriphCirculation(
-        Teuchos::RCP<Discret::Discretization>
+        Teuchos::RCP<Core::FE::Discretization>
             discr,                         ///< discretization where Cardiovascular0D lives on
         const std::string& conditionname,  ///< Name of condition to create Cardiovascular0D from
         std::vector<int>& curID            ///< current ID

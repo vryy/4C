@@ -7,7 +7,6 @@ set(_dependencies
     core
     global_data
     inpar
-    lib
     mat
     so3
     structure_new

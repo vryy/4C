@@ -29,10 +29,10 @@ namespace PARTICLEWALL
   class WallHandlerInterface;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -93,7 +93,7 @@ namespace PARTICLEWALL
     std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
 
     //! wall discretization
-    Teuchos::RCP<const Discret::Discretization> walldiscretization_;
+    Teuchos::RCP<const Core::FE::Discretization> walldiscretization_;
   };
 
 }  // namespace PARTICLEWALL

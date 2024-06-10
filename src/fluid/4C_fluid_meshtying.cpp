@@ -33,7 +33,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-FLD::Meshtying::Meshtying(Teuchos::RCP<Discret::Discretization> dis, Core::LinAlg::Solver& solver,
+FLD::Meshtying::Meshtying(Teuchos::RCP<Core::FE::Discretization> dis, Core::LinAlg::Solver& solver,
     int msht, int nsd, const UTILS::MapExtractor* surfacesplitter)
     : discret_(dis),
       solver_(solver),
@@ -463,7 +463,7 @@ void FLD::Meshtying::include_dirichlet_in_condensation(
 void FLD::Meshtying::evaluate_with_mesh_relocation(Teuchos::RCP<Epetra_Vector>& dispnp)
 {
   // get ALE discretization
-  Teuchos::RCP<Discret::Discretization> aledis = Global::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<Core::FE::Discretization> aledis = Global::Problem::Instance()->GetDis("ale");
 
   // call mortar evaluate routine including mesh correction
   adaptermeshtying_->evaluate_with_mesh_relocation(

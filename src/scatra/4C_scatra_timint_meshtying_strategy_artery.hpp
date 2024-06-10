@@ -20,10 +20,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
+
 namespace Adapter
 {
   class Coupling;
@@ -173,8 +174,8 @@ namespace ScaTra
     Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase> arttoscatracoupling_;
 
     //! the two discretizations
-    Teuchos::RCP<Discret::Discretization> artscatradis_;
-    Teuchos::RCP<Discret::Discretization> scatradis_;
+    Teuchos::RCP<Core::FE::Discretization> artscatradis_;
+    Teuchos::RCP<Core::FE::Discretization> scatradis_;
 
     //! block systemmatrix
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> comb_systemmatrix_;

@@ -28,13 +28,13 @@
 #include "4C_beaminteraction_contact_params.hpp"
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
 #include "4C_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.hpp"
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_geometry_pair_element.hpp"
 #include "4C_geometry_pair_element_faces.hpp"
 #include "4C_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "4C_geometry_pair_line_to_surface_evaluation_data.hpp"
 #include "4C_inpar_beam_to_solid.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_so3_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -112,7 +112,7 @@ BEAMINTERACTION::BeamToSolidCondition::CreateContactPair(
  */
 Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>
 BEAMINTERACTION::BeamToSolidCondition::create_indirect_assembly_manager(
-    const Teuchos::RCP<const Discret::Discretization>& discret)
+    const Teuchos::RCP<const Core::FE::Discretization>& discret)
 {
   if (beam_to_solid_params_->get_contact_discretization() ==
       Inpar::BeamToSolid::BeamToSolidContactDiscretization::mortar)
@@ -145,7 +145,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolume
  *
  */
 void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BuildIdSets(
-    const Teuchos::RCP<const Discret::Discretization>& discretization)
+    const Teuchos::RCP<const Core::FE::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
   BeamToSolidCondition::BuildIdSets(discretization);
@@ -346,7 +346,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::BeamToSolidConditionSurface(
  *
  */
 void BEAMINTERACTION::BeamToSolidConditionSurface::BuildIdSets(
-    const Teuchos::RCP<const Discret::Discretization>& discretization)
+    const Teuchos::RCP<const Core::FE::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
   BeamToSolidCondition::BuildIdSets(discretization);
@@ -374,7 +374,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::BuildIdSets(
  *
  */
 void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
-    const Teuchos::RCP<const Discret::Discretization>& discret)
+    const Teuchos::RCP<const Core::FE::Discretization>& discret)
 {
   // Call the parent method.
   BeamToSolidCondition::Setup(discret);
@@ -487,7 +487,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
  *
  */
 void BEAMINTERACTION::BeamToSolidConditionSurface::set_state(
-    const Teuchos::RCP<const Discret::Discretization>& discret,
+    const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
         beaminteraction_data_state)
 {

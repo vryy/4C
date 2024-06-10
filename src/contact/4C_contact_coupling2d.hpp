@@ -39,7 +39,7 @@ namespace CONTACT
     performed in parallel by individual processes.
 
     */
-    Coupling2d(Discret::Discretization& idiscret, int dim, bool quad,
+    Coupling2d(Core::FE::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele);
 
     //! @name Evlauation methods
@@ -107,7 +107,7 @@ namespace CONTACT
     performed in parallel by individual processes.
 
     */
-    Coupling2dManager(Discret::Discretization& idiscret, int dim, bool quad,
+    Coupling2dManager(Core::FE::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele);
 
 

@@ -148,7 +148,7 @@ const STR::TimeInt::BaseDataIO& STR::MODELEVALUATOR::Generic::global_in_output()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Discret::Discretization& STR::MODELEVALUATOR::Generic::discret()
+Core::FE::Discretization& STR::MODELEVALUATOR::Generic::discret()
 {
   check_init();
   return *discret_ptr_;
@@ -156,7 +156,7 @@ Discret::Discretization& STR::MODELEVALUATOR::Generic::discret()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization>& STR::MODELEVALUATOR::Generic::discret_ptr()
+Teuchos::RCP<Core::FE::Discretization>& STR::MODELEVALUATOR::Generic::discret_ptr()
 {
   check_init();
   return discret_ptr_;
@@ -164,7 +164,7 @@ Teuchos::RCP<Discret::Discretization>& STR::MODELEVALUATOR::Generic::discret_ptr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Discret::Discretization& STR::MODELEVALUATOR::Generic::discret() const
+const Core::FE::Discretization& STR::MODELEVALUATOR::Generic::discret() const
 {
   check_init();
   return *discret_ptr_;

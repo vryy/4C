@@ -80,13 +80,13 @@ namespace Adapter
     }
 
     //! direct access to discretization
-    Teuchos::RCP<const Discret::Discretization> discretization() const override
+    Teuchos::RCP<const Core::FE::Discretization> discretization() const override
     {
       return ale_->discretization();
     }
 
     /// writing access to discretization
-    Teuchos::RCP<Discret::Discretization> write_access_discretization() override
+    Teuchos::RCP<Core::FE::Discretization> write_access_discretization() override
     {
       return ale_->write_access_discretization();
     }

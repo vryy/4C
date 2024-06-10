@@ -9,8 +9,8 @@
 #include "4C_poromultiphase_scatra_utils.hpp"
 
 #include "4C_art_net_utils.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_poroelast_scatra_utils_clonestrategy.hpp"
 #include "4C_poroelast_utils.hpp"
@@ -83,10 +83,10 @@ PoroMultiPhaseScaTra::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase>
 PoroMultiPhaseScaTra::UTILS::CreateAndInitArteryCouplingStrategy(
-    Teuchos::RCP<Discret::Discretization> arterydis, Teuchos::RCP<Discret::Discretization> contdis,
-    const Teuchos::ParameterList& meshtyingparams, const std::string& condname,
-    const std::string& artcoupleddofname, const std::string& contcoupleddofname,
-    const bool evaluate_on_lateral_surface)
+    Teuchos::RCP<Core::FE::Discretization> arterydis,
+    Teuchos::RCP<Core::FE::Discretization> contdis, const Teuchos::ParameterList& meshtyingparams,
+    const std::string& condname, const std::string& artcoupleddofname,
+    const std::string& contcoupleddofname, const bool evaluate_on_lateral_surface)
 {
   // Creation of coupling strategy.
   Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase> strategy;
@@ -153,9 +153,9 @@ std::map<int, std::set<int>> PoroMultiPhaseScaTra::UTILS::SetupDiscretizationsAn
 
   Global::Problem* problem = Global::Problem::Instance();
 
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis(struct_disname);
-  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis(fluid_disname);
-  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis(scatra_disname);
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis(struct_disname);
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis(fluid_disname);
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis(scatra_disname);
 
   // fill scatra discretization by cloning structure discretization
   Core::FE::CloneDiscretization<PoroElastScaTra::UTILS::PoroScatraCloneStrategy>(
@@ -188,8 +188,8 @@ std::map<int, std::set<int>> PoroMultiPhaseScaTra::UTILS::SetupDiscretizationsAn
 
   if (artery_coupl)
   {
-    Teuchos::RCP<Discret::Discretization> artdis = problem->GetDis("artery");
-    Teuchos::RCP<Discret::Discretization> artscatradis = problem->GetDis("artery_scatra");
+    Teuchos::RCP<Core::FE::Discretization> artdis = problem->GetDis("artery");
+    Teuchos::RCP<Core::FE::Discretization> artscatradis = problem->GetDis("artery_scatra");
 
     if (!artdis->Filled()) FOUR_C_THROW("artery discretization should be filled at this point");
 
@@ -236,17 +236,17 @@ void PoroMultiPhaseScaTra::UTILS::assign_material_pointers(const std::string& st
 
   Global::Problem* problem = Global::Problem::Instance();
 
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis(struct_disname);
-  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis(fluid_disname);
-  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis(scatra_disname);
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis(struct_disname);
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis(fluid_disname);
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis(scatra_disname);
 
   PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, scatradis);
   PoroElast::UTILS::SetMaterialPointersMatchingGrid(fluiddis, scatradis);
 
   if (artery_coupl)
   {
-    Teuchos::RCP<Discret::Discretization> arterydis = problem->GetDis("artery");
-    Teuchos::RCP<Discret::Discretization> artscatradis = problem->GetDis("artery_scatra");
+    Teuchos::RCP<Core::FE::Discretization> arterydis = problem->GetDis("artery");
+    Teuchos::RCP<Core::FE::Discretization> artscatradis = problem->GetDis("artery_scatra");
 
     Arteries::UTILS::SetMaterialPointersMatchingGrid(arterydis, artscatradis);
   }

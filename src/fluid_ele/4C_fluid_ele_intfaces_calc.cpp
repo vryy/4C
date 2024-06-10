@@ -11,12 +11,12 @@
 
 #include "4C_fluid_ele_intfaces_calc.hpp"
 
+#include "4C_fem_discretization_faces.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_calc_intfaces_stab.hpp"
 #include "4C_fluid_ele_parameter_intface.hpp"
 #include "4C_fluid_ele_parameter_std.hpp"
 #include "4C_fluid_ele_parameter_timint.hpp"
-#include "4C_lib_discret_faces.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -99,13 +99,13 @@ Discret::ELEMENTS::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
-    Discret::ELEMENTS::FluidIntFace* intface,      ///< internal face element
-    Teuchos::RCP<Core::Mat::Material>& material,   ///< material for face stabilization
-    std::vector<int>& nds_master,                  ///< nodal dofset w.r.t. master element
-    std::vector<int>& nds_slave,                   ///< nodal dofset w.r.t. slave element
-    const Inpar::XFEM::FaceType& face_type,        ///< which type of face std, ghost, ghost-penalty
-    Teuchos::ParameterList& params,                ///< parameter list
-    Discret::DiscretizationFaces& discretization,  ///< faces discretization
+    Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+    Teuchos::RCP<Core::Mat::Material>& material,  ///< material for face stabilization
+    std::vector<int>& nds_master,                 ///< nodal dofset w.r.t. master element
+    std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
+    const Inpar::XFEM::FaceType& face_type,       ///< which type of face std, ghost, ghost-penalty
+    Teuchos::ParameterList& params,               ///< parameter list
+    Core::FE::DiscretizationFaces& discretization,          ///< faces discretization
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
     Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
 )
@@ -348,7 +348,7 @@ int Discret::ELEMENTS::FluidIntFaceImpl<distype>::evaluate_internal_faces(
     Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
     Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
     Teuchos::ParameterList& params,               ///< parameter list
-    Discret::Discretization& discretization,      ///< discretization
+    Core::FE::Discretization& discretization,     ///< discretization
     std::vector<int>& patchlm,                    ///< patch local map
     std::vector<int>& lm_masterToPatch,           ///< local map between master dofs and patchlm
     std::vector<int>& lm_slaveToPatch,            ///< local map between slave dofs and patchlm

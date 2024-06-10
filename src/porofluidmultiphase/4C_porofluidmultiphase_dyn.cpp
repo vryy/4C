@@ -10,12 +10,12 @@
 
 #include "4C_porofluidmultiphase_dyn.hpp"
 
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_bio.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_porofluidmultiphase_timint_implicit.hpp"
 #include "4C_porofluidmultiphase_timint_ost.hpp"
 #include "4C_porofluidmultiphase_utils.hpp"
@@ -60,7 +60,7 @@ void porofluidmultiphase_dyn(int restart)
   // -------------------------------------------------------------------
   // access the discretization(s)
   // -------------------------------------------------------------------
-  Teuchos::RCP<Discret::Discretization> actdis = Teuchos::null;
+  Teuchos::RCP<Core::FE::Discretization> actdis = Teuchos::null;
   actdis = Global::Problem::Instance()->GetDis(fluid_disname);
 
   // possible interaction partners as seen from the artery elements
@@ -69,7 +69,7 @@ void porofluidmultiphase_dyn(int restart)
 
   if (Global::Problem::Instance()->DoesExistDis(artery_disname))
   {
-    Teuchos::RCP<Discret::Discretization> arterydis = Teuchos::null;
+    Teuchos::RCP<Core::FE::Discretization> arterydis = Teuchos::null;
     arterydis = Global::Problem::Instance()->GetDis(artery_disname);
     // get the coupling method
     Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =

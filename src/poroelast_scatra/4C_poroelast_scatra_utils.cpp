@@ -9,8 +9,8 @@
 
 #include "4C_poroelast_scatra_utils.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_lib_discret_faces.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization_faces.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_mat_fluidporo.hpp"
@@ -112,7 +112,7 @@ Teuchos::RCP<PoroElastScaTra::PoroScatraBase> PoroElastScaTra::UTILS::CreatePoro
 }
 
 Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElastScaTra::UTILS::BuildPoroScatraSplitter(
-    Teuchos::RCP<Discret::Discretization> dis)
+    Teuchos::RCP<Core::FE::Discretization> dis)
 {
   Teuchos::RCP<Core::LinAlg::MapExtractor> porositysplitter = Teuchos::null;
 
@@ -134,14 +134,14 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElastScaTra::UTILS::BuildPoroScatra
   return porositysplitter;
 }
 
-void PoroElastScaTra::UTILS::create_volume_ghosting(Discret::Discretization& idiscret)
+void PoroElastScaTra::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret)
 {
   // We get the discretizations from the global problem, as the contact does not have
   // both structural and porofluid discretization, but we should guarantee consistent ghosting!
 
   Global::Problem* problem = Global::Problem::Instance();
 
-  std::vector<Teuchos::RCP<Discret::Discretization>> voldis;
+  std::vector<Teuchos::RCP<Core::FE::Discretization>> voldis;
   voldis.push_back(problem->GetDis("structure"));
   voldis.push_back(problem->GetDis("porofluid"));
   voldis.push_back(problem->GetDis("scatra"));
@@ -206,8 +206,8 @@ void PoroElastScaTra::UTILS::create_volume_ghosting(Discret::Discretization& idi
   PoroElast::UTILS::reconnect_parent_pointers(idiscret, *voldis[0], &(*voldis[1]));
 
   // 4 In case we use
-  Teuchos::RCP<Discret::DiscretizationFaces> facediscret =
-      Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(voldis[1]);
+  Teuchos::RCP<Core::FE::DiscretizationFaces> facediscret =
+      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(voldis[1]);
   if (facediscret != Teuchos::null) facediscret->FillCompleteFaces(true, true, true, true);
 }
 

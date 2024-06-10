@@ -14,9 +14,9 @@
 
 #include "4C_xfem_neumann.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_utils_function_of_time.hpp"
 
@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
 void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
-    Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<Epetra_Vector> systemvector,
+    Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Epetra_Vector> systemvector,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix)
 {
   if (systemmatrix == Teuchos::null)
@@ -44,7 +44,7 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
 void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
-    Teuchos::RCP<Discret::Discretization> discret, Epetra_Vector& systemvector,
+    Teuchos::RCP<Core::FE::Discretization> discret, Epetra_Vector& systemvector,
     Core::LinAlg::SparseOperator* systemmatrix)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 5) evaluate_neumann");
@@ -118,8 +118,9 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 void XFEM::EvaluateNeumannStandard(
     std::multimap<std::string, Core::Conditions::Condition*>& condition, const double time,
-    bool assemblemat, Teuchos::ParameterList& params, Teuchos::RCP<Discret::Discretization> discret,
-    Epetra_Vector& systemvector, Core::LinAlg::SparseOperator* systemmatrix)
+    bool assemblemat, Teuchos::ParameterList& params,
+    Teuchos::RCP<Core::FE::Discretization> discret, Epetra_Vector& systemvector,
+    Core::LinAlg::SparseOperator* systemmatrix)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EvaluateNeumannStandard" );
 

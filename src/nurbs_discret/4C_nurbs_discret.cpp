@@ -11,9 +11,9 @@
 
 #include "4C_nurbs_discret.hpp"
 
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_mapextractor.hpp"
@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Discret::Nurbs::NurbsDiscretization::NurbsDiscretization(
     const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
-    : Discret::Discretization::Discretization(name, comm, n_dim), knots_(Teuchos::null)
+    : Core::FE::Discretization::Discretization(name, comm, n_dim), knots_(Teuchos::null)
 {
   return;
 }
@@ -50,7 +50,8 @@ void Discret::Nurbs::NurbsDiscretization::SetKnotVector(
   if (knots == Teuchos::null)
   {
     FOUR_C_THROW(
-        "You're trying to set an invalid knotvector in the Discret::Nurbs::NurbsDiscretization "
+        "You're trying to set an invalid knotvector in the "
+        "Discret::Nurbs::NurbsDiscretization "
         "'%s'. The given know vector is a null vector and can't be set as such.",
         (this->Name()).c_str());
   }
@@ -68,7 +69,8 @@ Teuchos::RCP<Discret::Nurbs::Knotvector> Discret::Nurbs::NurbsDiscretization::Ge
   if (knots_ == Teuchos::null)
   {
     FOUR_C_THROW(
-        "You're trying to access the NURBS knot vector in the Discret::Nurbs::NurbsDiscretization "
+        "You're trying to access the NURBS knot vector in the "
+        "Discret::Nurbs::NurbsDiscretization "
         "'%s'. The required knot vector is a null vector and can't be accessed as such.",
         (this->Name()).c_str());
   }
@@ -86,7 +88,8 @@ Teuchos::RCP<const Discret::Nurbs::Knotvector> Discret::Nurbs::NurbsDiscretizati
   if (knots_ == Teuchos::null)
   {
     FOUR_C_THROW(
-        "You're trying to access the NURBS knot vector in the Discret::Nurbs::NurbsDiscretization "
+        "You're trying to access the NURBS knot vector in the "
+        "Discret::Nurbs::NurbsDiscretization "
         "'%s'. The required knot vector is a null vector and can't be accessed as such.",
         (this->Name()).c_str());
   }
@@ -96,12 +99,12 @@ Teuchos::RCP<const Discret::Nurbs::Knotvector> Discret::Nurbs::NurbsDiscretizati
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Discret::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
-    const Discret::Discretization& discret, double time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, Discret::UTILS::Dbc::DbcInfo& info,
+    const Core::FE::Discretization& discret, double time,
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, Core::FE::UTILS::Dbc::DbcInfo& info,
     Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // --------------------------- Step 1 ---------------------------------------
-  Discret::UTILS::Dbc::evaluate(params, discret, time, systemvectors, info, dbcgids);
+  Core::FE::UTILS::Dbc::evaluate(params, discret, time, systemvectors, info, dbcgids);
 
   // --------------------------- Step 2 ---------------------------------------
   std::vector<std::string> dbc_cond_names(2, "");
@@ -119,7 +122,7 @@ void Discret::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
     std::copy(curr_conds.begin(), curr_conds.end(), std::back_inserter(conds));
   }
 
-  Discret::UTILS::Dbc::DbcInfo info2(info.toggle.Map());
+  Core::FE::UTILS::Dbc::DbcInfo info2(info.toggle.Map());
   read_dirichlet_condition(params, discret, conds, time, info2, dbcgids);
 
   // --------------------------- Step 3 ---------------------------------------
@@ -136,7 +139,7 @@ void Discret::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
   if (not discret_nurbs) FOUR_C_THROW("Dynamic cast failed!");
 
   // build dummy column toggle vector and auxiliary vectors
-  Discret::UTILS::Dbc::DbcInfo info_col(*discret_nurbs->DofColMap());
+  Core::FE::UTILS::Dbc::DbcInfo info_col(*discret_nurbs->DofColMap());
   read_dirichlet_condition(params, discret, conds, time, info_col, dbcgids_nurbs);
 
   // --------------------------- Step 4 ---------------------------------------
@@ -147,14 +150,14 @@ void Discret::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Discret::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterList& params,
-    const Discret::Discretization& discret, const Core::Conditions::Condition& cond, double time,
+    const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // default call
   if (dbcgids[set_col].is_null())
   {
-    Discret::UTILS::Dbc::do_dirichlet_condition(
+    Core::FE::UTILS::Dbc::do_dirichlet_condition(
         params, discret, cond, time, systemvectors, toggle, dbcgids);
     return;
   }
@@ -474,7 +477,7 @@ void Discret::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterLi
       Teuchos::rcp(new Core::LinAlg::Solver(p, discret.Comm()));
   // FixMe actually the const qualifier could stay, if someone adds to each single
   // related ComputeNullSpace routine a "const"....
-  const_cast<Discret::Discretization&>(discret).compute_null_space_if_necessary(solver->Params());
+  const_cast<Core::FE::Discretization&>(discret).compute_null_space_if_necessary(solver->Params());
 
   // solve for control point values
   // always refactor and reset the matrix before a single new solver call

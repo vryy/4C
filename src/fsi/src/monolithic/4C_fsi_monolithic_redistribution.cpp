@@ -17,8 +17,9 @@
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_ale_utils_mapextractor.hpp"
 #include "4C_coupling_adapter.hpp"
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_fem_general_node.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_debugwriter.hpp"
 #include "4C_fsi_monolithic.hpp"
@@ -27,7 +28,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_rebalance_graph_based.hpp"
@@ -63,10 +63,10 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
 
 
   // access the discretizations
-  Teuchos::RCP<Discret::Discretization> structuredis =
+  Teuchos::RCP<Core::FE::Discretization> structuredis =
       Global::Problem::Instance()->GetDis("structure");
-  Teuchos::RCP<Discret::Discretization> fluiddis = Global::Problem::Instance()->GetDis("fluid");
-  Teuchos::RCP<Discret::Discretization> aledis = Global::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = Global::Problem::Instance()->GetDis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> aledis = Global::Problem::Instance()->GetDis("ale");
 
   // Fill maps based on condition for master side (masterdis != slavedis)
   Core::Conditions::FindConditionObjects(
@@ -316,10 +316,10 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const Inpar::FSI::R
 
 
   // access the discretizations
-  Teuchos::RCP<Discret::Discretization> structuredis =
+  Teuchos::RCP<Core::FE::Discretization> structuredis =
       Global::Problem::Instance()->GetDis("structure");
-  Teuchos::RCP<Discret::Discretization> fluiddis = Global::Problem::Instance()->GetDis("fluid");
-  Teuchos::RCP<Discret::Discretization> aledis = Global::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = Global::Problem::Instance()->GetDis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> aledis = Global::Problem::Instance()->GetDis("ale");
 
   // Fill maps based on condition for master side (masterdis != slavedis)
   Core::Conditions::FindConditionObjects(
@@ -367,7 +367,7 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const Inpar::FSI::R
   /* build nodal graph and insert edge weights */
   /*********************************************/
 
-  Teuchos::RCP<Discret::Discretization> dis;
+  Teuchos::RCP<Core::FE::Discretization> dis;
   if (domain == Inpar::FSI::Redistribute_structure)
     dis = structuredis;
   else if (domain == Inpar::FSI::Redistribute_fluid)
@@ -1300,7 +1300,7 @@ void FSI::BlockMonolithic::InsertDeletedEdges(std::map<int, std::list<int>>* del
 
 /*----------------------------------------------------------------------------*/
 void FSI::BlockMonolithic::find_node_related_to_dof(std::map<int, Core::Nodes::Node*>* nodes,
-    int gdofid, Teuchos::RCP<Discret::Discretization> discretization, int* re)
+    int gdofid, Teuchos::RCP<Core::FE::Discretization> discretization, int* re)
 {
   re[0] = -2;  // code: the node cannot be found on this proc
   bool breakout = false;
@@ -1329,8 +1329,8 @@ void FSI::BlockMonolithic::build_monolithic_graph(Teuchos::RCP<Epetra_CrsGraph> 
     std::map<int, std::vector<int>>& deletedEdges, std::map<int, std::vector<int>>& insertedEdges,
     std::map<int, std::vector<int>>& fluidToStructureMap,
     std::map<int, std::vector<int>>& structureToFluidMap,
-    Teuchos::RCP<Discret::Discretization> structuredis,  ///< structure discretization
-    Teuchos::RCP<Discret::Discretization> fluiddis)
+    Teuchos::RCP<Core::FE::Discretization> structuredis,  ///< structure discretization
+    Teuchos::RCP<Core::FE::Discretization> fluiddis)
 {
   int numproc = monolithicGraph->Comm().NumProc();
   int myrank = monolithicGraph->Comm().MyPID();

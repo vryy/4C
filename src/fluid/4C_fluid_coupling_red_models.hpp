@@ -17,8 +17,8 @@ problem
 #include "4C_config.hpp"
 
 #include "4C_art_net_dyn_drt.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_red_airways_dyn_drt.hpp"
 
@@ -52,8 +52,8 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidCouplingWrapperBase(Teuchos::RCP<Discret::Discretization> dis_3D,
-          Teuchos::RCP<Discret::Discretization> dis_redD, Core::IO::DiscretizationWriter& output,
+      FluidCouplingWrapperBase(Teuchos::RCP<Core::FE::Discretization> dis_3D,
+          Teuchos::RCP<Core::FE::Discretization> dis_redD, Core::IO::DiscretizationWriter& output,
           double dt_3d, double dt_redD);
 
       /*!
@@ -127,10 +127,10 @@ namespace FLD
       Teuchos::RCP<std::map<std::string, double>> map3_dn_;
 
       //! 3D fluid discretization
-      Teuchos::RCP<Discret::Discretization> discret3_d_;
+      Teuchos::RCP<Core::FE::Discretization> discret3_d_;
 
       //! Reduced-D artery network discretization
-      Teuchos::RCP<Discret::Discretization> discret_red_d_;
+      Teuchos::RCP<Core::FE::Discretization> discret_red_d_;
 
       //! Reduced-D artery network time integration
       //  Teuchos::RCP<Arteries::ArtNetExplicitTimeInt>              ArtExpTime_integ_;
@@ -152,8 +152,8 @@ namespace FLD
     class FluidCouplingWrapper : public FluidCouplingWrapperBase
     {
      public:
-      FluidCouplingWrapper(Teuchos::RCP<Discret::Discretization> dis_3D,
-          Teuchos::RCP<Discret::Discretization> dis_redD, Teuchos::RCP<red_D_time_int> time_intg,
+      FluidCouplingWrapper(Teuchos::RCP<Core::FE::Discretization> dis_3D,
+          Teuchos::RCP<Core::FE::Discretization> dis_redD, Teuchos::RCP<red_D_time_int> time_intg,
           Core::IO::DiscretizationWriter& output, double dt_3d, double dt_rm)
           : FluidCouplingWrapperBase(dis_3D, dis_redD, output, dt_3d, dt_rm),
             reduced_d_time_integ_(time_intg)
@@ -192,8 +192,8 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidCouplingBc(Teuchos::RCP<Discret::Discretization> dis_3D,
-          Teuchos::RCP<Discret::Discretization> dis_reD, Core::IO::DiscretizationWriter& output,
+      FluidCouplingBc(Teuchos::RCP<Core::FE::Discretization> dis_3D,
+          Teuchos::RCP<Core::FE::Discretization> dis_reD, Core::IO::DiscretizationWriter& output,
           double dt_3d, double dt_rm, int condid, int numcond, int numcond2);
 
       /*!
@@ -295,10 +295,10 @@ namespace FLD
       int myrank_;
 
       //! 3D fluid discretization
-      Teuchos::RCP<Discret::Discretization> discret_3_d_;
+      Teuchos::RCP<Core::FE::Discretization> discret_3_d_;
 
       //! fluid discretization
-      Teuchos::RCP<Discret::Discretization> discret_red_d_;
+      Teuchos::RCP<Core::FE::Discretization> discret_red_d_;
 
       //! the output writer
       Core::IO::DiscretizationWriter& output_;

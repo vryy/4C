@@ -10,9 +10,9 @@
 
 #include "4C_structure_new_resulttest.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_timint_base.hpp"
@@ -509,8 +509,8 @@ void STR::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& ner
   }
 
   // gather the result across processes
-  auto gather_result = [op](
-                           const Discret::Discretization& disc, const double local_result) -> double
+  auto gather_result = [op](const Core::FE::Discretization& disc,
+                           const double local_result) -> double
   {
     double tmp_result = local_result, result = 0.0;
     switch (op)

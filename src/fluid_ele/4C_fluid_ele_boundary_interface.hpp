@@ -14,7 +14,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
@@ -24,10 +24,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class FluidBoundary;
@@ -48,13 +51,13 @@ namespace Discret
       virtual ~FluidBoundaryInterface() = default;
 
       virtual void evaluate_action(Discret::ELEMENTS::FluidBoundary* ele1,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3) = 0;
 
       virtual int evaluate_neumann(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseMatrix* elemat1) = 0;

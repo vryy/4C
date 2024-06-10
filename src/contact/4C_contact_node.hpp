@@ -905,11 +905,13 @@ namespace CONTACT
 
     //! pack for parallel communication
     virtual void Pack(Core::Communication::PackBuffer& data) const {
-        /* no need to pack, since terms are re-evaluated after parallel communication */};
+        /* no need to pack, since terms are re-evaluated after parallel communication */
+    };
 
     //! unpack and re-init after parallel comunication
     virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data){
-        /* no need to pack, since terms are re-evaluated after parallel communication */};
+        /* no need to pack, since terms are re-evaluated after parallel communication */
+    };
 
     //! clear all stored data
     void Clear()
@@ -972,7 +974,7 @@ namespace CONTACT
     /*!
      \brief The discretization is a friend of Node
      */
-    friend class Discret::Discretization;
+    friend class Core::FE::Discretization;
 
     //@}
 

@@ -12,11 +12,11 @@
 #include "4C_adapter_str_timeada_joint.hpp"
 
 #include "4C_adapter_str_timeloop.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_structure_new_solver_factory.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"

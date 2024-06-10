@@ -15,7 +15,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_exporter.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_fem_general_elementtype.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
 #include <Epetra_MpiComm.h>
@@ -25,10 +25,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -46,8 +46,9 @@ namespace XFEM
   {
    public:
     //! ctor
-    MeshProjector(Teuchos::RCP<const Discret::Discretization> sourcedis,
-        Teuchos::RCP<const Discret::Discretization> targetdis, const Teuchos::ParameterList& params,
+    MeshProjector(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
+        Teuchos::RCP<const Core::FE::Discretization> targetdis,
+        const Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> sourcedisp = Teuchos::null);
 
     //! set current displacements of source discretization
@@ -112,8 +113,8 @@ namespace XFEM
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values,
         std::vector<char>& sblock);
 
-    Teuchos::RCP<const Discret::Discretization> sourcedis_;
-    Teuchos::RCP<const Discret::Discretization> targetdis_;
+    Teuchos::RCP<const Core::FE::Discretization> sourcedis_;
+    Teuchos::RCP<const Core::FE::Discretization> targetdis_;
 
     //! search radius factor
     double searchradius_fac_;

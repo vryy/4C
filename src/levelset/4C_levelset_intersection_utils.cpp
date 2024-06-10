@@ -14,13 +14,13 @@
 #include "4C_cut_integrationcell.hpp"
 #include "4C_cut_levelsetintersection.hpp"
 #include "4C_cut_volumecell.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_geometry_element_coordtrafo.hpp"
-#include "4C_discretization_geometry_element_volume.hpp"
-#include "4C_discretization_geometry_integrationcell.hpp"
-#include "4C_discretization_geometry_position_array.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_geometry_element_coordtrafo.hpp"
+#include "4C_fem_geometry_element_volume.hpp"
+#include "4C_fem_geometry_integrationcell.hpp"
+#include "4C_fem_geometry_position_array.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
 
@@ -47,7 +47,7 @@ void ScaTra::LevelSet::Intersection::reset()
  *----------------------------------------------------------------------------*/
 void ScaTra::LevelSet::Intersection::CaptureZeroLevelSet(
     const Teuchos::RCP<const Epetra_Vector>& phi,
-    const Teuchos::RCP<const Discret::Discretization>& scatradis, double& volumedomainminus,
+    const Teuchos::RCP<const Core::FE::Discretization>& scatradis, double& volumedomainminus,
     double& volumedomainplus, double& zerosurface,
     std::map<int, Core::Geo::BoundaryIntCells>& elementBoundaryIntCells)
 {
@@ -74,7 +74,7 @@ void ScaTra::LevelSet::Intersection::CaptureZeroLevelSet(
  *----------------------------------------------------------------------------*/
 template <typename T>
 void ScaTra::LevelSet::Intersection::get_zero_level_set(const Epetra_Vector& phi,
-    const Discret::Discretization& scatradis, std::map<int, T>& elementBoundaryIntCells,
+    const Core::FE::Discretization& scatradis, std::map<int, T>& elementBoundaryIntCells,
     bool cut_screenoutput)
 {
   // export phi from row to column map
@@ -292,7 +292,7 @@ void ScaTra::LevelSet::Intersection::collect_cut_eles(Core::Geo::Cut::ElementHan
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ScaTra::LevelSet::Intersection::prepare_cut(const Core::Elements::Element* ele,
-    const Discret::Discretization& scatradis, const Epetra_Vector& phicol,
+    const Core::FE::Discretization& scatradis, const Epetra_Vector& phicol,
     Core::LinAlg::SerialDenseMatrix& xyze, std::vector<double>& phi_nodes,
     std::vector<int>& node_ids) const
 {
@@ -609,10 +609,10 @@ void ScaTra::LevelSet::Intersection::unpack_boundary_int_cells(
 
 
 template void ScaTra::LevelSet::Intersection::get_zero_level_set<Core::Geo::BoundaryIntCells>(
-    const Epetra_Vector& phi, const Discret::Discretization& scatradis,
+    const Epetra_Vector& phi, const Core::FE::Discretization& scatradis,
     std::map<int, Core::Geo::BoundaryIntCells>& elementBoundaryIntCells, bool cut_screenoutput);
 template void ScaTra::LevelSet::Intersection::get_zero_level_set<Core::Geo::BoundaryIntCellPtrs>(
-    const Epetra_Vector& phi, const Discret::Discretization& scatradis,
+    const Epetra_Vector& phi, const Core::FE::Discretization& scatradis,
     std::map<int, Core::Geo::BoundaryIntCellPtrs>& elementBoundaryIntCells, bool cut_screenoutput);
 
 FOUR_C_NAMESPACE_CLOSE

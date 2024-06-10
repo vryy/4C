@@ -16,9 +16,9 @@ thereby builds the bridge between the xfluid class and the cut-library
 
 #include "4C_config.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_xfem.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Vector.h>
@@ -59,10 +59,10 @@ namespace XFEM
 
     //! constructor
     explicit CouplingBase(
-        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Discret::Discretization>&
+        Teuchos::RCP<Core::FE::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -133,7 +133,7 @@ namespace XFEM
     void Status(const int coupling_idx, const int side_start_gid);
 
 
-    std::string DisNameToString(Teuchos::RCP<Discret::Discretization> dis)
+    std::string DisNameToString(Teuchos::RCP<Core::FE::Discretization> dis)
     {
       if (dis == Teuchos::null) return "---";
 
@@ -213,9 +213,9 @@ namespace XFEM
 
     virtual const std::string& GetName() { return coupl_name_; }
 
-    Teuchos::RCP<Discret::Discretization> GetCutterDis() { return cutter_dis_; }
-    Teuchos::RCP<Discret::Discretization> GetCouplingDis() { return coupl_dis_; }
-    Teuchos::RCP<Discret::Discretization> GetCondDis() { return cond_dis_; }
+    Teuchos::RCP<Core::FE::Discretization> GetCutterDis() { return cutter_dis_; }
+    Teuchos::RCP<Core::FE::Discretization> GetCouplingDis() { return coupl_dis_; }
+    Teuchos::RCP<Core::FE::Discretization> GetCondDis() { return cond_dis_; }
 
     Inpar::XFEM::AveragingStrategy get_averaging_strategy() { return averaging_strategy_; }
 
@@ -541,7 +541,7 @@ namespace XFEM
     size_t nsd_;
 
     ///< background discretization
-    Teuchos::RCP<Discret::Discretization> bg_dis_;
+    Teuchos::RCP<Core::FE::Discretization> bg_dis_;
 
     ///------------------------
     // CUTTER-DISCRETIZATION specific member
@@ -551,7 +551,7 @@ namespace XFEM
     std::string cond_name_;
 
     ///< discretization from which the cutter discretization is derived
-    Teuchos::RCP<Discret::Discretization> cond_dis_;
+    Teuchos::RCP<Core::FE::Discretization> cond_dis_;
 
     ///< id of composite of coupling conditions
     const int coupling_id_;
@@ -559,7 +559,7 @@ namespace XFEM
     ///< discretization w.r.t which the interface is described and w.r.t which the state vectors
     ///< describing the interface position are defined (bgdis for LevelSetCoupling and boundary dis
     ///< for MeshCoupling)
-    Teuchos::RCP<Discret::Discretization> cutter_dis_;
+    Teuchos::RCP<Core::FE::Discretization> cutter_dis_;
 
     ///< pairs of condition type and pointer to Core::Conditions::Condition for all column elements
     ///< of the cutter discretization (bgdis for LevelSetCoupling and boundary dis for MeshCoupling)
@@ -580,7 +580,7 @@ namespace XFEM
     ///< discretization with which the background discretization is coupled (structural dis, fluid
     ///< dis, poro dis, scatra dis, boundary dis), Teuchos::null in case that no coupling terms but
     ///< only boundary terms are evaluated
-    Teuchos::RCP<Discret::Discretization> coupl_dis_;
+    Teuchos::RCP<Core::FE::Discretization> coupl_dis_;
 
     // TODO: be aware of the fact, that accesing the coupling object via Name is unsafe, it assumes
     // that only one coupling of that type is available < name of the mesh/levelset coupling object

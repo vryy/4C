@@ -38,10 +38,10 @@ namespace Adapter
   class ScaTraBaseAlgorithm;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -72,8 +72,8 @@ namespace SSI
   class ManifoldScaTraCoupling
   {
    public:
-    ManifoldScaTraCoupling(Teuchos::RCP<Discret::Discretization> manifolddis,
-        Teuchos::RCP<Discret::Discretization> scatradis,
+    ManifoldScaTraCoupling(Teuchos::RCP<Core::FE::Discretization> manifolddis,
+        Teuchos::RCP<Core::FE::Discretization> scatradis,
         Core::Conditions::Condition* condition_manifold,
         Core::Conditions::Condition* condition_kinetics, int ndof_per_node);
 
@@ -339,7 +339,7 @@ namespace SSI
     virtual ~ManifoldMeshTyingStrategyBase() = default;
 
     explicit ManifoldMeshTyingStrategyBase(
-        Teuchos::RCP<Discret::Discretization> scatra_manifold_dis,
+        Teuchos::RCP<Core::FE::Discretization> scatra_manifold_dis,
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying);
 
     //! apply mesh tying to right hand side
@@ -389,7 +389,7 @@ namespace SSI
   {
    public:
     explicit ManifoldMeshTyingStrategySparse(
-        Teuchos::RCP<Discret::Discretization> scatra_manifold_dis,
+        Teuchos::RCP<Core::FE::Discretization> scatra_manifold_dis,
         Teuchos::RCP<UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying);
 
     void apply_meshtying_to_manifold_matrix(
@@ -415,7 +415,7 @@ namespace SSI
   {
    public:
     explicit ManifoldMeshTyingStrategyBlock(
-        Teuchos::RCP<Discret::Discretization> scatra_manifold_dis,
+        Teuchos::RCP<Core::FE::Discretization> scatra_manifold_dis,
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying);
 
     void apply_meshtying_to_manifold_matrix(
@@ -462,7 +462,7 @@ namespace SSI
 
   //! build specific mesh tying strategy
   Teuchos::RCP<SSI::ManifoldMeshTyingStrategyBase> BuildManifoldMeshTyingStrategy(
-      Teuchos::RCP<Discret::Discretization> scatra_manifold_dis,
+      Teuchos::RCP<Core::FE::Discretization> scatra_manifold_dis,
       Teuchos::RCP<UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying,
       Core::LinAlg::MatrixType matrixtype_manifold);
 

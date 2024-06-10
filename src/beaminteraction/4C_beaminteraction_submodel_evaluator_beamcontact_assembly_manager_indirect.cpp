@@ -17,8 +17,8 @@ coupling matrices M and D first.
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_contact_pair.hpp"
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
@@ -32,7 +32,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::
     BeamContactAssemblyManagerInDirect(
         const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>&
             assembly_contact_elepairs,
-        const Teuchos::RCP<const Discret::Discretization>& discret,
+        const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& beam_to_solid_params)
     : BeamContactAssemblyManager()
 {
@@ -52,7 +52,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::evaluate_force_stiff(
-    Teuchos::RCP<Discret::Discretization> discret,
+    Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
     Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat)
 {

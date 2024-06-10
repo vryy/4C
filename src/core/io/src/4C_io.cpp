@@ -11,9 +11,9 @@
 
 #include "4C_io.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_legacy_table.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_nurbs_discret.hpp"
@@ -38,8 +38,8 @@ Core::IO::DiscretizationReader::DiscretizationReader() /* [PROTECTED] */
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::DiscretizationReader::DiscretizationReader(
-    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::IO::InputControl> input, int step)
+Core::IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<Core::FE::Discretization> dis,
+    Teuchos::RCP<Core::IO::InputControl> input, int step)
     : dis_(dis), input_(input)
 {
   find_result_group(step, input_->ControlFile());
@@ -507,7 +507,7 @@ Core::IO::DiscretizationWriter::DiscretizationWriter() /* PROTECTED */
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<Discret::Discretization> dis,
+Core::IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<Core::FE::Discretization> dis,
     Teuchos::RCP<OutputControl> output_control,
     const Core::FE::ShapeFunctionType shape_function_type)
     : dis_(Teuchos::rcp(dis.get(), false)),  // no ownership to break circle discretization<>writer
@@ -1625,7 +1625,7 @@ void Core::IO::DiscretizationWriter::ClearMapCache()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Discret::Discretization& Core::IO::DiscretizationWriter::GetDiscret() const
+const Core::FE::Discretization& Core::IO::DiscretizationWriter::GetDiscret() const
 {
   if (dis_.is_null()) FOUR_C_THROW("The discretization pointer has not been initialized!");
   return *dis_;

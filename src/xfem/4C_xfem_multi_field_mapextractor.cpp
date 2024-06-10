@@ -147,7 +147,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   // ------------------------------------------------------------------------
   // create an auxiliary master interface discretization
   // ------------------------------------------------------------------------
-  idiscret_ = Teuchos::rcp(new Discret::Discretization("multifield_interface",
+  idiscret_ = Teuchos::rcp(new Core::FE::Discretization("multifield_interface",
       Teuchos::rcp<Epetra_Comm>(comm().Clone()), Global::Problem::Instance()->NDim()));
 
   // ------------------------------------------------------------------------

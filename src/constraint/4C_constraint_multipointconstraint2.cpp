@@ -10,10 +10,10 @@
 
 #include "4C_constraint_multipointconstraint2.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_dofset_transparent.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_dofset_transparent.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_utils_function_of_time.hpp"
@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<Discret::Discretization> discr,
+CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<Core::FE::Discretization> discr,
     const std::string& conditionname, int& minID, int& maxID)
     : MPConstraint(discr, conditionname, minID, maxID)
 {
@@ -143,16 +143,16 @@ void CONSTRAINTS::MPConstraint2::Evaluate(Teuchos::ParameterList& params,
  |(private)                                                   tk 04/08    |
  |subroutine creating a new discretization containing constraint elements |
  *------------------------------------------------------------------------*/
-std::map<int, Teuchos::RCP<Discret::Discretization>>
+std::map<int, Teuchos::RCP<Core::FE::Discretization>>
 CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
-    Teuchos::RCP<Discret::Discretization> actdisc,
+    Teuchos::RCP<Core::FE::Discretization> actdisc,
     std::vector<Core::Conditions::Condition*> constrcondvec, const std::string& discret_name,
     const std::string& element_name, int& startID)
 {
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
 
-  Teuchos::RCP<Discret::Discretization> newdis =
-      Teuchos::rcp(new Discret::Discretization(discret_name, com, actdisc->n_dim()));
+  Teuchos::RCP<Core::FE::Discretization> newdis =
+      Teuchos::rcp(new Core::FE::Discretization(discret_name, com, actdisc->n_dim()));
 
   if (!actdisc->Filled())
   {
@@ -225,7 +225,7 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
 
   newdis->Redistribute(*constraintnoderowmap, *constraintnodecolmap);
 
-  std::map<int, Teuchos::RCP<Discret::Discretization>> newdismap;
+  std::map<int, Teuchos::RCP<Core::FE::Discretization>> newdismap;
   newdismap[startID] = newdis;
   return newdismap;
 }
@@ -256,7 +256,7 @@ void CONSTRAINTS::MPConstraint2::reorder_constraint_nodes(
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Discret::Discretization> disc,
+void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Discretization> disc,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,

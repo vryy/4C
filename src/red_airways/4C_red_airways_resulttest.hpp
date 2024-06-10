@@ -23,10 +23,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Airway
 {
@@ -54,7 +54,7 @@ namespace Airway
 
    private:
     /// Teuchos::RCP to scalar transport discretization
-    Teuchos::RCP<Discret::Discretization> dis_;
+    Teuchos::RCP<Core::FE::Discretization> dis_;
     /// Teuchos::RCP to nodal solution vector containing pressure
     Teuchos::RCP<Epetra_Vector> mynodesol_pressure_;
     /// Teuchos::RCP to nodal solution vector containing flow in

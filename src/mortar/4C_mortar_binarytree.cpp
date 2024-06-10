@@ -9,7 +9,7 @@
 
 #include "4C_mortar_binarytree.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mortar_element.hpp"
 #include "4C_mortar_node.hpp"
@@ -21,9 +21,9 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor BinaryTreeNode (public)                              popp 10/08|
  *----------------------------------------------------------------------*/
 Mortar::BinaryTreeNode::BinaryTreeNode(Mortar::BinaryTreeNodeType type,
-    Discret::Discretization& discret, Teuchos::RCP<BinaryTreeNode> parent, std::vector<int> elelist,
-    const Core::LinAlg::SerialDenseMatrix& dopnormals, const int& kdop, const int& dim,
-    const bool& useauxpos, const int layer,
+    Core::FE::Discretization& discret, Teuchos::RCP<BinaryTreeNode> parent,
+    std::vector<int> elelist, const Core::LinAlg::SerialDenseMatrix& dopnormals, const int& kdop,
+    const int& dim, const bool& useauxpos, const int layer,
     std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& streenodesmap,
     std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& mtreenodesmap,
     std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& sleafsmap,
@@ -375,8 +375,8 @@ void Mortar::BinaryTreeNode::PrintType()
 /*----------------------------------------------------------------------*
  |  ctor BinaryTree(public)                                   popp 10/08|
  *----------------------------------------------------------------------*/
-Mortar::BinaryTree::BinaryTree(Discret::Discretization& discret, Teuchos::RCP<Epetra_Map> selements,
-    Teuchos::RCP<Epetra_Map> melements, int dim, double eps,
+Mortar::BinaryTree::BinaryTree(Core::FE::Discretization& discret,
+    Teuchos::RCP<Epetra_Map> selements, Teuchos::RCP<Epetra_Map> melements, int dim, double eps,
     Inpar::Mortar::BinaryTreeUpdateType updatetype, bool useauxpos)
     : Mortar::BaseBinaryTree(discret, dim, eps),
       selements_(selements),

@@ -7,8 +7,8 @@
 
 #include "4C_solid_scatra_3D_ele.hpp"
 
-#include "4C_discretization_fem_general_cell_type.hpp"
-#include "4C_discretization_fem_general_cell_type_traits.hpp"
+#include "4C_fem_general_cell_type.hpp"
+#include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_so3_line.hpp"
 #include "4C_so3_nullspace.hpp"

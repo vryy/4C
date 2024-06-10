@@ -16,7 +16,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_field.hpp"
-#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
+#include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_utils_result_test.hpp"
 
@@ -26,11 +26,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-  class ResultTest;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::IO
 {
@@ -227,7 +226,7 @@ namespace Adapter
     virtual Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() = 0;
 
     /// direct access to discretization
-    virtual Teuchos::RCP<Discret::Discretization> discretization() = 0;
+    virtual Teuchos::RCP<Core::FE::Discretization> discretization() = 0;
 
     /// are there any algebraic constraints?
     virtual bool HaveConstraint() = 0;
@@ -534,7 +533,7 @@ namespace Adapter
    public:
     /// constructor
     StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
-        Teuchos::RCP<Discret::Discretization> actdis);
+        Teuchos::RCP<Core::FE::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
     virtual ~StructureBaseAlgorithm() = default;
@@ -548,11 +547,11 @@ namespace Adapter
    private:
     /// Create structure algorithm
     void create_structure(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
-        Teuchos::RCP<Discret::Discretization> actdis);
+        Teuchos::RCP<Core::FE::Discretization> actdis);
 
     /// setup structure algorithm of STR::TimIntImpl type
     void create_tim_int(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
-        Teuchos::RCP<Discret::Discretization> actdis);
+        Teuchos::RCP<Core::FE::Discretization> actdis);
 
     /*! \brief Create linear solver for contact/meshtying problems
      *
@@ -583,7 +582,7 @@ namespace Adapter
      * \sa create_linear_solver()
      */
     Teuchos::RCP<Core::LinAlg::Solver> create_contact_meshtying_solver(
-        Teuchos::RCP<Discret::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
+        Teuchos::RCP<Core::FE::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
 
     /*! \brief Create linear solver for pure structure problems
      *
@@ -604,7 +603,7 @@ namespace Adapter
      * \sa create_contact_meshtying_solver()
      */
     Teuchos::RCP<Core::LinAlg::Solver> create_linear_solver(
-        Teuchos::RCP<Discret::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
+        Teuchos::RCP<Core::FE::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
 
     /// structural field solver
     Teuchos::RCP<Structure> structure_;

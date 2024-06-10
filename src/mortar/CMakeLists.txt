@@ -8,7 +8,6 @@ set(_dependencies
     core
     global_data
     inpar
-    lib
     mat
     nurbs_discret
     poroelast

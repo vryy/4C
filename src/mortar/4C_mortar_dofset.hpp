@@ -11,15 +11,14 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_dofset.hpp"
+#include "4C_fem_dofset.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Mortar
 {
@@ -65,7 +64,7 @@ namespace Mortar
     @return Maximum dof number of this dofset
     */
     int assign_degrees_of_freedom(
-        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
+        const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
     //! @}
 

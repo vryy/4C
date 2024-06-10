@@ -18,7 +18,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -30,10 +30,10 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -49,18 +49,18 @@ namespace XFEM
 {
   /// evaluate Neumann boundary conditions
   void evaluate_neumann(Teuchos::ParameterList& params,
-      Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<Epetra_Vector> systemvector,
+      Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Epetra_Vector> systemvector,
       Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix = Teuchos::null);
 
   /// evaluate Neumann boundary conditions
   void evaluate_neumann(Teuchos::ParameterList& params,
-      Teuchos::RCP<Discret::Discretization> discret, Epetra_Vector& systemvector,
+      Teuchos::RCP<Core::FE::Discretization> discret, Epetra_Vector& systemvector,
       Core::LinAlg::SparseOperator* systemmatrix = nullptr);
 
   /// evaluate standard Neumann boundary conditions
   void EvaluateNeumannStandard(std::multimap<std::string, Core::Conditions::Condition*>& condition,
       const double time, bool assemblemat, Teuchos::ParameterList& params,
-      Teuchos::RCP<Discret::Discretization> discret, Epetra_Vector& systemvector,
+      Teuchos::RCP<Core::FE::Discretization> discret, Epetra_Vector& systemvector,
       Core::LinAlg::SparseOperator* systemmatrix);
 
 

@@ -19,7 +19,7 @@
  *---------------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
-#include "4C_discretization_condition_definition.hpp"
+#include "4C_fem_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN

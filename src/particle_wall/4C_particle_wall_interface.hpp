@@ -28,10 +28,10 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace PARTICLEWALL
 {
@@ -68,7 +68,7 @@ namespace PARTICLEWALL
      *
      * \return wall discretization
      */
-    virtual Teuchos::RCP<const Discret::Discretization> get_wall_discretization() const = 0;
+    virtual Teuchos::RCP<const Core::FE::Discretization> get_wall_discretization() const = 0;
 
     /*!
      * \brief get wall data state container

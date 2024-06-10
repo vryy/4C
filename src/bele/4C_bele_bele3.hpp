@@ -15,10 +15,10 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_node.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_node.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 #include <Epetra_Vector.h>
@@ -26,12 +26,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
+
 namespace Discret
 {
-  // forward declarations
-  class Discretization;
-
-
   namespace ELEMENTS
   {
     class Bele3Type : public Core::Elements::ElementType
@@ -133,13 +134,13 @@ namespace Discret
 
       //! @name Evaluation
 
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3) override;
 
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -352,7 +353,7 @@ namespace Discret
 
       //! @name Evaluation
 
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -360,7 +361,7 @@ namespace Discret
 
       //! @name Evaluate methods
 
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -397,7 +398,7 @@ namespace Discret
 
       //! integrate shape functions over a line
       void integrate_shape_function(Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1, const std::vector<double>& edispnp);
 
 

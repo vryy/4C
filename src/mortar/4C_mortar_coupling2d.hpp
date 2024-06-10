@@ -19,11 +19,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Mortar
 {
@@ -51,7 +50,7 @@ namespace Mortar
      performed in parallel by individual processes.
 
      */
-    Coupling2d(Discret::Discretization& idiscret, int dim, bool quad,
+    Coupling2d(Core::FE::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele);
 
     /*!
@@ -65,7 +64,7 @@ namespace Mortar
      \brief Get interface discretization
 
      */
-    virtual Discret::Discretization& Discret() const { return idiscret_; }
+    virtual Core::FE::Discretization& Discret() const { return idiscret_; }
 
     /*!
      \brief Get coupling slave element
@@ -196,12 +195,12 @@ namespace Mortar
     Coupling2d operator=(const Coupling2d& old);
     Coupling2d(const Coupling2d& old);
 
-    Discret::Discretization& idiscret_;  // discretization of the contact interface
-    int dim_;                            // problem dimension (here: 2D)
-    bool quad_;                          // flag indicating coupling type (true = quadratic)
-    Teuchos::ParameterList& imortar_;    // containing contact input parameters
-    Mortar::Element& sele_;              // slave element to perform coupling for
-    Mortar::Element& mele_;              // master element to perform coupling for
+    Core::FE::Discretization& idiscret_;  // discretization of the contact interface
+    int dim_;                             // problem dimension (here: 2D)
+    bool quad_;                           // flag indicating coupling type (true = quadratic)
+    Teuchos::ParameterList& imortar_;     // containing contact input parameters
+    Mortar::Element& sele_;               // slave element to perform coupling for
+    Mortar::Element& mele_;               // master element to perform coupling for
 
     std::vector<bool> hasproj_;   // projection status of the four end nodes
     std::vector<double> xiproj_;  // overlap regions in parameter spaces
@@ -227,7 +226,7 @@ namespace Mortar
      performed in parallel by individual processes.
 
      */
-    Coupling2dManager(Discret::Discretization& idiscret, int dim, bool quad,
+    Coupling2dManager(Core::FE::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele);
 
     /*!
@@ -317,7 +316,7 @@ namespace Mortar
     Coupling2dManager operator=(const Coupling2dManager& old);
     Coupling2dManager(const Coupling2dManager& old);
 
-    Discret::Discretization& idiscret_;   // discretization of the contact interface
+    Core::FE::Discretization& idiscret_;  // discretization of the contact interface
     int dim_;                             // problem dimension (here: 2D)
     bool quad_;                           // flag indicating coupling type (true = quadratic)
     Teuchos::ParameterList& imortar_;     // containing contact input parameters

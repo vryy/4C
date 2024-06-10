@@ -12,14 +12,14 @@
  *----------------------------------------------------------------------*/
 #include "4C_thermo_ele_boundary_impl.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
-#include "4C_discretization_geometry_position_array.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_geometry_position_array.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_thermo.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_nurbs_discret.hpp"
 #include "4C_thermo_ele_action.hpp"
 #include "4C_utils_function.hpp"
@@ -123,7 +123,8 @@ Discret::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(int numdofper
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     const Discret::ELEMENTS::ThermoBoundary* ele, Teuchos::ParameterList& params,
-    const Discret::Discretization& discretization, const Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization,
+    const Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -587,7 +588,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate_neumann(
     const Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    const Discret::Discretization& discretization, const Core::Conditions::Condition& condition,
+    const Core::FE::Discretization& discretization, const Core::Conditions::Condition& condition,
     const std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1)
 {
   // prepare nurbs
@@ -1157,8 +1158,8 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::surface_integration(
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::TemperBoundaryImpl<distype>::prepare_nurbs_eval(
-    const Core::Elements::Element* ele,            // the element whose matrix is calculated
-    const Discret::Discretization& discretization  // current discretisation
+    const Core::Elements::Element* ele,             // the element whose matrix is calculated
+    const Core::FE::Discretization& discretization  // current discretisation
 )
 {
   if (ele->Shape() != Core::FE::CellType::nurbs9)

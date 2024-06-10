@@ -71,7 +71,7 @@ namespace BEAMINTERACTION
      *
      * Rotational coupling contributions will be added in this method.
      */
-    void EvaluateAndAssemble(const Teuchos::RCP<const Discret::Discretization>& discret,
+    void EvaluateAndAssemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
@@ -79,7 +79,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Update state of rotational DoFs of both elements
      */
-    void ResetRotationState(const Discret::Discretization& discret,
+    void ResetRotationState(const Core::FE::Discretization& discret,
         const Teuchos::RCP<const Epetra_Vector>& ia_discolnp) override;
 
    protected:

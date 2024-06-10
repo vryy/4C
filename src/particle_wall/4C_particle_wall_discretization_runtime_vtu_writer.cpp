@@ -10,12 +10,12 @@
  *---------------------------------------------------------------------------*/
 #include "4C_particle_wall_discretization_runtime_vtu_writer.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_visualization_parameters.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_particle_wall_datastate.hpp"
 
 #include <memory>
@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WallDiscretizationRuntimeVtuWriter(
-    const Teuchos::RCP<Discret::Discretization> walldiscretization,
+    const Teuchos::RCP<Core::FE::Discretization> walldiscretization,
     const std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate, const double restart_time)
     : walldiscretization_(walldiscretization), walldatastate_(walldatastate)
 {

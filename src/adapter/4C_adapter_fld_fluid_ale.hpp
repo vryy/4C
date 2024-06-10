@@ -56,7 +56,7 @@ namespace Adapter
     const Teuchos::RCP<Adapter::AleFluidWrapper>& ale_field() const { return ale_; }
 
     /// discretization
-    Teuchos::RCP<Discret::Discretization> discretization() override;
+    Teuchos::RCP<Core::FE::Discretization> discretization() override;
 
     /// fluid interface
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override

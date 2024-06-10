@@ -57,10 +57,10 @@ output.
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_scatra.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_nurbs_discret.hpp"
 #include "4C_nurbs_discret_control_point.hpp"
@@ -93,7 +93,7 @@ namespace FLD
 
 
     */
-    TurbulenceStatisticsCha(Teuchos::RCP<Discret::Discretization> actdis, bool alefluid,
+    TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Discretization> actdis, bool alefluid,
         Teuchos::RCP<Epetra_Vector> dispnp, Teuchos::ParameterList& params,
         const std::string& statistics_outfilename, bool subgrid_dissipation,
         Teuchos::RCP<FLD::XWall> xwallobj);
@@ -112,7 +112,7 @@ namespace FLD
     to caculate mean values of multifractal subgrid-scales modeling
     parameters
     */
-    void store_scatra_discret_and_params(Teuchos::RCP<Discret::Discretization> scatradis,
+    void store_scatra_discret_and_params(Teuchos::RCP<Core::FE::Discretization> scatradis,
         Teuchos::RCP<Teuchos::ParameterList> scatraparams,
         Teuchos::RCP<Teuchos::ParameterList> scatraextraparams,
         Teuchos::RCP<Teuchos::ParameterList> scatratimeparams);
@@ -322,11 +322,11 @@ namespace FLD
     Inpar::FLUID::PhysicalType physicaltype_;
 
     //! The discretization (required for nodes, dofs etc;)
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! scatra discretization (required for additional multifractal subgrid-scale output in case on
     //! passive scalar transport)
-    Teuchos::RCP<Discret::Discretization> scatradiscret_;
+    Teuchos::RCP<Core::FE::Discretization> scatradiscret_;
 
     //! flag for ale discretization
     bool alefluid_;

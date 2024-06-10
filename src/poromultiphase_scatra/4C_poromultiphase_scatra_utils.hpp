@@ -26,10 +26,10 @@ namespace Core::LinAlg
 {
   class MultiMapExtractor;
 }
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 namespace Adapter
 {
   class Coupling;
@@ -63,8 +63,8 @@ namespace PoroMultiPhaseScaTra
 
     //! create coupling strategy for coupling with 1D network depending on input file
     Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase>
-    CreateAndInitArteryCouplingStrategy(Teuchos::RCP<Discret::Discretization> arterydis,
-        Teuchos::RCP<Discret::Discretization> contdis,
+    CreateAndInitArteryCouplingStrategy(Teuchos::RCP<Core::FE::Discretization> arterydis,
+        Teuchos::RCP<Core::FE::Discretization> contdis,
         const Teuchos::ParameterList& meshtyingparams, const std::string& condname,
         const std::string& artcoupleddofname, const std::string& contcoupleddofname,
         const bool evaluate_on_lateral_surface);

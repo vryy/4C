@@ -17,7 +17,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_discretization_fem_general_node.hpp"
+#include "4C_fem_general_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -169,7 +169,7 @@ namespace CrossLinking
     /*!
      \brief The discretization is a friend of Mortar::Node
      */
-    friend class Discret::Discretization;
+    friend class Core::FE::Discretization;
 
     //@}
 

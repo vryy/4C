@@ -12,7 +12,7 @@
 
 #include "4C_fluid_volumetric_surfaceFlow_condition.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper(
-    Teuchos::RCP<Discret::Discretization> actdis, double dta)
+    Teuchos::RCP<Core::FE::Discretization> actdis, double dta)
     :  // call constructor for "nontrivial" objects
       discret_(actdis)
 {
@@ -194,7 +194,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateVelocities(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
-    Teuchos::RCP<Discret::Discretization> actdis, double dta, std::string ds_condname,
+    Teuchos::RCP<Core::FE::Discretization> actdis, double dta, std::string ds_condname,
     std::string dl_condname, int condid, int surf_numcond, int line_numcond)
     :  // call constructor for "nontrivial" objects
       discret_(actdis)
@@ -736,7 +736,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_node_row_map(
-    Teuchos::RCP<Discret::Discretization> dis, const std::string condname, int condid, int condnum,
+    Teuchos::RCP<Core::FE::Discretization> dis, const std::string condname, int condid, int condnum,
     Teuchos::RCP<Epetra_Map>& cond_noderowmap)
 {
   //--------------------------------------------------------------------
@@ -792,7 +792,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_node_row_map(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
-    Teuchos::RCP<Discret::Discretization> dis, const std::string condname, int condid, int condnum,
+    Teuchos::RCP<Core::FE::Discretization> dis, const std::string condname, int condid, int condnum,
     Teuchos::RCP<Epetra_Map>& cond_dofrowmap)
 {
   //--------------------------------------------------------------------
@@ -1090,7 +1090,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
-    Teuchos::RCP<Discret::Discretization> disc, Teuchos::RCP<Epetra_Vector> bcdof,
+    Teuchos::RCP<Core::FE::Discretization> disc, Teuchos::RCP<Epetra_Vector> bcdof,
     Teuchos::RCP<Epetra_Map> cond_noderowmap, Teuchos::RCP<Epetra_Vector> local_radii,
     Teuchos::RCP<Epetra_Vector> border_radii, Teuchos::RCP<std::vector<double>> normal,
     Teuchos::RCP<Teuchos::ParameterList> params)
@@ -1937,7 +1937,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::update_residual(Teuchos::RCP<Epet
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(
-    Teuchos::RCP<Discret::Discretization> actdis, double dta)
+    Teuchos::RCP<Core::FE::Discretization> actdis, double dta)
     :  // call constructor for "nontrivial" objects
       discret_(actdis)
 {

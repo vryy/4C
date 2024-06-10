@@ -8,9 +8,9 @@
 
 *----------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_membrane_scatra.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   if (la.Size() > 1)
   {
@@ -102,7 +102,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::MembraneScatra<distype>::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,

@@ -10,7 +10,7 @@
 
 #include "4C_beaminteraction_link.hpp"
 
-#include "4C_discretization_fem_general_largerotations.hpp"
+#include "4C_fem_general_largerotations.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_utils_exceptions.hpp"

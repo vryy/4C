@@ -15,7 +15,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_inpar_xfem.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
@@ -29,11 +29,14 @@ namespace Core::LinAlg
   class SparseMatrix;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
   class DiscretizationFaces;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class FluidIntFace;
@@ -64,7 +67,7 @@ namespace Discret
           std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
           const Inpar::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
           Teuchos::ParameterList& params,          ///< parameter list
-          Discret::DiscretizationFaces& discretization,           ///< faces discretization
+          Core::FE::DiscretizationFaces& discretization,          ///< faces discretization
           Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
           Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
           ) = 0;
@@ -74,7 +77,7 @@ namespace Discret
           Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
           Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
           Teuchos::ParameterList& params,               ///< parameter list
-          Discret::Discretization& discretization,      ///< discretization
+          Core::FE::Discretization& discretization,     ///< discretization
           std::vector<int>& patchlm,                    ///< patch local map
           std::vector<int>& lm_masterToPatch,  ///< local map between master dofs and patchlm
           std::vector<int>& lm_slaveToPatch,   ///< local map between slave dofs and patchlm
@@ -135,7 +138,7 @@ namespace Discret
           std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
           const Inpar::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
           Teuchos::ParameterList& params,          ///< parameter list
-          Discret::DiscretizationFaces& discretization,           ///< faces discretization
+          Core::FE::DiscretizationFaces& discretization,          ///< faces discretization
           Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
           Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
           ) override;
@@ -145,7 +148,7 @@ namespace Discret
           Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
           Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
           Teuchos::ParameterList& params,               ///< parameter list
-          Discret::Discretization& discretization,      ///< discretization
+          Core::FE::Discretization& discretization,     ///< discretization
           std::vector<int>& patchlm,                    ///< patch local map
           std::vector<int>& lm_masterToPatch,  ///< local map between master dofs and patchlm
           std::vector<int>& lm_slaveToPatch,   ///< local map between slave dofs and patchlm

@@ -16,7 +16,7 @@
 #include "4C_contact_integrator_factory.hpp"
 #include "4C_contact_interpolator.hpp"
 #include "4C_contact_node.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-CONTACT::Coupling2d::Coupling2d(Discret::Discretization& idiscret, int dim, bool quad,
+CONTACT::Coupling2d::Coupling2d(Core::FE::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele)
     : Mortar::Coupling2d(idiscret, dim, quad, params, sele, mele),
       stype_(Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
@@ -143,8 +143,9 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<Mortar::ParamsInte
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-CONTACT::Coupling2dManager::Coupling2dManager(Discret::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele)
+CONTACT::Coupling2dManager::Coupling2dManager(Core::FE::Discretization& idiscret, int dim,
+    bool quad, Teuchos::ParameterList& params, Mortar::Element* sele,
+    std::vector<Mortar::Element*> mele)
     : Mortar::Coupling2dManager(idiscret, dim, quad, params, sele, mele),
       stype_(Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {

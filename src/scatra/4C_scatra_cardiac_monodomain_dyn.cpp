@@ -12,8 +12,8 @@
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_binstrategy.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_scatra_algorithm.hpp"
 #include "4C_scatra_ele.hpp"
@@ -65,9 +65,9 @@ void scatra_cardiac_monodomain_dyn(int restart)
   const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
 
   // access the fluid discretization
-  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis("fluid");
   // access the scatra discretization
-  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis("scatra");
 
   // ensure that all dofs are assigned in the right order; this creates dof numbers with
   //       fluid dof < scatra dof
@@ -136,7 +136,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
         if (scatradis->Comm().NumProc() > 1)
         {
           // create vector of discr.
-          std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+          std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
           dis.push_back(scatradis);
 
           // binning strategy for parallel redistribution
@@ -276,7 +276,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
           if (fluiddis->Comm().NumProc() > 1)
           {
             // create vector of discr.
-            std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+            std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
             dis.push_back(fluiddis);
             dis.push_back(scatradis);
 

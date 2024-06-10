@@ -14,10 +14,10 @@
 #include "4C_comm_utils_factory.hpp"
 #include "4C_elemag_ele_boundary_calc.hpp"
 #include "4C_elemag_ele_intfaces_calc.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_discretization_faces.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
-#include "4C_lib_discret_faces.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_so3_nullspace.hpp"
 
@@ -432,7 +432,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagBoun
  |  evaluate the element (public)                      berardocco 02/18 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::ElemagBoundary::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -447,7 +447,7 @@ int Discret::ELEMENTS::ElemagBoundary::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a surface/line Neumann boundary condition berardocco 02/18 |
  *-----------------------------------------------------------------------*/
 int Discret::ELEMENTS::ElemagBoundary::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -458,8 +458,9 @@ int Discret::ELEMENTS::ElemagBoundary::evaluate_neumann(Teuchos::ParameterList& 
 /*------------------------------------------------------------------------*
  |  Get degrees of freedom used by this element (public) berardocco 02/18 |
  *------------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagBoundary::LocationVector(const Discretization& dis, LocationArray& la,
-    bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const
+void Discret::ELEMENTS::ElemagBoundary::LocationVector(const Core::FE::Discretization& dis,
+    LocationArray& la, bool doDirichlet, const std::string& condstring,
+    Teuchos::ParameterList& params) const
 {
   // we have to do it this way, just as for weak Dirichlet conditions
   ParentMasterElement()->LocationVector(dis, la, false);
@@ -574,18 +575,18 @@ void Discret::ELEMENTS::ElemagIntFace::Unpack(const std::vector<char>& data)
  |  create the patch location vector (public)          berardocco 02/18 |
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::ElemagIntFace::PatchLocationVector(
-    Discret::Discretization& discretization,  // discretization
-    std::vector<int>& nds_master,             // nodal dofset w.r.t master parent element
-    std::vector<int>& nds_slave,              // nodal dofset w.r.t slave parent element
-    std::vector<int>& patchlm,                // local map for gdof ids for patch of elements
-    std::vector<int>& master_lm,              // local map for gdof ids for master element
-    std::vector<int>& slave_lm,               // local map for gdof ids for slave element
-    std::vector<int>& face_lm,                // local map for gdof ids for face element
-    std::vector<int>& lm_masterToPatch,       // local map between lm_master and lm_patch
-    std::vector<int>& lm_slaveToPatch,        // local map between lm_slave and lm_patch
-    std::vector<int>& lm_faceToPatch,         // local map between lm_face and lm_patch
-    std::vector<int>& lm_masterNodeToPatch,   // local map between master nodes and nodes in patch
-    std::vector<int>& lm_slaveNodeToPatch     // local map between slave nodes and nodes in patch
+    Core::FE::Discretization& discretization,  // discretization
+    std::vector<int>& nds_master,              // nodal dofset w.r.t master parent element
+    std::vector<int>& nds_slave,               // nodal dofset w.r.t slave parent element
+    std::vector<int>& patchlm,                 // local map for gdof ids for patch of elements
+    std::vector<int>& master_lm,               // local map for gdof ids for master element
+    std::vector<int>& slave_lm,                // local map for gdof ids for slave element
+    std::vector<int>& face_lm,                 // local map for gdof ids for face element
+    std::vector<int>& lm_masterToPatch,        // local map between lm_master and lm_patch
+    std::vector<int>& lm_slaveToPatch,         // local map between lm_slave and lm_patch
+    std::vector<int>& lm_faceToPatch,          // local map between lm_face and lm_patch
+    std::vector<int>& lm_masterNodeToPatch,    // local map between master nodes and nodes in patch
+    std::vector<int>& lm_slaveNodeToPatch      // local map between slave nodes and nodes in patch
 )
 {
   // create one patch location vector containing all dofs of master, slave and
@@ -799,7 +800,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagIntF
  |  evaluate the element (public)                      berardocco 02/18 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::ElemagIntFace::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -819,7 +820,7 @@ int Discret::ELEMENTS::ElemagIntFace::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a surface/line Neumann boundary condition  berardocco 02/18 |
  *------------------------------------------------------------------------*/
 int Discret::ELEMENTS::ElemagIntFace::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

@@ -12,7 +12,7 @@ is handed to a c++ object mesh.
 /*----------------------------------------------------------------------*/
 #include "4C_pre_exodus_reader.hpp"
 
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 
 #include <Epetra_SerialComm.h>
 #include <exodusII.h>

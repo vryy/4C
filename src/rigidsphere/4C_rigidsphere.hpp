@@ -15,10 +15,10 @@
 #include "4C_config.hpp"
 
 #include "4C_beaminteraction_calc_utils.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_largerotations.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
@@ -59,7 +59,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override;
+      int Initialize(Core::FE::Discretization& dis) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -242,7 +242,7 @@ namespace Discret
                                   given in params
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -268,7 +268,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override
@@ -415,7 +415,7 @@ namespace Discret
        * @return bounding volume of the respective element
        */
       Core::GeometricSearch::BoundingVolume GetBoundingVolume(
-          const Discret::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+          const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
           const Core::GeometricSearch::GeometricSearchParams& params) const override;
 
       //@}

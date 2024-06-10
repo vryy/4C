@@ -7,7 +7,6 @@ set(_dependencies
     core
     global_data
     inpar
-    lib
     mor
     so3
     solver_nonlin_nox

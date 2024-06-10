@@ -10,8 +10,8 @@
 #include "4C_contact_nitsche_integrator_ssi.hpp"
 
 #include "4C_contact_nitsche_utils.hpp"
-#include "4C_discretization_fem_general_cell_type.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_cell_type.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_scatra_ele_parameter_boundary.hpp"
 #include "4C_scatra_ele_parameter_timint.hpp"
 #include "4C_so3_base.hpp"

@@ -27,7 +27,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_scatra_wrapper.hpp"
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_io_runtime_csv_writer.hpp"
@@ -57,11 +57,10 @@ FOUR_C_NAMESPACE_OPEN
 /*==========================================================================*/
 // forward declarations
 /*==========================================================================*/
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-  class ResultTest;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Global
 {
@@ -135,9 +134,9 @@ namespace ScaTra
     /*========================================================================*/
 
     //! Standard Constructor
-    ScaTraTimIntImpl(Teuchos::RCP<Discret::Discretization> actdis,  //!< discretization
-        Teuchos::RCP<Core::LinAlg::Solver> solver,                  //!< linear solver
-        Teuchos::RCP<Teuchos::ParameterList> params,                //!< parameter list
+    ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdis,  //!< discretization
+        Teuchos::RCP<Core::LinAlg::Solver> solver,                   //!< linear solver
+        Teuchos::RCP<Teuchos::ParameterList> params,                 //!< parameter list
         Teuchos::RCP<Teuchos::ParameterList> extraparams,     //!< supplementary parameter list
         Teuchos::RCP<Core::IO::DiscretizationWriter> output,  //!< output writer
         const int probnum = 0                                 //!< global problem number
@@ -566,7 +565,7 @@ namespace ScaTra
     Teuchos::RCP<const Epetra_Map> dof_row_map(int nds);
 
     //! return discretization
-    Teuchos::RCP<Discret::Discretization> discretization() const override { return discret_; }
+    Teuchos::RCP<Core::FE::Discretization> discretization() const override { return discret_; }
 
     //! return the parameter lists
     Teuchos::RCP<Teuchos::ParameterList> ScatraParameterList() const { return params_; }
@@ -1471,7 +1470,7 @@ namespace ScaTra
     /*========================================================================*/
 
     //! the scalar transport discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! the discretization writer
     Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
@@ -1669,11 +1668,11 @@ namespace ScaTra
 
     //! return maximum number of dofs per node
     int num_dof_per_node_in_condition(const Core::Conditions::Condition& condition,
-        const Teuchos::RCP<const Discret::Discretization>& discret) const;
+        const Teuchos::RCP<const Core::FE::Discretization>& discret) const;
 
     //! return maximum number of transported scalars per node
     virtual int NumScalInCondition(const Core::Conditions::Condition& condition,
-        const Teuchos::RCP<const Discret::Discretization>& discret) const
+        const Teuchos::RCP<const Core::FE::Discretization>& discret) const
     {
       return num_dof_per_node_in_condition(condition, discret);
     };

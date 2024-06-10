@@ -11,7 +11,7 @@
 #include "4C_io_elementreader.hpp"
 
 #include "4C_comm_utils_factory.hpp"
-#include "4C_discretization_fem_general_element_definition.hpp"
+#include "4C_fem_general_element_definition.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_print.hpp"
 
@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::ElementReader::ElementReader(Teuchos::RCP<Discret::Discretization> dis,
+Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> dis,
     const Core::IO::DatFileReader& reader, std::string sectionname)
     : name_(dis->Name()),
       reader_(reader),
@@ -33,7 +33,7 @@ Core::IO::ElementReader::ElementReader(Teuchos::RCP<Discret::Discretization> dis
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::ElementReader::ElementReader(Teuchos::RCP<Discret::Discretization> dis,
+Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> dis,
     const Core::IO::DatFileReader& reader, std::string sectionname, std::string elementtype)
     : name_(dis->Name()),
       reader_(reader),
@@ -47,7 +47,7 @@ Core::IO::ElementReader::ElementReader(Teuchos::RCP<Discret::Discretization> dis
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::ElementReader::ElementReader(Teuchos::RCP<Discret::Discretization> dis,
+Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> dis,
     const Core::IO::DatFileReader& reader, std::string sectionname,
     const std::set<std::string>& elementtypes)
     : name_(dis->Name()),

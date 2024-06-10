@@ -12,8 +12,8 @@
 #define FOUR_C_GEOMETRY_PAIR_LINE_TO_SURFACE_PATCH_GEOMETRY_TEST_HPP
 
 
+#include "4C_fem_discretization.hpp"
 #include "4C_geometry_pair_element_faces.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_so3_hex8.hpp"
 #include "4C_so3_surface.hpp"
 
@@ -31,7 +31,7 @@ namespace
    * \brief Fill a discretization with the geometry for the unit test.
    */
   template <typename face_element_type>
-  void XtestSurfacePatchQuad4(const Teuchos::RCP<Discret::Discretization>& discret,
+  void XtestSurfacePatchQuad4(const Teuchos::RCP<Core::FE::Discretization>& discret,
       std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements_map)
   {
     using namespace FourC;

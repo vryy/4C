@@ -23,11 +23,10 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
-  class ResultTest;
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace POROFLUIDMULTIPHASE
 {
@@ -71,7 +70,7 @@ namespace Adapter
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
 
     /// direct access to discretization
-    Teuchos::RCP<Discret::Discretization> discretization() const override;
+    Teuchos::RCP<Core::FE::Discretization> discretization() const override;
 
     //! apply moving mesh data
     void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp  //!< displacement vector

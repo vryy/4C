@@ -37,11 +37,10 @@ namespace BINSTRATEGY
 {
   class BinningStrategy;
 }
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
-
+}  // namespace Core::FE
 namespace Core::Elements
 {
   class Element;
@@ -253,7 +252,7 @@ namespace Adapter
     Teuchos::RCP<Adapter::FluidMovingBoundary> get_fluid() const { return fluid_; };
 
     /// Get function for the structure and the fluid discretization in the vector #discretizations_
-    std::vector<Teuchos::RCP<Discret::Discretization>> get_discretizations() const
+    std::vector<Teuchos::RCP<Core::FE::Discretization>> get_discretizations() const
     {
       return discretizations_;
     }
@@ -277,7 +276,7 @@ namespace Adapter
     Teuchos::RCP<Adapter::FSIStructureWrapper> structure_;
 
     /// Vector containing both (fluid and structure) field discretizations
-    std::vector<Teuchos::RCP<Discret::Discretization>> discretizations_;
+    std::vector<Teuchos::RCP<Core::FE::Discretization>> discretizations_;
 
     /**
      * \brief Object bridging the gap between the specific implementation of the constraint

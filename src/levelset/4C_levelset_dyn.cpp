@@ -8,11 +8,11 @@
 #include "4C_levelset_dyn.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_levelset_algorithm.hpp"
-#include "4C_lib_discret.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_ParameterList.hpp>
@@ -34,7 +34,7 @@ void levelset_dyn(int restart)
   Global::Problem* problem = Global::Problem::Instance();
 
   // access the scatra discretization
-  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis("scatra");
 
   // access the communicator
   const Epetra_Comm& comm = scatradis->Comm();

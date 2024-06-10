@@ -13,10 +13,10 @@
 
 #include "4C_beam3_base.hpp"
 #include "4C_contact_meshtying_abstract_strategy.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
+#include "4C_fem_discretization_utils.hpp"
+#include "4C_fem_general_largerotations.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
-#include "4C_lib_utils_discret.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -108,7 +108,7 @@ STR::TimeInt::BaseDataGlobalState& STR::TimeInt::BaseDataGlobalState::operator=(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataGlobalState::Init(const Teuchos::RCP<Discret::Discretization> discret,
+void STR::TimeInt::BaseDataGlobalState::Init(const Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::ParameterList& sdynparams, const Teuchos::RCP<const BaseDataSDyn> datasdyn)
 {
   // We have to call Setup() after Init()
@@ -238,7 +238,7 @@ void STR::TimeInt::BaseDataGlobalState::set_initial_fields()
   localdofs.push_back(1);
   localdofs.push_back(2);
 
-  Discret::UTILS::evaluate_initial_field(
+  Core::FE::UTILS::evaluate_initial_field(
       Global::Problem::Instance()->FunctionManager(), *discret_, field, velnp_, localdofs);
 
   // set initial porosity field if existing
@@ -246,7 +246,7 @@ void STR::TimeInt::BaseDataGlobalState::set_initial_fields()
   std::vector<int> porositylocaldofs;
   porositylocaldofs.push_back(Global::Problem::Instance()->NDim());
 
-  Discret::UTILS::evaluate_initial_field(Global::Problem::Instance()->FunctionManager(), *discret_,
+  Core::FE::UTILS::evaluate_initial_field(Global::Problem::Instance()->FunctionManager(), *discret_,
       porosityfield, (*dis_)(0), porositylocaldofs);
 }
 
@@ -528,7 +528,7 @@ void STR::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
     }
     else
     {
-      Teuchos::RCP<Discret::Discretization> discret = discret_;
+      Teuchos::RCP<Core::FE::Discretization> discret = discret_;
       nodaladditdofs = beameleptr->GetAdditiveDofGIDs(*discret, *nodeptr);
       nodalrotvecdofs = beameleptr->GetRotVecDofGIDs(*discret, *nodeptr);
 

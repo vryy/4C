@@ -19,11 +19,11 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_thermo.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -85,7 +85,7 @@ namespace THR
     TimInt(const Teuchos::ParameterList& ioparams,           //!< ioflags
         const Teuchos::ParameterList& tdynparams,            //!< input parameters
         const Teuchos::ParameterList& xparams,               //!< extra flags
-        Teuchos::RCP<Discret::Discretization> actdis,        //!< current discretisation
+        Teuchos::RCP<Core::FE::Discretization> actdis,       //!< current discretisation
         Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
         Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
     );
@@ -385,7 +385,7 @@ namespace THR
     //@{
 
     //! Access dicretisation
-    Teuchos::RCP<Discret::Discretization> discretization() override { return discret_; }
+    Teuchos::RCP<Core::FE::Discretization> discretization() override { return discret_; }
 
     //! non-overlapping DOF map for multiple dofsets
     Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override
@@ -523,8 +523,8 @@ namespace THR
     //! @name General purpose algorithm members
     //@{
 
-    Teuchos::RCP<Discret::Discretization> discret_;        //!< attached discretisation
-    Teuchos::RCP<Discret::Discretization> discretstruct_;  //!< structural discretisation
+    Teuchos::RCP<Core::FE::Discretization> discret_;        //!< attached discretisation
+    Teuchos::RCP<Core::FE::Discretization> discretstruct_;  //!< structural discretisation
 
     int myrank_;                                        //!< ID of actual processor in parallel
     Teuchos::RCP<Core::LinAlg::Solver> solver_;         //!< linear algebraic solver

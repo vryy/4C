@@ -11,7 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -22,10 +22,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::IO
 {
@@ -64,7 +64,7 @@ namespace CONTACT
     @param contactConditions List of contact conditions as given in input file
     @param timeIntegrationMidPoint Generalized mid-point of time integration scheme
     */
-    MeshtyingContactBridge(Discret::Discretization& dis,
+    MeshtyingContactBridge(Core::FE::Discretization& dis,
         std::vector<Core::Conditions::Condition*>& meshtyingConditions,
         std::vector<Core::Conditions::Condition*>& contactConditions,
         double timeIntegrationMidPoint);

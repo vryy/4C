@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_scatra_ele_calc.hpp"
 #include "4C_scatra_ele_calc_utils.hpp"

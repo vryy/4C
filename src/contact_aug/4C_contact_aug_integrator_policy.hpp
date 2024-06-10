@@ -14,7 +14,7 @@
 
 #include "4C_contact_aug_contact_integrator_utils.hpp"
 #include "4C_contact_aug_timemonitor.hpp"
-#include "4C_discretization_fem_general_node.hpp"
+#include "4C_fem_general_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

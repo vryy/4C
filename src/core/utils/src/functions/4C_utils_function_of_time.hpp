@@ -8,7 +8,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_polynomial.hpp"
+#include "4C_fem_general_utils_polynomial.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_exceptions.hpp"

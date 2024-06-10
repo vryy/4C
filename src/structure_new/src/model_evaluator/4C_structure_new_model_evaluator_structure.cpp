@@ -14,14 +14,14 @@
 #include "4C_beam3_base.hpp"
 #include "4C_beam3_discretization_runtime_output_params.hpp"
 #include "4C_beam3_discretization_runtime_vtu_writer.hpp"
-#include "4C_discretization_fem_general_utils_gauss_point_postprocess.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_discretization_utils.hpp"
+#include "4C_fem_general_utils_gauss_point_postprocess.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_io_visualization_parameters.hpp"
-#include "4C_lib_discret.hpp"
-#include "4C_lib_utils_discret.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_sparseoperator.hpp"
@@ -101,7 +101,7 @@ void STR::MODELEVALUATOR::Structure::Setup()
       // get the global number ob beam and non-beam elements here. Based on that number we know
       // which output writers need to be initialized.
       const auto discretization =
-          Teuchos::rcp_dynamic_cast<const Discret::Discretization>(discret_ptr(), true);
+          Teuchos::rcp_dynamic_cast<const Core::FE::Discretization>(discret_ptr(), true);
       int number_my_solid_elements = std::count_if(discretization->MyRowElementRange().begin(),
           discretization->MyRowElementRange().end(),
           [](const auto* row_element)
@@ -596,7 +596,7 @@ Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Structure::get_inertial_force()
 void STR::MODELEVALUATOR::Structure::init_output_runtime_structure()
 {
   check_init();
-  const auto discretization = Teuchos::rcp_dynamic_cast<const Discret::Discretization>(
+  const auto discretization = Teuchos::rcp_dynamic_cast<const Core::FE::Discretization>(
       const_cast<STR::MODELEVALUATOR::Structure*>(this)->discret_ptr(), true);
   vtu_writer_ptr_ = Teuchos::rcp(
       new Core::IO::DiscretizationVisualizationWriterMesh(discretization, visualization_params_,
@@ -649,7 +649,7 @@ void STR::MODELEVALUATOR::Structure::write_time_step_output_runtime_structure() 
   check_init_setup();
 
   // export displacement state to column format
-  const auto& discret = dynamic_cast<const Discret::Discretization&>(this->discret());
+  const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Epetra_Vector> disn_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
   Core::LinAlg::Export(*global_state().get_dis_n(), *disn_col);
@@ -669,7 +669,7 @@ void STR::MODELEVALUATOR::Structure::write_iteration_output_runtime_structure() 
   check_init_setup();
 
   // export displacement state to column format
-  const auto& discret = dynamic_cast<const Discret::Discretization&>(this->discret());
+  const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Epetra_Vector> disnp_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
   Core::LinAlg::Export(*global_state().get_dis_np(), *disnp_col);
@@ -1029,7 +1029,7 @@ void STR::MODELEVALUATOR::Structure::write_time_step_output_runtime_beams() cons
   check_init_setup();
 
   // export displacement state to column format
-  const auto& discret = dynamic_cast<const Discret::Discretization&>(this->discret());
+  const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Epetra_Vector> disn_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
   Core::LinAlg::Export(*global_state().get_dis_n(), *disn_col);
@@ -1046,7 +1046,7 @@ void STR::MODELEVALUATOR::Structure::write_iteration_output_runtime_beams() cons
   check_init_setup();
 
   // export displacement state to column format
-  const auto& discret = dynamic_cast<const Discret::Discretization&>(this->discret());
+  const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Epetra_Vector> disnp_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
   Core::LinAlg::Export(*global_state().get_dis_np(), *disnp_col);
@@ -1204,7 +1204,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_internal_specified_elements(Teucho
   // this is about to go, once the old time integration is deleted
   params_interface2_parameter_list(eval_data_ptr(), p);
 
-  Discret::UTILS::Evaluate(*discret_ptr(), p, *eval_mat, *eval_vec, ele_map_to_be_evaluated);
+  Core::FE::UTILS::Evaluate(*discret_ptr(), p, *eval_mat, *eval_vec, ele_map_to_be_evaluated);
 
   discret().ClearState();
 }

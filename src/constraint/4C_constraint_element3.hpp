@@ -13,9 +13,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_node.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
@@ -24,10 +24,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     // forward declarations
@@ -172,7 +175,7 @@ namespace Discret
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params,   ///< ParameterList for communication
-          Discret::Discretization& discretization,   ///< discretization
+          Core::FE::Discretization& discretization,  ///< discretization
           std::vector<int>& lm,                      ///< location vector
           Core::LinAlg::SerialDenseMatrix& elemat1,  ///< first matrix to be filled by element
           Core::LinAlg::SerialDenseMatrix& elemat2,  ///< second matrix to be filled by element
@@ -190,7 +193,7 @@ namespace Discret
       \return 0 if successful, negative otherwise
       */
       int evaluate_neumann(Teuchos::ParameterList& params,  ///< ParameterList for communication
-          Discret::Discretization& discretization,          ///< discretization
+          Core::FE::Discretization& discretization,         ///< discretization
           Core::Conditions::Condition& condition,           ///< Neumann condition to evaluate
           std::vector<int>& lm,                             ///< location vector
           Core::LinAlg::SerialDenseVector& elevec1,         ///< vector to be filled by element

@@ -8,16 +8,16 @@
 
 #include "4C_shell7p_ele_scatra_preevaluator.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_shell7p_ele_calc_lib.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
 void Discret::ELEMENTS::Shell::PreEvaluateScatraByElement(Core::Elements::Element& ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& dof_index_array)
 {
   switch (ele.Shape())
@@ -46,7 +46,7 @@ void Discret::ELEMENTS::Shell::PreEvaluateScatraByElement(Core::Elements::Elemen
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Shell::PreEvaluateScatra(Core::Elements::Element& ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& dof_index_array)
 {
   Core::FE::IntegrationPoints2D intpoints_midsurface_ =

@@ -16,8 +16,8 @@
 /* header inclusions */
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 #include <Epetra_Vector.h>
@@ -27,10 +27,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class Ale2Line;
@@ -244,7 +247,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -265,7 +268,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -295,8 +298,8 @@ namespace Discret
        *  \note For spatial configuration, displacement vector equals current
        *  displacements. For material configuration, displacement vector is zero.
        */
-      void static_ke_laplace(Discret::Discretization& dis,  ///< discretization
-          std::vector<int>& lm,                             ///< node owning procs
+      void static_ke_laplace(Core::FE::Discretization& dis,  ///< discretization
+          std::vector<int>& lm,                              ///< node owning procs
           Core::LinAlg::SerialDenseMatrix* sys_mat,   ///< element stiffness matrix (to be filled)
           Core::LinAlg::SerialDenseVector& residual,  ///< element residual vector (to be filled)
           std::vector<double>& displacements,         ///< nodal discplacements
@@ -629,7 +632,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;

@@ -137,7 +137,7 @@ namespace THR
     TimIntOneStepTheta(const Teuchos::ParameterList& ioparams,  //!< ioflags
         const Teuchos::ParameterList& tdynparams,               //!< input parameters
         const Teuchos::ParameterList& xparams,                  //!< extra flags
-        Teuchos::RCP<Discret::Discretization> actdis,           //!< current discretisation
+        Teuchos::RCP<Core::FE::Discretization> actdis,          //!< current discretisation
         Teuchos::RCP<Core::LinAlg::Solver> solver,              //!< the solver
         Teuchos::RCP<Core::IO::DiscretizationWriter> output     //!< the output
     );

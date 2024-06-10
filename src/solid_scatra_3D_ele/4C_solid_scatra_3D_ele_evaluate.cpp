@@ -8,7 +8,7 @@ Evaluate(...), evaluate_neumann(...), etc.
 \level 1
 */
 
-#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
+#include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_solid_3D_ele_neumann_evaluator.hpp"
 #include "4C_solid_scatra_3D_ele.hpp"
 #include "4C_solid_scatra_3D_ele_calc_lib_nitsche.hpp"
@@ -16,7 +16,7 @@ Evaluate(...), evaluate_neumann(...), etc.
 FOUR_C_NAMESPACE_OPEN
 
 int Discret::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -128,7 +128,7 @@ int Discret::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
 }
 
 int Discret::ELEMENTS::SolidScatra::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

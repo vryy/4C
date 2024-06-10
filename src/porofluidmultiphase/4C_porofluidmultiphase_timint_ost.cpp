@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                   vuong  08/16 |
  *----------------------------------------------------------------------*/
 POROFLUIDMULTIPHASE::TimIntOneStepTheta::TimIntOneStepTheta(
-    Teuchos::RCP<Discret::Discretization> dis,  //!< discretization
-    const int linsolvernumber,                  //!< number of linear solver
+    Teuchos::RCP<Core::FE::Discretization> dis,  //!< discretization
+    const int linsolvernumber,                   //!< number of linear solver
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< output writer
     )

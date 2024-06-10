@@ -14,11 +14,11 @@
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_coupling_volmortar_shape.hpp"
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_discretization_fem_general_assemblestrategy.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_geometry_position_array.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
+#include "4C_fem_general_assemblestrategy.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_geometry_position_array.hpp"
 #include "4C_fluid_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
@@ -598,7 +598,7 @@ void ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying()
       for (auto& kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
       {
         // extract mortar interface discretization
-        Discret::Discretization& idiscret =
+        Core::FE::Discretization& idiscret =
             icoupmortar_[kinetics_slave_cond.first]->Interface()->Discret();
 
         // export global state vector to mortar interface
@@ -1501,7 +1501,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_cell(const Discret::Discretization& idiscret,
+void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_cell(const Core::FE::Discretization& idiscret,
     Mortar::IntCell& cell, const Inpar::ScaTra::ImplType& impltype, Mortar::Element& slaveelement,
     Mortar::Element& masterelement, Core::Elements::Element::LocationArray& la_slave,
     Core::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
@@ -1520,7 +1520,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_cell(const Discret::Discretiz
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2I::evaluate_slave_node(const Discret::Discretization& idiscret,
+void ScaTra::MeshtyingStrategyS2I::evaluate_slave_node(const Core::FE::Discretization& idiscret,
     const Mortar::Node& slavenode, const double& lumpedarea,
     const Inpar::ScaTra::ImplType& impltype, Mortar::Element& slaveelement,
     Mortar::Element& masterelement, Core::Elements::Element::LocationArray& la_slave,
@@ -1540,7 +1540,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_slave_node(const Discret::Discretiza
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_element(const Discret::Discretization& idiscret,
+void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_element(const Core::FE::Discretization& idiscret,
     Mortar::Element& element, const Inpar::ScaTra::ImplType& impltype,
     Core::Elements::Element::LocationArray& la, const Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
@@ -1557,7 +1557,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_element(const Discret::Discre
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_cells(const Discret::Discretization& idiscret,
+void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_cells(const Core::FE::Discretization& idiscret,
     const Teuchos::ParameterList& params,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix1,
     const Inpar::S2I::InterfaceSides matrix1_side_rows,
@@ -1589,7 +1589,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_cells(const Discret::Discreti
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_cells(const Discret::Discretization& idiscret,
+void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_cells(const Core::FE::Discretization& idiscret,
     const Teuchos::ParameterList& params, ScaTra::MortarCellAssemblyStrategy& strategy) const
 {
   // extract scatra-scatra interface coupling condition from parameter list
@@ -1647,7 +1647,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_cells(const Discret::Discreti
  *--------------------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyS2I::evaluate_nts(const Epetra_IntVector& islavenodestomasterelements,
     const Epetra_Vector& islavenodeslumpedareas, const Epetra_IntVector& islavenodesimpltypes,
-    const Discret::Discretization& idiscret, const Teuchos::ParameterList& params,
+    const Core::FE::Discretization& idiscret, const Teuchos::ParameterList& params,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix1,
     const Inpar::S2I::InterfaceSides matrix1_side_rows,
     const Inpar::S2I::InterfaceSides matrix1_side_cols,
@@ -1720,7 +1720,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_nts(const Epetra_IntVector& islaveno
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_elements(const Epetra_Map& ielecolmap,
-    const Epetra_IntVector& ieleimpltypes, const Discret::Discretization& idiscret,
+    const Epetra_IntVector& ieleimpltypes, const Core::FE::Discretization& idiscret,
     const Teuchos::ParameterList& params,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix1,
     const Inpar::S2I::InterfaceSides matrix1_side_rows,
@@ -2235,7 +2235,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
         Mortar::Interface& interface = *icoupmortar.Interface();
 
         // extract mortar discretization
-        const Discret::Discretization& idiscret = interface.Discret();
+        const Core::FE::Discretization& idiscret = interface.Discret();
 
         if (couplingtype_ != Inpar::S2I::coupling_nts_standard)
         {
@@ -3211,7 +3211,7 @@ void ScaTra::MeshtyingStrategyS2I::read_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::Discretization& ScaTra::MeshtyingStrategyS2I::mortar_discretization(
+Core::FE::Discretization& ScaTra::MeshtyingStrategyS2I::mortar_discretization(
     const int& condid) const
 {
   return icoupmortar_.at(condid)->Interface()->Discret();
@@ -4137,7 +4137,7 @@ ScaTra::MortarCellCalc<distypeS, distypeM>* ScaTra::MortarCellCalc<distypeS, dis
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalc<distypeS, distypeM>::Evaluate(const Discret::Discretization& idiscret,
+void ScaTra::MortarCellCalc<distypeS, distypeM>::Evaluate(const Core::FE::Discretization& idiscret,
     Mortar::IntCell& cell, Mortar::Element& slaveelement, Mortar::Element& masterelement,
     Core::Elements::Element::LocationArray& la_slave,
     Core::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
@@ -4178,7 +4178,7 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::Evaluate(const Discret::Discret
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
 void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_nts(
-    const Discret::Discretization& idiscret, const Mortar::Node& slavenode,
+    const Core::FE::Discretization& idiscret, const Mortar::Node& slavenode,
     const double& lumpedarea, Mortar::Element& slaveelement, Mortar::Element& masterelement,
     Core::Elements::Element::LocationArray& la_slave,
     Core::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
@@ -4220,7 +4220,7 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_nts(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
 void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_mortar_element(
-    const Discret::Discretization& idiscret, Mortar::Element& element,
+    const Core::FE::Discretization& idiscret, Mortar::Element& element,
     Core::Elements::Element::LocationArray& la, const Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseMatrix& elematrix3, Core::LinAlg::SerialDenseMatrix& elematrix4,
@@ -4275,7 +4275,7 @@ ScaTra::MortarCellCalc<distypeS, distypeM>::MortarCellCalc(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
 void ScaTra::MortarCellCalc<distypeS, distypeM>::extract_node_values(
-    const Discret::Discretization& idiscret, Core::Elements::Element::LocationArray& la_slave,
+    const Core::FE::Discretization& idiscret, Core::Elements::Element::LocationArray& la_slave,
     Core::Elements::Element::LocationArray& la_master)
 {
   // extract nodal state variables associated with mortar integration cell
@@ -4287,7 +4287,7 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::extract_node_values(
  *--------------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
 void ScaTra::MortarCellCalc<distypeS, distypeM>::extract_node_values(
-    Core::LinAlg::Matrix<nen_slave_, 1>& estate_slave, const Discret::Discretization& idiscret,
+    Core::LinAlg::Matrix<nen_slave_, 1>& estate_slave, const Core::FE::Discretization& idiscret,
     Core::Elements::Element::LocationArray& la_slave, const std::string& statename,
     const int& nds) const
 {
@@ -4309,7 +4309,7 @@ template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
 void ScaTra::MortarCellCalc<distypeS, distypeM>::extract_node_values(
     std::vector<Core::LinAlg::Matrix<nen_slave_, 1>>& estate_slave,
     std::vector<Core::LinAlg::Matrix<nen_master_, 1>>& estate_master,
-    const Discret::Discretization& idiscret, Core::Elements::Element::LocationArray& la_slave,
+    const Core::FE::Discretization& idiscret, Core::Elements::Element::LocationArray& la_slave,
     Core::Elements::Element::LocationArray& la_master, const std::string& statename,
     const int& nds) const
 {
@@ -4622,7 +4622,7 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_mortar_matrices(Mortar
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
 void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_condition(
-    const Discret::Discretization& idiscret, Mortar::IntCell& cell, Mortar::Element& slaveelement,
+    const Core::FE::Discretization& idiscret, Mortar::IntCell& cell, Mortar::Element& slaveelement,
     Mortar::Element& masterelement, Core::Elements::Element::LocationArray& la_slave,
     Core::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseMatrix& k_ss, Core::LinAlg::SerialDenseMatrix& k_sm,

@@ -16,7 +16,6 @@ set(_dependencies
     fluid
     fluid_ele
     fluid_xfluid
-    lib
     lubrication_ele
     mat
     membrane

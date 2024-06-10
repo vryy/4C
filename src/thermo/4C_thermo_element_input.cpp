@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------*
  | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_thermo_element.hpp"

@@ -9,15 +9,15 @@
 
 #include "4C_thermo_ele_impl.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
-#include "4C_discretization_geometry_position_array.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_geometry_position_array.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_inpar_thermo.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_fourieriso.hpp"
 #include "4C_mat_plasticelasthyper.hpp"
 #include "4C_mat_thermoplastichyperelast.hpp"
@@ -137,9 +137,9 @@ Discret::ELEMENTS::TemperImpl<distype>::TemperImpl()
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::TemperImpl<distype>::Evaluate(
-    const Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    const Discret::Discretization& discretization, const Core::Elements::Element::LocationArray& la,
+int Discret::ELEMENTS::TemperImpl<distype>::Evaluate(const Core::Elements::Element* ele,
+    Teuchos::ParameterList& params, const Core::FE::Discretization& discretization,
+    const Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  // Tangent ("stiffness")
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,  // Capacity ("mass")
     Core::LinAlg::SerialDenseVector& elevec1_epetra,  // internal force vector
@@ -629,7 +629,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::Evaluate(
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::TemperImpl<distype>::evaluate_neumann(const Core::Elements::Element* ele,
-    const Teuchos::ParameterList& params, const Discret::Discretization& discretization,
+    const Teuchos::ParameterList& params, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseMatrix* elemat1_epetra)
 {
@@ -676,7 +676,8 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate_neumann(const Core::Element
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::TemperImpl<distype>::evaluate_tang_capa_fint(
     const Core::Elements::Element* ele, const double time,
-    const Discret::Discretization& discretization, const Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization,
+    const Core::Elements::Element::LocationArray& la,
     Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* etang,
     Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,
     Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapalin,
@@ -734,7 +735,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::evaluate_tang_capa_fint(
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::TemperImpl<distype>::evaluate_coupled_tang(
-    const Core::Elements::Element* ele, const Discret::Discretization& discretization,
+    const Core::Elements::Element* ele, const Core::FE::Discretization& discretization,
     const Core::Elements::Element::LocationArray& la,
     Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_>* etangcoupl,
     Teuchos::ParameterList& params)
@@ -2635,8 +2636,9 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_heatflux_tempgrad(
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::TemperImpl<distype>::extract_disp_vel(
-    const Discret::Discretization& discretization, const Core::Elements::Element::LocationArray& la,
-    std::vector<double>& mydisp, std::vector<double>& myvel) const
+    const Core::FE::Discretization& discretization,
+    const Core::Elements::Element::LocationArray& la, std::vector<double>& mydisp,
+    std::vector<double>& myvel) const
 {
   if ((discretization.HasState(1, "displacement")) and (discretization.HasState(1, "velocity")))
   {
@@ -2879,8 +2881,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::initial_and_current_nodal_position_
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::TemperImpl<distype>::prepare_nurbs_eval(
-    const Core::Elements::Element* ele,            // the element whose matrix is calculated
-    const Discret::Discretization& discretization  // current discretisation
+    const Core::Elements::Element* ele,             // the element whose matrix is calculated
+    const Core::FE::Discretization& discretization  // current discretisation
 )
 {
   if (ele->Shape() != Core::FE::CellType::nurbs27)

@@ -11,10 +11,10 @@
 #include "4C_constraint_multipointconstraint3.hpp"
 
 #include "4C_constraint_element3.hpp"
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_dofset_transparent.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_dofset_transparent.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_rebalance_binning_based.hpp"
@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-CONSTRAINTS::MPConstraint3::MPConstraint3(Teuchos::RCP<Discret::Discretization> discr,
+CONSTRAINTS::MPConstraint3::MPConstraint3(Teuchos::RCP<Core::FE::Discretization> discr,
     const std::string& conditionname, int& offsetID, int& maxID)
     : MPConstraint(discr, conditionname)
 {
@@ -49,7 +49,7 @@ CONSTRAINTS::MPConstraint3::MPConstraint3(Teuchos::RCP<Discret::Discretization> 
     constraintdis_ = create_discretization_from_condition(
         actdisc_, constrcond_, "ConstrDisc", "CONSTRELE3", maxID);
 
-    std::map<int, Teuchos::RCP<Discret::Discretization>>::iterator discriter;
+    std::map<int, Teuchos::RCP<Core::FE::Discretization>>::iterator discriter;
     for (discriter = constraintdis_.begin(); discriter != constraintdis_.end(); discriter++)
     {
       // ReplaceNumDof(actdisc_,discriter->second);
@@ -178,7 +178,7 @@ void CONSTRAINTS::MPConstraint3::Evaluate(Teuchos::ParameterList& params,
     default:
       FOUR_C_THROW("Constraint/monitor is not an multi point constraint!");
   }
-  std::map<int, Teuchos::RCP<Discret::Discretization>>::iterator discriter;
+  std::map<int, Teuchos::RCP<Core::FE::Discretization>>::iterator discriter;
   for (discriter = constraintdis_.begin(); discriter != constraintdis_.end(); discriter++)
     evaluate_constraint(discriter->second, params, systemmatrix1, systemmatrix2, systemvector1,
         systemvector2, systemvector3);
@@ -190,14 +190,14 @@ void CONSTRAINTS::MPConstraint3::Evaluate(Teuchos::ParameterList& params,
  |(private)                                                   tk 04/08    |
  |subroutine creating a new discretization containing constraint elements |
  *------------------------------------------------------------------------*/
-std::map<int, Teuchos::RCP<Discret::Discretization>>
+std::map<int, Teuchos::RCP<Core::FE::Discretization>>
 CONSTRAINTS::MPConstraint3::create_discretization_from_condition(
-    Teuchos::RCP<Discret::Discretization> actdisc,
+    Teuchos::RCP<Core::FE::Discretization> actdisc,
     std::vector<Core::Conditions::Condition*> constrcondvec, const std::string& discret_name,
     const std::string& element_name, int& startID)
 {
   // start with empty map
-  std::map<int, Teuchos::RCP<Discret::Discretization>> newdiscmap;
+  std::map<int, Teuchos::RCP<Core::FE::Discretization>> newdiscmap;
 
   if (!actdisc->Filled())
   {
@@ -218,8 +218,8 @@ CONSTRAINTS::MPConstraint3::create_discretization_from_condition(
   {
     // initialize a new discretization
     Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
-    Teuchos::RCP<Discret::Discretization> newdis =
-        Teuchos::rcp(new Discret::Discretization(discret_name, com, actdisc->n_dim()));
+    Teuchos::RCP<Core::FE::Discretization> newdis =
+        Teuchos::rcp(new Core::FE::Discretization(discret_name, com, actdisc->n_dim()));
     const int myrank = newdis->Comm().MyPID();
     std::set<int> rownodeset;
     std::set<int> colnodeset;
@@ -339,7 +339,7 @@ CONSTRAINTS::MPConstraint3::create_discretization_from_condition(
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3::evaluate_constraint(Teuchos::RCP<Discret::Discretization> disc,
+void CONSTRAINTS::MPConstraint3::evaluate_constraint(Teuchos::RCP<Core::FE::Discretization> disc,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -474,7 +474,7 @@ void CONSTRAINTS::MPConstraint3::evaluate_constraint(Teuchos::RCP<Discret::Discr
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3::initialize_constraint(Teuchos::RCP<Discret::Discretization> disc,
+void CONSTRAINTS::MPConstraint3::initialize_constraint(Teuchos::RCP<Core::FE::Discretization> disc,
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   if (!(disc->Filled())) FOUR_C_THROW("fill_complete() was not called");

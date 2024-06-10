@@ -15,7 +15,6 @@ set(_dependencies
     core
     global_data
     inpar
-    lib
     solver_nonlin_nox
     structure_new
     )

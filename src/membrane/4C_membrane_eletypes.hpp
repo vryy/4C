@@ -12,16 +12,18 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_fem_general_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
+
 namespace Discret
 {
-  // forward declarations
-  class Discretization;
-
   namespace ELEMENTS
   {
     /*----------------------------------------------------------------------*
@@ -41,7 +43,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override { return 0; };
+      int Initialize(Core::FE::Discretization& dis) override { return 0; };
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -74,7 +76,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override { return 0; };
+      int Initialize(Core::FE::Discretization& dis) override { return 0; };
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -107,7 +109,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override { return 0; };
+      int Initialize(Core::FE::Discretization& dis) override { return 0; };
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -140,7 +142,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override { return 0; };
+      int Initialize(Core::FE::Discretization& dis) override { return 0; };
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;

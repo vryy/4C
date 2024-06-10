@@ -15,7 +15,7 @@ equations
 #include "4C_config.hpp"
 
 #include "4C_cut_enum.hpp"
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
 #include <vector>

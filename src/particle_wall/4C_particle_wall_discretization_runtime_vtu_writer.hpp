@@ -36,10 +36,10 @@ namespace PARTICLEWALL
   class WallDataState;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -68,7 +68,7 @@ namespace PARTICLEWALL
      *
      */
     explicit WallDiscretizationRuntimeVtuWriter(
-        const Teuchos::RCP<Discret::Discretization> walldiscretization,
+        const Teuchos::RCP<Core::FE::Discretization> walldiscretization,
         const std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate, double restart_time);
 
     /*!
@@ -93,7 +93,7 @@ namespace PARTICLEWALL
 
    private:
     //! wall discretization
-    Teuchos::RCP<Discret::Discretization> walldiscretization_;
+    Teuchos::RCP<Core::FE::Discretization> walldiscretization_;
 
     //! wall data state container
     std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate_;

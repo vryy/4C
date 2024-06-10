@@ -9,7 +9,7 @@
 #include "4C_mortar_coupling3d.hpp"
 
 #include "4C_contact_interpolator.hpp"  // MT interpolator is located in here
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-Mortar::Coupling3d::Coupling3d(Discret::Discretization& idiscret, int dim, bool quad,
+Mortar::Coupling3d::Coupling3d(Core::FE::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele)
     : idiscret_(idiscret),
       dim_(dim),
@@ -3876,7 +3876,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-Mortar::Coupling3dQuad::Coupling3dQuad(Discret::Discretization& idiscret, int dim, bool quad,
+Mortar::Coupling3dQuad::Coupling3dQuad(Core::FE::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele,
     Mortar::IntElement& sintele, Mortar::IntElement& mintele)
     : Mortar::Coupling3d(idiscret, dim, quad, params, sele, mele),
@@ -3899,7 +3899,7 @@ const Epetra_Comm& Mortar::Coupling3dManager::Comm() const { return idiscret_.Co
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-Mortar::Coupling3dManager::Coupling3dManager(Discret::Discretization& idiscret, int dim, bool quad,
+Mortar::Coupling3dManager::Coupling3dManager(Core::FE::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele)
     : idiscret_(idiscret),
       dim_(dim),
@@ -3919,7 +3919,7 @@ Mortar::Coupling3dManager::Coupling3dManager(Discret::Discretization& idiscret, 
 /*----------------------------------------------------------------------*
  |  ctor (public) -- empty                                   farah 01/13|
  *----------------------------------------------------------------------*/
-Mortar::Coupling3dQuadManager::Coupling3dQuadManager(Discret::Discretization& idiscret, int dim,
+Mortar::Coupling3dQuadManager::Coupling3dQuadManager(Core::FE::Discretization& idiscret, int dim,
     bool quad, Teuchos::ParameterList& params, Mortar::Element* sele,
     std::vector<Mortar::Element*> mele)
     : Coupling3dManager(idiscret, dim, quad, params, sele, mele)

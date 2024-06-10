@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntBDF2::TimIntBDF2(const Teuchos::RCP<Discret::Discretization>& actdis,
+FLD::TimIntBDF2::TimIntBDF2(const Teuchos::RCP<Core::FE::Discretization>& actdis,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)

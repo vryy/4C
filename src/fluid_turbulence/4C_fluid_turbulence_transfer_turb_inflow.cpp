@@ -14,8 +14,8 @@ boundary of the actual domain
 #include "4C_fluid_turbulence_transfer_turb_inflow.hpp"
 
 #include "4C_coupling_matchingoctree.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_utils_function_of_time.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
-    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
+    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
     : dis_(dis), dbcmaps_(dbcmaps), curve_(-1), numveldof_(3)
 {
   active_ = false;
@@ -695,7 +695,7 @@ void FLD::TransferTurbulentInflowCondition::set_values_available_on_this_proc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowConditionXW::TransferTurbulentInflowConditionXW(
-    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
+    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
     : TransferTurbulentInflowCondition(dis, dbcmaps)
 {
   numveldof_ = 6;
@@ -930,7 +930,7 @@ void FLD::TransferTurbulentInflowConditionXW::set_values_available_on_this_proc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowConditionNodal::TransferTurbulentInflowConditionNodal(
-    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
+    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
     : TransferTurbulentInflowCondition(dis, dbcmaps)
 {
   numveldof_ = 1;

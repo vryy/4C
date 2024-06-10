@@ -32,10 +32,10 @@ namespace BINSTRATEGY
   class BinningStrategy;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::Geo
 {
@@ -66,7 +66,7 @@ namespace FBI
      * \param[in] discretizations vector containing the structure and fluid discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    void Setup(std::vector<Teuchos::RCP<Discret::Discretization>>&,
+    void Setup(std::vector<Teuchos::RCP<Core::FE::Discretization>>&,
         Teuchos::RCP<const Epetra_Vector> structure_displacement) override;
 
     /**
@@ -83,7 +83,7 @@ namespace FBI
      * \returns map relating the beam element IDs to a vector of nearby fluid element IDs
      */
     Teuchos::RCP<std::map<int, std::vector<int>>> Search(
-        std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
+        std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
         Teuchos::RCP<const Epetra_Vector>& column_structure_displacement) override;
 
     /** \brief Update distribution of elements to bins
@@ -91,7 +91,7 @@ namespace FBI
      * \param[in] structure_discretization structure discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    void UpdateBinning(Teuchos::RCP<Discret::Discretization>& structure_discretization,
+    void UpdateBinning(Teuchos::RCP<Core::FE::Discretization>& structure_discretization,
         Teuchos::RCP<const Epetra_Vector> structure_column_displacement) override;
 
    protected:
@@ -108,7 +108,7 @@ namespace FBI
      * \param[in, out] positions map relating the node IDs to reference positions
      * \param[in] disp current displacements
      */
-    void compute_current_positions(Discret::Discretization& dis,
+    void compute_current_positions(Core::FE::Discretization& dis,
         Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions,
         Teuchos::RCP<const Epetra_Vector> disp) const override;
 
@@ -117,7 +117,7 @@ namespace FBI
      * \param[in] discretizations vector containing the structure and fluid discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    virtual void setup_binning(std::vector<Teuchos::RCP<Discret::Discretization>>&,
+    virtual void setup_binning(std::vector<Teuchos::RCP<Core::FE::Discretization>>&,
         Teuchos::RCP<const Epetra_Vector> structure_displacement);
 
     /** \brief Partition the Problem into bins
@@ -125,7 +125,7 @@ namespace FBI
      * \param[in] discretizations vector containing the structure and fluid discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    virtual void partition_geometry(std::vector<Teuchos::RCP<Discret::Discretization>>&,
+    virtual void partition_geometry(std::vector<Teuchos::RCP<Core::FE::Discretization>>&,
         Teuchos::RCP<const Epetra_Vector> structure_displacement);
 
    private:

@@ -104,7 +104,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<Adapter::ArtNet> artnettimint_;
 
     //! artery discretization
-    Teuchos::RCP<Discret::Discretization> arterydis_;
+    Teuchos::RCP<Core::FE::Discretization> arterydis_;
 
     //! the mesh tying object
     Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase> arttoporofluidcoupling_;

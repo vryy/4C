@@ -10,16 +10,16 @@
 /*----------------------------------------------------------------------------*/
 #include "4C_ale_utils_mapextractor.hpp"
 
-#include "4C_discretization_condition_selector.hpp"
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_selector.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::UTILS::MapExtractor::Setup(const Discret::Discretization& dis, bool overlapping)
+void ALE::UTILS::MapExtractor::Setup(const Core::FE::Discretization& dis, bool overlapping)
 {
   const int ndim = Global::Problem::Instance()->NDim();
   Core::Conditions::MultiConditionSelector mcs;
@@ -47,7 +47,7 @@ void ALE::UTILS::MapExtractor::Setup(const Discret::Discretization& dis, bool ov
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<std::set<int>> ALE::UTILS::MapExtractor::conditioned_element_map(
-    const Discret::Discretization& dis) const
+    const Core::FE::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int>> condelements =
       Core::Conditions::conditioned_element_map(dis, "FSICoupling");
@@ -84,7 +84,7 @@ Teuchos::RCP<std::set<int>> ALE::UTILS::MapExtractor::conditioned_element_map(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ALE::UTILS::FsiMapExtractor::Setup(const Discret::Discretization& dis)
+void ALE::UTILS::FsiMapExtractor::Setup(const Core::FE::Discretization& dis)
 {
   const int ndim = Global::Problem::Instance()->NDim();
   Core::Conditions::MultiConditionSelector mcs;
@@ -95,7 +95,7 @@ void ALE::UTILS::FsiMapExtractor::Setup(const Discret::Discretization& dis)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::UTILS::XFluidFluidMapExtractor::Setup(const Discret::Discretization& dis)
+void ALE::UTILS::XFluidFluidMapExtractor::Setup(const Core::FE::Discretization& dis)
 {
   const int ndim = Global::Problem::Instance()->NDim();
   Core::Conditions::MultiConditionSelector mcs;

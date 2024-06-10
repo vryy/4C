@@ -366,7 +366,7 @@ namespace CONTACT
 
       /// collect the owner of each interface node
       Teuchos::RCP<Epetra_Vector> collect_row_node_owners(
-          const Discret::Discretization& structure_dis) const;
+          const Core::FE::Discretization& structure_dis) const;
 
       //! @}
 
@@ -610,7 +610,7 @@ namespace CONTACT
         InterfaceDataContainer* interface_data_ptr_;
 
        protected:
-        Discret::Discretization& idiscret_;
+        Core::FE::Discretization& idiscret_;
       };
 
       /*--------------------------------------------------------------------------*/

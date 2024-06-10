@@ -10,7 +10,7 @@
 
 #include "4C_poromultiphase_scatra_artery_coupling_nodetopoint.hpp"
 
-#include "4C_discretization_condition_selector.hpp"
+#include "4C_fem_condition_selector.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_poromultiphase_scatra_artery_coupling_pair.hpp"
@@ -20,10 +20,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::
-    PoroMultiPhaseScaTraArtCouplNodeToPoint(Teuchos::RCP<Discret::Discretization> arterydis,
-        Teuchos::RCP<Discret::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
-        const std::string& condname, const std::string& artcoupleddofname,
-        const std::string& contcoupleddofname)
+    PoroMultiPhaseScaTraArtCouplNodeToPoint(Teuchos::RCP<Core::FE::Discretization> arterydis,
+        Teuchos::RCP<Core::FE::Discretization> contdis,
+        const Teuchos::ParameterList& couplingparams, const std::string& condname,
+        const std::string& artcoupleddofname, const std::string& contcoupleddofname)
     : PoroMultiPhaseScaTraArtCouplNonConforming(
           arterydis, contdis, couplingparams, condname, artcoupleddofname, contcoupleddofname)
 {

@@ -15,8 +15,8 @@
 #include "4C_config.hpp"
 
 #include "4C_cut_utils.hpp"
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_element_integration_select.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_element_integration_select.hpp"
 #include "4C_fluid_ele_calc_xfem_coupling.hpp"
 #include "4C_inpar_xfem.hpp"
 
@@ -188,7 +188,7 @@ namespace XFEM
         const Core::LinAlg::Matrix<3, 1>& elenormal, const Core::LinAlg::Matrix<3, 1>& normal);
 
     void EvaluteStateatGP(const Core::Elements::Element* sele,
-        const Core::LinAlg::Matrix<3, 1>& selexsi, const Discret::Discretization& discret,
+        const Core::LinAlg::Matrix<3, 1>& selexsi, const Core::FE::Discretization& discret,
         const std::string& state, Core::LinAlg::Matrix<3, 1>& vel_s);
 
   }  // namespace UTILS

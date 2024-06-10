@@ -10,11 +10,11 @@
 
 #include "4C_fluid_xfluid_resulttest.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_xfluid.hpp"
 #include "4C_fluid_xfluid_fluid.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 
 #include <string>
 
@@ -66,7 +66,7 @@ void FLD::XFluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int
 }
 
 void FLD::XFluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count,
-    int node, const Teuchos::RCP<const Discret::Discretization>& discret,
+    int node, const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<const Epetra_Vector>& velnp)
 {
   int havenode(discret->HaveGlobalNode(node));

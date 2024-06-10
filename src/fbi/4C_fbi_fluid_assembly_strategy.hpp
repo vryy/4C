@@ -35,10 +35,10 @@ namespace Core::LinAlg
   class SerialDenseVector;
   class SerialDenseMatrix;
 }  // namespace Core::LinAlg
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 namespace BEAMINTERACTION
 {
   class BeamContactPair;
@@ -98,8 +98,8 @@ namespace FBI
        * matrix relating DOFs in the first discretization to DOFs in the second discretization
        *
        */
-      virtual void Assemble(const Discret::Discretization& discretization1,
-          const Discret::Discretization& discretization2, std::vector<int> const& elegid,
+      virtual void Assemble(const Core::FE::Discretization& discretization1,
+          const Core::FE::Discretization& discretization2, std::vector<int> const& elegid,
           std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
           std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
           Teuchos::RCP<Epetra_FEVector>& f1, Teuchos::RCP<Epetra_FEVector>& f2,

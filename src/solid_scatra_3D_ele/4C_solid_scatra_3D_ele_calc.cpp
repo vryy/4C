@@ -8,10 +8,10 @@ solid formulation
 
 #include "4C_solid_scatra_3D_ele_calc.hpp"
 
-#include "4C_discretization_fem_general_cell_type.hpp"
-#include "4C_discretization_fem_general_cell_type_traits.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_cell_type.hpp"
+#include "4C_fem_general_cell_type_traits.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based.hpp"
 #include "4C_solid_3D_ele_calc_fbar.hpp"
@@ -110,7 +110,7 @@ namespace
   }
 
   template <bool is_scalar, Core::FE::CellType celltype>
-  void PrepareScatraQuantityInParameterList(const Discret::Discretization& discretization,
+  void PrepareScatraQuantityInParameterList(const Core::FE::Discretization& discretization,
       const Core::Elements::Element::LocationArray& la,
       const Discret::ELEMENTS::ElementNodes<celltype>& element_nodes, const std::string& field_name,
       const int field_index, const int num_scalars,
@@ -161,7 +161,7 @@ namespace
 
   template <Core::FE::CellType celltype>
   void PrepareScatraQuantitiesInParameterList(const Core::Elements::Element& element,
-      const Discret::Discretization& discretization,
+      const Core::FE::Discretization& discretization,
       const Core::Elements::Element::LocationArray& la,
       const Discret::ELEMENTS::ElementNodes<celltype>& element_nodes,
       const Core::FE::GaussIntegration& gauss_integration, Teuchos::ParameterList& params)
@@ -263,7 +263,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Unpack(
 template <Core::FE::CellType celltype, typename SolidFormulation>
 void Discret::ELEMENTS::SolidScatraEleCalc<celltype,
     SolidFormulation>::evaluate_nonlinear_force_stiffness_mass(const Core::Elements::Element& ele,
-    Mat::So3Material& solid_material, const Discret::Discretization& discretization,
+    Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
     const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector* force_vector,
     Core::LinAlg::SerialDenseMatrix* stiffness_matrix, Core::LinAlg::SerialDenseMatrix* mass_matrix)
@@ -352,8 +352,9 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype,
 template <Core::FE::CellType celltype, typename SolidFormulation>
 void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate_d_stress_d_scalar(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
-    const Discret::Discretization& discretization, const Core::Elements::Element::LocationArray& la,
-    Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& stiffness_matrix_dScalar)
+    const Core::FE::Discretization& discretization,
+    const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
+    Core::LinAlg::SerialDenseMatrix& stiffness_matrix_dScalar)
 {
   const int scatra_column_stride = std::invoke(
       [&]()
@@ -423,7 +424,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
 void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Recover(
-    const Core::Elements::Element& ele, const Discret::Discretization& discretization,
+    const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
     const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params)
 {
   // nothing needs to be done for simple displacement based elements
@@ -432,8 +433,8 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Recover(
 template <Core::FE::CellType celltype, typename SolidFormulation>
 void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Update(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
-    const Discret::Discretization& discretization, const Core::Elements::Element::LocationArray& la,
-    Teuchos::ParameterList& params)
+    const Core::FE::Discretization& discretization,
+    const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params)
 {
   const ElementNodes<celltype> nodal_coordinates =
       EvaluateElementNodes<celltype>(ele, discretization, la[0].lm_);
@@ -467,8 +468,8 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Update(
 template <Core::FE::CellType celltype, typename SolidFormulation>
 double Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calculate_internal_energy(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
-    const Discret::Discretization& discretization, const Core::Elements::Element::LocationArray& la,
-    Teuchos::ParameterList& params)
+    const Core::FE::Discretization& discretization,
+    const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params)
 {
   const ElementNodes<celltype> nodal_coordinates =
       EvaluateElementNodes<celltype>(ele, discretization, la[0].lm_);
@@ -507,7 +508,7 @@ double Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calcul
 template <Core::FE::CellType celltype, typename SolidFormulation>
 void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::CalculateStress(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material, const StressIO& stressIO,
-    const StrainIO& strainIO, const Discret::Discretization& discretization,
+    const StrainIO& strainIO, const Core::FE::Discretization& discretization,
     const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params)
 {
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;

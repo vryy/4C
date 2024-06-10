@@ -18,7 +18,7 @@
  *----------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_mortar_element.hpp"
 #include "4C_mortar_node.hpp"

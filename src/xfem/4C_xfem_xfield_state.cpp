@@ -12,7 +12,7 @@
 
 #include "4C_xfem_xfield_state.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_xfem_discretization.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -36,8 +36,8 @@ XFEM::XFieldState::XFieldState()
  *----------------------------------------------------------------------*/
 void XFEM::XFieldState::Init(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
     const Teuchos::RCP<Core::Geo::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
-    const Teuchos::RCP<Discret::Discretization>& xfielddiscret,
-    const Teuchos::RCP<Discret::Discretization>& fielddiscret)
+    const Teuchos::RCP<Core::FE::Discretization>& xfielddiscret,
+    const Teuchos::RCP<Core::FE::Discretization>& fielddiscret)
 {
   // Ensure, that the Setup() routines are called afterwards.
   issetup_ = false;

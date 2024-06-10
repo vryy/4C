@@ -13,7 +13,7 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_volmortar_utils.hpp"
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_inpar_poroelast.hpp"
 #include "4C_poroelast_utils.hpp"
 
@@ -23,10 +23,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -57,7 +57,7 @@ namespace PoroElastScaTra
   namespace UTILS
   {
     Teuchos::RCP<Core::LinAlg::MapExtractor> BuildPoroScatraSplitter(
-        Teuchos::RCP<Discret::Discretization> dis);
+        Teuchos::RCP<Core::FE::Discretization> dis);
 
     //! check if element is a poro-scatra-element
     bool IsPoroScatraElement(const Core::Elements::Element* actele);
@@ -67,7 +67,7 @@ namespace PoroElastScaTra
 
 
     Teuchos::RCP<Core::LinAlg::MapExtractor> BuildPoroSplitter(
-        Teuchos::RCP<Discret::Discretization> dis);
+        Teuchos::RCP<Core::FE::Discretization> dis);
 
     //! create solution algorithm depending on input file
     Teuchos::RCP<PoroElast::PoroBase> CreatePoroAlgorithm(
@@ -84,8 +84,8 @@ namespace PoroElastScaTra
     );
 
     //! reset Material pointers after redistribution
-    void SetMaterialPointersMatchingGrid(Teuchos::RCP<const Discret::Discretization> sourcedis,
-        Teuchos::RCP<const Discret::Discretization> targetdis);
+    void SetMaterialPointersMatchingGrid(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
+        Teuchos::RCP<const Core::FE::Discretization> targetdis);
 
     /*!
      Create volume ghosting:
@@ -101,14 +101,14 @@ namespace PoroElastScaTra
      element is lost! (Parent Element Pointer is not communicated)
      */
     void create_volume_ghosting(
-        Discret::Discretization& idiscret);  // redistributed interface discretization of contact!
+        Core::FE::Discretization& idiscret);  // redistributed interface discretization of contact!
 
     /*! Reconnect Face Element - Parent Element Pointers!
      Parent Element need to be ghosted on the processors where Face Elements
      exist already.
      */
-    void reconnect_parent_pointers(Discret::Discretization& idiscret,
-        Discret::Discretization& voldiscret, Discret::Discretization* voldiscret2 = nullptr);
+    void reconnect_parent_pointers(Core::FE::Discretization& idiscret,
+        Core::FE::Discretization& voldiscret, Core::FE::Discretization* voldiscret2 = nullptr);
 
     //! Determine norm of vector
     double calculate_vector_norm(const enum Inpar::PoroElast::VectorNorm norm,  //!< norm to use
@@ -116,8 +116,8 @@ namespace PoroElastScaTra
     );
 
     //! Set the slave and master elements of the face element
-    void SetSlaveAndMaster(const Discret::Discretization& voldiscret,
-        const Discret::Discretization* voldiscret2, const Epetra_Map* elecolmap,
+    void SetSlaveAndMaster(const Core::FE::Discretization& voldiscret,
+        const Core::FE::Discretization* voldiscret2, const Epetra_Map* elecolmap,
         Core::Elements::FaceElement* faceele);
 
     //! strategy for material assignment for non matching meshes with poro
@@ -147,14 +147,14 @@ namespace PoroElastScaTra
       //! assignment of fluid material to structure material
       void AssignMaterial2To1(const Core::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele1, const std::vector<int>& ids_2,
-          Teuchos::RCP<Discret::Discretization> dis1,
-          Teuchos::RCP<Discret::Discretization> dis2) override;
+          Teuchos::RCP<Core::FE::Discretization> dis1,
+          Teuchos::RCP<Core::FE::Discretization> dis2) override;
 
       //! assignment of structure material to fluid material
       void AssignMaterial1To2(const Core::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele2, const std::vector<int>& ids_1,
-          Teuchos::RCP<Discret::Discretization> dis1,
-          Teuchos::RCP<Discret::Discretization> dis2) override;
+          Teuchos::RCP<Core::FE::Discretization> dis1,
+          Teuchos::RCP<Core::FE::Discretization> dis2) override;
     };
   }  // namespace UTILS
 

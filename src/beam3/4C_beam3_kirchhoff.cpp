@@ -12,13 +12,13 @@
 
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"
 #include "4C_beaminteraction_periodic_boundingbox.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_largerotations.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -126,7 +126,7 @@ void Discret::ELEMENTS::Beam3kType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      meier 01/16|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Beam3kType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::Beam3kType::Initialize(Core::FE::Discretization& dis)
 {
   // setting up geometric variables for Beam3k elements
   for (int num = 0; num < dis.NumMyColElements(); ++num)

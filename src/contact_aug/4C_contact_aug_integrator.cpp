@@ -15,7 +15,7 @@
 #include "4C_contact_element.hpp"
 #include "4C_contact_node.hpp"
 #include "4C_contact_paramsinterface.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_mortar_coupling3d_classes.hpp"
 

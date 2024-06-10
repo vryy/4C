@@ -19,11 +19,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
+
 namespace Discret
 {
   // forward declarations
   class So_sh18Plast;
-  class Discretization;
 
   namespace ELEMENTS
   {
@@ -41,7 +45,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override;
+      int Initialize(Core::FE::Discretization& dis) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -94,7 +98,7 @@ namespace Discret
       {
         return SoSh18::VisData(name, data);
       }
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override
@@ -149,7 +153,7 @@ namespace Discret
       int Evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          Discret::Discretization& discretization,  //!< pointer to discretization for de-assembly
+          Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
           Core::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           Core::LinAlg::SerialDenseMatrix&
               elemat1_epetra,  //!< (stiffness-)matrix to be filled by element.

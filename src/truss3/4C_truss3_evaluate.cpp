@@ -9,9 +9,9 @@ adapts assembly automatically according to the thereby changed number of nodal d
 */
 /*---------------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_mat_lin_elast_1D.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public) cyron 08/08|
  *----------------------------------------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -151,7 +151,7 @@ int Discret::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------------------------------------------*/
 
 int Discret::ELEMENTS::Truss3::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -576,7 +576,7 @@ void Discret::ELEMENTS::Truss3::lump_mass(Core::LinAlg::SerialDenseMatrix* emass
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Discret::ELEMENTS::Truss3::extract_elemental_variables(LocationArray& la,
-    const Discret::Discretization& discretization, const Teuchos::ParameterList& params,
+    const Core::FE::Discretization& discretization, const Teuchos::ParameterList& params,
     std::map<std::string, std::vector<double>>& ele_state)
 {
   std::vector<double> disp_ele(la[0].lm_.size());

@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 #include "4C_scatra_timint_convcheck_strategies.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_scatra_timint_elch.hpp"
 #include "4C_scatra_timint_implicit.hpp"

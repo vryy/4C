@@ -10,16 +10,16 @@
 
 #include "4C_fs3i_biofilm_fsi_utils.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BioFilm::UTILS::ScatraChangeConfig(Teuchos::RCP<Discret::Discretization> scatradis,
-    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp)
+void FS3I::BioFilm::UTILS::ScatraChangeConfig(Teuchos::RCP<Core::FE::Discretization> scatradis,
+    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp)
 {
   const int numnode = (scatradis->NodeColMap())->NumMyElements();
 

@@ -11,7 +11,8 @@
 
 #include "4C_fluid_timint_hdg.hpp"
 
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_fem_discretization_hdg.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_hdg.hpp"
 #include "4C_fluid_ele_hdg_weak_comp.hpp"
@@ -19,7 +20,6 @@
 #include "4C_fluid_turbulence_hit_initial_field.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret_hdg.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                              kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-FLD::TimIntHDG::TimIntHDG(const Teuchos::RCP<Discret::Discretization>& actdis,
+FLD::TimIntHDG::TimIntHDG(const Teuchos::RCP<Core::FE::Discretization>& actdis,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
@@ -44,7 +44,7 @@ FLD::TimIntHDG::TimIntHDG(const Teuchos::RCP<Discret::Discretization>& actdis,
  *----------------------------------------------------------------------*/
 void FLD::TimIntHDG::Init()
 {
-  Discret::DiscretizationHDG* hdgdis = dynamic_cast<Discret::DiscretizationHDG*>(discret_.get());
+  Core::FE::DiscretizationHDG* hdgdis = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   int elementndof = hdgdis->NumMyRowElements() > 0
@@ -461,7 +461,7 @@ void FLD::TimIntHDG::Reset(bool completeReset, int numsteps, int iter)
 namespace
 {
   // internal helper function for output
-  void getNodeVectorsHDG(Discret::Discretization& dis,
+  void getNodeVectorsHDG(Core::FE::Discretization& dis,
       const Teuchos::RCP<Epetra_Vector>& interiorValues,
       const Teuchos::RCP<Epetra_Vector>& traceValues, const int ndim,
       Teuchos::RCP<Epetra_MultiVector>& velocity, Teuchos::RCP<Epetra_Vector>& pressure,

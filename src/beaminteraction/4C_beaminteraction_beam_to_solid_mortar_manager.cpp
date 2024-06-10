@@ -16,9 +16,9 @@
 #include "4C_beaminteraction_contact_pair.hpp"
 #include "4C_beaminteraction_contact_params.hpp"
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_geometry_pair.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
-    const Teuchos::RCP<const Discret::Discretization>& discret,
+    const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
     int start_value_lambda_gid)
     : is_setup_(false),

@@ -23,11 +23,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -315,7 +314,7 @@ namespace STR
     //! @name General purpose algorithm members
     //@{
     Teuchos::RCP<TimInt> sti_;                             //!< marching time integrator
-    Teuchos::RCP<Discret::Discretization> discret_;        //!< attached discretisation
+    Teuchos::RCP<Core::FE::Discretization> discret_;       //!< attached discretisation
     int myrank_;                                           //!< processor ID
     Teuchos::RCP<Core::LinAlg::Solver> solver_;            //!< linear algebraic solver
     Teuchos::RCP<Core::IO::DiscretizationWriter> output_;  //!< binary output

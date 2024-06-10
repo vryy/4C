@@ -15,7 +15,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_io_visualization_manager.hpp"
 
 #include <Teuchos_RCP.hpp>
@@ -36,10 +36,13 @@ namespace Core::Geo
   }
 }  // namespace Core::Geo
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class Beam3Base;
@@ -78,7 +81,7 @@ class BeamDiscretizationRuntimeOutputWriter
    *
    *  \author grill
    *  \date 03/17 */
-  void Initialize(Teuchos::RCP<Discret::Discretization> discretization,
+  void Initialize(Teuchos::RCP<Core::FE::Discretization> discretization,
       bool use_absolute_positions_for_point_coordinates, const unsigned int n_subsegments,
       Teuchos::RCP<const Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox);
 
@@ -274,7 +277,7 @@ class BeamDiscretizationRuntimeOutputWriter
 
  private:
   //! discretization containing beam elements of which geometry and result data shall be visualized
-  Teuchos::RCP<const Discret::Discretization> discretization_;
+  Teuchos::RCP<const Core::FE::Discretization> discretization_;
 
   //! all local row indices of beam elements in the given discretization
   std::vector<unsigned int> local_row_indices_beam_elements_;

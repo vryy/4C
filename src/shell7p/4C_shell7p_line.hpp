@@ -10,10 +10,10 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_element_integration_select.hpp"
-#include "4C_discretization_fem_general_node.hpp"
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_element_integration_select.hpp"
+#include "4C_fem_general_node.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_shell7p_ele.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -133,7 +133,7 @@ namespace Discret::ELEMENTS
 
     //! @name Evaluate methods
     //! @{
-    int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         Core::Conditions::Condition& condition, std::vector<int>& dof_index_array,
         Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;

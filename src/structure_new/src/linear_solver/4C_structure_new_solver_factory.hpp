@@ -43,10 +43,10 @@ namespace Core::LinAlg
 {
   class Solver;
 }
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 namespace STR
 {
   namespace SOLVER
@@ -70,29 +70,29 @@ namespace STR
       //! build the desired linear solvers
       Teuchos::RCP<LinSolMap> build_lin_solvers(
           const std::set<enum Inpar::STR::ModelType>& modeltypes,
-          const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis) const;
+          const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const;
 
       //! create the meshtying/contact linear solver
       static Teuchos::RCP<Core::LinAlg::Solver> build_meshtying_contact_lin_solver(
-          Discret::Discretization& actdis, enum Inpar::CONTACT::SolvingStrategy sol_type,
+          Core::FE::Discretization& actdis, enum Inpar::CONTACT::SolvingStrategy sol_type,
           enum Inpar::CONTACT::SystemType sys_type, const int lin_solver_id);
 
      private:
       //! create the structural linear solver (should be called by default)
       Teuchos::RCP<Core::LinAlg::Solver> build_structure_lin_solver(
-          const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis) const;
+          const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const;
 
       //! create the meshtying/contact linear solver
       Teuchos::RCP<Core::LinAlg::Solver> build_meshtying_contact_lin_solver(
-          Discret::Discretization& actdis) const;
+          Core::FE::Discretization& actdis) const;
 
       //! create the Lagrange/penalty enforced constraint linear solver
       Teuchos::RCP<Core::LinAlg::Solver> build_lag_pen_constraint_lin_solver(
-          const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis) const;
+          const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const;
 
       //! create the Windkessel linear solver
       Teuchos::RCP<Core::LinAlg::Solver> build_cardiovascular0_d_lin_solver(
-          const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis) const;
+          const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const;
 
     };  // class Factory
 
@@ -100,7 +100,7 @@ namespace STR
      *  Please call this method from outside! */
     Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
     build_lin_solvers(const std::set<enum Inpar::STR::ModelType>& modeltypes,
-        const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis);
+        const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis);
   }  // namespace SOLVER
 }  // namespace STR
 

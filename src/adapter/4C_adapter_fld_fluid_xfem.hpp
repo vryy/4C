@@ -40,10 +40,10 @@ namespace Adapter
     const Teuchos::RCP<Adapter::Fluid>& fluid_field() override { return fluid_; }
 
     /// return the boundary discretization that matches the structure discretization
-    Teuchos::RCP<Discret::Discretization> discretization() override;
+    Teuchos::RCP<Core::FE::Discretization> discretization() override;
 
     /// return the boundary discretization that matches the structure discretization
-    Teuchos::RCP<Discret::Discretization> boundary_discretization();
+    Teuchos::RCP<Core::FE::Discretization> boundary_discretization();
 
     /// communication object at the interface
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override

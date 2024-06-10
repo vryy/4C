@@ -13,9 +13,9 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_geometry_geo_utils.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_geometry_geo_utils.hpp"
 #include "4C_inpar_levelset.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 
@@ -40,7 +40,7 @@ namespace ScaTra
   {
    public:
     /// Standard Constructor
-    LevelSetAlgorithm(Teuchos::RCP<Discret::Discretization> dis,
+    LevelSetAlgorithm(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -102,7 +102,7 @@ namespace ScaTra
 
    protected:
     virtual void get_initial_volume_of_minus_domain(const Teuchos::RCP<const Epetra_Vector>& phinp,
-        const Teuchos::RCP<const Discret::Discretization>& scatradis,
+        const Teuchos::RCP<const Core::FE::Discretization>& scatradis,
         double& volumedomainminus) const;
 
     //! identify interface side due to phivalue value

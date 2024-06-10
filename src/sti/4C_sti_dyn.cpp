@@ -10,8 +10,8 @@
 #include "4C_sti_dyn.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_scatra_resulttest_elch.hpp"
 #include "4C_scatra_timint_elch.hpp"
@@ -37,7 +37,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
   const Epetra_Comm& comm = problem->GetDis("scatra")->Comm();
 
   // access scatra discretization
-  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis("scatra");
 
   // add dofset for velocity-related quantities to scatra discretization
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
@@ -55,7 +55,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
         "cloned from it!");
 
   // access thermo discretization
-  Teuchos::RCP<Discret::Discretization> thermodis = problem->GetDis("thermo");
+  Teuchos::RCP<Core::FE::Discretization> thermodis = problem->GetDis("thermo");
 
   // add dofset for velocity-related quantities to thermo discretization
   dofsetaux =

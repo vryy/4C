@@ -28,10 +28,10 @@
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
 #include "4C_coupling_volmortar_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_tsi.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mortar_multifield_coupling.hpp"
 #include "4C_structure_new_model_evaluator_contact.hpp"
 #include "4C_structure_new_model_evaluator_structure.hpp"
@@ -56,10 +56,10 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
       volcoupl_(Teuchos::null)
 {
   // access the structural discretization
-  Teuchos::RCP<Discret::Discretization> structdis =
+  Teuchos::RCP<Core::FE::Discretization> structdis =
       Global::Problem::Instance()->GetDis("structure");
   // access the thermo discretization
-  Teuchos::RCP<Discret::Discretization> thermodis = Global::Problem::Instance()->GetDis("thermo");
+  Teuchos::RCP<Core::FE::Discretization> thermodis = Global::Problem::Instance()->GetDis("thermo");
 
   // get the problem instance
   Global::Problem* problem = Global::Problem::Instance();
@@ -313,7 +313,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
  | enable visualisation of thermal variables on deformed body           |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::output_deformation_in_thr(
-    Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<Discret::Discretization> structdis)
+    Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<Core::FE::Discretization> structdis)
 {
   if (dispnp == Teuchos::null) FOUR_C_THROW("Got null pointer for displacements");
 

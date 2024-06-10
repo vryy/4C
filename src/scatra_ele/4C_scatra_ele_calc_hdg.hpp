@@ -14,7 +14,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_shapevalues_hdg.hpp"
+#include "4C_fem_general_utils_shapevalues_hdg.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_scatra_ele_calc.hpp"
 #include "4C_scatra_ele_hdg.hpp"
@@ -53,7 +53,7 @@ namespace Discret
 
       //! evaluate service routine
       int EvaluateService(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -62,7 +62,7 @@ namespace Discret
 
       //! interpolates an HDG solution to the element nodes for output
       virtual int NodeBasedValues(Core::Elements::Element* ele,
-          Discret::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1);
+          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1);
 
       //! initialize the shape functions and solver to the given element (degree is runtime
       //! parameter)
@@ -70,14 +70,14 @@ namespace Discret
 
       //! Evaluate the element (Generic virtual interface function. Called via base pointer.)
       int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3) override;
 
       //! evaluate action for off-diagonal system matrix block
       int evaluate_od(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3) override
@@ -87,14 +87,14 @@ namespace Discret
       }
 
       //! Setup element evaluation
-      int SetupCalc(Core::Elements::Element* ele, Discret::Discretization& discretization) override
+      int SetupCalc(Core::Elements::Element* ele, Core::FE::Discretization& discretization) override
       {
         return 0;
       }
 
       //! projection of Dirichlet function field
       int ProjectDirichField(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseVector& elevec1);
 
       //! update interior variables
@@ -106,7 +106,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2);
 
       //! project field
-      int ProjectField(const Core::Elements::Element* ele, Discret::Discretization& discretization,
+      int ProjectField(const Core::Elements::Element* ele, Core::FE::Discretization& discretization,
           Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2, Core::Elements::Element::LocationArray& la);
 
@@ -115,7 +115,7 @@ namespace Discret
 
       //! calc p-adaptivity
       int CalcPAdaptivity(const Core::Elements::Element* ele,
-          Discret::Discretization& discretization, Teuchos::ParameterList& params);
+          Core::FE::Discretization& discretization, Teuchos::ParameterList& params);
 
       //! calc error
       int CalcError(const Core::Elements::Element* ele, Teuchos::ParameterList& params,
@@ -161,14 +161,14 @@ namespace Discret
 
       //! stores the material internal state in a vector for output and restart
       virtual void get_material_internal_state(const Core::Elements::Element* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization)
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization)
       {
         return;
       };
 
       //! stores the restart information in the material internal state
       virtual void set_material_internal_state(const Core::Elements::Element* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization)
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization)
       {
         return;
       };
@@ -348,7 +348,7 @@ namespace Discret
 
       //! reads from global vectors
       void read_global_vectors(Core::Elements::Element* ele,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la);
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la);
 
       //! local solver object
       Teuchos::RCP<LocalSolver> local_solver_;

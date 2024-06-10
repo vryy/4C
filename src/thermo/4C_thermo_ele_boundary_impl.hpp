@@ -50,7 +50,7 @@ namespace Discret
       //! This class does not provide a definition for this function, it
       //! must be defined in TemperBoundaryImpl.
       virtual int Evaluate(const Discret::ELEMENTS::ThermoBoundary* ele,
-          Teuchos::ParameterList& params, const Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, const Core::FE::Discretization& discretization,
           const Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -63,7 +63,7 @@ namespace Discret
       //! This class does not provide a definition for this function, it
       //! must be defined in TemperBoundaryImpl.
       virtual int evaluate_neumann(const Core::Elements::Element* ele,
-          Teuchos::ParameterList& params, const Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, const Core::FE::Discretization& discretization,
           const Core::Conditions::Condition& condition, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra) = 0;
 
@@ -124,7 +124,7 @@ namespace Discret
 
       //! Evaluate (la required in case of multiple dofsets)
       int Evaluate(const Discret::ELEMENTS::ThermoBoundary* ele, Teuchos::ParameterList& params,
-          const Discret::Discretization& discretization,
+          const Core::FE::Discretization& discretization,
           const Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -134,15 +134,15 @@ namespace Discret
 
       //! Evaluate a Neumann boundary condition
       int evaluate_neumann(const Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          const Discret::Discretization& discretization,
+          const Core::FE::Discretization& discretization,
           const Core::Conditions::Condition& condition, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra) override;
 
      private:
       //! prepare the evaluation of NURBS shape functions
       virtual void prepare_nurbs_eval(
-          const Core::Elements::Element* ele,            //!< the element whose matrix is calculated
-          const Discret::Discretization& discretization  //!< current discretisation
+          const Core::Elements::Element* ele,  //!< the element whose matrix is calculated
+          const Core::FE::Discretization& discretization  //!< current discretisation
       );
 
       //! evaluate shape functions and derivatives at int. point

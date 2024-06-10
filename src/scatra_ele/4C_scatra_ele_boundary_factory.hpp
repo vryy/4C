@@ -14,7 +14,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_inpar_scatra.hpp"
 
 FOUR_C_NAMESPACE_OPEN

@@ -32,10 +32,10 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  | forward declarations                                     ager 10/15 |
  *---------------------------------------------------------------------*/
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace CONTACT
 {
@@ -63,7 +63,7 @@ namespace Adapter
 
     virtual void EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fvel, Teuchos::RCP<Epetra_Vector> svel,
         Teuchos::RCP<Epetra_Vector> fpres, Teuchos::RCP<Epetra_Vector> sdisp,
-        const Teuchos::RCP<Discret::Discretization> sdis,
+        const Teuchos::RCP<Core::FE::Discretization> sdis,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& f, Teuchos::RCP<Core::LinAlg::SparseMatrix>& k_fs,
         Teuchos::RCP<Epetra_Vector>& frhs, Core::Adapter::Coupling& coupfs,
         Teuchos::RCP<const Epetra_Map> fdofrowmap);
@@ -85,8 +85,8 @@ namespace Adapter
     \brief Read Mortar Condition
 
     */
-    void read_mortar_condition(Teuchos::RCP<Discret::Discretization> masterdis,
-        Teuchos::RCP<Discret::Discretization> slavedis, std::vector<int> coupleddof,
+    void read_mortar_condition(Teuchos::RCP<Core::FE::Discretization> masterdis,
+        Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
         std::map<int, Core::Nodes::Node*>& mastergnodes,
         std::map<int, Core::Nodes::Node*>& slavegnodes,
@@ -97,8 +97,8 @@ namespace Adapter
     \brief Add Mortar Elments
 
     */
-    void add_mortar_elements(Teuchos::RCP<Discret::Discretization> masterdis,
-        Teuchos::RCP<Discret::Discretization> slavedis, Teuchos::ParameterList& input,
+    void add_mortar_elements(Teuchos::RCP<Core::FE::Discretization> masterdis,
+        Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
         std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
         std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements,
         Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof) override;
@@ -108,15 +108,15 @@ namespace Adapter
            store maps as internal variable and do parallel redist.
 
     */
-    void complete_interface(Teuchos::RCP<Discret::Discretization> masterdis,
+    void complete_interface(Teuchos::RCP<Core::FE::Discretization> masterdis,
         Teuchos::RCP<CONTACT::Interface>& interface) override;
 
     /*!
     \brief create strategy object if required
 
     */
-    void create_strategy(Teuchos::RCP<Discret::Discretization> masterdis,
-        Teuchos::RCP<Discret::Discretization> slavedis, Teuchos::ParameterList& input,
+    void create_strategy(Teuchos::RCP<Core::FE::Discretization> masterdis,
+        Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
         int numcoupleddof) override;
 
    private:

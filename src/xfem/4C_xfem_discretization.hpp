@@ -14,10 +14,10 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_dofset.hpp"
-#include "4C_discretization_dofset_interface.hpp"
-#include "4C_discretization_dofset_proxy.hpp"
-#include "4C_lib_discret_faces.hpp"
+#include "4C_fem_discretization_faces.hpp"
+#include "4C_fem_dofset.hpp"
+#include "4C_fem_dofset_interface.hpp"
+#include "4C_fem_dofset_proxy.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -29,7 +29,7 @@ namespace XFEM
   \brief A class to manage a discretization in parallel with changing dofs
 
   */
-  class DiscretizationXFEM : public Discret::DiscretizationFaces
+  class DiscretizationXFEM : public Core::FE::DiscretizationFaces
   {
    public:
     /*!

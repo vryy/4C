@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
@@ -28,10 +28,13 @@ namespace Core::Elements
   class Element;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     /// Interface base class for ScaTraEleCalc
@@ -47,7 +50,7 @@ namespace Discret
 
       /// Setup element evaluation
       virtual int SetupCalc(
-          Core::Elements::Element* ele, Discret::Discretization& discretization) = 0;
+          Core::Elements::Element* ele, Core::FE::Discretization& discretization) = 0;
 
       /// Evaluate the element
       /*!
@@ -55,7 +58,7 @@ namespace Discret
         must be defined in ScatraEleCalc.
        */
       virtual int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -63,7 +66,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra) = 0;
 
       virtual int EvaluateService(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -71,7 +74,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra) = 0;
 
       virtual int evaluate_od(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,

@@ -12,11 +12,11 @@
 #include "4C_post_vtk_vtu_writer_node_based.hpp"
 
 #include "4C_beam3_base.hpp"
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_io_element_vtk_cell_type_register.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_nurbs_discret.hpp"
@@ -86,7 +86,7 @@ void PostVtuWriterNode::write_geo()
 {
   using namespace FourC;
 
-  Teuchos::RCP<Discret::Discretization> dis = this->GetField()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> dis = this->GetField()->discretization();
 
   // count number of nodes and number for each processor; output is completely independent of
   // the number of processors involved
@@ -258,7 +258,7 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing dof-based field " << name << std::endl;
 
-  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
 
   // For parallel computations, we need to access all dofs on the elements, including the
   // nodes owned by other processors. Therefore, we need to import that data here.
@@ -355,7 +355,7 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing node-based field " << name << std::endl;
 
-  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
   // on the row elements, so need to get the NodeColMap to have this access

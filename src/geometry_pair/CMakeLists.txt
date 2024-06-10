@@ -7,7 +7,6 @@ set(_dependencies
     core
     global_data
     inpar
-    lib
     nurbs_discret
     )
 

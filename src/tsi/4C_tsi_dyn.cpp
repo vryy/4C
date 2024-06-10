@@ -14,9 +14,9 @@
 
 #include "4C_adapter_str_structure.hpp"
 #include "4C_adapter_thermo.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_tsi.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_tsi_algorithm.hpp"
 #include "4C_tsi_monolithic.hpp"
 #include "4C_tsi_partitioned.hpp"

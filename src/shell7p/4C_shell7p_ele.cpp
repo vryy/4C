@@ -7,7 +7,7 @@
 #include "4C_shell7p_ele.hpp"
 
 #include "4C_comm_utils_factory.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_shell7p_ele_factory.hpp"
 #include "4C_shell7p_ele_interface_serializable.hpp"
@@ -159,7 +159,7 @@ void Discret::ELEMENTS::Shell7pType::setup_element_definition(
                             .Build();
 }
 
-int Discret::ELEMENTS::Shell7pType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::Shell7pType::Initialize(Core::FE::Discretization& dis)
 {
   STR::UTILS::Shell::Director::SetupShellElementDirectors(*this, dis);
 

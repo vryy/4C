@@ -20,11 +20,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace FSI
 {
@@ -84,7 +83,7 @@ namespace FSI
 
    private:
     //! slave discretisation
-    Teuchos::RCP<Discret::Discretization> slavedisc_;
+    Teuchos::RCP<Core::FE::Discretization> slavedisc_;
 
     //! Lagrange multiplier living on the slave discretization
     Teuchos::RCP<Epetra_Vector> fsilambda_;

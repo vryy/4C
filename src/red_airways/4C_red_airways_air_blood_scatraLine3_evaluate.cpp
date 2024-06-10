@@ -12,8 +12,8 @@ the routines called during the possible actions is contained in red_air_blood_sc
 /*---------------------------------------------------------------------*/
 
 
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_red_airways_air_blood_scatraLine3_impl.hpp"
@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  |evaluate the element (public)                            ismail 09/12|
  *---------------------------------------------------------------------*/
 int Discret::ELEMENTS::RedAirBloodScatraLine3::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -171,7 +171,7 @@ int Discret::ELEMENTS::RedAirBloodScatraLine3::Evaluate(Teuchos::ParameterList& 
 
 
 int Discret::ELEMENTS::RedAirBloodScatraLine3::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -184,7 +184,7 @@ int Discret::ELEMENTS::RedAirBloodScatraLine3::evaluate_neumann(Teuchos::Paramet
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::RedAirBloodScatraLine3::evaluate_dirichlet(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1)
 {
   return 0;

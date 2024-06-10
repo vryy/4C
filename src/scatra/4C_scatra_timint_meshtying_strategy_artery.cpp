@@ -11,9 +11,9 @@
 
 #include "4C_adapter_art_net.hpp"
 #include "4C_adapter_scatra_base_algorithm.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_bio.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_poromultiphase_scatra_artery_coupling_nodebased.hpp"

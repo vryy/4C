@@ -24,7 +24,7 @@
 #include "4C_beaminteraction_submodel_evaluator_generic.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_beam_to_solid.hpp"
 #include "4C_inpar_beamcontact.hpp"
@@ -82,7 +82,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // setup variables
   // -------------------------------------------------------------------------
   // discretization pointer
-  discret_ptr_ = Teuchos::rcp_dynamic_cast<Discret::Discretization>(discret_ptr(), true);
+  discret_ptr_ = Teuchos::rcp_dynamic_cast<Core::FE::Discretization>(discret_ptr(), true);
   // stiff
   stiff_beaminteraction_ = Teuchos::rcp(
       new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
@@ -139,7 +139,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // initialize and setup binning strategy and beam crosslinker handler
   // -------------------------------------------------------------------------
   // construct, init and setup binning strategy
-  std::vector<Teuchos::RCP<Discret::Discretization>> discret_vec(1, ia_discret_);
+  std::vector<Teuchos::RCP<Core::FE::Discretization>> discret_vec(1, ia_discret_);
 
   // We have to pass the displacement column vector to the initialization of the binning strategy.
   ia_state_ptr_->GetDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
@@ -375,7 +375,7 @@ void STR::MODELEVALUATOR::BeamInteraction::partition_problem()
   check_init();
 
   // store structure discretization in vector
-  std::vector<Teuchos::RCP<Discret::Discretization>> discret_vec(1, ia_discret_);
+  std::vector<Teuchos::RCP<Core::FE::Discretization>> discret_vec(1, ia_discret_);
 
   // displacement vector according to periodic boundary conditions
   std::vector<Teuchos::RCP<Epetra_Vector>> mutabledisnp(
@@ -1165,7 +1165,7 @@ void STR::MODELEVALUATOR::BeamInteraction::transform_force_stiff()
  *-----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::print_binning_info_to_screen() const
 {
-  std::vector<Teuchos::RCP<Discret::Discretization>> discret_vec(1, ia_discret_);
+  std::vector<Teuchos::RCP<Core::FE::Discretization>> discret_vec(1, ia_discret_);
   std::vector<Teuchos::RCP<const Epetra_Vector>> disnp_vec(1, Teuchos::null);
 
   double bin_size_lower_bound =

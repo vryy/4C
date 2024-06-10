@@ -44,10 +44,10 @@ namespace BINSTRATEGY
   class BinningStrategy;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -211,7 +211,7 @@ namespace PARTICLEWALL
      */
     virtual bool have_valid_wall_neighbors() const final { return validwallneighbors_; };
 
-    Teuchos::RCP<const Discret::Discretization> get_wall_discretization() const final
+    Teuchos::RCP<const Core::FE::Discretization> get_wall_discretization() const final
     {
       return walldiscretization_;
     };
@@ -300,7 +300,7 @@ namespace PARTICLEWALL
     Teuchos::RCP<Epetra_Map> bincolmap_;
 
     //! wall discretization
-    Teuchos::RCP<Discret::Discretization> walldiscretization_;
+    Teuchos::RCP<Core::FE::Discretization> walldiscretization_;
 
     //! wall data state container
     std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate_;

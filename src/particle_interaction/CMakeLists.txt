@@ -6,7 +6,6 @@ set(_dependencies
     core
     global_data
     inpar
-    lib
     mat
     particle_algorithm
     particle_engine

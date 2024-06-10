@@ -9,12 +9,12 @@
 
 #include "4C_fluid_DbcHDG.hpp"
 
+#include "4C_fem_discretization_hdg.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_calc.hpp"
 #include "4C_fluid_ele_calc_hdg.hpp"
 #include "4C_fluid_ele_hdg.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret_hdg.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -22,14 +22,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterList& params,
-    const Discret::Discretization& discret, const Core::Conditions::Condition& cond, double time,
-    Discret::UTILS::Dbc::DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+    const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
+    Core::FE::UTILS::Dbc::DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
     int hierarchical_order) const
 {
   // no need to check the cast, because it has been done during
   // the build process (see build_dbc())
-  const Discret::DiscretizationFaces& face_discret =
-      static_cast<const Discret::DiscretizationFaces&>(discret);
+  const Core::FE::DiscretizationFaces& face_discret =
+      static_cast<const Core::FE::DiscretizationFaces&>(discret);
 
   read_dirichlet_condition(params, face_discret, cond, time, info, dbcgids, hierarchical_order);
 }
@@ -37,13 +37,13 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterList& params,
-    const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
-    double time, Discret::UTILS::Dbc::DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+    const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
+    double time, Core::FE::UTILS::Dbc::DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
     int hierarchical_order) const
 
 {
   // call to corresponding method in base class; safety checks inside
-  Discret::UTILS::Dbc::read_dirichlet_condition(
+  Core::FE::UTILS::Dbc::read_dirichlet_condition(
       params, discret, cond, time, info, dbcgids, hierarchical_order);
 
   // say good bye if there are no face elements
@@ -141,14 +141,14 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterList& params,
-    const Discret::Discretization& discret, const Core::Conditions::Condition& cond, double time,
+    const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // no need to check the cast, because it has been done during
   // the build process (see build_dbc())
-  const Discret::DiscretizationFaces& face_discret =
-      static_cast<const Discret::DiscretizationFaces&>(discret);
+  const Core::FE::DiscretizationFaces& face_discret =
+      static_cast<const Core::FE::DiscretizationFaces&>(discret);
 
   do_dirichlet_condition(params, face_discret, cond, time, systemvectors, toggle);
 }
@@ -156,12 +156,12 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterList& params,
-    const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
+    const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
     double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
     const Epetra_IntVector& toggle) const
 {
   // call corresponding method from base class; safety checks inside
-  Discret::UTILS::Dbc::do_dirichlet_condition(
+  Core::FE::UTILS::Dbc::do_dirichlet_condition(
       params, discret, cond, time, systemvectors, toggle, nullptr);
 
   // say good bye if there are no face elements
@@ -205,8 +205,8 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
     Teuchos::ParameterList initParams;
     if (Global::Problem::Instance(0)->GetProblemType() == Core::ProblemType::elemag or
         Global::Problem::Instance(0)->GetProblemType() == Core::ProblemType::scatra)
-      Core::UTILS::AddEnumClassToParameterList<Discret::HDGAction>(
-          "action", Discret::HDGAction::project_dirich_field, initParams);
+      Core::UTILS::AddEnumClassToParameterList<Core::FE::HDGAction>(
+          "action", Core::FE::HDGAction::project_dirich_field, initParams);
     else
       initParams.set<int>(
           "action", FLD::project_fluid_field);  // TODO: Introduce a general action type that is
@@ -335,8 +335,8 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
       if (do_evaluate)
       {
         // cast the const qualifier away, thus the Evaluate routine can be called.
-        Discret::DiscretizationFaces& non_const_dis =
-            const_cast<Discret::DiscretizationFaces&>(discret);
+        Core::FE::DiscretizationFaces& non_const_dis =
+            const_cast<Core::FE::DiscretizationFaces&>(discret);
         faceele->ParentMasterElement()->Evaluate(
             initParams, non_const_dis, dummy, elemat1, elemat2, elevec1, elevec2, elevec3);
       }

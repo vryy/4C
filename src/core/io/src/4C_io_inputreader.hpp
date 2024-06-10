@@ -15,7 +15,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
@@ -119,7 +119,7 @@ namespace Core::IO
     /// @param dobj_fenode Resulting collection of all nodes that belong to a design.
     /// @param get_discretization Callback to return a discretization by name.
     void ReadDesign(const std::string& name, std::vector<std::vector<int>>& dobj_fenode,
-        const std::function<const Discret::Discretization&(const std::string& name)>&
+        const std::function<const Core::FE::Discretization&(const std::string& name)>&
             get_discretization);
 
     /*!

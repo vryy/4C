@@ -27,10 +27,10 @@ namespace Core::LinAlg
   class SerialDenseMatrix;
   class SparseMatrix;
 }  // namespace Core::LinAlg
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -112,7 +112,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Update state of rotational DoFs of both elements
      */
-    virtual void ResetRotationState(const Discret::Discretization& discret,
+    virtual void ResetRotationState(const Core::FE::Discretization& discret,
         const Teuchos::RCP<const Epetra_Vector>& ia_discolnp){};
 
     //@}
@@ -251,7 +251,7 @@ namespace BEAMINTERACTION
      * @param stiffness_matrix (in / out) Global stiffness matrix.
      * @param displacement_vector (in) Global displacement vector.
      */
-    virtual void EvaluateAndAssemble(const Teuchos::RCP<const Discret::Discretization>& discret,
+    virtual void EvaluateAndAssemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector){};
@@ -275,7 +275,7 @@ namespace BEAMINTERACTION
      * @param lambda (in) Global Lagrange multiplier vector.
      * @param displacement_vector (in) Global displacement vector.
      */
-    virtual void EvaluateAndAssemble(const Discret::Discretization& discret,
+    virtual void EvaluateAndAssemble(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -309,7 +309,7 @@ namespace BEAMINTERACTION
      * @param global_lambda_active (in/out) Global vector with active Lagrange multipliers.
      * @param displacement_vector (in) Global displacement vector.
      */
-    virtual void evaluate_and_assemble_mortar_contributions(const Discret::Discretization& discret,
+    virtual void evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_G_B,
         Core::LinAlg::SparseMatrix& global_G_S, Core::LinAlg::SparseMatrix& global_FB_L,
         Core::LinAlg::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,

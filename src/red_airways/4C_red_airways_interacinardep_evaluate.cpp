@@ -13,8 +13,8 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_newtonianfluid.hpp"
@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
  |Evaluate the element (public)                            ismail 09/12|
  *---------------------------------------------------------------------*/
 int Discret::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -169,7 +169,7 @@ int Discret::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& param
 
 
 int Discret::ELEMENTS::RedInterAcinarDep::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -183,7 +183,7 @@ int Discret::ELEMENTS::RedInterAcinarDep::evaluate_neumann(Teuchos::ParameterLis
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::RedInterAcinarDep::evaluate_dirichlet(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1)
 {
   return 0;

@@ -10,7 +10,7 @@
 
 #include "4C_post_vtk_vti_writer.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_post_common.hpp"
@@ -140,7 +140,7 @@ void PostVtiWriter::write_dof_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing dof-based field " << name << std::endl;
 
-  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
   // on the row elements, so need to get the DofColMap to have this access
@@ -235,7 +235,7 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing node-based field " << name << std::endl;
 
-  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
   // on the row elements, so need to get the NodeColMap to have this access
@@ -321,7 +321,7 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
   if (myrank_ == 0 && timestep_ == 0)
     std::cout << "writing element-based field " << name << std::endl;
 
-  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
 
   const int ncomponents = (numdf > 1 && numdf == field_->problem()->num_dim()) ? 3 : numdf;
 
@@ -392,7 +392,7 @@ void PostVtiWriter::writer_prep_timestep()
 {
   using namespace FourC;
 
-  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
   // collect all possible values of the x-, y- and z-coordinate
   typedef std::set<double, LessTol<double>> set_tol;
   set_tol collected_coords[3];

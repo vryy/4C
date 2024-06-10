@@ -13,7 +13,7 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter.hpp"
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
@@ -29,10 +29,10 @@ namespace Core::Adapter
   class CouplingSlaveConverter;
 }  // namespace Core::Adapter
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -63,7 +63,7 @@ namespace SSI
     //! check for a consistent input file definition of the SSIInterfaceContact condition
     void CheckConsistencyOfSSIInterfaceContactCondition(
         const std::vector<Core::Conditions::Condition*>& conditionsToBeTested,
-        Teuchos::RCP<Discret::Discretization>& structdis);
+        Teuchos::RCP<Core::FE::Discretization>& structdis);
 
     /// Function for checking that the different time steps are a
     /// multiplicative of each other
@@ -399,7 +399,7 @@ namespace SSI
     {
      public:
       explicit SSIMeshTying(const std::string& conditionname_coupling,
-          Teuchos::RCP<Discret::Discretization> dis, bool build_slave_slave_transformation,
+          Teuchos::RCP<Core::FE::Discretization> dis, bool build_slave_slave_transformation,
           bool check_over_constrained);
 
       //! check if one dof has slave side conditions and Dirichlet conditions
@@ -430,7 +430,7 @@ namespace SSI
       //!                                 (value)
       //! \param check_over_constrained   [in] check if two DBCs are set on two dofs at the same
       //! position
-      void define_master_slave_pairing(Teuchos::RCP<Discret::Discretization> dis,
+      void define_master_slave_pairing(Teuchos::RCP<Core::FE::Discretization> dis,
           const std::vector<std::vector<int>>& grouped_matching_nodes,
           std::vector<int>& master_gids, std::map<int, int>& slave_master_pair,
           bool check_over_constrained) const;
@@ -439,7 +439,7 @@ namespace SSI
       //! \param dis                 [in] discretization
       //! \param name_meshtying_condition   [in] name of meshtying condition
       //! \param coupling_pairs         [out] vector of pairs of matching nodes
-      void find_matching_node_pairs(Teuchos::RCP<Discret::Discretization> dis,
+      void find_matching_node_pairs(Teuchos::RCP<Core::FE::Discretization> dis,
           const std::string& name_meshtying_condition,
           std::vector<std::pair<int, int>>& coupling_pairs) const;
 
@@ -448,7 +448,7 @@ namespace SSI
       //! \param name_meshtying_condition          [in] name of meshtying condition
       //! \param inodegidvec_slave                 [in] new slave nodes on this proc
       //! \param all_coupled_original_slave_gids   [out] old slave nodes that match new slave nodes
-      void find_slave_slave_transformation_nodes(Teuchos::RCP<Discret::Discretization> dis,
+      void find_slave_slave_transformation_nodes(Teuchos::RCP<Core::FE::Discretization> dis,
           const std::string& name_meshtying_condition, const std::vector<int>& inodegidvec_slave,
           std::vector<int>& all_coupled_original_slave_gids) const;
 
@@ -491,7 +491,7 @@ namespace SSI
       //! \param name_meshtying_condition    [in] name of meshtying condition
       //! \param build_slave_slave_transformation [in] is a map required that defines the
       //! transformation from slave nodes at the input and matched slave nodes
-      void setup_mesh_tying_handlers(Teuchos::RCP<Discret::Discretization> dis,
+      void setup_mesh_tying_handlers(Teuchos::RCP<Core::FE::Discretization> dis,
           const std::string& name_meshtying_condition, bool build_slave_slave_transformation,
           bool check_over_constrained);
 

@@ -23,10 +23,10 @@ namespace Core::Communication
   class PackBuffer;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 
 namespace Core::Geo
@@ -53,7 +53,7 @@ namespace Core::Geo
       /*!
       \brief Basic CUT parallel constructor
        */
-      explicit Parallel(const Teuchos::RCP<Discret::Discretization>& discret,
+      explicit Parallel(const Teuchos::RCP<Core::FE::Discretization>& discret,
           Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::ParentIntersection& parentintersection);
 
       /*!
@@ -162,7 +162,7 @@ namespace Core::Geo
       // data accessing
 
       //! discretization
-      Teuchos::RCP<Discret::Discretization> discret_;
+      Teuchos::RCP<Core::FE::Discretization> discret_;
 
       //! current processor id
       const int myrank_;

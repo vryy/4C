@@ -11,7 +11,6 @@ set(_dependencies
     fsi
     global_data
     inpar
-    lib
     mat
     mortar
     so3

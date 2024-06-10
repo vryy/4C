@@ -55,7 +55,7 @@ namespace Discret
        */
       //   virtual int Evaluate(Core::Elements::Element*                 ele,
       //                        Teuchos::ParameterList&       params,
-      //                        Discret::Discretization &         discretization,
+      //                        Core::FE::Discretization &         discretization,
       //                        const std::vector<int> &      lm,
       //                        Core::LinAlg::SerialDenseMatrix&     elemat1_epetra,
       //                        Core::LinAlg::SerialDenseMatrix&     elemat2_epetra,
@@ -66,7 +66,7 @@ namespace Discret
      protected:
       //! evaluate action
       int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::FE::Discretization& discretization, const ScaTra::Action& action,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -76,7 +76,7 @@ namespace Discret
 
       //   int EvaluateODMesh(  Core::Elements::Element*                 ele,
       //                        Teuchos::ParameterList&       params,
-      //                        Discret::Discretization &         discretization,
+      //                        Core::FE::Discretization &         discretization,
       //                        const std::vector<int> &      lm,
       //                        Core::LinAlg::SerialDenseMatrix&     elemat1_epetra,
       //                        Core::LinAlg::SerialDenseMatrix&     elemat2_epetra,
@@ -86,7 +86,7 @@ namespace Discret
       //
       //   int EvaluateODFluid(  Core::Elements::Element*                 ele,
       //                        Teuchos::ParameterList&       params,
-      //                        Discret::Discretization &         discretization,
+      //                        Core::FE::Discretization &         discretization,
       //                        const std::vector<int> &      lm,
       //                        Core::LinAlg::SerialDenseMatrix&     elemat1_epetra,
       //                        Core::LinAlg::SerialDenseMatrix&     elemat2_epetra,
@@ -114,13 +114,13 @@ namespace Discret
       //! extract element based or nodal values
       //  return extracted values of phinp
       void extract_element_and_node_values(Core::Elements::Element* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la) override;
 
       //! extract element based or nodal values
       //  return extracted values of phinp
       virtual void extract_element_and_node_values_poro(Core::Elements::Element* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la);
 
       //! get the material parameters

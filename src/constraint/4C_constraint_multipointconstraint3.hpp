@@ -30,7 +30,7 @@ namespace CONSTRAINTS
     \brief Standard Constructor
     */
     MPConstraint3(
-        Teuchos::RCP<Discret::Discretization> discr,  ///< discretization constraint lives on
+        Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname,  ///< Name of condition to create constraint from
         int& offsetID,                     ///< minimum constraint or monitor ID so far
         int& maxID                         ///< maximum constraint or monitor ID so far
@@ -78,7 +78,7 @@ namespace CONSTRAINTS
 
     //! Evaluate constraint discretization and assemble the results
     void evaluate_constraint(
-        Teuchos::RCP<Discret::Discretization> disc,  ///< discretization to evaluate
+        Teuchos::RCP<Core::FE::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Core::LinAlg::SparseOperator>
@@ -97,7 +97,7 @@ namespace CONSTRAINTS
 
     //! Initialize constraint discretization and assemble the results to the refbasevector
     void initialize_constraint(
-        Teuchos::RCP<Discret::Discretization> disc,  ///< discretization to evaluate
+        Teuchos::RCP<Core::FE::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Epetra_Vector> systemvector3  ///< distributed vector that may be filled by
@@ -105,8 +105,8 @@ namespace CONSTRAINTS
     );
 
     //! creating a new discretization based on conditions containing constraint elements
-    std::map<int, Teuchos::RCP<Discret::Discretization>> create_discretization_from_condition(
-        Teuchos::RCP<Discret::Discretization> actdisc,
+    std::map<int, Teuchos::RCP<Core::FE::Discretization>> create_discretization_from_condition(
+        Teuchos::RCP<Core::FE::Discretization> actdisc,
         std::vector<Core::Conditions::Condition*>
             constrcond,                   ///< conditions as discretization basis
         const std::string& discret_name,  ///< name of new discretization

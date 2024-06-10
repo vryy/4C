@@ -25,11 +25,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
-
+}  // namespace Core::FE
 namespace Core::Communication
 {
   /*!
@@ -40,8 +39,8 @@ namespace Core::Communication
    * @param[out] my_gid_vec           vector/set with my node GIDs
    */
   void AddOwnedNodeGID(
-      const Discret::Discretization& dis, int nodegid, std::vector<int>& my_gid_vec);
-  void AddOwnedNodeGID(const Discret::Discretization& dis, int nodegid, std::set<int>& my_gid_set);
+      const Core::FE::Discretization& dis, int nodegid, std::vector<int>& my_gid_vec);
+  void AddOwnedNodeGID(const Core::FE::Discretization& dis, int nodegid, std::set<int>& my_gid_set);
 
   /*!
    * \brief Add nodal GIDs on this processor to existing list from list with global GIDs
@@ -52,7 +51,7 @@ namespace Core::Communication
    */
   template <typename T, typename U>
   void AddOwnedNodeGIDFromList(
-      const Discret::Discretization& dis, const T& global_node_gid_vec, U& my_gid_list)
+      const Core::FE::Discretization& dis, const T& global_node_gid_vec, U& my_gid_list)
   {
     for (const int nodegid : global_node_gid_vec) AddOwnedNodeGID(dis, nodegid, my_gid_list);
   }
@@ -64,7 +63,7 @@ namespace Core::Communication
    * @param[in] node_gid              GID of node to be checked
    * @return                          indicates, whether node is owned by this processor
    */
-  bool IsNodeGIDOnThisProc(const Discret::Discretization& dis, int node_gid);
+  bool IsNodeGIDOnThisProc(const Core::FE::Discretization& dis, int node_gid);
 
   //! Merge map @p map_in (key of type @p T and value of type @p U) from all procs to a merged
   //! map (key of type @p T and value of type @p U). It is distributed to to all procs.

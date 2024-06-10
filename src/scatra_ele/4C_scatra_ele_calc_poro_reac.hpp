@@ -78,7 +78,7 @@ namespace Discret
       //! extract element based or nodal values
       //  return extracted values of phinp
       void extract_element_and_node_values(Core::Elements::Element* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la) override;
     };
   }  // namespace ELEMENTS

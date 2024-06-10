@@ -13,10 +13,10 @@
 #include "4C_red_airways_tissue.hpp"
 
 #include "4C_adapter_str_redairway.hpp"
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_red_airways_implicitintegration.hpp"
 
@@ -35,7 +35,7 @@ Airway::RedAirwayTissue::RedAirwayTissue(
   // into neumann orthopressure conditions
   std::vector<Core::Conditions::Condition*> surfneumcond;
   std::vector<int> tmp;
-  Teuchos::RCP<Discret::Discretization> structdis =
+  Teuchos::RCP<Core::FE::Discretization> structdis =
       Global::Problem::Instance()->GetDis("structure");
   if (structdis == Teuchos::null) FOUR_C_THROW("no structure discretization available");
 
@@ -70,7 +70,7 @@ Airway::RedAirwayTissue::RedAirwayTissue(
   }
 
   std::vector<Core::Conditions::Condition*> nodecond;
-  Teuchos::RCP<Discret::Discretization> redairwaydis =
+  Teuchos::RCP<Core::FE::Discretization> redairwaydis =
       Global::Problem::Instance()->GetDis("red_airway");
   if (redairwaydis == Teuchos::null) FOUR_C_THROW("no redairway discretization available");
 
@@ -462,7 +462,7 @@ void Airway::RedAirwayTissue::update_and_output()
 void Airway::RedAirwayTissue::SetupRedAirways()
 {
   // Access the discretization
-  Teuchos::RCP<Discret::Discretization> actdis = Teuchos::null;
+  Teuchos::RCP<Core::FE::Discretization> actdis = Teuchos::null;
   actdis = Global::Problem::Instance()->GetDis("red_airway");
 
   // Set degrees of freedom in the discretization

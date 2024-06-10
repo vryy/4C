@@ -11,9 +11,9 @@
 #include "4C_beaminteraction_crosslinker_handler.hpp"
 
 #include "4C_binstrategy_meshfree_multibin.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>

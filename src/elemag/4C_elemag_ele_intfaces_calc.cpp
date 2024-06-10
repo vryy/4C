@@ -10,7 +10,7 @@
 #include "4C_elemag_ele_intfaces_calc.hpp"
 
 #include "4C_elemag_ele_action.hpp"
-#include "4C_lib_discret_faces.hpp"
+#include "4C_fem_discretization_faces.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -92,7 +92,7 @@ void Discret::ELEMENTS::ElemagIntFaceImpl<distype>::assemble_internal_faces_usin
     std::vector<int>& nds_master,                           // nodal dofset w.r.t. master element
     std::vector<int>& nds_slave,                            // nodal dofset w.r.t. slave element
     Teuchos::ParameterList& params,                         // parameter list
-    Discret::DiscretizationFaces& discretization,           // faces discretization
+    Core::FE::DiscretizationFaces& discretization,          // faces discretization
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  // systemmatrix
     Teuchos::RCP<Epetra_Vector> systemvector                // systemvector
 )
@@ -108,7 +108,7 @@ template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ElemagIntFaceImpl<distype>::evaluate_internal_faces(
     Discret::ELEMENTS::ElemagIntFace* intface,  // internal face element
     Teuchos::ParameterList& params,             // parameter list
-    Discret::Discretization& discretization,    // discretization
+    Core::FE::Discretization& discretization,   // discretization
     std::vector<int>& patchlm,                  // patch local map
     std::vector<int>& lm_masterToPatch,         // local map between master dofs and patchlm
     std::vector<int>& lm_slaveToPatch,          // local map between slave dofs and patchlm

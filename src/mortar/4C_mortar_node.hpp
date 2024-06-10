@@ -12,7 +12,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_discretization_fem_general_node.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_utils_pairedvector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -293,7 +293,7 @@ namespace Mortar
     /*!
      \brief The discretization is a friend of Node
      */
-    friend class Discret::Discretization;
+    friend class Core::FE::Discretization;
 
     //! @}
 
@@ -582,14 +582,14 @@ namespace Mortar
      \brief Find closest node from given node set and return pointer
 
      This method will compute the distance of the active node to all
-     nodes of the given Epetra_Map on the given Discret::Discretization
+     nodes of the given Epetra_Map on the given Core::FE::Discretization
 
      \param intdis (in):         Master Node to project
      \param nodesearchmap (in):  Slave Celement to project on
      \param mindist (out):       Distance to closest node
 
      */
-    virtual Mortar::Node* FindClosestNode(const Teuchos::RCP<Discret::Discretization> intdis,
+    virtual Mortar::Node* FindClosestNode(const Teuchos::RCP<Core::FE::Discretization> intdis,
         const Teuchos::RCP<Epetra_Map> nodesearchmap, double& mindist);
 
     /*!

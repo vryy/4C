@@ -15,9 +15,9 @@ be directly assembled into the global matrices.
 
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_contact_pair.hpp"
-#include "4C_discretization_fem_general_element.hpp"
 #include "4C_fbi_calc_utils.hpp"
 #include "4C_fbi_fluid_assembly_strategy.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_sparsematrix.hpp"
@@ -43,8 +43,8 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDir
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect::
-    evaluate_force_stiff(const Discret::Discretization& discretization1,
-        const Discret::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
+    evaluate_force_stiff(const Core::FE::Discretization& discretization1,
+        const Core::FE::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
         Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<Core::LinAlg::SparseOperator> cff,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbb,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& cfb,

@@ -6,11 +6,11 @@
 
 *----------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_micromaterial.hpp"
@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoHex20::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -467,7 +467,7 @@ int Discret::ELEMENTS::SoHex20::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Volume Neumann boundary condition (public)               |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoHex20::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -1427,7 +1427,7 @@ void Discret::ELEMENTS::SoHex20::soh20_shapederiv(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex20Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex20Type::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

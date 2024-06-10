@@ -28,10 +28,10 @@ namespace Core::IO
   class DatFileReader;
 }  // namespace Core::IO
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Global
 {
@@ -93,7 +93,7 @@ namespace CONTACT
 
       /// print my DAT file section and possible contact constitutive laws
       std::ostream& Print(std::ostream& stream,  ///< the output stream
-          const Discret::Discretization* dis = nullptr);
+          const Core::FE::Discretization* dis = nullptr);
 
       /// get contact constitutive law name
       [[nodiscard]] std::string Name() const { return coconstlawname_; }

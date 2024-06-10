@@ -6,7 +6,7 @@
 \level 2
 
  *----------------------------------------------------------------------*/
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_mat_elchmat.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_action.hpp"
@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -33,7 +33,7 @@ int Discret::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& param
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -107,7 +107,7 @@ int Discret::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& param
  | evaluate Neumann boundary condition on boundary element   fang 01/15 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::TransportBoundary::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -125,7 +125,7 @@ int Discret::ELEMENTS::TransportBoundary::evaluate_neumann(Teuchos::ParameterLis
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element                (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::TransportBoundary::LocationVector(const Discretization& dis,
+void Discret::ELEMENTS::TransportBoundary::LocationVector(const Core::FE::Discretization& dis,
     LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {

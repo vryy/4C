@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_scatra_ele_parameter_base.hpp"
 

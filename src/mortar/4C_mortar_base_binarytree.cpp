@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------*/
 #include "4C_mortar_base_binarytree.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_mortar_element.hpp"
 #include "4C_mortar_node.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor BaseBinaryTree (public)                           schmidt 01/19|
  *----------------------------------------------------------------------*/
-Mortar::BaseBinaryTree::BaseBinaryTree(Discret::Discretization& discret, int dim, double eps)
+Mortar::BaseBinaryTree::BaseBinaryTree(Core::FE::Discretization& discret, int dim, double eps)
     : Mortar::AbstractBinaryTree::AbstractBinaryTree(),
       idiscret_(discret),
       dim_(dim),
@@ -105,7 +105,7 @@ void Mortar::BaseBinaryTree::Init()
 /*----------------------------------------------------------------------*
  |  ctor BaseBinaryTreeNode (public)                       schmidt 01/19|
  *----------------------------------------------------------------------*/
-Mortar::BaseBinaryTreeNode::BaseBinaryTreeNode(Discret::Discretization& discret,
+Mortar::BaseBinaryTreeNode::BaseBinaryTreeNode(Core::FE::Discretization& discret,
     std::vector<int> elelist, const Core::LinAlg::SerialDenseMatrix& dopnormals, const int& kdop,
     const int& dim, const bool& useauxpos, const int layer)
     : Mortar::AbstractBinaryTreeNode::AbstractBinaryTreeNode(),

@@ -19,9 +19,9 @@
 #include "4C_contact_meshtying_contact_bridge.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_dofset_gidbased_wrapper.hpp"
-#include "4C_discretization_fem_general_assemblestrategy.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_dofset_gidbased_wrapper.hpp"
+#include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -52,12 +52,12 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     is_part_of_multifield_problem_ = true;
 
   // access the structural discretization
-  Teuchos::RCP<Discret::Discretization> structdis =
+  Teuchos::RCP<Core::FE::Discretization> structdis =
       Global::Problem::Instance()->GetDis("structure");
 
   if (!matchinggrid_)
   {
-    Teuchos::RCP<Discret::Discretization> fluiddis =
+    Teuchos::RCP<Core::FE::Discretization> fluiddis =
         Global::Problem::Instance()->GetDis("porofluid");
     // Scheme: non matching meshes --> volumetric mortar coupling...
     volcoupl_ = Teuchos::rcp(new Core::Adapter::MortarVolCoupl());
@@ -415,8 +415,8 @@ void PoroElast::PoroBase::Output(bool forced_writerestart)
 void PoroElast::PoroBase::setup_coupling()
 {
   // get discretizations
-  Teuchos::RCP<Discret::Discretization> structdis = structure_field()->discretization();
-  Teuchos::RCP<Discret::Discretization> fluiddis = fluid_field()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> structdis = structure_field()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = fluid_field()->discretization();
 
   // if one discretization is a subset of the other, they will differ in node number (and element
   // number) we assume matching grids for the overlapping part here
@@ -491,8 +491,8 @@ void PoroElast::PoroBase::replace_dof_sets()
   // the problem is two way coupled, thus each discretization must know the other discretization
 
   // get discretizations
-  Teuchos::RCP<Discret::Discretization> structdis = structure_field()->discretization();
-  Teuchos::RCP<Discret::Discretization> fluiddis = fluid_field()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> structdis = structure_field()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = fluid_field()->discretization();
 
   /* When coupling porous media with a pure structure we will have two discretizations
    * of different size. In this case we need a special proxy, which can handle submeshes.

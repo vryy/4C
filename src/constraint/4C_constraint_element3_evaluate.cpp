@@ -7,8 +7,8 @@
 *----------------------------------------------------------------------*/
 
 #include "4C_constraint_element3.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -154,7 +154,7 @@ int Discret::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& para
 /*----------------------------------------------------------------------*
  * Evaluate Neumann (->FOUR_C_THROW) */
 int Discret::ELEMENTS::ConstraintElement3::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

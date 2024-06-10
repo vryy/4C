@@ -11,11 +11,11 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_node.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_node.hpp"
+#include "4C_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -184,20 +184,20 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //! Evaluate method for StructuralSurface-Elements
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elematrix1,
           Core::LinAlg::SerialDenseMatrix& elematrix2, Core::LinAlg::SerialDenseVector& elevector1,
           Core::LinAlg::SerialDenseVector& elevector2,
           Core::LinAlg::SerialDenseVector& elevector3) override;
 
       //! Evaluate method for StructuralSurface-Elements
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           LocationArray& la, Core::LinAlg::SerialDenseMatrix& elematrix1,
           Core::LinAlg::SerialDenseMatrix& elematrix2, Core::LinAlg::SerialDenseVector& elevector1,
           Core::LinAlg::SerialDenseVector& elevector2,
@@ -396,7 +396,7 @@ namespace Discret
 
       //! Submethod to compute surface porosity
       void calculate_surface_porosity(Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, LocationArray& la);
+          Core::FE::Discretization& discretization, LocationArray& la);
 
      private:
       //! Private Constructor to be called from StructuralSurfaceType

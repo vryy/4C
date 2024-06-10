@@ -14,9 +14,9 @@
 #include "4C_comm_exporter.hpp"
 #include "4C_cut_boundingbox.hpp"
 #include "4C_cut_position.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_geometry_searchtree.hpp"
-#include "4C_discretization_geometry_searchtree_service.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_geometry_searchtree.hpp"
+#include "4C_fem_geometry_searchtree_service.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"
@@ -30,8 +30,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const Discret::Discretization> sourcedis,
-    Teuchos::RCP<const Discret::Discretization> targetdis, const Teuchos::ParameterList& params,
+XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
+    Teuchos::RCP<const Core::FE::Discretization> targetdis, const Teuchos::ParameterList& params,
     Teuchos::RCP<const Epetra_Vector> sourcedisp)
     : sourcedis_(sourcedis),
       targetdis_(targetdis),
@@ -611,7 +611,7 @@ void XFEM::MeshProjector::GmshOutput(int step, Teuchos::RCP<const Epetra_Vector>
   std::ofstream gmshfilecontent(filename.c_str());
   {
     XFEM::UTILS::PrintDiscretizationToStream(
-        Teuchos::rcp_const_cast<Discret::Discretization>(sourcedis_), sourcedis_->Name(), true,
+        Teuchos::rcp_const_cast<Core::FE::Discretization>(sourcedis_), sourcedis_->Name(), true,
         false, false, false, false, false, gmshfilecontent, &src_nodepositions_n_);
 
     gmshfilecontent << "View \" "

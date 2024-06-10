@@ -10,8 +10,8 @@
 
 #include "4C_scatra_ele_calc_multiporo_reac.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_list_reactions.hpp"
@@ -69,7 +69,7 @@ Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Instance(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
-    Core::Elements::Element* ele, Discret::Discretization& discretization)
+    Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
   pororeac::SetupCalc(ele, discretization);
 
@@ -360,7 +360,7 @@ int Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // extract action parameter
   const auto action = Teuchos::getIntegralValue<ScaTra::Action>(params, "action");
@@ -489,7 +489,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_nodal_flux(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     const int numfluidphases)
 {
   // resize state vectors based on number of phases

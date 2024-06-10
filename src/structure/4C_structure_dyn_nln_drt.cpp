@@ -13,12 +13,12 @@
 #include "4C_adapter_str_structure.hpp"
 #include "4C_adapter_str_structure_new.hpp"
 #include "4C_comm_utils.hpp"
-#include "4C_discretization_condition_periodic.hpp"
+#include "4C_fem_condition_periodic.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_resulttest.hpp"
@@ -72,7 +72,7 @@ void dyn_nlnstructural_drt()
   // get input lists
   const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
   // access the structural discretization
-  Teuchos::RCP<Discret::Discretization> structdis =
+  Teuchos::RCP<Core::FE::Discretization> structdis =
       Global::Problem::Instance()->GetDis("structure");
 
   // connect degrees of freedom for periodic boundary conditions

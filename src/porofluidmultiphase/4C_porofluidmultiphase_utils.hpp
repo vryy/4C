@@ -23,10 +23,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -66,14 +66,14 @@ namespace POROFLUIDMULTIPHASE
       nodes)
      */
     Teuchos::RCP<Epetra_MultiVector> ConvertDofVectorToNodeBasedMultiVector(
-        const Discret::Discretization& dis, const Epetra_Vector& vector, const int nds,
+        const Core::FE::Discretization& dis, const Epetra_Vector& vector, const int nds,
         const int numdofpernode);
 
     /// create solution algorithm depending on input file
     Teuchos::RCP<Adapter::PoroFluidMultiphase> CreateAlgorithm(
         Inpar::POROFLUIDMULTIPHASE::TimeIntegrationScheme
             timintscheme,                                    //!< time discretization scheme
-        Teuchos::RCP<Discret::Discretization> dis,           //!< discretization
+        Teuchos::RCP<Core::FE::Discretization> dis,          //!< discretization
         const int linsolvernumber,                           //!< number of linear solver
         const Teuchos::ParameterList& probparams,            //!< parameter list of global problem
         const Teuchos::ParameterList& poroparams,            //!< paramter list of poro problem
@@ -89,8 +89,8 @@ namespace POROFLUIDMULTIPHASE
      *                     artery element with a vector of close 3D elements
      */
     std::map<int, std::set<int>> ExtendedGhostingArteryDiscretization(
-        Teuchos::RCP<Discret::Discretization> contdis, Teuchos::RCP<Discret::Discretization> artdis,
-        const bool evaluate_on_lateral_surface,
+        Teuchos::RCP<Core::FE::Discretization> contdis,
+        Teuchos::RCP<Core::FE::Discretization> artdis, const bool evaluate_on_lateral_surface,
         const Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod couplingmethod);
 
     /**
@@ -106,7 +106,7 @@ namespace POROFLUIDMULTIPHASE
 
     /// maximum distance between two nodes of an element
     double GetMaxNodalDistance(
-        Core::Elements::Element* ele, Teuchos::RCP<Discret::Discretization> dis);
+        Core::Elements::Element* ele, Teuchos::RCP<Core::FE::Discretization> dis);
 
     /**
      * \brief perform octtree search for NTP coupling
@@ -121,9 +121,9 @@ namespace POROFLUIDMULTIPHASE
      * @return                  set of nearby element pairs as seen from the artery discretization,
      *                          each artery element with a vector of close 3D elements
      */
-    std::map<int, std::set<int>> OctTreeSearch(Teuchos::RCP<Discret::Discretization> contdis,
-        Teuchos::RCP<Discret::Discretization> artdis,
-        Teuchos::RCP<Discret::Discretization> artsearchdis, const bool evaluate_on_lateral_surface,
+    std::map<int, std::set<int>> OctTreeSearch(Teuchos::RCP<Core::FE::Discretization> contdis,
+        Teuchos::RCP<Core::FE::Discretization> artdis,
+        Teuchos::RCP<Core::FE::Discretization> artsearchdis, const bool evaluate_on_lateral_surface,
         const std::vector<int> artEleGIDs, std::set<int>& elecolset, std::set<int>& nodecolset);
 
     /*!
@@ -133,7 +133,7 @@ namespace POROFLUIDMULTIPHASE
      * @return             nodal position as a std::map<int, Core::LinAlg::Matrix<3, 1>>
      */
     std::map<int, Core::LinAlg::Matrix<3, 1>> GetNodalPositions(
-        Teuchos::RCP<Discret::Discretization> dis, const Epetra_Map* nodemap);
+        Teuchos::RCP<Core::FE::Discretization> dis, const Epetra_Map* nodemap);
 
     //! Determine norm of vector
     double calculate_vector_norm(
@@ -148,8 +148,8 @@ namespace POROFLUIDMULTIPHASE
      * @param doboundaryconditions  also do boundary conditions in fill-complete call
      * @return  fully-overlapping artery discretization
      */
-    Teuchos::RCP<Discret::Discretization> CreateFullyOverlappingArteryDiscretization(
-        Teuchos::RCP<Discret::Discretization> artdis, std::string disname,
+    Teuchos::RCP<Core::FE::Discretization> CreateFullyOverlappingArteryDiscretization(
+        Teuchos::RCP<Core::FE::Discretization> artdis, std::string disname,
         bool doboundaryconditions);
 
   }  // namespace UTILS
