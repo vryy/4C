@@ -10,7 +10,9 @@ function(enable_compiler_flag_if_supported _flag)
   # compiler as a define.
   string(REGEX REPLACE "^-" "" _flag_var ${_flag})
   string(REGEX REPLACE "\[-=\]" "_" _flag_var ${_flag_var})
-  four_c_add_settings_if_compiles(FOUR_C_COMPILER_HAS_FLAG_${_flag_var} COMPILE_OPTIONS ${_flag})
+  four_c_check_compiles(
+    FOUR_C_COMPILER_HAS_FLAG_${_flag_var} COMPILE_OPTIONS ${_flag} APPEND_ON_SUCCESS
+    )
 endfunction()
 
 #
@@ -21,16 +23,13 @@ function(enable_linker_flag_if_supported _flag)
   # compiler as a define.
   string(REGEX REPLACE "^-" "" _flag_var ${_flag})
   string(REGEX REPLACE "\[-=\]" "_" _flag_var ${_flag_var})
-  four_c_add_settings_if_compiles(FOUR_C_LINKER_HAS_FLAG_${_flag_var} LINK_OPTIONS ${_flag})
+  four_c_check_compiles(FOUR_C_LINKER_HAS_FLAG_${_flag_var} LINK_OPTIONS ${_flag} APPEND_ON_SUCCESS)
 endfunction()
 
 enable_compiler_flag_if_supported("-Wall")
 enable_compiler_flag_if_supported("-Wextra")
 # Disable unused parameter detection since there would be too many hits to fix
 enable_compiler_flag_if_supported("-Wno-unused-parameter")
-# Disable maybe uninitialized detection since this can give false positives that are hard to circumvent.
-# Our address sanitizer checks will also find such errors, although only later.
-enable_compiler_flag_if_supported("-Wno-maybe-uninitialized")
 enable_compiler_flag_if_supported("-Wvla")
 
 # Export symbols (necessary for stacktraces)
@@ -43,6 +42,13 @@ if(BUILD_SHARED_LIBS)
   set_target_properties(
     four_c_private_compile_interface PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE
     )
+endif()
+
+# Special flags for GCC
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  # Disable maybe uninitialized detection since this can give false positives that are hard to circumvent.
+  # Our address sanitizer checks will also find such errors, although only later.
+  enable_compiler_flag_if_supported("-Wno-maybe-uninitialized")
 endif()
 
 # For clang: do not error for a number of checks that are not yet fixed
@@ -73,12 +79,13 @@ if(FOUR_C_ENABLE_ADDRESS_SANITIZER)
   enable_linker_flag_if_supported("-fno-omit-frame-pointer")
 
   # ASAN requires to check both flags at once.
-  four_c_add_settings_if_compiles(
+  four_c_check_compiles(
     FOUR_C_COMPILER_LINKER_SUPPORT_ASAN
     COMPILE_OPTIONS
     "-fsanitize=address"
     LINK_OPTIONS
     "-fsanitize=address"
+    APPEND_ON_SUCCESS
     )
 
   if(NOT FOUR_C_COMPILER_LINKER_SUPPORT_ASAN)
@@ -93,7 +100,7 @@ four_c_process_global_option(
   FOUR_C_ENABLE_COVERAGE "Set up a build to gather coverage information" OFF
   )
 if(FOUR_C_ENABLE_COVERAGE)
-  four_c_add_settings_if_compiles(
+  four_c_check_compiles(
     FOUR_C_COMPILER_SUPPORT_COVERAGE
     COMPILE_OPTIONS
     "-fprofile-arcs"
@@ -101,6 +108,7 @@ if(FOUR_C_ENABLE_COVERAGE)
     LINK_OPTIONS
     "-fprofile-arcs"
     "-ftest-coverage"
+    APPEND_ON_SUCCESS
     )
 
   if(NOT FOUR_C_COMPILER_SUPPORT_COVERAGE)

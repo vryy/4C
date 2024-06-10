@@ -10,12 +10,12 @@ endfunction()
 
 #
 # A wrapper around CMake's try_compile including all compiler setup done up to this
-# point. All settings that are checked are added at once, and only if they all work,
-# they will be used.
+# point. In case APPEND_ON_SUCCESS is used all settings that are checked are appended
+# to the four_c_private_compile_interface target but and only if they all work.
 #
-function(four_c_add_settings_if_compiles _result_var)
+function(four_c_check_compiles _result_var)
   # Parse arguments
-  set(options "")
+  set(options APPEND_ON_SUCCESS)
   set(oneValueArgs "")
   set(multiValueArgs COMPILE_OPTIONS COMPILE_DEFINITIONS LINK_OPTIONS LINK_LIBRARIES)
   cmake_parse_arguments(
@@ -64,7 +64,7 @@ function(four_c_add_settings_if_compiles _result_var)
 
   check_cxx_source_compiles("${_test_source_code}" ${_result_var})
 
-  if(${_result_var})
+  if(_result_var AND _parsed_APPEND_ON_SUCCESS)
     target_compile_options(four_c_private_compile_interface INTERFACE ${_parsed_COMPILE_OPTIONS})
     target_compile_definitions(
       four_c_private_compile_interface INTERFACE ${_parsed_COMPILE_DEFINITIONS}
