@@ -10,7 +10,7 @@
 #include <gtest/gtest.h>
 
 #include "4C_contact_element.hpp"
-#include "4C_fem_geometry_reference_config_utils.hpp"
+#include "4C_contact_selfcontact_binarytree_unbiased.hpp"
 #include "4C_so3_hex8.hpp"
 #include "4C_so3_tet4.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
@@ -84,7 +84,7 @@ namespace
     hex8refsolution(0, 0) = 423.0 / 800.0;
     hex8refsolution(1, 0) = 281.0 / 800.0;
     hex8refsolution(2, 0) = 207.0 / 200.0;
-    Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::hex8>(
+    CONTACT::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::hex8>(
         hex8ele, xicenterhex8ele, hex8elecoords);
 
     FOUR_C_EXPECT_NEAR(hex8elecoords, hex8refsolution, 1e-14);
@@ -97,7 +97,7 @@ namespace
     quad4refsolution(0, 0) = 14.0 / 25.0;
     quad4refsolution(1, 0) = 111.0 / 200.0;
     quad4refsolution(2, 0) = 33.0 / 100.0;
-    Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::quad4>(
+    CONTACT::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::quad4>(
         quad4ele, xicenterquad4ele, quad4elecoords);
 
     FOUR_C_EXPECT_NEAR(quad4elecoords, quad4refsolution, 1e-14);
@@ -111,7 +111,7 @@ namespace
     tet4refsolution(1, 0) = -199.0 / 400.0;
     tet4refsolution(2, 0) = 9.0 / 16.0;
     xicentertet4ele.PutScalar(1.0 / 4.0);
-    Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tet4>(
+    CONTACT::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tet4>(
         tet4ele, xicentertet4ele, tet4elecoords);
 
     FOUR_C_EXPECT_NEAR(tet4elecoords, tet4refsolution, 1e-14);
@@ -125,7 +125,7 @@ namespace
     tri3refsolution(1, 0) = -149.0 / 300.0;
     tri3refsolution(2, 0) = 1.0 / 12.0;
     xicentertri3ele.PutScalar(1.0 / 3.0);
-    Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri3>(
+    CONTACT::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri3>(
         tri3ele, xicentertri3ele, tri3elecoords);
 
     FOUR_C_EXPECT_NEAR(tri3elecoords, tri3refsolution, 1e-14);
@@ -141,7 +141,7 @@ namespace
     quad4refsolution(0, 0) = -0.29138926578643;
     quad4refsolution(1, 0) = -0.40854577471087;
     quad4refsolution(2, 0) = 0.86497551742829;
-    Core::Geo::ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::quad4>(
+    CONTACT::ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::quad4>(
         quad4ele, xicenterquad4ele, quad4elecoords);
 
     FOUR_C_EXPECT_NEAR(quad4elecoords, quad4refsolution, 1e-14);
@@ -155,7 +155,7 @@ namespace
     tri3refsolution(1, 0) = 0.048198682858935;
     tri3refsolution(2, 0) = -0.995161040205065;
     xicentertri3ele.PutScalar(1.0 / 3.0);
-    Core::Geo::ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::tri3>(
+    CONTACT::ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::tri3>(
         tri3ele, xicentertri3ele, tri3elecoords);
 
     FOUR_C_EXPECT_NEAR(tri3elecoords, tri3refsolution, 1e-14);
