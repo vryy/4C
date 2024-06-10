@@ -25,10 +25,13 @@ namespace Mat
   class FluidPoroMultiPhase;
 }  // namespace Mat
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     /*!
@@ -177,7 +180,7 @@ namespace Discret
       int Evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          Discret::Discretization& discretization,  //!< pointer to discretization for de-assembly
+          Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
           Core::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           Core::LinAlg::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.
@@ -191,7 +194,7 @@ namespace Discret
       virtual void pre_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          Discret::Discretization& discretization,    //!< pointer to discretization for de-assembly
+          Core::FE::Discretization& discretization,   //!< pointer to discretization for de-assembly
           Core::Elements::Element::LocationArray& la  //!< location array for de-assembly
       );
 
@@ -306,7 +309,7 @@ namespace Discret
       virtual int my_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          Discret::Discretization& discretization,  //!< pointer to discretization for de-assembly
+          Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
           Core::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           Core::LinAlg::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.
@@ -526,7 +529,7 @@ namespace Discret
 
       //! helper functions to get element vectors from global vector
       void extract_values_from_global_vector(
-          const Discret::Discretization& discretization,         //!< discretization
+          const Core::FE::Discretization& discretization,        //!< discretization
           const int& dofset,                                     //!< number of dofset
           const std::vector<int>& lm,                            //!< location vector
           Core::LinAlg::Matrix<numdim_, numnod_>* matrixtofill,  //!< vector field

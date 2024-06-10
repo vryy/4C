@@ -32,7 +32,7 @@ Core::COUPLING::MatchingOctree::MatchingOctree()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::COUPLING::MatchingOctree::Init(const Discret::Discretization& actdis,
+int Core::COUPLING::MatchingOctree::Init(const Core::FE::Discretization& actdis,
     const std::vector<int>& masternodeids, const int maxnodeperleaf, const double tol)
 {
   set_is_setup(false);
@@ -414,7 +414,7 @@ void Core::COUPLING::MatchingOctree::create_global_entity_matching(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::MatchingOctree::FindMatch(const Discret::Discretization& slavedis,
+void Core::COUPLING::MatchingOctree::FindMatch(const Core::FE::Discretization& slavedis,
     const std::vector<int>& slavenodeids, std::map<int, std::pair<int, double>>& coupling)
 {
   check_is_init();
@@ -587,7 +587,7 @@ void Core::COUPLING::MatchingOctree::FindMatch(const Discret::Discretization& sl
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::COUPLING::MatchingOctree::fill_slave_to_master_gid_mapping(
-    const Discret::Discretization& slavedis, const std::vector<int>& slavenodeids,
+    const Core::FE::Discretization& slavedis, const std::vector<int>& slavenodeids,
     std::map<int, std::vector<double>>& coupling)
 {
   check_is_init();
@@ -758,7 +758,7 @@ Core::COUPLING::NodeMatchingOctree::NodeMatchingOctree()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::COUPLING::NodeMatchingOctree::calc_point_coordinate(
-    const Discret::Discretization* dis, const int id, double* coord)
+    const Core::FE::Discretization* dis, const int id, double* coord)
 {
   Core::Nodes::Node* actnode = dis->gNode(id);
 
@@ -784,7 +784,7 @@ void Core::COUPLING::NodeMatchingOctree::calc_point_coordinate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool Core::COUPLING::NodeMatchingOctree::check_have_entity(
-    const Discret::Discretization* dis, const int id)
+    const Core::FE::Discretization* dis, const int id)
 {
   return dis->HaveGlobalNode(id);
 }  // NodeMatchingOctree::check_have_entity
@@ -792,7 +792,7 @@ bool Core::COUPLING::NodeMatchingOctree::check_have_entity(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool Core::COUPLING::NodeMatchingOctree::check_entity_owner(
-    const Discret::Discretization* dis, const int id)
+    const Core::FE::Discretization* dis, const int id)
 {
   return (dis->gNode(id)->Owner() == dis->Comm().MyPID());
 }  // NodeMatchingOctree::check_entity_owner
@@ -800,7 +800,7 @@ bool Core::COUPLING::NodeMatchingOctree::check_entity_owner(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::COUPLING::NodeMatchingOctree::pack_entity(
-    Core::Communication::PackBuffer& data, const Discret::Discretization* dis, const int id)
+    Core::Communication::PackBuffer& data, const Core::FE::Discretization* dis, const int id)
 {
   // get the slavenode
   Core::Nodes::Node* actnode = dis->gNode(id);
@@ -854,7 +854,7 @@ Core::COUPLING::ElementMatchingOctree::ElementMatchingOctree()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::COUPLING::ElementMatchingOctree::calc_point_coordinate(
-    const Discret::Discretization* dis, const int id, double* coord)
+    const Core::FE::Discretization* dis, const int id, double* coord)
 {
   Core::Elements::Element* actele = dis->gElement(id);
 
@@ -890,7 +890,7 @@ void Core::COUPLING::ElementMatchingOctree::calc_point_coordinate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool Core::COUPLING::ElementMatchingOctree::check_have_entity(
-    const Discret::Discretization* dis, const int id)
+    const Core::FE::Discretization* dis, const int id)
 {
   return dis->HaveGlobalElement(id);
 }  // ElementMatchingOctree::check_have_entity
@@ -898,7 +898,7 @@ bool Core::COUPLING::ElementMatchingOctree::check_have_entity(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool Core::COUPLING::ElementMatchingOctree::check_entity_owner(
-    const Discret::Discretization* dis, const int id)
+    const Core::FE::Discretization* dis, const int id)
 {
   return (dis->gElement(id)->Owner() == dis->Comm().MyPID());
 }  // ElementMatchingOctree::check_have_entity
@@ -906,7 +906,7 @@ bool Core::COUPLING::ElementMatchingOctree::check_entity_owner(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::COUPLING::ElementMatchingOctree::pack_entity(
-    Core::Communication::PackBuffer& data, const Discret::Discretization* dis, const int id)
+    Core::Communication::PackBuffer& data, const Core::FE::Discretization* dis, const int id)
 {
   // get the slavenode
   Core::Elements::Element* actele = dis->gElement(id);
@@ -980,7 +980,7 @@ Core::COUPLING::OctreeNodalElement::OctreeNodalElement() : OctreeElement() {}  /
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::COUPLING::OctreeNodalElement::calc_point_coordinate(
-    const Discret::Discretization* dis, const int id, double* coord)
+    const Core::FE::Discretization* dis, const int id, double* coord)
 {
   Core::Nodes::Node* actnode = dis->gNode(id);
 
@@ -1015,7 +1015,7 @@ Core::COUPLING::OctreeElementElement::OctreeElementElement()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::COUPLING::OctreeElementElement::calc_point_coordinate(
-    const Discret::Discretization* dis, const int id, double* coord)
+    const Core::FE::Discretization* dis, const int id, double* coord)
 {
   Core::Elements::Element* actele = dis->gElement(id);
 
@@ -1060,7 +1060,7 @@ Core::COUPLING::OctreeElement::OctreeElement()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::COUPLING::OctreeElement::Init(const Discret::Discretization& actdis,
+int Core::COUPLING::OctreeElement::Init(const Core::FE::Discretization& actdis,
     std::vector<int>& nodeidstoadd, const Core::LinAlg::SerialDenseMatrix& boundingboxtoadd,
     const int layer, const int maxnodeperleaf, const double tol)
 {

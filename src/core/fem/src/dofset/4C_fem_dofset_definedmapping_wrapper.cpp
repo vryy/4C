@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Core::DOFSets::DofSetDefinedMappingWrapper::DofSetDefinedMappingWrapper(
     Teuchos::RCP<DofSetInterface> sourcedofset,
-    Teuchos::RCP<const Discret::Discretization> sourcedis, const std::string& couplingcond,
+    Teuchos::RCP<const Core::FE::Discretization> sourcedis, const std::string& couplingcond,
     const std::set<int> condids)
     : DofSetBase(),
       sourcedofset_(sourcedofset),
@@ -52,7 +52,7 @@ Core::DOFSets::DofSetDefinedMappingWrapper::~DofSetDefinedMappingWrapper()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
-    const Discret::Discretization& dis, const unsigned dspos, const int start)
+    const Core::FE::Discretization& dis, const unsigned dspos, const int start)
 {
   if (sourcedofset_ == Teuchos::null)
     FOUR_C_THROW("No source dof set assigned to mapping dof set!");

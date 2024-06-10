@@ -115,7 +115,7 @@ namespace GEOMETRYPAIR
      * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    virtual void Setup(const Teuchos::RCP<const Discret::Discretization>& discret,
+    virtual void Setup(const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements) = 0;
 
     /**
@@ -222,7 +222,7 @@ namespace GEOMETRYPAIR
      * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    void Setup(const Teuchos::RCP<const Discret::Discretization>& discret,
+    void Setup(const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
@@ -357,7 +357,7 @@ namespace GEOMETRYPAIR
      * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    void Setup(const Teuchos::RCP<const Discret::Discretization>& discret,
+    void Setup(const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
@@ -437,7 +437,7 @@ namespace GEOMETRYPAIR
      * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    void Setup(const Teuchos::RCP<const Discret::Discretization>& discret,
+    void Setup(const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 

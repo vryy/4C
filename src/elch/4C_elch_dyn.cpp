@@ -161,7 +161,7 @@ void elch_dyn(int restart)
       // support for turbulent flow statistics
       const auto& fdyn = (problem->FluidDynamicParams());
 
-      Teuchos::RCP<Discret::Discretization> aledis = problem->GetDis("ale");
+      Teuchos::RCP<Core::FE::Discretization> aledis = problem->GetDis("ale");
       if (!aledis->Filled()) aledis->fill_complete(false, false, false);
       // is ALE needed or not?
       const auto withale = Core::UTILS::IntegralValue<Inpar::ElCh::ElchMovingBoundary>(

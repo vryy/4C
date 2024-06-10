@@ -22,10 +22,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 
 namespace Core::FE
@@ -38,7 +38,7 @@ namespace Core::FE
    */
   template <int dim>
   Teuchos::RCP<Epetra_MultiVector> compute_superconvergent_patch_recovery(
-      Discret::Discretization& dis,   ///< underlying discretization
+      Core::FE::Discretization& dis,  ///< underlying discretization
       const Epetra_Vector& state,     ///< state vector needed on element level
       const std::string& statename,   ///< name of state which will be set
       const int numvec,               ///< number of entries per node to project

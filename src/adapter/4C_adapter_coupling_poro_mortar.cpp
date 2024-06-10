@@ -52,8 +52,9 @@ Adapter::CouplingPoroMortar::CouplingPoroMortar(int spatial_dimension,
  |  Read Mortar Condition                                     ager 10/15|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingPoroMortar::read_mortar_condition(
-    Teuchos::RCP<Discret::Discretization> masterdis, Teuchos::RCP<Discret::Discretization> slavedis,
-    std::vector<int> coupleddof, const std::string& couplingcond, Teuchos::ParameterList& input,
+    Teuchos::RCP<Core::FE::Discretization> masterdis,
+    Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    const std::string& couplingcond, Teuchos::ParameterList& input,
     std::map<int, Core::Nodes::Node*>& mastergnodes, std::map<int, Core::Nodes::Node*>& slavegnodes,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements)
@@ -92,8 +93,8 @@ void Adapter::CouplingPoroMortar::read_mortar_condition(
  |  Add Mortar Elements                                        ager 10/15|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingPoroMortar::add_mortar_elements(
-    Teuchos::RCP<Discret::Discretization> masterdis, Teuchos::RCP<Discret::Discretization> slavedis,
-    Teuchos::ParameterList& input,
+    Teuchos::RCP<Core::FE::Discretization> masterdis,
+    Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements,
     Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof)
@@ -260,8 +261,8 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
 /*----------------------------------------------------------------------*
  |  read mortar condition                                    Ager 02/16 |
  *----------------------------------------------------------------------*/
-void Adapter::CouplingPoroMortar::create_strategy(Teuchos::RCP<Discret::Discretization> masterdis,
-    Teuchos::RCP<Discret::Discretization> slavedis, Teuchos::ParameterList& input,
+void Adapter::CouplingPoroMortar::create_strategy(Teuchos::RCP<Core::FE::Discretization> masterdis,
+    Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
     int numcoupleddof)
 {
   // poro lagrange strategy:
@@ -371,7 +372,7 @@ void Adapter::CouplingPoroMortar::create_strategy(Teuchos::RCP<Discret::Discreti
  |  complete interface (also print and parallel redist.)      Ager 02/16|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingPoroMortar::complete_interface(
-    Teuchos::RCP<Discret::Discretization> masterdis, Teuchos::RCP<CONTACT::Interface>& interface)
+    Teuchos::RCP<Core::FE::Discretization> masterdis, Teuchos::RCP<CONTACT::Interface>& interface)
 {
   // finalize the contact interface construction
   int maxdof = masterdis->dof_row_map()->MaxAllGID();
@@ -418,7 +419,7 @@ void Adapter::CouplingPoroMortar::complete_interface(
  *----------------------------------------------------------------------*/
 void Adapter::CouplingPoroMortar::EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fvel,
     Teuchos::RCP<Epetra_Vector> svel, Teuchos::RCP<Epetra_Vector> fpres,
-    Teuchos::RCP<Epetra_Vector> sdisp, const Teuchos::RCP<Discret::Discretization> sdis,
+    Teuchos::RCP<Epetra_Vector> sdisp, const Teuchos::RCP<Core::FE::Discretization> sdis,
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& f, Teuchos::RCP<Core::LinAlg::SparseMatrix>& k_fs,
     Teuchos::RCP<Epetra_Vector>& frhs, Core::Adapter::Coupling& coupfs,
     Teuchos::RCP<const Epetra_Map> fdofrowmap)

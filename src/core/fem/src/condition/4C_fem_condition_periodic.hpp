@@ -24,11 +24,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::DOFSets
 {
@@ -70,7 +69,7 @@ namespace Core::Conditions
     \return void
 
     */
-    PeriodicBoundaryConditions(Teuchos::RCP<Discret::Discretization> dis, bool verbose = true);
+    PeriodicBoundaryConditions(Teuchos::RCP<Core::FE::Discretization> dis, bool verbose = true);
 
     /*!
     \brief Destructor
@@ -312,7 +311,7 @@ namespace Core::Conditions
     //@}
 
     //!\brief the discretisation
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //!\brief a flag controlling the verbosity, i.e. the amount of output
     // displayed on the screen

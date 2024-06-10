@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                     krank 09/13|
  *----------------------------------------------------------------------*/
 FLD::Boxfilter::Boxfilter(
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params)
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params)
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
@@ -104,7 +104,7 @@ FLD::Boxfilter::Boxfilter(
 /*----------------------------------------------------------------------*
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
-void FLD::Boxfilter::AddScatra(Teuchos::RCP<Discret::Discretization> scatradis)
+void FLD::Boxfilter::AddScatra(Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 
@@ -121,7 +121,7 @@ void FLD::Boxfilter::InitializeVreman()
   return;
 }
 
-void FLD::Boxfilter::initialize_vreman_scatra(Teuchos::RCP<Discret::Discretization> scatradis)
+void FLD::Boxfilter::initialize_vreman_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 

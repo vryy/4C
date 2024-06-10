@@ -59,7 +59,7 @@ using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -1280,7 +1280,7 @@ int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -2716,7 +2716,7 @@ void Discret::ELEMENTS::SoHex8::soh8_recover_from_eas_backup_state()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 04/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex8Type::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

@@ -1900,7 +1900,7 @@ void EHL::Monolithic::LinCouetteForceDisp(Teuchos::RCP<Core::LinAlg::SparseMatri
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dd)
 {
   const int ndim = Global::Problem::Instance()->NDim();
-  Discret::Discretization& lub_dis = *lubrication_->LubricationField()->discretization();
+  Core::FE::Discretization& lub_dis = *lubrication_->LubricationField()->discretization();
   Teuchos::RCP<Epetra_Vector> visc_vec =
       Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->dof_row_map(1)));
   for (int i = 0; i < lub_dis.NodeRowMap()->NumMyElements(); ++i)
@@ -2060,7 +2060,7 @@ void EHL::Monolithic::LinCouetteForcePres(Teuchos::RCP<Core::LinAlg::SparseMatri
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
   hinv_relV->Multiply(1., *h_inv, *relVel, 0.);
 
-  Discret::Discretization& lub_dis = *lubrication_->LubricationField()->discretization();
+  Core::FE::Discretization& lub_dis = *lubrication_->LubricationField()->discretization();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dVisc_dp =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(lub_dis.dof_row_map(1)), 81));
 

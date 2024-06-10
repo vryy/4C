@@ -45,7 +45,7 @@ FOUR_C_NAMESPACE_OPEN
  |  constructor (public)                                     meier 01/11|
  *----------------------------------------------------------------------*/
 Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
-    Discret::Discretization& discret, Discret::Discretization& searchdis)
+    Core::FE::Discretization& discret, Core::FE::Discretization& searchdis)
     : btsol_(false), discret_(discret), searchdis_(searchdis), basisnodes_(discret.NumGlobalNodes())
 {
   extrusionvalue_ = Teuchos::rcp(new std::vector<double>);

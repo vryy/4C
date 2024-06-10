@@ -127,7 +127,7 @@ void FSI::UTILS::DumpJacobian(::NOX::Epetra::Interface::Required& interface, dou
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool FSI::UTILS::FluidAleNodesDisjoint(
-    Teuchos::RCP<Discret::Discretization> fluiddis, Teuchos::RCP<Discret::Discretization> aledis)
+    Teuchos::RCP<Core::FE::Discretization> fluiddis, Teuchos::RCP<Core::FE::Discretization> aledis)
 {
   // flag indicating whether fluid and ALE node numbers have are non-overlapping or not
   bool isdisjoint = false;
@@ -168,8 +168,8 @@ bool FSI::UTILS::FluidAleNodesDisjoint(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Discret::Discretization> structdis,
-    Teuchos::RCP<Discret::Discretization> fluiddis, Core::Adapter::CouplingMortar& coupsf,
+FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> structdis,
+    Teuchos::RCP<Core::FE::Discretization> fluiddis, Core::Adapter::CouplingMortar& coupsf,
     bool structcoupmaster, Inpar::FSI::SlideALEProj aleproj)
     : aletype_(aleproj)
 {
@@ -307,7 +307,7 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Discret::Discretization> s
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::SlideAleUtils::Remeshing(Adapter::FSIStructureWrapper& structure,
-    Teuchos::RCP<Discret::Discretization> fluiddis, Teuchos::RCP<Epetra_Vector> idispale,
+    Teuchos::RCP<Core::FE::Discretization> fluiddis, Teuchos::RCP<Epetra_Vector> idispale,
     Teuchos::RCP<Epetra_Vector> iprojdispale, Core::Adapter::CouplingMortar& coupsf,
     const Epetra_Comm& comm)
 {
@@ -404,7 +404,7 @@ Teuchos::RCP<Epetra_Vector> FSI::UTILS::SlideAleUtils::InterpolateFluid(
 std::vector<double> FSI::UTILS::SlideAleUtils::centerdisp(
     Adapter::FSIStructureWrapper& structure, const Epetra_Comm& comm)
 {
-  Teuchos::RCP<Discret::Discretization> structdis = structure.discretization();
+  Teuchos::RCP<Core::FE::Discretization> structdis = structure.discretization();
 
   Teuchos::RCP<Epetra_Vector> idispn = structure.extract_interface_dispn();
   Teuchos::RCP<Epetra_Vector> idisptotal = structure.extract_interface_dispnp();
@@ -484,7 +484,7 @@ std::vector<double> FSI::UTILS::SlideAleUtils::centerdisp(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::map<int, Core::LinAlg::Matrix<3, 1>> FSI::UTILS::SlideAleUtils::current_struct_pos(
-    Teuchos::RCP<Epetra_Vector> reddisp, Discret::Discretization& interfacedis,
+    Teuchos::RCP<Epetra_Vector> reddisp, Core::FE::Discretization& interfacedis,
     std::map<int, double>& maxcoord)
 {
   std::map<int, Core::LinAlg::Matrix<3, 1>> currentpositions;
@@ -533,7 +533,7 @@ std::map<int, Core::LinAlg::Matrix<3, 1>> FSI::UTILS::SlideAleUtils::current_str
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::SlideAleUtils::slide_projection(
-    Adapter::FSIStructureWrapper& structure, Teuchos::RCP<Discret::Discretization> fluiddis,
+    Adapter::FSIStructureWrapper& structure, Teuchos::RCP<Core::FE::Discretization> fluiddis,
     Teuchos::RCP<Epetra_Vector> idispale, Teuchos::RCP<Epetra_Vector> iprojdispale,
     Core::Adapter::CouplingMortar& coupsf, const Epetra_Comm& comm
 
@@ -549,7 +549,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
   Teuchos::RCP<Epetra_Vector> reddisp = Core::LinAlg::CreateVector(*structfullnodemap_, true);
   reddisp->Import(*idispnp, *interimpo, Add);
 
-  Discret::Discretization& interfacedis = coupsf.Interface()->Discret();
+  Core::FE::Discretization& interfacedis = coupsf.Interface()->Discret();
   std::map<int, double> rotrat;
   // currentpositions of struct nodes for the search tree (always 3 coordinates)
   std::map<int, Core::LinAlg::Matrix<3, 1>> currentpositions =
@@ -700,7 +700,7 @@ void FSI::UTILS::SlideAleUtils::redundant_elements(
     foffset = 0;
   }
 
-  Discret::Discretization& interfacedis = coupsf.Interface()->Discret();
+  Core::FE::Discretization& interfacedis = coupsf.Interface()->Discret();
 
   std::map<int, std::map<int, Teuchos::RCP<Core::Elements::Element>>>::iterator mapit;
   // build redundant version istructslideles_;
@@ -770,7 +770,8 @@ void FSI::UTILS::SlideAleUtils::redundant_elements(
 }
 
 
-void FSI::UTILS::SlideAleUtils::rotation(Discret::Discretization& mtrdis,  ///< fluid discretization
+void FSI::UTILS::SlideAleUtils::rotation(
+    Core::FE::Discretization& mtrdis,      ///< fluid discretization
     Teuchos::RCP<Epetra_Vector> idispale,  ///< vector of ALE displacements
     const Epetra_Comm& comm,               ///< communicator
     std::map<int, double>& rotrat,         ///< rotation ratio of tangential displacements

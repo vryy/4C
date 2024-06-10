@@ -36,10 +36,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshCoupling(
-        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Discret::Discretization>&
+        Teuchos::RCP<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -210,10 +210,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshVolCoupling(
-        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Discret::Discretization>&
+        Teuchos::RCP<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -259,7 +259,7 @@ namespace XFEM
 
     //! get auxiliary coupling discretization (embedded elements with nodes in the cutting surface
     //! discretization)
-    Teuchos::RCP<Discret::Discretization> get_auxiliary_discretization()
+    Teuchos::RCP<Core::FE::Discretization> get_auxiliary_discretization()
     {
       FOUR_C_ASSERT(init_volcoupling_,
           "MeshVolCoupling::get_auxiliary_discretization: Volume Coupling not initialized!");
@@ -296,7 +296,7 @@ namespace XFEM
    private:
     //! auxiliary discretization, based on the elements of cond_dis, that contribute to
     //! the elements of cutter_dis_ with at least one edge
-    Teuchos::RCP<Discret::Discretization> aux_coup_dis_;
+    Teuchos::RCP<Core::FE::Discretization> aux_coup_dis_;
 
     //! bool to indicate if volume coupling is initialized
     bool init_volcoupling_;
@@ -316,10 +316,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshCouplingBC(
-        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Discret::Discretization>&
+        Teuchos::RCP<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -362,10 +362,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshCouplingWeakDirichlet(
-        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Discret::Discretization>&
+        Teuchos::RCP<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -418,10 +418,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshCouplingNeumann(
-        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Discret::Discretization>&
+        Teuchos::RCP<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -490,10 +490,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshCouplingNavierSlip(
-        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Discret::Discretization>&
+        Teuchos::RCP<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -582,10 +582,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshCouplingFSI(
-        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Discret::Discretization>&
+        Teuchos::RCP<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -663,7 +663,7 @@ namespace XFEM
 
     /// Initialize Fluid State
     bool initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
-        Teuchos::RCP<Discret::Discretization> fluiddis,
+        Teuchos::RCP<Core::FE::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);
 
@@ -755,10 +755,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshCouplingFluidFluid(
-        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Discret::Discretization>&
+        Teuchos::RCP<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time

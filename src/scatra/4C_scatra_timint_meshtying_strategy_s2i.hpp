@@ -136,7 +136,7 @@ namespace ScaTra
      * @param params    parameter list for evaluation of mortar integration cells
      * @param strategy  assembly strategy for mortar integration cells
      */
-    void evaluate_mortar_cells(const Discret::Discretization& idiscret,
+    void evaluate_mortar_cells(const Core::FE::Discretization& idiscret,
         const Teuchos::ParameterList& params, ScaTra::MortarCellAssemblyStrategy& strategy) const;
 
     //! explicit predictor step to obtain better starting value for Newton-Raphson iteration
@@ -222,7 +222,7 @@ namespace ScaTra
     const Core::LinAlg::MatrixType& MatrixType() const { return matrixtype_; };
 
     //! return mortar interface discretization associated with particular condition ID
-    Discret::Discretization& mortar_discretization(const int& condid) const;
+    Core::FE::Discretization& mortar_discretization(const int& condid) const;
 
     //! output solution for post-processing
     void Output() const override;
@@ -511,7 +511,7 @@ namespace ScaTra
      * @param cellvector1    cell vector 1
      * @param cellvector2    cell vector 2
      */
-    void evaluate_mortar_cell(const Discret::Discretization& idiscret, Mortar::IntCell& cell,
+    void evaluate_mortar_cell(const Core::FE::Discretization& idiscret, Mortar::IntCell& cell,
         const Inpar::ScaTra::ImplType& impltype, Mortar::Element& slaveelement,
         Mortar::Element& masterelement, Core::Elements::Element::LocationArray& la_slave,
         Core::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
@@ -539,10 +539,10 @@ namespace ScaTra
      * @param ntsvector1     node-to-segment vector 1
      * @param ntsvector2     node-to-segment vector 2
      */
-    void evaluate_slave_node(const Discret::Discretization& idiscret, const Mortar::Node& slavenode,
-        const double& lumpedarea, const Inpar::ScaTra::ImplType& impltype,
-        Mortar::Element& slaveelement, Mortar::Element& masterelement,
-        Core::Elements::Element::LocationArray& la_slave,
+    void evaluate_slave_node(const Core::FE::Discretization& idiscret,
+        const Mortar::Node& slavenode, const double& lumpedarea,
+        const Inpar::ScaTra::ImplType& impltype, Mortar::Element& slaveelement,
+        Mortar::Element& masterelement, Core::Elements::Element::LocationArray& la_slave,
         Core::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
         Core::LinAlg::SerialDenseMatrix& ntsmatrix1, Core::LinAlg::SerialDenseMatrix& ntsmatrix2,
         Core::LinAlg::SerialDenseMatrix& ntsmatrix3, Core::LinAlg::SerialDenseMatrix& ntsmatrix4,
@@ -564,7 +564,7 @@ namespace ScaTra
      * @param elevector1 element vector 1
      * @param elevector2 element vector 2
      */
-    void evaluate_mortar_element(const Discret::Discretization& idiscret, Mortar::Element& element,
+    void evaluate_mortar_element(const Core::FE::Discretization& idiscret, Mortar::Element& element,
         const Inpar::ScaTra::ImplType& impltype, Core::Elements::Element::LocationArray& la,
         const Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& elematrix1,
         Core::LinAlg::SerialDenseMatrix& elematrix2, Core::LinAlg::SerialDenseMatrix& elematrix3,
@@ -593,7 +593,7 @@ namespace ScaTra
      * @param systemvector2      system vector 2
      * @param vector2_side       interface side associated with system vector 2
      */
-    void evaluate_mortar_cells(const Discret::Discretization& idiscret,
+    void evaluate_mortar_cells(const Core::FE::Discretization& idiscret,
         const Teuchos::ParameterList& params,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix1,
         const Inpar::S2I::InterfaceSides matrix1_side_rows,
@@ -641,7 +641,7 @@ namespace ScaTra
      */
     void evaluate_nts(const Epetra_IntVector& islavenodestomasterelements,
         const Epetra_Vector& islavenodeslumpedareas, const Epetra_IntVector& islavenodesimpltypes,
-        const Discret::Discretization& idiscret, const Teuchos::ParameterList& params,
+        const Core::FE::Discretization& idiscret, const Teuchos::ParameterList& params,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix1,
         const Inpar::S2I::InterfaceSides matrix1_side_rows,
         const Inpar::S2I::InterfaceSides matrix1_side_cols,
@@ -684,7 +684,7 @@ namespace ScaTra
      * @param vector2_side       interface side associated with system vector 2
      */
     void evaluate_mortar_elements(const Epetra_Map& ielecolmap,
-        const Epetra_IntVector& ieleimpltypes, const Discret::Discretization& idiscret,
+        const Epetra_IntVector& ieleimpltypes, const Core::FE::Discretization& idiscret,
         const Teuchos::ParameterList& params,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix1,
         const Inpar::S2I::InterfaceSides matrix1_side_rows,
@@ -730,25 +730,25 @@ namespace ScaTra
 
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types
-    virtual void Evaluate(const Discret::Discretization& idiscret,  //!< interface discretization
-        Mortar::IntCell& cell,                                      //!< mortar integration cell
-        Mortar::Element& slaveelement,                              //!< slave-side mortar element
-        Mortar::Element& masterelement,                             //!< master-side mortar element
-        Core::Elements::Element::LocationArray& la_slave,           //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master,          //!< master-side location array
-        const Teuchos::ParameterList& params,                       //!< parameter list
-        Core::LinAlg::SerialDenseMatrix& cellmatrix1,               //!< cell matrix 1
-        Core::LinAlg::SerialDenseMatrix& cellmatrix2,               //!< cell matrix 2
-        Core::LinAlg::SerialDenseMatrix& cellmatrix3,               //!< cell matrix 3
-        Core::LinAlg::SerialDenseMatrix& cellmatrix4,               //!< cell matrix 4
-        Core::LinAlg::SerialDenseVector& cellvector1,               //!< cell vector 1
-        Core::LinAlg::SerialDenseVector& cellvector2                //!< cell vector 2
+    virtual void Evaluate(const Core::FE::Discretization& idiscret,  //!< interface discretization
+        Mortar::IntCell& cell,                                       //!< mortar integration cell
+        Mortar::Element& slaveelement,                               //!< slave-side mortar element
+        Mortar::Element& masterelement,                              //!< master-side mortar element
+        Core::Elements::Element::LocationArray& la_slave,            //!< slave-side location array
+        Core::Elements::Element::LocationArray& la_master,           //!< master-side location array
+        const Teuchos::ParameterList& params,                        //!< parameter list
+        Core::LinAlg::SerialDenseMatrix& cellmatrix1,                //!< cell matrix 1
+        Core::LinAlg::SerialDenseMatrix& cellmatrix2,                //!< cell matrix 2
+        Core::LinAlg::SerialDenseMatrix& cellmatrix3,                //!< cell matrix 3
+        Core::LinAlg::SerialDenseMatrix& cellmatrix4,                //!< cell matrix 4
+        Core::LinAlg::SerialDenseVector& cellvector1,                //!< cell vector 1
+        Core::LinAlg::SerialDenseVector& cellvector2                 //!< cell vector 2
         ) = 0;
 
     //! evaluate single slave-side node for node-to-segment coupling
     virtual void evaluate_nts(
-        const Discret::Discretization& idiscret,  //!< interface discretization
-        const Mortar::Node& slavenode,            //!< slave-side node
+        const Core::FE::Discretization& idiscret,  //!< interface discretization
+        const Mortar::Node& slavenode,             //!< slave-side node
         const double&
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
         Mortar::Element& slaveelement,                      //!< slave-side mortar element
@@ -766,7 +766,7 @@ namespace ScaTra
 
     //! evaluate single mortar element
     virtual void evaluate_mortar_element(
-        const Discret::Discretization& idiscret,      //!< interface discretization
+        const Core::FE::Discretization& idiscret,     //!< interface discretization
         Mortar::Element& element,                     //!< mortar element
         Core::Elements::Element::LocationArray& la,   //!< location array
         const Teuchos::ParameterList& params,         //!< parameter list
@@ -818,24 +818,24 @@ namespace ScaTra
 
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types
-    void Evaluate(const Discret::Discretization& idiscret,  //!< interface discretization
-        Mortar::IntCell& cell,                              //!< mortar integration cell
-        Mortar::Element& slaveelement,                      //!< slave-side mortar element
-        Mortar::Element& masterelement,                     //!< master-side mortar element
-        Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
-        const Teuchos::ParameterList& params,               //!< parameter list
-        Core::LinAlg::SerialDenseMatrix& cellmatrix1,       //!< cell matrix 1
-        Core::LinAlg::SerialDenseMatrix& cellmatrix2,       //!< cell matrix 2
-        Core::LinAlg::SerialDenseMatrix& cellmatrix3,       //!< cell matrix 3
-        Core::LinAlg::SerialDenseMatrix& cellmatrix4,       //!< cell matrix 4
-        Core::LinAlg::SerialDenseVector& cellvector1,       //!< cell vector 1
-        Core::LinAlg::SerialDenseVector& cellvector2        //!< cell vector 2
+    void Evaluate(const Core::FE::Discretization& idiscret,  //!< interface discretization
+        Mortar::IntCell& cell,                               //!< mortar integration cell
+        Mortar::Element& slaveelement,                       //!< slave-side mortar element
+        Mortar::Element& masterelement,                      //!< master-side mortar element
+        Core::Elements::Element::LocationArray& la_slave,    //!< slave-side location array
+        Core::Elements::Element::LocationArray& la_master,   //!< master-side location array
+        const Teuchos::ParameterList& params,                //!< parameter list
+        Core::LinAlg::SerialDenseMatrix& cellmatrix1,        //!< cell matrix 1
+        Core::LinAlg::SerialDenseMatrix& cellmatrix2,        //!< cell matrix 2
+        Core::LinAlg::SerialDenseMatrix& cellmatrix3,        //!< cell matrix 3
+        Core::LinAlg::SerialDenseMatrix& cellmatrix4,        //!< cell matrix 4
+        Core::LinAlg::SerialDenseVector& cellvector1,        //!< cell vector 1
+        Core::LinAlg::SerialDenseVector& cellvector2         //!< cell vector 2
         ) override;
 
     //! evaluate single slave-side node for node-to-segment coupling
-    void evaluate_nts(const Discret::Discretization& idiscret,  //!< interface discretization
-        const Mortar::Node& slavenode,                          //!< slave-side node
+    void evaluate_nts(const Core::FE::Discretization& idiscret,  //!< interface discretization
+        const Mortar::Node& slavenode,                           //!< slave-side node
         const double&
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
         Mortar::Element& slaveelement,                      //!< slave-side mortar element
@@ -853,7 +853,7 @@ namespace ScaTra
 
     //! evaluate single mortar element
     void evaluate_mortar_element(
-        const Discret::Discretization& idiscret,      //!< interface discretization
+        const Core::FE::Discretization& idiscret,     //!< interface discretization
         Mortar::Element& element,                     //!< mortar element
         Core::Elements::Element::LocationArray& la,   //!< location array
         const Teuchos::ParameterList& params,         //!< parameter list
@@ -897,7 +897,7 @@ namespace ScaTra
 
     //! evaluate and assemble interface linearizations and residuals
     virtual void evaluate_condition(
-        const Discret::Discretization& idiscret,            //!< interface discretization
+        const Core::FE::Discretization& idiscret,           //!< interface discretization
         Mortar::IntCell& cell,                              //!< mortar integration cell
         Mortar::Element& slaveelement,                      //!< slave-side mortar element
         Mortar::Element& masterelement,                     //!< master-side mortar element
@@ -951,7 +951,7 @@ namespace ScaTra
 
     //! extract nodal state variables associated with mortar integration cell
     virtual void extract_node_values(
-        const Discret::Discretization& idiscret,           //!< interface discretization
+        const Core::FE::Discretization& idiscret,          //!< interface discretization
         Core::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
         Core::Elements::Element::LocationArray& la_master  //!< master-side location array
     );
@@ -966,7 +966,7 @@ namespace ScaTra
      * @param nds          number of relevant dofset
      */
     void extract_node_values(Core::LinAlg::Matrix<nen_slave_, 1>& estate_slave,
-        const Discret::Discretization& idiscret, Core::Elements::Element::LocationArray& la_slave,
+        const Core::FE::Discretization& idiscret, Core::Elements::Element::LocationArray& la_slave,
         const std::string& statename = "iphinp", const int& nds = 0) const;
 
     /*!
@@ -982,7 +982,7 @@ namespace ScaTra
      */
     void extract_node_values(std::vector<Core::LinAlg::Matrix<nen_slave_, 1>>& estate_slave,
         std::vector<Core::LinAlg::Matrix<nen_master_, 1>>& estate_master,
-        const Discret::Discretization& idiscret, Core::Elements::Element::LocationArray& la_slave,
+        const Core::FE::Discretization& idiscret, Core::Elements::Element::LocationArray& la_slave,
         Core::Elements::Element::LocationArray& la_master, const std::string& statename = "iphinp",
         const int& nds = 0) const;
 

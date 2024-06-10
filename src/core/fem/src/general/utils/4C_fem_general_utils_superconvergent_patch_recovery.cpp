@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <int dim>
 Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery(
-    Discret::Discretization& dis, const Epetra_Vector& state, const std::string& statename,
+    Core::FE::Discretization& dis, const Epetra_Vector& state, const std::string& statename,
     const int numvec, Teuchos::ParameterList& params)
 {
   const int dimp = dim + 1;
@@ -591,13 +591,13 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
 }
 
 template Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery<1>(
-    Discret::Discretization&, const Epetra_Vector&, const std::string&, const int,
+    Core::FE::Discretization&, const Epetra_Vector&, const std::string&, const int,
     Teuchos::ParameterList&);
 template Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery<2>(
-    Discret::Discretization&, const Epetra_Vector&, const std::string&, const int,
+    Core::FE::Discretization&, const Epetra_Vector&, const std::string&, const int,
     Teuchos::ParameterList&);
 template Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery<3>(
-    Discret::Discretization&, const Epetra_Vector&, const std::string&, const int,
+    Core::FE::Discretization&, const Epetra_Vector&, const std::string&, const int,
     Teuchos::ParameterList&);
 
 FOUR_C_NAMESPACE_CLOSE

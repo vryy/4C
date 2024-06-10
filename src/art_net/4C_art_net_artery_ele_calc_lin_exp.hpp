@@ -54,7 +54,7 @@ namespace Discret
           const int numdofpernode, const std::string& disname);
 
       int Evaluate(Artery* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -63,7 +63,7 @@ namespace Discret
           Teuchos::RCP<Core::Mat::Material> mat) override;
 
       int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -72,7 +72,7 @@ namespace Discret
           Teuchos::RCP<Core::Mat::Material> mat) override;
 
       int EvaluateService(Artery* ele, const Arteries::Action action,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -111,31 +111,31 @@ namespace Discret
           Teuchos::RCP<const Core::Mat::Material> material, double dt);
 
       virtual bool SolveRiemann(Artery* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<const Core::Mat::Material> mat);
 
       virtual void EvaluateTerminalBC(Artery* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat);
 
       virtual void EvaluateScatraBC(Artery* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& disctretization, std::vector<int>& lm,
+          Core::FE::Discretization& disctretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material);
 
       virtual void calc_postprocessing_values(Artery* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat);
 
       virtual void calc_scatra_from_scatra_fw(Artery* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material);
 
       virtual void EvaluateWfAndWb(Artery* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material);
 
       virtual void solve_scatra_analytically(Artery* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material);
 
       /*!
@@ -153,7 +153,7 @@ namespace Discret
         \param dt               (i) timestep
         */
       virtual void Initial(Artery* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<const Core::Mat::Material> material);
 
       /*!

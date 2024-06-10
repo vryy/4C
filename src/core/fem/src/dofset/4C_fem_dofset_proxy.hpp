@@ -62,7 +62,7 @@ namespace Core::DOFSets
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
-        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
+        const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// returns true if \ref dofset_ is filled
     bool Filled() const override;

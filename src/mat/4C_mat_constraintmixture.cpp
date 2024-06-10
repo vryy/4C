@@ -3106,7 +3106,7 @@ bool Mat::ConstraintMixture::VisData(
  just works with strtimint!
  don't forget to include constraintmixture.H */
 void Mat::ConstraintMixtureOutputToGmsh(
-    const Teuchos::RCP<Discret::Discretization> dis, const int timestep, const int iter)
+    const Teuchos::RCP<Core::FE::Discretization> dis, const int timestep, const int iter)
 {
   const std::string filebase = Global::Problem::Instance()->OutputControlFile()->FileName();
   // file for stress

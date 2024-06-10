@@ -37,7 +37,7 @@ Adapter::FBIFluidMB::FBIFluidMB(const Teuchos::ParameterList& prbdyn, std::strin
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization> Adapter::FBIFluidMB::discretization()
+Teuchos::RCP<Core::FE::Discretization> Adapter::FBIFluidMB::discretization()
 {
   return fluid_field()->discretization();
 }

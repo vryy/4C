@@ -67,7 +67,7 @@ void SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
     if (convform == Inpar::ScaTra::convform_convective)
     {
       // get scatra discretization
-      Teuchos::RCP<Discret::Discretization> scatradis =
+      Teuchos::RCP<Core::FE::Discretization> scatradis =
           Global::Problem::Instance()->GetDis(scatra_disname);
 
       // loop over all elements of scatra discretization to check if impltype is correct or not

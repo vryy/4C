@@ -22,11 +22,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-  class ResultTest;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Adapter
 {
@@ -61,7 +60,7 @@ namespace Adapter
     virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
 
     //! get discretization
-    virtual Teuchos::RCP<Discret::Discretization> discretization() = 0;
+    virtual Teuchos::RCP<Core::FE::Discretization> discretization() = 0;
 
     // get time step size
     virtual double Dt() const = 0;

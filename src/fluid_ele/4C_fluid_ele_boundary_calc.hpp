@@ -23,10 +23,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class FluidBoundary;
@@ -79,7 +82,7 @@ namespace Discret
       FluidBoundaryImpl();
 
       void evaluate_action(Discret::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3) override;
@@ -98,7 +101,7 @@ namespace Discret
 
       //! Evaluate a Neumann boundary condition
       int evaluate_neumann(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+          Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseMatrix* elemat1) override;
 
@@ -113,7 +116,7 @@ namespace Discret
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       */
       virtual void integrate_shape_function(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
           const std::vector<double>& edispnp);
 
@@ -126,7 +129,7 @@ namespace Discret
         \param enormals (in)      : Node normals
       */
       void element_mean_curvature(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
           const std::vector<double>& edispnp, std::vector<double>& enormals);
 
@@ -139,7 +142,7 @@ namespace Discret
         \param curvature (in)     : Interpolated curvature
       */
       void element_surface_tension(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
           const std::vector<double>& edispnp, std::vector<double>& enormals,
           std::vector<double>& ecurvature);
@@ -151,7 +154,7 @@ namespace Discret
                                   and elements
       */
       void area_calculation(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm);
+          Core::FE::Discretization& discretization, std::vector<int>& lm);
 
       /*!
        brief integrate elemental pressure over a surface
@@ -162,7 +165,7 @@ namespace Discret
        \param lm (in)            : location vector of this element
        */
       void pressure_boundary_integral(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm);
 
       /*!
@@ -174,7 +177,7 @@ namespace Discret
        \param lm (in)            : location vector of this element
        */
       void center_of_mass_calculation(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm);
 
       /*!
@@ -187,7 +190,7 @@ namespace Discret
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       */
       void calc_traction_velocity_component(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1);
 
       /*!
@@ -200,7 +203,7 @@ namespace Discret
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       */
       void compute_neumann_uv_integral(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1);
 
       /*!
@@ -212,7 +215,7 @@ namespace Discret
        \param lm (in)            : location vector of this element
        */
       void compute_flow_rate(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1);
 
       /*!
@@ -230,7 +233,7 @@ namespace Discret
       \param elevec3 (out)      : flowrate
       */
       void flow_rate_deriv(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3);
@@ -245,7 +248,7 @@ namespace Discret
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       */
       void impedance_integration(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1);
 
       /*!
@@ -258,7 +261,7 @@ namespace Discret
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       */
       void d_qdu(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1);
 
       /*!
@@ -274,7 +277,7 @@ namespace Discret
 
       */
       void neumann_inflow(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1);
 
      protected:

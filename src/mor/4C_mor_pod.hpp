@@ -21,11 +21,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -41,7 +40,7 @@ namespace ModelOrderRed
     /*!
         \brief Constructor
      */
-    ProperOrthogonalDecomposition(Teuchos::RCP<Discret::Discretization> discr);
+    ProperOrthogonalDecomposition(Teuchos::RCP<Core::FE::Discretization> discr);
 
 
     /*!
@@ -84,7 +83,7 @@ namespace ModelOrderRed
 
     bool is_orthogonal(Teuchos::RCP<Epetra_MultiVector> M);
 
-    Teuchos::RCP<Discret::Discretization> actdisc_;
+    Teuchos::RCP<Core::FE::Discretization> actdisc_;
     int myrank_;  //!< ID of actual processor in parallel
     Teuchos::ParameterList morparams_;
     bool havemor_;

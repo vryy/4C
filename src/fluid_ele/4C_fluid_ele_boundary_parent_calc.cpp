@@ -133,7 +133,7 @@ Discret::ELEMENTS::FluidBoundaryParent<distype>::FluidBoundaryParent()
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   switch (surfele->Shape())
@@ -212,7 +212,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(
     Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   switch (surfele->Shape())
@@ -254,7 +254,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
     Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   switch (surfele->Shape())
@@ -296,7 +296,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   switch (surfele->Shape())
@@ -375,7 +375,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
     Core::Elements::FaceElement* surfele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat1, Core::LinAlg::SerialDenseMatrix::Base& elemat2)
 {
   switch (surfele->Shape())
@@ -462,7 +462,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   switch (surfele->Shape())
@@ -505,7 +505,7 @@ template <Core::FE::CellType distype>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
 void Discret::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra,
     Core::LinAlg::SerialDenseVector::Base& elevec_epetra)
 {
@@ -1246,7 +1246,7 @@ template <Core::FE::CellType distype>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
 void Discret::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(
     Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra,
     Core::LinAlg::SerialDenseVector::Base& elevec_epetra)
 {
@@ -1577,7 +1577,7 @@ template <Core::FE::CellType distype>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
 void Discret::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
     Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra,
     Core::LinAlg::SerialDenseVector::Base& elevec_epetra)
 {
@@ -1833,7 +1833,7 @@ template <Core::FE::CellType distype>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
 void Discret::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra,
     Core::LinAlg::SerialDenseVector::Base& elevec_epetra)
 {
@@ -3734,7 +3734,7 @@ template <Core::FE::CellType distype>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
 void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
     Core::Elements::FaceElement* surfele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& blm,
+    Core::FE::Discretization& discretization, std::vector<int>& blm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra1,
     Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra2)
 {
@@ -4296,7 +4296,7 @@ template <Core::FE::CellType distype>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
 void Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra,
     Core::LinAlg::SerialDenseVector::Base& elevec_epetra)
 {

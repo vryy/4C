@@ -23,10 +23,10 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  std::vector<Teuchos::RCP<Discret::Discretization>> FindDisNode(
+  std::vector<Teuchos::RCP<Core::FE::Discretization>> FindDisNode(
       const std::vector<Core::IO::ElementReader>& element_readers, int global_node_id)
   {
-    std::vector<Teuchos::RCP<Discret::Discretization>> list_of_discretizations;
+    std::vector<Teuchos::RCP<Core::FE::Discretization>> list_of_discretizations;
     for (const auto& element_reader : element_readers)
       if (element_reader.HasNode(global_node_id))
         list_of_discretizations.emplace_back(element_reader.GetDis());
@@ -99,7 +99,7 @@ void Core::IO::ReadNodes(const Core::IO::DatFileReader& reader,
 
           nodeid--;
           max_node_id = std::max(max_node_id, nodeid) + 1;
-          std::vector<Teuchos::RCP<Discret::Discretization>> dis =
+          std::vector<Teuchos::RCP<Core::FE::Discretization>> dis =
               FindDisNode(element_readers, nodeid);
 
           for (const auto& di : dis)
@@ -128,7 +128,7 @@ void Core::IO::ReadNodes(const Core::IO::DatFileReader& reader,
 
           nodeid--;
           max_node_id = std::max(max_node_id, nodeid) + 1;
-          std::vector<Teuchos::RCP<Discret::Discretization>> diss =
+          std::vector<Teuchos::RCP<Core::FE::Discretization>> diss =
               FindDisNode(element_readers, nodeid);
 
           for (const auto& dis : diss)
@@ -161,7 +161,7 @@ void Core::IO::ReadNodes(const Core::IO::DatFileReader& reader,
           if (cpid != filecount)
             FOUR_C_THROW("Reading of control points failed: They must be numbered consecutive!!");
           if (tmp != "COORD") FOUR_C_THROW("failed to read control point %d", cpid);
-          std::vector<Teuchos::RCP<Discret::Discretization>> diss =
+          std::vector<Teuchos::RCP<Core::FE::Discretization>> diss =
               FindDisNode(element_readers, cpid);
 
           for (auto& dis : diss)
@@ -284,7 +284,7 @@ void Core::IO::ReadNodes(const Core::IO::DatFileReader& reader,
           }
 
           // add fiber information to node
-          std::vector<Teuchos::RCP<Discret::Discretization>> discretizations =
+          std::vector<Teuchos::RCP<Core::FE::Discretization>> discretizations =
               FindDisNode(element_readers, nodeid);
           for (auto& dis : discretizations)
           {

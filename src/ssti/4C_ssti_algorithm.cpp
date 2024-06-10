@@ -68,9 +68,9 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
   // discretization from scatra discretization
   clone_discretizations(comm);
 
-  Teuchos::RCP<Discret::Discretization> structuredis = problem->GetDis("structure");
-  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis("scatra");
-  Teuchos::RCP<Discret::Discretization> thermodis = problem->GetDis("thermo");
+  Teuchos::RCP<Core::FE::Discretization> structuredis = problem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<Core::FE::Discretization> thermodis = problem->GetDis("thermo");
 
   // safety check
   if (structparams.get<std::string>("INT_STRATEGY") == "Old")
@@ -220,9 +220,9 @@ void SSTI::SSTIAlgorithm::clone_discretizations(const Epetra_Comm& comm)
 
   Global::Problem* problem = Global::Problem::Instance();
 
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis("structure");
-  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis("scatra");
-  Teuchos::RCP<Discret::Discretization> thermodis = problem->GetDis("thermo");
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<Core::FE::Discretization> thermodis = problem->GetDis("thermo");
 
   if (scatradis->NumGlobalNodes() == 0)
   {

@@ -174,7 +174,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::PoroFluidMultiPhaseBoun
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::PoroFluidMultiPhaseType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::PoroFluidMultiPhaseType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

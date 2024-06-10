@@ -34,10 +34,14 @@ const int NODDOF_ALE3 = 3;  ///< number of dofs per node
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace Discret
+
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     // where should that be put?
@@ -320,7 +324,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -341,7 +345,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -403,7 +407,7 @@ namespace Discret
           ) = 0;
 
       virtual void static_ke_nonlinear(Ale3* ele,     ///< pointer to element
-          Discret::Discretization& discretization,    ///< discretization
+          Core::FE::Discretization& discretization,   ///< discretization
           std::vector<int>& lm,                       ///< node owner procs
           Core::LinAlg::SerialDenseMatrix& sys_mat,   ///< element stiffness matrix (to be filled)
           Core::LinAlg::SerialDenseVector& residual,  ///< element residual vector (to be filled)
@@ -414,7 +418,7 @@ namespace Discret
           ) = 0;
 
       virtual void static_ke_laplace(Ale3* ele,        ///< pointer to element
-          Discret::Discretization& dis,                ///< discretization
+          Core::FE::Discretization& dis,               ///< discretization
           Core::LinAlg::SerialDenseMatrix& sys_mat,    ///< element stiffnes matrix (to be filled)
           Core::LinAlg::SerialDenseVector& residual,   ///< element residual vector (to be filled)
           std::vector<double>& my_dispnp,              ///< nodal displacements
@@ -436,7 +440,7 @@ namespace Discret
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       void static_ke_laplace(Ale3* ele,                ///< pointer to element
-          Discret::Discretization& dis,                ///< discretization
+          Core::FE::Discretization& dis,               ///< discretization
           Core::LinAlg::SerialDenseMatrix& sys_mat,    ///< element stiffnes matrix (to be filled)
           Core::LinAlg::SerialDenseVector& residual,   ///< element residual vector (to be filled)
           std::vector<double>& my_dispnp,              ///< nodal displacements
@@ -456,7 +460,7 @@ namespace Discret
           ) override;
 
       void static_ke_nonlinear(Ale3* ele,             ///< pointer to element
-          Discret::Discretization& discretization,    ///< discretization
+          Core::FE::Discretization& discretization,   ///< discretization
           std::vector<int>& lm,                       ///< node owner procs
           Core::LinAlg::SerialDenseMatrix& sys_mat,   ///< element stiffness matrix (to be filled)
           Core::LinAlg::SerialDenseVector& residual,  ///< element residual vector (to be filled)
@@ -716,7 +720,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -738,7 +742,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -768,7 +772,7 @@ namespace Discret
       static Ale3SurfaceImplInterface* Impl(Discret::ELEMENTS::Ale3Surface* ele);
 
       virtual void ElementNodeNormal(Ale3Surface* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1, std::vector<double>& mydispnp) = 0;
     };
 
@@ -795,7 +799,7 @@ namespace Discret
       static constexpr int numdofpernode_ = nsd_;
 
       void ElementNodeNormal(Ale3Surface* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1, std::vector<double>& mydispnp) override;
 
      private:

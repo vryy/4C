@@ -81,7 +81,7 @@ Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::ScaTraEleCalcLsReini
 template <Core::FE::CellType distype, unsigned probDim>
 int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Evaluate(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -109,7 +109,7 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Evaluate(
 template <Core::FE::CellType distype, unsigned probDim>
 void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitialization(
     const Epetra_Vector& phinp, const std::vector<int>& lm, Core::Elements::Element* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra)
 {
@@ -132,7 +132,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitiali
 template <Core::FE::CellType distype, unsigned probDim>
 void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitialization_embedded(
     const std::vector<int>& lm, Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra)
 {
   // distinguish reinitalization
@@ -348,7 +348,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::elliptic_newton
 template <Core::FE::CellType distype, unsigned probDim>
 void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitialization_std(
     const Epetra_Vector& phinp, const std::vector<int>& lm, Core::Elements::Element* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra)
 {

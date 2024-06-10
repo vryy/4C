@@ -35,11 +35,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | forward declarations                                      dano 02/11 |
  *----------------------------------------------------------------------*/
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-  class ResultTest;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::IO
 {
@@ -144,7 +143,7 @@ namespace Adapter
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() = 0;
 
     /// direct access to discretization
-    virtual Teuchos::RCP<Discret::Discretization> discretization() = 0;
+    virtual Teuchos::RCP<Core::FE::Discretization> discretization() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
     virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() = 0;
@@ -278,7 +277,7 @@ namespace Adapter
    public:
     /// constructor
     explicit ThermoBaseAlgorithm(
-        const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Discret::Discretization> actdis);
+        const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Core::FE::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
     virtual ~ThermoBaseAlgorithm() = default;
@@ -293,11 +292,11 @@ namespace Adapter
    private:
     /// setup thermo algorithm
     void setup_thermo(
-        const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Discret::Discretization> actdis);
+        const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Core::FE::Discretization> actdis);
 
     /// setup thermo algorithm of THR::TimIntImpl type
     void setup_tim_int(const Teuchos::ParameterList& prbdyn, Inpar::THR::DynamicType timinttype,
-        Teuchos::RCP<Discret::Discretization> actdis);
+        Teuchos::RCP<Core::FE::Discretization> actdis);
 
     /// thermal field solver
     Teuchos::RCP<Thermo> thermo_;

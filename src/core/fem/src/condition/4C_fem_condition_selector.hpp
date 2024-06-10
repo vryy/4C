@@ -31,10 +31,10 @@ namespace Core::LinAlg
   class MultiMapExtractor;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Nodes
 {
@@ -70,11 +70,11 @@ namespace Core::Conditions
    public:
     /// Construct a selector on the given discretization for the Condition
     /// with the given name
-    ConditionSelector(const Discret::Discretization& dis, std::string condname);
+    ConditionSelector(const Core::FE::Discretization& dis, std::string condname);
 
     /// construct a selector from a given vector of conditions
-    ConditionSelector(const Discret::Discretization& dis,  //!< discretization
-        const std::vector<Condition*>& conds               //!< given vector of conditions
+    ConditionSelector(const Core::FE::Discretization& dis,  //!< discretization
+        const std::vector<Condition*>& conds                //!< given vector of conditions
     );
 
     /// Destructor
@@ -91,14 +91,14 @@ namespace Core::Conditions
 
    protected:
     /// discretization we are looking at
-    const Discret::Discretization& discretization() const { return dis_; }
+    const Core::FE::Discretization& discretization() const { return dis_; }
 
     /// all conditions that come by the given name
     const std::vector<Condition*>& conditions() const { return conds_; }
 
    private:
     /// discretization
-    const Discret::Discretization& dis_;
+    const Core::FE::Discretization& dis_;
 
     /// Conditions
     std::vector<Condition*> conds_;
@@ -118,7 +118,7 @@ namespace Core::Conditions
   {
    public:
     NDimConditionSelector(
-        const Discret::Discretization& dis, std::string condname, int startdim, int enddim)
+        const Core::FE::Discretization& dis, std::string condname, int startdim, int enddim)
         : ConditionSelector(dis, std::move(condname)), startdim_(startdim), enddim_(enddim)
     {
     }
@@ -160,7 +160,7 @@ namespace Core::Conditions
     void AddSelector(Teuchos::RCP<ConditionSelector> s) { selectors_.push_back(s); }
 
     /// Do the setup
-    void SetupExtractor(const Discret::Discretization& dis, const Epetra_Map& fullmap,
+    void SetupExtractor(const Core::FE::Discretization& dis, const Epetra_Map& fullmap,
         Core::LinAlg::MultiMapExtractor& extractor);
 
     /// Activate overlapping
@@ -168,7 +168,7 @@ namespace Core::Conditions
 
    private:
     /// evaluate the ConditionSelector objects
-    void setup_cond_dof_sets(const Discret::Discretization& dis);
+    void setup_cond_dof_sets(const Core::FE::Discretization& dis);
 
     /// condition selectors
     std::vector<Teuchos::RCP<ConditionSelector>> selectors_;

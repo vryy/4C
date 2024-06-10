@@ -27,11 +27,13 @@ FOUR_C_NAMESPACE_OPEN
 class PostField;
 class PostResult;
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
 
 namespace Discret
 {
-  class Discretization;
-
   namespace ELEMENTS
   {
     class Beam3Base;

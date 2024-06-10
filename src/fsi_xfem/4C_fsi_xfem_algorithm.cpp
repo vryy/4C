@@ -57,7 +57,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
   {
     // ask base algorithm for the structural time integrator
     // access the structural discretization
-    Teuchos::RCP<Discret::Discretization> structdis =
+    Teuchos::RCP<Core::FE::Discretization> structdis =
         Global::Problem::Instance()->GetDis("structure");
     Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure =
         Teuchos::rcp(new Adapter::StructureBaseAlgorithm(

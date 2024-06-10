@@ -29,10 +29,10 @@ namespace NOX::Nln
   class Group;
 }  // namespace NOX::Nln
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -1418,7 +1418,7 @@ namespace CONTACT
     void store_dirichlet_status(Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps) override;
 
     virtual void SetParentState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec,
-        const Teuchos::RCP<Discret::Discretization> dis){
+        const Teuchos::RCP<Core::FE::Discretization> dis){
         /* standard contact methods don't need the corresponding bulk element */
     };
 

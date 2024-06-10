@@ -131,7 +131,7 @@ Teuchos::RCP<PoroElast::PoroBase> PoroElast::UTILS::CreatePoroAlgorithm(
 
 
 Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElast::UTILS::BuildPoroSplitter(
-    Teuchos::RCP<Discret::Discretization> dis)
+    Teuchos::RCP<Core::FE::Discretization> dis)
 {
   Teuchos::RCP<Core::LinAlg::MapExtractor> porositysplitter = Teuchos::null;
 
@@ -154,8 +154,8 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElast::UTILS::BuildPoroSplitter(
 }
 
 void PoroElast::UTILS::SetMaterialPointersMatchingGrid(
-    Teuchos::RCP<const Discret::Discretization> sourcedis,
-    Teuchos::RCP<const Discret::Discretization> targetdis)
+    Teuchos::RCP<const Core::FE::Discretization> sourcedis,
+    Teuchos::RCP<const Core::FE::Discretization> targetdis)
 {
   const int numelements = targetdis->NumMyColElements();
 
@@ -172,7 +172,7 @@ void PoroElast::UTILS::SetMaterialPointersMatchingGrid(
   }
 }
 
-void PoroElast::UTILS::create_volume_ghosting(Discret::Discretization& idiscret)
+void PoroElast::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret)
 {
   //**********************************************************************
   // Prerequisites of this funtion:
@@ -187,7 +187,7 @@ void PoroElast::UTILS::create_volume_ghosting(Discret::Discretization& idiscret)
 
   Global::Problem* problem = Global::Problem::Instance();
 
-  std::vector<Teuchos::RCP<Discret::Discretization>> voldis;
+  std::vector<Teuchos::RCP<Core::FE::Discretization>> voldis;
   voldis.push_back(problem->GetDis("structure"));
   voldis.push_back(problem->GetDis("porofluid"));
 
@@ -249,13 +249,13 @@ void PoroElast::UTILS::create_volume_ghosting(Discret::Discretization& idiscret)
   PoroElast::UTILS::reconnect_parent_pointers(idiscret, *voldis[0], &(*voldis[1]));
 
   // 4 In case we use
-  Teuchos::RCP<Discret::DiscretizationFaces> facediscret =
-      Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(voldis[1]);
+  Teuchos::RCP<Core::FE::DiscretizationFaces> facediscret =
+      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(voldis[1]);
   if (facediscret != Teuchos::null) facediscret->FillCompleteFaces(true, true, true, true);
 }
 
-void PoroElast::UTILS::reconnect_parent_pointers(Discret::Discretization& idiscret,
-    Discret::Discretization& voldiscret, Discret::Discretization* voldiscret2)
+void PoroElast::UTILS::reconnect_parent_pointers(Core::FE::Discretization& idiscret,
+    Core::FE::Discretization& voldiscret, Core::FE::Discretization* voldiscret2)
 {
   const Epetra_Map* ielecolmap = idiscret.ElementColMap();
   const Epetra_Map* elecolmap = voldiscret.ElementColMap();
@@ -274,8 +274,8 @@ void PoroElast::UTILS::reconnect_parent_pointers(Discret::Discretization& idiscr
   }
 }
 
-void PoroElast::UTILS::SetSlaveAndMaster(const Discret::Discretization& voldiscret,
-    const Discret::Discretization* voldiscret2, const Epetra_Map* elecolmap,
+void PoroElast::UTILS::SetSlaveAndMaster(const Core::FE::Discretization& voldiscret,
+    const Core::FE::Discretization* voldiscret2, const Epetra_Map* elecolmap,
     Core::Elements::FaceElement* faceele)
 {
   int volgid = faceele->ParentElementId();
@@ -378,8 +378,8 @@ double PoroElast::UTILS::calculate_vector_norm(
 
 void PoroElast::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
     const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele1,
-    const std::vector<int>& ids_2, Teuchos::RCP<Discret::Discretization> dis1,
-    Teuchos::RCP<Discret::Discretization> dis2)
+    const std::vector<int>& ids_2, Teuchos::RCP<Core::FE::Discretization> dis1,
+    Teuchos::RCP<Core::FE::Discretization> dis2)
 {
   // call default assignment
   Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
@@ -425,8 +425,8 @@ void PoroElast::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
 
 void PoroElast::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
     const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele2,
-    const std::vector<int>& ids_1, Teuchos::RCP<Discret::Discretization> dis1,
-    Teuchos::RCP<Discret::Discretization> dis2)
+    const std::vector<int>& ids_1, Teuchos::RCP<Core::FE::Discretization> dis1,
+    Teuchos::RCP<Core::FE::Discretization> dis2)
 {
   // call default assignment
   Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(

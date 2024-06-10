@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::Geo
 {
-  std::map<int, Core::LinAlg::Matrix<3, 2>> getCurrentXAABBs(const Discret::Discretization& dis,
+  std::map<int, Core::LinAlg::Matrix<3, 2>> getCurrentXAABBs(const Core::FE::Discretization& dis,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions);
 
   /*!

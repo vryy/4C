@@ -31,7 +31,7 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   DiscretizationVisualizationWriterMesh::DiscretizationVisualizationWriterMesh(
-      const Teuchos::RCP<const Discret::Discretization>& discretization,
+      const Teuchos::RCP<const Core::FE::Discretization>& discretization,
       VisualizationParameters parameters,
       std::function<bool(const Core::Elements::Element* element)> element_filter)
       : discretization_(discretization),
@@ -405,7 +405,7 @@ namespace Core::IO
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
-  void append_element_ghosting_information(const Discret::Discretization& discretization,
+  void append_element_ghosting_information(const Core::FE::Discretization& discretization,
       VisualizationManager& visualization_manager,
       const std::function<bool(const Core::Elements::Element* ele)>& element_predicate)
   {

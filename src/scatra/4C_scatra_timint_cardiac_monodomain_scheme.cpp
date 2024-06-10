@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                     ljag 01/14 |
  *----------------------------------------------------------------------*/
 ScaTra::TimIntCardiacMonodomainOST::TimIntCardiacMonodomainOST(
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -120,7 +120,7 @@ void ScaTra::TimIntCardiacMonodomainOST::add_time_integration_specific_vectors(
  |  Constructor (public)                                     ljag 01/14 |
  *----------------------------------------------------------------------*/
 ScaTra::TimIntCardiacMonodomainBDF2::TimIntCardiacMonodomainBDF2(
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -206,7 +206,7 @@ void ScaTra::TimIntCardiacMonodomainBDF2::read_restart(
  |  Constructor (public)                                     ljag 01/14 |
  *----------------------------------------------------------------------*/
 ScaTra::TimIntCardiacMonodomainGenAlpha::TimIntCardiacMonodomainGenAlpha(
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,

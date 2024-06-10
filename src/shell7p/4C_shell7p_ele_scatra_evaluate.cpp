@@ -78,7 +78,7 @@ namespace
 }  // namespace
 
 int Discret::ELEMENTS::Shell7pScatra::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -194,7 +194,7 @@ int Discret::ELEMENTS::Shell7pScatra::Evaluate(Teuchos::ParameterList& params,
 
 // Integrate a Surface Neumann boundary condition
 int Discret::ELEMENTS::Shell7pScatra::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& la, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

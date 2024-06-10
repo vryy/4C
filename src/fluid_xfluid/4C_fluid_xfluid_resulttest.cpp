@@ -66,7 +66,7 @@ void FLD::XFluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int
 }
 
 void FLD::XFluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count,
-    int node, const Teuchos::RCP<const Discret::Discretization>& discret,
+    int node, const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<const Epetra_Vector>& velnp)
 {
   int havenode(discret->HaveGlobalNode(node));

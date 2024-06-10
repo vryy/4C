@@ -120,14 +120,14 @@ namespace PoroElastScaTra
 
    protected:
     //! setup up of dofsets for two way coupling
-    void replace_dof_sets(Teuchos::RCP<Discret::Discretization> structdis,
-        Teuchos::RCP<Discret::Discretization> fluiddis,
-        Teuchos::RCP<Discret::Discretization> scatradis);
+    void replace_dof_sets(Teuchos::RCP<Core::FE::Discretization> structdis,
+        Teuchos::RCP<Core::FE::Discretization> fluiddis,
+        Teuchos::RCP<Core::FE::Discretization> scatradis);
 
     //! setup up coupling objects if necessary
-    void setup_coupling(Teuchos::RCP<Discret::Discretization> structdis,
-        Teuchos::RCP<Discret::Discretization> fluiddis,
-        Teuchos::RCP<Discret::Discretization> scatradis);
+    void setup_coupling(Teuchos::RCP<Core::FE::Discretization> structdis,
+        Teuchos::RCP<Core::FE::Discretization> fluiddis,
+        Teuchos::RCP<Core::FE::Discretization> scatradis);
 
     //! Pointer to the porous media problem. (poroelastic)
     Teuchos::RCP<PoroElast::PoroBase> poro_;

@@ -33,10 +33,10 @@ namespace BINSTRATEGY
   class BinningStrategy;
 }  // namespace BINSTRATEGY
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -178,9 +178,9 @@ namespace Mortar
 
     inline bool IsRedistributed() const { return redistributed_; }
 
-    inline Teuchos::RCP<Discret::Discretization>& i_discret() { return idiscret_; }
+    inline Teuchos::RCP<Core::FE::Discretization>& i_discret() { return idiscret_; }
 
-    inline Teuchos::RCP<const Discret::Discretization> i_discret() const { return idiscret_; }
+    inline Teuchos::RCP<const Core::FE::Discretization> i_discret() const { return idiscret_; }
 
     inline int& Dim() { return dim_; }
 
@@ -402,7 +402,7 @@ namespace Mortar
     const Interface* masharingrefinterface_ = nullptr;
 
     //! the discretization of the mortar interface
-    Teuchos::RCP<Discret::Discretization> idiscret_;
+    Teuchos::RCP<Core::FE::Discretization> idiscret_;
 
     //! Spatial dimension of problem (2D or 3D)
     int dim_;
@@ -633,7 +633,7 @@ namespace Mortar
     /*!
     \brief Get discretization of this interface
     */
-    Discret::Discretization& Discret() const { return *idiscret_; }
+    Core::FE::Discretization& Discret() const { return *idiscret_; }
 
     /*!
     \brief Get problem dimension
@@ -996,8 +996,8 @@ namespace Mortar
     ghosting.
 
     If we have arrived at the final parallel distribution, we have to ask the underlying
-    Discret::Discretization to assign degrees of freedom. Since this is very expensive, let's do
-    this only if requested by the user/algorithm.
+    Core::FE::Discretization to assign degrees of freedom. Since this is very expensive,
+    let's do this only if requested by the user/algorithm.
 
     \sa extend_interface_ghosting()
 
@@ -1551,8 +1551,8 @@ namespace Mortar
     ghosting.
 
     If we have arrived at the final parallel distribution, we have to ask the underlying
-    Discret::Discretization to assign degrees of freedom. Since this is very expensive, let's do
-    this only if requested by the user/algorithm.
+    Core::FE::Discretization to assign degrees of freedom. Since this is very expensive,
+    let's do this only if requested by the user/algorithm.
 
     \sa extend_interface_ghosting_safely()
 
@@ -1724,7 +1724,7 @@ namespace Mortar
     /*!
     \brief Setup interface discretization
 
-    Creates either a regular Discret::Discretization or a Discret::NurbsDiscretization.
+    Creates either a regular Core::FE::Discretization or a Discret::NurbsDiscretization.
     */
     void create_interface_discretization();
 
@@ -1752,7 +1752,7 @@ namespace Mortar
     std::map<int, int>& procmap_;            ///< ref. to mapping global -> local communicator PIDs
     bool& redistributed_;                    ///< ref. to redistribution for this time step?
 
-    Teuchos::RCP<Discret::Discretization>&
+    Teuchos::RCP<Core::FE::Discretization>&
         idiscret_;                     ///< ref. to the discretization of the mortar interface
     int& dim_;                         ///< ref. to dimension of problem (2D or 3D)
     Teuchos::ParameterList& imortar_;  ///< ref. to containing contact input parameters of interface

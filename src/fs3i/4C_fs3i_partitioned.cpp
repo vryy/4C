@@ -86,11 +86,11 @@ void FS3I::PartFS3I::Init()
   // and structure-based scalar transport and get material map for fluid
   // and scalar transport elements
   //---------------------------------------------------------------------
-  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis("fluid");
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis("structure");
-  Teuchos::RCP<Discret::Discretization> fluidscatradis = problem->GetDis("scatra1");
-  Teuchos::RCP<Discret::Discretization> structscatradis = problem->GetDis("scatra2");
-  Teuchos::RCP<Discret::Discretization> aledis = problem->GetDis("ale");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> fluidscatradis = problem->GetDis("scatra1");
+  Teuchos::RCP<Core::FE::Discretization> structscatradis = problem->GetDis("scatra2");
+  Teuchos::RCP<Core::FE::Discretization> aledis = problem->GetDis("ale");
 
   //---------------------------------------------------------------------
   // create ale discretization as a clone from fluid discretization
@@ -334,7 +334,8 @@ void FS3I::PartFS3I::Setup()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_object(
-    Teuchos::RCP<Discret::Discretization> masterdis, Teuchos::RCP<Discret::Discretization> slavedis)
+    Teuchos::RCP<Core::FE::Discretization> masterdis,
+    Teuchos::RCP<Core::FE::Discretization> slavedis)
 {
   // copy conditions
   // this is actually only needed for copying TRANSPORT DIRICHLET/NEUMANN CONDITIONS
@@ -463,7 +464,7 @@ void FS3I::PartFS3I::SetupSystem()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-    Teuchos::RCP<Discret::Discretization> currdis = currscatra->ScaTraField()->discretization();
+    Teuchos::RCP<Core::FE::Discretization> currdis = currscatra->ScaTraField()->discretization();
     const int numscal = currscatra->ScaTraField()->NumScal();
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mapex =
         Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
@@ -540,7 +541,7 @@ void FS3I::PartFS3I::SetupSystem()
   check_interface_dirichlet_bc();
 
   // scatra solver
-  Teuchos::RCP<Discret::Discretization> firstscatradis =
+  Teuchos::RCP<Core::FE::Discretization> firstscatradis =
       (scatravec_[0])->ScaTraField()->discretization();
 #ifdef SCATRABLOCKMATRIXMERGE
   Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = Teuchos::rcp(new Teuchos::ParameterList);

@@ -24,11 +24,14 @@ continuous interior penalty) scheme
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
   class DiscretizationFaces;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class Fluid;
@@ -80,7 +83,7 @@ namespace XFEM
     //! routine
     void evaluate_edge_stab_ghost_penalty(
         Teuchos::ParameterList& eleparams,                      ///< element parameter list
-        Teuchos::RCP<Discret::Discretization> discret,          ///< discretization
+        Teuchos::RCP<Core::FE::Discretization> discret,         ///< discretization
         Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
         Teuchos::RCP<Epetra_Vector> systemvector,               ///< systemvector
@@ -98,16 +101,16 @@ namespace XFEM
         Discret::ELEMENTS::FluidIntFace* intface,  ///< internal face element
         Teuchos::RCP<Core::Mat::Material>& material_m,  ///< material of the master side
         Teuchos::RCP<Core::Mat::Material>& material_s,  ///< material of the slave side
-        std::vector<int>& nds_master,            ///< nodal dofset vector w.r.t. master element
-        std::vector<int>& nds_slave,             ///< nodal dofset vector w.r.t. slave element
-        Discret::DiscretizationFaces& xdiscret,  ///< discretization with faces
+        std::vector<int>& nds_master,             ///< nodal dofset vector w.r.t. master element
+        std::vector<int>& nds_slave,              ///< nodal dofset vector w.r.t. slave element
+        Core::FE::DiscretizationFaces& xdiscret,  ///< discretization with faces
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
         Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
     );
 
     //! prepares edge based stabilization for standard fluid
     void EvaluateEdgeStabStd(Teuchos::ParameterList& eleparams,  ///< element parameter list
-        Teuchos::RCP<Discret::Discretization> discret,           ///< discretization
+        Teuchos::RCP<Core::FE::Discretization> discret,          ///< discretization
         Discret::ELEMENTS::FluidIntFace* faceele,                ///< face element
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
         Teuchos::RCP<Epetra_Vector> systemvector                 ///< systemvector
@@ -116,9 +119,9 @@ namespace XFEM
     //! prepares edge based stabilization for fluid-fluid applications, where we want to apply
     //! EOS pressure stabilizing terms to the interface-contributing embedded fluid elements
     void evaluate_edge_stab_boundary_gp(
-        Teuchos::ParameterList& eleparams,              ///< element parameter list
-        Teuchos::RCP<Discret::Discretization> discret,  ///< discretization
-        Teuchos::RCP<Discret::Discretization>
+        Teuchos::ParameterList& eleparams,               ///< element parameter list
+        Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
+        Teuchos::RCP<Core::FE::Discretization>
             boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
         Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix

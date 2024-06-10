@@ -16,14 +16,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 Core::DOFSets::TransparentDofSet::TransparentDofSet(
-    Teuchos::RCP<Discret::Discretization> sourcedis, bool parallel)
+    Teuchos::RCP<Core::FE::Discretization> sourcedis, bool parallel)
     : Core::DOFSets::DofSet(), sourcedis_(sourcedis), parallel_(parallel)
 {
   return;
 }
 
 int Core::DOFSets::TransparentDofSet::assign_degrees_of_freedom(
-    const Discret::Discretization& dis, const unsigned dspos, const int start)
+    const Core::FE::Discretization& dis, const unsigned dspos, const int start)
 {
   // first, we call the standard assign_degrees_of_freedom from the base class
   int count = DofSet::assign_degrees_of_freedom(dis, dspos, start);
@@ -47,7 +47,7 @@ int Core::DOFSets::TransparentDofSet::assign_degrees_of_freedom(
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
 void Core::DOFSets::TransparentDofSet::transfer_degrees_of_freedom(
-    const Discret::Discretization& sourcedis, const Discret::Discretization& newdis,
+    const Core::FE::Discretization& sourcedis, const Core::FE::Discretization& newdis,
     const int start)
 {
   if (!sourcedis.dof_row_map()->UniqueGIDs()) FOUR_C_THROW("dof_row_map is not unique");
@@ -131,7 +131,7 @@ void Core::DOFSets::TransparentDofSet::transfer_degrees_of_freedom(
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
 void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
-    const Discret::Discretization& sourcedis, const Discret::Discretization& newdis,
+    const Core::FE::Discretization& sourcedis, const Core::FE::Discretization& newdis,
     const int start)
 {
   if (!sourcedis.dof_row_map()->UniqueGIDs()) FOUR_C_THROW("dof_row_map is not unique");

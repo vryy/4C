@@ -59,8 +59,8 @@ namespace FSI
 
     /// Check whether fluid node numbers and ALE node numbers are equal.
     bool FluidAleNodesDisjoint(
-        Teuchos::RCP<Discret::Discretization> fluiddis,  ///< pointer to fluid discretization
-        Teuchos::RCP<Discret::Discretization> aledis     ///< pointer to ALE discretization
+        Teuchos::RCP<Core::FE::Discretization> fluiddis,  ///< pointer to fluid discretization
+        Teuchos::RCP<Core::FE::Discretization> aledis     ///< pointer to ALE discretization
     );
 
     /*!
@@ -70,9 +70,9 @@ namespace FSI
     {
      public:
       /// constructor initializing internal variables
-      SlideAleUtils(Teuchos::RCP<Discret::Discretization> structdis,  ///< structure discretization
-          Teuchos::RCP<Discret::Discretization> fluiddis,             ///< fluid discretization
-          Core::Adapter::CouplingMortar& coupsf,                      ///< mortar adapter
+      SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> structdis,  ///< structure discretization
+          Teuchos::RCP<Core::FE::Discretization> fluiddis,             ///< fluid discretization
+          Core::Adapter::CouplingMortar& coupsf,                       ///< mortar adapter
           bool structcoupmaster,            ///< is structure master of adapter coupling?
           Inpar::FSI::SlideALEProj aleproj  ///< projection enum
       );
@@ -81,7 +81,7 @@ namespace FSI
       virtual ~SlideAleUtils() = default;
       /// remesh ALE corresponding
       void Remeshing(Adapter::FSIStructureWrapper& structure,  ///< structure adapter
-          Teuchos::RCP<Discret::Discretization> fluiddis,      ///< fluid discretization
+          Teuchos::RCP<Core::FE::Discretization> fluiddis,     ///< fluid discretization
           Teuchos::RCP<Epetra_Vector> idispale,      ///< standard ALE interface displacement
           Teuchos::RCP<Epetra_Vector> iprojdispale,  ///< projected ALE interface displacement
           Core::Adapter::CouplingMortar& coupsf,     ///< mortar adapter
@@ -119,9 +119,9 @@ namespace FSI
       );
 
       /// compute approximate interface rotation (structuresplit)
-      void rotation(Discret::Discretization& mtrdis,  ///< mtr interface  discretization
-          Teuchos::RCP<Epetra_Vector> idispale,       ///< vector of ALE displacements
-          const Epetra_Comm& comm,                    ///< communicator
+      void rotation(Core::FE::Discretization& mtrdis,  ///< mtr interface  discretization
+          Teuchos::RCP<Epetra_Vector> idispale,        ///< vector of ALE displacements
+          const Epetra_Comm& comm,                     ///< communicator
           std::map<int, double>& rotrat,  ///< rotation ratio of tangential displacements
           Teuchos::RCP<Epetra_Vector>
               rotfull  ///< vector of full displacements in tangential directions
@@ -130,14 +130,14 @@ namespace FSI
 
       /// calculate current position of structure interface nodes
       std::map<int, Core::LinAlg::Matrix<3, 1>> current_struct_pos(
-          Teuchos::RCP<Epetra_Vector> reddisp,    ///< redundant version of structure displacements
-          Discret::Discretization& interfacedis,  ///< interface discretization
+          Teuchos::RCP<Epetra_Vector> reddisp,     ///< redundant version of structure displacements
+          Core::FE::Discretization& interfacedis,  ///< interface discretization
           std::map<int, double>& maxcoord);
 
 
       /// project ALE nodes onto the structure surface
       void slide_projection(Adapter::FSIStructureWrapper& structure,  ///< structure adapter
-          Teuchos::RCP<Discret::Discretization> fluiddis,             ///< fluid discretization
+          Teuchos::RCP<Core::FE::Discretization> fluiddis,            ///< fluid discretization
           Teuchos::RCP<Epetra_Vector> idispale,      ///< standard ALE interface displacement
           Teuchos::RCP<Epetra_Vector> iprojdispale,  ///< projected ALE interface displacement
           Core::Adapter::CouplingMortar& coupsf,     ///< mortar adapter

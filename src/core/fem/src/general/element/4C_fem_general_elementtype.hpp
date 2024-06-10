@@ -30,10 +30,10 @@ namespace Core::LinAlg
   class SparseOperator;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 /// Subclass of ParObjectType that adds element type specific methods
 /*!
   Element types need to be initialized. Furthermore, there is a pre_evaluate
@@ -74,10 +74,10 @@ namespace Core::Elements
     virtual Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) = 0;
 
     /// initialize the element type
-    virtual int Initialize(Discret::Discretization& dis);
+    virtual int Initialize(Core::FE::Discretization& dis);
 
     /// preevaluation
-    virtual inline void pre_evaluate(Discret::Discretization& dis, Teuchos::ParameterList& p,
+    virtual inline void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,

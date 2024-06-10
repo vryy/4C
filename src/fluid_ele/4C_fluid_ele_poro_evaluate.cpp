@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Discret::ELEMENTS::FluidPoroEleType::pre_evaluate(Discret::Discretization& dis,
+void Discret::ELEMENTS::FluidPoroEleType::pre_evaluate(Core::FE::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -43,7 +43,7 @@ void Discret::ELEMENTS::FluidPoroEleType::pre_evaluate(Discret::Discretization& 
 }
 
 int Discret::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)

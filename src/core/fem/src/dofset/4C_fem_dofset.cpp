@@ -127,7 +127,7 @@ void Core::DOFSets::DofSet::Reset()
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
 int Core::DOFSets::DofSet::assign_degrees_of_freedom(
-    const Discret::Discretization& dis, const unsigned dspos, const int start)
+    const Core::FE::Discretization& dis, const unsigned dspos, const int start)
 {
   if (!dis.Filled()) FOUR_C_THROW("discretization Filled()==false");
   if (!dis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("Nodal row map is not unique");
@@ -163,8 +163,8 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
   int count = get_first_gid_number_to_be_used(dis);
 
   // Check if we have a face discretization which supports degrees of freedom on faces
-  Teuchos::RCP<const Discret::DiscretizationHDG> facedis =
-      Teuchos::rcp_dynamic_cast<const Discret::DiscretizationHDG>(Teuchos::rcp(&dis, false));
+  Teuchos::RCP<const Core::FE::DiscretizationHDG> facedis =
+      Teuchos::rcp_dynamic_cast<const Core::FE::DiscretizationHDG>(Teuchos::rcp(&dis, false));
 
   // set count to 0 in case of dofset 2 in HDG discretizations
   if (facedis != Teuchos::null && dspos_ == 2) count = 0;
@@ -632,7 +632,8 @@ int Core::DOFSets::DofSet::MinAllGID() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::DOFSets::DofSet::get_first_gid_number_to_be_used(const Discret::Discretization& dis) const
+int Core::DOFSets::DofSet::get_first_gid_number_to_be_used(
+    const Core::FE::Discretization& dis) const
 {
   return MaxGIDinList(dis.Comm()) + 1;
 }
@@ -641,7 +642,7 @@ int Core::DOFSets::DofSet::get_first_gid_number_to_be_used(const Discret::Discre
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Core::DOFSets::DofSet::get_minimal_node_gid_if_relevant(
-    const Discret::Discretization& dis) const
+    const Core::FE::Discretization& dis) const
 {
   return dis.NodeRowMap()->MinAllGID();
 }

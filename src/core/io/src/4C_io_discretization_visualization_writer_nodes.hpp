@@ -20,10 +20,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 namespace Core::IO
 {
   class VisualizationManager;
@@ -45,7 +45,7 @@ namespace Core::IO
      * @param parameters (in)     Visualization parameters
      */
     DiscretizationVisualizationWriterNodes(
-        const Teuchos::RCP<const Discret::Discretization>& discretization,
+        const Teuchos::RCP<const Core::FE::Discretization>& discretization,
         VisualizationParameters parameters);
 
     /**
@@ -102,7 +102,7 @@ namespace Core::IO
 
    private:
     //! discretization containing nodes of which geometry and result data shall be visualized
-    Teuchos::RCP<const Discret::Discretization> discretization_;
+    Teuchos::RCP<const Core::FE::Discretization> discretization_;
 
     //! The actual visualization writer object that additionally stores the geometry and result data
     Teuchos::RCP<VisualizationManager> visualization_manager_;

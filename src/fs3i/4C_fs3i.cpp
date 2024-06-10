@@ -89,8 +89,8 @@ void FS3I::FS3IBase::Setup()
 /*----------------------------------------------------------------------*/
 void FS3I::FS3IBase::check_interface_dirichlet_bc()
 {
-  Teuchos::RCP<Discret::Discretization> masterdis = scatravec_[0]->ScaTraField()->discretization();
-  Teuchos::RCP<Discret::Discretization> slavedis = scatravec_[1]->ScaTraField()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> masterdis = scatravec_[0]->ScaTraField()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> slavedis = scatravec_[1]->ScaTraField()->discretization();
 
   Teuchos::RCP<const Epetra_Map> mastermap = scatracoup_->MasterDofMap();
   Teuchos::RCP<const Epetra_Map> permmastermap = scatracoup_->PermMasterDofMap();
@@ -237,7 +237,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
           fs3idyn, "STRUCTSCAL_FIELDCOUPLING") == Inpar::FS3I::coupling_match)
   {
     // get structure discretization
-    Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis("structure");
+    Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis("structure");
 
     for (int i = 0; i < structdis->NumMyColElements(); ++i)
     {
@@ -274,7 +274,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
 
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
-    Teuchos::RCP<Discret::Discretization> disscatra =
+    Teuchos::RCP<Core::FE::Discretization> disscatra =
         (scatravec_[i])->ScaTraField()->discretization();
     std::vector<Core::Conditions::Condition*> coupcond;
     disscatra->GetCondition("ScaTraCoupling", coupcond);

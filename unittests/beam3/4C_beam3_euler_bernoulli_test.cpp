@@ -30,7 +30,7 @@ namespace
     Beam3eb()
     {
       testdis_ = Teuchos::rcp(
-          new Discret::Discretization("Beam3eb", Teuchos::rcp(new Epetra_SerialComm), 3));
+          new Core::FE::Discretization("Beam3eb", Teuchos::rcp(new Epetra_SerialComm), 3));
 
       std::vector<std::vector<double>> xrefe{{-0.05, 0.05, 0.3}, {0.45, -0.05, 0.1}};
       std::vector<double> xrefe_full{-0.05, 0.05, 0.3, 0.45, -0.05, 0.1};
@@ -51,7 +51,7 @@ namespace
 
    protected:
     //! dummy discretization for holding element and node pointers
-    Teuchos::RCP<Discret::Discretization> testdis_;
+    Teuchos::RCP<Core::FE::Discretization> testdis_;
     //! the beam3eb element to be tested
     Teuchos::RCP<Discret::ELEMENTS::Beam3eb> testele_;
   };

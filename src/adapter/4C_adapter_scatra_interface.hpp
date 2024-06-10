@@ -18,10 +18,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace ScaTra
 {
@@ -51,7 +51,7 @@ namespace Adapter
     virtual ~ScatraInterface() = default;
 
     //! return discretization
-    virtual Teuchos::RCP<Discret::Discretization> discretization() const = 0;
+    virtual Teuchos::RCP<Core::FE::Discretization> discretization() const = 0;
 
     //! add parameters specific for time-integration scheme
     virtual void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) = 0;

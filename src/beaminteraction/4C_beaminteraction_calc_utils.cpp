@@ -121,7 +121,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     void PeriodicBoundaryConsistentDisVector(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<const Core::Geo::MeshFree::BoundingBox> const& pbb,
-        Teuchos::RCP<const Discret::Discretization> const& discret)
+        Teuchos::RCP<const Core::FE::Discretization> const& discret)
     {
       Core::LinAlg::Matrix<3, 1> d;
       Core::LinAlg::Matrix<3, 1> X;
@@ -188,7 +188,7 @@ namespace BEAMINTERACTION
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void GetCurrentElementDis(Discret::Discretization const& discret,
+    void GetCurrentElementDis(Core::FE::Discretization const& discret,
         Core::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
         std::vector<double>& eledisp)
     {
@@ -203,7 +203,7 @@ namespace BEAMINTERACTION
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void GetCurrentUnshiftedElementDis(Discret::Discretization const& discret,
+    void GetCurrentUnshiftedElementDis(Core::FE::Discretization const& discret,
         Core::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
         Core::Geo::MeshFree::BoundingBox const& pbb, std::vector<double>& eledisp)
     {
@@ -223,7 +223,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------*/
     template <typename T>
     void SetFilamentBindingSpotPositions(
-        Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<T> params)
+        Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<T> params)
     {
       // todo: set somewhere else
       double const tol = Core::Geo::TOL7;
@@ -321,7 +321,7 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void ExtendGhostingForFilamentBspotSetup(
-        std::set<int>& relevantfilaments, Teuchos::RCP<Discret::Discretization> discret)
+        std::set<int>& relevantfilaments, Teuchos::RCP<Core::FE::Discretization> discret)
     {
       std::set<int> setofnodegidswithrequiredelecloud;
       DetermineOffMyRankNodesWithRelevantEleCloudForFilamentBspotSetup(
@@ -384,7 +384,7 @@ namespace BEAMINTERACTION
      *-----------------------------------------------------------------------------*/
     void DetermineOffMyRankNodesWithRelevantEleCloudForFilamentBspotSetup(
         std::set<int>& relevantfilaments, std::set<int>& setofrequirednodes,
-        Teuchos::RCP<Discret::Discretization> discret)
+        Teuchos::RCP<Core::FE::Discretization> discret)
     {
       // loop over all row nodes
       for (int rown = 0; rown < discret->NumMyRowNodes(); ++rown)
@@ -418,7 +418,7 @@ namespace BEAMINTERACTION
      *-----------------------------------------------------------------------------*/
     void ComputeFilamentLengthAndSortItsElements(
         std::vector<Core::Elements::Element*>& sortedfilamenteles, std::vector<int> const* nodeids,
-        double& filreflength, Teuchos::RCP<Discret::Discretization> discret)
+        double& filreflength, Teuchos::RCP<Core::FE::Discretization> discret)
     {
       // loop over all nodes associated with current filament
       for (int nodei = 0; nodei < static_cast<int>(nodeids->size()); ++nodei)
@@ -520,7 +520,7 @@ namespace BEAMINTERACTION
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void GetPosAndTriadOfBindingSpot(Discret::Discretization const& discret,
+    void GetPosAndTriadOfBindingSpot(Core::FE::Discretization const& discret,
         Core::Elements::Element* ele, Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
         Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& pbb,
         Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotnum,
@@ -587,7 +587,7 @@ namespace BEAMINTERACTION
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     void fe_assemble_ele_force_stiff_into_system_vector_matrix(
-        const Discret::Discretization& discret, std::vector<int> const& elegid,
+        const Core::FE::Discretization& discret, std::vector<int> const& elegid,
         std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat)
@@ -649,7 +649,7 @@ namespace BEAMINTERACTION
      *
      */
     template <unsigned int n_centerline_dof>
-    void GetElementCenterlineGIDIndices(Discret::Discretization const& discret,
+    void GetElementCenterlineGIDIndices(Core::FE::Discretization const& discret,
         const Core::Elements::Element* ele,
         Core::LinAlg::Matrix<n_centerline_dof, 1, int>& centerline_gid)
     {
@@ -682,7 +682,7 @@ namespace BEAMINTERACTION
     /**
      *
      */
-    void GetElementCenterlineDOFIndices(Discret::Discretization const& discret,
+    void GetElementCenterlineDOFIndices(Core::FE::Discretization const& discret,
         const Core::Elements::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
         unsigned int& num_dof)
     {
@@ -711,7 +711,7 @@ namespace BEAMINTERACTION
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     void AssembleCenterlineDofForceStiffIntoElementForceStiff(
-        Discret::Discretization const& discret, std::vector<int> const& elegid,
+        Core::FE::Discretization const& discret, std::vector<int> const& elegid,
         std::vector<Core::LinAlg::SerialDenseVector> const& eleforce_centerlineDOFs,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
         std::vector<Core::LinAlg::SerialDenseVector>* eleforce,
@@ -790,7 +790,7 @@ namespace BEAMINTERACTION
     /**
      *
      */
-    void AssembleCenterlineDofColMatrixIntoElementColMatrix(Discret::Discretization const& discret,
+    void AssembleCenterlineDofColMatrixIntoElementColMatrix(Core::FE::Discretization const& discret,
         const Core::Elements::Element* element,
         Core::LinAlg::SerialDenseMatrix const& row_matrix_centerlineDOFs,
         Core::LinAlg::SerialDenseMatrix& row_matrix_elementDOFs)
@@ -820,7 +820,7 @@ namespace BEAMINTERACTION
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void ExtractPosDofVecAbsoluteValues(Discret::Discretization const& discret,
+    void ExtractPosDofVecAbsoluteValues(Core::FE::Discretization const& discret,
         Core::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
         std::vector<double>& element_posdofvec_absolutevalues)
     {
@@ -850,7 +850,7 @@ namespace BEAMINTERACTION
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void ExtractPosDofVecValues(Discret::Discretization const& discret,
+    void ExtractPosDofVecValues(Core::FE::Discretization const& discret,
         Core::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
         std::vector<double>& element_posdofvec_values)
     {
@@ -878,7 +878,7 @@ namespace BEAMINTERACTION
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     template <class T1, class T2>
-    void ApplyBindingSpotForceToParentElements(Discret::Discretization const& discret,
+    void ApplyBindingSpotForceToParentElements(Core::FE::Discretization const& discret,
         Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& pbb,
         const Teuchos::RCP<Epetra_Vector> disp_np_col,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr,
@@ -922,7 +922,7 @@ namespace BEAMINTERACTION
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     template <class T1, class T2>
-    void ApplyBindingSpotStiffToParentElements(Discret::Discretization const& discret,
+    void ApplyBindingSpotStiffToParentElements(Core::FE::Discretization const& discret,
         Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& pbb,
         const Teuchos::RCP<Epetra_Vector> disp_np_col,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr,
@@ -1023,7 +1023,7 @@ namespace BEAMINTERACTION
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     template <class T1, class T2>
-    void ApplyBindingSpotForceStiffToParentElements(Discret::Discretization const& discret,
+    void ApplyBindingSpotForceStiffToParentElements(Core::FE::Discretization const& discret,
         Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& pbb,
         const Teuchos::RCP<Epetra_Vector> disp_np_col,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr,
@@ -1171,7 +1171,7 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void SetupEleTypeMapExtractor(Teuchos::RCP<const Discret::Discretization> const& discret,
+    void SetupEleTypeMapExtractor(Teuchos::RCP<const Core::FE::Discretization> const& discret,
         Teuchos::RCP<Core::LinAlg::MultiMapExtractor>& eletypeextractor)
     {
       std::vector<std::set<int>> eletypeset(3);
@@ -1214,7 +1214,7 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void UpdateDofMapOfVector(Teuchos::RCP<Discret::Discretization> discret,
+    void UpdateDofMapOfVector(Teuchos::RCP<Core::FE::Discretization> discret,
         Teuchos::RCP<Epetra_Vector>& dofmapvec, Teuchos::RCP<Epetra_Vector> old)
     {
       if (dofmapvec != Teuchos::null)
@@ -1266,38 +1266,38 @@ namespace BEAMINTERACTION
     // explicit template instantiation (to please every compiler)
     //-----------------------------------------------------------------------------
     template void SetFilamentBindingSpotPositions(
-        Teuchos::RCP<Discret::Discretization>, Teuchos::RCP<BEAMINTERACTION::CrosslinkingParams>);
-    template void SetFilamentBindingSpotPositions(Teuchos::RCP<Discret::Discretization>,
+        Teuchos::RCP<Core::FE::Discretization>, Teuchos::RCP<BEAMINTERACTION::CrosslinkingParams>);
+    template void SetFilamentBindingSpotPositions(Teuchos::RCP<Core::FE::Discretization>,
         Teuchos::RCP<BEAMINTERACTION::SphereBeamLinkingParams>);
 
     template void ApplyBindingSpotForceToParentElements<Discret::ELEMENTS::Beam3Base,
-        Discret::ELEMENTS::Beam3Base>(Discret::Discretization const&,
+        Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
         Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&, const Teuchos::RCP<Epetra_Vector>,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
         std::vector<Core::LinAlg::SerialDenseVector> const&,
         std::vector<Core::LinAlg::SerialDenseVector>&);
     template void ApplyBindingSpotForceToParentElements<Discret::ELEMENTS::Rigidsphere,
-        Discret::ELEMENTS::Beam3Base>(Discret::Discretization const&,
+        Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
         Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&, const Teuchos::RCP<Epetra_Vector>,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
         std::vector<Core::LinAlg::SerialDenseVector> const&,
         std::vector<Core::LinAlg::SerialDenseVector>&);
 
     template void ApplyBindingSpotStiffToParentElements<Discret::ELEMENTS::Beam3Base,
-        Discret::ELEMENTS::Beam3Base>(Discret::Discretization const&,
+        Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
         Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&, const Teuchos::RCP<Epetra_Vector>,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
     template void ApplyBindingSpotStiffToParentElements<Discret::ELEMENTS::Rigidsphere,
-        Discret::ELEMENTS::Beam3Base>(Discret::Discretization const&,
+        Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
         Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&, const Teuchos::RCP<Epetra_Vector>,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
 
     template void ApplyBindingSpotForceStiffToParentElements<Discret::ELEMENTS::Beam3Base,
-        Discret::ELEMENTS::Beam3Base>(Discret::Discretization const&,
+        Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
         Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&, const Teuchos::RCP<Epetra_Vector>,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
         std::vector<Core::LinAlg::SerialDenseVector> const&,
@@ -1305,7 +1305,7 @@ namespace BEAMINTERACTION
         std::vector<Core::LinAlg::SerialDenseVector>&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
     template void ApplyBindingSpotForceStiffToParentElements<Discret::ELEMENTS::Rigidsphere,
-        Discret::ELEMENTS::Beam3Base>(Discret::Discretization const&,
+        Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
         Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&, const Teuchos::RCP<Epetra_Vector>,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
         std::vector<Core::LinAlg::SerialDenseVector> const&,
@@ -1313,9 +1313,9 @@ namespace BEAMINTERACTION
         std::vector<Core::LinAlg::SerialDenseVector>&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
 
-    template void GetElementCenterlineGIDIndices<6>(Discret::Discretization const&,
+    template void GetElementCenterlineGIDIndices<6>(Core::FE::Discretization const&,
         const Core::Elements::Element*, Core::LinAlg::Matrix<6, 1, int>&);
-    template void GetElementCenterlineGIDIndices<12>(Discret::Discretization const&,
+    template void GetElementCenterlineGIDIndices<12>(Core::FE::Discretization const&,
         const Core::Elements::Element*, Core::LinAlg::Matrix<12, 1, int>&);
 
   }  // namespace UTILS

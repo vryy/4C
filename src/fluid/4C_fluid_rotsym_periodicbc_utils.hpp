@@ -24,10 +24,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Nodes
 {
@@ -57,7 +57,7 @@ namespace FLD
   void GetRelevantSlaveNodesOfRotSymPBC(
       std::map<int, double>&
           pbcslavenodemap,  ///< map to be filled with node gids and rotation angles
-      Teuchos::RCP<Discret::Discretization> dis);  ///< discretization
+      Teuchos::RCP<Core::FE::Discretization> dis);  ///< discretization
 
 }  // namespace FLD
 

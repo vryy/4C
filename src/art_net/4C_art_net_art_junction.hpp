@@ -66,7 +66,7 @@ namespace Arteries
       /*!
       \brief Standard Constructor
       */
-      ArtJunctionWrapper(Teuchos::RCP<Discret::Discretization> actdis,
+      ArtJunctionWrapper(Teuchos::RCP<Core::FE::Discretization> actdis,
           Core::IO::DiscretizationWriter &output, Teuchos::ParameterList &params, double dta);
 
       /*!
@@ -105,7 +105,7 @@ namespace Arteries
       // map<const int, Teuchos::RCP<Teuchos::ParameterList> >  nodalParams_;
 
       //! 1d artery discretization
-      Teuchos::RCP<Discret::Discretization> discret_;
+      Teuchos::RCP<Core::FE::Discretization> discret_;
 
       //! the output writer
       Core::IO::DiscretizationWriter &output_;
@@ -133,7 +133,7 @@ namespace Arteries
       /*!
       \brief Standard Constructor
      */
-      ArtJunctionBc(Teuchos::RCP<Discret::Discretization> actdis,
+      ArtJunctionBc(Teuchos::RCP<Core::FE::Discretization> actdis,
           Core::IO::DiscretizationWriter &output, std::vector<Core::Conditions::Condition *> conds,
           std::vector<int> IOart_flag, double dta, int condid, int numcond);
 
@@ -212,7 +212,7 @@ namespace Arteries
       int myrank_;
 
       //! fluid discretization
-      Teuchos::RCP<Discret::Discretization> discret_;
+      Teuchos::RCP<Core::FE::Discretization> discret_;
 
       //! the output writer
       Core::IO::DiscretizationWriter &output_;

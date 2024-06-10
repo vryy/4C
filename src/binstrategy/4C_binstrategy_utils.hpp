@@ -21,10 +21,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -66,7 +66,7 @@ namespace BINSTRATEGY
      * @param[in] initelements init elements, enters fill_complete call
      * @param[in] doboundaryconditions do boundary conditions, enters fill_complete call
      */
-    void ExtendDiscretizationGhosting(Teuchos::RCP<Discret::Discretization> discret,
+    void ExtendDiscretizationGhosting(Teuchos::RCP<Core::FE::Discretization> discret,
         Teuchos::RCP<Epetra_Map> const& extendedelecolmap, bool assigndegreesoffreedom,
         bool initelements, bool doboundaryconditions);
 
@@ -85,7 +85,7 @@ namespace BINSTRATEGY
      * @param[in] discret discretization
      * @param[in] toranktosendeles key: new owner std::vector: elements that are sended to new owner
      */
-    void CommunicateElements(Teuchos::RCP<Discret::Discretization>& discret,
+    void CommunicateElements(Teuchos::RCP<Core::FE::Discretization>& discret,
         std::map<int, std::vector<Core::Elements::Element*>> const& toranktosendeles);
 
     /*!
@@ -96,7 +96,7 @@ namespace BINSTRATEGY
      * @param[out] bintorowelemap
      */
     void CommunicateDistributionOfTransferredElementsToBins(
-        Teuchos::RCP<Discret::Discretization>& discret,
+        Teuchos::RCP<Core::FE::Discretization>& discret,
         std::map<int, std::vector<std::pair<int, std::vector<int>>>> const& toranktosendbinids,
         std::map<int, std::set<int>>& bintorowelemap);
 
@@ -108,7 +108,7 @@ namespace BINSTRATEGY
      * @param[in] disnp current displacement state
      * @param[out] currpos current position of node
      */
-    void GetCurrentNodePos(Teuchos::RCP<const Discret::Discretization> const discret,
+    void GetCurrentNodePos(Teuchos::RCP<const Core::FE::Discretization> const discret,
         Core::Nodes::Node const* node, Teuchos::RCP<const Epetra_Vector> const disnp,
         double* currpos);
 

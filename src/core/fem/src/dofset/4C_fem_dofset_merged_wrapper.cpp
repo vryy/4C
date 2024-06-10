@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::DOFSets::DofSetMergedWrapper::DofSetMergedWrapper(Teuchos::RCP<DofSetInterface> sourcedofset,
-    Teuchos::RCP<const Discret::Discretization> sourcedis, const std::string& couplingcond_master,
+    Teuchos::RCP<const Core::FE::Discretization> sourcedis, const std::string& couplingcond_master,
     const std::string& couplingcond_slave)
     : DofSetBase(),
       master_nodegids_col_layout_(Teuchos::null),
@@ -69,7 +69,7 @@ const Epetra_Map* Core::DOFSets::DofSetMergedWrapper::DofColMap() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
-    const Discret::Discretization& dis, const unsigned dspos, const int start)
+    const Core::FE::Discretization& dis, const unsigned dspos, const int start)
 {
   if (sourcedofset_ == Teuchos::null) FOUR_C_THROW("No source dof set assigned to merged dof set!");
   if (sourcedis_ == Teuchos::null)

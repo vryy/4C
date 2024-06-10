@@ -25,7 +25,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-FLD::TimInt::TimInt(const Teuchos::RCP<Discret::Discretization>& discret,
+FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<Core::IO::DiscretizationWriter>& output)

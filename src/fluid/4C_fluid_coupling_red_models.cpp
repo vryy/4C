@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
-    Teuchos::RCP<Discret::Discretization> dis_3D, Teuchos::RCP<Discret::Discretization> dis_redD,
+    Teuchos::RCP<Core::FE::Discretization> dis_3D, Teuchos::RCP<Core::FE::Discretization> dis_redD,
     //                                                         Teuchos::RCP<red_D_time_int>
     //                                                         RedD_Time_integ,
     Core::IO::DiscretizationWriter& output, double dt_3D, double dt_redD)
@@ -696,9 +696,10 @@ void FLD::UTILS::FluidCouplingWrapperBase::read_restart(Core::IO::Discretization
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::UTILS::FluidCouplingBc::FluidCouplingBc(Teuchos::RCP<Discret::Discretization> dis_3D,
-    Teuchos::RCP<Discret::Discretization> dis_redD, Core::IO::DiscretizationWriter& output,
-    double dt_3d, double dt_rm, int condid, int numcond, int numcond2)
+FLD::UTILS::FluidCouplingBc::FluidCouplingBc(Teuchos::RCP<Core::FE::Discretization> dis_3D,
+    Teuchos::RCP<Core::FE::Discretization> dis_redD, Core::IO::DiscretizationWriter& output,
+    double dt_3d, double dt_rm, int condid, int numcond,
+    int numcond2)
     :  // call constructor for "nontrivial" objects
       condid_(condid),
       discret_3_d_(dis_3D),

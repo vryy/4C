@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntLoma::TimIntLoma(const Teuchos::RCP<Discret::Discretization>& actdis,
+FLD::TimIntLoma::TimIntLoma(const Teuchos::RCP<Core::FE::Discretization>& actdis,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
@@ -87,7 +87,7 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vect
     Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
     Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-    Teuchos::RCP<Discret::Discretization> scatradis)
+    Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
   // initializations
   int err(0);
@@ -177,7 +177,7 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vect
  *----------------------------------------------------------------------*/
 void FLD::TimIntLoma::SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
     const double thermpressnp, Teuchos::RCP<const Epetra_Vector> scatraresidual,
-    Teuchos::RCP<Discret::Discretization> scatradis, const int whichscalar)
+    Teuchos::RCP<Core::FE::Discretization> scatradis, const int whichscalar)
 {
   FluidImplicitTimeInt::SetScalarFields(
       scalarnp, thermpressnp, scatraresidual, scatradis, whichscalar);

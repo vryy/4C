@@ -378,7 +378,7 @@ namespace CONTACT
     /*!
      \brief The discretization is a friend of FriNode
      */
-    friend class Discret::Discretization;
+    friend class Core::FE::Discretization;
 
     //@}
 

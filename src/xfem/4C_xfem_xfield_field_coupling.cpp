@@ -181,8 +181,8 @@ void XFEM::XFieldField::Coupling::SlaveToMaster(const Teuchos::RCP<const Epetra_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::Coupling::build_dof_maps(const Discret::Discretization& masterdis,
-    const Discret::Discretization& slavedis, const Teuchos::RCP<const Epetra_Map>& masternodemap,
+void XFEM::XFieldField::Coupling::build_dof_maps(const Core::FE::Discretization& masterdis,
+    const Core::FE::Discretization& slavedis, const Teuchos::RCP<const Epetra_Map>& masternodemap,
     const Teuchos::RCP<const Epetra_Map>& slavenodemap,
     const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
     const Teuchos::RCP<const Epetra_Map>& permslavenodemap, const std::vector<int>& masterdofs,
@@ -254,7 +254,7 @@ void XFEM::XFieldField::Coupling::save_node_maps(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::Coupling::build_min_dof_maps(const Discret::Discretization& min_dis,
+void XFEM::XFieldField::Coupling::build_min_dof_maps(const Core::FE::Discretization& min_dis,
     const Epetra_Map& min_nodemap, const Epetra_Map& min_permnodemap,
     Teuchos::RCP<const Epetra_Map>& min_dofmap, Teuchos::RCP<const Epetra_Map>& min_permdofmap,
     Teuchos::RCP<Epetra_Export>& min_exporter, const Epetra_Map& max_nodemap,
@@ -321,7 +321,7 @@ void XFEM::XFieldField::Coupling::build_min_dof_maps(const Discret::Discretizati
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::Coupling::build_max_dof_maps(const Discret::Discretization& max_dis,
+void XFEM::XFieldField::Coupling::build_max_dof_maps(const Core::FE::Discretization& max_dis,
     const Epetra_Map& max_nodemap, const Epetra_Map& max_permnodemap,
     Teuchos::RCP<const Epetra_Map>& max_dofmap, Teuchos::RCP<const Epetra_Map>& max_permdofmap,
     Teuchos::RCP<Epetra_Export>& max_exporter,

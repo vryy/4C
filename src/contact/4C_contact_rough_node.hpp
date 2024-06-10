@@ -37,7 +37,7 @@ namespace CONTACT
     /*!
      \brief The discretization is a friend of RoughNode
      */
-    friend class Discret::Discretization;
+    friend class Core::FE::Discretization;
 
     //@}
 

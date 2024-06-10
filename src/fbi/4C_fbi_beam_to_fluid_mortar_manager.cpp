@@ -31,8 +31,8 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamToFluidMortarManager::BeamToFluidMortarManager(
-    Teuchos::RCP<const Discret::Discretization> discretization1,
-    Teuchos::RCP<const Discret::Discretization> discretization2,
+    Teuchos::RCP<const Core::FE::Discretization> discretization1,
+    Teuchos::RCP<const Core::FE::Discretization> discretization2,
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingParams> params, int start_value_lambda_gid)
     : is_setup_(false),
       is_local_maps_build_(false),

@@ -38,8 +38,8 @@ Core::IO::DiscretizationReader::DiscretizationReader() /* [PROTECTED] */
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::DiscretizationReader::DiscretizationReader(
-    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::IO::InputControl> input, int step)
+Core::IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<Core::FE::Discretization> dis,
+    Teuchos::RCP<Core::IO::InputControl> input, int step)
     : dis_(dis), input_(input)
 {
   find_result_group(step, input_->ControlFile());
@@ -507,7 +507,7 @@ Core::IO::DiscretizationWriter::DiscretizationWriter() /* PROTECTED */
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<Discret::Discretization> dis,
+Core::IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<Core::FE::Discretization> dis,
     Teuchos::RCP<OutputControl> output_control,
     const Core::FE::ShapeFunctionType shape_function_type)
     : dis_(Teuchos::rcp(dis.get(), false)),  // no ownership to break circle discretization<>writer
@@ -1625,7 +1625,7 @@ void Core::IO::DiscretizationWriter::ClearMapCache()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Discret::Discretization& Core::IO::DiscretizationWriter::GetDiscret() const
+const Core::FE::Discretization& Core::IO::DiscretizationWriter::GetDiscret() const
 {
   if (dis_.is_null()) FOUR_C_THROW("The discretization pointer has not been initialized!");
   return *dis_;

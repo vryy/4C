@@ -171,7 +171,7 @@ namespace Core::IO
   /*----------------------------------------------------------------------*/
   void DatFileReader::ReadDesign(const std::string& name,
       std::vector<std::vector<int>>& dobj_fenode,
-      const std::function<const Discret::Discretization&(const std::string& name)>&
+      const std::function<const Core::FE::Discretization&(const std::string& name)>&
           get_discretization)
   {
     std::map<int, std::set<int>> topology;
@@ -256,7 +256,7 @@ namespace Core::IO
             FOUR_C_THROW("Illegal line in section '%s': '%s'", marker.c_str(), l);
           }
 
-          const Discret::Discretization& actdis = get_discretization(disname);
+          const Core::FE::Discretization& actdis = get_discretization(disname);
 
           std::vector<double> box_specifications;
           if (cached_box_specifications_.find(disname) != cached_box_specifications_.end())

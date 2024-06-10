@@ -80,7 +80,7 @@ namespace POROFLUIDMULTIPHASE
     /*========================================================================*/
 
     //! Standard Constructor
-    TimIntImpl(Teuchos::RCP<Discret::Discretization> dis, const int linsolvernumber,
+    TimIntImpl(Teuchos::RCP<Core::FE::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
@@ -186,7 +186,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const override;
 
     //! return discretization
-    Teuchos::RCP<Discret::Discretization> discretization() const override { return discret_; }
+    Teuchos::RCP<Core::FE::Discretization> discretization() const override { return discret_; }
 
     //! access dof row map
     Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) const override;
@@ -655,7 +655,7 @@ namespace POROFLUIDMULTIPHASE
     /*========================================================================*/
 
     //! the porous multiphase flow discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! the discretization writer
     Teuchos::RCP<Core::IO::DiscretizationWriter> output_;

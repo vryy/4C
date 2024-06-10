@@ -54,10 +54,12 @@ void electromagnetics_drt()
   const Teuchos::ParameterList& elemagparams = problem->electromagnetic_params();
 
   // declare discretization and check their existence
-  Teuchos::RCP<Discret::DiscretizationHDG> elemagdishdg =
-      Teuchos::rcp_dynamic_cast<Discret::DiscretizationHDG>(problem->GetDis("elemag"));
+  Teuchos::RCP<Core::FE::DiscretizationHDG> elemagdishdg =
+      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationHDG>(problem->GetDis("elemag"));
   if (elemagdishdg == Teuchos::null)
-    FOUR_C_THROW("Failed to cast Discret::Discretization to Discret::DiscretizationHDG.");
+    FOUR_C_THROW(
+        "Failed to cast Core::FE::Discretization to "
+        "Core::FE::DiscretizationHDG.");
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   elemagdishdg->PrintFaces(std::cout);
@@ -180,12 +182,12 @@ void electromagnetics_drt()
       {
         Teuchos::RCP<Epetra_Comm> newcomm = Teuchos::rcp(elemagdishdg->Comm().Clone());
 
-        Teuchos::RCP<Discret::Discretization> scatradis;
+        Teuchos::RCP<Core::FE::Discretization> scatradis;
 
         if (ishdg)
         {
           scatradis = Teuchos::rcp(
-              new Discret::DiscretizationHDG((std::string) "scatra", newcomm, problem->NDim()));
+              new Core::FE::DiscretizationHDG((std::string) "scatra", newcomm, problem->NDim()));
 
           scatradis->fill_complete();
 
@@ -196,7 +198,7 @@ void electromagnetics_drt()
         else
         {
           scatradis = Teuchos::rcp(
-              new Discret::Discretization((std::string) "scatra", newcomm, problem->NDim()));
+              new Core::FE::Discretization((std::string) "scatra", newcomm, problem->NDim()));
           scatradis->fill_complete();
 
           Core::FE::CloneDiscretization<
@@ -211,7 +213,7 @@ void electromagnetics_drt()
 
         // This is necessary to have the dirichlet conditions done also in the scatra problmem. It
         // might be necessary to rethink how things are handled inside the
-        // Discret::UTILS::DbcHDG::do_dirichlet_condition.
+        // Core::FE::UTILS::DbcHDG::do_dirichlet_condition.
         problem->SetProblemType(Core::ProblemType::scatra);
 
         // access the problem-specific parameter list

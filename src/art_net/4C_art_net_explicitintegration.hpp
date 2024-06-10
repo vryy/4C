@@ -52,7 +52,7 @@ namespace Arteries
     \brief Standard Constructor
 
     */
-    ArtNetExplicitTimeInt(Teuchos::RCP<Discret::Discretization> dis, const int linsolvernumber,
+    ArtNetExplicitTimeInt(Teuchos::RCP<Core::FE::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
         Core::IO::DiscretizationWriter& output);
 

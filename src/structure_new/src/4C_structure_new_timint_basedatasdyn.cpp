@@ -109,7 +109,7 @@ STR::TimeInt::BaseDataSDyn::BaseDataSDyn()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataSDyn::Init(const Teuchos::RCP<Discret::Discretization> discret,
+void STR::TimeInt::BaseDataSDyn::Init(const Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     const Teuchos::RCP<std::set<enum Inpar::STR::ModelType>> modeltypes,
     const Teuchos::RCP<std::set<enum Inpar::STR::EleTech>> eletechs,

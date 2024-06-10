@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 FLD::XFluidState::CouplingState::CouplingState(
     const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
-    const Teuchos::RCP<Discret::Discretization>& slavediscret_mat,
-    const Teuchos::RCP<Discret::Discretization>& slavediscret_rhs)
+    const Teuchos::RCP<Core::FE::Discretization>& slavediscret_mat,
+    const Teuchos::RCP<Core::FE::Discretization>& slavediscret_rhs)
     : is_active_(true)
 {
   if (slavediscret_mat == Teuchos::null)
@@ -357,7 +357,7 @@ void FLD::XFluidState::zero_system_matrix_and_rhs()
  |  Set dirichlet- and velocity/pressure-map extractor      kruse 08/14 |
  *----------------------------------------------------------------------*/
 void FLD::XFluidState::SetupMapExtractors(
-    const Teuchos::RCP<Discret::Discretization>& xfluiddiscret, const double& time)
+    const Teuchos::RCP<Core::FE::Discretization>& xfluiddiscret, const double& time)
 {
   // create dirichlet map extractor
   Teuchos::ParameterList eleparams;

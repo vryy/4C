@@ -31,7 +31,7 @@
  *----------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_OPEN
 CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointConstraintManager(
-    Teuchos::RCP<const Discret::Discretization> disc_ptr, Core::LinAlg::SparseMatrix* st_ptr)
+    Teuchos::RCP<const Core::FE::Discretization> disc_ptr, Core::LinAlg::SparseMatrix* st_ptr)
 {
   discret_ptr_ = disc_ptr;
   stiff_ptr_ = st_ptr;

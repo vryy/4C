@@ -73,7 +73,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     enum Inpar::RveMpc::EnforcementStrategy strategy_ = Inpar::RveMpc::EnforcementStrategy::penalty;
 
     //! Pointer to the discretization
-    Teuchos::RCP<const Discret::Discretization> discret_ptr_ = Teuchos::null;
+    Teuchos::RCP<const Core::FE::Discretization> discret_ptr_ = Teuchos::null;
 
     //! System Matrix \f$ Q_{dd} \f$
     Teuchos::RCP<Core::LinAlg::SparseMatrix> Q_dd_ = Teuchos::null;

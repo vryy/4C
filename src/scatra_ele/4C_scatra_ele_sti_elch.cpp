@@ -71,7 +71,7 @@ template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleSTIElch<distype>::extract_element_and_node_values(
     Core::Elements::Element* ele,               //!< current element
     Teuchos::ParameterList& params,             //!< parameter list
-    Discret::Discretization& discretization,    //!< discretization
+    Core::FE::Discretization& discretization,   //!< discretization
     Core::Elements::Element::LocationArray& la  //!< location array
 )
 {

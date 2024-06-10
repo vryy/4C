@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 /* create marching time integrator */
 Teuchos::RCP<STR::TimInt> STR::TimIntCreate(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization>& actdis,
     Teuchos::RCP<Core::LinAlg::Solver>& solver, Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter>& output)
 {
@@ -57,7 +57,7 @@ Teuchos::RCP<STR::TimInt> STR::TimIntCreate(const Teuchos::ParameterList& timepa
 /* create implicit marching time integrator */
 Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization>& actdis,
     Teuchos::RCP<Core::LinAlg::Solver>& solver, Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter>& output)
 {
@@ -118,7 +118,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate(const Teuchos::ParameterList
 /* create explicit marching time integrator */
 Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization>& actdis,
     Teuchos::RCP<Core::LinAlg::Solver>& solver, Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter>& output)
 {

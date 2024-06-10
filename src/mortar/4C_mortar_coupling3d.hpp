@@ -21,11 +21,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Mortar
 {
@@ -58,7 +57,7 @@ namespace Mortar
      performed in parallel by individual processes.
 
      */
-    Coupling3d(Discret::Discretization& idiscret, int dim, bool quad,
+    Coupling3d(Core::FE::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele);
 
     /*!
@@ -72,7 +71,7 @@ namespace Mortar
      \brief Get interface discretization
 
      */
-    virtual Discret::Discretization& Discret() const { return idiscret_; }
+    virtual Core::FE::Discretization& Discret() const { return idiscret_; }
 
     /*!
      \brief Get communicator
@@ -441,7 +440,7 @@ namespace Mortar
     Coupling3d operator=(const Coupling3d& old);
     Coupling3d(const Coupling3d& old);
 
-    Discret::Discretization& idiscret_;      // discretization of the contact interface
+    Core::FE::Discretization& idiscret_;     // discretization of the contact interface
     int dim_;                                // problem dimension (here: 3D)
     Inpar::Mortar::ShapeFcn shapefcn_;       // lm shape function type
     bool quad_;                              // flag indicating coupling type (true = quadratic)
@@ -492,7 +491,7 @@ namespace Mortar
      performed in parallel by individual processes.
 
      */
-    Coupling3dQuad(Discret::Discretization& idiscret, int dim, bool quad,
+    Coupling3dQuad(Core::FE::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele,
         Mortar::IntElement& sintele, Mortar::IntElement& mintele);
 
@@ -539,7 +538,7 @@ namespace Mortar
      performed in parallel by individual processes.
 
      */
-    Coupling3dManager(Discret::Discretization& idiscret, int dim, bool quad,
+    Coupling3dManager(Core::FE::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele);
 
     /*!
@@ -631,7 +630,7 @@ namespace Mortar
     Coupling3dManager operator=(const Coupling3dManager& old);
     Coupling3dManager(const Coupling3dManager& old);
 
-    Discret::Discretization& idiscret_;                   // discretization of the contact interface
+    Core::FE::Discretization& idiscret_;                  // discretization of the contact interface
     int dim_;                                             // problem dimension (here: 3D)
     Inpar::Mortar::IntType integrationtype_;              // integration type
     Inpar::Mortar::ShapeFcn shapefcn_;                    // lm shape function type
@@ -659,7 +658,7 @@ namespace Mortar
     /*!
      \brief Constructor
      */
-    Coupling3dQuadManager(Discret::Discretization& idiscret, int dim, bool quad,
+    Coupling3dQuadManager(Core::FE::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele);
 
 

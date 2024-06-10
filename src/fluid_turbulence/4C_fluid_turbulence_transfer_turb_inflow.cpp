@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
-    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
+    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
     : dis_(dis), dbcmaps_(dbcmaps), curve_(-1), numveldof_(3)
 {
   active_ = false;
@@ -695,7 +695,7 @@ void FLD::TransferTurbulentInflowCondition::set_values_available_on_this_proc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowConditionXW::TransferTurbulentInflowConditionXW(
-    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
+    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
     : TransferTurbulentInflowCondition(dis, dbcmaps)
 {
   numveldof_ = 6;
@@ -930,7 +930,7 @@ void FLD::TransferTurbulentInflowConditionXW::set_values_available_on_this_proc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowConditionNodal::TransferTurbulentInflowConditionNodal(
-    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
+    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
     : TransferTurbulentInflowCondition(dis, dbcmaps)
 {
   numveldof_ = 1;

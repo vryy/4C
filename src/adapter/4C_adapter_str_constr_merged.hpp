@@ -164,7 +164,7 @@ namespace Adapter
 
     /// @name local copies of input parameters
     //{@
-    Teuchos::RCP<Discret::Discretization> discret_;  ///< the discretization
+    Teuchos::RCP<Core::FE::Discretization> discret_;  ///< the discretization
     Teuchos::RCP<Teuchos::ParameterList>
         sdynparams_;  ///< dynamic control flags ... used, but could/should be circumvented
     Teuchos::RCP<Teuchos::ParameterList> xparams_;         ///< eXtra input parameters

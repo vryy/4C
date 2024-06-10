@@ -68,7 +68,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
 // int Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::Evaluate(
 //  Core::Elements::Element*              ele,
 //  Teuchos::ParameterList&    params,
-//  Discret::Discretization&       discretization,
+//  Core::FE::Discretization&       discretization,
 //  const std::vector<int>&    lm,
 //  Core::LinAlg::SerialDenseMatrix&  elemat1_epetra,
 //  Core::LinAlg::SerialDenseMatrix&  elemat2_epetra,
@@ -137,7 +137,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::evaluate_action(Core::Elements::Element* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     const ScaTra::Action& action, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -197,7 +197,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::read_element_coordinates(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   extract_element_and_node_values_poro(ele, params, discretization, la);
 
@@ -212,7 +212,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_val
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_values_poro(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // get number of dofset associated with velocity related dofs
   const int ndsvel = my::scatrapara_->NdsVel();

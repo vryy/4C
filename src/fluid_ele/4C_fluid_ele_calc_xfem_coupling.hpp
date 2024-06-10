@@ -82,17 +82,17 @@ namespace Discret
 
         //! add slave element's displacements and set current element's nodal coordinates
         virtual void AddSlaveEleDisp(
-            const Discret::Discretization& slavedis,  ///< coupling slave discretization
-            const std::vector<int>& lm,               ///< local map
-            std::vector<double>& mymatrix             ///< slave element displacement vector
+            const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
+            const std::vector<int>& lm,                ///< local map
+            std::vector<double>& mymatrix              ///< slave element displacement vector
         )
         {
           FOUR_C_THROW("There is no concrete slave element available.");
         };
 
         virtual void AddSlaveEleDisp(
-            const Discret::Discretization& slavedis,  ///< coupling slave discretization
-            const std::vector<int>& lm                ///< local map
+            const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
+            const std::vector<int>& lm                 ///< local map
         )
         {
           FOUR_C_THROW("There is no concrete slave element available.");
@@ -103,8 +103,8 @@ namespace Discret
 
         //! set slave element's nodal velocities
         virtual void SetSlaveState(
-            const Discret::Discretization& slavedis,  ///< embedded discretization
-            const std::vector<int>& lm                ///< local map
+            const Core::FE::Discretization& slavedis,  ///< embedded discretization
+            const std::vector<int>& lm                 ///< local map
         )
         {
           FOUR_C_THROW("There is no concrete slave element available.");
@@ -112,8 +112,8 @@ namespace Discret
 
         //! set slave element's nodal velocities
         virtual void SetSlaveStaten(
-            const Discret::Discretization& slavedis,  ///< embedded discretization
-            const std::vector<int>& lm                ///< local map
+            const Core::FE::Discretization& slavedis,  ///< embedded discretization
+            const std::vector<int>& lm                 ///< local map
         )
         {
           FOUR_C_THROW("There is no concrete slave element available.");
@@ -175,9 +175,9 @@ namespace Discret
 
         //! set state for interface velocity jump
         virtual void set_interface_jump_statenp(
-            const Discret::Discretization& cutterdis,  ///< cutter discretization
-            const std::string state,                   ///< state
-            const std::vector<int>& lm                 ///< local map
+            const Core::FE::Discretization& cutterdis,  ///< cutter discretization
+            const std::string state,                    ///< state
+            const std::vector<int>& lm                  ///< local map
         )
         {
           FOUR_C_THROW("There is no concrete slave element available.");
@@ -185,9 +185,9 @@ namespace Discret
 
         //! set state for interface velocity jump for previous time step
         virtual void set_interface_jump_staten(
-            const Discret::Discretization& cutterdis,  ///< cutter discretization
-            const std::string state,                   ///< state
-            const std::vector<int>& lm                 ///< local map
+            const Core::FE::Discretization& cutterdis,  ///< cutter discretization
+            const std::string state,                    ///< state
+            const std::vector<int>& lm                  ///< local map
         )
         {
           FOUR_C_THROW("There is no concrete slave element available.");

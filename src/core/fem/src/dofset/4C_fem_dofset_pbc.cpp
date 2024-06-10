@@ -40,7 +40,7 @@ int Core::DOFSets::PBCDofSet::MinAllGID() const { return myMinGID_; }
 
 
 int Core::DOFSets::PBCDofSet::assign_degrees_of_freedom(
-    const Discret::Discretization& dis, const unsigned dspos, const int start)
+    const Core::FE::Discretization& dis, const unsigned dspos, const int start)
 {
   // temporarily store the slave node set
   Teuchos::RCP<std::set<int>> tempset = slavenodeids_;

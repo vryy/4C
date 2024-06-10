@@ -64,7 +64,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Discret::Discretization> actdis,
+ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output, const int probnum)

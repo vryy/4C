@@ -55,7 +55,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
 Arteries::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params)
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params)
     : discret_(actdis)
 {
   // -------------------------------------------------------------------
@@ -262,7 +262,7 @@ Arteries::UTILS::ArtWriteGnuplot::ArtWriteGnuplot() {}
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<Discret::Discretization> discret,
+void Arteries::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<Core::FE::Discretization> discret,
     Teuchos::ParameterList& params, const std::vector<int>* nodes)
 {
   // defining the Length

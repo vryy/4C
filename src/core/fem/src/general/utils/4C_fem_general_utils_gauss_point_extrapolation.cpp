@@ -109,7 +109,7 @@ namespace
 
   template <Core::FE::CellType distype, class GaussIntegration>
   Core::LinAlg::SerialDenseMatrix EvaluateNURBSBaseShapeFunctionsAtGaussPoints(
-      const Discret::Discretization& dis, const Core::Elements::Element& ele,
+      const Core::FE::Discretization& dis, const Core::Elements::Element& ele,
       const Core::FE::CellType base_distype, const GaussIntegration& intpoints)
   {
     constexpr int nsd = Core::FE::dim<distype>;
@@ -377,7 +377,7 @@ Core::FE::EvaluateGaussPointsToNodesExtrapolationMatrix<Core::FE::CellType::pyra
 
 template <Core::FE::CellType distype, class GaussIntegration>
 Core::LinAlg::SerialDenseMatrix Core::FE::EvaluateGaussPointsToNURBSKnotsExtrapolationMatrix(
-    const Discret::Discretization& dis, const Core::Elements::Element& ele,
+    const Core::FE::Discretization& dis, const Core::Elements::Element& ele,
     const GaussIntegration& intpoints)
 {
   static std::unordered_map<unsigned, Core::LinAlg::SerialDenseMatrix> extrapolation_matrix_cache{};
@@ -419,7 +419,7 @@ void Core::FE::ExtrapolateGPQuantityToNodesAndAssemble(const Core::Elements::Ele
 }
 
 template <Core::FE::CellType distype, class GaussIntegration>
-void Core::FE::ExtrapolateGPQuantityToNURBSKnotsAndAssemble(const Discret::Discretization& dis,
+void Core::FE::ExtrapolateGPQuantityToNURBSKnotsAndAssemble(const Core::FE::Discretization& dis,
     const Core::Elements::Element& ele, const LinAlg::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average, const GaussIntegration& integration)
 {
@@ -546,11 +546,11 @@ template void Core::FE::ExtrapolateGPQuantityToNodesAndAssemble<Core::FE::CellTy
     bool nodal_average, const Core::FE::IntegrationPoints2D& integration);
 
 template void Core::FE::ExtrapolateGPQuantityToNURBSKnotsAndAssemble<Core::FE::CellType::nurbs27,
-    Core::FE::GaussIntegration>(const Discret::Discretization& dis,
+    Core::FE::GaussIntegration>(const Core::FE::Discretization& dis,
     const Core::Elements::Element& ele, const LinAlg::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average, const GaussIntegration& integration);
 template void Core::FE::ExtrapolateGPQuantityToNURBSKnotsAndAssemble<Core::FE::CellType::nurbs27,
-    Core::FE::IntegrationPoints3D>(const Discret::Discretization& dis,
+    Core::FE::IntegrationPoints3D>(const Core::FE::Discretization& dis,
     const Core::Elements::Element& ele, const LinAlg::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average,
     const Core::FE::IntegrationPoints3D& integration);

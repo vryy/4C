@@ -25,7 +25,7 @@ namespace XFEM
   {
     //! extract the nodal vectors and store them in node-vector-map
     //! \author schott \date 01/13
-    void extract_node_vectors(Teuchos::RCP<Discret::Discretization> dis,
+    void extract_node_vectors(Teuchos::RCP<Core::FE::Discretization> dis,
         std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> idispnp);
 
     //! @name Get material properties for the Volume Cell
@@ -62,7 +62,7 @@ namespace XFEM
     void ExtractQuantityAtElement(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
         const Core::Elements::Element* element,
         const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
-        Teuchos::RCP<Discret::Discretization>& dis, const int nds_vector, const int nsd);
+        Teuchos::RCP<Core::FE::Discretization>& dis, const int nds_vector, const int nsd);
 
     //! @name Extract quantities on a node
     /*!
@@ -71,7 +71,7 @@ namespace XFEM
     void ExtractQuantityAtNode(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
         const Core::Nodes::Node* node,
         const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
-        Teuchos::RCP<Discret::Discretization>& dis, const int nds_vector, const unsigned int nsd);
+        Teuchos::RCP<Core::FE::Discretization>& dis, const int nds_vector, const unsigned int nsd);
 
   }  // namespace UTILS
 }  // namespace XFEM

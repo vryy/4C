@@ -451,7 +451,7 @@ Teuchos::RCP<Epetra_Vector> Immersed::ImmersedPartitionedFSIDirichletNeumann::in
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Immersed::ImmersedPartitionedFSIDirichletNeumann::build_immersed_dirich_map(
-    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Epetra_Map>& dirichmap,
+    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Epetra_Map>& dirichmap,
     const Teuchos::RCP<const Epetra_Map>& dirichmap_original)
 {
   const Epetra_Map* elecolmap = dis->ElementColMap();

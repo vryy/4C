@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 int CONSTRAINTS::ConstraintDofSet::assign_degrees_of_freedom(
-    const Teuchos::RCP<Discret::Discretization> dis, const int ndofs, const int start)
+    const Teuchos::RCP<Core::FE::Discretization> dis, const int ndofs, const int start)
 {
   // A definite offset is currently not supported.
   if (start != 0) FOUR_C_THROW("right now user specified dof offsets are not supported");

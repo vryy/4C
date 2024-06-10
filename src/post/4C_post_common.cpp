@@ -625,14 +625,14 @@ PostField PostProblem::getfield(MAP* field_info)
   const int numele = map_read_int(field_info, "num_ele");
   const int ndim = map_read_int(field_info, "num_dim");
 
-  Teuchos::RCP<Discret::Discretization> dis;
+  Teuchos::RCP<Core::FE::Discretization> dis;
 
   switch (spatial_approx_)
   {
     case Core::FE::ShapeFunctionType::polynomial:
     case Core::FE::ShapeFunctionType::hdg:
     {
-      dis = Teuchos::rcp(new Discret::Discretization(field_name, comm_, ndim));
+      dis = Teuchos::rcp(new Core::FE::Discretization(field_name, comm_, ndim));
       break;
     }
     case Core::FE::ShapeFunctionType::nurbs:
@@ -681,7 +681,7 @@ int PostProblem::get_max_nodeid(const std::string& fieldname)
 /*----------------------------------------------------------------------*
  * Constructor of PostField.
  *----------------------------------------------------------------------*/
-PostField::PostField(Teuchos::RCP<Discret::Discretization> dis, PostProblem* problem,
+PostField::PostField(Teuchos::RCP<Core::FE::Discretization> dis, PostProblem* problem,
     std::string field_name, const int numnd, const int numele)
     : dis_(dis), problem_(problem), field_name_(field_name), numnd_(numnd), numele_(numele)
 {

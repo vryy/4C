@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
  |                                                         pfaller Apr15|
  *----------------------------------------------------------------------*/
 CONSTRAINTS::SpringDashpot::SpringDashpot(
-    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::Conditions::Condition> cond)
+    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::Conditions::Condition> cond)
     : actdisc_(std::move(dis)),
       spring_(std::move(cond)),
       stiff_tens_((spring_->parameters().Get<std::vector<double>>("stiff"))[0]),

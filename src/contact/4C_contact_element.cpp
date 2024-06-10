@@ -150,7 +150,7 @@ int CONTACT::Element::NumDofPerNode(const Core::Nodes::Node& node) const
  |  evaluate element (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
 int CONTACT::Element::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)

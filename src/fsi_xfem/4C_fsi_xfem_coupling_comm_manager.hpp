@@ -23,11 +23,10 @@ transform matrixes, vectors, ...
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -69,16 +68,16 @@ namespace XFEM
     };
 
     //! constructor
-    explicit CouplingCommManager(std::map<int, Teuchos::RCP<const Discret::Discretization>> dis,
+    explicit CouplingCommManager(std::map<int, Teuchos::RCP<const Core::FE::Discretization>> dis,
         std::string cond_name, int startdim = 0, int enddim = 3);
 
     //! constructor
-    explicit CouplingCommManager(Teuchos::RCP<const Discret::Discretization> dis0,
+    explicit CouplingCommManager(Teuchos::RCP<const Core::FE::Discretization> dis0,
         std::string cond_name, int startdim = 0, int enddim = 3);
 
     //! constructor
-    explicit CouplingCommManager(Teuchos::RCP<const Discret::Discretization> dis0,
-        Teuchos::RCP<const Discret::Discretization> dis1, std::string cond_name, int startdim = 0,
+    explicit CouplingCommManager(Teuchos::RCP<const Core::FE::Discretization> dis0,
+        Teuchos::RCP<const Core::FE::Discretization> dis1, std::string cond_name, int startdim = 0,
         int enddim = 3);
 
     //! virtual destructor to support polymorph destruction
@@ -127,17 +126,18 @@ namespace XFEM
         std::string str1, std::string str2 = "", std::string str3 = "", std::string str4 = "");
 
    private:
-    void setup(std::map<int, Teuchos::RCP<const Discret::Discretization>> dis);
+    void setup(std::map<int, Teuchos::RCP<const Core::FE::Discretization>> dis);
 
-    void setup_multi_map_extractors(std::map<int, Teuchos::RCP<const Discret::Discretization>> dis);
+    void setup_multi_map_extractors(
+        std::map<int, Teuchos::RCP<const Core::FE::Discretization>> dis);
 
-    void setup_full_map_extractors(std::map<int, Teuchos::RCP<const Discret::Discretization>> dis);
+    void setup_full_map_extractors(std::map<int, Teuchos::RCP<const Core::FE::Discretization>> dis);
 
-    void setup_couplings(std::map<int, Teuchos::RCP<const Discret::Discretization>> dis);
+    void setup_couplings(std::map<int, Teuchos::RCP<const Core::FE::Discretization>> dis);
 
-    void setup_full_couplings(std::map<int, Teuchos::RCP<const Discret::Discretization>> dis);
+    void setup_full_couplings(std::map<int, Teuchos::RCP<const Core::FE::Discretization>> dis);
 
-    void setup_full_extractor(std::map<int, Teuchos::RCP<const Discret::Discretization>> dis);
+    void setup_full_extractor(std::map<int, Teuchos::RCP<const Core::FE::Discretization>> dis);
 
     std::string cond_name_;
     int startdim_;

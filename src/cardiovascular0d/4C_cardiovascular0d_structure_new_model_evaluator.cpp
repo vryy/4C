@@ -46,7 +46,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
 {
   check_init();
 
-  Teuchos::RCP<Discret::Discretization> dis = discret_ptr();
+  Teuchos::RCP<Core::FE::Discretization> dis = discret_ptr();
 
   // setup the displacement pointer
   disnp_ptr_ = global_state().get_dis_np();

@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-Adapter::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+Adapter::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Discretization> dis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : Adapter::FluidFPSI::FluidFPSI(fluid, dis, solver, params, output, isale, dirichletcond)

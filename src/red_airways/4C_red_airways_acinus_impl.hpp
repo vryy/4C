@@ -42,7 +42,7 @@ namespace Discret
       /// Empty destructor
       virtual ~RedAcinusImplInterface() = default;  /// Evaluate the element
       virtual int Evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -51,40 +51,40 @@ namespace Discret
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
       virtual void Initial(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<const Core::Mat::Material> material) = 0;
 
       virtual void EvaluateTerminalBC(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
       virtual void CalcFlowRates(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
       virtual void CalcElemVolume(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
       virtual void GetCoupledValues(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) = 0;
 
       virtual void get_junction_volume_mix(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::LinAlg::SerialDenseVector& volumeMix_np,
+          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& volumeMix_np,
           std::vector<int>& lm, Teuchos::RCP<Core::Mat::Material> material) = 0;
 
       virtual void update_scatra(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) = 0;
 
       virtual void UpdateElem12Scatra(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) = 0;
 
       virtual void eval_nodal_essential_values(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::LinAlg::SerialDenseVector& nodal_surface,
+          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& nodal_surface,
           Core::LinAlg::SerialDenseVector& nodal_volume,
           Core::LinAlg::SerialDenseVector& nodal_flow, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) = 0;
@@ -122,7 +122,7 @@ namespace Discret
         The evaluate function for the general acinus case.
       */
       int Evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -131,7 +131,7 @@ namespace Discret
           Teuchos::RCP<Core::Mat::Material> mat) override;
 
       void EvaluateTerminalBC(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> mat) override;
 
       /*!
@@ -149,47 +149,47 @@ namespace Discret
         \param dt               (i) timestep
       */
       void Initial(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<const Core::Mat::Material> material) override;
 
       /*!
         \Essential functions to compute the results of essentail matrices
       */
       void CalcFlowRates(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat) override;
 
       /*!
         \Essential functions to compute the volume of an element
       */
       void CalcElemVolume(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat) override;
 
       /*!
         \Essential functions to evaluate the coupled results
       */
       void GetCoupledValues(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) override;
 
       /*!
         \Essential functions to evaluate mixed volume flowing into a junction
       */
       void get_junction_volume_mix(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::LinAlg::SerialDenseVector& volumeMix_np,
+          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& volumeMix_np,
           std::vector<int>& lm, Teuchos::RCP<Core::Mat::Material> material) override;
 
       void update_scatra(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) override;
 
       void UpdateElem12Scatra(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) override;
 
       void eval_nodal_essential_values(RedAcinus* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::LinAlg::SerialDenseVector& nodal_surface,
+          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& nodal_surface,
           Core::LinAlg::SerialDenseVector& nodal_volume,
           Core::LinAlg::SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) override;

@@ -46,7 +46,7 @@ void Core::DOFSets::IndependentDofSet::AddDofSettoList()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Core::DOFSets::IndependentDofSet::get_first_gid_number_to_be_used(
-    const Discret::Discretization& dis) const
+    const Core::FE::Discretization& dis) const
 {
   // always start from zero here, as this is an independent DofSet
   return 0;
@@ -56,7 +56,7 @@ int Core::DOFSets::IndependentDofSet::get_first_gid_number_to_be_used(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Core::DOFSets::IndependentDofSet::get_minimal_node_gid_if_relevant(
-    const Discret::Discretization& dis) const
+    const Core::FE::Discretization& dis) const
 {
   return ignoreminnodegid_ ? 0 : dis.NodeRowMap()->MinAllGID();
 }

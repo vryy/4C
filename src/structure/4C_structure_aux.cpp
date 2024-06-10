@@ -62,7 +62,7 @@ double STR::calculate_vector_norm(const enum Inpar::STR::VectorNorm norm,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void STR::MapExtractor::Setup(
-    const Discret::Discretization& dis, const Epetra_Map& fullmap, bool overlapping)
+    const Core::FE::Discretization& dis, const Epetra_Map& fullmap, bool overlapping)
 {
   const int ndim = Global::Problem::Instance()->NDim();
   Core::Conditions::MultiConditionSelector mcs;
@@ -89,7 +89,7 @@ void STR::MapExtractor::Setup(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<std::set<int>> STR::MapExtractor::conditioned_element_map(
-    const Discret::Discretization& dis) const
+    const Core::FE::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int>> condelements =
       Core::Conditions::conditioned_element_map(dis, "FSICoupling");

@@ -40,7 +40,7 @@ using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
  |  evaluate the element (public)                            bborn 03/08|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -501,7 +501,7 @@ int Discret::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoSh8p8::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -2291,7 +2291,7 @@ double Discret::ELEMENTS::SoSh8p8::shear_mod() const
 
 void Discret::ELEMENTS::SoSh8p8::do_calc_stc_matrix(Core::LinAlg::Matrix<NUMDOF_, NUMDOF_>& elemat1,
     const Inpar::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
-    Discret::Discretization& discretization, bool calcinverse)
+    Core::FE::Discretization& discretization, bool calcinverse)
 {
   double stc_fact = 0.0;
   if (stc_scaling == Inpar::STR::stc_currsym)
@@ -2518,7 +2518,7 @@ void Discret::ELEMENTS::SoSh8p8::do_calc_stc_matrix(Core::LinAlg::Matrix<NUMDOF_
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh8p8Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoSh8p8Type::Initialize(Core::FE::Discretization& dis)
 {
   // sosh8_gmshplotdis(dis);
 

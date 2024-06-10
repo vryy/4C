@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WallDiscretizationRuntimeVtuWriter(
-    const Teuchos::RCP<Discret::Discretization> walldiscretization,
+    const Teuchos::RCP<Core::FE::Discretization> walldiscretization,
     const std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate, const double restart_time)
     : walldiscretization_(walldiscretization), walldatastate_(walldatastate)
 {

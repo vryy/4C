@@ -57,7 +57,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     probdim>::evaluate_min_max_overpotential(const Core::Elements::FaceElement* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la)
 {
   // access material of parent element
@@ -153,7 +153,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     probdim>::evaluate_s2_i_coupling(const Core::Elements::FaceElement* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
     Core::LinAlg::SerialDenseMatrix& emastermatrix, Core::LinAlg::SerialDenseVector& eslaveresidual)
 {
@@ -360,7 +360,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::evaluate_action(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, ScaTra::BoundaryAction action,
+    Core::FE::Discretization& discretization, ScaTra::BoundaryAction action,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -412,7 +412,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     probdim>::evaluate_s2_i_coupling_scatra_growth(const Core::Elements::FaceElement* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix)
 {
   // access material of parent element
@@ -595,7 +595,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     probdim>::evaluate_s2_i_coupling_growth_scatra(const Core::Elements::FaceElement* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
     Core::LinAlg::SerialDenseMatrix& emastermatrix)
 {
@@ -708,7 +708,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     probdim>::evaluate_s2_i_coupling_growth_growth(const Core::Elements::FaceElement* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
     Core::LinAlg::SerialDenseVector& eslaveresidual)
 {
@@ -831,7 +831,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
-    probdim>::extract_node_values(const Discret::Discretization& discretization,
+    probdim>::extract_node_values(const Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la)
 {
   // call base class routine

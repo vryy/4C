@@ -53,7 +53,7 @@ namespace Adapter
     }
 
     /// direct access to discretization
-    virtual Teuchos::RCP<Discret::Discretization> discretization()
+    virtual Teuchos::RCP<Core::FE::Discretization> discretization()
     {
       return structure_->discretization();
     }

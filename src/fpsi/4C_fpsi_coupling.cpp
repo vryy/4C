@@ -108,10 +108,10 @@ void FPSI::FpsiCoupling::setup_interface_coupling()
 {
   const int ndim = Global::Problem::Instance()->NDim();
 
-  Teuchos::RCP<Discret::Discretization> fluiddis = fluid_field()->discretization();
-  Teuchos::RCP<Discret::Discretization> porofluiddis =
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = fluid_field()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> porofluiddis =
       poro_field()->fluid_field()->discretization();
-  Teuchos::RCP<Discret::Discretization> porostructdis =
+  Teuchos::RCP<Core::FE::Discretization> porostructdis =
       poro_field()->structure_field()->discretization();
 
   {

@@ -43,9 +43,10 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-Arteries::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(Teuchos::RCP<Discret::Discretization> actdis,
-    const int linsolvernumber, const Teuchos::ParameterList& probparams,
-    const Teuchos::ParameterList& artparams, Core::IO::DiscretizationWriter& output)
+Arteries::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(
+    Teuchos::RCP<Core::FE::Discretization> actdis, const int linsolvernumber,
+    const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
+    Core::IO::DiscretizationWriter& output)
     : TimInt(actdis, linsolvernumber, probparams, artparams, output)
 {
   //  exit(1);

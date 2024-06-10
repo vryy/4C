@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor for lts/stl (public)                                farah 07/16|
  *----------------------------------------------------------------------*/
-CONTACT::LineToSurfaceCoupling3d::LineToSurfaceCoupling3d(Discret::Discretization& idiscret,
+CONTACT::LineToSurfaceCoupling3d::LineToSurfaceCoupling3d(Core::FE::Discretization& idiscret,
     int dim, Teuchos::ParameterList& params, Element& pEle, Teuchos::RCP<Mortar::Element>& lEle,
     std::vector<Element*> surfEles, LineToSurfaceCoupling3d::IntType type)
     : idiscret_(idiscret),
@@ -2318,7 +2318,7 @@ const Epetra_Comm& CONTACT::LineToSurfaceCoupling3d::comm() const { return idisc
 /*----------------------------------------------------------------------*
  |  ctor for ltl (public)                                    farah 07/16|
  *----------------------------------------------------------------------*/
-CONTACT::LineToLineCouplingPoint3d::LineToLineCouplingPoint3d(Discret::Discretization& idiscret,
+CONTACT::LineToLineCouplingPoint3d::LineToLineCouplingPoint3d(Core::FE::Discretization& idiscret,
     int dim, Teuchos::ParameterList& params, Teuchos::RCP<Mortar::Element>& lsele,
     Teuchos::RCP<Mortar::Element>& lmele)
     : idiscret_(idiscret), dim_(dim), imortar_(params), l_sele_(lsele), l_mele_(lmele)

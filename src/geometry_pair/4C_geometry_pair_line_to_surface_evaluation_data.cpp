@@ -42,7 +42,7 @@ void GEOMETRYPAIR::LineToSurfaceEvaluationData::Clear()
  *
  */
 void GEOMETRYPAIR::LineToSurfaceEvaluationData::Setup(
-    const Teuchos::RCP<const Discret::Discretization>& discret,
+    const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   face_elements_ = face_elements;

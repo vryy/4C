@@ -32,7 +32,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::
     BeamContactAssemblyManagerInDirect(
         const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>&
             assembly_contact_elepairs,
-        const Teuchos::RCP<const Discret::Discretization>& discret,
+        const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& beam_to_solid_params)
     : BeamContactAssemblyManager()
 {
@@ -52,7 +52,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::evaluate_force_stiff(
-    Teuchos::RCP<Discret::Discretization> discret,
+    Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
     Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat)
 {

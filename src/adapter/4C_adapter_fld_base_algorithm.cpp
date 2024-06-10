@@ -70,7 +70,7 @@ Adapter::FluidBaseAlgorithm::FluidBaseAlgorithm(const Teuchos::ParameterList& pr
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Adapter::FluidBaseAlgorithm::FluidBaseAlgorithm(
-    const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<Discret::Discretization> discret)
+    const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<Core::FE::Discretization> discret)
 {
   setup_inflow_fluid(prbdyn, discret);
   return;
@@ -94,7 +94,7 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<Discret::Discretization> actdis = Global::Problem::Instance()->GetDis(disname);
+  Teuchos::RCP<Core::FE::Discretization> actdis = Global::Problem::Instance()->GetDis(disname);
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -762,7 +762,7 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
                 "XFLUIDFLUID"))
         {
           // actdis is the embedded fluid discretization
-          Teuchos::RCP<Discret::Discretization> xfluiddis =
+          Teuchos::RCP<Core::FE::Discretization> xfluiddis =
               Global::Problem::Instance()->GetDis("xfluid");
 
           Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
@@ -787,9 +787,9 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
           break;
         }
 
-        Teuchos::RCP<Discret::Discretization> soliddis =
+        Teuchos::RCP<Core::FE::Discretization> soliddis =
             Global::Problem::Instance()->GetDis("structure");
-        Teuchos::RCP<Discret::Discretization> scatradis = Teuchos::null;
+        Teuchos::RCP<Core::FE::Discretization> scatradis = Teuchos::null;
 
         if (Global::Problem::Instance()->DoesExistDis("scatra"))
           scatradis = Global::Problem::Instance()->GetDis("scatra");
@@ -836,7 +836,7 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         else
           FOUR_C_THROW("non supported COUPALGO for FSI");
 
-        Teuchos::RCP<Discret::Discretization> soliddis =
+        Teuchos::RCP<Core::FE::Discretization> soliddis =
             Global::Problem::Instance()->GetDis("structure");
         Teuchos::RCP<FLD::XFluid> tmpfluid;
         if (Core::UTILS::IntegralValue<bool>(
@@ -848,7 +848,7 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
               "FLD::XFluid");
 
           // actdis is the embedded fluid discretization
-          Teuchos::RCP<Discret::Discretization> xfluiddis =
+          Teuchos::RCP<Core::FE::Discretization> xfluiddis =
               Global::Problem::Instance()->GetDis("xfluid");
 
           Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid_emb;
@@ -873,7 +873,7 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         }
         else
         {
-          Teuchos::RCP<Discret::Discretization> scatradis = Teuchos::null;
+          Teuchos::RCP<Core::FE::Discretization> scatradis = Teuchos::null;
 
           if (Global::Problem::Instance()->DoesExistDis("scatra"))
             scatradis = Global::Problem::Instance()->GetDis("scatra");
@@ -891,9 +891,9 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
       break;
       case Core::ProblemType::fluid_xfem_ls:
       {
-        Teuchos::RCP<Discret::Discretization> soliddis =
+        Teuchos::RCP<Core::FE::Discretization> soliddis =
             Global::Problem::Instance()->GetDis("structure");
-        Teuchos::RCP<Discret::Discretization> scatradis = Teuchos::null;
+        Teuchos::RCP<Core::FE::Discretization> scatradis = Teuchos::null;
 
         if (Global::Problem::Instance()->DoesExistDis("scatra"))
           scatradis = Global::Problem::Instance()->GetDis("scatra");
@@ -944,7 +944,7 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         {
           fluidtimeparams->set<bool>("shape derivatives", false);
           // actdis is the embedded fluid discretization
-          Teuchos::RCP<Discret::Discretization> xfluiddis =
+          Teuchos::RCP<Core::FE::Discretization> xfluiddis =
               Global::Problem::Instance()->GetDis("xfluid");
           Teuchos::RCP<FLD::XFluidFluid> xffluid = Teuchos::rcp(
               new FLD::XFluidFluid(tmpfluid, xfluiddis, solver, fluidtimeparams, false, isale));
@@ -1112,9 +1112,9 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
           }
           else if (probtype == Core::ProblemType::fpsi_xfem)
           {
-            Teuchos::RCP<Discret::Discretization> soliddis =
+            Teuchos::RCP<Core::FE::Discretization> soliddis =
                 Global::Problem::Instance()->GetDis("structure");
-            Teuchos::RCP<Discret::Discretization> scatradis = Teuchos::null;
+            Teuchos::RCP<Core::FE::Discretization> scatradis = Teuchos::null;
 
             if (Global::Problem::Instance()->DoesExistDis("scatra"))
               scatradis = Global::Problem::Instance()->GetDis("scatra");
@@ -1242,7 +1242,7 @@ void Adapter::FluidBaseAlgorithm::set_initial_inflow_field(const Teuchos::Parame
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FluidBaseAlgorithm::setup_inflow_fluid(
-    const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<Discret::Discretization> discret)
+    const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<Core::FE::Discretization> discret)
 {
   Teuchos::RCP<Teuchos::Time> t =
       Teuchos::TimeMonitor::getNewTimer("Adapter::FluidBaseAlgorithm::setup_fluid");

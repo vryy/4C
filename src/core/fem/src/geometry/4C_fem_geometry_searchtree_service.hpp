@@ -21,10 +21,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Nodes
 {
@@ -52,7 +52,7 @@ namespace Core::Geo
    \param currentpositions     current nodal positions in discretization
    \return  XAxisAlignedBoundingBox
    */
-  Core::LinAlg::Matrix<3, 2> getXAABBofDis(const Discret::Discretization& dis,
+  Core::LinAlg::Matrix<3, 2> getXAABBofDis(const Core::FE::Discretization& dis,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions);
 
   /*!
@@ -61,7 +61,7 @@ namespace Core::Geo
    \param dis                  discretization
    \return  XAxisAlignedBoundingBox
    */
-  Core::LinAlg::Matrix<3, 2> getXAABBofDis(const Discret::Discretization& dis);
+  Core::LinAlg::Matrix<3, 2> getXAABBofDis(const Core::FE::Discretization& dis);
 
   /*!
    \brief Returns the eXtendedAxisAlignedBoundingBox of coords
@@ -89,7 +89,7 @@ namespace Core::Geo
    \return  AxisAlignedBoundingBox as Core::LinAlg::Matrix<3,2>
    */
   std::vector<Core::LinAlg::Matrix<3, 2>> computeXAABBForLabeledStructures(
-      const Discret::Discretization& dis,
+      const Core::FE::Discretization& dis,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList);
 
@@ -103,7 +103,7 @@ namespace Core::Geo
    \param elementList          map of elements label gid
    \return                     label
    */
-  std::map<int, std::set<int>> getElementsInRadius(const Discret::Discretization& dis,
+  std::map<int, std::set<int>> getElementsInRadius(const Core::FE::Discretization& dis,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const Core::LinAlg::Matrix<3, 1>& querypoint, const double radius, const int label,
       std::map<int, std::set<int>>& elementList);
@@ -140,7 +140,7 @@ namespace Core::Geo
    \param minDistCoords        Coords of the nearest point
    \return surface id of nearest object (node or line: a random adjacent surface is chosen)
    */
-  int nearest3DObjectInNode(const Teuchos::RCP<Discret::Discretization> dis,
+  int nearest3DObjectInNode(const Teuchos::RCP<Core::FE::Discretization> dis,
       std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList, const Core::LinAlg::Matrix<3, 1>& point,
@@ -151,7 +151,7 @@ namespace Core::Geo
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const Core::LinAlg::Matrix<3, 1>& point, Core::LinAlg::Matrix<3, 1>& minDistCoords);
 
-  void nearest2DObjectInNode(const Teuchos::RCP<Discret::Discretization> dis,
+  void nearest2DObjectInNode(const Teuchos::RCP<Core::FE::Discretization> dis,
       std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList, const Core::LinAlg::Matrix<3, 1>& point,

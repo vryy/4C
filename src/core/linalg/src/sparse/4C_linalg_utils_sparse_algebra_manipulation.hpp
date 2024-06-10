@@ -31,10 +31,10 @@ namespace Core::IO
   class DiscretizationWriter;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -346,7 +346,7 @@ namespace Core::LinAlg
    *  \author hiermeier \date 03/18 */
   void ComputeDofMapsFromNodeMaps(const int dofset_id,
       const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps,
-      const Discret::Discretization& discret, std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps);
+      const Core::FE::Discretization& discret, std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps);
 
   /*! \brief Compute a dof map corresponding to the given node map
    *
@@ -358,7 +358,7 @@ namespace Core::LinAlg
    *
    *  \author hiermeier \date 03/18 */
   Teuchos::RCP<Epetra_Map> ComputeDofMapFromNodeMap(
-      const int dofset_id, const Epetra_Map& node_map, const Discret::Discretization& discret);
+      const int dofset_id, const Epetra_Map& node_map, const Core::FE::Discretization& discret);
 
   /*! \brief Write values from a std::vector to a Epetra_MultiVector
    *

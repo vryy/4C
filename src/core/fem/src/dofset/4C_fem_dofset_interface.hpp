@@ -22,10 +22,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -172,7 +172,7 @@ namespace Core::DOFSets
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     virtual int assign_degrees_of_freedom(
-        const Discret::Discretization& dis, const unsigned dspos, const int start) = 0;
+        const Core::FE::Discretization& dis, const unsigned dspos, const int start) = 0;
 
     /// reset all internal variables
     virtual void Reset() = 0;

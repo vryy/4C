@@ -30,10 +30,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Conditions
 {
@@ -50,12 +50,12 @@ namespace Core::Conditions
     section that describes this condition, (b) read a dat file and create
     Core::Conditions::Condition objects for each line in this section and (c) write the dat
     file section filled with all corresponding conditions from a given
-    Discret::Discretization.
+    Core::FE::Discretization.
 
     So this is quite sophisticated internal stuff here. If you want to
     introduce a new condition to 4C, all you have to do is add an
     appropriate definition in ValidConditions(). This will take care of the
-    reading part and you will get your Discret::Discretization filled with proper
+    reading part and you will get your Core::FE::Discretization filled with proper
     Core::Conditions::Condition objects.
 
     \author u.kue
@@ -67,7 +67,7 @@ namespace Core::Conditions
     /// construction of a condition definition
     /*!
       \param sectionname name of dat file section
-      \param conditionname name of conditions in Discret::Discretization
+      \param conditionname name of conditions in Core::FE::Discretization
       \param description description of condition type
       \param condtype type of conditions to be build
       \param buildgeometry whether we need conditions elements
@@ -95,7 +95,7 @@ namespace Core::Conditions
         std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>>& cmap);
 
     /// print my dat file section and possible conditions from the discretization
-    std::ostream& Print(std::ostream& stream, const Discret::Discretization* dis = nullptr);
+    std::ostream& Print(std::ostream& stream, const Core::FE::Discretization* dis = nullptr);
 
     /// name of my section in input file
     std::string SectionName() const { return sectionname_; }

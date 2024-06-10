@@ -78,7 +78,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     gammi 04/07|
  *----------------------------------------------------------------------*/
-FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(const Teuchos::RCP<Discret::Discretization>& actdis,
+FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
+    const Teuchos::RCP<Core::FE::Discretization>& actdis,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/
@@ -397,7 +398,7 @@ void FLD::FluidImplicitTimeInt::create_faces_extension()
   // since we want to keep the standard discretization as clean as
   // possible, we create interal faces via an enhanced discretization
   // including the faces between elements
-  facediscret_ = Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(discret_, true);
+  facediscret_ = Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discret_, true);
   facediscret_->create_internal_faces_extension(true);
 }
 /*----------------------------------------------------------------------*
@@ -4637,7 +4638,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
     Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
-    Teuchos::RCP<Discret::Discretization> scatradis, int dofset)
+    Teuchos::RCP<Core::FE::Discretization> scatradis, int dofset)
 {
   // initializations
   int err(0);
@@ -4747,7 +4748,7 @@ void FLD::FluidImplicitTimeInt::SetIterScalarFields(Teuchos::RCP<const Epetra_Ve
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
     const double thermpressnp, Teuchos::RCP<const Epetra_Vector> scatraresidual,
-    Teuchos::RCP<Discret::Discretization> scatradis, const int whichscalar)
+    Teuchos::RCP<Core::FE::Discretization> scatradis, const int whichscalar)
 {
   // initializations
   int err(0);
@@ -6571,9 +6572,9 @@ void FLD::FluidImplicitTimeInt::apply_dirichlet_bc(Teuchos::ParameterList& param
   // --------------------------------------------------------------------------------
   discret_->ClearState();
   // If we have HDG discret
-  if (dynamic_cast<const Discret::DiscretizationHDG*>(&(*discret_)) != nullptr)
+  if (dynamic_cast<const Core::FE::DiscretizationHDG*>(&(*discret_)) != nullptr)
   {
-    auto dbc = Teuchos::rcp<const Discret::UTILS::Dbc>(new const FLD::UTILS::DbcHdgFluid());
+    auto dbc = Teuchos::rcp<const Core::FE::UTILS::Dbc>(new const FLD::UTILS::DbcHdgFluid());
     (*dbc)(*discret_, params, systemvector, systemvectord, systemvectordd, Teuchos::null,
         recreatemap ? dbcmaps_ : Teuchos::null);
   }

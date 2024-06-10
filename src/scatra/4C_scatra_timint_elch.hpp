@@ -45,7 +45,7 @@ namespace ScaTra
     /*========================================================================*/
 
     //! Standard Constructor
-    ScaTraTimIntElch(Teuchos::RCP<Discret::Discretization> dis,
+    ScaTraTimIntElch(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -467,7 +467,7 @@ namespace ScaTra
     //! return maximum number of transported scalars per node (not including potential and current
     //! density)
     int NumScalInCondition(const Core::Conditions::Condition& condition,
-        const Teuchos::RCP<const Discret::Discretization>& discret) const override;
+        const Teuchos::RCP<const Core::FE::Discretization>& discret) const override;
 
     /*========================================================================*/
     //! @name Internal variables

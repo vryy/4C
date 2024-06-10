@@ -16,10 +16,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Discret::ELEMENTS
 {
@@ -54,7 +54,7 @@ namespace Discret::ELEMENTS
    * @param total_time (in) : The total time for time dependent Neumann conditions
    */
   void EvaluateNeumannByElement(Core::Elements::Element& element,
-      const Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+      const Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
       const std::vector<int>& dof_index_array,
       Core::LinAlg::SerialDenseVector& element_force_vector, double total_time);
 
@@ -89,7 +89,7 @@ namespace Discret::ELEMENTS
    */
   template <Core::FE::CellType celltype>
   void evaluate_neumann(Core::Elements::Element& element,
-      const Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+      const Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
       const std::vector<int>& dof_index_array,
       Core::LinAlg::SerialDenseVector& element_force_vector, double total_time);
 

@@ -147,7 +147,7 @@ namespace FSI
     void init_dop_normals();
 
     std::map<int, Core::LinAlg::Matrix<9, 2>> calc_background_dops(
-        Teuchos::RCP<Discret::Discretization> searchdis);
+        Teuchos::RCP<Core::FE::Discretization> searchdis);
 
     Core::LinAlg::Matrix<9, 2> calc_dop(Core::Elements::Element& ele);
 

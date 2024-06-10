@@ -49,8 +49,8 @@ Core::Adapter::MortarVolCoupl::MortarVolCoupl()
  |  init                                                     farah 10/13|
  *----------------------------------------------------------------------*/
 void Core::Adapter::MortarVolCoupl::Init(int spatial_dimension,
-    Teuchos::RCP<Discret::Discretization> dis1,  // masterdis - on Omega_1
-    Teuchos::RCP<Discret::Discretization> dis2,  // slavedis  - on Omega_2
+    Teuchos::RCP<Core::FE::Discretization> dis1,  // masterdis - on Omega_1
+    Teuchos::RCP<Core::FE::Discretization> dis2,  // slavedis  - on Omega_2
     std::vector<int>* coupleddof12, std::vector<int>* coupleddof21, std::pair<int, int>* dofsets12,
     std::pair<int, int>* dofsets21,
     Teuchos::RCP<Core::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy,
@@ -142,7 +142,7 @@ void Core::Adapter::MortarVolCoupl::Redistribute()
   check_init();
 
   // create vector of discr.
-  std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+  std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
   dis.push_back(masterdis_);
   dis.push_back(slavedis_);
 
@@ -155,8 +155,8 @@ void Core::Adapter::MortarVolCoupl::Redistribute()
 /*----------------------------------------------------------------------*
  |  Create Auxiliary dofsets for multiphysics                farah 06/15|
  *----------------------------------------------------------------------*/
-void Core::Adapter::MortarVolCoupl::create_aux_dofsets(Teuchos::RCP<Discret::Discretization> dis1,
-    Teuchos::RCP<Discret::Discretization> dis2, std::vector<int>* coupleddof12,
+void Core::Adapter::MortarVolCoupl::create_aux_dofsets(Teuchos::RCP<Core::FE::Discretization> dis1,
+    Teuchos::RCP<Core::FE::Discretization> dis2, std::vector<int>* coupleddof12,
     std::vector<int>* coupleddof21)
 {
   // first call fill_complete for single discretizations.
@@ -187,8 +187,8 @@ void Core::Adapter::MortarVolCoupl::create_aux_dofsets(Teuchos::RCP<Discret::Dis
 /*----------------------------------------------------------------------*
  |  AssignMaterials                                          vuong 09/14|
  *----------------------------------------------------------------------*/
-void Core::Adapter::MortarVolCoupl::AssignMaterials(Teuchos::RCP<Discret::Discretization> dis1,
-    Teuchos::RCP<Discret::Discretization> dis2, const Teuchos::ParameterList& volmortar_params,
+void Core::Adapter::MortarVolCoupl::AssignMaterials(Teuchos::RCP<Core::FE::Discretization> dis1,
+    Teuchos::RCP<Core::FE::Discretization> dis2, const Teuchos::ParameterList& volmortar_params,
     Teuchos::RCP<Core::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy)
 {
   if (materialstrategy == Teuchos::null)

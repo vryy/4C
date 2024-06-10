@@ -31,7 +31,7 @@ namespace
    * \brief Fill a discretization with the geometry for the unit test.
    */
   template <typename face_element_type>
-  void XtestSurfacePatchQuad4(const Teuchos::RCP<Discret::Discretization>& discret,
+  void XtestSurfacePatchQuad4(const Teuchos::RCP<Core::FE::Discretization>& discret,
       std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements_map)
   {
     using namespace FourC;

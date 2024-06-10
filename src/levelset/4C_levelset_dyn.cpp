@@ -34,7 +34,7 @@ void levelset_dyn(int restart)
   Global::Problem* problem = Global::Problem::Instance();
 
   // access the scatra discretization
-  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis("scatra");
 
   // access the communicator
   const Epetra_Comm& comm = scatradis->Comm();

@@ -35,7 +35,7 @@ namespace Discret
     \date 12/10
     */
     template <class WG>
-    bool GetMyNurbsKnotsAndWeights(const Discret::Discretization& dis,
+    bool GetMyNurbsKnotsAndWeights(const Core::FE::Discretization& dis,
         const Core::Elements::Element* ele, std::vector<Core::LinAlg::SerialDenseVector>& myknots,
         WG& weights)
     {
@@ -108,7 +108,7 @@ namespace Discret
     template <class WG>
     bool GetKnotVectorAndWeightsForNurbsBoundary(const Core::Elements::Element* boundaryele,
         const int localsurfaceid, const int parenteleid,
-        const Discret::Discretization& discretization,
+        const Core::FE::Discretization& discretization,
         std::vector<Core::LinAlg::SerialDenseVector>& mypknots,
         std::vector<Core::LinAlg::SerialDenseVector>& myknots, WG& weights, double& normalfac)
     {
@@ -161,7 +161,7 @@ namespace Discret
     template <class WG>
     bool GetKnotVectorAndWeightsForNurbsBoundaryAndParent(Core::Elements::Element* parentele,
         Core::Elements::Element* boundaryele, const int localsurfaceid,
-        const Discret::Discretization& discretization,
+        const Core::FE::Discretization& discretization,
         std::vector<Core::LinAlg::SerialDenseVector>& mypknots,
         std::vector<Core::LinAlg::SerialDenseVector>& myknots, WG& pweights, WG& weights,
         double& normalfac)

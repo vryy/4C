@@ -56,7 +56,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::Setup()
   noxinterface_prec_ptr_->Init(global_state_ptr());
   noxinterface_prec_ptr_->Setup();
 
-  Teuchos::RCP<Discret::Discretization> dis = discret_ptr();
+  Teuchos::RCP<Core::FE::Discretization> dis = discret_ptr();
 
   // setup the displacement pointer
   disnp_ptr_ = global_state().get_dis_np();

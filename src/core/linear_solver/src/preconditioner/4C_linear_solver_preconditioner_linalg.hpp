@@ -21,10 +21,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -71,7 +71,7 @@ namespace Core::LinAlg
      */
     void Setup(Teuchos::RCP<Epetra_Operator> matrix,
         Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex = Teuchos::null,
-        Teuchos::RCP<Discret::Discretization> fdis = Teuchos::null,
+        Teuchos::RCP<Core::FE::Discretization> fdis = Teuchos::null,
         Teuchos::RCP<Epetra_Map> inodes = Teuchos::null, bool structuresplit = false);
 
     /// Solve system of equations

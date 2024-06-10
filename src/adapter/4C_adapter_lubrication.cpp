@@ -36,7 +36,7 @@ void Adapter::LubricationBaseAlgorithm::Setup(
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<Discret::Discretization> actdis = Teuchos::null;
+  Teuchos::RCP<Core::FE::Discretization> actdis = Teuchos::null;
   actdis = Global::Problem::Instance()->GetDis(disname);
 
   // -------------------------------------------------------------------

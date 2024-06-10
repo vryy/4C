@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Integrate a Line Neumann boundary condition (public)      popp 06/13|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -491,7 +491,7 @@ double Discret::ELEMENTS::Wall1Line::w1_substitution(const Core::LinAlg::SerialD
 
 /*======================================================================*/
 int Discret::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
     Core::LinAlg::SerialDenseVector& elevector3)
@@ -666,7 +666,7 @@ int Discret::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
  * Evaluate method on mutliple dofsets                       vuong 11/12*
  * ---------------------------------------------------------------------*/
 int Discret::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
     Core::LinAlg::SerialDenseVector& elevector3)

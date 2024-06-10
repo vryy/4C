@@ -149,7 +149,7 @@ void scatra_dyn(int restart)
       if (scatradis->GetCondition("ScatraHeteroReactionSlave") != nullptr)
       {
         // create vector of discr.
-        std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+        std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
         dis.push_back(scatradis);
 
         Core::Rebalance::RebalanceDiscretizationsByBinning(dis, false);
@@ -278,7 +278,7 @@ void scatra_dyn(int restart)
       if (fieldcoupling == Inpar::ScaTra::coupling_volmortar)
       {
         // create vector of discr.
-        std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+        std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
         dis.push_back(fluiddis);
         dis.push_back(scatradis);
 

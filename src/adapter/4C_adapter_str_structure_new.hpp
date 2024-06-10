@@ -48,10 +48,10 @@ namespace Core::LinAlg
   class Solver;
 }  // namespace Core::LinAlg
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Adapter
 {
@@ -436,7 +436,7 @@ namespace Adapter
     STR::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::STR::ModelType mtype) override = 0;
 
     /// direct access to discretization
-    Teuchos::RCP<Discret::Discretization> discretization() override = 0;
+    Teuchos::RCP<Core::FE::Discretization> discretization() override = 0;
 
     /// are there any algebraic constraints?
     bool HaveConstraint() override = 0;
@@ -547,7 +547,7 @@ namespace Adapter
 
     /// initialize all class internal variables
     virtual void Init(const Teuchos::ParameterList& prbdyn, Teuchos::ParameterList& sdyn,
-        Teuchos::RCP<Discret::Discretization> actdis);
+        Teuchos::RCP<Core::FE::Discretization> actdis);
 
     /// setup
     virtual void Setup();
@@ -660,7 +660,7 @@ namespace Adapter
     Teuchos::RCP<Teuchos::ParameterList> sdyn_;
 
     /// current discretization
-    Teuchos::RCP<Discret::Discretization> actdis_;
+    Teuchos::RCP<Core::FE::Discretization> actdis_;
 
     /// init flag
     bool isinit_;

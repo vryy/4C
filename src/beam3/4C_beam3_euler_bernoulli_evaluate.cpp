@@ -31,7 +31,7 @@ using FAD = Sacado::Fad::DFad<double>;
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -239,7 +239,7 @@ int Discret::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 /*-----------------------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

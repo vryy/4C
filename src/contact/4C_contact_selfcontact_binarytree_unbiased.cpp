@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor UnbiasedSelfBinaryTree (public)                   schmidt 01/19|
  *----------------------------------------------------------------------*/
-CONTACT::UnbiasedSelfBinaryTree::UnbiasedSelfBinaryTree(Discret::Discretization& discret,
+CONTACT::UnbiasedSelfBinaryTree::UnbiasedSelfBinaryTree(Core::FE::Discretization& discret,
     const Teuchos::ParameterList& iparams, Teuchos::RCP<Epetra_Map> elements, int dim, double eps)
     : SelfBinaryTree(discret, iparams, elements, dim, eps),
       two_half_pass_(iparams.get<bool>("Two_half_pass")),

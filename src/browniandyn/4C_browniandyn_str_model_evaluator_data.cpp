@@ -125,7 +125,7 @@ void STR::MODELEVALUATOR::BrownianDynData::Setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BrownianDynData::resize_random_force_m_vector(
-    Teuchos::RCP<Discret::Discretization> discret_ptr, int maxrandnumelement)
+    Teuchos::RCP<Core::FE::Discretization> discret_ptr, int maxrandnumelement)
 {
   check_init_setup();
 

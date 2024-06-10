@@ -1349,7 +1349,7 @@ namespace STR
 
       //! get specified time curve number of imposed Dirichlet BCs
       void resize_random_force_m_vector(
-          Teuchos::RCP<Discret::Discretization> discret_ptr, int maxrandnumelement);
+          Teuchos::RCP<Core::FE::Discretization> discret_ptr, int maxrandnumelement);
 
       //! get mutable random force vector
       Teuchos::RCP<Epetra_MultiVector>& get_random_forces()

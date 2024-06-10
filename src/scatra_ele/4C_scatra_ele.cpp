@@ -244,7 +244,7 @@ void Discret::ELEMENTS::TransportType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::TransportType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::TransportType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

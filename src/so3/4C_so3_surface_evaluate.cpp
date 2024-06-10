@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
  * ---------------------------------------------------------------------*/
 int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -630,7 +630,7 @@ void Discret::ELEMENTS::StructuralSurface::analytical_d_surface_integration(
  * Evaluate method for StructuralSurface-Elements               tk 10/07*
  * ---------------------------------------------------------------------*/
 int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
     Core::LinAlg::SerialDenseVector& elevector3)
@@ -1334,9 +1334,9 @@ int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& param
       const Core::FE::IntPointsAndWeights<2> intpoints(
           Discret::ELEMENTS::DisTypeToOptGaussRule<Core::FE::CellType::quad4>::rule);
 
-      const Teuchos::RCP<Discret::Discretization> backgrddis =
+      const Teuchos::RCP<Core::FE::Discretization> backgrddis =
           globalproblem->GetDis(backgrddisname);
-      const Teuchos::RCP<Discret::Discretization> immerseddis =
+      const Teuchos::RCP<Core::FE::Discretization> immerseddis =
           globalproblem->GetDis(immerseddisname);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -2010,7 +2010,7 @@ int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& param
  * Evaluate method for StructuralSurface-Elements               tk 10/07*
  * ---------------------------------------------------------------------*/
 int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
     Core::LinAlg::SerialDenseVector& elevector3)
@@ -2432,7 +2432,7 @@ void Discret::ELEMENTS::StructuralSurface::build_normals_at_nodes(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::StructuralSurface::calculate_surface_porosity(
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, LocationArray& la)
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, LocationArray& la)
 {
   // get the parent element
   Core::Elements::Element* parentele = parent_element();

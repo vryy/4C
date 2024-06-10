@@ -40,7 +40,7 @@ namespace ScaTra
   {
    public:
     /// Standard Constructor
-    LevelSetAlgorithm(Teuchos::RCP<Discret::Discretization> dis,
+    LevelSetAlgorithm(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -102,7 +102,7 @@ namespace ScaTra
 
    protected:
     virtual void get_initial_volume_of_minus_domain(const Teuchos::RCP<const Epetra_Vector>& phinp,
-        const Teuchos::RCP<const Discret::Discretization>& scatradis,
+        const Teuchos::RCP<const Core::FE::Discretization>& scatradis,
         double& volumedomainminus) const;
 
     //! identify interface side due to phivalue value

@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-CONSTRAINTS::MPConstraint::MPConstraint(Teuchos::RCP<Discret::Discretization> discr,
+CONSTRAINTS::MPConstraint::MPConstraint(Teuchos::RCP<Core::FE::Discretization> discr,
     const std::string& conditionname, int& minID, int& maxID)
     : CONSTRAINTS::Constraint(discr, conditionname, minID, maxID)
 {
@@ -31,7 +31,7 @@ CONSTRAINTS::MPConstraint::MPConstraint(Teuchos::RCP<Discret::Discretization> di
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
 CONSTRAINTS::MPConstraint::MPConstraint(
-    Teuchos::RCP<Discret::Discretization> discr, const std::string& conditionname)
+    Teuchos::RCP<Core::FE::Discretization> discr, const std::string& conditionname)
     : CONSTRAINTS::Constraint(discr, conditionname)
 {
   return;
@@ -44,7 +44,7 @@ void CONSTRAINTS::MPConstraint::SetConstrState(const std::string& state,  ///< n
 {
   if (constrtype_ != none)
   {
-    std::map<int, Teuchos::RCP<Discret::Discretization>>::iterator discrit;
+    std::map<int, Teuchos::RCP<Core::FE::Discretization>>::iterator discrit;
     for (discrit = constraintdis_.begin(); discrit != constraintdis_.end(); ++discrit)
     {
       Teuchos::RCP<Epetra_Vector> tmp =

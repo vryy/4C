@@ -92,7 +92,7 @@ Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::Instance(const std::str
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::Evaluate(Core::Elements::Element* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -128,7 +128,7 @@ int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::Evaluate(Core::Elem
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateEHLMon(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -165,7 +165,7 @@ int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateEHLMon(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::SetupCalc(
-    Core::Elements::Element* ele, Discret::Discretization& discretization)
+    Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
   // get element coordinates
   read_element_coordinates(ele);
@@ -197,7 +197,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::read_element_coord
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // 1. Extract the average tangential velocity
 
@@ -1215,7 +1215,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rel_vel_at_in
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateService(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -1241,7 +1241,7 @@ int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateService(
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_action(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, const LUBRICATION::Action& action,
+    Core::FE::Discretization& discretization, const LUBRICATION::Action& action,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,

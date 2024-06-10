@@ -58,7 +58,7 @@ void CONTACT::LagrangeStrategyTsi::set_state(
     {
       for (int j = 0; j < (int)interface_.size(); ++j)
       {
-        Discret::Discretization& idiscr = interface_[j]->Discret();
+        Core::FE::Discretization& idiscr = interface_[j]->Discret();
         Teuchos::RCP<Epetra_Vector> global =
             Teuchos::rcp(new Epetra_Vector(*idiscr.DofColMap(), false));
         Core::LinAlg::Export(vec, *global);
@@ -81,7 +81,7 @@ void CONTACT::LagrangeStrategyTsi::set_state(
     {
       for (int j = 0; j < (int)interface_.size(); ++j)
       {
-        Discret::Discretization& idiscr = interface_[j]->Discret();
+        Core::FE::Discretization& idiscr = interface_[j]->Discret();
 
         Teuchos::RCP<Epetra_Vector> global =
             Teuchos::rcp(new Epetra_Vector(*idiscr.DofColMap(), false));

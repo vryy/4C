@@ -492,7 +492,7 @@ void STR::UTILS::Shell::Director::AverageDirector(const Core::LinAlg::Matrix<3, 
 }
 
 void STR::UTILS::Shell::Director::ExportDirectorMapFromRowToColMap(
-    const Core::Elements::ElementType& eletype, const Discret::Discretization& dis,
+    const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis,
     std::map<int, std::vector<double>>& director_map)
 {
   // export this map from nodal row map to nodal col map
@@ -541,7 +541,7 @@ void STR::UTILS::Shell::Director::ExportDirectorMapFromRowToColMap(
 
 
 void STR::UTILS::Shell::Director::AverageDirectorsAtNodes(
-    const Core::Elements::ElementType& eletype, const Discret::Discretization& dis,
+    const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis,
     std::map<int, std::vector<double>>& director_map)
 {
   const int max_ele = 8;
@@ -609,7 +609,7 @@ void STR::UTILS::Shell::Director::AverageDirectorsAtNodes(
 }
 
 void STR::UTILS::Shell::Director::SetupShellElementDirectors(
-    const Core::Elements::ElementType& eletype, const Discret::Discretization& dis)
+    const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis)
 {
   for (const auto& actele : dis.MyColElementRange())
   {

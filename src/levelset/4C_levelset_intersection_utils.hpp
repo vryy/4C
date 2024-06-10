@@ -33,10 +33,10 @@ namespace Core::Communication
   class PackBuffer;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Geo
 {
@@ -70,7 +70,7 @@ namespace ScaTra
        *
        *  \author rasthofer \date 09/13 */
       void CaptureZeroLevelSet(const Teuchos::RCP<const Epetra_Vector>& phi,
-          const Teuchos::RCP<const Discret::Discretization>& scatradis, double& volumedomainminus,
+          const Teuchos::RCP<const Core::FE::Discretization>& scatradis, double& volumedomainminus,
           double& volumedomainplus, double& zerosurface,
           std::map<int, Core::Geo::BoundaryIntCells>& elementBoundaryIntCells);
 
@@ -92,7 +92,7 @@ namespace ScaTra
       void reset();
 
       template <typename T>
-      void get_zero_level_set(const Epetra_Vector& phi, const Discret::Discretization& scatradis,
+      void get_zero_level_set(const Epetra_Vector& phi, const Core::FE::Discretization& scatradis,
           std::map<int, T>& elementBoundaryIntCells, bool cut_screenoutput = false);
 
       /** \brief export boundary integration cells from this proc to parallel distribution
@@ -135,9 +135,10 @@ namespace ScaTra
       /** \brief prepare the cut algorithm
        *
        *  \author hiermeier \date 11/16 */
-      void prepare_cut(const Core::Elements::Element* ele, const Discret::Discretization& scatradis,
-          const Epetra_Vector& phicol, Core::LinAlg::SerialDenseMatrix& xyze,
-          std::vector<double>& phi_nodes, std::vector<int>& node_ids) const;
+      void prepare_cut(const Core::Elements::Element* ele,
+          const Core::FE::Discretization& scatradis, const Epetra_Vector& phicol,
+          Core::LinAlg::SerialDenseMatrix& xyze, std::vector<double>& phi_nodes,
+          std::vector<int>& node_ids) const;
 
       /// perform the cut operation
       Core::Geo::Cut::ElementHandle* cut(Core::Geo::Cut::LevelSetIntersection& levelset,

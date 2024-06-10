@@ -28,10 +28,10 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 10/13 |
  *---------------------------------------------------------------------*/
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -66,8 +66,8 @@ namespace Core::Adapter
     \brief Call parallel redistr. and evaluate volmortar coupl.
 
     */
-    void Init(int spatial_dimension, Teuchos::RCP<Discret::Discretization> dis1,
-        Teuchos::RCP<Discret::Discretization> dis2, std::vector<int>* coupleddof12 = nullptr,
+    void Init(int spatial_dimension, Teuchos::RCP<Core::FE::Discretization> dis1,
+        Teuchos::RCP<Core::FE::Discretization> dis2, std::vector<int>* coupleddof12 = nullptr,
         std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofsets12 = nullptr,
         std::pair<int, int>* dofsets21 = nullptr,
         Teuchos::RCP<VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null,
@@ -121,8 +121,8 @@ namespace Core::Adapter
     //@}
 
     //! assign materials
-    void AssignMaterials(Teuchos::RCP<Discret::Discretization> dis1,
-        Teuchos::RCP<Discret::Discretization> dis2, const Teuchos::ParameterList& volmortar_params,
+    void AssignMaterials(Teuchos::RCP<Core::FE::Discretization> dis1,
+        Teuchos::RCP<Core::FE::Discretization> dis2, const Teuchos::ParameterList& volmortar_params,
         Teuchos::RCP<VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null);
 
 
@@ -197,8 +197,8 @@ namespace Core::Adapter
     \brief Create auxiliary dofsets for multiphysics if necessary
 
     */
-    void create_aux_dofsets(Teuchos::RCP<Discret::Discretization> dis1,
-        Teuchos::RCP<Discret::Discretization> dis2, std::vector<int>* coupleddof12,
+    void create_aux_dofsets(Teuchos::RCP<Core::FE::Discretization> dis1,
+        Teuchos::RCP<Core::FE::Discretization> dis2, std::vector<int>* coupleddof12,
         std::vector<int>* coupleddof21);
 
     /// check setup call
@@ -231,8 +231,8 @@ namespace Core::Adapter
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         p21_;  ///< global Mortar projection matrix P Omega_1 -> Omega_2
 
-    Teuchos::RCP<Discret::Discretization> masterdis_;
-    Teuchos::RCP<Discret::Discretization> slavedis_;
+    Teuchos::RCP<Core::FE::Discretization> masterdis_;
+    Teuchos::RCP<Core::FE::Discretization> slavedis_;
 
     std::vector<int>* coupleddof12_;
     std::vector<int>* coupleddof21_;

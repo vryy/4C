@@ -90,7 +90,7 @@ double FLD::GetRotAngleFromCondition(const Core::Conditions::Condition* cond)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FLD::GetRelevantSlaveNodesOfRotSymPBC(
-    std::map<int, double>& pbcslavenodemap, Teuchos::RCP<Discret::Discretization> dis)
+    std::map<int, double>& pbcslavenodemap, Teuchos::RCP<Core::FE::Discretization> dis)
 {
   // get all periodic boundary conditions
   std::vector<Core::Conditions::Condition*> mypbccond;

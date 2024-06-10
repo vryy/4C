@@ -459,7 +459,7 @@ bool FS3I::ACFSI::does_growth_needs_update()
   // check if the structure material is a growth material. We assume here
   // that the structure has the same material for the whole discretiazation.
   // Hence we check only the first element:
-  Teuchos::RCP<Discret::Discretization> structuredis = fsi_->structure_field()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> structuredis = fsi_->structure_field()->discretization();
   const int GID = structuredis->ElementColMap()->GID(0);  // global element ID
 
   Teuchos::RCP<Core::Mat::Material> structurematerial = structuredis->gElement(GID)->Material();
@@ -780,7 +780,7 @@ std::vector<Teuchos::RCP<Core::LinAlg::MapExtractor>> FS3I::ACFSI::BuildMapExtra
   const Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra =
       scatravec_[1]->ScaTraField();  // structure scatra
   const int numscal = scatra->NumScal();
-  const Teuchos::RCP<const Discret::Discretization> dis = scatra->discretization();
+  const Teuchos::RCP<const Core::FE::Discretization> dis = scatra->discretization();
 
   for (int k = 0; k < numscal; k++)
   {

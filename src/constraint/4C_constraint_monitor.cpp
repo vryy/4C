@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-CONSTRAINTS::Monitor::Monitor(Teuchos::RCP<Discret::Discretization> discr,
+CONSTRAINTS::Monitor::Monitor(Teuchos::RCP<Core::FE::Discretization> discr,
     const std::string& conditionname, int& minID, int& maxID)
     : actdisc_(discr)
 {

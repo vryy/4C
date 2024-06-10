@@ -22,10 +22,10 @@ the number of dofs per node when multiple sets of degrees of freedom per node ha
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::Geo
 {
@@ -39,7 +39,7 @@ namespace XFEM
    public:
     /// constructor
     XFEMDofSet(
-        Core::Geo::CutWizard& wizard, int numMyReservedDofsperNode, Discret::Discretization& dis)
+        Core::Geo::CutWizard& wizard, int numMyReservedDofsperNode, Core::FE::Discretization& dis)
         : FixedSizeDofSet(numMyReservedDofsperNode,
               dis.NodeRowMap()->MaxAllGID() - dis.NodeRowMap()->MinAllGID() + 1),
           wizard_(wizard),
@@ -95,7 +95,7 @@ namespace XFEM
     Core::Geo::CutWizard& wizard_;
 
     /// background discretization
-    Discret::Discretization&
+    Core::FE::Discretization&
         dis_;  ///< use reference instead of RCP to avoid Ringschluss in discretization
   };
 }  // namespace XFEM

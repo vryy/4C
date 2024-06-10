@@ -32,7 +32,7 @@ FBI::FBIBinningGeometryCoupler::FBIBinningGeometryCoupler()
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIBinningGeometryCoupler::setup_binning(
-    std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
+    std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector> structure_displacement)
 {
   Teuchos::RCP<const Epetra_Vector> disp2 =
@@ -44,7 +44,7 @@ void FBI::FBIBinningGeometryCoupler::setup_binning(
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIBinningGeometryCoupler::partition_geometry(
-    std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
+    std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector> structure_displacement)
 {
   Teuchos::RCP<const Epetra_Vector> disp2 =
@@ -88,7 +88,7 @@ void FBI::FBIBinningGeometryCoupler::partition_geometry(
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIBinningGeometryCoupler::UpdateBinning(
-    Teuchos::RCP<Discret::Discretization>& structure_discretization,
+    Teuchos::RCP<Core::FE::Discretization>& structure_discretization,
     Teuchos::RCP<const Epetra_Vector> structure_column_displacement)
 {
   binstrategy_->distribute_col_elements_to_bins_using_ele_aabb(
@@ -101,7 +101,7 @@ void FBI::FBIBinningGeometryCoupler::UpdateBinning(
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIBinningGeometryCoupler::Setup(
-    std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
+    std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector> structure_displacement)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::Setup");
@@ -114,7 +114,7 @@ void FBI::FBIBinningGeometryCoupler::Setup(
 /*----------------------------------------------------------------------*/
 
 Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIBinningGeometryCoupler::Search(
-    std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
+    std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector>& column_structure_displacement)
 {
   Teuchos::RCP<Teuchos::Time> t =
@@ -133,7 +133,7 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIBinningGeometryCoupler::Se
 
 /*----------------------------------------------------------------------*/
 
-void FBI::FBIBinningGeometryCoupler::compute_current_positions(Discret::Discretization& dis,
+void FBI::FBIBinningGeometryCoupler::compute_current_positions(Core::FE::Discretization& dis,
     Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions,
     Teuchos::RCP<const Epetra_Vector> disp) const
 {

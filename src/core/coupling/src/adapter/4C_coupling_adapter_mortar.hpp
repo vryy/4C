@@ -30,10 +30,10 @@ namespace Core::LinAlg
   class SparseMatrix;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -96,9 +96,9 @@ feel free to write your own tailored Setup() method.
      * meshtying
      *  - ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra meshtying
      */
-    void Setup(const Teuchos::RCP<Discret::Discretization>& masterdis,  ///< master discretization
-        const Teuchos::RCP<Discret::Discretization>& slavedis,          ///< slave discretization
-        const Teuchos::RCP<Discret::Discretization>& aledis,            ///< ALE discretization
+    void Setup(const Teuchos::RCP<Core::FE::Discretization>& masterdis,  ///< master discretization
+        const Teuchos::RCP<Core::FE::Discretization>& slavedis,          ///< slave discretization
+        const Teuchos::RCP<Core::FE::Discretization>& aledis,            ///< ALE discretization
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
         const std::string& couplingcond,     ///< string for coupling condition
         const Epetra_Comm& comm,             ///< communicator
@@ -117,8 +117,8 @@ feel free to write your own tailored Setup() method.
      *  - ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra meshtying
      */
     void setup_interface(
-        const Teuchos::RCP<Discret::Discretization>& masterdis,  ///< master discretization
-        const Teuchos::RCP<Discret::Discretization>& slavedis,   ///< slave discretization
+        const Teuchos::RCP<Core::FE::Discretization>& masterdis,  ///< master discretization
+        const Teuchos::RCP<Core::FE::Discretization>& slavedis,   ///< slave discretization
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
         const std::map<int, Core::Nodes::Node*>&
             mastergnodes,  ///< master nodes, including ghosted nodes
@@ -154,11 +154,11 @@ feel free to write your own tailored Setup() method.
 
     //! Compute mortar matrices after performing a mesh correction step
     virtual void evaluate_with_mesh_relocation(
-        Teuchos::RCP<Discret::Discretization> slavedis,  ///< slave discretization
-        Teuchos::RCP<Discret::Discretization> aledis,    ///< ALE discretization
-        Teuchos::RCP<Epetra_Vector>& idisp,              ///< ALE displacements
-        const Epetra_Comm& comm,                         ///< communicator
-        bool slavewithale                                ///< flag defining if slave is ALE
+        Teuchos::RCP<Core::FE::Discretization> slavedis,  ///< slave discretization
+        Teuchos::RCP<Core::FE::Discretization> aledis,    ///< ALE discretization
+        Teuchos::RCP<Epetra_Vector>& idisp,               ///< ALE displacements
+        const Epetra_Comm& comm,                          ///< communicator
+        bool slavewithale                                 ///< flag defining if slave is ALE
     );
 
     //! Get the mortar interface itself
@@ -316,7 +316,7 @@ feel free to write your own tailored Setup() method.
      *  [1] Puso, M and Laursen, TA: Mesh tying on curved interfaces in 3D,
      *      Engineering Computation, 20:305-319 (2003)
      */
-    void check_slave_dirichlet_overlap(const Teuchos::RCP<Discret::Discretization>& slavedis,
+    void check_slave_dirichlet_overlap(const Teuchos::RCP<Core::FE::Discretization>& slavedis,
         const Epetra_Comm& comm, const Core::UTILS::FunctionManager& function_manager);
 
     /// back transformation to initial parallel distribution
@@ -334,8 +334,8 @@ feel free to write your own tailored Setup() method.
    private:
     /// perform mesh relocation
     void mesh_relocation(
-        Teuchos::RCP<Discret::Discretization> slavedis,  ///< [in] Slave discretization
-        Teuchos::RCP<Discret::Discretization> aledis,    ///< [in] ALE discretization
+        Teuchos::RCP<Core::FE::Discretization> slavedis,  ///< [in] Slave discretization
+        Teuchos::RCP<Core::FE::Discretization> aledis,    ///< [in] ALE discretization
         Teuchos::RCP<const Epetra_Map>
             masterdofrowmap,  ///< [in] DOF row map of master discretization
         Teuchos::RCP<const Epetra_Map>

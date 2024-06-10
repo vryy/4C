@@ -99,7 +99,7 @@ void Discret::ELEMENTS::SoHex8ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                           dano 08/12 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8ThermoType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex8ThermoType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -210,7 +210,7 @@ void Discret::ELEMENTS::SoHex8fbarThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                           dano 05/13 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8fbarThermoType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex8fbarThermoType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -317,7 +317,7 @@ void Discret::ELEMENTS::SoTet4ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                           dano 08/12 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet4ThermoType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoTet4ThermoType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -423,7 +423,7 @@ void Discret::ELEMENTS::SoTet10ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                          farah 05/14 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet10ThermoType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoTet10ThermoType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -529,7 +529,7 @@ void Discret::ELEMENTS::SoHex27ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                           dano 10/13 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex27ThermoType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex27ThermoType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -635,7 +635,7 @@ void Discret::ELEMENTS::SoHex20ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                          farah 05/14 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex20ThermoType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex20ThermoType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -742,7 +742,7 @@ void Discret::ELEMENTS::SoNurbs27ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                          seitz 12/15 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoNurbs27ThermoType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoNurbs27ThermoType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

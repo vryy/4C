@@ -24,11 +24,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Adapter
 {
@@ -91,7 +90,7 @@ namespace FS3I
 
     const Epetra_Comm& Comm() { return comm_; }
 
-    void VecToScatravec(Teuchos::RCP<Discret::Discretization> scatradis,
+    void VecToScatravec(Teuchos::RCP<Core::FE::Discretization> scatradis,
         Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<Epetra_MultiVector> scatravec);
 
     void StructGmshOutput();

@@ -25,10 +25,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -54,7 +54,7 @@ namespace FLD
   {
    public:
     /// Standard Constructor
-    XWall(Teuchos::RCP<Discret::Discretization> dis, int nsd,
+    XWall(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
         Teuchos::RCP<Teuchos::ParameterList>& params,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
         Teuchos::RCP<FLD::UTILS::StressManager> wssmanager);
@@ -139,7 +139,7 @@ namespace FLD
     void overwrite_transferred_values();
 
     //! discretisation
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! fluid params
     Teuchos::RCP<Teuchos::ParameterList> params_;
@@ -208,7 +208,7 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> xtoggleloc_;
 
     //! redistributed xwall discretization
-    Teuchos::RCP<Discret::Discretization> xwdiscret_;
+    Teuchos::RCP<Core::FE::Discretization> xwdiscret_;
 
     //! mass matrix for projection
     Teuchos::RCP<Core::LinAlg::SparseMatrix> massmatrix_;
@@ -296,7 +296,7 @@ namespace FLD
   {
    public:
     /// Standard Constructor
-    XWallAleFSI(Teuchos::RCP<Discret::Discretization> dis, int nsd,
+    XWallAleFSI(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
         Teuchos::RCP<Teuchos::ParameterList>& params,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
         Teuchos::RCP<FLD::UTILS::StressManager> wssmanager, Teuchos::RCP<Epetra_Vector> dispnp,

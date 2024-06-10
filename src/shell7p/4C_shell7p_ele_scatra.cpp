@@ -162,7 +162,7 @@ void Discret::ELEMENTS::Shell7pScatraType::setup_element_definition(
                             .Build();
 }
 
-int Discret::ELEMENTS::Shell7pScatraType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::Shell7pScatraType::Initialize(Core::FE::Discretization& dis)
 {
   STR::UTILS::Shell::Director::SetupShellElementDirectors(*this, dis);
 

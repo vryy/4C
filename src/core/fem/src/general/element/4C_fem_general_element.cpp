@@ -453,7 +453,7 @@ Core::Conditions::Condition* Core::Elements::Element::GetCondition(const std::st
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::LocationVector(const Discret::Discretization& dis,
+void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis,
     const std::vector<int>& nds, Core::Elements::Element::LocationArray& la, bool doDirichlet) const
 {
   const int numnode = num_node();
@@ -572,7 +572,7 @@ void Core::Elements::Element::LocationVector(const Discret::Discretization& dis,
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
 void Core::Elements::Element::LocationVector(
-    const Discret::Discretization& dis, LocationArray& la, bool doDirichlet) const
+    const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet) const
 {
   const int numnode = num_node();
   const Core::Nodes::Node* const* nodes = Nodes();
@@ -755,7 +755,7 @@ void Core::Elements::Element::LocationVector(
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element                (public) |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::LocationVector(const Discret::Discretization& dis, LocationArray& la,
+void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis, LocationArray& la,
     bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const
 {
   /* This method is intended to fill the LocationArray with the dofs
@@ -772,7 +772,7 @@ void Core::Elements::Element::LocationVector(const Discret::Discretization& dis,
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::LocationVector(const Discret::Discretization& dis,
+void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis,
     std::vector<int>& lm, std::vector<int>& lmdirich, std::vector<int>& lmowner,
     std::vector<int>& lmstride) const
 {
@@ -873,7 +873,7 @@ void Core::Elements::Element::LocationVector(const Discret::Discretization& dis,
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::LocationVector(const Discret::Discretization& dis,
+void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis,
     std::vector<int>& lm, std::vector<int>& lmowner, std::vector<int>& lmstride) const
 {
   const int numnode = num_node();
@@ -984,7 +984,7 @@ void Core::Elements::Element::SetFace(
  |  evaluate element dummy (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
 int Core::Elements::Element::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -996,7 +996,7 @@ int Core::Elements::Element::Evaluate(Teuchos::ParameterList& params,
  |  evaluate element dummy (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
 int Core::Elements::Element::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -1034,7 +1034,7 @@ bool Core::Elements::Element::HasOnlyGhostNodes(const int mypid) const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 unsigned int Core::Elements::Element::append_visualization_geometry(
-    const Discret::Discretization& discret, std::vector<uint8_t>& cell_types,
+    const Core::FE::Discretization& discret, std::vector<uint8_t>& cell_types,
     std::vector<double>& point_coordinates) const
 {
   if (IsNurbsElement())
@@ -1047,8 +1047,9 @@ unsigned int Core::Elements::Element::append_visualization_geometry(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 unsigned int Core::Elements::Element::append_visualization_dof_based_result_data_vector(
-    const Discret::Discretization& discret, const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
-    unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
+    const Core::FE::Discretization& discret,
+    const Teuchos::RCP<Epetra_Vector>& result_data_dofbased, unsigned int& result_num_dofs_per_node,
+    const unsigned int read_result_data_from_dofindex,
     std::vector<double>& vtu_point_result_data) const
 {
   if (IsNurbsElement())
@@ -1064,7 +1065,7 @@ unsigned int Core::Elements::Element::append_visualization_dof_based_result_data
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::GeometricSearch::BoundingVolume Core::Elements::Element::GetBoundingVolume(
-    const Discret::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
     const Core::GeometricSearch::GeometricSearchParams& params) const
 {
   Core::GeometricSearch::BoundingVolume bounding_box;

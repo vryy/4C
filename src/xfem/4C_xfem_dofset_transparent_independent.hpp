@@ -17,10 +17,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::Geo
 {
@@ -47,7 +47,7 @@ namespace XFEM
     /*!
       \brief Standard Constructor
      */
-    explicit XFEMTransparentIndependentDofSet(Teuchos::RCP<Discret::Discretization> sourcedis,
+    explicit XFEMTransparentIndependentDofSet(Teuchos::RCP<Core::FE::Discretization> sourcedis,
         bool parallel, Teuchos::RCP<Core::Geo::CutWizard> wizard);
 
 

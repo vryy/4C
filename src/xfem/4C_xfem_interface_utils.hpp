@@ -188,7 +188,7 @@ namespace XFEM
         const Core::LinAlg::Matrix<3, 1>& elenormal, const Core::LinAlg::Matrix<3, 1>& normal);
 
     void EvaluteStateatGP(const Core::Elements::Element* sele,
-        const Core::LinAlg::Matrix<3, 1>& selexsi, const Discret::Discretization& discret,
+        const Core::LinAlg::Matrix<3, 1>& selexsi, const Core::FE::Discretization& discret,
         const std::string& state, Core::LinAlg::Matrix<3, 1>& vel_s);
 
   }  // namespace UTILS

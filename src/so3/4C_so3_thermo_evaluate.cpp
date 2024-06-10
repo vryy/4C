@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // if the coupling variables are required before Evaluate() is called the 1st
   // time
@@ -70,7 +70,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::pre_evaluate(Teuchos::Param
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
 int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -149,7 +149,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterL
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
 int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -1080,7 +1080,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::lin_kd_t_tsi(
 template <class so3_ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
     Core::Elements::Element::LocationArray& la,  // location array
-    Discret::Discretization& discretization,     ///< discretisation to extract knot vector
+    Core::FE::Discretization& discretization,    ///< discretisation to extract knot vector
     std::vector<double>& disp,                   // current displacements
     std::vector<double>& temp,                   // current temperature
     Core::LinAlg::Matrix<numdofperelement_, numdofperelement_>*
@@ -1340,9 +1340,9 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
 template <class so3_ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi(
     Core::Elements::Element::LocationArray& la,
-    Discret::Discretization& discretization,  ///< discretisation to extract knot vector
-    std::vector<double>& disp,                // current displacement
-    std::vector<double>& temp,                // current temperature
+    Core::FE::Discretization& discretization,  ///< discretisation to extract knot vector
+    std::vector<double>& disp,                 // current displacement
+    std::vector<double>& temp,                 // current temperature
     Core::LinAlg::Matrix<numdofperelement_, nen_>* stiffmatrix_kdT,  // (nsd_*nen_ x nen_)
     Teuchos::ParameterList& params)
 {
@@ -2432,7 +2432,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::g_lto_ea(
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::init_jacobian_mapping_special_for_nurbs(
-    Discret::Discretization& dis)
+    Core::FE::Discretization& dis)
 {
   // get the material coordinates
   Core::LinAlg::Matrix<nen_, nsd_> xrefe;

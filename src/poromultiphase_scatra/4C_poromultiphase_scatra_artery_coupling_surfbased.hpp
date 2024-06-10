@@ -28,10 +28,10 @@ namespace PoroMultiPhaseScaTra
   {
    public:
     //! create using a Epetra_Comm
-    PoroMultiPhaseScaTraArtCouplSurfBased(Teuchos::RCP<Discret::Discretization> arterydis,
-        Teuchos::RCP<Discret::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
-        const std::string& condname, const std::string& artcoupleddofname,
-        const std::string& contcoupleddofname);
+    PoroMultiPhaseScaTraArtCouplSurfBased(Teuchos::RCP<Core::FE::Discretization> arterydis,
+        Teuchos::RCP<Core::FE::Discretization> contdis,
+        const Teuchos::ParameterList& couplingparams, const std::string& condname,
+        const std::string& artcoupleddofname, const std::string& contcoupleddofname);
 
     //! set-up of global system of equations of coupled problem
     void SetupSystem(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,

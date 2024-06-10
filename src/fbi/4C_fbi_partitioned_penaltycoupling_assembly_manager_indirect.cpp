@@ -35,8 +35,8 @@ FOUR_C_NAMESPACE_OPEN
 BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect::
     PartitionedBeamInteractionAssemblyManagerIndirect(
         std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& assembly_contact_elepairs,
-        Teuchos::RCP<const Discret::Discretization>& discretization1,
-        Teuchos::RCP<const Discret::Discretization>& discretization2,
+        Teuchos::RCP<const Core::FE::Discretization>& discretization1,
+        Teuchos::RCP<const Core::FE::Discretization>& discretization2,
         Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_contact_params_ptr)
     : PartitionedBeamInteractionAssemblyManager(assembly_contact_elepairs)
 {
@@ -55,8 +55,8 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerInd
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect::
-    evaluate_force_stiff(const Discret::Discretization& discretization1,
-        const Discret::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
+    evaluate_force_stiff(const Core::FE::Discretization& discretization1,
+        const Core::FE::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
         Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<Core::LinAlg::SparseOperator> cff,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbb,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& cfb,

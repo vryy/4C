@@ -73,7 +73,7 @@ void Discret::ELEMENTS::WallQuad4PoroType::setup_element_definition(
                       .Build();
 }
 
-int Discret::ELEMENTS::WallQuad4PoroType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::WallQuad4PoroType::Initialize(Core::FE::Discretization& dis)
 {
   Discret::ELEMENTS::Wall1Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
@@ -141,7 +141,7 @@ void Discret::ELEMENTS::WallQuad9PoroType::setup_element_definition(
                       .Build();
 }
 
-int Discret::ELEMENTS::WallQuad9PoroType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::WallQuad9PoroType::Initialize(Core::FE::Discretization& dis)
 {
   Discret::ELEMENTS::Wall1Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
@@ -210,7 +210,7 @@ void Discret::ELEMENTS::WallNurbs4PoroType::setup_element_definition(
                        .Build();
 }
 
-int Discret::ELEMENTS::WallNurbs4PoroType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::WallNurbs4PoroType::Initialize(Core::FE::Discretization& dis)
 {
   Discret::ELEMENTS::Wall1Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
@@ -279,7 +279,7 @@ void Discret::ELEMENTS::WallNurbs9PoroType::setup_element_definition(
                        .Build();
 }
 
-int Discret::ELEMENTS::WallNurbs9PoroType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::WallNurbs9PoroType::Initialize(Core::FE::Discretization& dis)
 {
   Discret::ELEMENTS::Wall1Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
@@ -350,7 +350,7 @@ void Discret::ELEMENTS::WallTri3PoroType::setup_element_definition(
                      .Build();
 }
 
-int Discret::ELEMENTS::WallTri3PoroType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::WallTri3PoroType::Initialize(Core::FE::Discretization& dis)
 {
   Discret::ELEMENTS::Wall1Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)

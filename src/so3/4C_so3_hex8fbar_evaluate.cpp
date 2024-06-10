@@ -37,7 +37,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -625,7 +625,7 @@ void Discret::ELEMENTS::SoHex8fbar::init_jacobian_mapping()
  |  Integrate a Volume Neumann boundary condition (public)               |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoHex8fbar::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -1447,7 +1447,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8fbarType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex8fbarType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 11/07|
  *----------------------------------------------------------------------*/
-CONSTRAINTS::ConstraintSolver::ConstraintSolver(Teuchos::RCP<Discret::Discretization> discr,
+CONSTRAINTS::ConstraintSolver::ConstraintSolver(Teuchos::RCP<Core::FE::Discretization> discr,
     Core::LinAlg::Solver& solver, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
     Teuchos::ParameterList params)
     : actdisc_(discr),
@@ -39,7 +39,7 @@ CONSTRAINTS::ConstraintSolver::ConstraintSolver(Teuchos::RCP<Discret::Discretiza
 /*----------------------------------------------------------------------*
  |  set-up (public)                                             tk 11/07|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintSolver::Setup(Teuchos::RCP<Discret::Discretization> discr,
+void CONSTRAINTS::ConstraintSolver::Setup(Teuchos::RCP<Core::FE::Discretization> discr,
     Core::LinAlg::Solver& solver, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
     Teuchos::ParameterList params)
 {

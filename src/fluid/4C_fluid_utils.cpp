@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                         Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-FLD::UTILS::StressManager::StressManager(Teuchos::RCP<Discret::Discretization> discret,
+FLD::UTILS::StressManager::StressManager(Teuchos::RCP<Core::FE::Discretization> discret,
     Teuchos::RCP<Epetra_Vector> dispnp, const bool alefluid, const int numdim)
     : discret_(discret),
       dispnp_(dispnp),
@@ -531,8 +531,8 @@ void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<Core::LinAlg::SparseOp
 
 //----------------------------------------------------------------------*/
 //----------------------------------------------------------------------*/
-void FLD::UTILS::SetupFluidFluidVelPresSplit(const Discret::Discretization& fluiddis, int ndim,
-    const Discret::Discretization& alefluiddis, Core::LinAlg::MapExtractor& extractor,
+void FLD::UTILS::SetupFluidFluidVelPresSplit(const Core::FE::Discretization& fluiddis, int ndim,
+    const Core::FE::Discretization& alefluiddis, Core::LinAlg::MapExtractor& extractor,
     Teuchos::RCP<Epetra_Map> fullmap)
 {
   std::set<int> veldofset;
@@ -602,7 +602,7 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const Discret::Discretization& flui
 // -------------------------------------------------------------------
 // compute forces and moments                          rasthofer 08/13
 // -------------------------------------------------------------------
-void FLD::UTILS::LiftDrag(const Teuchos::RCP<const Discret::Discretization> dis,
+void FLD::UTILS::LiftDrag(const Teuchos::RCP<const Core::FE::Discretization> dis,
     const Teuchos::RCP<const Epetra_Vector> trueresidual,
     const Teuchos::RCP<const Epetra_Vector> dispnp, const int ndim,
     Teuchos::RCP<std::map<int, std::vector<double>>>& liftdragvals, bool alefluid)
@@ -864,7 +864,7 @@ void FLD::UTILS::WriteLiftDragToFile(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<int, double> FLD::UTILS::ComputeFlowRates(Discret::Discretization& dis,
+std::map<int, double> FLD::UTILS::ComputeFlowRates(Core::FE::Discretization& dis,
     const Teuchos::RCP<Epetra_Vector>& velnp, const std::string& condstring,
     const Inpar::FLUID::PhysicalType physicaltype)
 {
@@ -873,7 +873,7 @@ std::map<int, double> FLD::UTILS::ComputeFlowRates(Discret::Discretization& dis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<int, double> FLD::UTILS::ComputeFlowRates(Discret::Discretization& dis,
+std::map<int, double> FLD::UTILS::ComputeFlowRates(Core::FE::Discretization& dis,
     const Teuchos::RCP<Epetra_Vector>& velnp, const Teuchos::RCP<Epetra_Vector>& gridv,
     const Teuchos::RCP<Epetra_Vector>& dispnp, const std::string& condstring,
     const Inpar::FLUID::PhysicalType physicaltype)
@@ -934,7 +934,7 @@ std::map<int, double> FLD::UTILS::ComputeFlowRates(Discret::Discretization& dis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<int, double> FLD::UTILS::compute_volume(Discret::Discretization& dis,
+std::map<int, double> FLD::UTILS::compute_volume(Core::FE::Discretization& dis,
     const Teuchos::RCP<Epetra_Vector>& velnp, const Teuchos::RCP<Epetra_Vector>& gridv,
     const Teuchos::RCP<Epetra_Vector>& dispnp, const Inpar::FLUID::PhysicalType physicaltype)
 {
@@ -967,7 +967,7 @@ std::map<int, double> FLD::UTILS::compute_volume(Discret::Discretization& dis,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int, Core::LinAlg::Matrix<3, 1>> FLD::UTILS::ComputeSurfaceImpulsRates(
-    Discret::Discretization& dis, const Teuchos::RCP<Epetra_Vector> velnp)
+    Core::FE::Discretization& dis, const Teuchos::RCP<Epetra_Vector> velnp)
 {
   Teuchos::ParameterList eleparams;
   // set action for elements
@@ -1068,7 +1068,7 @@ void FLD::UTILS::WriteDoublesToFile(
 /*----------------------------------------------------------------------*|
  | project vel gradient and store it in given param list        bk 05/15 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::ProjectGradientAndSetParam(Teuchos::RCP<Discret::Discretization> discret,
+void FLD::UTILS::ProjectGradientAndSetParam(Teuchos::RCP<Core::FE::Discretization> discret,
     Teuchos::ParameterList& eleparams, Teuchos::RCP<const Epetra_Vector> vel,
     const std::string paraname, bool alefluid)
 {
@@ -1088,7 +1088,7 @@ void FLD::UTILS::ProjectGradientAndSetParam(Teuchos::RCP<Discret::Discretization
  | Project velocity gradient                                    bk 05/15 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
-    Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<const Epetra_Vector> vel,
+    Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<const Epetra_Vector> vel,
     bool alefluid)
 {
   // reconstruction of second derivatives for fluid residual

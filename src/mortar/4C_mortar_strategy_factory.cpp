@@ -49,7 +49,7 @@ void Mortar::STRATEGY::Factory::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::STRATEGY::Factory::Init(Teuchos::RCP<Discret::Discretization> dis)
+void Mortar::STRATEGY::Factory::Init(Teuchos::RCP<Core::FE::Discretization> dis)
 {
   // call Setup() after Init()
   issetup_ = false;
@@ -105,7 +105,7 @@ const STR::TimeInt::BaseDataGlobalState& Mortar::STRATEGY::Factory::g_state() co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Discret::Discretization& Mortar::STRATEGY::Factory::discret()
+Core::FE::Discretization& Mortar::STRATEGY::Factory::discret()
 {
   check_init();
   return *discret_ptr_;
@@ -113,7 +113,7 @@ Discret::Discretization& Mortar::STRATEGY::Factory::discret()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Discret::Discretization& Mortar::STRATEGY::Factory::discret() const
+const Core::FE::Discretization& Mortar::STRATEGY::Factory::discret() const
 {
   check_init();
   return *discret_ptr_;
@@ -171,7 +171,7 @@ void Mortar::STRATEGY::Factory::CheckDimension() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::STRATEGY::Factory::prepare_nurbs_element(const Discret::Discretization& discret,
+void Mortar::STRATEGY::Factory::prepare_nurbs_element(const Core::FE::Discretization& discret,
     Teuchos::RCP<Core::Elements::Element> ele, Teuchos::RCP<Mortar::Element> cele) const
 {
   const Discret::Nurbs::NurbsDiscretization* nurbsdis =

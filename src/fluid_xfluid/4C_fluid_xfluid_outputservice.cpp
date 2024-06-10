@@ -627,7 +627,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
 
 /// Gmsh output function for elements without an Core::Geo::Cut::ElementHandle
 void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
-    Discret::Discretization& discret,         ///< background fluid discretization
+    Core::FE::Discretization& discret,        ///< background fluid discretization
     std::ofstream& vel_f,                     ///< output file stream for velocity
     std::ofstream& press_f,                   ///< output file stream for pressure
     std::ofstream& acc_f,                     ///< output file stream for acceleration
@@ -760,7 +760,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
 
 /// Gmsh output function for volumecells
 void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
-    Discret::Discretization& discret,          ///< background fluid discretization
+    Core::FE::Discretization& discret,         ///< background fluid discretization
     std::ofstream& vel_f,                      ///< output file stream for velocity
     std::ofstream& press_f,                    ///< output file stream for pressure
     std::ofstream& acc_f,                      ///< output file stream for acceleration
@@ -1148,7 +1148,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
 
 /// Gmsh output function for boundarycells
 void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
-    Discret::Discretization& discret,                 ///< background fluid discretization
+    Core::FE::Discretization& discret,                ///< background fluid discretization
     std::ofstream& bound_f,                           ///< output file stream for boundary mesh
     Core::Geo::Cut::VolumeCell* vc,                   ///< volumecell
     const Teuchos::RCP<Core::Geo::CutWizard>& wizard  ///< cut wizard
@@ -1294,10 +1294,12 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
     std::cout << "discretization output " << discret_->Name() << std::endl;
 
   // cast to DiscretizationFaces
-  Teuchos::RCP<Discret::DiscretizationFaces> xdiscret =
-      Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(discret_, true);
+  Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
+      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discret_, true);
   if (xdiscret == Teuchos::null)
-    FOUR_C_THROW("Failed to cast Discret::Discretization to Discret::DiscretizationFaces.");
+    FOUR_C_THROW(
+        "Failed to cast Core::FE::Discretization to "
+        "Core::FE::DiscretizationFaces.");
 
   // output for Element and Node IDs
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("DISCRET",
@@ -1323,10 +1325,12 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
   if (!gmsh_eos_out_ || edge_stab == Teuchos::null) return;
 
   // cast to DiscretizationXFEM
-  Teuchos::RCP<Discret::DiscretizationFaces> xdiscret =
-      Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(discret_, true);
+  Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
+      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discret_, true);
   if (xdiscret == Teuchos::null)
-    FOUR_C_THROW("Failed to cast Discret::Discretization to Discret::DiscretizationFaces.");
+    FOUR_C_THROW(
+        "Failed to cast Core::FE::Discretization to "
+        "Core::FE::DiscretizationFaces.");
 
   // output for Element and Node IDs
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("EOS",

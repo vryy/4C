@@ -197,8 +197,8 @@ namespace FSI
         std::map<int, std::list<int>>* inverseNodeOwner,
         std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
         std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
-        Teuchos::RCP<Discret::Discretization> structuredis,
-        Teuchos::RCP<Discret::Discretization> fluiddis,
+        Teuchos::RCP<Core::FE::Discretization> structuredis,
+        Teuchos::RCP<Core::FE::Discretization> fluiddis,
         const Inpar::FSI::Redistribute domain) override
     {
       FOUR_C_THROW("Not implemented!");

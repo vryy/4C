@@ -76,7 +76,7 @@ void Discret::ELEMENTS::SoHex8PoroType::setup_element_definition(
                      .Build();
 }
 
-int Discret::ELEMENTS::SoHex8PoroType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex8PoroType::Initialize(Core::FE::Discretization& dis)
 {
   SoHex8Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
@@ -153,7 +153,7 @@ void Discret::ELEMENTS::SoTet4PoroType::setup_element_definition(
                      .Build();
 }
 
-int Discret::ELEMENTS::SoTet4PoroType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoTet4PoroType::Initialize(Core::FE::Discretization& dis)
 {
   SoTet4Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
@@ -226,7 +226,7 @@ void Discret::ELEMENTS::SoHex27PoroType::setup_element_definition(
                       .Build();
 }
 
-int Discret::ELEMENTS::SoHex27PoroType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex27PoroType::Initialize(Core::FE::Discretization& dis)
 {
   SoHex27Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
@@ -299,7 +299,7 @@ void Discret::ELEMENTS::SoTet10PoroType::setup_element_definition(
                       .Build();
 }
 
-int Discret::ELEMENTS::SoTet10PoroType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoTet10PoroType::Initialize(Core::FE::Discretization& dis)
 {
   SoTet10Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
@@ -372,7 +372,7 @@ void Discret::ELEMENTS::SoNurbs27PoroType::setup_element_definition(
                         .Build();
 }
 
-int Discret::ELEMENTS::SoNurbs27PoroType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoNurbs27PoroType::Initialize(Core::FE::Discretization& dis)
 {
   Nurbs::SoNurbs27Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)

@@ -1628,7 +1628,7 @@ namespace Core::FE
       double& fac, Core::LinAlg::Matrix<Core::FE::dim<distype> + 1, 1>& unitnormal, double& drs,
       Core::LinAlg::Matrix<Core::FE::dim<distype>, 1>& xsi,
       Core::LinAlg::Matrix<Core::FE::dim<distype> + 1, Core::FE::num_nodes<distype>>& xyze,
-      Core::Elements::Element* ele, Discret::Discretization& discretization,
+      Core::Elements::Element* ele, Core::FE::Discretization& discretization,
       Core::LinAlg::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
       const bool isnurbs, const bool isale)
   {

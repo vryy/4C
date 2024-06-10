@@ -27,12 +27,13 @@ const int NUMDOF_SOP5 = 15;  ///< total dofs per element
 const int NUMGPT_SOP5 = 8;   ///< total gauss points per element
 const int NUMDIM_SOP5 = 3;   ///< number of dimensions
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
 
 namespace Discret
 {
-  // forward declarations
-  class Discretization;
-
   namespace ELEMENTS
   {
     // forward declarations
@@ -52,7 +53,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override;
+      int Initialize(Core::FE::Discretization& dis) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -282,8 +283,8 @@ namespace Discret
       int Evaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
-          Discret::Discretization& discretization,  ///< pointer to discretization for de-assembly
-          std::vector<int>& lm,                     ///< location matrix for de-assembly
+          Core::FE::Discretization& discretization,  ///< pointer to discretization for de-assembly
+          std::vector<int>& lm,                      ///< location matrix for de-assembly
           Core::LinAlg::SerialDenseMatrix&
               elemat1,  ///< (stiffness-)matrix to be filled by element.
           Core::LinAlg::SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
@@ -308,7 +309,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;

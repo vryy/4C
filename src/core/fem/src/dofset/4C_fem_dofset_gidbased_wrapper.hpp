@@ -56,7 +56,7 @@ namespace Core::DOFSets
   {
    public:
     //! Standard Constructor
-    DofSetGIDBasedWrapper(Teuchos::RCP<Discret::Discretization> sourcedis,
+    DofSetGIDBasedWrapper(Teuchos::RCP<Core::FE::Discretization> sourcedis,
         Teuchos::RCP<DofSetInterface> sourcedofset);
 
     //! Destructor
@@ -64,7 +64,7 @@ namespace Core::DOFSets
 
     //! original DofSet has new dofs
     int assign_degrees_of_freedom(
-        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
+        const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
     //! original DofSet has been reset
     void Reset() override;
@@ -272,7 +272,7 @@ namespace Core::DOFSets
     void check_is_assigned() const;
 
     //! source discretization
-    Teuchos::RCP<Discret::Discretization> sourcedis_;
+    Teuchos::RCP<Core::FE::Discretization> sourcedis_;
 
     //! source dofset wrapped in this class
     Teuchos::RCP<DofSetInterface> sourcedofset_;

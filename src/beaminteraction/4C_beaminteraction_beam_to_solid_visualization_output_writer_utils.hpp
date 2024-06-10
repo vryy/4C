@@ -30,10 +30,10 @@ namespace Core::LinAlg
   template <unsigned int rows, unsigned int cols, class value_type>
   class Matrix;
 }
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 namespace BEAMINTERACTION
 {
   class BeamToSolidOutputWriterVisualization;
@@ -56,7 +56,7 @@ namespace BEAMINTERACTION
    */
   void AddBeamInteractionNodalForces(
       const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
-      const Teuchos::RCP<const Discret::Discretization>& discret_ptr,
+      const Teuchos::RCP<const Core::FE::Discretization>& discret_ptr,
       const Teuchos::RCP<const Epetra_MultiVector>& displacement,
       const Teuchos::RCP<const Epetra_MultiVector>& force, const bool write_unique_ids = false);
 
@@ -87,7 +87,7 @@ namespace BEAMINTERACTION
    * @param beam_resultant (out) Matrix with the force and moment resultants for the beam nodes.
    * @param solid_resultant (out) Matrix with the force and moment resultants for the solid nodes.
    */
-  void GetGlobalCouplingForceResultants(const Discret::Discretization& discret,
+  void GetGlobalCouplingForceResultants(const Core::FE::Discretization& discret,
       const Epetra_MultiVector& force, const Epetra_MultiVector& displacement,
       Core::LinAlg::Matrix<3, 2, double>& beam_resultant,
       Core::LinAlg::Matrix<3, 2, double>& solid_resultant);

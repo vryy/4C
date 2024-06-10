@@ -22,15 +22,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
+
 namespace Discret
 {
-  // forward declarations
-  class Discretization;
-
   namespace UTILS
   {
     //! send data to rank map key and recv data
-    void ISendReceiveAny(Teuchos::RCP<Discret::Discretization> const& discret,
+    void ISendReceiveAny(Teuchos::RCP<Core::FE::Discretization> const& discret,
         std::map<int, std::vector<std::pair<int, std::vector<int>>>> const& toranktosenddata,
         std::vector<std::pair<int, std::vector<int>>>& recvdata);
 

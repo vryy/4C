@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public)                            g.bau 07/07|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Bele3Line::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -80,7 +80,7 @@ int Discret::ELEMENTS::Bele3Line::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Line Neumann boundary condition (public)     gammi 04/07|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -218,7 +218,7 @@ double Discret::ELEMENTS::Bele3Line::f2_substitution(const Core::LinAlg::SerialD
  |  Integrate shapefunctions over line (public)              g.bau 07/07|
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::Bele3Line::integrate_shape_function(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, const std::vector<double>& edispnp)
 {
   // there are 2 velocities and 1 pressure

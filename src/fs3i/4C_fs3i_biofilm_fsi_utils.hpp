@@ -18,10 +18,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace FS3I
 {
@@ -29,8 +29,8 @@ namespace FS3I
   {
     namespace UTILS
     {
-      void ScatraChangeConfig(Teuchos::RCP<Discret::Discretization> scatradis,
-          Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp);
+      void ScatraChangeConfig(Teuchos::RCP<Core::FE::Discretization> scatradis,
+          Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp);
 
     } /* namespace UTILS */
   }   // namespace BioFilm

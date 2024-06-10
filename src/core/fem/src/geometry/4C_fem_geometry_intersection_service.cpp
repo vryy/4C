@@ -103,7 +103,7 @@ void Core::Geo::checkGeoType(const Core::Elements::Element* element,
  | discretization                                                       |
  *----------------------------------------------------------------------*/
 std::map<int, Core::LinAlg::Matrix<3, 2>> Core::Geo::getCurrentXAABBs(
-    const Discret::Discretization& dis,
+    const Core::FE::Discretization& dis,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions)
 {
   std::map<int, Core::LinAlg::Matrix<3, 2>> currentXAABBs;

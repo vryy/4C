@@ -19,10 +19,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::Geo
 {
@@ -183,11 +183,11 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// Create nodal dofset sets within the parallel cut framework
-      void CreateNodalDofSet(bool include_inner, const Discret::Discretization& dis);
+      void CreateNodalDofSet(bool include_inner, const Core::FE::Discretization& dis);
 
       /// fill parallel DofSetData with information that has to be communicated
       void fill_parallel_dof_set_data(std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData,
-          const Discret::Discretization& dis, bool include_inner);
+          const Core::FE::Discretization& dis, bool include_inner);
 
       /// create parallel DofSetData for a volumecell that has to be communicated
       void create_parallel_dof_set_data_vc(
@@ -205,7 +205,7 @@ namespace Core::Geo
 
       /// connect sets of volumecells for neighboring elements around a node
       void ConnectNodalDOFSets(std::vector<Node*>& nodes, bool include_inner,
-          const Discret::Discretization& dis,
+          const Core::FE::Discretization& dis,
           const std::vector<plain_volumecell_set>& connected_vc_sets,
           std::vector<std::vector<int>>& nodaldofset_vc_sets,
           std::vector<std::map<int, int>>& vcsets_nid_dofsetnumber_map_toComm);
@@ -240,15 +240,15 @@ namespace Core::Geo
       /// write gmsh debug output for nodal cell sets
       void dump_gmsh_nodal_cell_set(
           std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets,
-          const Discret::Discretization& dis);
+          const Core::FE::Discretization& dis);
 
       /// write gmsh debug output for CellSets
       void DumpGmshCellSets(
-          std::vector<plain_volumecell_set>& cell_sets, const Discret::Discretization& dis);
+          std::vector<plain_volumecell_set>& cell_sets, const Core::FE::Discretization& dis);
 
       /// write gmsh cut output for number of dofsets and the connected vc sets
       void dump_gmsh_num_dof_sets(
-          std::string filename, bool include_inner, const Discret::Discretization& dis);
+          std::string filename, bool include_inner, const Core::FE::Discretization& dis);
 
       /// write gmsh output for volumecells
       void dump_gmsh_volume_cells(std::string name, bool include_inner);

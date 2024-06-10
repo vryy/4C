@@ -43,7 +43,7 @@ STR::Nln::LinSystem::StcScaling::StcScaling(
   Teuchos::ParameterList p;
 
   // get discretization
-  Teuchos::RCP<Discret::Discretization> discret = GState.get_discret();
+  Teuchos::RCP<Core::FE::Discretization> discret = GState.get_discret();
 
   // action for elements
   discret->set_state("displacement", GState.get_dis_np());

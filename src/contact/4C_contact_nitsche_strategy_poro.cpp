@@ -67,7 +67,7 @@ void CONTACT::NitscheStrategyPoro::SetParentState(
   //
   if (statename == Mortar::state_fvelocity || statename == Mortar::state_fpressure)
   {
-    Teuchos::RCP<Discret::Discretization> dis = Global::Problem::Instance()->GetDis("porofluid");
+    Teuchos::RCP<Core::FE::Discretization> dis = Global::Problem::Instance()->GetDis("porofluid");
     if (dis == Teuchos::null) FOUR_C_THROW("didn't get my discretization");
 
     Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap(), true));
@@ -77,7 +77,7 @@ void CONTACT::NitscheStrategyPoro::SetParentState(
     // set state on interfaces
     for (const auto& interface : interface_)
     {
-      Discret::Discretization& idiscret = interface->Discret();
+      Core::FE::Discretization& idiscret = interface->Discret();
 
       for (int j = 0; j < interface->Discret().ElementColMap()->NumMyElements(); ++j)
       {

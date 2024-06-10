@@ -32,10 +32,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
-    PoroMultiPhaseScaTraArtCouplNonConforming(Teuchos::RCP<Discret::Discretization> arterydis,
-        Teuchos::RCP<Discret::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
-        const std::string& condname, const std::string& artcoupleddofname,
-        const std::string& contcoupleddofname)
+    PoroMultiPhaseScaTraArtCouplNonConforming(Teuchos::RCP<Core::FE::Discretization> arterydis,
+        Teuchos::RCP<Core::FE::Discretization> contdis,
+        const Teuchos::ParameterList& couplingparams, const std::string& condname,
+        const std::string& artcoupleddofname, const std::string& contcoupleddofname)
     : PoroMultiPhaseScaTraArtCouplBase(
           arterydis, contdis, couplingparams, condname, artcoupleddofname, contcoupleddofname),
       couplingparams_(couplingparams),

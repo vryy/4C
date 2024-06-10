@@ -29,11 +29,11 @@ namespace
    public:
     DomainReaderTest()
     {
-      testdis_ = Teuchos::rcp(new Discret::Discretization("dummy", testreader_.Comm(), 3));
+      testdis_ = Teuchos::rcp(new Core::FE::Discretization("dummy", testreader_.Comm(), 3));
     }
 
    protected:
-    Teuchos::RCP<Discret::Discretization> testdis_;
+    Teuchos::RCP<Core::FE::Discretization> testdis_;
     DatFileReaderStub testreader_;
   };
 

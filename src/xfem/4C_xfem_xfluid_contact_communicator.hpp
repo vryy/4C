@@ -40,13 +40,17 @@ namespace CONTACT
   class NitscheStrategy;
 }  // namespace CONTACT
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
+
 namespace Discret
 {
   namespace ELEMENTS
   {
     class StructuralSurface;
   }
-  class Discretization;
 }  // namespace Discret
 
 namespace Core::Elements
@@ -117,7 +121,7 @@ namespace XFEM
     virtual ~XFluidContactComm() = default;
     /// Initialize overall Fluid State (includes the Cut intersection information)
     void initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
-        Teuchos::RCP<Discret::Discretization> fluiddis,
+        Teuchos::RCP<Core::FE::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);
 
@@ -183,7 +187,7 @@ namespace XFEM
     int GetSurfSid(const int mortarId) { return mortar_id_to_sosid_.at(mortarId - min_mortar_id_); }
 
     /// Setup Interface element connection vectors based on points
-    void SetupSurfElePtrs(Discret::Discretization& contact_interface_dis);
+    void SetupSurfElePtrs(Core::FE::Discretization& contact_interface_dis);
 
     /// Get element size of background mesh
     double Get_h();
@@ -303,7 +307,7 @@ namespace XFEM
     /// The XFluid CutWizard
     Teuchos::RCP<Core::Geo::CutWizard> cutwizard_;
     /// The Background Fluid discretization
-    Teuchos::RCP<Discret::Discretization> fluiddis_;
+    Teuchos::RCP<Core::FE::Discretization> fluiddis_;
     /// The XFEM Condition Manager
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
     /// A list of all mesh coupling objects

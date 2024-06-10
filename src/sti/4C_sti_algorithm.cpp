@@ -127,8 +127,8 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
             if (condid < 0) FOUR_C_THROW("Invalid condition ID!");
 
             // extract mortar discretizations associated with current condition
-            Discret::Discretization& scatradis = strategyscatra_->mortar_discretization(condid);
-            Discret::Discretization& thermodis = strategythermo_->mortar_discretization(condid);
+            Core::FE::Discretization& scatradis = strategyscatra_->mortar_discretization(condid);
+            Core::FE::Discretization& thermodis = strategythermo_->mortar_discretization(condid);
 
             // exchange dofsets between discretizations
             scatradis.AddDofSet(thermodis.GetDofSetProxy());
@@ -333,7 +333,7 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
             if (condid < 0) FOUR_C_THROW("Invalid condition ID!");
 
             // extract mortar discretization associated with current condition
-            Discret::Discretization& thermodis = strategythermo_->mortar_discretization(condid);
+            Core::FE::Discretization& thermodis = strategythermo_->mortar_discretization(condid);
 
             // pass interfacial scatra degrees of freedom to thermo discretization
             const Teuchos::RCP<Epetra_Vector> iscatra =
@@ -380,7 +380,7 @@ void STI::Algorithm::transfer_thermo_to_scatra(const Teuchos::RCP<const Epetra_V
         if (condid < 0) FOUR_C_THROW("Invalid condition ID!");
 
         // extract mortar discretization associated with current condition
-        Discret::Discretization& scatradis = strategyscatra_->mortar_discretization(condid);
+        Core::FE::Discretization& scatradis = strategyscatra_->mortar_discretization(condid);
 
         // pass interfacial thermo degrees of freedom to scatra discretization
         const Teuchos::RCP<Epetra_Vector> ithermo =

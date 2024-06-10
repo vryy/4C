@@ -39,13 +39,13 @@ namespace PoroElast
       const bool matchinggrid = Core::UTILS::IntegralValue<bool>(porodyn, "MATCHINGGRID");
 
       // access the structure discretization, make sure it is filled
-      Teuchos::RCP<Discret::Discretization> structdis;
+      Teuchos::RCP<Core::FE::Discretization> structdis;
       structdis = problem->GetDis("structure");
       // set degrees of freedom in the discretization
       if (!structdis->Filled() or !structdis->HaveDofs()) structdis->fill_complete();
 
       // access the fluid discretization
-      Teuchos::RCP<Discret::Discretization> fluiddis;
+      Teuchos::RCP<Core::FE::Discretization> fluiddis;
       fluiddis = problem->GetDis("porofluid");
       if (!fluiddis->Filled()) fluiddis->fill_complete();
 

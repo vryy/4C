@@ -52,11 +52,12 @@ namespace Discret
       /*========================================================================*/
 
       //! setup element evaluation
-      int SetupCalc(Core::Elements::Element* ele, Discret::Discretization& discretization) override;
+      int SetupCalc(
+          Core::Elements::Element* ele, Core::FE::Discretization& discretization) override;
 
       //! evaluate the element
       int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -64,7 +65,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
       int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::FE::Discretization& discretization, const ScaTra::Action& action,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -107,17 +108,17 @@ namespace Discret
 
       void eval_reinitialization(const Epetra_Vector& phinp, const std::vector<int>& lm,
           Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra);
 
       void eval_reinitialization_embedded(const std::vector<int>& lm, Core::Elements::Element* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra);
 
       void eval_reinitialization_std(const Epetra_Vector& phinp, const std::vector<int>& lm,
           Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra);
 
       /*========================================================================*/

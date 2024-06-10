@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   if (la.Size() > 1)
   {
@@ -179,7 +179,7 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::pre_evaluate(Teuchos::Param
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
 int Discret::ELEMENTS::So3Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,

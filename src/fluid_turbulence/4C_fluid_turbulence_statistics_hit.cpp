@@ -31,7 +31,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | constructor                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  TurbulenceStatisticsHit::TurbulenceStatisticsHit(Teuchos::RCP<Discret::Discretization> actdis,
+  TurbulenceStatisticsHit::TurbulenceStatisticsHit(Teuchos::RCP<Core::FE::Discretization> actdis,
       Teuchos::ParameterList& params, const std::string& statistics_outfilename, const bool forced)
       : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
   {
@@ -1715,7 +1715,7 @@ namespace FLD
    | constructor                                         bk 03/15 |
    *--------------------------------------------------------------*/
   TurbulenceStatisticsHitHDG::TurbulenceStatisticsHitHDG(
-      Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params,
+      Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params,
       const std::string& statistics_outfilename, const bool forced)
       : TurbulenceStatisticsHit(actdis, params, statistics_outfilename, forced)
   {

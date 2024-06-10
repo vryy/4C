@@ -19,10 +19,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class FluidBoundary;
@@ -68,7 +71,7 @@ namespace Discret
 
       /// determines which boundary integral is to be evaluated
       void evaluate_action(Discret::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3) override;
@@ -97,7 +100,7 @@ namespace Discret
                                   this matrix.
       */
       void poro_boundary(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1);
 
       /*!
@@ -106,7 +109,7 @@ namespace Discret
       */
       template <Core::FE::CellType pdistype>
       void poro_boundary(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1);
 
       /*!
@@ -123,7 +126,7 @@ namespace Discret
                                   this matrix.
       */
       void pressure_coupling(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1);
 
       /*!
@@ -141,7 +144,7 @@ namespace Discret
                                   this matrix.
       */
       void fpsi_coupling(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1);
 
       /*!
@@ -150,7 +153,7 @@ namespace Discret
       */
       template <Core::FE::CellType pdistype>
       void fpsi_coupling(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1);
 
       /*!
@@ -184,7 +187,7 @@ namespace Discret
       \param elevec1 (out)      : vector to be filled by element.
       */
       void no_penetration(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1);
 
@@ -205,7 +208,7 @@ namespace Discret
                                   in this vector otherwise 0.0
       */
       void no_penetration_i_ds(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::LinAlg::SerialDenseVector& elevec1, std::vector<int>& lm);
 
       /*!
@@ -219,7 +222,7 @@ namespace Discret
 
       */
       void compute_flow_rate(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1);
 
       /*!
@@ -229,7 +232,7 @@ namespace Discret
       */
       template <Core::FE::CellType pdistype>
       void compute_flow_rate(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1);
 
       /*!
@@ -246,7 +249,7 @@ namespace Discret
       constraint.
       */
       void no_penetration_mat_and_rhs(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_fluid,
           Core::LinAlg::SerialDenseVector& rhs);
 
@@ -256,7 +259,7 @@ namespace Discret
       */
       template <Core::FE::CellType pdistype>
       void no_penetration_mat_and_rhs(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_fluid,
           Core::LinAlg::SerialDenseVector& rhs);
 
@@ -273,7 +276,7 @@ namespace Discret
       of constraint w.r.t to lagrange multiplier
       */
       void no_penetration_mat_od(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_struct,
           Core::LinAlg::SerialDenseMatrix& k_lambda);
 
@@ -283,7 +286,7 @@ namespace Discret
       */
       template <Core::FE::CellType pdistype>
       void no_penetration_mat_od(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_struct,
           Core::LinAlg::SerialDenseMatrix& k_lambda);
 
@@ -299,7 +302,7 @@ namespace Discret
       pressure part ofporosity
       */
       void no_penetration_mat_od_poro_pres(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_pres);
 
       /*!
@@ -308,7 +311,7 @@ namespace Discret
       */
       template <Core::FE::CellType pdistype>
       void no_penetration_mat_od_poro_pres(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_pres);
 
       /*!
@@ -323,7 +326,7 @@ namespace Discret
       displacement part ofporosity
       */
       void no_penetration_mat_od_poro_disp(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_disp);
 
       /*!
@@ -332,7 +335,7 @@ namespace Discret
       */
       template <Core::FE::CellType pdistype>
       void no_penetration_mat_od_poro_disp(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_disp);
 
 

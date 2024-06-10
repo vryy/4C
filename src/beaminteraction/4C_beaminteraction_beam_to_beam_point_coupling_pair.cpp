@@ -63,7 +63,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::Setup()
  */
 template <typename beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemble(
-    const Teuchos::RCP<const Discret::Discretization>& discret,
+    const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
@@ -79,7 +79,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemble(
  */
 template <typename beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_positional_coupling(
-    const Teuchos::RCP<const Discret::Discretization>& discret,
+    const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const
@@ -171,7 +171,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_p
  */
 template <typename beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_rotational_coupling(
-    const Teuchos::RCP<const Discret::Discretization>& discret,
+    const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const

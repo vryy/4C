@@ -193,7 +193,7 @@ double LAGPENCONSTRAINT::NoxInterface::get_previous_lagrange_multiplier_norms(
  *----------------------------------------------------------------------------*/
 bool LAGPENCONSTRAINT::NoxInterfacePrec::IsSaddlePointSystem() const
 {
-  Teuchos::RCP<const Discret::Discretization> dis = gstate_ptr_->get_discret();
+  Teuchos::RCP<const Core::FE::Discretization> dis = gstate_ptr_->get_discret();
 
   // ---------------------------------------------------------------------------
   // check type of constraint conditions (Lagrange multiplier vs. penalty)

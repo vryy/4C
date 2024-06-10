@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -1793,7 +1793,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_cauchy(
 
 void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
     Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1, const Inpar::STR::StcScale stc_scaling,
-    const int stc_layer, std::vector<int>& lm, Discret::Discretization& discretization,
+    const int stc_layer, std::vector<int>& lm, Core::FE::Discretization& discretization,
     bool calcinverse)
 {
   /// Compute C based on element aspect ratio
@@ -1994,7 +1994,7 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh8Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoSh8Type::Initialize(Core::FE::Discretization& dis)
 {
   // sosh8_gmshplotdis(dis);
 

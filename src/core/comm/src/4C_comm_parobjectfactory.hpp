@@ -34,10 +34,10 @@ namespace Input
   class LineDefinition;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -116,10 +116,10 @@ namespace Core::Communication
         const std::string eletype, const std::string eledistype, const int id, const int owner);
 
     /// initialize all element types
-    void initialize_elements(Discret::Discretization& dis);
+    void initialize_elements(Core::FE::Discretization& dis);
 
     /// preevaluate elements (via element types)
-    void pre_evaluate(Discret::Discretization& dis, Teuchos::ParameterList& p,
+    void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -148,7 +148,7 @@ namespace Core::Communication
     std::vector<ParObjectType*> types_;
 
     /// element types that are actually used
-    std::map<Discret::Discretization*, std::set<Core::Elements::ElementType*>> active_elements_;
+    std::map<Core::FE::Discretization*, std::set<Core::Elements::ElementType*>> active_elements_;
 
     // no copying
 

@@ -448,7 +448,7 @@ void PARTICLEWALL::WallHandlerBase::create_wall_discretization_runtime_vtu_write
 void PARTICLEWALL::WallHandlerBase::create_wall_discretization()
 {
   // create wall discretization
-  walldiscretization_ = Teuchos::rcp(new Discret::Discretization(
+  walldiscretization_ = Teuchos::rcp(new Core::FE::Discretization(
       "particlewalls", Teuchos::rcp(comm_.Clone()), Global::Problem::Instance()->NDim()));
 
   // create wall discretization writer
@@ -540,7 +540,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
   create_wall_discretization();
 
   // access the structural discretization
-  Teuchos::RCP<Discret::Discretization> structurediscretization =
+  Teuchos::RCP<Core::FE::Discretization> structurediscretization =
       Global::Problem::Instance()->GetDis("structure");
 
   // finalize structure discretization construction

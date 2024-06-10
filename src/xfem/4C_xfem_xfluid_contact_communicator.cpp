@@ -33,7 +33,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 void XFEM::XFluidContactComm::initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
-    Teuchos::RCP<Discret::Discretization> fluiddis,
+    Teuchos::RCP<Core::FE::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)
 {
@@ -561,7 +561,7 @@ void XFEM::XFluidContactComm::get_penalty_param(
   return;
 }
 
-void XFEM::XFluidContactComm::SetupSurfElePtrs(Discret::Discretization& contact_interface_dis)
+void XFEM::XFluidContactComm::SetupSurfElePtrs(Core::FE::Discretization& contact_interface_dis)
 {
   if (ele_ptrs_already_setup_) return;
 

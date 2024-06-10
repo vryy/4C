@@ -58,7 +58,7 @@ namespace FLD
     \brief Standard Constructor (public)
 
     */
-    DynSmagFilter(Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params);
+    DynSmagFilter(Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params);
 
     /*!
     \brief Destructor
@@ -66,7 +66,7 @@ namespace FLD
     */
     virtual ~DynSmagFilter() = default;
 
-    void AddScatra(Teuchos::RCP<Discret::Discretization> scatradis);
+    void AddScatra(Teuchos::RCP<Core::FE::Discretization> scatradis);
 
     /*!
     \brief Perform box filter operation, compare filtered quantities
@@ -156,7 +156,7 @@ namespace FLD
     Teuchos::RCP<FLD::Boxfilter> boxfsc_;
 
     //! the discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
     //! parameterlist including time params, stabilization params and turbulence sublist
     Teuchos::ParameterList& params_;
     //! flag for physical type of fluid flow
@@ -172,7 +172,7 @@ namespace FLD
 
     //! @name special scatra variables
     //! the discretization
-    Teuchos::RCP<Discret::Discretization> scatradiscret_;
+    Teuchos::RCP<Core::FE::Discretization> scatradiscret_;
     //@}
 
     //! @name vectors used for filtering (for dynamic Smagorinsky model)

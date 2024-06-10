@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  | Constructor (public)                                      Thon 07/16 |
  *----------------------------------------------------------------------*/
 FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(
-    const Teuchos::RCP<Discret::Discretization> actdis)
+    const Teuchos::RCP<Core::FE::Discretization> actdis)
 {
   std::vector<Core::Conditions::Condition*> impedancecond;
   actdis->GetCondition("ImpedanceCond", impedancecond);
@@ -181,7 +181,7 @@ std::vector<double> FLD::UTILS::FluidImpedanceWrapper::getWKrelerrors()
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     Thon 07/16 |
  *----------------------------------------------------------------------*/
-FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<Discret::Discretization> actdis,
+FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<Core::FE::Discretization> actdis,
     const int condid, Core::Conditions::Condition* impedancecond)
     : discret_(actdis),
       myrank_(discret_->Comm().MyPID()),

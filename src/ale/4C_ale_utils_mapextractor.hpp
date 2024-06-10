@@ -19,10 +19,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace ALE
 {
@@ -60,10 +60,11 @@ namespace ALE
       };
 
       /// setup the whole thing
-      void Setup(const Discret::Discretization& dis, bool overlapping = false);
+      void Setup(const Core::FE::Discretization& dis, bool overlapping = false);
 
       /// get all element gids those nodes are touched by any condition
-      Teuchos::RCP<std::set<int>> conditioned_element_map(const Discret::Discretization& dis) const;
+      Teuchos::RCP<std::set<int>> conditioned_element_map(
+          const Core::FE::Discretization& dis) const;
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(FSICond, cond_fsi)
@@ -87,7 +88,7 @@ namespace ALE
       };
 
       /// setup the whole thing
-      void Setup(const Discret::Discretization& dis);
+      void Setup(const Core::FE::Discretization& dis);
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(FSI, cond_fsi)
@@ -104,7 +105,7 @@ namespace ALE
       };
 
       /// setup the whole thing
-      void Setup(const Discret::Discretization& dis);
+      void Setup(const Core::FE::Discretization& dis);
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(XFluidFluidCond, cond_xfluidfluid)

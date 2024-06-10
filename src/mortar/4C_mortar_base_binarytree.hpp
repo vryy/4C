@@ -20,11 +20,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 namespace CONTACT
 {
   class SelfBinaryTree;
@@ -60,7 +59,7 @@ namespace Mortar
     \param [in] layer:       current layer of tree node
 
     */
-    BaseBinaryTreeNode(Discret::Discretization& discret, std::vector<int> elelist,
+    BaseBinaryTreeNode(Core::FE::Discretization& discret, std::vector<int> elelist,
         const Core::LinAlg::SerialDenseMatrix& dopnormals, const int& kdop, const int& dim,
         const bool& useauxpos, const int layer);
 
@@ -147,7 +146,7 @@ namespace Mortar
     \brief Get discretization of the interface
 
     */
-    Discret::Discretization& discret() const { return idiscret_; }
+    Core::FE::Discretization& discret() const { return idiscret_; }
 
     /*!
     \brief Return pointer to normals of DOP
@@ -200,7 +199,7 @@ namespace Mortar
     //! list containing the gids of all elements of the tree node
     std::vector<int> elelist_;
     //! interface discretization
-    Discret::Discretization& idiscret_;
+    Core::FE::Discretization& idiscret_;
     //! number of vertices
     const int kdop_;
     //! layer of tree node in tree (0=root node!)
@@ -225,7 +224,7 @@ namespace Mortar
     \param [in] dim:     dimension of the problem
     \param [in] eps:     factor used to enlarge dops
     */
-    BaseBinaryTree(Discret::Discretization& discret, int dim, double eps);
+    BaseBinaryTree(Core::FE::Discretization& discret, int dim, double eps);
 
 
     //! @name Evaluation methods
@@ -261,7 +260,7 @@ namespace Mortar
     \brief Get discretization of the interface
 
     */
-    Discret::Discretization& discret() const { return idiscret_; }
+    Core::FE::Discretization& discret() const { return idiscret_; }
 
     /*!
     \brief Get matrix of DOP normals
@@ -296,7 +295,7 @@ namespace Mortar
     virtual void init_internal_variables() = 0;
 
     //! interface discretization
-    Discret::Discretization& idiscret_;
+    Core::FE::Discretization& idiscret_;
     //! problem dimension (2D or 3D)
     const int dim_;
     //! normals of DOP

@@ -815,7 +815,7 @@ Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMaps::StructureDofRowMap() const
  *---------------------------------------------------------------------------------*/
 void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
     const std::vector<Core::Conditions::Condition*>& conditionsToBeTested,
-    Teuchos::RCP<Discret::Discretization>& structdis)
+    Teuchos::RCP<Core::FE::Discretization>& structdis)
 {
   // get conditions to check against
   std::vector<Core::Conditions::Condition*> s2ikinetics_conditions;
@@ -901,7 +901,7 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 SSI::UTILS::SSIMeshTying::SSIMeshTying(const std::string& conditionname_coupling,
-    Teuchos::RCP<Discret::Discretization> dis, const bool build_slave_slave_transformation,
+    Teuchos::RCP<Core::FE::Discretization> dis, const bool build_slave_slave_transformation,
     const bool check_over_constrained)
     : comm_(dis->Comm()),
       do_print_(dis->Comm().MyPID() == 0),
@@ -930,7 +930,7 @@ SSI::UTILS::SSIMeshTying::SSIMeshTying(const std::string& conditionname_coupling
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<Discret::Discretization> dis,
+void SSI::UTILS::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<Core::FE::Discretization> dis,
     const std::string& name_meshtying_condition, const bool build_slave_slave_transformation,
     const bool check_over_constrained)
 {
@@ -1092,7 +1092,7 @@ int SSI::UTILS::SSIMeshTying::has_gid_partial(const int gid, const int start, co
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMeshTying::find_matching_node_pairs(Teuchos::RCP<Discret::Discretization> dis,
+void SSI::UTILS::SSIMeshTying::find_matching_node_pairs(Teuchos::RCP<Core::FE::Discretization> dis,
     const std::string& name_meshtying_condition,
     std::vector<std::pair<int, int>>& coupling_pairs) const
 {
@@ -1260,7 +1260,7 @@ void SSI::UTILS::SSIMeshTying::get_num_assigned_slave_to_master_nodes(
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 void SSI::UTILS::SSIMeshTying::define_master_slave_pairing(
-    Teuchos::RCP<Discret::Discretization> dis,
+    Teuchos::RCP<Core::FE::Discretization> dis,
     const std::vector<std::vector<int>>& grouped_matching_nodes, std::vector<int>& master_gids,
     std::map<int, int>& slave_master_pair, const bool check_over_constrained) const
 {
@@ -1334,7 +1334,7 @@ void SSI::UTILS::SSIMeshTying::define_master_slave_pairing(
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 void SSI::UTILS::SSIMeshTying::find_slave_slave_transformation_nodes(
-    Teuchos::RCP<Discret::Discretization> dis, const std::string& name_meshtying_condition,
+    Teuchos::RCP<Core::FE::Discretization> dis, const std::string& name_meshtying_condition,
     const std::vector<int>& inodegidvec_slave,
     std::vector<int>& all_coupled_original_slave_gids) const
 {

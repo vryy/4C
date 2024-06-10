@@ -45,8 +45,8 @@ void loma_dyn(int restart)
   Global::Problem* problem = Global::Problem::Instance();
 
   // access fluid and (typically empty) scatra discretization
-  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis("fluid");
-  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis("scatra");
 
   // ensure that all dofs are assigned in the right order such that
   // dof numbers are created with fluid dof < scatra/elch dof

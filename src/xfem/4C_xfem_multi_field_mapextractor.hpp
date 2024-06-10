@@ -29,10 +29,10 @@ class Epetra_Map;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Nodes
 {
@@ -139,7 +139,7 @@ namespace XFEM
    *  \date 09/16 */
   class MultiFieldMapExtractor
   {
-    typedef std::vector<Teuchos::RCP<const Discret::Discretization>> XDisVec;
+    typedef std::vector<Teuchos::RCP<const Core::FE::Discretization>> XDisVec;
 
     // number of map extractor types
     static constexpr unsigned NUM_MAP_TYPES = 2;
@@ -164,7 +164,7 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 09/16 */
-    void Init(const std::vector<Teuchos::RCP<const Discret::Discretization>>& dis_vec,
+    void Init(const std::vector<Teuchos::RCP<const Core::FE::Discretization>>& dis_vec,
         int max_num_reserved_dofs_per_node);
 
     /** \brief Setup member variables
@@ -579,17 +579,17 @@ namespace XFEM
     /** \brief Access the interface discretization
      *
      *  \author hiermeier \date 10/16 */
-    inline const Discret::Discretization& i_discret() const
+    inline const Core::FE::Discretization& i_discret() const
     {
       check_init();
       return *idiscret_;
     }
 
-    inline const Discret::Discretization& sl_discret(enum FieldName field) const
+    inline const Core::FE::Discretization& sl_discret(enum FieldName field) const
     {
       return sl_discret(slave_id(field));
     }
-    const Discret::Discretization& sl_discret(unsigned dis_id) const
+    const Core::FE::Discretization& sl_discret(unsigned dis_id) const
     {
       check_init();
 
@@ -655,7 +655,7 @@ namespace XFEM
 
     int slave_id(enum FieldName field) const;
 
-    const std::vector<Teuchos::RCP<const Discret::Discretization>>& sl_dis_vec() const
+    const std::vector<Teuchos::RCP<const Core::FE::Discretization>>& sl_dis_vec() const
     {
       return slave_discret_vec_;
     }
@@ -694,7 +694,7 @@ namespace XFEM
     Teuchos::RCP<const Epetra_Comm> comm_;
 
     /// vector containing pointers to all the input discretizations
-    std::vector<Teuchos::RCP<const Discret::Discretization>> slave_discret_vec_;
+    std::vector<Teuchos::RCP<const Core::FE::Discretization>> slave_discret_vec_;
 
     /// mapping between the FieldName enumerator and the slave vector entry number
     std::map<enum FieldName, int> slave_discret_id_map_;
@@ -721,7 +721,7 @@ namespace XFEM
     std::set<int> xfem_dis_ids_;
 
     /// interface discretization
-    Teuchos::RCP<Discret::Discretization> idiscret_;
+    Teuchos::RCP<Core::FE::Discretization> idiscret_;
 
     /// interface coupling DoF-set
     Teuchos::RCP<XFEM::XFieldField::CouplingDofSet> icoupl_dofset_;

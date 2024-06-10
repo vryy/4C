@@ -35,8 +35,8 @@ void Adapter::FBIConstraintBridgePenalty::Setup(const Epetra_Map* beam_map,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FBIConstraintBridgePenalty::Evaluate(
-    Teuchos::RCP<const Discret::Discretization> discretization1,
-    Teuchos::RCP<const Discret::Discretization> discretization2,
+    Teuchos::RCP<const Core::FE::Discretization> discretization1,
+    Teuchos::RCP<const Core::FE::Discretization> discretization2,
     Teuchos::RCP<const Epetra_Vector> fluid_vel, Teuchos::RCP<const Epetra_Vector> beam_vel)
 {
   // Create assembly manager..

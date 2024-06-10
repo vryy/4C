@@ -62,7 +62,7 @@ namespace FLD
     o Allocate distributed vector for squares
 
     */
-    TurbulenceStatisticsPh(Teuchos::RCP<Discret::Discretization> actdis,
+    TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename);
 
     /*!
@@ -119,7 +119,7 @@ namespace FLD
     int numx1statlocations_;
 
     //! The discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! parameter list
     Teuchos::ParameterList& params_;

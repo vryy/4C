@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-Arteries::TimInt::TimInt(Teuchos::RCP<Discret::Discretization> actdis, const int linsolvernumber,
+Arteries::TimInt::TimInt(Teuchos::RCP<Core::FE::Discretization> actdis, const int linsolvernumber,
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
     Core::IO::DiscretizationWriter& output)
     : discret_(actdis),

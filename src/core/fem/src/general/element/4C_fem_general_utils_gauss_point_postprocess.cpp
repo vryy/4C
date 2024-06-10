@@ -34,7 +34,7 @@ namespace
 }  // namespace
 
 void Core::FE::ExtrapolateGaussPointQuantityToNodes(Core::Elements::Element& ele,
-    const Core::LinAlg::SerialDenseMatrix& data, const Discret::Discretization& dis,
+    const Core::LinAlg::SerialDenseMatrix& data, const Core::FE::Discretization& dis,
     Epetra_MultiVector& nodal_data)
 {
   switch (ele.Shape())

@@ -18,10 +18,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::IO::GridGenerator
 {
@@ -36,7 +36,7 @@ namespace Core::IO::GridGenerator
     \param outputFlag             (i) triggers output writing
   */
   void CreateRectangularCuboidDiscretization(
-      Discret::Discretization& dis, const RectangularCuboidInputs& inputData, bool outputFlag);
+      Core::FE::Discretization& dis, const RectangularCuboidInputs& inputData, bool outputFlag);
 
   /// storage for input parameters for CreateRectangularCuboidDiscretization
   struct RectangularCuboidInputs

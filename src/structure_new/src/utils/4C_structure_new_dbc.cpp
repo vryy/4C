@@ -45,7 +45,7 @@ STR::Dbc::Dbc()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::Init(const Teuchos::RCP<Discret::Discretization>& discret_ptr,
+void STR::Dbc::Init(const Teuchos::RCP<Core::FE::Discretization>& discret_ptr,
     const Teuchos::RCP<Epetra_Vector>& freact_ptr,
     const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr)
 {
@@ -137,7 +137,7 @@ void STR::Dbc::check_init_setup() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization> STR::Dbc::discret_ptr()
+Teuchos::RCP<Core::FE::Discretization> STR::Dbc::discret_ptr()
 {
   check_init();
   return discret_ptr_;
@@ -145,10 +145,10 @@ Teuchos::RCP<Discret::Discretization> STR::Dbc::discret_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Discret::Discretization> STR::Dbc::discret_ptr() const
+Teuchos::RCP<const Core::FE::Discretization> STR::Dbc::discret_ptr() const
 {
   check_init();
-  return Teuchos::rcp_dynamic_cast<const Discret::Discretization>(discret_ptr_, true);
+  return Teuchos::rcp_dynamic_cast<const Core::FE::Discretization>(discret_ptr_, true);
 }
 
 /*----------------------------------------------------------------------------*

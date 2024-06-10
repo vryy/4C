@@ -53,7 +53,7 @@ CONSTRAINTS::ConstrManager::ConstrManager()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::ConstrManager::Init(
-    Teuchos::RCP<Discret::Discretization> discr, const Teuchos::ParameterList& params)
+    Teuchos::RCP<Core::FE::Discretization> discr, const Teuchos::ParameterList& params)
 {
   set_is_setup(false);
 

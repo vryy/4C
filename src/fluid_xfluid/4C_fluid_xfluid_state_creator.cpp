@@ -77,7 +77,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::Create(
     const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
-    const Teuchos::RCP<Discret::Discretization>&
+    const Teuchos::RCP<Core::FE::Discretization>&
         embfluiddiscret,  //!< embedded fluid discretization
     Teuchos::RCP<const Epetra_Vector>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis

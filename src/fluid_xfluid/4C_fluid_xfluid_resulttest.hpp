@@ -20,10 +20,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace FLD
 {
@@ -54,17 +54,17 @@ namespace FLD
    private:
     /// nodal value test (one can specify discretization and corresponding solution here!)
     void test_node(Input::LineDefinition& res, int& nerr, int& test_count, int node,
-        const Teuchos::RCP<const Discret::Discretization>& discret,
+        const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<const Epetra_Vector>& velnp);
 
     /// XFEM discretization
-    Teuchos::RCP<const Discret::Discretization> discret_;
+    Teuchos::RCP<const Core::FE::Discretization> discret_;
 
     /// solution vector for XFEM discretization
     Teuchos::RCP<const Epetra_Vector> velnp_;
 
     /// optional additional discretization for the same field (fluid-fluid coupling)
-    Teuchos::RCP<const Discret::Discretization> coupl_discret_;
+    Teuchos::RCP<const Core::FE::Discretization> coupl_discret_;
 
     /// solution vector for additional coupling discretization
     Teuchos::RCP<const Epetra_Vector> coupl_velnp_;

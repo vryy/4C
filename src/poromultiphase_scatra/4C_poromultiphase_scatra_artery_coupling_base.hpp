@@ -21,11 +21,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace PoroMultiPhaseScaTra
 {
@@ -34,10 +33,10 @@ namespace PoroMultiPhaseScaTra
   {
    public:
     //! constructor
-    PoroMultiPhaseScaTraArtCouplBase(Teuchos::RCP<Discret::Discretization> arterydis,
-        Teuchos::RCP<Discret::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
-        const std::string& condname, const std::string& artcoupleddofname,
-        const std::string& contcoupleddofname);
+    PoroMultiPhaseScaTraArtCouplBase(Teuchos::RCP<Core::FE::Discretization> arterydis,
+        Teuchos::RCP<Core::FE::Discretization> contdis,
+        const Teuchos::ParameterList& couplingparams, const std::string& condname,
+        const std::string& artcoupleddofname, const std::string& contcoupleddofname);
 
     //! virtual destructor
     virtual ~PoroMultiPhaseScaTraArtCouplBase() = default;
@@ -122,10 +121,10 @@ namespace PoroMultiPhaseScaTra
     const Epetra_Comm& comm() const { return comm_; }
 
     //! artery (1D) discretization
-    Teuchos::RCP<Discret::Discretization> arterydis_;
+    Teuchos::RCP<Core::FE::Discretization> arterydis_;
 
     //! continous field (2D, 3D) discretization
-    Teuchos::RCP<Discret::Discretization> contdis_;
+    Teuchos::RCP<Core::FE::Discretization> contdis_;
 
     //! coupled dofs of artery field
     std::vector<int> coupleddofs_art_;

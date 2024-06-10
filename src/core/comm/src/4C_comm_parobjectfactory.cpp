@@ -211,7 +211,7 @@ void Core::Communication::ParObjectFactory::finalize_registration()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Communication::ParObjectFactory::initialize_elements(Discret::Discretization& dis)
+void Core::Communication::ParObjectFactory::initialize_elements(Core::FE::Discretization& dis)
 {
   finalize_registration();
 
@@ -256,7 +256,7 @@ void Core::Communication::ParObjectFactory::initialize_elements(Discret::Discret
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Communication::ParObjectFactory::pre_evaluate(Discret::Discretization& dis,
+void Core::Communication::ParObjectFactory::pre_evaluate(Core::FE::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,

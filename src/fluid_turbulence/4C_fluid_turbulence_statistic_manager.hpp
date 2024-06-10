@@ -29,11 +29,10 @@ overhead as possible from the time integration method.
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
-
+}  // namespace Core::FE
 namespace Core::DOFSets
 {
   class DofSet;
@@ -202,9 +201,9 @@ namespace FLD
     int dumperiod_;
 
     //! the fluid discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
     //! the scatra discretization
-    Teuchos::RCP<Discret::Discretization> scatradis_;
+    Teuchos::RCP<Core::FE::Discretization> scatradis_;
 
     //! parameterlist of the discretization including time params,
     //! stabilization params and turbulence sublist

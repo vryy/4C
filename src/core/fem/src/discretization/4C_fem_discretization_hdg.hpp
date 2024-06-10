@@ -33,7 +33,7 @@ namespace Core::LinAlg
   class SparseMatrix;
 }  // namespace Core::LinAlg
 
-namespace Discret
+namespace Core::FE
 {
   enum class HDGAction
   {
@@ -122,31 +122,31 @@ namespace Discret
 
      protected:
       void read_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
+          const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
           double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
           int hierarchical_order) const override;
 
       void read_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
+          const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
           double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
           int hierarchical_order) const;
 
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
+          const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
           double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const override;
 
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
+          const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
           double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle) const;
     };  // class DbcHDG
   }     // namespace UTILS
-}  // namespace Discret
+}  // namespace Core::FE
 
 /// << operator
-std::ostream& operator<<(std::ostream& os, const Discret::DiscretizationHDG& dis);
+std::ostream& operator<<(std::ostream& os, const Core::FE::DiscretizationHDG& dis);
 
 
 FOUR_C_NAMESPACE_CLOSE

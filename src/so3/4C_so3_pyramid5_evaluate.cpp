@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoPyramid5::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -461,7 +461,7 @@ int Discret::ELEMENTS::SoPyramid5::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Volume Neumann boundary condition (public)              |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoPyramid5::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -1543,7 +1543,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_shapederiv(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoPyramid5Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoPyramid5Type::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

@@ -30,10 +30,10 @@ namespace Core::IO
   class DiscretizationReader;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -63,7 +63,7 @@ namespace CONSTRAINTS
 
 
     //! initialize this class
-    void Init(Teuchos::RCP<Discret::Discretization> discr, const Teuchos::ParameterList& params);
+    void Init(Teuchos::RCP<Core::FE::Discretization> discr, const Teuchos::ParameterList& params);
 
     /*! \brief Setup all class internal objects and members
 
@@ -275,7 +275,7 @@ namespace CONSTRAINTS
     /// Build Monitor type Vector
     void build_moni_type();
 
-    Teuchos::RCP<Discret::Discretization>
+    Teuchos::RCP<Core::FE::Discretization>
         actdisc_;  ///< discretization, elements to constraint live in
     Teuchos::RCP<ConstraintDofSet> constrdofset_;  ///< degrees of freedom of lagrange multipliers
     Teuchos::RCP<Epetra_Map> constrmap_;           ///< unique map of constraint values

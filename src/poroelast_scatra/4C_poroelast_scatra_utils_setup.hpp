@@ -40,9 +40,9 @@ namespace PoroElastScaTra
       Global::Problem* problem = Global::Problem::Instance();
 
       // 1.-Initialization.
-      Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis("structure");
-      Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis("porofluid");
-      Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis("scatra");
+      Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis("structure");
+      Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis("porofluid");
+      Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis("scatra");
 
       // setup of the discretizations, including clone strategy (do not set material pointers, this
       // will be done here)
@@ -93,7 +93,7 @@ namespace PoroElastScaTra
       else
       {
         // create vector of discr.
-        std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+        std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
         dis.push_back(structdis);
         dis.push_back(fluiddis);
         dis.push_back(scatradis);

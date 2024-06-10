@@ -36,7 +36,7 @@ namespace Core::IO::GridGenerator
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void CreateRectangularCuboidDiscretization(Discret::Discretization& dis,
+  void CreateRectangularCuboidDiscretization(Core::FE::Discretization& dis,
       const Core::IO::GridGenerator::RectangularCuboidInputs& inputData, bool outputFlag)
   {
     const Epetra_Comm& comm = dis.Comm();

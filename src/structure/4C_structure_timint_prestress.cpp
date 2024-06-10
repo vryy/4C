@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /* constructor */
 STR::TimIntPrestress::TimIntPrestress(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, const Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::ParameterList& xparams, const Teuchos::RCP<Core::FE::Discretization>& actdis,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,
     const Teuchos::RCP<Core::IO::DiscretizationWriter>& output)

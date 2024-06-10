@@ -37,7 +37,7 @@ namespace
     {
       Teuchos::RCP<Epetra_SerialComm> comm =
           Teuchos::rcp<Epetra_SerialComm>(new Epetra_SerialComm());
-      discret_ = Teuchos::rcp(new Discret::Discretization("unit_test", comm, 3));
+      discret_ = Teuchos::rcp(new Core::FE::Discretization("unit_test", comm, 3));
     }
 
     /**
@@ -59,7 +59,7 @@ namespace
     }
 
     //! Pointer to the discretization object that holds the geometry for the tests.
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
   };
 
   /**

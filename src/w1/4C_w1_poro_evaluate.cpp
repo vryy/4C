@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Wall1Poro<distype>::pre_evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   if (scatra_coupling_)
   {
@@ -70,7 +70,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::pre_evaluate(Teuchos::ParameterList&
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::Wall1Poro<distype>::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -138,7 +138,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::Evaluate(Teuchos::ParameterList& para
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -2388,7 +2388,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_primary_variable_at_gp(
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Wall1Poro<distype>::extract_values_from_global_vector(
-    const Discret::Discretization& discretization, const int& dofset, const std::vector<int>& lm,
+    const Core::FE::Discretization& discretization, const int& dofset, const std::vector<int>& lm,
     Core::LinAlg::Matrix<numdim_, numnod_>* matrixtofill,
     Core::LinAlg::Matrix<numnod_, 1>* vectortofill, const std::string state)
 {

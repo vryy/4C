@@ -46,8 +46,8 @@ namespace Core::FE
     //! destructor
     virtual ~DiscretizationCreatorBase() = default;
     //! copy given conditions from source to target discretization
-    void CopyConditions(const Discret::Discretization& sourcedis,
-        Discret::Discretization& targetdis,
+    void CopyConditions(const Core::FE::Discretization& sourcedis,
+        Core::FE::Discretization& targetdis,
         const std::map<std::string, std::string>& conditions_to_copy) const;
 
 
@@ -62,14 +62,14 @@ namespace Core::FE
      * @param doboundaryconditions: flag for call to fill complete on cloned dis
      * @return the cloned discretization
      */
-    Teuchos::RCP<Discret::Discretization> create_matching_discretization(
-        const Teuchos::RCP<Discret::Discretization>& sourcedis, const std::string& targetdisname,
+    Teuchos::RCP<Core::FE::Discretization> create_matching_discretization(
+        const Teuchos::RCP<Core::FE::Discretization>& sourcedis, const std::string& targetdisname,
         bool clonedofs = true, bool assigndegreesoffreedom = true, bool initelements = true,
         bool doboundaryconditions = true) const;
 
     //! Base class version for creation of matching discretization without material
-    Teuchos::RCP<Discret::Discretization> create_matching_discretization_from_condition(
-        const Discret::Discretization& sourcedis,  ///< discretization with condition
+    Teuchos::RCP<Core::FE::Discretization> create_matching_discretization_from_condition(
+        const Core::FE::Discretization& sourcedis,  ///< discretization with condition
         const Core::Conditions::Condition&
             cond,  ///< condition, from which the derived discretization is derived
         const std::string& discret_name,  ///< name of the new discretization
@@ -95,11 +95,11 @@ namespace Core::FE
     };  // create_matching_discretization_from_condition
 
     //! Base class version for creation of matching discretization without material
-    Teuchos::RCP<Discret::Discretization> create_matching_discretization_from_condition(
-        const Discret::Discretization& sourcedis,  ///< discretization with condition
-        const std::string& condname,               ///< name of the condition, by which the derived
-                                                   ///< discretization is identified
-        const std::string& discret_name,           ///< name of the new discretization
+    Teuchos::RCP<Core::FE::Discretization> create_matching_discretization_from_condition(
+        const Core::FE::Discretization& sourcedis,  ///< discretization with condition
+        const std::string& condname,                ///< name of the condition, by which the derived
+                                                    ///< discretization is identified
+        const std::string& discret_name,            ///< name of the new discretization
         const std::string&
             element_name,  ///< name/type of the elements to be created, if set to "" the natural
                            ///< element will be created (e.g. Fluid-->FluidBoundary,...)
@@ -122,8 +122,8 @@ namespace Core::FE
     };  // create_discretization_from_condition
 
     //! method for cloning a new discretization from an existing condition without material
-    Teuchos::RCP<Discret::Discretization> create_matching_discretization_from_condition(
-        const Discret::Discretization& sourcedis,  ///< discretization with condition
+    Teuchos::RCP<Core::FE::Discretization> create_matching_discretization_from_condition(
+        const Core::FE::Discretization& sourcedis,  ///< discretization with condition
         const std::map<int, Teuchos::RCP<Core::Elements::Element>>&
             sourceelements,               ///< element map/geometry of the condition
         const std::string& discret_name,  ///< name of the new discretization
@@ -138,8 +138,8 @@ namespace Core::FE
       const int myrank = com->MyPID();
       const Epetra_Map* sourcenoderowmap = sourcedis.NodeRowMap();
 
-      Teuchos::RCP<Discret::Discretization> targetdis =
-          Teuchos::rcp(new Discret::Discretization(discret_name, com, sourcedis.n_dim()));
+      Teuchos::RCP<Core::FE::Discretization> targetdis =
+          Teuchos::rcp(new Core::FE::Discretization(discret_name, com, sourcedis.n_dim()));
 
       // construct new elements
       for (std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator sourceele_iter =
@@ -239,21 +239,21 @@ namespace Core::FE
 
    protected:
     //! construct row nodes for cloned target discretization
-    void create_nodes(const Discret::Discretization& sourcedis, Discret::Discretization& targetdis,
-        const std::set<int>& rownodeset, const std::set<int>& colnodeset, const bool isnurbsdis,
-        const bool buildimmersednode) const;
+    void create_nodes(const Core::FE::Discretization& sourcedis,
+        Core::FE::Discretization& targetdis, const std::set<int>& rownodeset,
+        const std::set<int>& colnodeset, const bool isnurbsdis, const bool buildimmersednode) const;
 
     //! construct and return Epetra_Map
     Teuchos::RCP<Epetra_Map> create_map(
-        std::set<int>& gidset, const Discret::Discretization& targetdis) const;
+        std::set<int>& gidset, const Core::FE::Discretization& targetdis) const;
 
     //! do some checks
     void initial_checks(
-        const Discret::Discretization& sourcedis, const Discret::Discretization& targetdis) const;
+        const Core::FE::Discretization& sourcedis, const Core::FE::Discretization& targetdis) const;
 
     //! export target nodes and elements and perform some checks
     void finalize(
-        const Discret::Discretization& sourcedis, Discret::Discretization& targetdis) const;
+        const Core::FE::Discretization& sourcedis, Core::FE::Discretization& targetdis) const;
 
    protected:
     //! set of row nodes
@@ -290,7 +290,7 @@ namespace Core::FE
 
     /// Create the clone field material map from the input file
     void create_clone_field_mat_map(std::map<int, int>& matmap,
-        const Discret::Discretization& sourcedis, const Discret::Discretization& targetdis,
+        const Core::FE::Discretization& sourcedis, const Core::FE::Discretization& targetdis,
         const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
         const
     {
@@ -309,9 +309,9 @@ namespace Core::FE
     };  // create_clone_field_mat_map
 
     /// method for cloning a new discretization from an existing one
-    void create_matching_discretization(
-        Teuchos::RCP<Discret::Discretization> sourcedis,  ///< Teuchos::RCP to source discretization
-        Teuchos::RCP<Discret::Discretization>
+    void create_matching_discretization(Teuchos::RCP<Core::FE::Discretization>
+                                            sourcedis,  ///< Teuchos::RCP to source discretization
+        Teuchos::RCP<Core::FE::Discretization>
             targetdis,   ///< Teuchos::RCP to empty target discretization
         const int matid  ///< ID of the material which generated elements will get
     )
@@ -347,9 +347,9 @@ namespace Core::FE
     };  // create_matching_discretization
 
     /// method for cloning a new discretization from an existing one
-    void create_matching_discretization(
-        Teuchos::RCP<Discret::Discretization> sourcedis,  ///< Teuchos::RCP to source discretization
-        Teuchos::RCP<Discret::Discretization>
+    void create_matching_discretization(Teuchos::RCP<Core::FE::Discretization>
+                                            sourcedis,  ///< Teuchos::RCP to source discretization
+        Teuchos::RCP<Core::FE::Discretization>
             targetdis,                   ///< Teuchos::RCP to empty target discretization
         const std::map<int, int> matmap  ///< map of material IDs (source element -> target element)
     )
@@ -394,10 +394,10 @@ namespace Core::FE
     /// method for cloning a new discretization from an existing condition using the actual
     /// condition
     void create_matching_discretization_from_condition(
-        const Discret::Discretization& sourcedis,  ///< ref. to source discretization
+        const Core::FE::Discretization& sourcedis,  ///< ref. to source discretization
         const std::vector<Core::Conditions::Condition*>&
             conds,  ///< vector of conditions containing the elements to clone
-        Discret::Discretization& targetdis,  ///< Teuchos::RCP to empty target discretization
+        Core::FE::Discretization& targetdis,  ///< Teuchos::RCP to empty target discretization
         const std::map<int, int>&
             matmap  ///< map of material IDs (source element -> target element)
     )
@@ -424,9 +424,9 @@ namespace Core::FE
     /// method for cloning a new discretization from an existing condition using the condition
     /// name
     void create_matching_discretization_from_condition(
-        const Discret::Discretization& sourcedis,  ///< ref. to source discretization
-        const std::string& condname,         ///< string to identify conditioned elements to clone
-        Discret::Discretization& targetdis,  ///< Teuchos::RCP to empty target discretization
+        const Core::FE::Discretization& sourcedis,  ///< ref. to source discretization
+        const std::string& condname,          ///< string to identify conditioned elements to clone
+        Core::FE::Discretization& targetdis,  ///< Teuchos::RCP to empty target discretization
         const std::map<int, int>&
             matmap  ///< map of material IDs (source element -> target element)
     )
@@ -443,10 +443,10 @@ namespace Core::FE
    private:
     /// method for cloning a new discretization from an existing condition with material
     void create_matching_discretization_from_condition(
-        const Discret::Discretization& sourcedis,  ///< ref. to source discretization
+        const Core::FE::Discretization& sourcedis,  ///< ref. to source discretization
         const std::map<int, Teuchos::RCP<Core::Elements::Element>>&
-            sourceelements,                  ///< conditioned element map to clone
-        Discret::Discretization& targetdis,  ///< Teuchos::RCP to empty target discretization
+            sourceelements,                   ///< conditioned element map to clone
+        Core::FE::Discretization& targetdis,  ///< Teuchos::RCP to empty target discretization
         const std::map<int, int>&
             matmap  ///< map of material IDs (source element -> target element)
     )
@@ -483,7 +483,7 @@ namespace Core::FE
     };  // create_matching_discretization_from_condition with material
 
     /// get element type std::strings and global id's and nodes from source discretization
-    void analyze_source_dis(Teuchos::RCP<Discret::Discretization> sourcedis,
+    void analyze_source_dis(Teuchos::RCP<Core::FE::Discretization> sourcedis,
         std::vector<std::string>& eletype, std::set<int>& rownodeset, std::set<int>& colnodeset,
         std::set<int>& roweleset, std::set<int>& coleleset)
     {
@@ -527,7 +527,7 @@ namespace Core::FE
 
     /// get element type std::strings and global id's and nodes from conditioned source
     /// discretization
-    void analyze_conditioned_source_dis(const Discret::Discretization& sourcedis,
+    void analyze_conditioned_source_dis(const Core::FE::Discretization& sourcedis,
         const std::map<int, Teuchos::RCP<Core::Elements::Element>>& sourceelements,
         std::vector<std::string>& eletype, std::set<int>& rownodeset, std::set<int>& colnodeset,
         std::set<int>& roweleset, std::set<int>& coleleset)
@@ -594,8 +594,8 @@ namespace Core::FE
     };  // analyze_conditioned_source_dis
 
     /// create new elements and add them to the target discretization
-    void create_elements(Teuchos::RCP<Discret::Discretization> sourcedis,
-        Teuchos::RCP<Discret::Discretization> targetdis, std::map<int, int> matmap,
+    void create_elements(Teuchos::RCP<Core::FE::Discretization> sourcedis,
+        Teuchos::RCP<Core::FE::Discretization> targetdis, std::map<int, int> matmap,
         const bool isnurbsdis)
     {
       // now do the elements
@@ -694,7 +694,7 @@ namespace Core::FE
     /// create new elements from the condition and add them to the target discretization
     void create_elements_from_condition(
         const std::map<int, Teuchos::RCP<Core::Elements::Element>>& sourceelements,
-        Discret::Discretization& targetdis, const std::map<int, int>& matmap,
+        Core::FE::Discretization& targetdis, const std::map<int, int>& matmap,
         const bool& isnurbsdis)
     {
       // now do the elements
@@ -824,8 +824,8 @@ namespace Core::FE
   /// clone target discretization @p targetdis from a given source discretization @p sourcedis.
   /// The @p clonefieldmatmap is required from the global CloningMaterialMap.
   template <class CloneStrategy>
-  void CloneDiscretization(Teuchos::RCP<Discret::Discretization> sourcedis,
-      Teuchos::RCP<Discret::Discretization> targetdis,
+  void CloneDiscretization(Teuchos::RCP<Core::FE::Discretization> sourcedis,
+      Teuchos::RCP<Core::FE::Discretization> targetdis,
       const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
   {
     // access the communicator for time measurement
@@ -855,14 +855,14 @@ namespace Core::FE
   /// based on conditions @p conds. The @p clonefieldmatmap is required from the global
   /// CloningMaterialMap.
   template <class CloneStrategy>
-  void CloneDiscretizationFromCondition(const Discret::Discretization& sourcedis,
-      Discret::Discretization& targetdis, const std::vector<Core::Conditions::Condition*>& conds,
+  void CloneDiscretizationFromCondition(const Core::FE::Discretization& sourcedis,
+      Core::FE::Discretization& targetdis, const std::vector<Core::Conditions::Condition*>& conds,
       const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
   {
-    const Discret::Discretization* sourcedis_ptr =
-        dynamic_cast<const Discret::Discretization*>(&sourcedis);
+    const Core::FE::Discretization* sourcedis_ptr =
+        dynamic_cast<const Core::FE::Discretization*>(&sourcedis);
     if (sourcedis_ptr == nullptr) FOUR_C_THROW("Cast of the source discretization failed!");
-    Discret::Discretization* targetdis_ptr = dynamic_cast<Discret::Discretization*>(&targetdis);
+    Core::FE::Discretization* targetdis_ptr = dynamic_cast<Core::FE::Discretization*>(&targetdis);
     if (targetdis_ptr == nullptr) FOUR_C_THROW("Cast of the target discretization failed!");
 
     // access the communicator for time measurement
@@ -896,8 +896,8 @@ namespace Core::FE
   /// based on the name of a condition @p condname. The @p clonefieldmatmap is required from the
   /// global CloningMaterialMap.
   template <class CloneStrategy>
-  void CloneDiscretizationFromCondition(const Discret::Discretization& sourcedis,
-      Discret::Discretization& targetdis, const std::string& condname,
+  void CloneDiscretizationFromCondition(const Core::FE::Discretization& sourcedis,
+      Core::FE::Discretization& targetdis, const std::string& condname,
       const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
   {
     // access the communicator for time measurement

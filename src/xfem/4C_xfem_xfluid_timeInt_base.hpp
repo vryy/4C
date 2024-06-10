@@ -351,8 +351,8 @@ namespace XFEM
    public:
     //! constructor
     explicit XfluidTimeintBase(
-        const Teuchos::RCP<Discret::Discretization> discret,      /// background discretization
-        const Teuchos::RCP<Discret::Discretization> boundarydis,  /// cut discretization
+        const Teuchos::RCP<Core::FE::Discretization> discret,      /// background discretization
+        const Teuchos::RCP<Core::FE::Discretization> boundarydis,  /// cut discretization
         Teuchos::RCP<Core::Geo::CutWizard> wizard_old,  /// cut wizard w.r.t. old interface position
         Teuchos::RCP<Core::Geo::CutWizard> wizard_new,  /// cut wizard w.r.t. new interface position
         Teuchos::RCP<XFEM::XFEMDofSet> dofset_old,  /// XFEM dofset w.r.t. old interface position
@@ -575,8 +575,8 @@ namespace XFEM
     //! @name  data w.r.t old and new interface position
     /*========================================================================*/
 
-    Teuchos::RCP<Discret::Discretization> discret_;      //! background discretization
-    Teuchos::RCP<Discret::Discretization> boundarydis_;  //! cut discretization
+    Teuchos::RCP<Core::FE::Discretization> discret_;      //! background discretization
+    Teuchos::RCP<Core::FE::Discretization> boundarydis_;  //! cut discretization
 
     Teuchos::RCP<Core::Geo::CutWizard> wizard_old_;  //! cut wizard w.r.t. old interface position
     Teuchos::RCP<Core::Geo::CutWizard> wizard_new_;  //! cut wizard w.r.t. new interface position
@@ -937,7 +937,7 @@ namespace XFEM
     //! add side's or line's interface displacements and set current node coordinates
     template <Core::FE::CellType distype, const int numdof>
     void addeidisp(Core::LinAlg::SerialDenseMatrix& xyze,  ///< node coordinates of side or line
-        const Discret::Discretization& cutdis,             ///< cut discretization
+        const Core::FE::Discretization& cutdis,            ///< cut discretization
         const std::string state,                           ///< state
         const std::vector<int>& lm                         ///< local map
     );

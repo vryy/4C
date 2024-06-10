@@ -41,10 +41,13 @@ namespace NOX
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declaration
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
+
+namespace Discret
+{
   namespace ELEMENTS
   {
     class Beam3Base;
@@ -105,7 +108,7 @@ namespace STR
        * @param sdynparams Parameter list for structural dynamics from input file
        * @param datasdyn Structural dynamics data container
        */
-      void Init(const Teuchos::RCP<Discret::Discretization> discret,
+      void Init(const Teuchos::RCP<Core::FE::Discretization> discret,
           const Teuchos::ParameterList& sdynparams,
           const Teuchos::RCP<const BaseDataSDyn> datasdyn);
 
@@ -279,7 +282,7 @@ namespace STR
       ///@{
 
       /// attached discretisation
-      Teuchos::RCP<const Discret::Discretization> get_discret() const
+      Teuchos::RCP<const Core::FE::Discretization> get_discret() const
       {
         check_init();
         return discret_;
@@ -579,7 +582,7 @@ namespace STR
       /// @name Get general purpose algorithm members (read only access)
       ///@{
       /// attached discretization
-      Teuchos::RCP<Discret::Discretization> get_discret()
+      Teuchos::RCP<Core::FE::Discretization> get_discret()
       {
         check_init();
         return discret_;
@@ -937,7 +940,7 @@ namespace STR
       ///@{
 
       /// attached discretisation
-      Teuchos::RCP<Discret::Discretization> discret_;
+      Teuchos::RCP<Core::FE::Discretization> discret_;
 
       /// communicator
       Teuchos::RCP<const Epetra_Comm> comm_;

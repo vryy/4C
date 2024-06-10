@@ -51,9 +51,9 @@ namespace FLD
     void transfer_inflow_velocity();
 
     /// discretization of the compete domain
-    Teuchos::RCP<Discret::Discretization> fluiddis_;
+    Teuchos::RCP<Core::FE::Discretization> fluiddis_;
     /// discretization of the separate part
-    Teuchos::RCP<Discret::Discretization> inflowdis_;
+    Teuchos::RCP<Core::FE::Discretization> inflowdis_;
     /// object for a redistributed evaluation of of the separated part
     Teuchos::RCP<FluidDiscretExtractor> inflowgenerator_;
     /// instance of fluid algorithm

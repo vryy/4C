@@ -126,7 +126,7 @@ void Discret::ELEMENTS::Beam3kType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      meier 01/16|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Beam3kType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::Beam3kType::Initialize(Core::FE::Discretization& dis)
 {
   // setting up geometric variables for Beam3k elements
   for (int num = 0; num < dis.NumMyColElements(); ++num)

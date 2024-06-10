@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  |  preevaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   const int numnode = num_node();
 
@@ -54,7 +54,7 @@ void Discret::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params
       params.set<double>("scalar", meanphi);
     }
     // Get pointer for scatra material in the same element
-    Teuchos::RCP<Discret::Discretization> scatradis = Teuchos::null;
+    Teuchos::RCP<Core::FE::Discretization> scatradis = Teuchos::null;
     scatradis = Global::Problem::Instance()->GetDis("scatra");
     Core::Elements::Element* scatraele = scatradis->gElement(Id());
     Teuchos::RCP<Core::Mat::Material> scatramat =
@@ -75,7 +75,7 @@ void Discret::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Wall1Scatra::my_evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -89,7 +89,7 @@ int Discret::ELEMENTS::Wall1Scatra::my_evaluate(Teuchos::ParameterList& params,
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Wall1Scatra::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,

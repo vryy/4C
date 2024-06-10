@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate (public)                                        mwgee 12/06|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::Evaluate(Teuchos::ParameterList& params,
+void Core::FE::Discretization::Evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -40,7 +40,7 @@ void Discret::Discretization::Evaluate(Teuchos::ParameterList& params,
 }
 
 
-void Discret::Discretization::Evaluate(
+void Core::FE::Discretization::Evaluate(
     Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy)
 {
   // Call the Evaluate method for the specific element
@@ -59,14 +59,14 @@ void Discret::Discretization::Evaluate(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Discretization::Evaluate(Teuchos::ParameterList& params,
+void Core::FE::Discretization::Evaluate(Teuchos::ParameterList& params,
     Core::FE::AssembleStrategy& strategy,
     const std::function<void(Core::Elements::Element&, Core::Elements::Element::LocationArray&,
         Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&,
         Core::LinAlg::SerialDenseVector&, Core::LinAlg::SerialDenseVector&,
         Core::LinAlg::SerialDenseVector&)>& element_action)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Discret::Discretization::Evaluate");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Discretization::Evaluate");
 
   if (!Filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -111,14 +111,14 @@ void Discret::Discretization::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate (public)                                        u.kue 01/08|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::Evaluate(Teuchos::ParameterList& params,
+void Core::FE::Discretization::Evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<Epetra_Vector> systemvector)
 {
   Evaluate(params, systemmatrix, Teuchos::null, systemvector, Teuchos::null, Teuchos::null);
 }
 
-void Discret::Discretization::Evaluate(
+void Core::FE::Discretization::Evaluate(
     const std::function<void(Core::Elements::Element&)>& element_action)
 {
   // test only for Filled()!Dof information is not required
@@ -135,7 +135,7 @@ void Discret::Discretization::Evaluate(
 /*----------------------------------------------------------------------*
  |  evaluate (public)                                        a.ger 03/09|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::Evaluate(Teuchos::ParameterList& params)
+void Core::FE::Discretization::Evaluate(Teuchos::ParameterList& params)
 {
   // define empty element matrices and vectors
   Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -159,7 +159,7 @@ void Discret::Discretization::Evaluate(Teuchos::ParameterList& params)
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                     mwgee 12/06|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
+void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
     Epetra_Vector& systemvector, Core::LinAlg::SparseOperator* systemmatrix)
 {
   if (!Filled()) FOUR_C_THROW("fill_complete() was not called");
@@ -338,12 +338,12 @@ void Discret::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet conditions (public)                  rauch 06/16 |
  *----------------------------------------------------------------------*/
-void Discret::Discretization::evaluate_dirichlet(Teuchos::ParameterList& params,
+void Core::FE::Discretization::evaluate_dirichlet(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
     Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmapextractor) const
 {
-  Discret::UTILS::evaluate_dirichlet(
+  Core::FE::UTILS::evaluate_dirichlet(
       *this, params, systemvector, systemvectord, systemvectordd, toggle, dbcmapextractor);
 }
 
@@ -351,7 +351,7 @@ void Discret::Discretization::evaluate_dirichlet(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate a condition (public)                               tk 02/08|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::evaluate_condition(Teuchos::ParameterList& params,
+void Core::FE::Discretization::evaluate_condition(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -360,12 +360,12 @@ void Discret::Discretization::evaluate_condition(Teuchos::ParameterList& params,
   Core::FE::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
   evaluate_condition(params, strategy, condstring, condid);
-}  // end of Discret::Discretization::evaluate_condition
+}  // end of Core::FE::Discretization::evaluate_condition
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Discretization::evaluate_condition(Teuchos::ParameterList& params,
+void Core::FE::Discretization::evaluate_condition(Teuchos::ParameterList& params,
     Core::FE::AssembleStrategy& strategy, const std::string& condstring, const int condid)
 {
   if (!Filled()) FOUR_C_THROW("fill_complete() was not called");
@@ -462,13 +462,13 @@ void Discret::Discretization::evaluate_condition(Teuchos::ParameterList& params,
       }
     }
   }
-}  // end of Discret::Discretization::evaluate_condition
+}  // end of Core::FE::Discretization::evaluate_condition
 
 
 /*----------------------------------------------------------------------*
  |  evaluate/assemble scalars across elements (public)       bborn 08/08|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::EvaluateScalars(
+void Core::FE::Discretization::EvaluateScalars(
     Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars)
 {
   if (!Filled()) FOUR_C_THROW("fill_complete() was not called");
@@ -512,13 +512,13 @@ void Discret::Discretization::EvaluateScalars(
   // reduce
   for (int i = 0; i < numscalars; ++i) (*scalars)(i) = 0.0;
   Comm().SumAll(cpuscalars.values(), scalars->values(), numscalars);
-}  // Discret::Discretization::EvaluateScalars
+}  // Core::FE::Discretization::EvaluateScalars
 
 
 /*-----------------------------------------------------------------------------*
  | evaluate/assemble scalars across conditioned elements (public)   fang 02/15 |
  *-----------------------------------------------------------------------------*/
-void Discret::Discretization::EvaluateScalars(
+void Core::FE::Discretization::EvaluateScalars(
     Teuchos::ParameterList& params,  //! (in) parameter list
     Teuchos::RCP<Core::LinAlg::SerialDenseVector>
         scalars,                    //! (out) result vector for scalar quantities to be computed
@@ -597,13 +597,13 @@ void Discret::Discretization::EvaluateScalars(
 
   // communicate results across all processors
   Comm().SumAll(cpuscalars.values(), scalars->values(), numscalars);
-}  // Discret::Discretization::EvaluateScalars
+}  // Core::FE::Discretization::EvaluateScalars
 
 
 /*----------------------------------------------------------------------*
  |  evaluate/assemble scalars across elements (public)         gee 05/11|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::EvaluateScalars(
+void Core::FE::Discretization::EvaluateScalars(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_MultiVector> scalars)
 {
   if (!Filled()) FOUR_C_THROW("fill_complete() was not called");
@@ -653,17 +653,18 @@ void Discret::Discretization::EvaluateScalars(
     }
 
   }  // for (int i=0; i<numrowele; ++i)
-}  // Discret::Discretization::EvaluateScalars
+}  // Core::FE::Discretization::EvaluateScalars
 
 
 /*----------------------------------------------------------------------*
  |  evaluate an initial scalar or vector field (public)       popp 06/11|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::evaluate_initial_field(
+void Core::FE::Discretization::evaluate_initial_field(
     const Core::UTILS::FunctionManager& function_manager, const std::string& fieldstring,
     Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids) const
 {
-  Discret::UTILS::evaluate_initial_field(function_manager, *this, fieldstring, fieldvector, locids);
-}  // Discret::Discretization::EvaluateIntialField
+  Core::FE::UTILS::evaluate_initial_field(
+      function_manager, *this, fieldstring, fieldvector, locids);
+}  // Core::FE::Discretization::EvaluateIntialField
 
 FOUR_C_NAMESPACE_CLOSE

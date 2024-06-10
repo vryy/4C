@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      gjb 08/08 |
  *----------------------------------------------------------------------*/
-ScaTra::TimIntStationary::TimIntStationary(Teuchos::RCP<Discret::Discretization> actdis,
+ScaTra::TimIntStationary::TimIntStationary(Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)

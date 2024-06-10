@@ -82,10 +82,10 @@ namespace Discret
 
       //! Correction for additional flux terms / currents across Dirichlet boundaries
       void correction_for_flux_across_dc(
-          Discret::Discretization& discretization,  //!< discretization
-          const std::vector<int>& lm,               //!< location vector
-          Core::LinAlg::SerialDenseMatrix& emat,    //!< element matrix to calculate
-          Core::LinAlg::SerialDenseVector& erhs     //!< element rhs to calculate
+          Core::FE::Discretization& discretization,  //!< discretization
+          const std::vector<int>& lm,                //!< location vector
+          Core::LinAlg::SerialDenseMatrix& emat,     //!< element matrix to calculate
+          Core::LinAlg::SerialDenseVector& erhs      //!< element rhs to calculate
           ) override;
 
       /*========================================================================*/
@@ -293,7 +293,7 @@ namespace Discret
 
       //! evaluate action
       int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::FE::Discretization& discretization, const ScaTra::Action& action,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -349,7 +349,7 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix& emat,                       //!< element matrix
           Core::LinAlg::SerialDenseVector& erhs,                       //!< element residual
           Teuchos::ParameterList& params,                              //!< parameter list
-          Discret::Discretization& discretization,                     //!< discretization
+          Core::FE::Discretization& discretization,                    //!< discretization
           Core::Elements::Element::LocationArray& la                   //!< location array
           ) override;
 
@@ -382,7 +382,7 @@ namespace Discret
           ) override;
 
       void calc_elch_domain_kinetics(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra);
 
@@ -425,7 +425,8 @@ namespace Discret
       }
 
       void calculate_mean_electrode_concentration(const Core::Elements::Element* const& ele,
-          const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          const Core::FE::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseVector& conc) override;
 
       //! flag for used element formulation (material based)

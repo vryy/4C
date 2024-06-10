@@ -46,7 +46,7 @@ void Core::DOFSets::DofSetProxy::AddDofSettoList()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Core::DOFSets::DofSetProxy::assign_degrees_of_freedom(
-    const Discret::Discretization& dis, const unsigned dspos, const int start)
+    const Core::FE::Discretization& dis, const unsigned dspos, const int start)
 {
   // This method does nothing, because the DofSetProxy is not supposed to assign dofs itself.
   // Instead, the original dofset assigns dofs when fill_complete() is called on its discretization.

@@ -43,11 +43,11 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 /*==========================================================================*/
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
   class IndependentDofSet;
-}  // namespace Discret
+}  // namespace Core::FE
 namespace Core::LinAlg
 {
   class Solver;
@@ -109,9 +109,9 @@ namespace FLD
    public:
     /// Constructor
     XFluid(
-        const Teuchos::RCP<Discret::Discretization>& actdis,  ///< background fluid discretization
-        const Teuchos::RCP<Discret::Discretization>& mesh_coupdis,
-        const Teuchos::RCP<Discret::Discretization>& levelset_coupdis,
+        const Teuchos::RCP<Core::FE::Discretization>& actdis,  ///< background fluid discretization
+        const Teuchos::RCP<Core::FE::Discretization>& mesh_coupdis,
+        const Teuchos::RCP<Core::FE::Discretization>& levelset_coupdis,
         const Teuchos::RCP<Core::LinAlg::Solver>& solver,    ///< fluid solver
         const Teuchos::RCP<Teuchos::ParameterList>& params,  ///< xfluid params
         const Teuchos::RCP<Core::IO::DiscretizationWriter>&
@@ -406,8 +406,8 @@ namespace FLD
 
     /// integrate the shape function and assemble into a vector for KrylovSpaceProjection
     void integrate_shape_function(Teuchos::ParameterList& eleparams,  ///< element parameters
-        Discret::Discretization& discret,  ///< background fluid discretization
-        Teuchos::RCP<Epetra_Vector> vec    ///< vector into which we assemble
+        Core::FE::Discretization& discret,  ///< background fluid discretization
+        Teuchos::RCP<Epetra_Vector> vec     ///< vector into which we assemble
     );
 
     /*!
@@ -466,10 +466,10 @@ namespace FLD
                                             ///< reconstruction techniques
         const bool timint_semi_lagrangean,  ///< dofs have to be reconstructed via semi-Lagrangean
                                             ///< reconstruction techniques
-        Teuchos::RCP<Discret::Discretization> dis,  ///< discretization
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset_i,    ///< dofset last iteration
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset_ip,   ///< dofset current iteration
-        const bool screen_out                       ///< screen output?
+        Teuchos::RCP<Core::FE::Discretization> dis,  ///< discretization
+        Teuchos::RCP<XFEM::XFEMDofSet> dofset_i,     ///< dofset last iteration
+        Teuchos::RCP<XFEM::XFEMDofSet> dofset_ip,    ///< dofset current iteration
+        const bool screen_out                        ///< screen output?
     );
 
     /// Transfer vectors from old time-step t^n w.r.t dofset and interface position
@@ -484,9 +484,9 @@ namespace FLD
         const bool screen_out, const bool firstcall_in_timestep);
 
     /// did the dofsets change?
-    bool x_timint_changed_dofsets(Teuchos::RCP<Discret::Discretization> dis,  ///< discretization
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset,                                ///< first dofset
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset_other                           ///< other dofset
+    bool x_timint_changed_dofsets(Teuchos::RCP<Core::FE::Discretization> dis,  ///< discretization
+        Teuchos::RCP<XFEM::XFEMDofSet> dofset,                                 ///< first dofset
+        Teuchos::RCP<XFEM::XFEMDofSet> dofset_other                            ///< other dofset
     );
 
     /// transfer vectors between two time-steps or Newton steps
@@ -681,11 +681,11 @@ namespace FLD
     Teuchos::RCP<XFEM::DiscretizationXFEM> xdiscret_;
 
     //! vector of all coupling discretizations, the fluid is coupled with
-    std::vector<Teuchos::RCP<Discret::Discretization>> meshcoupl_dis_;
+    std::vector<Teuchos::RCP<Core::FE::Discretization>> meshcoupl_dis_;
 
     //! vector of all coupling discretizations, which carry levelset fields, the fluid is coupled
     //! with
-    std::vector<Teuchos::RCP<Discret::Discretization>> levelsetcoupl_dis_;
+    std::vector<Teuchos::RCP<Core::FE::Discretization>> levelsetcoupl_dis_;
 
     //@}
 

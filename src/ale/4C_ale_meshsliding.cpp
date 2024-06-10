@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-ALE::Meshsliding::Meshsliding(Teuchos::RCP<Discret::Discretization> dis,
+ALE::Meshsliding::Meshsliding(Teuchos::RCP<Core::FE::Discretization> dis,
     Core::LinAlg::Solver& solver, int msht, int nsd, const UTILS::MapExtractor* surfacesplitter)
     : Meshtying(dis, solver, msht, nsd, surfacesplitter)
 {

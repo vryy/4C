@@ -50,7 +50,7 @@ namespace Arteries
     /*========================================================================*/
 
     //! Standard Constructor
-    TimInt(Teuchos::RCP<Discret::Discretization> dis, const int linsolvernumber,
+    TimInt(Teuchos::RCP<Core::FE::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
         Core::IO::DiscretizationWriter& output);
 
@@ -60,7 +60,7 @@ namespace Arteries
         const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     //! get discretization
-    Teuchos::RCP<Discret::Discretization> discretization() override { return discret_; }
+    Teuchos::RCP<Core::FE::Discretization> discretization() override { return discret_; }
 
     double Dt() const override { return dta_; }
 
@@ -170,7 +170,7 @@ namespace Arteries
    protected:
     //! @name general algorithm parameters
     //! arterial network discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
     //! linear solver
     Teuchos::RCP<Core::LinAlg::Solver> solver_;
     const Teuchos::ParameterList& params_;

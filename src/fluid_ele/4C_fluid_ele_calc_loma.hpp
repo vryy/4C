@@ -37,7 +37,7 @@ namespace Discret
       static FluidEleCalcLoma<distype>* Instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
-      int Evaluate(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+      int Evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -47,7 +47,7 @@ namespace Discret
 
       /// Evaluate the element at specified gauss points for porous flow
       virtual int evaluate_od(Discret::ELEMENTS::Fluid* ele,
-          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

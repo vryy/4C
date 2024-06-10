@@ -28,11 +28,10 @@ namespace Core::Elements
   class Element;
 }
 
-namespace Discret
+namespace Core::FE
 {
-  // forward declarations
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Nodes
 {
@@ -61,7 +60,7 @@ namespace Core::Nodes
     /*!
     \brief The discretization is a friend of Node
     */
-    friend class Discretization;
+    friend class Core::FE::Discretization;
 
     //@}
 

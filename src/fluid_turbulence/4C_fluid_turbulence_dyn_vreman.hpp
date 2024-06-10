@@ -60,7 +60,7 @@ namespace FLD
     \brief Standard Constructor (public)
 
     */
-    Vreman(Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params);
+    Vreman(Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params);
 
     /*!
     \brief Destructor
@@ -79,7 +79,7 @@ namespace FLD
         const double thermpress, const Teuchos::RCP<const Epetra_Vector> dirichtoggle,
         Teuchos::ParameterList& extraparams, const int ndsvel);
 
-    void AddScatra(Teuchos::RCP<Discret::Discretization> scatradis);
+    void AddScatra(Teuchos::RCP<Core::FE::Discretization> scatradis);
 
     void GetCv(double& Cv)
     {
@@ -99,13 +99,13 @@ namespace FLD
 
 
     //! the discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
     //! parameterlist including time params, stabilization params and turbulence sublist
     Teuchos::ParameterList& params_;
     //! flag for physical type of fluid flow
     Inpar::FLUID::PhysicalType physicaltype_;
     // scatra specific
-    Teuchos::RCP<Discret::Discretization> scatradiscret_;
+    Teuchos::RCP<Core::FE::Discretization> scatradiscret_;
 
 
     double dyn_vreman_compute_cv();

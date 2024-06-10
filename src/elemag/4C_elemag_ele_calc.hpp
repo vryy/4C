@@ -42,7 +42,7 @@ namespace Discret
       static constexpr unsigned int nfaces_ = Core::FE::num_faces<distype>;
 
       int integrate_shape_function(Discret::ELEMENTS::Elemag* ele,
-          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1) override
       {
         FOUR_C_THROW("Not implemented");
@@ -54,7 +54,7 @@ namespace Discret
 
       /// Interpolates an HDG solution to the element nodes for output.
       virtual int interpolate_solution_to_nodes(Discret::ELEMENTS::Elemag* ele,
-          Discret::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1);
+          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1);
 
       /// Initialize the shape functions and solver to the given element (degree is runtime
       /// parameter).
@@ -62,7 +62,7 @@ namespace Discret
 
       /// Evaluate the element.
       /// Generic virtual interface function.Called via base pointer.
-      int Evaluate(Discret::ELEMENTS::Elemag* ele, Discret::Discretization& discretization,
+      int Evaluate(Discret::ELEMENTS::Elemag* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -71,7 +71,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       /// Evaluate the element at specified gauss points.
-      virtual int Evaluate(Discret::ELEMENTS::Elemag* ele, Discret::Discretization& discretization,
+      virtual int Evaluate(Discret::ELEMENTS::Elemag* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -118,7 +118,7 @@ namespace Discret
             Core::LinAlg::SerialDenseVector& interiorSourcenp);
 
         /// Add terms corresponding to the absorbing boundary condition.
-        void ComputeAbsorbingBC(Discret::Discretization& discretization,
+        void ComputeAbsorbingBC(Core::FE::Discretization& discretization,
             Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
             Teuchos::RCP<Core::Mat::Material>& mat, int face,
             Core::LinAlg::SerialDenseMatrix& elemat, int indexstart,
@@ -129,7 +129,7 @@ namespace Discret
             Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params, int face);
 
         /// Calls local solver to compute matrices: internal and face
-        void ComputeMatrices(Discret::Discretization& discretization,
+        void ComputeMatrices(Core::FE::Discretization& discretization,
             const Teuchos::RCP<Core::Mat::Material>& mat, Discret::ELEMENTS::Elemag& ele, double dt,
             Inpar::EleMag::DynamicType dyna, const double tau);
 
@@ -222,15 +222,15 @@ namespace Discret
 
       /// Reads from global vectors.
       void read_global_vectors(Core::Elements::Element* ele,
-          Discret::Discretization& discretization, const std::vector<int>& lm);
+          Core::FE::Discretization& discretization, const std::vector<int>& lm);
 
       /// Writes internal fields from elements to global vectors.
       void fill_restart_vectors(
-          Core::Elements::Element* ele, Discret::Discretization& discretization);
+          Core::Elements::Element* ele, Core::FE::Discretization& discretization);
 
       /// Reads internal field from global vectors to element vectors.
       void element_init_from_restart(
-          Core::Elements::Element* ele, Discret::Discretization& discretization);
+          Core::Elements::Element* ele, Core::FE::Discretization& discretization);
 
       /// Calculate error maps with local postprocessing.
       double estimate_error(Discret::ELEMENTS::Elemag& ele, Core::LinAlg::SerialDenseVector& p);

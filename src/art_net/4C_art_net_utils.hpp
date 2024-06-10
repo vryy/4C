@@ -23,10 +23,11 @@ namespace Adapter
   class ArtNet;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
+
 namespace Core::LinAlg
 {
   class Solver;
@@ -72,7 +73,7 @@ namespace Arteries
   {
     // create algorithm depending on time integration scheme
     Teuchos::RCP<Adapter::ArtNet> CreateAlgorithm(Inpar::ArtDyn::TimeIntegrationScheme timintscheme,
-        Teuchos::RCP<Discret::Discretization> dis, const int linsolvernumber,
+        Teuchos::RCP<Core::FE::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
@@ -81,8 +82,8 @@ namespace Arteries
         const std::string& artery_disname, const std::string& scatra_disname);
 
     //! set material pointers
-    void SetMaterialPointersMatchingGrid(Teuchos::RCP<const Discret::Discretization> sourcedis,
-        Teuchos::RCP<const Discret::Discretization> targetdis);
+    void SetMaterialPointersMatchingGrid(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
+        Teuchos::RCP<const Core::FE::Discretization> targetdis);
   }  // namespace UTILS
 }  // namespace Arteries
 

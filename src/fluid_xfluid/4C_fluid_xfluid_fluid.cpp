@@ -39,7 +39,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FLD::XFluidFluid::XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& embedded_fluid,
-    const Teuchos::RCP<Discret::Discretization>& xfluiddis,
+    const Teuchos::RCP<Core::FE::Discretization>& xfluiddis,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params, bool ale_xfluid, bool ale_fluid)
     : XFluid(xfluiddis, embedded_fluid->discretization(), Teuchos::null, solver, params,
@@ -56,8 +56,8 @@ FLD::XFluidFluid::XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& emb
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FLD::XFluidFluid::XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& embedded_fluid,
-    const Teuchos::RCP<Discret::Discretization>& xfluiddis,
-    const Teuchos::RCP<Discret::Discretization>& soliddis,
+    const Teuchos::RCP<Core::FE::Discretization>& xfluiddis,
+    const Teuchos::RCP<Core::FE::Discretization>& soliddis,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params, bool ale_xfluid, bool ale_fluid)
     : XFluid(xfluiddis, soliddis, Teuchos::null, solver, params, xfluiddis->Writer(), ale_xfluid),
@@ -117,8 +117,8 @@ void FLD::XFluidFluid::CreateInitialState()
     if (xff_eos_pres_emb_layer_ && Core::UTILS::IntegralValue<Inpar::FLUID::StabType>(*stabparams,
                                        "STABTYPE") == Inpar::FLUID::stabtype_residualbased)
     {
-      Teuchos::RCP<Discret::DiscretizationFaces> facediscret =
-          Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(
+      Teuchos::RCP<Core::FE::DiscretizationFaces> facediscret =
+          Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(
               embedded_fluid_->discretization(), true);
       facediscret->create_internal_faces_extension(true);
     }
@@ -498,8 +498,8 @@ void FLD::XFluidFluid::add_eos_pres_stab_to_emb_layer()
 
   Teuchos::ParameterList faceparams;
 
-  const Teuchos::RCP<Discret::DiscretizationFaces> xdiscret =
-      Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(
+  const Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
+      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(
           embedded_fluid_->discretization(), true);
 
   // set additional faceparams according to ghost-penalty terms due to Nitsche's method

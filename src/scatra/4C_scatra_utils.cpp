@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ScaTra::ScaTraUtils::CheckConsistencyOfS2IConditions(
-    Teuchos::RCP<Discret::Discretization> discretization)
+    Teuchos::RCP<Core::FE::Discretization> discretization)
 {
   // check if the number of s2i condition definition is correct
   std::vector<Core::Conditions::Condition*> s2ikinetics_conditions, s2isclcoupling_condition,
@@ -69,7 +69,8 @@ void ScaTra::ScaTraUtils::CheckConsistencyOfS2IConditions(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ScaTra::ScaTraUtils::CheckConsistencyWithS2IKineticsCondition(
-    const std::string& condition_to_be_tested, Teuchos::RCP<Discret::Discretization> discretization)
+    const std::string& condition_to_be_tested,
+    Teuchos::RCP<Core::FE::Discretization> discretization)
 {
   std::vector<Core::Conditions::Condition*> allConditionsToBeTested;
   discretization->GetCondition(condition_to_be_tested, allConditionsToBeTested);
@@ -143,7 +144,7 @@ void ScaTra::ScaTraUtils::CheckConsistencyWithS2IKineticsCondition(
  *----------------------------------------------------------------------*/
 template <const int dim>
 Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAtNodesMeanAverage(
-    Teuchos::RCP<Discret::Discretization> discret, const Teuchos::RCP<const Epetra_Vector> state,
+    Teuchos::RCP<Core::FE::Discretization> discret, const Teuchos::RCP<const Epetra_Vector> state,
     const int scatra_dofid)
 {
   // number space dimensions
@@ -344,14 +345,14 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAtNodesMean
 }
 
 template Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAtNodesMeanAverage<3>(
-    Teuchos::RCP<Discret::Discretization> discret, const Teuchos::RCP<const Epetra_Vector> state,
+    Teuchos::RCP<Core::FE::Discretization> discret, const Teuchos::RCP<const Epetra_Vector> state,
     const int scatra_dofid);
 
 
 
 template <const int dim, Core::FE::CellType DISTYPE>
 Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementGradientNode(
-    Teuchos::RCP<Discret::Discretization> discret,
+    Teuchos::RCP<Core::FE::Discretization> discret,
     std::vector<const Core::Elements::Element*> elements, Teuchos::RCP<Epetra_Vector> phinp_node,
     const int nodegid, const int scatra_dofid)
 {
@@ -485,13 +486,13 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
 // Templates for Mean value averaging -- For now only HEX-type elements allowed!
 template Core::LinAlg::Matrix<3, 1>
 ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementGradientNode<3, Core::FE::CellType::hex8>(
-    Teuchos::RCP<Discret::Discretization> discret,
+    Teuchos::RCP<Core::FE::Discretization> discret,
     std::vector<const Core::Elements::Element*> elements, Teuchos::RCP<Epetra_Vector> phinp_node,
     const int nodegid, const int scatra_dofid);
 
 template Core::LinAlg::Matrix<3, 1>
 ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementGradientNode<3, Core::FE::CellType::hex27>(
-    Teuchos::RCP<Discret::Discretization> discret,
+    Teuchos::RCP<Core::FE::Discretization> discret,
     std::vector<const Core::Elements::Element*> elements, Teuchos::RCP<Epetra_Vector> phinp_node,
     const int nodegid, const int scatra_dofid);
 

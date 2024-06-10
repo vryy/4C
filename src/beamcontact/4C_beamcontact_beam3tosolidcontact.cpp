@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
 CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Beam3tosolidcontact(
-    const Discret::Discretization& pdiscret, const Discret::Discretization& cdiscret,
+    const Core::FE::Discretization& pdiscret, const Core::FE::Discretization& cdiscret,
     const std::map<int, int>& dofoffsetmap, Core::Elements::Element* element1,
     Core::Elements::Element* element2, Teuchos::ParameterList beamcontactparams)
     : pdiscret_(pdiscret),
@@ -2801,7 +2801,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::shift_
 
 Teuchos::RCP<CONTACT::Beam3tosolidcontactinterface> CONTACT::Beam3tosolidcontactinterface::Impl(
     const int numnodessol, const int numnodes, const int numnodalvalues,
-    const Discret::Discretization& pdiscret, const Discret::Discretization& cdiscret,
+    const Core::FE::Discretization& pdiscret, const Core::FE::Discretization& cdiscret,
     const std::map<int, int>& dofoffsetmap, Core::Elements::Element* element1,
     Core::Elements::Element* element2, Teuchos::ParameterList beamcontactparams)
 {

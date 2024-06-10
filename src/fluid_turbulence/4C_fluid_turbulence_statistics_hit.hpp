@@ -21,11 +21,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace FLD
 {
@@ -33,7 +32,7 @@ namespace FLD
   {
    public:
     //! constructor: set-up sampling
-    TurbulenceStatisticsHit(Teuchos::RCP<Discret::Discretization> actdis,
+    TurbulenceStatisticsHit(Teuchos::RCP<Core::FE::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename,
         const bool forced);
 
@@ -41,7 +40,7 @@ namespace FLD
     virtual ~TurbulenceStatisticsHit() = default;
 
     //! store scatra discretization if passive scalar is included
-    virtual void StoreScatraDiscret(Teuchos::RCP<Discret::Discretization> scatradis)
+    virtual void StoreScatraDiscret(Teuchos::RCP<Core::FE::Discretization> scatradis)
     {
       scatradiscret_ = scatradis;
       return;
@@ -100,10 +99,10 @@ namespace FLD
     }
 
     //! the discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! the scatra discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<Discret::Discretization> scatradiscret_;
+    Teuchos::RCP<Core::FE::Discretization> scatradiscret_;
 
     //! parameter list
     Teuchos::ParameterList& params_;
@@ -164,13 +163,13 @@ namespace FLD
   {
    public:
     //! constructor: set-up sampling
-    TurbulenceStatisticsHitHDG(Teuchos::RCP<Discret::Discretization> actdis,
+    TurbulenceStatisticsHitHDG(Teuchos::RCP<Core::FE::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename,
         const bool forced);
 
 
     //! store scatra discretization if passive scalar is included
-    void StoreScatraDiscret(Teuchos::RCP<Discret::Discretization> scatradis) override
+    void StoreScatraDiscret(Teuchos::RCP<Core::FE::Discretization> scatradis) override
     {
       FOUR_C_THROW("not implemented for hdg");
       return;

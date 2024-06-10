@@ -78,7 +78,7 @@ Adapter::PoroFluidMultiphaseWrapper::artery_porofluid_sysmat() const
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization> Adapter::PoroFluidMultiphaseWrapper::discretization() const
+Teuchos::RCP<Core::FE::Discretization> Adapter::PoroFluidMultiphaseWrapper::discretization() const
 {
   return porofluid_->discretization();
 }

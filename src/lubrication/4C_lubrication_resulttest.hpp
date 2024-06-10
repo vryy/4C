@@ -23,10 +23,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Nodes
 {
@@ -74,7 +74,7 @@ namespace LUBRICATION
 
    private:
     /// Teuchos::RCP to lubrication discretization
-    Teuchos::RCP<Discret::Discretization> dis_;
+    Teuchos::RCP<Core::FE::Discretization> dis_;
     /// Teuchos::RCP to solution vector
     Teuchos::RCP<Epetra_Vector> mysol_;
     /// number of iterations in last newton iteration

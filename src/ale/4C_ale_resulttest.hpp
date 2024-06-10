@@ -25,10 +25,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace ALE
 {
@@ -54,7 +54,7 @@ namespace ALE
 
    private:
     /// pointer to ALE discretization
-    Teuchos::RCP<const Discret::Discretization> aledis_;
+    Teuchos::RCP<const Core::FE::Discretization> aledis_;
 
     /// pointer to ALE displacement result vector
     Teuchos::RCP<const Epetra_Vector> dispnp_;

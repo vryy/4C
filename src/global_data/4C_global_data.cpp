@@ -246,7 +246,7 @@ Teuchos::RCP<const Teuchos::ParameterList> Global::Problem::getParameterList() c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::Problem::AddDis(const std::string& name, Teuchos::RCP<Discret::Discretization> dis)
+void Global::Problem::AddDis(const std::string& name, Teuchos::RCP<Core::FE::Discretization> dis)
 {
   // safety checks
   if (dis == Teuchos::null) FOUR_C_THROW("Received Teuchos::null.");
@@ -264,7 +264,7 @@ void Global::Problem::AddDis(const std::string& name, Teuchos::RCP<Discret::Disc
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization> Global::Problem::GetDis(const std::string& name) const
+Teuchos::RCP<Core::FE::Discretization> Global::Problem::GetDis(const std::string& name) const
 {
   auto iter = discretizationmap_.find(name);
 

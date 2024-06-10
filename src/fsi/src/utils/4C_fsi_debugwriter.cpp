@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<Discret::Discretization> dis) : itnum_(-1)
+FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<Core::FE::Discretization> dis) : itnum_(-1)
 {
   std::vector<std::string> conditions_to_copy = {"FSICoupling"};
   Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discreator =
@@ -86,7 +86,7 @@ void FSI::UTILS::DebugWriter::WriteVector(const std::string& name, const Epetra_
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::UTILS::SimpleDebugWriter::SimpleDebugWriter(
-    Teuchos::RCP<Discret::Discretization> dis, const std::string& name)
+    Teuchos::RCP<Core::FE::Discretization> dis, const std::string& name)
     : dis_(dis), name_(name), itnum_(-1)
 {
 }

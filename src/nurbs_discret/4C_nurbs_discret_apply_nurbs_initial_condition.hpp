@@ -31,10 +31,10 @@ the function value as well)
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 namespace Core::LinAlg
 {
   class Solver;
@@ -57,7 +57,7 @@ namespace Discret
 
     \date 08/11
     */
-    void apply_nurbs_initial_condition(Discret::Discretization& dis,
+    void apply_nurbs_initial_condition(Core::FE::Discretization& dis,
         const Teuchos::ParameterList& solverparams,
         const Core::UTILS::FunctionOfSpaceTime& start_function,
         Teuchos::RCP<Epetra_Vector> initialvals);

@@ -18,10 +18,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -50,7 +50,7 @@ namespace CONSTRAINTS
     takes care of the monitor IDs.
     */
 
-    Monitor(Teuchos::RCP<Discret::Discretization> discr,  ///< discretization monitor lives on
+    Monitor(Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization monitor lives on
         const std::string& conditionname,  ///< Name of condition to creat monitor from
         int& minID,                        ///< minimum monitor ID so far
         int& maxID                         ///< maximum monitor ID so far
@@ -82,7 +82,7 @@ namespace CONSTRAINTS
 
 
    protected:
-    Teuchos::RCP<Discret::Discretization> actdisc_;  ///< standard discretization
+    Teuchos::RCP<Core::FE::Discretization> actdisc_;  ///< standard discretization
     std::vector<Core::Conditions::Condition*>
         moncond_;       ///< conditions, that define the monitor (all of the same kind)
     MoniType montype_;  ///< monitor type

@@ -19,10 +19,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace STR
 {
@@ -65,7 +65,7 @@ class StruResultTest : public Core::UTILS::ResultTest
   Teuchos::RCP<STR::TimInt> timeintegrator_;
 
   //! Structure discretisation
-  Teuchos::RCP<Discret::Discretization> strudisc_;
+  Teuchos::RCP<Core::FE::Discretization> strudisc_;
 
   //! @name Solution
   //!@{

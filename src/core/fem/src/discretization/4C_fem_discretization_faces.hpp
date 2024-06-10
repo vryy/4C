@@ -33,9 +33,9 @@ namespace Core::LinAlg
   class SparseMatrix;
 }  // namespace Core::LinAlg
 
-namespace Discret
+namespace Core::FE
 {
-  class DiscretizationFaces : public Discret::Discretization
+  class DiscretizationFaces : public Core::FE::Discretization
   {
    public:
     /*!
@@ -157,7 +157,7 @@ namespace Discret
       //           (having XFEM dofs seems to render the system non-singular, but it should be
       //           singular so the null space has a non-zero dimension)
       //         - the ML preconditioner also relies on a fixed number of dofs per node
-      Discret::Discretization::compute_null_space_if_necessary(solveparams, recompute);
+      Core::FE::Discretization::compute_null_space_if_necessary(solveparams, recompute);
     }
 
     /*!
@@ -264,7 +264,7 @@ namespace Discret
     virtual inline Core::Elements::Element* lRowFace(int lid) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (!Filled()) FOUR_C_THROW("Discret::DiscretizationFaces::lRowIntFace: Filled() != true");
+      if (!Filled()) FOUR_C_THROW("Core::FE::DiscretizationFaces::lRowIntFace: Filled() != true");
 #endif
       return facerowptr_[lid];
     }
@@ -281,7 +281,7 @@ namespace Discret
     virtual inline Core::Elements::Element* lColFace(int lid) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (!Filled()) FOUR_C_THROW("Discret::DiscretizationFaces::lColIntFace: Filled() != true");
+      if (!Filled()) FOUR_C_THROW("Core::FE::DiscretizationFaces::lColIntFace: Filled() != true");
 #endif
       return facecolptr_[lid];
     }
@@ -345,10 +345,10 @@ namespace Discret
 
 
   };  // class DiscretizationXFEM
-}  // namespace Discret
+}  // namespace Core::FE
 
 /// << operator
-std::ostream& operator<<(std::ostream& os, const Discret::DiscretizationFaces& dis);
+std::ostream& operator<<(std::ostream& os, const Core::FE::DiscretizationFaces& dis);
 
 
 FOUR_C_NAMESPACE_CLOSE

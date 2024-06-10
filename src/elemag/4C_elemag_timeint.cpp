@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                               gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-EleMag::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<Discret::DiscretizationHDG> &actdis,
+EleMag::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<Core::FE::DiscretizationHDG> &actdis,
     const Teuchos::RCP<Core::LinAlg::Solver> &solver,
     const Teuchos::RCP<Teuchos::ParameterList> &params,
     const Teuchos::RCP<Core::IO::DiscretizationWriter> &output)
@@ -353,7 +353,7 @@ void EleMag::ElemagTimeInt::SetInitialField(const Inpar::EleMag::InitialField in
  |  Set initial field by scatra solution (public)      berardocco 05/20 |
  *----------------------------------------------------------------------*/
 void EleMag::ElemagTimeInt::set_initial_electric_field(
-    Teuchos::RCP<Epetra_Vector> phi, Teuchos::RCP<Discret::Discretization> &scatradis)
+    Teuchos::RCP<Epetra_Vector> phi, Teuchos::RCP<Core::FE::Discretization> &scatradis)
 {
   // we have to call an init for the elements first!
   Teuchos::ParameterList initParams;
@@ -367,7 +367,7 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
 
   Teuchos::RCP<Epetra_Vector> phicol;
   bool ishdg = false;
-  if (Teuchos::rcp_dynamic_cast<Discret::DiscretizationHDG>(scatradis) != Teuchos::null)
+  if (Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationHDG>(scatradis) != Teuchos::null)
   {
     phicol = Teuchos::rcp(new Epetra_Vector(*(scatradis->DofColMap(2))));
     ishdg = true;
@@ -828,7 +828,7 @@ namespace
   |  Interpolate discontinous values to nodal values     berardocco 03/18 |
   *----------------------------------------------------------------------*/
   // internal helper function for output
-  void getNodeVectorsHDG(Discret::Discretization &dis,
+  void getNodeVectorsHDG(Core::FE::Discretization &dis,
       const Teuchos::RCP<Epetra_Vector> &traceValues, const int ndim,
       Teuchos::RCP<Epetra_MultiVector> &electric, Teuchos::RCP<Epetra_MultiVector> &electric_post,
       Teuchos::RCP<Epetra_MultiVector> &magnetic, Teuchos::RCP<Epetra_MultiVector> &trace,
@@ -931,7 +931,7 @@ namespace
   /*----------------------------------------------------------------------*
   |  Reads material properties from element for output   berardocco 03/18 |
   *----------------------------------------------------------------------*/
-  void getElementMaterialProperties(Discret::Discretization &dis,
+  void getElementMaterialProperties(Core::FE::Discretization &dis,
       Teuchos::RCP<Epetra_Vector> &conductivity, Teuchos::RCP<Epetra_Vector> &permittivity,
       Teuchos::RCP<Epetra_Vector> &permeability)
   {
@@ -1131,7 +1131,7 @@ void EleMag::ElemagTimeInt::SpySysmat(std::ostream &out)
 /*----------------------------------------------------------------------*
  |  Return discretization (public)                     berardocco 08/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization> EleMag::ElemagTimeInt::discretization()
+Teuchos::RCP<Core::FE::Discretization> EleMag::ElemagTimeInt::discretization()
 {
   return discret_;
 }  // discretization

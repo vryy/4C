@@ -661,7 +661,7 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
   if (redistribution_type == SSI::RedistributionType::match and !is_sca_tra_manifold())
   {
     // first we bin the scatra discretization
-    std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+    std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
     dis.push_back(scatradis);
     Core::Rebalance::RebalanceDiscretizationsByBinning(dis, false);
 
@@ -674,7 +674,7 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
   else if (redistribution_type == SSI::RedistributionType::binning)
   {
     // create vector of discr.
-    std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+    std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
     dis.push_back(structdis);
     dis.push_back(scatradis);
 

@@ -21,9 +21,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::PoroMultiPhaseScaTraArtCouplNodeBased(
-    Teuchos::RCP<Discret::Discretization> arterydis, Teuchos::RCP<Discret::Discretization> contdis,
-    const Teuchos::ParameterList& meshtyingparams, const std::string& condname,
-    const std::string& artcoupleddofname, const std::string& contcoupleddofname)
+    Teuchos::RCP<Core::FE::Discretization> arterydis,
+    Teuchos::RCP<Core::FE::Discretization> contdis, const Teuchos::ParameterList& meshtyingparams,
+    const std::string& condname, const std::string& artcoupleddofname,
+    const std::string& contcoupleddofname)
     : PoroMultiPhaseScaTraArtCouplBase(
           arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname),
       condname_(condname)
@@ -123,7 +124,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::Setup()
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_map_extractor(
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mapextractor,
-    Teuchos::RCP<Discret::Discretization> dis, const std::vector<int>& coupleddofs)
+    Teuchos::RCP<Core::FE::Discretization> dis, const std::vector<int>& coupleddofs)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> partialmaps_coupled;
 
@@ -270,7 +271,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::extract_single
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::check_dbc_on_coupled_dofs(
-    Teuchos::RCP<Discret::Discretization> dis, const Teuchos::RCP<const Epetra_Map>& coupleddofmap)
+    Teuchos::RCP<Core::FE::Discretization> dis, const Teuchos::RCP<const Epetra_Map>& coupleddofmap)
 {
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps = Teuchos::rcp(new Core::LinAlg::MapExtractor());

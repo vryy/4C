@@ -193,7 +193,7 @@ namespace
    */
   template <Core::FE::CellType celltype>
   Core::LinAlg::Matrix<num_dof_per_ele<celltype>, 1> GetDisplacementIncrement(
-      const Discret::Discretization& discretization, const std::vector<int>& lm)
+      const Core::FE::Discretization& discretization, const std::vector<int>& lm)
   {
     auto residual_from_dis = discretization.GetState("residual displacement");
     std::vector<double> residual(lm.size());
@@ -240,7 +240,7 @@ namespace
    */
   template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
   void UpdateAlpha(Discret::ELEMENTS::EasIterationData<celltype, eastype>& eas_iteration_data,
-      const Discret::Discretization& discretization, const std::vector<int>& lm,
+      const Core::FE::Discretization& discretization, const std::vector<int>& lm,
       const double step_length = 1.0)
   {
     // residual displacement at the previous step
@@ -657,7 +657,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Unpack(
 template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
 void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_nonlinear_force_stiffness_mass(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
-    const Discret::Discretization& discretization, const std::vector<int>& lm,
+    const Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
     Core::LinAlg::SerialDenseMatrix* stiffness_matrix, Core::LinAlg::SerialDenseMatrix* mass_matrix)
 {
@@ -782,7 +782,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_nonlinear_f
 
 template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
 void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Recover(Core::Elements::Element& ele,
-    const Discret::Discretization& discretization, const std::vector<int>& lm,
+    const Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
   STR::ELEMENTS::ParamsInterface& params_interface =
@@ -815,7 +815,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Recover(Core::Elemen
 template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
 void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Update(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
-    const Discret::Discretization& discretization, const std::vector<int>& lm,
+    const Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
   const ElementNodes<celltype> nodal_coordinates =
@@ -860,7 +860,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Update(
 template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
 void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateStress(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material, const StressIO& stressIO,
-    const StrainIO& strainIO, const Discret::Discretization& discretization,
+    const StrainIO& strainIO, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;
@@ -914,7 +914,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateStress(
 template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
 double Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::calculate_internal_energy(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
-    const Discret::Discretization& discretization, const std::vector<int>& lm,
+    const Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
   double intenergy = 0.0;

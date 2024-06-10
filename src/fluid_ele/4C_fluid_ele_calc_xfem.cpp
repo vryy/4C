@@ -88,7 +88,7 @@ namespace Discret
     *-------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::EvaluateXFEM(Discret::ELEMENTS::Fluid* ele,
-        Discret::Discretization& discretization, const std::vector<int>& lm,
+        Core::FE::Discretization& discretization, const std::vector<int>& lm,
         Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
         Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
         Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -116,7 +116,7 @@ namespace Discret
     *-------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::integrate_shape_function_xfem(Discret::ELEMENTS::Fluid* ele,
-        Discret::Discretization& discretization, const std::vector<int>& lm,
+        Core::FE::Discretization& discretization, const std::vector<int>& lm,
         Core::LinAlg::SerialDenseVector& elevec1_epetra,
         const std::vector<Core::FE::GaussIntegration>& intpoints,
         const Core::Geo::Cut::plain_volumecell_set& cells)
@@ -139,7 +139,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::compute_error(Discret::ELEMENTS::Fluid* ele,
         Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
-        Discret::Discretization& discretization, std::vector<int>& lm,
+        Core::FE::Discretization& discretization, std::vector<int>& lm,
         Core::LinAlg::SerialDenseVector& ele_dom_norms)
     {
       // integrations points and weights
@@ -152,7 +152,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::compute_error(Discret::ELEMENTS::Fluid* ele,
         Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
-        Discret::Discretization& discretization, std::vector<int>& lm,
+        Core::FE::Discretization& discretization, std::vector<int>& lm,
         Core::LinAlg::SerialDenseVector& ele_dom_norms,  // squared element domain norms
         const Core::FE::GaussIntegration& intpoints)
     {
@@ -784,7 +784,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::compute_error_interface(
         Discret::ELEMENTS::Fluid* ele,                             ///< fluid element
-        Discret::Discretization& dis,                              ///< background discretization
+        Core::FE::Discretization& dis,                             ///< background discretization
         const std::vector<int>& lm,                                ///< element local map
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
         Teuchos::RCP<Core::Mat::Material>& mat,                    ///< material
@@ -970,7 +970,7 @@ namespace Discret
         bool is_ls_coupling_side = cond_manager->IsLevelSetCoupling(coup_sid);
         bool is_mesh_coupling_side = cond_manager->IsMeshCoupling(coup_sid);
 
-        Teuchos::RCP<Discret::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
+        Teuchos::RCP<Core::FE::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         if (is_ls_coupling_side and is_mesh_coupling_side)
@@ -1278,7 +1278,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::element_xfem_interface_hybrid_lm(
         Discret::ELEMENTS::Fluid* ele,                             ///< fluid element
-        Discret::Discretization& dis,                              ///< background discretization
+        Core::FE::Discretization& dis,                             ///< background discretization
         const std::vector<int>& lm,                                ///< element local map
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
         const std::vector<Core::FE::GaussIntegration>& intpoints,  ///< element gauss points
@@ -1607,7 +1607,7 @@ namespace Discret
         bool is_ls_coupling_side = cond_manager->IsLevelSetCoupling(coup_sid);
         bool is_mesh_coupling_side = cond_manager->IsMeshCoupling(coup_sid);
 
-        Teuchos::RCP<Discret::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
+        Teuchos::RCP<Core::FE::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         if (is_ls_coupling_side and is_mesh_coupling_side)
@@ -1656,7 +1656,7 @@ namespace Discret
           }
         }
 
-        Teuchos::RCP<Discret::Discretization> coupl_dis_ = cond_manager->GetCouplingDis(coup_sid);
+        Teuchos::RCP<Core::FE::Discretization> coupl_dis_ = cond_manager->GetCouplingDis(coup_sid);
 
         if (!(is_ls_coupling_side and
                 !cond_manager->IsCoupling(coup_sid, my::eid_)))  // not level-set-WDBC case
@@ -3192,7 +3192,7 @@ namespace Discret
      *--------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::element_xfem_interface_nit(Discret::ELEMENTS::Fluid* ele,
-        Discret::Discretization& dis, const std::vector<int>& lm,
+        Core::FE::Discretization& dis, const std::vector<int>& lm,
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
         const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>& bcells,
         const std::map<int, std::vector<Core::FE::GaussIntegration>>& bintpoints,
@@ -3422,7 +3422,7 @@ namespace Discret
         bool is_ls_coupling_side = cond_manager->IsLevelSetCoupling(coup_sid);
         bool is_mesh_coupling_side = cond_manager->IsMeshCoupling(coup_sid);
 
-        Teuchos::RCP<Discret::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
+        Teuchos::RCP<Core::FE::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         if (is_ls_coupling_side and is_mesh_coupling_side)
@@ -3488,7 +3488,7 @@ namespace Discret
           }
         }
 
-        Teuchos::RCP<Discret::Discretization> coupl_dis_ = cond_manager->GetCouplingDis(coup_sid);
+        Teuchos::RCP<Core::FE::Discretization> coupl_dis_ = cond_manager->GetCouplingDis(coup_sid);
 
         if (!(is_ls_coupling_side and
                 !cond_manager->IsCoupling(coup_sid, my::eid_)))  // not level-set-WDBC case
@@ -4370,7 +4370,7 @@ namespace Discret
               "hybrid_lm_create_special_contribution_matrices for level-set coupling not supported "
               "yet");
 
-        Teuchos::RCP<Discret::Discretization> cutter_dis = Teuchos::null;
+        Teuchos::RCP<Core::FE::Discretization> cutter_dis = Teuchos::null;
         if (cond_manager->IsMeshCoupling(coup_sid))
           cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
@@ -4452,7 +4452,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::assemble_interface_force(
         Teuchos::RCP<Epetra_Vector> iforcecol,   ///< interface force column vector
-        Discret::Discretization& cutdis,         ///< cut discretization
+        Core::FE::Discretization& cutdis,        ///< cut discretization
         std::vector<int>& lm,                    ///< local dof map
         Core::LinAlg::SerialDenseVector& iforce  ///< interface force vector
     )
@@ -4517,7 +4517,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::calculate_continuity_xfem(
         Discret::ELEMENTS::Fluid* ele,                    ///< fluid element
-        Discret::Discretization& dis,                     ///< discretization
+        Core::FE::Discretization& dis,                    ///< discretization
         const std::vector<int>& lm,                       ///< local map
         Core::LinAlg::SerialDenseVector& elevec1_epetra,  ///< element vector
         const Core::FE::GaussIntegration& intpoints       ///< integration points
@@ -4569,7 +4569,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::calculate_continuity_xfem(
         Discret::ELEMENTS::Fluid* ele,                   ///< fluid element
-        Discret::Discretization& dis,                    ///< discretization
+        Core::FE::Discretization& dis,                   ///< discretization
         const std::vector<int>& lm,                      ///< local map
         Core::LinAlg::SerialDenseVector& elevec1_epetra  ///< element vector
     )

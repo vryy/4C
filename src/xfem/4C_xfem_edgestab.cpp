@@ -39,7 +39,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
     Teuchos::ParameterList& eleparams,                      ///< element parameter list
-    Teuchos::RCP<Discret::Discretization> discret,          ///< discretization
+    Teuchos::RCP<Core::FE::Discretization> discret,         ///< discretization
     Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
     Teuchos::RCP<Epetra_Vector> systemvector,               ///< systemvector
@@ -90,10 +90,12 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
   //                                                                         elements are uncut)
 
 
-  Teuchos::RCP<Discret::DiscretizationFaces> xdiscret =
-      Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(discret);
+  Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
+      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discret);
   if (xdiscret == Teuchos::null)
-    FOUR_C_THROW("Failed to cast Discret::Discretization to Discret::DiscretizationFaces.");
+    FOUR_C_THROW(
+        "Failed to cast Core::FE::Discretization to "
+        "Core::FE::DiscretizationFaces.");
 
 
   // get the parent fluid elements
@@ -604,7 +606,7 @@ void XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(
     Teuchos::RCP<Core::Mat::Material>& material_s,  ///< material of the slave side
     std::vector<int>& nds_master,                   ///< nodal dofset vector w.r.t. master element
     std::vector<int>& nds_slave,                    ///< nodal dofset vector w.r.t. slave element
-    Discret::DiscretizationFaces& xdiscret,         ///< XFEM discretization
+    Core::FE::DiscretizationFaces& xdiscret,        ///< XFEM discretization
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
     Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
 )
@@ -671,16 +673,18 @@ void XFEM::XfemEdgeStab::reset()
  *----------------------------------------------------------------------*/
 void XFEM::XfemEdgeStab::EvaluateEdgeStabStd(
     Teuchos::ParameterList& eleparams,                      ///< element parameter list
-    Teuchos::RCP<Discret::Discretization> discret,          ///< discretization
+    Teuchos::RCP<Core::FE::Discretization> discret,         ///< discretization
     Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
     Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
 )
 {
-  Teuchos::RCP<Discret::DiscretizationFaces> xdiscret =
-      Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(discret);
+  Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
+      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discret);
   if (xdiscret == Teuchos::null)
-    FOUR_C_THROW("Failed to cast Discret::Discretization to Discret::DiscretizationFaces.");
+    FOUR_C_THROW(
+        "Failed to cast Core::FE::Discretization to "
+        "Core::FE::DiscretizationFaces.");
 
 
   // get the parent fluid elements
@@ -721,19 +725,21 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabStd(
  |  embedded fluid elements                               (kruse 10/14) |
  *----------------------------------------------------------------------*/
 void XFEM::XfemEdgeStab::evaluate_edge_stab_boundary_gp(
-    Teuchos::ParameterList& eleparams,              ///< element parameter list
-    Teuchos::RCP<Discret::Discretization> discret,  ///< discretization
-    Teuchos::RCP<Discret::Discretization>
+    Teuchos::ParameterList& eleparams,               ///< element parameter list
+    Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
+    Teuchos::RCP<Core::FE::Discretization>
         boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
     Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
     Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
 )
 {
-  Teuchos::RCP<Discret::DiscretizationFaces> xdiscret =
-      Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(discret);
+  Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
+      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discret);
   if (xdiscret == Teuchos::null)
-    FOUR_C_THROW("Failed to cast Discret::Discretization to Discret::DiscretizationFaces.");
+    FOUR_C_THROW(
+        "Failed to cast Core::FE::Discretization to "
+        "Core::FE::DiscretizationFaces.");
 
 
   // get the parent fluid elements

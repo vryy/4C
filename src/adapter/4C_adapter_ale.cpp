@@ -41,7 +41,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 Adapter::AleBaseAlgorithm::AleBaseAlgorithm(
-    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Discret::Discretization> actdis)
+    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Core::FE::Discretization> actdis)
 {
   setup_ale(prbdyn, actdis);
 }
@@ -50,7 +50,7 @@ Adapter::AleBaseAlgorithm::AleBaseAlgorithm(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void Adapter::AleBaseAlgorithm::setup_ale(
-    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Discret::Discretization> actdis)
+    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Core::FE::Discretization> actdis)
 {
   Teuchos::RCP<Teuchos::Time> t =
       Teuchos::TimeMonitor::getNewTimer("ALE::AleBaseAlgorithm::setup_ale");

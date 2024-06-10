@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  //evaluate the element (public)                            ismail 06/09
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -82,7 +82,7 @@ int Discret::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
 
 
 int Discret::ELEMENTS::Artery::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -95,7 +95,7 @@ int Discret::ELEMENTS::Artery::evaluate_neumann(Teuchos::ParameterList& params,
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Artery::evaluate_dirichlet(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1)
 {
   return 0;

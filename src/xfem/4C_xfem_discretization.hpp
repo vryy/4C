@@ -29,7 +29,7 @@ namespace XFEM
   \brief A class to manage a discretization in parallel with changing dofs
 
   */
-  class DiscretizationXFEM : public Discret::DiscretizationFaces
+  class DiscretizationXFEM : public Core::FE::DiscretizationFaces
   {
    public:
     /*!

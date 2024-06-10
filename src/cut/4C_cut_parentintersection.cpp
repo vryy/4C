@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  * Create nodal dofset sets within the parallel cut framework
  *------------------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::ParentIntersection::CreateNodalDofSet(
-    bool include_inner, const Discret::Discretization& dis)
+    bool include_inner, const Core::FE::Discretization& dis)
 {
   dis.Comm().Barrier();
 
@@ -217,7 +217,7 @@ void Core::Geo::Cut::ParentIntersection::CreateNodalDofSet(
  | fill parallel DofSetData with information that has to be communicated   schott 03/12 |
  *-------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::ParentIntersection::fill_parallel_dof_set_data(
-    std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData, const Discret::Discretization& dis,
+    std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData, const Core::FE::Discretization& dis,
     bool include_inner)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
@@ -430,7 +430,7 @@ void Core::Geo::Cut::ParentIntersection::FindNodalCellSets(bool include_inner, s
  | connect sets of volumecells for neighboring elements around a node      schott 03/12 |
  *-------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>& nodes,
-    bool include_inner, const Discret::Discretization& dis,
+    bool include_inner, const Core::FE::Discretization& dis,
     const std::vector<plain_volumecell_set>&
         connected_vc_sets,  // connections of volumecells within one element connected via
                             // subelements
@@ -595,7 +595,7 @@ void Core::Geo::Cut::ParentIntersection::print_cell_stats() { NormalMesh().print
  *-------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::ParentIntersection::dump_gmsh_nodal_cell_set(
     std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets,
-    const Discret::Discretization& dis)
+    const Core::FE::Discretization& dis)
 {
   std::string filename =
       "cut_test";  // ::Global::Problem::Instance()->OutputControlFile()->FileName();
@@ -672,7 +672,7 @@ void Core::Geo::Cut::ParentIntersection::dump_gmsh_nodal_cell_set(
  * write gmsh debug output for CellSets
  *-------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::ParentIntersection::DumpGmshCellSets(
-    std::vector<plain_volumecell_set>& cell_sets, const Discret::Discretization& dis)
+    std::vector<plain_volumecell_set>& cell_sets, const Core::FE::Discretization& dis)
 {
   std::string filename =
       "cut_test";  // ::Global::Problem::Instance()->OutputControlFile()->FileName();
@@ -722,7 +722,7 @@ void Core::Geo::Cut::ParentIntersection::DumpGmshCellSets(
  * write gmsh cut output for number of dofsets and the connected vc sets
  *-------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::ParentIntersection::dump_gmsh_num_dof_sets(
-    std::string filename, bool include_inner, const Discret::Discretization& dis)
+    std::string filename, bool include_inner, const Core::FE::Discretization& dis)
 {
   std::stringstream str;
   str << filename << ".CUT_NumDOFSets." << dis.Comm().MyPID() << ".pos";

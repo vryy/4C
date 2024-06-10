@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                  laspina 08/19 |
  *----------------------------------------------------------------------*/
-FLD::TimIntHDGWeakComp::TimIntHDGWeakComp(const Teuchos::RCP<Discret::Discretization>& actdis,
+FLD::TimIntHDGWeakComp::TimIntHDGWeakComp(const Teuchos::RCP<Core::FE::Discretization>& actdis,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid)
@@ -42,7 +42,7 @@ FLD::TimIntHDGWeakComp::TimIntHDGWeakComp(const Teuchos::RCP<Discret::Discretiza
  *----------------------------------------------------------------------*/
 void FLD::TimIntHDGWeakComp::Init()
 {
-  Discret::DiscretizationHDG* hdgdis = dynamic_cast<Discret::DiscretizationHDG*>(discret_.get());
+  Core::FE::DiscretizationHDG* hdgdis = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   // get number of spatial dimensions
@@ -648,7 +648,7 @@ void FLD::TimIntHDGWeakComp::Reset(bool completeReset, int numsteps, int iter)
 namespace
 {
   // internal helper function for output
-  void getNodeVectorsHDGWeakComp(Discret::Discretization& dis,
+  void getNodeVectorsHDGWeakComp(Core::FE::Discretization& dis,
       const Teuchos::RCP<Epetra_Vector>& interiorValues,
       const Teuchos::RCP<Epetra_Vector>& traceValues, const int ndim,
       Teuchos::RCP<Epetra_MultiVector>& mixedvar, Teuchos::RCP<Epetra_Vector>& density,

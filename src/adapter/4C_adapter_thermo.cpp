@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
  |                                                          bborn 08/09 |
  *----------------------------------------------------------------------*/
 Adapter::ThermoBaseAlgorithm::ThermoBaseAlgorithm(
-    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Discret::Discretization> actdis)
+    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Core::FE::Discretization> actdis)
 {
   setup_thermo(prbdyn, actdis);
 }
@@ -43,7 +43,7 @@ Adapter::ThermoBaseAlgorithm::ThermoBaseAlgorithm(
  |                                                          bborn 08/09 |
  *----------------------------------------------------------------------*/
 void Adapter::ThermoBaseAlgorithm::setup_thermo(
-    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Discret::Discretization> actdis)
+    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Core::FE::Discretization> actdis)
 {
   const Teuchos::ParameterList& tdyn = Global::Problem::Instance()->thermal_dynamic_params();
 
@@ -71,7 +71,7 @@ void Adapter::ThermoBaseAlgorithm::setup_thermo(
  | setup of thermal time integration                        bborn 08/09 |
  *----------------------------------------------------------------------*/
 void Adapter::ThermoBaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& prbdyn,
-    Inpar::THR::DynamicType timinttype, Teuchos::RCP<Discret::Discretization> actdis)
+    Inpar::THR::DynamicType timinttype, Teuchos::RCP<Core::FE::Discretization> actdis)
 {
   // this is not exactly a one hundred meter race, but we need timing
   Teuchos::RCP<Teuchos::Time> t =

@@ -210,7 +210,7 @@ namespace Mortar
            not very safe, so be sure, what you do. Material pointers can be
            added according to link_materials
     */
-    void create_volume_ghosting(const Discret::Discretization& dis_src,
+    void create_volume_ghosting(const Core::FE::Discretization& dis_src,
         const std::vector<std::string> dis_tar, std::vector<std::pair<int, int>> material_links,
         bool check_on_in = true, bool check_on_exit = true);
 
@@ -221,7 +221,7 @@ namespace Mortar
 
     store knot vector, zerosized information and normal factor
     */
-    void prepare_nurbs_element(Discret::Discretization& discret,
+    void prepare_nurbs_element(Core::FE::Discretization& discret,
         Teuchos::RCP<Core::Elements::Element> ele, Teuchos::RCP<Mortar::Element> cele, int dim);
 
     /*!

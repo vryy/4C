@@ -47,7 +47,7 @@ namespace Core::DOFSets
    public:
     //! Standard Constructor
     DofSetMergedWrapper(Teuchos::RCP<DofSetInterface> dofset,
-        Teuchos::RCP<const Discret::Discretization> sourcedis,
+        Teuchos::RCP<const Core::FE::Discretization> sourcedis,
         const std::string& couplingcond_master, const std::string& couplingcond_slave);
 
     //! Destructor
@@ -58,7 +58,7 @@ namespace Core::DOFSets
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
-        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
+        const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// reset all internal variables
     void Reset() override;
@@ -263,7 +263,7 @@ namespace Core::DOFSets
     Teuchos::RCP<DofSetInterface> sourcedofset_;
 
     //! source discretization
-    Teuchos::RCP<const Discret::Discretization> sourcedis_;
+    Teuchos::RCP<const Core::FE::Discretization> sourcedis_;
 
     //! condition strings defining the coupling
     const std::string couplingcond_master_;

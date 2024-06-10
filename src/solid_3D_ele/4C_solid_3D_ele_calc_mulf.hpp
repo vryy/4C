@@ -170,7 +170,7 @@ namespace Discret::ELEMENTS
   constexpr bool IsPrestressUpdateable<T,
       std::void_t<decltype(std::declval<T>()->UpdatePrestress(
           std::declval<const Core::Elements::Element&>(), std::declval<Mat::So3Material&>(),
-          std::declval<const Discret::Discretization&>(), std::declval<const std::vector<int>&>(),
+          std::declval<const Core::FE::Discretization&>(), std::declval<const std::vector<int>&>(),
           std::declval<Teuchos::ParameterList&>()))>> = true;
 
   namespace Details
@@ -178,7 +178,7 @@ namespace Discret::ELEMENTS
     struct UpdatePrestressAction
     {
       UpdatePrestressAction(const Core::Elements::Element& e, Mat::So3Material& m,
-          const Discret::Discretization& d, const std::vector<int>& lmvec,
+          const Core::FE::Discretization& d, const std::vector<int>& lmvec,
           Teuchos::ParameterList& p)
           : element(e), mat(m), discretization(d), lm(lmvec), params(p)
       {
@@ -201,7 +201,7 @@ namespace Discret::ELEMENTS
 
       const Core::Elements::Element& element;
       Mat::So3Material& mat;
-      const Discret::Discretization& discretization;
+      const Core::FE::Discretization& discretization;
       const std::vector<int>& lm;
       Teuchos::ParameterList& params;
     };
@@ -209,7 +209,7 @@ namespace Discret::ELEMENTS
 
   template <typename VariantType>
   void UpdatePrestress(VariantType& variant, const Core::Elements::Element& element,
-      Mat::So3Material& mat, const Discret::Discretization& discretization,
+      Mat::So3Material& mat, const Core::FE::Discretization& discretization,
       const std::vector<int>& lm, Teuchos::ParameterList& params)
   {
     std::visit(Details::UpdatePrestressAction(element, mat, discretization, lm, params), variant);

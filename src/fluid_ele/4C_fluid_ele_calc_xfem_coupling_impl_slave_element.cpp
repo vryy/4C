@@ -29,8 +29,8 @@ namespace Discret
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::AddSlaveEleDisp(
-          const Discret::Discretization& slavedis,  ///< coupling slave discretization
-          const std::vector<int>& lm                ///< local map
+          const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
+          const std::vector<int>& lm                 ///< local map
       )
       {
         std::vector<double> mymatrix(lm.size());
@@ -43,9 +43,9 @@ namespace Discret
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::AddSlaveEleDisp(
-          const Discret::Discretization& slavedis,  ///< coupling slave discretization
-          const std::vector<int>& lm,               ///< local map
-          std::vector<double>& mymatrix             ///< slave element displacement vector
+          const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
+          const std::vector<int>& lm,                ///< local map
+          std::vector<double>& mymatrix              ///< slave element displacement vector
       )
       {
         // leave, if displacements are not set
@@ -85,8 +85,8 @@ namespace Discret
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::SetSlaveState(
-          const Discret::Discretization& slavedis,  ///< coupling slave discretization
-          const std::vector<int>& lm                ///< local map
+          const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
+          const std::vector<int>& lm                 ///< local map
       )
       {
         // get state of the global vector
@@ -118,8 +118,8 @@ namespace Discret
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::SetSlaveStaten(
-          const Discret::Discretization& slavedis,  ///< coupling slave discretization
-          const std::vector<int>& lm                ///< local map
+          const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
+          const std::vector<int>& lm                 ///< local map
       )
       {
         // get state of the global vector
@@ -235,9 +235,9 @@ namespace Discret
           unsigned int slave_numdof>
       void
       SlaveElementRepresentation<distype, slave_distype, slave_numdof>::set_interface_jump_statenp(
-          const Discret::Discretization& cutterdis,  ///< cutter discretization
-          const std::string state,                   ///< state
-          const std::vector<int>& lm                 ///< local map
+          const Core::FE::Discretization& cutterdis,  ///< cutter discretization
+          const std::string state,                    ///< state
+          const std::vector<int>& lm                  ///< local map
       )
       {
         // get state of the global vector
@@ -269,9 +269,9 @@ namespace Discret
           unsigned int slave_numdof>
       void
       SlaveElementRepresentation<distype, slave_distype, slave_numdof>::set_interface_jump_staten(
-          const Discret::Discretization& cutterdis,  ///< cutter discretization
-          const std::string state,                   ///< state
-          const std::vector<int>& lm                 ///< local map
+          const Core::FE::Discretization& cutterdis,  ///< cutter discretization
+          const std::string state,                    ///< state
+          const std::vector<int>& lm                  ///< local map
       )
       {
         // get state of the global vector

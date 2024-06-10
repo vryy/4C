@@ -26,7 +26,7 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   DiscretizationVisualizationWriterNodes::DiscretizationVisualizationWriterNodes(
-      const Teuchos::RCP<const Discret::Discretization>& discretization,
+      const Teuchos::RCP<const Core::FE::Discretization>& discretization,
       VisualizationParameters parameters)
       : discretization_(discretization),
         visualization_manager_(Teuchos::rcp(new Core::IO::VisualizationManager(

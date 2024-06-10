@@ -47,7 +47,7 @@ namespace FLD
    public:
     //! ctor
     XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& embedded_fluid,  ///< embedded fluid
-        const Teuchos::RCP<Discret::Discretization>&
+        const Teuchos::RCP<Core::FE::Discretization>&
             xfluiddis,                                       ///< background fluid discretization
         const Teuchos::RCP<Core::LinAlg::Solver>& solver,    ///< fluid solver
         const Teuchos::RCP<Teuchos::ParameterList>& params,  ///< xfluid params
@@ -57,9 +57,9 @@ namespace FLD
 
     //! ctor for multiple mesh coupling
     XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& embedded_fluid,  ///< embedded fluid
-        const Teuchos::RCP<Discret::Discretization>&
+        const Teuchos::RCP<Core::FE::Discretization>&
             xfluiddis,  ///< background fluid discretization
-        const Teuchos::RCP<Discret::Discretization>&
+        const Teuchos::RCP<Core::FE::Discretization>&
             soliddis,  ///< structure discretization to couple with
         const Teuchos::RCP<Core::LinAlg::Solver>& solver,    ///< fluid solver
         const Teuchos::RCP<Teuchos::ParameterList>& params,  ///< xfluid params

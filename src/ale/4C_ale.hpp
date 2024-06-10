@@ -32,11 +32,10 @@ namespace Core::LinAlg
   class MapExtractor;
 }  // namespace Core::LinAlg
 
-namespace Discret
+namespace Core::FE
 {
-  class ResultTest;
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Conditions
 {
@@ -110,7 +109,7 @@ namespace ALE
     // friend class AleResultTest;
 
    public:
-    Ale(Teuchos::RCP<Discret::Discretization> actdis,        ///< pointer to discretization
+    Ale(Teuchos::RCP<Core::FE::Discretization> actdis,       ///< pointer to discretization
         Teuchos::RCP<Core::LinAlg::Solver> solver,           ///< linear solver
         Teuchos::RCP<Teuchos::ParameterList> params,         ///< parameter list
         Teuchos::RCP<Core::IO::DiscretizationWriter> output  ///< output writing
@@ -272,10 +271,13 @@ namespace ALE
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
     /// direct access to discretization
-    Teuchos::RCP<const Discret::Discretization> discretization() const override { return discret_; }
+    Teuchos::RCP<const Core::FE::Discretization> discretization() const override
+    {
+      return discret_;
+    }
 
     /// writing access to discretization
-    Teuchos::RCP<Discret::Discretization> write_access_discretization() override
+    Teuchos::RCP<Core::FE::Discretization> write_access_discretization() override
     {
       return discret_;
     }
@@ -357,7 +359,7 @@ namespace ALE
     //! @name Misc
 
     //! ALE discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! linear solver
     Teuchos::RCP<Core::LinAlg::Solver> solver_;
@@ -527,10 +529,10 @@ namespace ALE
     //@{
 
     //! Constructor
-    AleLinear(Teuchos::RCP<Discret::Discretization> actdis,  ///< pointer to discretization
-        Teuchos::RCP<Core::LinAlg::Solver> solver,           ///< linear solver
-        Teuchos::RCP<Teuchos::ParameterList> params_in,      ///< parameter list
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output  ///< output writing
+    AleLinear(Teuchos::RCP<Core::FE::Discretization> actdis,  ///< pointer to discretization
+        Teuchos::RCP<Core::LinAlg::Solver> solver,            ///< linear solver
+        Teuchos::RCP<Teuchos::ParameterList> params_in,       ///< parameter list
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output   ///< output writing
     );
 
     //@}

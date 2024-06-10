@@ -31,9 +31,13 @@ namespace Core::LinAlg
   class MultiMapExtractor;
 }  // namespace Core::LinAlg
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
+
+namespace Discret
+{
   namespace ELEMENTS
   {
     class Beam3Base;
@@ -62,7 +66,7 @@ namespace STR
       void Init();
 
       /// setup of the new class variables
-      void Setup(Teuchos::RCP<const Discret::Discretization> const& ia_discret);
+      void Setup(Teuchos::RCP<const Core::FE::Discretization> const& ia_discret);
 
      protected:
       inline const bool& is_init() const { return isinit_; };

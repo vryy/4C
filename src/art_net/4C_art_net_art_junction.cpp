@@ -72,7 +72,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 Arteries::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(
-    Teuchos::RCP<Discret::Discretization> actdis, Core::IO::DiscretizationWriter &output,
+    Teuchos::RCP<Core::FE::Discretization> actdis, Core::IO::DiscretizationWriter &output,
     Teuchos::ParameterList &params, double dta)
     : discret_(actdis), output_(output)
 {
@@ -262,7 +262,7 @@ int Arteries::UTILS::ArtJunctionWrapper::Solve(Teuchos::ParameterList &params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-Arteries::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<Discret::Discretization> actdis,
+Arteries::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<Core::FE::Discretization> actdis,
     Core::IO::DiscretizationWriter &output, std::vector<Core::Conditions::Condition *> conds,
     std::vector<int> IOart_flag, double dta, int condid, int numcond)
     : condid_(condid), discret_(actdis), output_(output), io_art_flag_(IOart_flag)

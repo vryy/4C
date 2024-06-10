@@ -51,7 +51,7 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidVolumetricSurfaceFlowWrapper(Teuchos::RCP<Discret::Discretization> actdis, double dta);
+      FluidVolumetricSurfaceFlowWrapper(Teuchos::RCP<Core::FE::Discretization> actdis, double dta);
 
       /*!
       \brief Destructor
@@ -91,7 +91,7 @@ namespace FLD
       std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>> fvsf_map_;
 
       //! fluid discretization
-      Teuchos::RCP<Discret::Discretization> discret_;
+      Teuchos::RCP<Core::FE::Discretization> discret_;
 
     };  // class FluidWomersleyWrapper
 
@@ -105,7 +105,7 @@ namespace FLD
       \brief Standard Constructor
       */
 
-      TotalTractionCorrector(Teuchos::RCP<Discret::Discretization> actdis, double dta);
+      TotalTractionCorrector(Teuchos::RCP<Core::FE::Discretization> actdis, double dta);
 
       /*!
       \brief Destructor
@@ -149,7 +149,7 @@ namespace FLD
       std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>> fvsf_map_;
 
       //! fluid discretization
-      Teuchos::RCP<Discret::Discretization> discret_;
+      Teuchos::RCP<Core::FE::Discretization> discret_;
 
     };  // class TotalTractionCorrector
 
@@ -172,7 +172,7 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidVolumetricSurfaceFlowBc(Teuchos::RCP<Discret::Discretization> actdis, double dta,
+      FluidVolumetricSurfaceFlowBc(Teuchos::RCP<Core::FE::Discretization> actdis, double dta,
           std::string ds_condname, std::string dl_condname, int condid, int surf_numcond,
           int line_numcond);
 
@@ -201,13 +201,13 @@ namespace FLD
       /*!
       \brief get the node row map of the womersley condition
       */
-      void build_condition_node_row_map(Teuchos::RCP<Discret::Discretization> dis,
+      void build_condition_node_row_map(Teuchos::RCP<Core::FE::Discretization> dis,
           std::string condname, int condid, int condnum, Teuchos::RCP<Epetra_Map>& cond_noderowmap);
 
       /*!
       \brief get the dof row map of the womersley condition
       */
-      void build_condition_dof_row_map(Teuchos::RCP<Discret::Discretization> dis,
+      void build_condition_dof_row_map(Teuchos::RCP<Core::FE::Discretization> dis,
           const std::string condname, int condid, int condnum,
           Teuchos::RCP<Epetra_Map>& cond_dofrowmap);
 
@@ -232,10 +232,10 @@ namespace FLD
       /*!
       \brief Evaluate velocities
       */
-      void Velocities(Teuchos::RCP<Discret::Discretization> disc, Teuchos::RCP<Epetra_Vector> bcdof,
-          Teuchos::RCP<Epetra_Map> cond_noderowmap, Teuchos::RCP<Epetra_Vector> local_radii,
-          Teuchos::RCP<Epetra_Vector> border_radii, Teuchos::RCP<std::vector<double>> normal,
-          Teuchos::RCP<Teuchos::ParameterList> params);
+      void Velocities(Teuchos::RCP<Core::FE::Discretization> disc,
+          Teuchos::RCP<Epetra_Vector> bcdof, Teuchos::RCP<Epetra_Map> cond_noderowmap,
+          Teuchos::RCP<Epetra_Vector> local_radii, Teuchos::RCP<Epetra_Vector> border_radii,
+          Teuchos::RCP<std::vector<double>> normal, Teuchos::RCP<Teuchos::ParameterList> params);
 
       /*!
       \brief Polynomail shaped velocity profile
@@ -360,7 +360,7 @@ namespace FLD
       int myrank_;
 
       //! fluid discretization
-      Teuchos::RCP<Discret::Discretization> discret_;
+      Teuchos::RCP<Core::FE::Discretization> discret_;
 
       //! Flowrate array for Womersley conditions
       Teuchos::RCP<std::vector<double>> flowrates_;

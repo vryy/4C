@@ -52,7 +52,7 @@ const Core::Elements::Element* Core::Geo::CutWizard::BackMesh::lColElement(int l
 /*-------------------------------------------------------------*
  * constructor
  *-------------------------------------------------------------*/
-Core::Geo::CutWizard::CutWizard(const Teuchos::RCP<Discret::Discretization>& backdis)
+Core::Geo::CutWizard::CutWizard(const Teuchos::RCP<Core::FE::Discretization>& backdis)
     : back_mesh_(Teuchos::rcp(new CutWizard::BackMesh(backdis, this))),
       comm_(backdis->Comm()),
       myrank_(backdis->Comm().MyPID()),
@@ -150,7 +150,7 @@ void Core::Geo::CutWizard::SetBackgroundState(
  * set displacement and level-set vectors used during the cut
  *--------------------------------------------------------------*/
 void Core::Geo::CutWizard::AddCutterState(const int mc_idx,
-    Teuchos::RCP<Discret::Discretization> cutter_dis,
+    Teuchos::RCP<Core::FE::Discretization> cutter_dis,
     Teuchos::RCP<const Epetra_Vector> cutter_disp_col)
 {
   AddCutterState(0, cutter_dis, cutter_disp_col, 0);
@@ -160,7 +160,7 @@ void Core::Geo::CutWizard::AddCutterState(const int mc_idx,
  * set displacement and level-set vectors used during the cut
  *--------------------------------------------------------------*/
 void Core::Geo::CutWizard::AddCutterState(const int mc_idx,
-    Teuchos::RCP<Discret::Discretization> cutter_dis,
+    Teuchos::RCP<Core::FE::Discretization> cutter_dis,
     Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
 {
   std::map<int, Teuchos::RCP<CutterMesh>>::iterator cm = cutter_meshes_.find(mc_idx);
@@ -178,7 +178,7 @@ void Core::Geo::CutWizard::AddCutterState(const int mc_idx,
  *--------------------------------------------------------------*/
 void Core::Geo::CutWizard::set_marked_condition_sides(
     // const int mc_idx,                                       //Not needed (for now?)
-    Teuchos::RCP<Discret::Discretization> cutter_dis,
+    Teuchos::RCP<Core::FE::Discretization> cutter_dis,
     // Teuchos::RCP<const Epetra_Vector> cutter_disp_col,      //Not needed (for now?)
     const int start_ele_gid)
 {
@@ -238,7 +238,7 @@ void Core::Geo::CutWizard::Cut(
   TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CutWizard::Cut");
 
   if (myrank_ == 0 and screenoutput_)
-    Core::IO::cout << "\nCORE::Geo::CutWizard::Cut:" << Core::IO::endl;
+    Core::IO::cout << "\nCore::Geo::CutWizard::Cut:" << Core::IO::endl;
 
   const double t_start = Teuchos::Time::wallTime();
 
@@ -279,7 +279,7 @@ void Core::Geo::CutWizard::Prepare()
   const double t_start = Teuchos::Time::wallTime();
 
   if (myrank_ == 0 and screenoutput_)
-    Core::IO::cout << "\nCORE::Geo::CutWizard::Prepare:" << Core::IO::endl;
+    Core::IO::cout << "\nCore::Geo::CutWizard::Prepare:" << Core::IO::endl;
 
   if (myrank_ == 0 and screenoutput_) Core::IO::cout << "\n\t * 1/6 Cut_Initialize ...";
 
@@ -362,7 +362,7 @@ void Core::Geo::CutWizard::add_mesh_cutting_side()
 /*-------------------------------------------------------------*
  * add all cutting sides from the cut-discretization
  *--------------------------------------------------------------*/
-void Core::Geo::CutWizard::add_mesh_cutting_side(Teuchos::RCP<Discret::Discretization> cutterdis,
+void Core::Geo::CutWizard::add_mesh_cutting_side(Teuchos::RCP<Core::FE::Discretization> cutterdis,
     Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
     const int start_ele_gid  ///< mesh coupling index
 )
@@ -845,7 +845,7 @@ bool Core::Geo::CutWizard::HasLSCuttingSide(int sid)
 }
 
 void Core::Geo::CutWizard::update_boundary_cell_coords(
-    Teuchos::RCP<Discret::Discretization> cutterdis,
+    Teuchos::RCP<Core::FE::Discretization> cutterdis,
     Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
 {
   if (cutterdis == Teuchos::null)

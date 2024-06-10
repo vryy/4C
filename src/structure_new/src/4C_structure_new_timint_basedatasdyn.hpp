@@ -36,10 +36,10 @@ namespace Core::LinAlg
 {
   class Solver;
 }  // namespace Core::LinAlg
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 namespace Core::Geo
 {
   namespace MeshFree
@@ -73,7 +73,7 @@ namespace STR
       virtual ~BaseDataSDyn() = default;
 
       /// initialize class variables (already existing)
-      virtual void Init(const Teuchos::RCP<Discret::Discretization> discret,
+      virtual void Init(const Teuchos::RCP<Core::FE::Discretization> discret,
           const Teuchos::ParameterList& sDynParams, const Teuchos::ParameterList& xparams,
           const Teuchos::RCP<std::set<enum Inpar::STR::ModelType>> modeltypes,
           const Teuchos::RCP<std::set<enum Inpar::STR::EleTech>> eletechs,

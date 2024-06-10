@@ -27,11 +27,10 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
-  class ResultTest;
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace POROFLUIDMULTIPHASE
 {
@@ -78,7 +77,7 @@ namespace Adapter
     virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const = 0;
 
     /// direct access to discretization
-    virtual Teuchos::RCP<Discret::Discretization> discretization() const = 0;
+    virtual Teuchos::RCP<Core::FE::Discretization> discretization() const = 0;
 
     //! apply moving mesh data
     virtual void ApplyMeshMovement(

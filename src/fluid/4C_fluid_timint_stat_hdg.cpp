@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                      als 01/18 |    // TODO als fix
  fluid_timint_stat_hdg because it is not working
  *----------------------------------------------------------------------*/
-FLD::TimIntStationaryHDG::TimIntStationaryHDG(const Teuchos::RCP<Discret::Discretization>& actdis,
+FLD::TimIntStationaryHDG::TimIntStationaryHDG(const Teuchos::RCP<Core::FE::Discretization>& actdis,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
@@ -47,7 +47,7 @@ FLD::TimIntStationaryHDG::TimIntStationaryHDG(const Teuchos::RCP<Discret::Discre
  *----------------------------------------------------------------------*/
 void FLD::TimIntStationaryHDG::Init()
 {
-  Discret::DiscretizationHDG* hdgdis = dynamic_cast<Discret::DiscretizationHDG*>(discret_.get());
+  Core::FE::DiscretizationHDG* hdgdis = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   int elementndof = hdgdis->NumMyRowElements() > 0

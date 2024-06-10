@@ -83,7 +83,7 @@ void PostVtuWriter::write_geo()
 {
   using namespace FourC;
 
-  Teuchos::RCP<Discret::Discretization> dis = this->GetField()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> dis = this->GetField()->discretization();
 
   // count number of nodes and number for each processor; output is completely independent of
   // the number of processors involved
@@ -245,7 +245,7 @@ void PostVtuWriter::write_dof_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing dof-based field " << name << std::endl;
 
-  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
 
   // For parallel computations, we need to access all dofs on the elements, including the
   // nodes owned by other processors. Therefore, we need to import that data here.
@@ -365,7 +365,7 @@ void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing node-based field " << name << std::endl;
 
-  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
   // on the row elements, so need to get the NodeColMap to have this access
@@ -460,7 +460,7 @@ void PostVtuWriter::write_element_result_step(std::ofstream& file,
   if (myrank_ == 0 && timestep_ == 0)
     std::cout << "writing element-based field " << name << std::endl;
 
-  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
 
   int ncomponents = numdf;
   if (numdf > 1 && numdf == field_->problem()->num_dim()) ncomponents = 3;
@@ -593,7 +593,7 @@ void PostVtuWriter::write_geo_nurbs_ele(const Core::Elements::Element* ele,
   const std::vector<int>& numbering =
       Core::IO::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).second;
 
-  Teuchos::RCP<const Discret::Discretization> dis = this->GetField()->discretization();
+  Teuchos::RCP<const Core::FE::Discretization> dis = this->GetField()->discretization();
 
   celltypes.push_back(Core::IO::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).first);
 
@@ -757,7 +757,7 @@ void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Elemen
   const unsigned NUMNODES = Core::FE::num_nodes<nurbs_type>;
   const unsigned DIM = Core::FE::dim<nurbs_type>;
 
-  const Teuchos::RCP<const Discret::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<const Core::FE::Discretization> dis = field_->discretization();
   std::vector<int> nodedofs;
 
   const Core::FE::CellType mapped_dis_type = map_nurbs_dis_type_to_lagrange_dis_type(nurbs_type);
@@ -835,7 +835,7 @@ void PostVtuWriter::write_dof_result_step_beam_ele(const Discret::ELEMENTS::Beam
         "restricted to centerline displacements where numdof = ncomponents = 3");
   }
 
-  const Teuchos::RCP<Discret::Discretization> dis = this->GetField()->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = this->GetField()->discretization();
   std::vector<int> nodedofs;
   std::vector<double> elementdofvals;
 
@@ -945,7 +945,7 @@ void PostVtuWriter::write_nodal_result_step_nurbs_ele(const Core::Elements::Elem
   const unsigned NUMNODES = Core::FE::num_nodes<nurbs_type>;
   const unsigned DIM = Core::FE::dim<nurbs_type>;
 
-  const Teuchos::RCP<const Discret::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<const Core::FE::Discretization> dis = field_->discretization();
   std::vector<int> nodedofs;
 
   const Core::FE::CellType mapped_dis_type = map_nurbs_dis_type_to_lagrange_dis_type(nurbs_type);

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                           mwgee 11/06|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::reset(bool killdofs, bool killcond)
+void Core::FE::Discretization::reset(bool killdofs, bool killcond)
 {
   filled_ = false;
   if (killdofs)
@@ -58,7 +58,7 @@ void Discret::Discretization::reset(bool killdofs, bool killcond)
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                           mwgee 11/06|
  *----------------------------------------------------------------------*/
-int Discret::Discretization::fill_complete(
+int Core::FE::Discretization::fill_complete(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   // my processor id
@@ -151,7 +151,7 @@ int Discret::Discretization::fill_complete(
 /*----------------------------------------------------------------------*
  |  init elements (public)                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::initialize_elements()
+void Core::FE::Discretization::initialize_elements()
 {
   if (!Filled()) FOUR_C_THROW("fill_complete was not called");
 
@@ -164,7 +164,7 @@ void Discret::Discretization::initialize_elements()
 /*----------------------------------------------------------------------*
  |  Build noderowmap_ (private)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::build_node_row_map()
+void Core::FE::Discretization::build_node_row_map()
 {
   const int myrank = Comm().MyPID();
   int nummynodes = 0;
@@ -190,7 +190,7 @@ void Discret::Discretization::build_node_row_map()
 /*----------------------------------------------------------------------*
  |  Build nodecolmap_ (private)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::build_node_col_map()
+void Core::FE::Discretization::build_node_col_map()
 {
   int nummynodes = (int)node_.size();
   std::vector<int> nodeids(nummynodes);
@@ -214,7 +214,7 @@ void Discret::Discretization::build_node_col_map()
 /*----------------------------------------------------------------------*
  |  Build elerowmap_ (private)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::build_element_row_map()
+void Core::FE::Discretization::build_element_row_map()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
@@ -239,7 +239,7 @@ void Discret::Discretization::build_element_row_map()
 /*----------------------------------------------------------------------*
  |  Build elecolmap_ (private)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::build_element_col_map()
+void Core::FE::Discretization::build_element_col_map()
 {
   int nummyeles = (int)element_.size();
   std::vector<int> eleids(nummyeles);
@@ -261,7 +261,7 @@ void Discret::Discretization::build_element_col_map()
 /*----------------------------------------------------------------------*
  |  Build ptrs element -> node (private)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::build_element_to_node_pointers()
+void Core::FE::Discretization::build_element_to_node_pointers()
 {
   std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator elecurr;
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
@@ -275,7 +275,7 @@ void Discret::Discretization::build_element_to_node_pointers()
 /*----------------------------------------------------------------------*
  |  Build ptrs element -> element (private)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::build_element_to_element_pointers()
+void Core::FE::Discretization::build_element_to_element_pointers()
 {
   std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator elecurr;
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
@@ -289,7 +289,7 @@ void Discret::Discretization::build_element_to_element_pointers()
 /*----------------------------------------------------------------------*
  |  Build ptrs node -> element (private)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::build_node_to_element_pointers()
+void Core::FE::Discretization::build_node_to_element_pointers()
 {
   std::map<int, Teuchos::RCP<Core::Nodes::Node>>::iterator nodecurr;
   for (nodecurr = node_.begin(); nodecurr != node_.end(); ++nodecurr)
@@ -315,7 +315,7 @@ void Discret::Discretization::build_node_to_element_pointers()
 /*----------------------------------------------------------------------*
  |  set degrees of freedom (protected)                       mwgee 03/07|
  *----------------------------------------------------------------------*/
-int Discret::Discretization::assign_degrees_of_freedom(int start)
+int Core::FE::Discretization::assign_degrees_of_freedom(int start)
 {
   if (!Filled()) FOUR_C_THROW("Filled()==false");
   if (!NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("Nodal row map is not unique");

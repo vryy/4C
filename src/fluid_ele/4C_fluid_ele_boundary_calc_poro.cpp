@@ -53,7 +53,7 @@ Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FluidEleBoundaryCalcPoro()
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::evaluate_action(
     Discret::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -130,7 +130,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::evaluate_action(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
   switch (distype)
@@ -188,7 +188,7 @@ template <Core::FE::CellType distype>
 template <Core::FE::CellType pdistype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
   /*
@@ -355,7 +355,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     // InterfaceFacingElementMap in general does not have elements on NeumannIntegration
     //(just on the FPSI interface)
     {
-      Teuchos::RCP<Discret::Discretization> porofluiddis =
+      Teuchos::RCP<Core::FE::Discretization> porofluiddis =
           Global::Problem::Instance()->GetDis("porofluid");
       it = InterfaceFacingElementMap->find(ele->Id());
       if (it == InterfaceFacingElementMap->end())
@@ -380,7 +380,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   }
   else if (discretization.Name() == "porofluid")
   {
-    Teuchos::RCP<Discret::Discretization> fluiddis = Global::Problem::Instance()->GetDis("fluid");
+    Teuchos::RCP<Core::FE::Discretization> fluiddis = Global::Problem::Instance()->GetDis("fluid");
     it = InterfaceFacingElementMap->find(ele->Id());
     if (it == InterfaceFacingElementMap->end())
       FOUR_C_THROW("Couldn't find ele %d in InterfaceFacingElementMap", ele->Id());
@@ -495,7 +495,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   }
 
   // get porosity values from parent element
-  Teuchos::RCP<Discret::Discretization> structdis = Teuchos::null;
+  Teuchos::RCP<Core::FE::Discretization> structdis = Teuchos::null;
 
   // access structure discretization
   structdis = Global::Problem::Instance()->GetDis("structure");
@@ -1692,7 +1692,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   switch (distype)
@@ -1802,7 +1802,7 @@ template <Core::FE::CellType distype>
 template <Core::FE::CellType pdistype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // This function is only implemented for 3D and 2D
@@ -2051,7 +2051,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -2284,7 +2284,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1,
     std::vector<int>& lm)
 {
   // This function is only implemented for 3D
@@ -2373,7 +2373,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
   switch (distype)
@@ -2498,7 +2498,7 @@ template <Core::FE::CellType distype>
 template <Core::FE::CellType pdistype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
   // This function is only implemented for 3D and 2D
@@ -2870,7 +2870,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
   // This function is only implemented for 3D
@@ -3077,7 +3077,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_porosity_at_g
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rhs(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& k_fluid, Core::LinAlg::SerialDenseVector& rhs)
 {
   switch (distype)
@@ -3192,7 +3192,7 @@ template <Core::FE::CellType distype>
 template <Core::FE::CellType pdistype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rhs(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& k_fluid, Core::LinAlg::SerialDenseVector& rhs)
 {
   // This function is only implemented for 3D
@@ -3444,7 +3444,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& k_struct, Core::LinAlg::SerialDenseMatrix& k_lambda)
 {
   switch (distype)
@@ -3559,7 +3559,7 @@ template <Core::FE::CellType distype>
 template <Core::FE::CellType pdistype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& k_struct, Core::LinAlg::SerialDenseMatrix& k_lambda)
 {
   // This function is only implemented for 3D
@@ -4058,7 +4058,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_pres(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& k_pres)
 {
   switch (distype)
@@ -4173,7 +4173,7 @@ template <Core::FE::CellType distype>
 template <Core::FE::CellType pdistype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_pres(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& k_pres)
 {
   // This function is only implemented for 3D
@@ -4419,7 +4419,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_disp(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix& k_disp)
 {
   switch (distype)
@@ -4534,7 +4534,7 @@ template <Core::FE::CellType distype>
 template <Core::FE::CellType pdistype>
 void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_disp(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix& k_disp)
 {
   // This function is only implemented for 3D

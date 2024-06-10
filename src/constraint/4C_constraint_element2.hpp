@@ -24,11 +24,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
+
 namespace Discret
 {
-  // forward declarations
-  class Discretization;
-
   namespace ELEMENTS
   {
     // forward declarations
@@ -176,7 +178,7 @@ namespace Discret
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params,   ///< ParameterList for communication
-          Discret::Discretization& discretization,   ///< discretization
+          Core::FE::Discretization& discretization,  ///< discretization
           std::vector<int>& lm,                      ///< location vector
           Core::LinAlg::SerialDenseMatrix& elemat1,  ///< first matrix to be filled by element
           Core::LinAlg::SerialDenseMatrix& elemat2,  ///< second matrix to be filled by element
@@ -194,7 +196,7 @@ namespace Discret
       \return 0 if successful, negative otherwise
       */
       int evaluate_neumann(Teuchos::ParameterList& params,  ///< ParameterList for communication
-          Discret::Discretization& discretization,          ///< discretization
+          Core::FE::Discretization& discretization,         ///< discretization
           Core::Conditions::Condition& condition,           ///< Neumann condition to evaluate
           std::vector<int>& lm,                             ///< location vector
           Core::LinAlg::SerialDenseVector& elevec1,         ///< vector to be filled by element

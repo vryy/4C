@@ -26,11 +26,10 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
-  class ResultTest;
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace ScaTra
 {

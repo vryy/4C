@@ -62,7 +62,7 @@ Discret::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
     Discret::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -240,7 +240,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseMatrix* elemat1_epetra)
 {
@@ -533,7 +533,7 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
   if (fldparatimint_->is_new_ost_implementation())
@@ -777,7 +777,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryImpl<distype>::integrate_shape_function(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, const std::vector<double>& edispnp)
 {
   // get status of Ale
@@ -837,7 +837,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::integrate_shape_function(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_mean_curvature(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
     std::vector<double>& enormals)
 {
@@ -1008,7 +1008,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_mean_curvature(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_surface_tension(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
     std::vector<double>& enormals, std::vector<double>& ecurvature)
 // Attention: mynormals and mycurvature are not used in the function
@@ -1150,7 +1150,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_surface_tension(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryImpl<distype>::area_calculation(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm)
+    Core::FE::Discretization& discretization, std::vector<int>& lm)
 {
   //------------------------------------------------------------------
   // get and set density and viscosity (still required for following routines:
@@ -1241,7 +1241,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::area_calculation(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryImpl<distype>::pressure_boundary_integral(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm)
+    Core::FE::Discretization& discretization, std::vector<int>& lm)
 {
   // extract pressure values from global velocity/pressure vector
   // renamed to "velaf" to be consistent in fluidimplicitintegration.cpp (krank 12/13)
@@ -1314,7 +1314,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::pressure_boundary_integral(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryImpl<distype>::center_of_mass_calculation(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm)
+    Core::FE::Discretization& discretization, std::vector<int>& lm)
 {
   //------------------------------------------------------------------
   // This calculates the integrated the pressure from the
@@ -1416,7 +1416,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::center_of_mass_calculation(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryImpl<distype>::compute_flow_rate(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // get integration rule
@@ -1537,7 +1537,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::compute_flow_rate(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -1817,7 +1817,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryImpl<distype>::impedance_integration(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   const double tfacrhs = fldparatimint_->TimeFacRhs();
@@ -1883,7 +1883,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::impedance_integration(
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryImpl<distype>::d_qdu(Discret::ELEMENTS::FluidBoundary* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // get Gaussrule
@@ -2064,7 +2064,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::get_density(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryImpl<distype>::calc_traction_velocity_component(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // extract local values from the global vectors
@@ -2218,7 +2218,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::calc_traction_velocity_compo
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidBoundaryImpl<distype>::compute_neumann_uv_integral(
     Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
 }

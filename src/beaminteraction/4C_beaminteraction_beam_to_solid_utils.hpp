@@ -43,10 +43,11 @@ namespace Core::LinAlg
   class Matrix;
   class SparseMatrix;
 }  // namespace Core::LinAlg
-namespace Discret
+
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -106,7 +107,7 @@ namespace BEAMINTERACTION
    * @param triad_interpolation_scheme (out) Interpolation of current triad field..
    * @param ref_triad_interpolation_scheme (out) Interpolation of reference triad field.
    */
-  void GetBeamTriadInterpolationScheme(const Discret::Discretization& discret,
+  void GetBeamTriadInterpolationScheme(const Core::FE::Discretization& discret,
       const Teuchos::RCP<const Epetra_Vector>& displacement_vector,
       const Core::Elements::Element* ele,
       LargeRotations::TriadInterpolationLocalRotationVectors<3, double>& triad_interpolation_scheme,
@@ -292,7 +293,7 @@ namespace BEAMINTERACTION
    */
   template <typename beam, typename other, typename mortar>
   void AssembleLocalMortarContributions(const BEAMINTERACTION::BeamContactPair* pair,
-      const Discret::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
+      const Core::FE::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
       Core::LinAlg::SparseMatrix& global_G_B, Core::LinAlg::SparseMatrix& global_G_S,
       Core::LinAlg::SparseMatrix& global_FB_L, Core::LinAlg::SparseMatrix& global_FS_L,
       Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,

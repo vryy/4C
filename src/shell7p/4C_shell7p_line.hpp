@@ -133,7 +133,7 @@ namespace Discret::ELEMENTS
 
     //! @name Evaluate methods
     //! @{
-    int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         Core::Conditions::Condition& condition, std::vector<int>& dof_index_array,
         Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;

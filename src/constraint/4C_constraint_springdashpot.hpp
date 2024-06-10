@@ -24,10 +24,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -66,7 +66,7 @@ namespace CONSTRAINTS
     \brief constructor
      */
     SpringDashpot(
-        Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::Conditions::Condition> cond);
+        Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::Conditions::Condition> cond);
 
     //! add contribution of spring dashpot BC to residual vector
     // old version, NOT consistently integrated over element surface!!
@@ -149,7 +149,7 @@ namespace CONSTRAINTS
     //! initialize prestr offset
     void initialize_prestr_offset();
 
-    Teuchos::RCP<Discret::Discretization> actdisc_;     ///< standard discretization
+    Teuchos::RCP<Core::FE::Discretization> actdisc_;    ///< standard discretization
     Teuchos::RCP<Core::Conditions::Condition> spring_;  ///< spring dashpot condition
 
     /// Mortar interface in case of curnormal springs

@@ -602,7 +602,7 @@ void FSI::VolCorrector::init_dop_normals()
  |  Calculate Dops for background mesh                       farah 05/16|
  *----------------------------------------------------------------------*/
 std::map<int, Core::LinAlg::Matrix<9, 2>> FSI::VolCorrector::calc_background_dops(
-    Teuchos::RCP<Discret::Discretization> searchdis)
+    Teuchos::RCP<Core::FE::Discretization> searchdis)
 {
   std::map<int, Core::LinAlg::Matrix<9, 2>> currentKDOPs;
 

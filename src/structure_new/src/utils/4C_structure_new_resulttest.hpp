@@ -23,10 +23,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -219,7 +219,7 @@ namespace STR
 
    private:
     //! our discretisation
-    Teuchos::RCP<const Discret::Discretization> strudisc_;
+    Teuchos::RCP<const Core::FE::Discretization> strudisc_;
     // our solution
     //! global displacement DOFs
     Teuchos::RCP<const Epetra_Vector> disn_;

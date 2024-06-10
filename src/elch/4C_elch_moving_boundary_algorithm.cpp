@@ -328,8 +328,8 @@ void ElCh::MovingBoundaryAlgorithm::compute_interface_vectors(
   fluxnp_ = ScaTraField()->CalcFluxAtBoundary(false);
 
   // access discretizations
-  Teuchos::RCP<Discret::Discretization> fluiddis = fluid_field()->discretization();
-  Teuchos::RCP<Discret::Discretization> scatradis = ScaTraField()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = fluid_field()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> scatradis = ScaTraField()->discretization();
 
   // no support for multiple reactions at the interface !
   // id of the reacting species

@@ -46,7 +46,7 @@ namespace Arteries
       \brief Standard Constructor
       */
       ArtWriteGnuplotWrapper(
-          Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params);
+          Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params);
 
       /*!
       \brief Destructor
@@ -68,7 +68,7 @@ namespace Arteries
 
 
       //! 1d artery discretization
-      Teuchos::RCP<Discret::Discretization> discret_;
+      Teuchos::RCP<Core::FE::Discretization> discret_;
 
     };  // class ArtWriteGnuplotWrapper
 
@@ -106,7 +106,7 @@ namespace Arteries
       /*!
       \Solve the write the results of an artery
       */
-      void write(Teuchos::RCP<Discret::Discretization> discret, Teuchos::ParameterList& params,
+      void write(Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::ParameterList& params,
           const std::vector<int>* nodes);
 
 

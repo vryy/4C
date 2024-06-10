@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Nurbs::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -235,7 +235,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::Evaluate(Teuchos::ParameterList& params
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matrix<81, 81>& elemat1,
     const Inpar::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
-    Discret::Discretization& discretization, bool do_inverse)
+    Core::FE::Discretization& discretization, bool do_inverse)
 {
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
@@ -538,7 +538,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
  |  Integrate a Volume Neumann boundary condition (public)              |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -679,7 +679,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate_neumann(Teuchos::ParameterList
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)                       |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Nurbs::SoNurbs27::init_jacobian_mapping(Discret::Discretization& dis)
+void Discret::ELEMENTS::Nurbs::SoNurbs27::init_jacobian_mapping(Core::FE::Discretization& dis)
 {
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
@@ -743,7 +743,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::init_jacobian_mapping(Discret::Discret
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
     std::vector<int>& lm,                       // location matrix
-    Discret::Discretization& discretization,    // discretisation to extract knot vector
+    Core::FE::Discretization& discretization,   // discretisation to extract knot vector
     std::vector<double>& disp,                  // current displacements
     std::vector<double>& residual,              // current residual displ
     Core::LinAlg::Matrix<81, 81>* stiffmatrix,  // element stiffness matrix
@@ -1058,7 +1058,7 @@ std::vector<double> Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_gpweights()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Nurbs::SoNurbs27Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::Nurbs::SoNurbs27Type::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -1075,9 +1075,9 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27Type::Initialize(Discret::Discretization&
  |  calculate internal energy of the element (private)                  |
  *----------------------------------------------------------------------*/
 double Discret::ELEMENTS::Nurbs::SoNurbs27::calc_int_energy(
-    Discret::Discretization& discretization,  // discretisation to extract knot vector
-    std::vector<double>& disp,                // current displacements
-    Teuchos::ParameterList& params)           // strain output option
+    Core::FE::Discretization& discretization,  // discretisation to extract knot vector
+    std::vector<double>& disp,                 // current displacements
+    Teuchos::ParameterList& params)            // strain output option
 {
   double energy = 0.;
 

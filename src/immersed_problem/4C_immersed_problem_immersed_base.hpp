@@ -31,11 +31,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
-
+}  // namespace Core::FE
 namespace Adapter
 {
   class FluidWrapper;
@@ -118,7 +117,7 @@ namespace Immersed
     \param condname      (in) : condition name
     \param buildgeometry (in) : build geometry for condition or not
     */
-    void create_volume_condition(const Teuchos::RCP<Discret::Discretization>& dis,
+    void create_volume_condition(const Teuchos::RCP<Core::FE::Discretization>& dis,
         const std::vector<int> dvol_fenode, const Core::Conditions::ConditionType condtype,
         const std::string condname, bool buildgeometry);
 
@@ -128,7 +127,7 @@ namespace Immersed
     \author rauch
     \date 02/17
     */
-    void build_condition_dof_map(const Teuchos::RCP<const Discret::Discretization>& dis,
+    void build_condition_dof_map(const Teuchos::RCP<const Core::FE::Discretization>& dis,
         const std::string condname, const Teuchos::RCP<const Epetra_Map>& cond_dofmap_orig,
         const int numdof, Teuchos::RCP<Epetra_Map>& cond_dofmap);
 
@@ -167,7 +166,7 @@ namespace Immersed
     \date 02/17
     */
     virtual void ApplyDirichlet(const Teuchos::RCP<Adapter::StructureWrapper>& field_wrapper,
-        const Teuchos::RCP<Discret::Discretization>& dis, const std::string condname,
+        const Teuchos::RCP<Core::FE::Discretization>& dis, const std::string condname,
         Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
         const Teuchos::RCP<const Epetra_Vector>& dirichvals);
 
@@ -179,7 +178,7 @@ namespace Immersed
     \date 02/17
     */
     void apply_dirichlet_to_fluid(const Teuchos::RCP<Adapter::FluidWrapper>& field_wrapper,
-        const Teuchos::RCP<Discret::Discretization>& dis, const std::string condname,
+        const Teuchos::RCP<Core::FE::Discretization>& dis, const std::string condname,
         Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
         const Teuchos::RCP<const Epetra_Vector>& dirichvals);
 
@@ -210,8 +209,9 @@ namespace Immersed
     \author rauch
     \date 05/14
     */
-    void EvaluateImmersed(Teuchos::ParameterList& params, Teuchos::RCP<Discret::Discretization> dis,
-        Core::FE::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
+    void EvaluateImmersed(Teuchos::ParameterList& params,
+        Teuchos::RCP<Core::FE::Discretization> dis, Core::FE::AssembleStrategy* strategy,
+        std::map<int, std::set<int>>* elementstoeval,
         Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
         std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, int action,
         bool evaluateonlyboundary = false);
@@ -225,7 +225,7 @@ namespace Immersed
 
     */
     void evaluate_immersed_no_assembly(Teuchos::ParameterList& params,
-        Teuchos::RCP<Discret::Discretization> dis, std::map<int, std::set<int>>* elementstoeval,
+        Teuchos::RCP<Core::FE::Discretization> dis, std::map<int, std::set<int>>* elementstoeval,
         Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
         std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, int action);
 
@@ -237,8 +237,8 @@ namespace Immersed
     \date 05/14
 
     */
-    void evaluate_sca_tra_with_internal_communication(Teuchos::RCP<Discret::Discretization> dis,
-        const Teuchos::RCP<const Discret::Discretization> idis,
+    void evaluate_sca_tra_with_internal_communication(Teuchos::RCP<Core::FE::Discretization> dis,
+        const Teuchos::RCP<const Core::FE::Discretization> idis,
         Core::FE::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
         Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
         std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct,
@@ -253,7 +253,7 @@ namespace Immersed
     \date 05/14
 
     */
-    void evaluate_interpolation_condition(Teuchos::RCP<Discret::Discretization> evaldis,
+    void evaluate_interpolation_condition(Teuchos::RCP<Core::FE::Discretization> evaldis,
         Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy,
         const std::string& condstring, const int condid);
 
@@ -267,7 +267,7 @@ namespace Immersed
     */
     void search_potentially_covered_backgrd_elements(
         std::map<int, std::set<int>>* current_subset_tofill,
-        Teuchos::RCP<Core::Geo::SearchTree> backgrd_SearchTree, const Discret::Discretization& dis,
+        Teuchos::RCP<Core::Geo::SearchTree> backgrd_SearchTree, const Core::FE::Discretization& dis,
         const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
         const Core::LinAlg::Matrix<3, 1>& point, const double radius, const int label);
 
@@ -280,7 +280,7 @@ namespace Immersed
 
     */
     void evaluate_subset_elements(Teuchos::ParameterList& params,
-        Teuchos::RCP<Discret::Discretization> dis, std::map<int, std::set<int>>& elementstoeval,
+        Teuchos::RCP<Core::FE::Discretization> dis, std::map<int, std::set<int>>& elementstoeval,
         int action);
 
 
@@ -313,7 +313,7 @@ namespace Immersed
     \date 03/17
     */
     std::vector<double> calc_global_resultantfrom_epetra_vector(const Epetra_Comm& comm,
-        const Teuchos::RCP<const Discret::Discretization>& dis,
+        const Teuchos::RCP<const Core::FE::Discretization>& dis,
         const Teuchos::RCP<const Epetra_Vector>& vec_epetra);
 
    private:
@@ -361,8 +361,8 @@ namespace Immersed
 
   */
   template <Core::FE::CellType sourcedistype, Core::FE::CellType targetdistype>
-  int InterpolateToImmersedIntPoint(const Teuchos::RCP<Discret::Discretization> sourcedis,
-      const Teuchos::RCP<Discret::Discretization> targetdis, Core::Elements::Element& targetele,
+  int InterpolateToImmersedIntPoint(const Teuchos::RCP<Core::FE::Discretization> sourcedis,
+      const Teuchos::RCP<Core::FE::Discretization> targetdis, Core::Elements::Element& targetele,
       const std::vector<double>& targetxi, const std::vector<double>& targetedisp, int action,
       std::vector<double>& targetdata)
   {
@@ -901,8 +901,8 @@ namespace Immersed
   */
   template <Core::FE::CellType sourcedistype, Core::FE::CellType targetdistype>
   int InterpolateToBackgrdPoint(std::map<int, std::set<int>>& curr_subset_of_structdis,
-      const Teuchos::RCP<Discret::Discretization> sourcedis,
-      const Teuchos::RCP<Discret::Discretization> targetdis, Core::Elements::Element& targetele,
+      const Teuchos::RCP<Core::FE::Discretization> sourcedis,
+      const Teuchos::RCP<Core::FE::Discretization> targetdis, Core::Elements::Element& targetele,
       const std::vector<double>& targetxi, const std::vector<double>& targetedisp,
       const std::string action, std::vector<double>& targetdata, bool& match, bool vel_calculation,
       bool doCommunication = true)
@@ -1222,8 +1222,8 @@ namespace Immersed
   template <Core::FE::CellType structdistype, Core::FE::CellType fluiddistype>
   int FindClosestStructureSurfacePoint(
       std::map<int, std::set<int>>& curr_subset_of_structdis,  //!< Input
-      const Teuchos::RCP<Discret::Discretization> structdis,   //!< Input
-      const Teuchos::RCP<Discret::Discretization> fluiddis,    //!< Input
+      const Teuchos::RCP<Core::FE::Discretization> structdis,  //!< Input
+      const Teuchos::RCP<Core::FE::Discretization> fluiddis,   //!< Input
       Core::Elements::Element& fluidele,                       //!< Input
       const std::vector<double>& fluidxi,                      //!< Input
       const std::vector<double>& fluideledisp,                 //!< Input

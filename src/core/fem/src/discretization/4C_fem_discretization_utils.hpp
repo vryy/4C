@@ -49,7 +49,7 @@ namespace Core::UTILS
   class FunctionManager;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
   class DiscretizationFaces;
@@ -63,7 +63,7 @@ namespace Discret
      *  This evaluate routine supports the evaluation of a subset of all column
      *  elements inside the given discretization. If the \c col_ele_map pointer
      *  is not set or set to \c nullptr, this routine generates almost no overhead
-     *  and is equivalent to the more familiar implementation in Discret::Discretization.
+     *  and is equivalent to the more familiar implementation in Core::FE::Discretization.
      *
      *  \param discret      (in)  : discretization containing the considered elements
      *  \param eparams      (in)  : element parameter list
@@ -72,7 +72,7 @@ namespace Discret
      *  \param col_ele_map  (in)  : column element map, which can be a subset of the
      *                              discretization column map ( optional )
      */
-    void Evaluate(Discret::Discretization& discret, Teuchos::ParameterList& eparams,
+    void Evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& systemvector, const Epetra_Map* col_ele_map = nullptr);
 
@@ -82,7 +82,7 @@ namespace Discret
      *  This evaluate routine supports the evaluation of a subset of all column
      *  elements inside the given discretization. If the \c col_ele_map pointer
      *  is not set or set to \c nullptr, this routine generates almost no overhead
-     *  and is equivalent to the more familiar implementation in Discret::Discretization.
+     *  and is equivalent to the more familiar implementation in Core::FE::Discretization.
      *
      *  \param discret      (in)  : discretization containing the considered elements
      *  \param eparams      (in)  : element parameter list
@@ -91,7 +91,7 @@ namespace Discret
      *  \param col_ele_map  (in)  : column element map, which can be a subset of the
      *                              discretization column map ( optional )
      */
-    void Evaluate(Discret::Discretization& discret, Teuchos::ParameterList& eparams,
+    void Evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
         std::vector<Teuchos::RCP<Core::LinAlg::SparseOperator>>& systemmatrices,
         std::vector<Teuchos::RCP<Epetra_Vector>>& systemvector,
         const Epetra_Map* col_ele_map = nullptr);
@@ -102,7 +102,7 @@ namespace Discret
      *  This evaluate routine supports the evaluation of a subset of all column
      *  elements inside the given discretization. If the \c col_ele_map pointer
      *  is not set or set to \c nullptr, this routine generates almost no overhead
-     *  and is equivalent to the more familiar implementation in Discret::Discretization.
+     *  and is equivalent to the more familiar implementation in Core::FE::Discretization.
      *
      *  \param discret      (in)  : discretization containing the considered elements
      *  \param eparams      (in)  : element parameter list
@@ -111,14 +111,14 @@ namespace Discret
      *  \param col_ele_map  (in)  : column element map, which can be a subset of the
      *                              discretization column map ( optional )
      */
-    void Evaluate(Discret::Discretization& discret, Teuchos::ParameterList& eparams,
+    void Evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
         Core::FE::AssembleStrategy& strategy, const Epetra_Map* col_ele_map = nullptr);
 
     /** \brief Evaluate Dirichlet boundary conditions
      *
      *  non-member functions to call the dbc public routines
      */
-    void evaluate_dirichlet(const Discret::Discretization& discret,
+    void evaluate_dirichlet(const Core::FE::Discretization& discret,
         const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
         const Teuchos::RCP<Epetra_Vector>& systemvectord,
         const Teuchos::RCP<Epetra_Vector>& systemvectordd,
@@ -130,7 +130,7 @@ namespace Discret
      *  Call this variant, if you need no new dbc map extractor.
      *  See the corresponding called function for more detailed information.
      */
-    inline void evaluate_dirichlet(const Discret::Discretization& discret,
+    inline void evaluate_dirichlet(const Core::FE::Discretization& discret,
         const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
         const Teuchos::RCP<Epetra_Vector>& systemvectord,
         const Teuchos::RCP<Epetra_Vector>& systemvectordd,
@@ -152,7 +152,7 @@ namespace Discret
     contain only the local pressure DOF id, namely {3}.
     */
     void evaluate_initial_field(const Core::UTILS::FunctionManager& function_manager,
-        const Discret::Discretization& discret, const std::string& fieldstring,
+        const Core::FE::Discretization& discret, const std::string& fieldstring,
         Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids);
 
 
@@ -163,14 +163,14 @@ namespace Discret
 
     */
     void DoInitialField(const Core::UTILS::FunctionManager& function_manager,
-        const Discret::Discretization& discret, Core::Conditions::Condition& cond,
+        const Core::FE::Discretization& discret, Core::Conditions::Condition& cond,
         Epetra_Vector& fieldvector, const std::vector<int>& locids);
 
     /** \brief Build a Dbc object
      *
      *  The Dbc object is build in dependency of the given discretization.
      */
-    Teuchos::RCP<const Dbc> BuildDbc(const Discret::Discretization* discret_ptr);
+    Teuchos::RCP<const Dbc> BuildDbc(const Core::FE::Discretization* discret_ptr);
 
     /** \brief Default Dirchilet boundary condition evaluation class
      */
@@ -247,7 +247,7 @@ namespace Discret
       /** \brief Extract parameters and setup some temporal variables, before the actual
        *  evaluation process can start
        */
-      void operator()(const Discret::Discretization& discret, const Teuchos::ParameterList& params,
+      void operator()(const Core::FE::Discretization& discret, const Teuchos::ParameterList& params,
           const Teuchos::RCP<Epetra_Vector>& systemvector,
           const Teuchos::RCP<Epetra_Vector>& systemvectord,
           const Teuchos::RCP<Epetra_Vector>& systemvectordd,
@@ -300,7 +300,7 @@ namespace Discret
        *                                and the remaining/free DOFs
        */
       virtual void evaluate(const Teuchos::ParameterList& params,
-          const Discret::Discretization& discret, double time,
+          const Core::FE::Discretization& discret, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
           Teuchos::RCP<std::set<int>>* dbcgids) const;
 
@@ -336,13 +336,13 @@ namespace Discret
        *  definition of a lower entity.
        */
       void read_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Discret::Discretization& discret,
+          const Core::FE::Discretization& discret,
           const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
           DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and read the given type
       void read_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Discret::Discretization& discret,
+          const Core::FE::Discretization& discret,
           const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
           DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
           const enum Core::Conditions::ConditionType& type) const;
@@ -375,7 +375,7 @@ namespace Discret
        *  corresponding entries in the systemvectors remain untouched.
        */
       virtual void read_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
+          const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
           double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
           int hierarchical_order) const;
 
@@ -387,14 +387,14 @@ namespace Discret
        *  (4) Assign PointDirichlet DBC GIDs
        */
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Discret::Discretization& discret,
+          const Core::FE::Discretization& discret,
           const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and assign the given type
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Discret::Discretization& discret,
+          const Core::FE::Discretization& discret,
           const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids,
@@ -440,19 +440,19 @@ namespace Discret
        *  do_dirichlet_condition(...).
        */
       virtual void do_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
+          const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
           double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /** \brief Create a Dbc map extractor, if desired
        */
-      void build_dbc_map_extractor(const Discret::Discretization& discret,
+      void build_dbc_map_extractor(const Core::FE::Discretization& discret,
           const Teuchos::RCP<const std::set<int>>& dbcrowgids,
           const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const;
 
     };  // class Dbc
   }     // namespace UTILS
-}  // namespace Discret
+}  // namespace Core::FE
 
 
 FOUR_C_NAMESPACE_CLOSE

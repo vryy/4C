@@ -55,10 +55,10 @@ namespace Core::IO
   class DiscretizationReader;
 }  // namespace Core::IO
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace STR
 {
@@ -459,7 +459,7 @@ namespace STR
       const STR::TimeInt::BaseDataIO& global_in_output() const;
 
       //! Returns the (structural) discretization
-      const Discret::Discretization& discret() const;
+      const Core::FE::Discretization& discret() const;
 
       //! Returns the underlying STR::Integrator object
       const STR::Integrator& integrator() const;
@@ -497,8 +497,8 @@ namespace STR
       Teuchos::RCP<STR::TimeInt::BaseDataIO> global_in_output_ptr();
 
       //! Returns the (structural) discretization
-      Discret::Discretization& discret();
-      Teuchos::RCP<Discret::Discretization>& discret_ptr();
+      Core::FE::Discretization& discret();
+      Teuchos::RCP<Core::FE::Discretization>& discret_ptr();
 
       //! Returns the underlying STR::Integrator object
       STR::Integrator& integrator();
@@ -524,7 +524,7 @@ namespace STR
       Teuchos::RCP<STR::TimeInt::BaseDataIO> gio_ptr_;
 
       //! pointer to the problem discretization
-      Teuchos::RCP<Discret::Discretization> discret_ptr_;
+      Teuchos::RCP<Core::FE::Discretization> discret_ptr_;
 
       //! pointer to the structural (time) integrator
       Teuchos::RCP<STR::Integrator> int_ptr_;

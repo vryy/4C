@@ -57,8 +57,9 @@ Adapter::CouplingEhlMortar::CouplingEhlMortar(int spatial_dimension,
  |  read mortar condition                                               |
  *----------------------------------------------------------------------*/
 void Adapter::CouplingEhlMortar::read_mortar_condition(
-    Teuchos::RCP<Discret::Discretization> masterdis, Teuchos::RCP<Discret::Discretization> slavedis,
-    std::vector<int> coupleddof, const std::string& couplingcond, Teuchos::ParameterList& input,
+    Teuchos::RCP<Core::FE::Discretization> masterdis,
+    Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    const std::string& couplingcond, Teuchos::ParameterList& input,
     std::map<int, Core::Nodes::Node*>& mastergnodes, std::map<int, Core::Nodes::Node*>& slavegnodes,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements)
@@ -69,8 +70,8 @@ void Adapter::CouplingEhlMortar::read_mortar_condition(
   input.set<int>("PROBTYPE", Inpar::CONTACT::ehl);
 }
 
-void Adapter::CouplingEhlMortar::Setup(Teuchos::RCP<Discret::Discretization> masterdis,
-    Teuchos::RCP<Discret::Discretization> slavedis, std::vector<int> coupleddof,
+void Adapter::CouplingEhlMortar::Setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
+    Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
     const std::string& couplingcond)
 {
   Adapter::CouplingNonLinMortar::Setup(masterdis, slavedis, coupleddof, couplingcond);

@@ -46,7 +46,7 @@ Discret::ELEMENTS::FluidEleCalcImmersed<distype>::FluidEleCalcImmersed()
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

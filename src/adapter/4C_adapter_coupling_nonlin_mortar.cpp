@@ -64,8 +64,8 @@ Adapter::CouplingNonLinMortar::CouplingNonLinMortar(int spatial_dimension,
 /*----------------------------------------------------------------------*
  |  initialize nonlinear mortar framework                    farah 10/14|
  *----------------------------------------------------------------------*/
-void Adapter::CouplingNonLinMortar::Setup(Teuchos::RCP<Discret::Discretization> masterdis,
-    Teuchos::RCP<Discret::Discretization> slavedis, std::vector<int> coupleddof,
+void Adapter::CouplingNonLinMortar::Setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
+    Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
     const std::string& couplingcond)
 {
   myrank_ = masterdis->Comm().MyPID();
@@ -124,8 +124,9 @@ void Adapter::CouplingNonLinMortar::Setup(Teuchos::RCP<Discret::Discretization> 
 /*----------------------------------------------------------------------*
  |  read mortar condition                                    farah 10/14|
  *----------------------------------------------------------------------*/
-void Adapter::CouplingNonLinMortar::create_strategy(Teuchos::RCP<Discret::Discretization> masterdis,
-    Teuchos::RCP<Discret::Discretization> slavedis, Teuchos::ParameterList& input,
+void Adapter::CouplingNonLinMortar::create_strategy(
+    Teuchos::RCP<Core::FE::Discretization> masterdis,
+    Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
     int numcoupleddof)
 {
   // nothing to do for pure adapter
@@ -137,8 +138,9 @@ void Adapter::CouplingNonLinMortar::create_strategy(Teuchos::RCP<Discret::Discre
  |  read mortar condition                                    farah 10/14|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::read_mortar_condition(
-    Teuchos::RCP<Discret::Discretization> masterdis, Teuchos::RCP<Discret::Discretization> slavedis,
-    std::vector<int> coupleddof, const std::string& couplingcond, Teuchos::ParameterList& input,
+    Teuchos::RCP<Core::FE::Discretization> masterdis,
+    Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    const std::string& couplingcond, Teuchos::ParameterList& input,
     std::map<int, Core::Nodes::Node*>& mastergnodes, std::map<int, Core::Nodes::Node*>& slavegnodes,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements)
@@ -236,9 +238,10 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
  |  add mortar nodes                                         farah 10/14|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::add_mortar_nodes(
-    Teuchos::RCP<Discret::Discretization> masterdis, Teuchos::RCP<Discret::Discretization> slavedis,
-    std::vector<int> coupleddof, Teuchos::ParameterList& input,
-    std::map<int, Core::Nodes::Node*>& mastergnodes, std::map<int, Core::Nodes::Node*>& slavegnodes,
+    Teuchos::RCP<Core::FE::Discretization> masterdis,
+    Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    Teuchos::ParameterList& input, std::map<int, Core::Nodes::Node*>& mastergnodes,
+    std::map<int, Core::Nodes::Node*>& slavegnodes,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements,
     Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof)
@@ -345,8 +348,8 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
  |  add mortar elements                                      farah 10/14|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::add_mortar_elements(
-    Teuchos::RCP<Discret::Discretization> masterdis, Teuchos::RCP<Discret::Discretization> slavedis,
-    Teuchos::ParameterList& input,
+    Teuchos::RCP<Core::FE::Discretization> masterdis,
+    Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements,
     Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof)
@@ -509,7 +512,7 @@ void Adapter::CouplingNonLinMortar::init_matrices()
  |  complete interface (also print and parallel redist.)     farah 02/16|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::complete_interface(
-    Teuchos::RCP<Discret::Discretization> masterdis, Teuchos::RCP<CONTACT::Interface>& interface)
+    Teuchos::RCP<Core::FE::Discretization> masterdis, Teuchos::RCP<CONTACT::Interface>& interface)
 {
   const Teuchos::ParameterList& input =
       Global::Problem::Instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
@@ -578,7 +581,8 @@ void Adapter::CouplingNonLinMortar::complete_interface(
  | setup contact elements for spring dashpot condition     pfaller Apr15|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
-    Teuchos::RCP<Discret::Discretization> masterdis, Teuchos::RCP<Discret::Discretization> slavedis,
+    Teuchos::RCP<Core::FE::Discretization> masterdis,
+    Teuchos::RCP<Core::FE::Discretization> slavedis,
     Teuchos::RCP<Core::Conditions::Condition> spring, const int coupling_id,
     const Epetra_Comm& comm)
 {

@@ -19,11 +19,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Mortar
 {
@@ -69,7 +68,7 @@ namespace Mortar
     \param ...map      references to maps
 
     */
-    BinaryTreeNode(BinaryTreeNodeType type, Discret::Discretization& discret,
+    BinaryTreeNode(BinaryTreeNodeType type, Core::FE::Discretization& discret,
         Teuchos::RCP<BinaryTreeNode> parent, std::vector<int> elelist,
         const Core::LinAlg::SerialDenseMatrix& dopnormals, const int& kdop, const int& dim,
         const bool& useauxpos, const int layer,
@@ -191,7 +190,7 @@ namespace Mortar
     \param useauxpos (in):   flag indicating usage of auxiliary position for calculation of slabs
 
     */
-    BinaryTree(Discret::Discretization& discret, Teuchos::RCP<Epetra_Map> selements,
+    BinaryTree(Core::FE::Discretization& discret, Teuchos::RCP<Epetra_Map> selements,
         Teuchos::RCP<Epetra_Map> melements, int dim, double eps,
         Inpar::Mortar::BinaryTreeUpdateType updatetype, bool useauxpos);
 

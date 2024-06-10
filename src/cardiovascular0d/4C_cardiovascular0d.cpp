@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
-UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Discret::Discretization> discr,
+UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization> discr,
     const std::string& conditionname, std::vector<int>& curID)
     : actdisc_(discr),
       cardiovascular0dcond_(0),
@@ -61,7 +61,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Discret::Discretization> 
       curID.push_back(i->parameters().Get<int>("id"));
     }
 
-    Teuchos::RCP<Discret::Discretization> structdis =
+    Teuchos::RCP<Core::FE::Discretization> structdis =
         Global::Problem::Instance()->GetDis("structure");
     if (structdis == Teuchos::null) FOUR_C_THROW("no structure discretization available");
 

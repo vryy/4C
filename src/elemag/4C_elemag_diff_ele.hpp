@@ -23,10 +23,13 @@ Pack, Unpack, NumDofPerNode etc.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class ElemagDiffType : public ElemagType
@@ -295,7 +298,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -333,7 +336,7 @@ namespace Discret
       \param condstring (in): Name of condition to be evaluated
       \param condstring (in):  List of parameters for use at element level
       */
-      void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
+      void LocationVector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
           const std::string& condstring, Teuchos::ParameterList& params) const override;
 
      private:
@@ -438,7 +441,7 @@ namespace Discret
       \note All dofs shared by master and slave element are contained only once. Dofs from interface
       nodes are also included.
       */
-      void PatchLocationVector(Discret::Discretization& discretization,  ///< discretization
+      void PatchLocationVector(Core::FE::Discretization& discretization,  ///< discretization
           std::vector<int>& nds_master,        ///< nodal dofset w.r.t master parent element
           std::vector<int>& nds_slave,         ///< nodal dofset w.r.t slave parent element
           std::vector<int>& patchlm,           ///< local map for gdof ids for patch of elements

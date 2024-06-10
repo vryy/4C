@@ -945,7 +945,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_laplace(
  *------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::correction_for_flux_across_dc(
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs)
 {
   if ((myelch::elchparams_->EquPot() == Inpar::ElCh::equpot_enc_pde) or

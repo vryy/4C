@@ -26,10 +26,13 @@ namespace Input
   class LineDefinition;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class FluidHDGType : public FluidType
@@ -49,7 +52,7 @@ namespace Discret
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual void ComputeNullSpace(Discret::Discretization& dis, std::vector<double>& ns,
+      virtual void ComputeNullSpace(Core::FE::Discretization& dis, std::vector<double>& ns,
           const double* x0, int numdf, int dimns);
 
       void setup_element_definition(
@@ -207,7 +210,7 @@ namespace Discret
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,

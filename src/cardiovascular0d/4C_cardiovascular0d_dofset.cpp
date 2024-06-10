@@ -40,7 +40,7 @@ void UTILS::Cardiovascular0DDofSet::Reset()
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
 int UTILS::Cardiovascular0DDofSet::assign_degrees_of_freedom(
-    const Teuchos::RCP<Discret::Discretization> dis, const int ndofs, const int start,
+    const Teuchos::RCP<Core::FE::Discretization> dis, const int ndofs, const int start,
     const Teuchos::RCP<ModelOrderRed::ProperOrthogonalDecomposition> mor)
 {
   // A definite offset is currently not supported.

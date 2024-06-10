@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 //
 //----------------------------------------------------------------------
 FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
-    Teuchos::RCP<Discret::Discretization> discret, std::string homdir,
+    Teuchos::RCP<Core::FE::Discretization> discret, std::string homdir,
     Core::LinAlg::MapExtractor& velpressplitter, const bool withscatra)
     : discret_(discret),
       standarddofset_(Teuchos::null),
@@ -78,7 +78,7 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
 //
 //----------------------------------------------------------------------
 FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
-    Teuchos::RCP<Discret::Discretization> discret,
+    Teuchos::RCP<Core::FE::Discretization> discret,
     Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset, std::string homdir,
     Core::LinAlg::MapExtractor& velpressplitter, const bool withscatra)
     : discret_(discret),
@@ -1233,7 +1233,7 @@ void FLD::TurbulenceStatisticsGeneralMean::reset_fluid_avg_vectors(const Epetra_
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
     Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset,
-    Teuchos::RCP<Discret::Discretization> discret)
+    Teuchos::RCP<Core::FE::Discretization> discret)
 {
   standarddofset_ = Teuchos::null;
   standarddofset_ = standarddofset;
@@ -1303,7 +1303,7 @@ Add results from scalar transport field solver to statistics
 
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsGeneralMean::AddScaTraResults(
-    Teuchos::RCP<Discret::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp)
+    Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp)
 {
   withscatra_ = true;  // now it is clear: we have scatra results as well!
 

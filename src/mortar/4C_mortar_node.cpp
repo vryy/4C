@@ -474,12 +474,12 @@ void Mortar::Node::BuildAveragedNormal()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Mortar::Node* Mortar::Node::FindClosestNode(const Teuchos::RCP<Discret::Discretization> intdis,
+Mortar::Node* Mortar::Node::FindClosestNode(const Teuchos::RCP<Core::FE::Discretization> intdis,
     const Teuchos::RCP<Epetra_Map> nodesearchmap, double& mindist)
 {
   Node* closestnode = nullptr;
 
-  // loop over all nodes of the Discret::Discretization that are
+  // loop over all nodes of the Core::FE::Discretization that are
   // included in the given Epetra_Map ("brute force" search)
   for (int i = 0; i < nodesearchmap->NumMyElements(); ++i)
   {

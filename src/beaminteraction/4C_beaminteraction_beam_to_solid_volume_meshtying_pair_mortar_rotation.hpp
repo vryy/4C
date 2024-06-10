@@ -75,7 +75,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void evaluate_and_assemble_mortar_contributions(const Discret::Discretization& discret,
+    void evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_G_B,
         Core::LinAlg::SparseMatrix& global_G_S, Core::LinAlg::SparseMatrix& global_FB_L,
         Core::LinAlg::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -86,7 +86,7 @@ namespace BEAMINTERACTION
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
      * matrix (derived).
      */
-    void EvaluateAndAssemble(const Discret::Discretization& discret,
+    void EvaluateAndAssemble(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,

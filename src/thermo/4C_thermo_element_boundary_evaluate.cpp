@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate the element for volume coupling (public)         dano 02/10 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::ThermoBoundary::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -40,7 +40,7 @@ int Discret::ELEMENTS::ThermoBoundary::Evaluate(Teuchos::ParameterList& params,
  | integrate a Surface/Line Neumann boundary condition       dano 09/09 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::ThermoBoundary::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

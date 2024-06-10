@@ -205,7 +205,7 @@ Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::FluidEleCalc()
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -220,7 +220,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Discret::ELEMENT
 
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -1733,7 +1733,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::eval_shape_func_and_deri
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_grid_disp_vel_ale(
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::Matrix<nsd_, nen_>& edispnp, Core::LinAlg::Matrix<nsd_, nen_>& egridv)
 {
   switch (fldpara_->PhysicalType())
@@ -1761,7 +1761,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_grid_disp_vel_ale(
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_grid_disp_ale(
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::Matrix<nsd_, nen_>& edispnp)
 {
   extract_values_from_global_vector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "dispnp");
@@ -5822,7 +5822,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::reynolds_stress_stab(
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateService(
     Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+    Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
     Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
@@ -5972,7 +5972,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateService(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::integrate_shape_function(
-    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1)
 {
   // integrations points and weights
@@ -5985,7 +5985,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::integrate_shape_function(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::integrate_shape_function(
-    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     const Core::FE::GaussIntegration& intpoints)
 {
@@ -6053,7 +6053,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::integrate_shape_function(
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivOp(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // get node coordinates
@@ -6099,7 +6099,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivOp(Discret::ELEMEN
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::vel_gradient_projection(
     Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2)
 {
   //----------------------------------------------------------------------------
@@ -6172,7 +6172,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::vel_gradient_projection(
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pres_gradient_projection(
     Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2)
 {
   //----------------------------------------------------------------------------
@@ -6244,7 +6244,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pres_gradient_projection(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   double area = 0.0;
@@ -6338,7 +6338,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(Discret::ELEM
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_error(Discret::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // integrations points and weights
@@ -6355,7 +6355,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_error(Discret::EL
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_error(Discret::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, const Core::FE::GaussIntegration& intpoints)
 {
   // analytical solution
@@ -7073,8 +7073,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
  */
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::extract_values_from_global_vector(
-    const Discret::Discretization& discretization,  ///< discretization
-    const std::vector<int>& lm,                     ///<
+    const Core::FE::Discretization& discretization,  ///< discretization
+    const std::vector<int>& lm,                      ///<
     FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1, enrtype>& rotsymmpbc,  ///<
     Core::LinAlg::Matrix<nsd_, nen_>* matrixtofill,                                ///< vector field
     Core::LinAlg::Matrix<nen_, 1>* vectortofill,                                   ///< scalar field
@@ -7115,7 +7115,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::extract_values_from_glob
  *--------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> mat)
 {
   //----------------------------------------------------------------------
@@ -8526,7 +8526,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::inflow_element(Core::Ele
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(Discret::ELEMENTS::Fluid* ele,
     //    Teuchos::ParameterList&              params,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra)
 {
   // set element id
@@ -8679,7 +8679,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(Discret::E
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_gradient_and_pressure(
-    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
     const std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,  // vectofill
     Core::LinAlg::SerialDenseVector& elevec2_epetra   // given point in parameter space coordinates
@@ -8884,7 +8884,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_grad
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_node(
     Teuchos::ParameterList& params, Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,  // vectofill
     Core::LinAlg::SerialDenseVector& elevec2_epetra   // given point in parameter space coordinates
 )
@@ -8911,8 +8911,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
   static double searchradiusfac =
       globalproblem->immersed_method_params().get<double>("FLD_SRCHRADIUS_FAC");
 
-  const Teuchos::RCP<Discret::Discretization> backgrddis = globalproblem->GetDis(backgrddisname);
-  const Teuchos::RCP<Discret::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
+  const Teuchos::RCP<Core::FE::Discretization> backgrddis = globalproblem->GetDis(backgrddisname);
+  const Teuchos::RCP<Core::FE::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
 
   // numgp in cut boundary elements
   static int num_gp_fluid_bound =
@@ -9209,7 +9209,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_velocities(
     Teuchos::ParameterList& params, Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization,  // fluid
+    Core::FE::Discretization& discretization,  // fluid
     const std::vector<int>& lm, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,  // vectofill
     Core::LinAlg::SerialDenseVector& elevec2_epetra)
@@ -9229,8 +9229,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_ve
         globalproblem->immersed_method_params().get<double>("FLD_SRCHRADIUS_FAC");
 
     // get discretizations
-    Teuchos::RCP<Discret::Discretization> fluid_dis = Teuchos::null;
-    Teuchos::RCP<Discret::Discretization> struct_dis = Teuchos::null;
+    Teuchos::RCP<Core::FE::Discretization> fluid_dis = Teuchos::null;
+    Teuchos::RCP<Core::FE::Discretization> struct_dis = Teuchos::null;
 
     {
       // get discretizations
@@ -9428,7 +9428,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_ve
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_point(
     Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
   // coordinates of the current integration point
@@ -9481,7 +9481,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_p
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_pressure_to_point(
     Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // coordinates of the current integration point
@@ -9540,7 +9540,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_pressure_to_p
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
     Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material>& mat)
 {
   // moved here from fluid_ele_evaluate_utils,  f3_calc_means()
@@ -10240,7 +10240,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcTimeStep(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // ---------------------------------------------------------------------------
@@ -10317,7 +10317,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcTimeStep(Discret::ELE
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_mass_flow_periodic_hill(
     Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, Teuchos::RCP<Core::Mat::Material>& mat)
 {
   // set element id
@@ -10412,7 +10412,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::ResetImmersedEle(
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_vel_gradient_ele_center(
-    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseVector& elevec2)
 {
@@ -14285,7 +14285,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::supgost_new(
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_grid_disp_vel_aleost_new(
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::Matrix<nsd_, nen_>& edispnp, Core::LinAlg::Matrix<nsd_, nen_>& egridvnp,
     Core::LinAlg::Matrix<nsd_, nen_>& egridvn)
 {

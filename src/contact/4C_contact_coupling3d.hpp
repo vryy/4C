@@ -51,7 +51,7 @@ namespace CONTACT
      performed in parallel by individual processes.
 
      */
-    Coupling3d(Discret::Discretization& idiscret, int dim, bool quad,
+    Coupling3d(Core::FE::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele);
 
     //! @name Evlauation methods
@@ -205,7 +205,7 @@ namespace CONTACT
      performed in parallel by individual processes.
 
      */
-    Coupling3dQuad(Discret::Discretization& idiscret, int dim, bool quad,
+    Coupling3dQuad(Core::FE::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele,
         Mortar::IntElement& sintele, Mortar::IntElement& mintele);
 
@@ -268,7 +268,7 @@ namespace CONTACT
      with the alternative constructor (see below).
 
      */
-    Coupling3dManager(Discret::Discretization& idiscret, int dim, bool quad,
+    Coupling3dManager(Core::FE::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele);
 
     /*!
@@ -383,7 +383,7 @@ namespace CONTACT
     Coupling3dManager operator=(const Coupling3dManager& old) = delete;
     Coupling3dManager(const Coupling3dManager& old) = delete;
 
-    Discret::Discretization& idiscret_;   // discretization of the contact interface
+    Core::FE::Discretization& idiscret_;  // discretization of the contact interface
     int dim_;                             // problem dimension (here: 3D)
     bool quad_;                           // flag indicating coupling type (true = quadratic)
     Teuchos::ParameterList& imortar_;     // containing contact input parameters
@@ -414,7 +414,7 @@ namespace CONTACT
      \brief Constructor
 
      */
-    Coupling3dQuadManager(Discret::Discretization& idiscret, int dim, bool quad,
+    Coupling3dQuadManager(Core::FE::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele);
 
 
@@ -452,7 +452,10 @@ namespace CONTACT
      \brief contact discretization
 
      */
-    virtual Discret::Discretization& Discret() { return Mortar::Coupling3dQuadManager::idiscret_; };
+    virtual Core::FE::Discretization& Discret()
+    {
+      return Mortar::Coupling3dQuadManager::idiscret_;
+    };
 
     /*!
      \brief input params

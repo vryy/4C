@@ -88,14 +88,15 @@ namespace Discret
       /// since only derived child classes are free to be allocated!!
 
       /// Setup element evaluation
-      int SetupCalc(Core::Elements::Element* ele, Discret::Discretization& discretization) override;
+      int SetupCalc(
+          Core::Elements::Element* ele, Core::FE::Discretization& discretization) override;
 
       /// Evaluate the element
       /*!
         Generic virtual interface function. Called via base pointer.
        */
       int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -104,7 +105,7 @@ namespace Discret
 
       //! evaluate action
       virtual int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::FE::Discretization& discretization, const ScaTra::Action& action,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -114,7 +115,7 @@ namespace Discret
 
       //! evaluate action for off-diagonal system matrix block
       virtual int EvaluateActionOD(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::FE::Discretization& discretization, const ScaTra::Action& action,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -124,7 +125,7 @@ namespace Discret
 
       //! evaluate service routine
       int EvaluateService(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -132,7 +133,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
       int evaluate_od(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -169,12 +170,12 @@ namespace Discret
       //! extract element based or nodal values
       //  return extracted values of phinp
       virtual void extract_element_and_node_values(Core::Elements::Element* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la);
 
       //! extract turbulence approach
       void extract_turbulence_approach(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           int& nlayer);
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
@@ -205,7 +206,7 @@ namespace Discret
 
       //! further node-based source terms not given via Neumann volume condition
       void other_node_based_source_terms(const std::vector<int>& lm,  //!< location vector
-          Discret::Discretization& discretization,                    //!< discretization
+          Core::FE::Discretization& discretization,                   //!< discretization
           Teuchos::ParameterList& params                              //!< parameterlist
       );
 
@@ -254,7 +255,7 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix& emat,                               //!< element matrix
           Core::LinAlg::SerialDenseVector& erhs,                               //!< element residual
           Teuchos::ParameterList& params,                                      //!< parameter list
-          Discret::Discretization& discretization,                             //!< discretization
+          Core::FE::Discretization& discretization,                            //!< discretization
           Core::Elements::Element::LocationArray& la                           //!< location array
       );
 
@@ -293,8 +294,8 @@ namespace Discret
 
       //! calculate scalar time derivative(s) and domain integral
       void calculate_scalar_time_derivatives(
-          const Discret::Discretization& discretization,  //!< discretization
-          const std::vector<int>& lm,                     //!< location vector
+          const Core::FE::Discretization& discretization,  //!< discretization
+          const std::vector<int>& lm,                      //!< location vector
           Core::LinAlg::SerialDenseVector&
               scalars  //!< result vector for scalar integrals to be computed
       );
@@ -308,7 +309,7 @@ namespace Discret
 
       //! calculate filtered fields for turbulent Prandtl number
       void calc_box_filter(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la);
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la);
 
       //! calculate error of numerical solution with respect to analytical solution
       virtual void cal_error_compared_to_analyt_solution(
@@ -595,7 +596,7 @@ namespace Discret
       //! calculate dissipation introduced by stabilization and turbulence models
       void calc_dissipation(Teuchos::ParameterList& params,  //!< parameter list
           Core::Elements::Element* ele,                      //!< pointer to element
-          Discret::Discretization& discretization,           //!< scatra discretization
+          Core::FE::Discretization& discretization,          //!< scatra discretization
           Core::Elements::Element::LocationArray& la         //!< location array
       );
 

@@ -130,7 +130,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::mat_scatra(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // call base class routine
   poro::extract_element_and_node_values(ele, params, discretization, la);

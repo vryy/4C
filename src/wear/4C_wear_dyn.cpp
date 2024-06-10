@@ -50,13 +50,13 @@ void wear_dyn_drt(int restart)
   }
 
   // access the structure discretization, make sure it is filled
-  Teuchos::RCP<Discret::Discretization> structdis = Teuchos::null;
+  Teuchos::RCP<Core::FE::Discretization> structdis = Teuchos::null;
   structdis = Global::Problem::Instance()->GetDis("structure");
   // set degrees of freedom in the discretization
   if (!structdis->Filled() or !structdis->HaveDofs()) structdis->fill_complete();
 
   // access the ale discretization
-  Teuchos::RCP<Discret::Discretization> aledis = Teuchos::null;
+  Teuchos::RCP<Core::FE::Discretization> aledis = Teuchos::null;
   aledis = Global::Problem::Instance()->GetDis("ale");
   if (!aledis->Filled()) aledis->fill_complete();
 
@@ -81,7 +81,7 @@ void wear_dyn_drt(int restart)
             Global::Problem::Instance()->WearParams(), "MATCHINGGRID"))
     {
       // create vector of discr.
-      std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+      std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
       dis.push_back(structdis);
       dis.push_back(aledis);
 

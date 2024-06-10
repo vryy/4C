@@ -169,8 +169,8 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup_field_coupling(
     const std::string fluid_disname, const std::string scatra_disname)
 {
   Global::Problem* problem = Global::Problem::Instance();
-  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis(fluid_disname);
-  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis(scatra_disname);
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis(fluid_disname);
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis(scatra_disname);
 
   if (fieldcoupling_ == Inpar::ScaTra::coupling_volmortar)
   {

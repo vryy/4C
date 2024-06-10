@@ -130,7 +130,7 @@ Discret::ELEMENTS::Beam3Base::brownian_dyn_params_interface_ptr() const
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 std::vector<int> Discret::ELEMENTS::Beam3Base::GetAdditiveDofGIDs(
-    const Discret::Discretization& discret, const Core::Nodes::Node& node) const
+    const Core::FE::Discretization& discret, const Core::Nodes::Node& node) const
 {
   std::vector<int> dofgids;
   std::vector<int> dofindices;
@@ -152,7 +152,7 @@ std::vector<int> Discret::ELEMENTS::Beam3Base::GetAdditiveDofGIDs(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::vector<int> Discret::ELEMENTS::Beam3Base::GetRotVecDofGIDs(
-    const Discret::Discretization& discret, const Core::Nodes::Node& node) const
+    const Core::FE::Discretization& discret, const Core::Nodes::Node& node) const
 {
   std::vector<int> dofgids;
   std::vector<int> dofindices;
@@ -424,7 +424,7 @@ void Discret::ELEMENTS::Beam3Base::get_triad_of_binding_spot(Core::LinAlg::Matri
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
 Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Beam3Base::GetBoundingVolume(
-    const Discret::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
     const Core::GeometricSearch::GeometricSearchParams& params) const
 {
   // Get the centerline dof values of the beam.

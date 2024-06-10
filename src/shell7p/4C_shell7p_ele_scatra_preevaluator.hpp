@@ -17,11 +17,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-
-}  // namespace Discret
+}  // namespace Core::FE
 
 
 namespace Discret::ELEMENTS::Shell
@@ -37,7 +36,7 @@ namespace Discret::ELEMENTS::Shell
    * @param dof_index_array (in) : The location array of the owned dofs
    */
   void PreEvaluateScatraByElement(Core::Elements::Element& ele, Teuchos::ParameterList& params,
-      Discret::Discretization& discretization,
+      Core::FE::Discretization& discretization,
       Core::Elements::Element::LocationArray& dof_index_array);
 
   /*!
@@ -53,7 +52,7 @@ namespace Discret::ELEMENTS::Shell
    */
   template <Core::FE::CellType distype>
   void PreEvaluateScatra(Core::Elements::Element& ele, Teuchos::ParameterList& params,
-      Discret::Discretization& discretization,
+      Core::FE::Discretization& discretization,
       Core::Elements::Element::LocationArray& dof_index_array);
 
 }  // namespace Discret::ELEMENTS::Shell

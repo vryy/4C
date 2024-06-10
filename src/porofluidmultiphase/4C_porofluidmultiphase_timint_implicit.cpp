@@ -41,7 +41,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                     (public) vuong 08/16 |
  *----------------------------------------------------------------------*/
-POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<Discret::Discretization> actdis,
+POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
     const Teuchos::ParameterList& poroparams,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)

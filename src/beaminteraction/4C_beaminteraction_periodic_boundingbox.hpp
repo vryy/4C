@@ -26,10 +26,10 @@ namespace Core::IO
 {
   class DiscretizationVisualizationWriterMesh;
 }
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::Geo
 {
@@ -64,7 +64,7 @@ namespace Core::Geo
       bool HavePBC() const { return haveperiodicbc_; }
 
       /// get const bounding box discretization
-      Discret::Discretization const& BoundingBoxDiscret() const { return *boxdiscret_; }
+      Core::FE::Discretization const& BoundingBoxDiscret() const { return *boxdiscret_; }
 
       /// get corner points
       double operator()(int i, int j) const { return box_(i, j); }
@@ -271,7 +271,7 @@ namespace Core::Geo
 
      private:
       /// discretization with one volume element representing the box ( used e.g. for output)
-      Teuchos::RCP<Discret::Discretization> boxdiscret_;
+      Teuchos::RCP<Core::FE::Discretization> boxdiscret_;
       /// box displacement vector
       Teuchos::RCP<Epetra_Vector> disn_row_;
       Teuchos::RCP<Epetra_Vector> disn_col_;

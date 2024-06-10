@@ -25,10 +25,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -56,7 +56,7 @@ namespace Core::Conditions
            to the private methods that would otherwise have to be public.
 
     */
-    friend class Discret::Discretization;
+    friend class Core::FE::Discretization;
 
     //@}
 
@@ -68,7 +68,7 @@ namespace Core::Conditions
     The way a condition is treated later on depends on the type of the
     condition. E.g. Dirichlet conditions are treated differently from
     Neumann conditions. How they are treated is not described here but in
-    Discret::Discretization.
+    Core::FE::Discretization.
 
     \note In case you might wonder where this condition class actually stores
           data necessary for the condition: This class implements Core::IO::InputParameterContainer.
@@ -194,12 +194,12 @@ namespace Core::Conditions
     geometry description might be needed to properly evaluate the condition
     (e.g. in the case of Neumann conditions).
     Such a geometry description is build in \ref
-    Discret::Discretization::boundary_conditions_geometry and then added to this Condition. The
-    geometry description consists of elements that are capable to perform the necessary operations
-    on the condition (e.g. integrate a Neumann BC along a line). The matching nodes are taken from
-    the underlying discretization itself. Also, it is actually the discretization class that drives
-    this process, so do not add elements yourself to the condition, let the discretization do it for
-    you.
+    Core::FE::Discretization::boundary_conditions_geometry and then added to this
+    Condition. The geometry description consists of elements that are capable to perform the
+    necessary operations on the condition (e.g. integrate a Neumann BC along a line). The matching
+    nodes are taken from the underlying discretization itself. Also, it is actually the
+    discretization class that drives this process, so do not add elements yourself to the condition,
+    let the discretization do it for you.
 
     \param geom (in): Map of elements describing the geometry.
                       A deep copy of the map is made and stored.

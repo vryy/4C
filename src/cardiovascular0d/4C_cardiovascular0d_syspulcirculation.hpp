@@ -58,10 +58,10 @@ Res =                                                                           
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -81,7 +81,7 @@ namespace UTILS
     */
 
     Cardiovascular0DSysPulCirculation(
-        Teuchos::RCP<Discret::Discretization>
+        Teuchos::RCP<Core::FE::Discretization>
             discr,                         ///< discretization where Cardiovascular0D lives on
         const std::string& conditionname,  ///< Name of condition to create Cardiovascular0D from
         std::vector<int>& curID            ///< current ID

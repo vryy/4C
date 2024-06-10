@@ -32,7 +32,7 @@ Adapter::FluidAleXFEM::FluidAleXFEM(const Teuchos::ParameterList& prbdyn, std::s
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization> Adapter::FluidAleXFEM::boundary_discretization()
+Teuchos::RCP<Core::FE::Discretization> Adapter::FluidAleXFEM::boundary_discretization()
 {
   // returns the boundary discretization
   // REMARK:

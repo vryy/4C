@@ -80,7 +80,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::CreateMap(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::LinAlg::CreateMapExtractorFromDiscretization(
-    const Discret::Discretization& dis, int ndim, Core::LinAlg::MultiMapExtractor& extractor)
+    const Core::FE::Discretization& dis, int ndim, Core::LinAlg::MultiMapExtractor& extractor)
 {
   std::set<int> conddofset;
   std::set<int> otherdofset;
@@ -129,7 +129,7 @@ void Core::LinAlg::CreateMapExtractorFromDiscretization(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::CreateMapExtractorFromDiscretization(const Discret::Discretization& dis,
+void Core::LinAlg::CreateMapExtractorFromDiscretization(const Core::FE::Discretization& dis,
     const Core::DOFSets::DofSetInterface& dofset, int ndim, Core::LinAlg::MapExtractor& extractor)
 {
   std::set<int> conddofset;
@@ -176,7 +176,7 @@ void Core::LinAlg::CreateMapExtractorFromDiscretization(const Discret::Discretiz
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::CreateMapExtractorFromDiscretization(const Discret::Discretization& dis,
+void Core::LinAlg::CreateMapExtractorFromDiscretization(const Core::FE::Discretization& dis,
     int ndim_field1, int ndim_field2, Core::LinAlg::MultiMapExtractor& extractor)
 {
   unsigned fp_dim = static_cast<unsigned>(ndim_field1 + ndim_field2);

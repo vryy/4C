@@ -37,7 +37,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                     (public) wirtz 11/15 |
  *----------------------------------------------------------------------*/
-LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<Discret::Discretization> actdis,
+LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)

@@ -178,7 +178,7 @@ void Discret::ELEMENTS::Beam3rType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      cyron 01/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Beam3rType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::Beam3rType::Initialize(Core::FE::Discretization& dis)
 {
   // setting up geometric variables for beam3r elements
   for (int num = 0; num < dis.NumMyColElements(); ++num)

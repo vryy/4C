@@ -41,7 +41,7 @@ namespace Discret
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       int EvaluateService(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -53,12 +53,12 @@ namespace Discret
        */
       virtual int evaluate_service_x_wall(Discret::ELEMENTS::Fluid* ele,
           Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3);
 
-      int Evaluate(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+      int Evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -102,7 +102,7 @@ namespace Discret
           const Core::FE::GaussIntegration& intpoints) override;
 
       //! get ALE grid displacements and grid velocity for element
-      void get_grid_disp_ale(Discret::Discretization& discretization, const std::vector<int>& lm,
+      void get_grid_disp_ale(Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::Matrix<nsd_, nen_>& edispnp) override;
 
       //! linearisation in the case of mesh motion 3-D
@@ -137,7 +137,7 @@ namespace Discret
 
       //! get properties of xwall element
       virtual void get_ele_properties(Discret::ELEMENTS::Fluid* ele,
-          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat);
 
       //! brief get enrichment function
@@ -168,7 +168,7 @@ namespace Discret
        */
 
       virtual int tau_w_via_gradient(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2);
 
@@ -181,7 +181,7 @@ namespace Discret
        */
 
       virtual int calc_mk(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2);
 
@@ -196,7 +196,7 @@ namespace Discret
        *  \author bk \date 06/2014
        */
       virtual int x_wall_projection(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2);
 

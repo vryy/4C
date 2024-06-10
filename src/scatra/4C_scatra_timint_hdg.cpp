@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
-ScaTra::TimIntHDG::TimIntHDG(const Teuchos::RCP<Discret::Discretization> &actdis,
+ScaTra::TimIntHDG::TimIntHDG(const Teuchos::RCP<Core::FE::Discretization> &actdis,
     const Teuchos::RCP<Core::LinAlg::Solver> &solver,
     const Teuchos::RCP<Teuchos::ParameterList> &params,
     const Teuchos::RCP<Teuchos::ParameterList> &extraparams,
@@ -60,7 +60,7 @@ ScaTra::TimIntHDG::TimIntHDG(const Teuchos::RCP<Discret::Discretization> &actdis
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntHDG::Setup()
 {
-  hdgdis_ = dynamic_cast<Discret::DiscretizationHDG *>(discret_.get());
+  hdgdis_ = dynamic_cast<Core::FE::DiscretizationHDG *>(discret_.get());
   if (hdgdis_ == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   // vector to store the dofs per element
@@ -289,7 +289,7 @@ void ScaTra::TimIntHDG::Update()
 namespace
 {
   // internal helper function for output
-  void getNodeVectorsHDG(Discret::Discretization &dis,
+  void getNodeVectorsHDG(Core::FE::Discretization &dis,
       const Teuchos::RCP<Epetra_Vector> &interiorValues,
       const Teuchos::RCP<Epetra_Vector> &traceValues, const int ndim,
       Teuchos::RCP<Epetra_Vector> &phi, Teuchos::RCP<Epetra_MultiVector> &gradphi,
@@ -407,7 +407,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
     if (discret_->Comm().NumProc() > 1)
     {
       // create vector of discr.
-      std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+      std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
       dis.push_back(discret_);
 
       // binning strategy for parallel redistribution
@@ -1070,7 +1070,7 @@ void ScaTra::TimIntHDG::adapt_degree()
   const double tcadapt = Teuchos::Time::wallTime();
 
   // cast and check if hdg discretization is provided
-  Discret::DiscretizationHDG *hdgdis = dynamic_cast<Discret::DiscretizationHDG *>(discret_.get());
+  Core::FE::DiscretizationHDG *hdgdis = dynamic_cast<Core::FE::DiscretizationHDG *>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   // vector to store the dofs per single element

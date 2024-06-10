@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       vg 11/08 |
  *----------------------------------------------------------------------*/
-ScaTra::TimIntLomaGenAlpha::TimIntLomaGenAlpha(Teuchos::RCP<Discret::Discretization> actdis,
+ScaTra::TimIntLomaGenAlpha::TimIntLomaGenAlpha(Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,

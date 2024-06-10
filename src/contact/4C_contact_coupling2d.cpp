@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-CONTACT::Coupling2d::Coupling2d(Discret::Discretization& idiscret, int dim, bool quad,
+CONTACT::Coupling2d::Coupling2d(Core::FE::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele)
     : Mortar::Coupling2d(idiscret, dim, quad, params, sele, mele),
       stype_(Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
@@ -143,8 +143,9 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<Mortar::ParamsInte
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-CONTACT::Coupling2dManager::Coupling2dManager(Discret::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele)
+CONTACT::Coupling2dManager::Coupling2dManager(Core::FE::Discretization& idiscret, int dim,
+    bool quad, Teuchos::ParameterList& params, Mortar::Element* sele,
+    std::vector<Mortar::Element*> mele)
     : Mortar::Coupling2dManager(idiscret, dim, quad, params, sele, mele),
       stype_(Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {

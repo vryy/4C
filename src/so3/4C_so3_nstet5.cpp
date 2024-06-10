@@ -420,7 +420,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::NStet5::Li
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::NStet5Type::init_elementsand_maps(
     std::map<int, Discret::ELEMENTS::NStet5*>& elecids, std::map<int, Core::Nodes::Node*>& noderids,
-    const int myrank, const int numproc, Discret::Discretization& dis)
+    const int myrank, const int numproc, Core::FE::Discretization& dis)
 {
   const int numele = dis.NumMyColElements();
 
@@ -458,7 +458,7 @@ void Discret::ELEMENTS::NStet5Type::init_adjacency(
     std::map<int, std::vector<int>>& adjlm,
     std::map<int, std::map<int, std::vector<int>>>& adjsubele,
     std::map<int, std::vector<std::vector<std::vector<int>>>>& adjlmlm,
-    Discret::Discretization& dis)
+    Core::FE::Discretization& dis)
 {
   std::map<int, Core::Nodes::Node*>::iterator node;
   for (node = noderids.begin(); node != noderids.end(); ++node)
@@ -600,7 +600,7 @@ void Discret::ELEMENTS::NStet5Type::init_adjacency(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 03/12|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::NStet5Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::NStet5Type::Initialize(Core::FE::Discretization& dis)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::NStet5Type::Initialize");
 

@@ -91,7 +91,7 @@ Discret::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleCalcPoro<distype>::pre_evaluate(Teuchos::ParameterList& params,
-    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization)
+    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization)
 {
   // do nothing
 }
@@ -99,7 +99,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::pre_evaluate(Teuchos::Paramet
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateService(Discret::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -128,7 +128,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateService(Discret::ELEME
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -162,7 +162,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(Discret::ELEMENTS::Fl
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -321,7 +321,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(Discret::ELEMENTS::Fl
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_od(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -6138,7 +6138,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_p
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_volume(Teuchos::ParameterList& params,
-    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization, std::vector<int>& lm,
+    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   //----------------------------------------------------------------
@@ -6233,7 +6233,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_def_gradient(
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // integrations points and weights
@@ -6246,7 +6246,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENT
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, const Core::FE::GaussIntegration& intpoints)
 {
   // analytical solution

@@ -94,7 +94,7 @@ Discret::ELEMENTS::Ale3Impl<distype>* Discret::ELEMENTS::Ale3Impl<distype>::Inst
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -245,7 +245,7 @@ int Discret::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Ale3::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -1352,7 +1352,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
-    Discret::Discretization& dis, std::vector<int>& lm,
+    Core::FE::Discretization& dis, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& sys_mat_epetra,
     Core::LinAlg::SerialDenseVector& residual_epetra, std::vector<double>& my_dispnp,
     Teuchos::ParameterList& params, const bool spatialconfiguration)
@@ -1575,7 +1575,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele,
-    Discret::Discretization& dis, Core::LinAlg::SerialDenseMatrix& sys_mat_epetra,
+    Core::FE::Discretization& dis, Core::LinAlg::SerialDenseMatrix& sys_mat_epetra,
     Core::LinAlg::SerialDenseVector& residual, std::vector<double>& my_dispnp,
     Teuchos::RCP<Core::Mat::Material> material, const bool spatialconfiguration)
 {

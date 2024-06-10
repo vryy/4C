@@ -76,7 +76,7 @@ namespace Core::IO
   class DiscretizationWriter;
 }  // namespace Core::IO
 
-namespace Discret
+namespace Core::FE
 {
   /*!
   \brief A class to manage a discretization in parallel
@@ -144,7 +144,7 @@ namespace Discret
 
   <h3>Misc</h3>
 
-  The \ref Discret::Discretization class supports the ostream& operator <<
+  The \ref Core::FE::Discretization class supports the ostream& operator <<
 
   */
   class Discretization
@@ -167,17 +167,17 @@ namespace Discret
     /**
      * The discretization is a heavy object that should not be copied (accidentally).
      */
-    Discretization(const Discret::Discretization&) = delete;
+    Discretization(const Core::FE::Discretization&) = delete;
 
     /**
      * The discretization is a heavy object that should not be copied (accidentally).
      */
-    Discretization operator=(const Discretization&) = delete;
+    Discretization operator=(const Core::FE::Discretization&) = delete;
 
     /**
      * Moving a discretization is not supported.
      */
-    Discretization(Discret::Discretization&&) = delete;
+    Discretization(Core::FE::Discretization&&) = delete;
 
     /**
      * Moving a discretization is not supported.
@@ -2300,10 +2300,10 @@ namespace Discret
     //! number of space dimension
     const unsigned int n_dim_;
   };  // class Discretization
-}  // namespace Discret
+}  // namespace Core::FE
 
 /// << operator
-std::ostream& operator<<(std::ostream& os, const Discret::Discretization& dis);
+std::ostream& operator<<(std::ostream& os, const Core::FE::Discretization& dis);
 
 FOUR_C_NAMESPACE_CLOSE
 

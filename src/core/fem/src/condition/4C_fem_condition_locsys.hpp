@@ -95,7 +95,7 @@ namespace Core::Conditions
      *                                to be applied on sysmatrix, if true
      *
      */
-    explicit LocsysManager(Discret::Discretization& discret, int dim);
+    explicit LocsysManager(Core::FE::Discretization& discret, int dim);
 
     /*!
      * Set current @p time and @p nodenormals to the locsys manager. The vector of @p
@@ -123,7 +123,7 @@ namespace Core::Conditions
      * \brief Get discretization
      *
      */
-    inline Discret::Discretization& Discret() const { return discret_; };
+    inline Core::FE::Discretization& Discret() const { return discret_; };
 
     /*!
      * \brief Get problem dimension
@@ -250,7 +250,7 @@ namespace Core::Conditions
     //@{
 
     /// current discretization
-    Discret::Discretization& discret_;
+    Core::FE::Discretization& discret_;
 
     /// id of locsys condition
     std::vector<int> id_;

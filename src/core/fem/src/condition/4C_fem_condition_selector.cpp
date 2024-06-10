@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Core::Conditions::ConditionSelector::ConditionSelector(
-    const Discret::Discretization& dis, std::string condname)
+    const Core::FE::Discretization& dis, std::string condname)
     : dis_(dis)
 {
   dis.GetCondition(condname, conds_);
@@ -35,7 +35,7 @@ Core::Conditions::ConditionSelector::ConditionSelector(
  | construct a selector from a given vector of conditions    fang 07/16 |
  *----------------------------------------------------------------------*/
 Core::Conditions::ConditionSelector::ConditionSelector(
-    const Discret::Discretization& dis,   //!< discretization
+    const Core::FE::Discretization& dis,  //!< discretization
     const std::vector<Condition*>& conds  //!< given vector of conditions
     )
     : dis_(dis), conds_(conds)
@@ -88,7 +88,7 @@ Core::Conditions::MultiConditionSelector::MultiConditionSelector() : overlapping
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Conditions::MultiConditionSelector::SetupExtractor(const Discret::Discretization& dis,
+void Core::Conditions::MultiConditionSelector::SetupExtractor(const Core::FE::Discretization& dis,
     const Epetra_Map& fullmap, Core::LinAlg::MultiMapExtractor& extractor)
 {
   setup_cond_dof_sets(dis);
@@ -128,7 +128,7 @@ void Core::Conditions::MultiConditionSelector::SetupExtractor(const Discret::Dis
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::Conditions::MultiConditionSelector::setup_cond_dof_sets(
-    const Discret::Discretization& dis)
+    const Core::FE::Discretization& dis)
 {
   // we get as many sets as we have selectors
   conddofset_.resize(selectors_.size());

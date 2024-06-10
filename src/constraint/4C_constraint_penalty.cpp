@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
-    Teuchos::RCP<Discret::Discretization> discr, const std::string& conditionname)
+    Teuchos::RCP<Core::FE::Discretization> discr, const std::string& conditionname)
     : Constraint(discr, conditionname)
 {
   if (constrcond_.size())

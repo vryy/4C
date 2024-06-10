@@ -113,7 +113,7 @@ Discret::ELEMENTS::ElemagBoundaryImpl<distype>::ElemagBoundaryImpl()
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate_neumann(
     Discret::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseMatrix* elemat1_epetra)
 {
@@ -124,7 +124,7 @@ int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate_neumann(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(Discret::ELEMENTS::ElemagBoundary* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,

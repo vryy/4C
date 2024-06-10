@@ -61,7 +61,7 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::fa
     const int iquad,                          ///< current boundary integration point
     const Core::Elements::FaceElement* bele,  ///< current boundary element
     Teuchos::ParameterList& params,           ///< parameter list
-    Discret::Discretization& discretization   ///< discretization
+    Core::FE::Discretization& discretization  ///< discretization
 )
 {
   const Core::Elements::Element* pele = bele->parent_element();
@@ -107,7 +107,7 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ca
     const Core::Elements::FaceElement* bele,  ///< current boundary element
     const Core::Elements::Element* pele,      ///< current parent element
     Teuchos::ParameterList& params,           ///< parameter list
-    Discret::Discretization& discretization   ///< discretization
+    Core::FE::Discretization& discretization  ///< discretization
 )
 {
   // NOTE: we want to evaluate J=det(F) on the current gauss point of the current boundary element.

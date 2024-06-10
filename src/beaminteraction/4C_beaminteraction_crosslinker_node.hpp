@@ -169,7 +169,7 @@ namespace CrossLinking
     /*!
      \brief The discretization is a friend of Mortar::Node
      */
-    friend class Discret::Discretization;
+    friend class Core::FE::Discretization;
 
     //@}
 

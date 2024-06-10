@@ -38,7 +38,7 @@ namespace Discret
       double fac_for_ref_conc(const int iquad,      ///< current boundary integration point
           const Core::Elements::FaceElement* bele,  ///< current boundary element
           Teuchos::ParameterList& params,           ///< parameter list
-          Discret::Discretization& discretization   ///< discretization
+          Core::FE::Discretization& discretization  ///< discretization
           ) override;
 
      private:
@@ -52,7 +52,7 @@ namespace Discret
           const Core::Elements::FaceElement* bele,  ///< current boundary element
           const Core::Elements::Element* pele,      ///< current parent element
           Teuchos::ParameterList& params,           ///< parameter list
-          Discret::Discretization& discretization   ///< discretization
+          Core::FE::Discretization& discretization  ///< discretization
       );
 
     };  // class ScaTraEleBoundaryCalcRefConcReac

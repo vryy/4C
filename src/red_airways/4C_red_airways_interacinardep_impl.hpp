@@ -42,7 +42,7 @@ namespace Discret
       /// Empty destructor
       virtual ~RedInterAcinarDepImplInterface() = default;  /// Evaluate the element
       virtual int Evaluate(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -51,22 +51,22 @@ namespace Discret
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
       virtual void Initial(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
           Teuchos::RCP<const Core::Mat::Material> material) = 0;
 
       virtual void EvaluateTerminalBC(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
       virtual void CalcFlowRates(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::LinAlg::SerialDenseVector& a_volumen,
+          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& a_volumen,
           Core::LinAlg::SerialDenseVector& a_volumenp, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
       virtual void GetCoupledValues(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) = 0;
 
       /// Internal implementation class for inter-acinar linker element
@@ -102,7 +102,7 @@ namespace Discret
         The evaluate function for the general inter-acinar linker case.
        */
       int Evaluate(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -129,7 +129,7 @@ namespace Discret
 
 
       void EvaluateTerminalBC(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& rhs,
           Teuchos::RCP<Core::Mat::Material> material) override;
 
@@ -148,7 +148,7 @@ namespace Discret
         \param dt               (i) timestep
         */
       void Initial(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& n_intr_acn_l,
           Teuchos::RCP<const Core::Mat::Material> material) override;
 
@@ -156,7 +156,7 @@ namespace Discret
        \Essential functions to compute the results of essential matrices
       */
       void CalcFlowRates(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization,
+          Core::FE::Discretization& discretization,
           Core::LinAlg::SerialDenseVector& a_volumen_strain_np,
           Core::LinAlg::SerialDenseVector& a_volumenp, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat) override{};
@@ -165,7 +165,7 @@ namespace Discret
        \Essential functions to evaluate the coupled results
       */
       void GetCoupledValues(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) override{};
 
      private:

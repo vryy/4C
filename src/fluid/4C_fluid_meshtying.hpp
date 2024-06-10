@@ -24,10 +24,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class FluidEleParameter;
@@ -69,7 +72,7 @@ namespace FLD
 
    public:
     //! Constructor
-    Meshtying(Teuchos::RCP<Discret::Discretization> dis,        ///> actual discretisation
+    Meshtying(Teuchos::RCP<Core::FE::Discretization> dis,       ///> actual discretisation
         Core::LinAlg::Solver& solver,                           ///> solver
         int msht,                                               ///> meshting parameter list
         int nsd,                                                ///> number space dimensions
@@ -263,7 +266,7 @@ namespace FLD
 
    private:
     //! discretisation
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     Core::LinAlg::Solver& solver_;  // standard solver object
 

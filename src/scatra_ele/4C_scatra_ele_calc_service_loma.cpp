@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::evaluate_action(Core::Elements::Element* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     const ScaTra::Action& action, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -123,7 +123,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calculate_domain_and_bodyfor
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // add loma-specific values
   if (my::scatraparatimint_->IsGenAlpha())

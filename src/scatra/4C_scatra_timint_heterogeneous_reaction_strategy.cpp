@@ -98,13 +98,13 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(scatratimint_->discretization()->Comm().Clone());
 
   // standard case
-  discret_ = Teuchos::rcp(new Discret::Discretization(
+  discret_ = Teuchos::rcp(new Core::FE::Discretization(
       scatratimint_->discretization()->Name(), com, Global::Problem::Instance()->NDim()));
 
   // call complete without assigning degrees of freedom
   discret_->fill_complete(false, true, false);
 
-  Teuchos::RCP<Discret::Discretization> scatradis = scatratimint_->discretization();
+  Teuchos::RCP<Core::FE::Discretization> scatradis = scatratimint_->discretization();
 
   // create scatra elements if the scatra discretization is empty
   {

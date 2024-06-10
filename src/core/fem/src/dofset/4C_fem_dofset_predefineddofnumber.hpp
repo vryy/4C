@@ -109,7 +109,7 @@ namespace Core::DOFSets
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
-        const Discret::Discretization& dis, const unsigned dspos, const int start) override
+        const Core::FE::Discretization& dis, const unsigned dspos, const int start) override
     {
       // redistribute internal vectors if necessary
       if (numdofpernodenodewise_ != Teuchos::null and

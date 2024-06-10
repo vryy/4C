@@ -509,8 +509,8 @@ void STR::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& ner
   }
 
   // gather the result across processes
-  auto gather_result = [op](
-                           const Discret::Discretization& disc, const double local_result) -> double
+  auto gather_result = [op](const Core::FE::Discretization& disc,
+                           const double local_result) -> double
   {
     double tmp_result = local_result, result = 0.0;
     switch (op)

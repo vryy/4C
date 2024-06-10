@@ -20,10 +20,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -54,7 +54,7 @@ namespace FBI
      * @param num_dof (out) Number total DOFs on the element.
      *
      */
-    void GetFBIElementCenterlineDOFIndices(Discret::Discretization const& discret,
+    void GetFBIElementCenterlineDOFIndices(Core::FE::Discretization const& discret,
         const Core::Elements::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
         unsigned int& num_dof);
 
@@ -81,8 +81,8 @@ namespace FBI
      */
 
     void AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
-        const Discret::Discretization& discretization1,
-        const Discret::Discretization& discretization2, std::vector<int> const& elegid,
+        const Core::FE::Discretization& discretization1,
+        const Core::FE::Discretization& discretization2, std::vector<int> const& elegid,
         std::vector<Core::LinAlg::SerialDenseVector> const& eleforce_centerlineDOFs,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
         std::vector<Core::LinAlg::SerialDenseVector>* eleforce,

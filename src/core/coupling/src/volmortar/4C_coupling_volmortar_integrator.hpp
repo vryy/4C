@@ -76,8 +76,8 @@ namespace Core::VolMortar
     */
     void IntegrateCells2D(Core::Elements::Element& sele, Core::Elements::Element& mele,
         Teuchos::RCP<Mortar::IntCell> cell, Core::LinAlg::SparseMatrix& dmatrix,
-        Core::LinAlg::SparseMatrix& mmatrix, Teuchos::RCP<const Discret::Discretization> slavedis,
-        Teuchos::RCP<const Discret::Discretization> masterdis, int sdofset, int mdofset);
+        Core::LinAlg::SparseMatrix& mmatrix, Teuchos::RCP<const Core::FE::Discretization> slavedis,
+        Teuchos::RCP<const Core::FE::Discretization> masterdis, int sdofset, int mdofset);
 
     /*!
     \brief Integrate cell for 3D problems
@@ -86,8 +86,8 @@ namespace Core::VolMortar
     void IntegrateCells3D(Core::Elements::Element& Aele, Core::Elements::Element& Bele,
         Teuchos::RCP<Core::VolMortar::Cell> cell, Core::LinAlg::SparseMatrix& dmatrix_A,
         Core::LinAlg::SparseMatrix& mmatrix_A, Core::LinAlg::SparseMatrix& dmatrix_B,
-        Core::LinAlg::SparseMatrix& mmatrix_B, Teuchos::RCP<const Discret::Discretization> Adis,
-        Teuchos::RCP<const Discret::Discretization> Bdis, int sdofset_A, int mdofset_A,
+        Core::LinAlg::SparseMatrix& mmatrix_B, Teuchos::RCP<const Core::FE::Discretization> Adis,
+        Teuchos::RCP<const Core::FE::Discretization> Bdis, int sdofset_A, int mdofset_A,
         int sdofset_B, int mdofset_B);
 
     /*!
@@ -99,8 +99,8 @@ namespace Core::VolMortar
         Teuchos::RCP<Core::FE::GaussPoints> intpoints, bool switched_conf,
         Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
         Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
-        Teuchos::RCP<const Discret::Discretization> Adis,
-        Teuchos::RCP<const Discret::Discretization> Bdis, int sdofset_A, int mdofset_A,
+        Teuchos::RCP<const Core::FE::Discretization> Adis,
+        Teuchos::RCP<const Core::FE::Discretization> Bdis, int sdofset_A, int mdofset_A,
         int sdofset_B, int mdofset_B);
 
     /*!
@@ -110,8 +110,8 @@ namespace Core::VolMortar
     void IntegrateEle3D(int domain, Core::Elements::Element& Aele, Core::Elements::Element& Bele,
         Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
         Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
-        Teuchos::RCP<const Discret::Discretization> Adis,
-        Teuchos::RCP<const Discret::Discretization> Bdis, int sdofset_A, int mdofset_A,
+        Teuchos::RCP<const Core::FE::Discretization> Adis,
+        Teuchos::RCP<const Core::FE::Discretization> Bdis, int sdofset_A, int mdofset_A,
         int sdofset_B, int mdofset_B);
 
     /*!
@@ -120,8 +120,8 @@ namespace Core::VolMortar
     */
     void integrate_ele_based3_d_a_dis(Core::Elements::Element& Aele, std::vector<int>& foundeles,
         Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
-        Teuchos::RCP<const Discret::Discretization> Adiscret,
-        Teuchos::RCP<const Discret::Discretization> Bdiscret, int dofsetA, int dofsetB);
+        Teuchos::RCP<const Core::FE::Discretization> Adiscret,
+        Teuchos::RCP<const Core::FE::Discretization> Bdiscret, int dofsetA, int dofsetB);
 
     /*!
     \brief Integrate ele for 3D problems
@@ -129,8 +129,8 @@ namespace Core::VolMortar
     */
     void integrate_ele_based3_d_b_dis(Core::Elements::Element& Bele, std::vector<int>& foundeles,
         Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
-        Teuchos::RCP<const Discret::Discretization> Adiscret,
-        Teuchos::RCP<const Discret::Discretization> Bdiscret, int dofsetA, int dofsetB);
+        Teuchos::RCP<const Core::FE::Discretization> Adiscret,
+        Teuchos::RCP<const Core::FE::Discretization> Bdiscret, int dofsetA, int dofsetB);
 
    protected:
     /*!
@@ -185,8 +185,8 @@ namespace Core::VolMortar
     */
     void IntegrateEleBased3D(Core::Elements::Element& sele, std::vector<int>& foundeles,
         Core::LinAlg::SparseMatrix& dmatrixA, Core::LinAlg::SparseMatrix& mmatrixA,
-        Teuchos::RCP<const Discret::Discretization> Adiscret,
-        Teuchos::RCP<const Discret::Discretization> Bdiscret, int dofseta, int dofsetb,
+        Teuchos::RCP<const Core::FE::Discretization> Adiscret,
+        Teuchos::RCP<const Core::FE::Discretization> Bdiscret, int dofseta, int dofsetb,
         const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
         const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap);
 
@@ -370,16 +370,16 @@ namespace Core::VolMortar
       std::vector<int>& foundeles, int& found, int& gpid, double& jac, double& wgt, double& gpdist,
       double* Axi, double* AuxXi, double* globgp, DualQuad& dq, Shapefcn& shape,
       Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
-      Teuchos::RCP<const Discret::Discretization> Adis,
-      Teuchos::RCP<const Discret::Discretization> Bdis, int dofseta, int dofsetb,
+      Teuchos::RCP<const Core::FE::Discretization> Adis,
+      Teuchos::RCP<const Core::FE::Discretization> Bdis, int dofseta, int dofsetb,
       const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
       const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap);
 
   // evaluation of nts approach
   template <Core::FE::CellType distype>
   bool ConsInterpolatorEval(Core::Nodes::Node* node, Core::Elements::Element* ele,
-      Core::LinAlg::SparseMatrix& pmatrix, Teuchos::RCP<const Discret::Discretization> nodediscret,
-      Teuchos::RCP<const Discret::Discretization> elediscret, std::vector<int>& foundeles,
+      Core::LinAlg::SparseMatrix& pmatrix, Teuchos::RCP<const Core::FE::Discretization> nodediscret,
+      Teuchos::RCP<const Core::FE::Discretization> elediscret, std::vector<int>& foundeles,
       int& found, int& eleid, double& dist, double* AuxXi, double* nodepos,
       std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
       const Teuchos::RCP<const Epetra_Map>& P_dofcolmap);
@@ -400,8 +400,8 @@ namespace Core::VolMortar
 
     */
     void Interpolate(Core::Nodes::Node* node, Core::LinAlg::SparseMatrix& pmatrix_,
-        Teuchos::RCP<const Discret::Discretization> nodediscret,
-        Teuchos::RCP<const Discret::Discretization> elediscret, std::vector<int>& foundeles,
+        Teuchos::RCP<const Core::FE::Discretization> nodediscret,
+        Teuchos::RCP<const Core::FE::Discretization> elediscret, std::vector<int>& foundeles,
         std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
         const Teuchos::RCP<const Epetra_Map>& P_dofcolmap);
   };

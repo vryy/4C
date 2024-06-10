@@ -64,7 +64,7 @@ Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Instance(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::SetupCalc(
-    Core::Elements::Element* ele, Discret::Discretization& discretization)
+    Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
   // base class
   my::SetupCalc(ele, discretization);
@@ -134,7 +134,7 @@ void Discret::ELEMENTS::ScaTraEleCalcArtery<distype,
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   //---------------------------------------------------------------------------------------------
   //                                 SCATRA

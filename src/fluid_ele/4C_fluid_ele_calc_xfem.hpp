@@ -120,7 +120,7 @@ namespace Discret
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// evaluate the XFEM cut element
-      int EvaluateXFEM(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+      int EvaluateXFEM(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -132,23 +132,23 @@ namespace Discret
 
       /// evaluate the shape functions in the XFEM
       int integrate_shape_function_xfem(Discret::ELEMENTS::Fluid* ele,
-          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           const std::vector<Core::FE::GaussIntegration>& intpoints,
           const Core::Geo::Cut::plain_volumecell_set& cells) override;
 
       /// error computation
       int compute_error(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& ele_dom_norms) override;
 
       int compute_error(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& ele_dom_norms,
           const Core::FE::GaussIntegration& intpoints) override;
 
       int compute_error_interface(Discret::ELEMENTS::Fluid* ele,     ///< fluid element
-          Discret::Discretization& dis,                              ///< background discretization
+          Core::FE::Discretization& dis,                             ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           Teuchos::RCP<Core::Mat::Material>& mat,                    ///< material
@@ -164,7 +164,7 @@ namespace Discret
       /// add terms from mixed/hybrid Lagrange multiplier coupling approach to element matrix and
       /// rhs
       void element_xfem_interface_hybrid_lm(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
-          Discret::Discretization& dis,                              ///< background discretization
+          Core::FE::Discretization& dis,                             ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           const std::vector<Core::FE::GaussIntegration>& intpoints,  ///< element gauss points
@@ -188,7 +188,7 @@ namespace Discret
 
       /// add Nitsche (NIT) interface condition to element matrix and rhs
       void element_xfem_interface_nit(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
-          Discret::Discretization& dis,                               ///< background discretization
+          Core::FE::Discretization& dis,                              ///< background discretization
           const std::vector<int>& lm,                                 ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,   ///< XFEM condition manager
           const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
@@ -210,7 +210,7 @@ namespace Discret
 
       ///
       void calculate_continuity_xfem(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
-          Discret::Discretization& dis,                              ///< discretization
+          Core::FE::Discretization& dis,                             ///< discretization
           const std::vector<int>& lm,                                ///< local map
           Core::LinAlg::SerialDenseVector& elevec1_epetra,           ///< element vector
           const Core::FE::GaussIntegration& intpoints                ///< integration points
@@ -218,7 +218,7 @@ namespace Discret
 
       ///
       void calculate_continuity_xfem(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
-          Discret::Discretization& dis,                              ///< discretization
+          Core::FE::Discretization& dis,                             ///< discretization
           const std::vector<int>& lm,                                ///< local map
           Core::LinAlg::SerialDenseVector& elevec1_epetra            ///< element vector
           ) override;
@@ -322,7 +322,7 @@ namespace Discret
       //! assemble side's interface force
       void assemble_interface_force(
           Teuchos::RCP<Epetra_Vector> iforcecol,   ///< interface force column vector
-          Discret::Discretization& cutdis,         ///< cut discretization
+          Core::FE::Discretization& cutdis,        ///< cut discretization
           std::vector<int>& lm,                    ///< local dof map
           Core::LinAlg::SerialDenseVector& iforce  ///< interface force vector
       );

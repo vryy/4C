@@ -18,7 +18,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 void Discret::ELEMENTS::EvaluateNeumannByElement(Core::Elements::Element& element,
-    const Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    const Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     const std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& element_force_vector,
     double total_time)
 {
@@ -70,7 +70,7 @@ void Discret::ELEMENTS::EvaluateNeumannByElement(Core::Elements::Element& elemen
 
 template <Core::FE::CellType celltype>
 void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
-    const Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    const Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     const std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& element_force_vector,
     double total_time)
 {

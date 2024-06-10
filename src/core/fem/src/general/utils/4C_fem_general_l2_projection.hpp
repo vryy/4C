@@ -26,10 +26,10 @@ namespace Core::LinAlg
   class SparseMatrix;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::FE
 {
@@ -45,15 +45,15 @@ namespace Core::FE
     \date 06/14
    */
   Teuchos::RCP<Epetra_MultiVector> compute_nodal_l2_projection(
-      Teuchos::RCP<Discret::Discretization> dis,  ///< underlying discretization
-      const std::string& statename,               ///< name of state which will be set
-      const int& numvec,                          ///< number of entries per node to project
+      Teuchos::RCP<Core::FE::Discretization> dis,  ///< underlying discretization
+      const std::string& statename,                ///< name of state which will be set
+      const int& numvec,                           ///< number of entries per node to project
       Teuchos::ParameterList& params,  ///< parameter list that contains the element action
       const Teuchos::ParameterList&
           solverparams);  ///< solver parameters for solving the resulting global system;
 
   Teuchos::RCP<Epetra_MultiVector> evaluate_and_solve_nodal_l2_projection(
-      Discret::Discretization& dis, const Epetra_Map& noderowmap, const std::string& statename,
+      Core::FE::Discretization& dis, const Epetra_Map& noderowmap, const std::string& statename,
       const int& numvec, Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
       const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap);
 

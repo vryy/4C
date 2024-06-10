@@ -46,7 +46,7 @@ void Core::Geo::SearchTree::initializeTree(const Core::LinAlg::Matrix<3, 2>& nod
  | discretization, elements are taken unsorted from discretization      |
  *----------------------------------------------------------------------*/
 void Core::Geo::SearchTree::initializeTree(const Core::LinAlg::Matrix<3, 2>& nodeBox,
-    const Discret::Discretization& dis, const TreeType treetype)
+    const Core::FE::Discretization& dis, const TreeType treetype)
 {
   tree_root_ = Teuchos::null;
   tree_root_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
@@ -93,7 +93,7 @@ void Core::Geo::SearchTree::initialize_tree_slide_ale(const Core::LinAlg::Matrix
  | returns nodes in the radius of a given point              u.may 07/08|
  *----------------------------------------------------------------------*/
 std::map<int, std::set<int>> Core::Geo::SearchTree::search_elements_in_radius(
-    const Discret::Discretization& dis,
+    const Core::FE::Discretization& dis,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const Core::LinAlg::Matrix<3, 1>& point, const double radius, const int label)
 {
@@ -392,7 +392,7 @@ void Core::Geo::SearchTree::TreeNode::insertElement(const int label, const int e
   return;
 }
 
-void Core::Geo::SearchTree::TreeNode::create_children(const Discret::Discretization& dis,
+void Core::Geo::SearchTree::TreeNode::create_children(const Core::FE::Discretization& dis,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions)
 {
   // create empty children
@@ -1160,7 +1160,7 @@ std::vector<int> Core::Geo::SearchTree::TreeNode::classify_radius(
  | returns nodes in the radius of a given point              u.may 08/08|
  *----------------------------------------------------------------------*/
 std::map<int, std::set<int>> Core::Geo::SearchTree::TreeNode::search_elements_in_radius(
-    const Discret::Discretization& dis,
+    const Core::FE::Discretization& dis,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const Core::LinAlg::Matrix<3, 1>& point, const double radius, const int label)
 {

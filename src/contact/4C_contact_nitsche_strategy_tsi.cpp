@@ -63,7 +63,7 @@ void CONTACT::NitscheStrategyTsi::SetParentState(
 {
   if (statename == Mortar::state_temperature)
   {
-    Teuchos::RCP<Discret::Discretization> disT = Global::Problem::Instance()->GetDis("thermo");
+    Teuchos::RCP<Core::FE::Discretization> disT = Global::Problem::Instance()->GetDis("thermo");
     if (disT.is_null()) FOUR_C_THROW("set state temperature, but no thermo-discretization???");
 
     Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*disT->DofColMap(), true));
@@ -72,7 +72,7 @@ void CONTACT::NitscheStrategyTsi::SetParentState(
     // set state on interfaces
     for (auto& interface : interface_)
     {
-      Discret::Discretization& idiscret = interface->Discret();
+      Core::FE::Discretization& idiscret = interface->Discret();
 
       for (int j = 0; j < idiscret.ElementColMap()->NumMyElements(); ++j)
       {

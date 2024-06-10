@@ -2102,7 +2102,7 @@ void CONTACT::Aug::Interface::split_into_far_and_close_sets(std::vector<int>& cl
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> CONTACT::Aug::Interface::collect_row_node_owners(
-    const Discret::Discretization& structure_dis) const
+    const Core::FE::Discretization& structure_dis) const
 {
   Teuchos::RCP<Epetra_Map> smnodemap_ptr = Core::LinAlg::MergeMap(snoderowmap_, mnoderowmap_);
 

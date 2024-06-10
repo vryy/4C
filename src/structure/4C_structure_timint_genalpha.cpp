@@ -88,7 +88,7 @@ void STR::TimIntGenAlpha::VerifyCoeff()
 /* constructor */
 STR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization> actdis,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
@@ -126,7 +126,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // call Init() in base class
   STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
@@ -884,7 +884,7 @@ void STR::TimIntGenAlpha::build_res_stiff_nl_mass_rot(Teuchos::RCP<Epetra_Vector
  * Check, if there are solely beam elements in the whole             meier 05/14
  * discretization
  *----------------------------------------------------------------------------*/
-bool STR::TimIntGenAlpha::SolelyBeam3Elements(Teuchos::RCP<Discret::Discretization> actdis)
+bool STR::TimIntGenAlpha::SolelyBeam3Elements(Teuchos::RCP<Core::FE::Discretization> actdis)
 {
   bool solelybeameles = true;
 

@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   std::vector<double> GetAccelerationVector(
-      const Discret::Discretization& discretization, const std::vector<int>& lm)
+      const Core::FE::Discretization& discretization, const std::vector<int>& lm)
   {
     const Epetra_Vector& acceleration = *discretization.GetState("acceleration");
     std::vector<double> my_acceleration(lm.size());
@@ -46,7 +46,7 @@ namespace
         acceleration, 0.0);
   }
 
-  void EvaluateInertiaForce(const Discret::Discretization& discretization,
+  void EvaluateInertiaForce(const Core::FE::Discretization& discretization,
       const std::vector<int>& lm, const Core::LinAlg::SerialDenseMatrix& mass_matrix,
       Core::LinAlg::SerialDenseVector& inertia_force)
   {
@@ -60,7 +60,7 @@ namespace
 }  // namespace
 
 int Discret::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -258,7 +258,7 @@ int Discret::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
   return 0;
 }
 int Discret::ELEMENTS::Solid::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

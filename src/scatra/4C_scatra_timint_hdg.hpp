@@ -25,7 +25,7 @@ namespace ScaTra
   {
    public:
     //! standard constructor
-    TimIntHDG(const Teuchos::RCP<Discret::Discretization>& actdis,
+    TimIntHDG(const Teuchos::RCP<Core::FE::Discretization>& actdis,
         const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<Teuchos::ParameterList>& extraparams,
@@ -184,7 +184,7 @@ namespace ScaTra
     Teuchos::RCP<Epetra_Vector> activation_time_interpol_np_;
 
     //! HDG discretization
-    Discret::DiscretizationHDG* hdgdis_;
+    Core::FE::DiscretizationHDG* hdgdis_;
 
     //! p-adativitity
     bool padaptivity_;

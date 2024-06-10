@@ -21,7 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs, bool killcond)
+void Core::FE::Discretization::ExportRowNodes(
+    const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // test whether newmap is non-overlapping
   if (!newmap.UniqueGIDs()) FOUR_C_THROW("new map not unique");
@@ -56,7 +57,7 @@ void Discret::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool kill
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Discretization::ExportColumnNodes(
+void Core::FE::Discretization::ExportColumnNodes(
     const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // destroy all ghosted nodes
@@ -94,7 +95,7 @@ void Discret::Discretization::ExportColumnNodes(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Discretization::proc_zero_distribute_elements_to_all(
+void Core::FE::Discretization::proc_zero_distribute_elements_to_all(
     Epetra_Map& target, std::vector<int>& gidlist)
 {
   const int myrank = Comm().MyPID();
@@ -202,7 +203,7 @@ void Discret::Discretization::proc_zero_distribute_elements_to_all(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
+void Core::FE::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
 {
   const int myrank = Comm().MyPID();
 
@@ -317,7 +318,7 @@ void Discret::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& targ
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Discretization::ExportRowElements(
+void Core::FE::Discretization::ExportRowElements(
     const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // test whether newmap is non-overlapping
@@ -352,7 +353,7 @@ void Discret::Discretization::ExportRowElements(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Discretization::export_column_elements(
+void Core::FE::Discretization::export_column_elements(
     const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // destroy all ghosted elements
@@ -389,7 +390,7 @@ void Discret::Discretization::export_column_elements(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsGraph> Discret::Discretization::BuildNodeGraph() const
+Teuchos::RCP<Epetra_CrsGraph> Core::FE::Discretization::BuildNodeGraph() const
 {
   if (!Filled()) FOUR_C_THROW("fill_complete() was not called on this discretization");
 
@@ -432,7 +433,7 @@ Teuchos::RCP<Epetra_CrsGraph> Discret::Discretization::BuildNodeGraph() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Discret::Discretization::build_node_coordinates(
+Teuchos::RCP<Epetra_MultiVector> Core::FE::Discretization::build_node_coordinates(
     Teuchos::RCP<const Epetra_Map> noderowmap) const
 {
   // get nodal row map if not given
@@ -455,7 +456,7 @@ Teuchos::RCP<Epetra_MultiVector> Discret::Discretization::build_node_coordinates
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>>
-Discret::Discretization::build_element_row_column(
+Core::FE::Discretization::build_element_row_column(
     const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap) const
 {
   const int myrank = Comm().MyPID();
@@ -625,7 +626,7 @@ Discret::Discretization::build_element_row_column(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Discretization::Redistribute(const Epetra_Map& noderowmap,
+void Core::FE::Discretization::Redistribute(const Epetra_Map& noderowmap,
     const Epetra_Map& nodecolmap, bool assigndegreesoffreedom, bool initelements,
     bool doboundaryconditions, bool killdofs, bool killcond)
 {
@@ -646,7 +647,7 @@ void Discret::Discretization::Redistribute(const Epetra_Map& noderowmap,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Discretization::Redistribute(const Epetra_Map& noderowmap,
+void Core::FE::Discretization::Redistribute(const Epetra_Map& noderowmap,
     const Epetra_Map& nodecolmap, const Epetra_Map& elerowmap, const Epetra_Map& elecolmap,
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions, bool killdofs,
     bool killcond)
@@ -665,7 +666,7 @@ void Discret::Discretization::Redistribute(const Epetra_Map& noderowmap,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap,
+void Core::FE::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap,
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions, bool checkghosting)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -808,7 +809,7 @@ void Discret::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Discretization::SetupGhosting(
+void Core::FE::Discretization::SetupGhosting(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   if (Filled())

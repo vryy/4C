@@ -1061,7 +1061,7 @@ void PoroElastScaTra::PoroScatraMono::evaluate_od_block_mat_poro()
   fparams.set("delta time", Dt());
   fparams.set("total time", Time());
 
-  const Teuchos::RCP<Discret::Discretization>& porofluiddis =
+  const Teuchos::RCP<Core::FE::Discretization>& porofluiddis =
       poro_field()->fluid_field()->discretization();
   porofluiddis->ClearState();
 

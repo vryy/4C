@@ -73,7 +73,7 @@ namespace CONTACT
        *  \author hiermeier \date 03/17 */
       static Teuchos::RCP<CONTACT::Interface> CreateInterface(const int id, const Epetra_Comm& comm,
           const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-          const Teuchos::RCP<const Discret::Discretization>& parent_dis,
+          const Teuchos::RCP<const Core::FE::Discretization>& parent_dis,
           Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr = Teuchos::null,
           const int contactconstitutivelaw_id = -1);
 
@@ -83,7 +83,7 @@ namespace CONTACT
       static Teuchos::RCP<CONTACT::Interface> CreateInterface(
           const enum Inpar::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
           const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-          const Teuchos::RCP<const Discret::Discretization>& parent_dis,
+          const Teuchos::RCP<const Core::FE::Discretization>& parent_dis,
           Teuchos::RCP<CONTACT::InterfaceDataContainer> interface_data_ptr,
           const int contactconstitutivelaw_id = -1);
 
@@ -136,7 +136,8 @@ namespace CONTACT
        *  \author Ager */
       void set_poro_parent_element(enum Mortar::Element::PhysicalType& slavetype,
           enum Mortar::Element::PhysicalType& mastertype, Teuchos::RCP<CONTACT::Element>& cele,
-          Teuchos::RCP<Core::Elements::Element>& ele, const Discret::Discretization& discret) const;
+          Teuchos::RCP<Core::Elements::Element>& ele,
+          const Core::FE::Discretization& discret) const;
 
       /*! \brief Find Physical Type (Poro or Structure) of Poro Interface
        *

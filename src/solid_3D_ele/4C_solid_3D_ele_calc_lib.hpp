@@ -155,7 +155,7 @@ namespace Discret::ELEMENTS
    */
   template <Core::FE::CellType celltype>
   ElementNodes<celltype> EvaluateElementNodes(const Core::Elements::Element& ele,
-      const Discret::Discretization& discretization, const std::vector<int>& lm)
+      const Core::FE::Discretization& discretization, const std::vector<int>& lm)
   {
     const Epetra_Vector& displacements = *discretization.GetState("displacement");
 

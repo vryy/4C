@@ -70,7 +70,7 @@ void Discret::ELEMENTS::SoHex8ScatraType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8ScatraType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex8ScatraType::Initialize(Core::FE::Discretization& dis)
 {
   SoHex8Type::Initialize(dis);
 
@@ -146,7 +146,7 @@ void Discret::ELEMENTS::SoHex8fbarScatraType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8fbarScatraType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex8fbarScatraType::Initialize(Core::FE::Discretization& dis)
 {
   SoHex8fbarType::Initialize(dis);
 
@@ -222,7 +222,7 @@ void Discret::ELEMENTS::SoHex27ScatraType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex27ScatraType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex27ScatraType::Initialize(Core::FE::Discretization& dis)
 {
   SoHex27Type::Initialize(dis);
 
@@ -298,7 +298,7 @@ void Discret::ELEMENTS::SoTet4ScatraType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet4ScatraType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoTet4ScatraType::Initialize(Core::FE::Discretization& dis)
 {
   SoTet4Type::Initialize(dis);
 
@@ -376,7 +376,7 @@ void Discret::ELEMENTS::SoTet10ScatraType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet10ScatraType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoTet10ScatraType::Initialize(Core::FE::Discretization& dis)
 {
   SoTet10Type::Initialize(dis);
 
@@ -455,7 +455,7 @@ void Discret::ELEMENTS::SoWeg6ScatraType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoWeg6ScatraType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoWeg6ScatraType::Initialize(Core::FE::Discretization& dis)
 {
   SoWeg6Type::Initialize(dis);
 

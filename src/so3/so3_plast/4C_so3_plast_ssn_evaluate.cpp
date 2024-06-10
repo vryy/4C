@@ -36,7 +36,7 @@ using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -687,7 +687,7 @@ void Discret::ELEMENTS::So3Plast<distype>::calculate_bop(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::So3Plast<distype>::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -3294,7 +3294,7 @@ void Discret::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& t
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::get_nurbs_ele_info(Discret::Discretization* dis)
+void Discret::ELEMENTS::So3Plast<distype>::get_nurbs_ele_info(Core::FE::Discretization* dis)
 {
   if (!IsNurbsElement()) return;
 

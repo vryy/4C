@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     krank 09/13|
  *----------------------------------------------------------------------*/
-FLD::Vreman::Vreman(Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params)
+FLD::Vreman::Vreman(Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params)
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
@@ -42,7 +42,7 @@ FLD::Vreman::Vreman(Teuchos::RCP<Discret::Discretization> actdis, Teuchos::Param
 /*----------------------------------------------------------------------*
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
-void FLD::Vreman::AddScatra(Teuchos::RCP<Discret::Discretization> scatradis)
+void FLD::Vreman::AddScatra(Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 

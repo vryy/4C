@@ -31,11 +31,14 @@ namespace Input
 {
   class LineDefinition;
 }
+
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
+
 namespace Discret
 {
-  // forward declaration
-  class Discretization;
-
   namespace ELEMENTS
   {
     // forward declaration
@@ -95,7 +98,7 @@ namespace Discret
        * @param mass_matrix (out) : Pointer to mass matrix or nullptr
        */
       virtual void evaluate_nonlinear_force_stiffness_mass(Core::Elements::Element& ele,
-          Mat::So3Material& solid_material, const Discret::Discretization& discretization,
+          Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
           const Core::LinAlg::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params,
           Core::LinAlg::SerialDenseVector* force_vector,
@@ -112,7 +115,7 @@ namespace Discret
        * materials
        */
       virtual void Recover(Core::Elements::Element& ele,
-          const Discret::Discretization& discretization, const std::vector<int>& dof_index_array,
+          const Core::FE::Discretization& discretization, const std::vector<int>& dof_index_array,
           Teuchos::ParameterList& params, STR::ELEMENTS::ParamsInterface& str_interface) = 0;
 
       /*!
@@ -130,7 +133,7 @@ namespace Discret
        */
       virtual void calculate_stresses_strains(Core::Elements::Element& ele,
           Mat::So3Material& solid_material, const ShellStressIO& stressIO,
-          const ShellStrainIO& strainIO, const Discret::Discretization& discretization,
+          const ShellStrainIO& strainIO, const Core::FE::Discretization& discretization,
           const Core::LinAlg::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) = 0;
 
@@ -146,7 +149,7 @@ namespace Discret
        * materials
        */
       virtual double calculate_internal_energy(Core::Elements::Element& ele,
-          Mat::So3Material& solid_material, const Discret::Discretization& discretization,
+          Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
           const Core::LinAlg::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) = 0;
 
@@ -162,7 +165,7 @@ namespace Discret
        * the elements/materials
        */
       virtual void Update(Core::Elements::Element& ele, Mat::So3Material& solid_material,
-          const Discret::Discretization& discretization,
+          const Core::FE::Discretization& discretization,
           const Core::LinAlg::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) = 0;
 

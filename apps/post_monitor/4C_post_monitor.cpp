@@ -50,7 +50,7 @@ MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
     if (field->name() == infieldtype)
     {
       // pointer (rcp) to actual discretisation
-      Teuchos::RCP<Discret::Discretization> mydiscrete = field->discretization();
+      Teuchos::RCP<Core::FE::Discretization> mydiscrete = field->discretization();
       // store, if this node belongs to me
       if (mydiscrete->HaveGlobalNode(node))
       {
@@ -94,7 +94,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int
   check_infield_type(infieldtype);
 
   // pointer (rcp) to actual discretisation
-  Teuchos::RCP<Discret::Discretization> mydiscrete = field->discretization();
+  Teuchos::RCP<Core::FE::Discretization> mydiscrete = field->discretization();
   // space dimension of the problem
   int dim = problem.num_dim();
 
@@ -259,7 +259,7 @@ void MonWriter::write_mon_str_file(const std::string& filename, PostProblem& pro
   check_infield_type(infieldtype);
 
   // pointer (rcp) to actual discretisation
-  Teuchos::RCP<Discret::Discretization> mydiscrete = field->discretization();
+  Teuchos::RCP<Core::FE::Discretization> mydiscrete = field->discretization();
   // space dimension of the problem
   const int dim = problem.num_dim();
 
@@ -316,7 +316,7 @@ void MonWriter::write_mon_str_file(const std::string& filename, PostProblem& pro
 
   // This is a loop over all possible stress or strain modes (called groupnames).
   // The call is handed to _all_ processors, because the extrapolation of the
-  // stresses/strains from Gauss points to nodes is done by Discret::Discretization
+  // stresses/strains from Gauss points to nodes is done by Core::FE::Discretization
   // utilising an assembly call. The assembly is parallel and thus all processors
   // have to be incoporated --- at least I think so.
   // (culpit: bborn, 07/09)
@@ -404,7 +404,7 @@ void MonWriter::write_mon_thr_file(const std::string& filename, PostProblem& pro
   check_infield_type(infieldtype);
 
   // pointer (rcp) to actual discretisation
-  Teuchos::RCP<Discret::Discretization> mydiscrete = field->discretization();
+  Teuchos::RCP<Core::FE::Discretization> mydiscrete = field->discretization();
   // space dimension of the problem
   const int dim = problem.num_dim();
 
@@ -463,7 +463,7 @@ void MonWriter::write_mon_thr_file(const std::string& filename, PostProblem& pro
   // This is a loop over all possible heatflux or temperature gradient modes
   // (called groupnames).The call is handed to _all_ processors, because the
   // extrapolation of the heatfluxes/temperature gradients from Gauss points to
-  // nodes is done by Discret::Discretization utilising an assembly call. The
+  // nodes is done by Core::FE::Discretization utilising an assembly call. The
   // assembly is parallel and thus all processors have to be incoporated
   // --- at least I think so. (culpit: bborn, 07/09)
   for (std::vector<std::string>::iterator gn = groupnames.begin(); gn != groupnames.end(); ++gn)
@@ -874,7 +874,7 @@ void StructMonWriter::write_str_result(std::ofstream& outfile, PostField*& field
   const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
       result.read_result_serialdensematrix(groupname);
   // discretisation (once more)
-  const Teuchos::RCP<Discret::Discretization> dis = field->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = field->discretization();
 
   Epetra_MultiVector nodal_stress(*dis->NodeRowMap(), 6, true);
 
@@ -1534,7 +1534,7 @@ void ThermoMonWriter::write_thr_result(std::ofstream& outfile, PostField*& field
   const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
       result.read_result_serialdensematrix(groupname);
   // discretisation (once more)
-  const Teuchos::RCP<Discret::Discretization> dis = field->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = field->discretization();
 
   // extrapolate heatfluxes/temperature gradients to nodes
   // and assemble them in two global vectors

@@ -26,10 +26,10 @@ namespace FBI
 {
   class BeamToFluidMeshtyingParams;
 }
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 namespace STR
 {
   namespace TimeInt
@@ -95,8 +95,8 @@ namespace BEAMINTERACTION
      * @param[in] params Parameters for the beam contact.
      * @param[in] start_value_lambda_gid Start value for the Lagrange multiplier global IDs.
      */
-    BeamToFluidMortarManager(Teuchos::RCP<const Discret::Discretization> discretization1,
-        Teuchos::RCP<const Discret::Discretization> discretization2,
+    BeamToFluidMortarManager(Teuchos::RCP<const Core::FE::Discretization> discretization1,
+        Teuchos::RCP<const Core::FE::Discretization> discretization2,
         Teuchos::RCP<const FBI::BeamToFluidMeshtyingParams> params, int start_value_lambda_gid);
 
     /**
@@ -238,10 +238,10 @@ namespace BEAMINTERACTION
     unsigned int n_lambda_element_;
 
     //! structure discretization
-    Teuchos::RCP<const Discret::Discretization> discretization_structure_;
+    Teuchos::RCP<const Core::FE::Discretization> discretization_structure_;
 
     //! fluid discretization
-    Teuchos::RCP<const Discret::Discretization> discretization_fluid_;
+    Teuchos::RCP<const Core::FE::Discretization> discretization_fluid_;
 
     //! Pointer to the beam contact parameters.
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingParams> beam_contact_parameters_ptr_;

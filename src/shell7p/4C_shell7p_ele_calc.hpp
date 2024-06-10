@@ -53,30 +53,30 @@ namespace Discret
           Core::Elements::Element& ele, Mat::So3Material& solid_material) override;
 
       void evaluate_nonlinear_force_stiffness_mass(Core::Elements::Element& ele,
-          Mat::So3Material& solid_material, const Discret::Discretization& discretization,
+          Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
           const Core::LinAlg::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params,
           Core::LinAlg::SerialDenseVector* force_vector,
           Core::LinAlg::SerialDenseMatrix* stiffness_matrix,
           Core::LinAlg::SerialDenseMatrix* mass_matrix) override;
 
-      void Recover(Core::Elements::Element& ele, const Discret::Discretization& discretization,
+      void Recover(Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params,
           STR::ELEMENTS::ParamsInterface& str_interface) override;
 
       void calculate_stresses_strains(Core::Elements::Element& ele,
           Mat::So3Material& solid_material, const ShellStressIO& stressIO,
-          const ShellStrainIO& strainIO, const Discret::Discretization& discretization,
+          const ShellStrainIO& strainIO, const Core::FE::Discretization& discretization,
           const Core::LinAlg::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) override;
 
       double calculate_internal_energy(Core::Elements::Element& ele,
-          Mat::So3Material& solid_material, const Discret::Discretization& discretization,
+          Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
           const Core::LinAlg::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) override;
 
       void Update(Core::Elements::Element& ele, Mat::So3Material& solid_material,
-          const Discret::Discretization& discretization,
+          const Core::FE::Discretization& discretization,
           const Core::LinAlg::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) override;
 

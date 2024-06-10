@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
-void Mortar::MultiFieldCoupling::PushBackCoupling(const Teuchos::RCP<Discret::Discretization>& dis,
+void Mortar::MultiFieldCoupling::PushBackCoupling(const Teuchos::RCP<Core::FE::Discretization>& dis,
     const int nodeset, const std::vector<int> dofs_to_couple)
 {
   if (!dis->GetCondition("MortarMulti"))

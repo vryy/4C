@@ -43,7 +43,7 @@ Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::FluidEleCalcPoroP1()
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -280,7 +280,7 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_pressure_equation(
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_od(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -1173,7 +1173,7 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::reac_stab(
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::compute_volume(Teuchos::ParameterList& params,
-    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization, std::vector<int>& lm,
+    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // get node coordinates

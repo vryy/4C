@@ -49,7 +49,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
 
   // Create the two uncoupled subproblems.
   // access the structural discretization
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis(struct_disname);
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis(struct_disname);
 
   // build structural time integrator
   Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase =
@@ -71,7 +71,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
   // -------------------------------------------------------------------
   // access the fluid discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<Discret::Discretization> fluiddis =
+  Teuchos::RCP<Core::FE::Discretization> fluiddis =
       Global::Problem::Instance()->GetDis(fluid_disname);
 
   // -------------------------------------------------------------------

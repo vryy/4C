@@ -101,7 +101,7 @@ std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefi
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::ostream& Mat::MaterialDefinition::Print(
-    std::ostream& stream, const Discret::Discretization* dis)
+    std::ostream& stream, const Core::FE::Discretization* dis)
 {
   // a string holding the comment indicating symbols for DAT input file
   const std::string comment = "//";

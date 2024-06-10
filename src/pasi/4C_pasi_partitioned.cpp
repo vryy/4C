@@ -243,7 +243,7 @@ void PaSI::PartitionedAlgo::init_structure_field()
   const Teuchos::ParameterList& params = problem->structural_dynamic_params();
 
   // access the structural discretization
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis("structure");
 
   // build structure
   if (params.get<std::string>("INT_STRATEGY") == "Standard")

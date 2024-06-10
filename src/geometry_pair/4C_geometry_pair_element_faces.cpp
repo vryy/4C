@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  */
 template <typename surface, typename scalar_type>
 void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::Setup(
-    const Teuchos::RCP<const Discret::Discretization>& discret,
+    const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Get the DOF GIDs of this face.
@@ -128,7 +128,7 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::evaluate_face_norm
  */
 template <typename surface, typename scalar_type>
 void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::Setup(
-    const Teuchos::RCP<const Discret::Discretization>& discret,
+    const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Call setup of the base class.
@@ -414,7 +414,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::average_nodal
  */
 template <typename surface, typename scalar_type, typename volume>
 void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volume>::Setup(
-    const Teuchos::RCP<const Discret::Discretization>& discret,
+    const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Get the DOF GIDs of this face and volume element.

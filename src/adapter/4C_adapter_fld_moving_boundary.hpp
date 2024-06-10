@@ -56,7 +56,7 @@ namespace Adapter
     //! @name Misc
 
     /// direct access to discretization
-    virtual Teuchos::RCP<Discret::Discretization> discretization() = 0;
+    virtual Teuchos::RCP<Core::FE::Discretization> discretization() = 0;
 
     virtual const Teuchos::RCP<Adapter::Fluid>& fluid_field() = 0;
 

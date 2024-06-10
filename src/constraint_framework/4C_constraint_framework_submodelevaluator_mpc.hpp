@@ -40,7 +40,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     \brief Standard Constructor
     */
     RveMultiPointConstraintManager(
-        Teuchos::RCP<const Discret::Discretization> disc_ptr, Core::LinAlg::SparseMatrix* st_ptr);
+        Teuchos::RCP<const Core::FE::Discretization> disc_ptr, Core::LinAlg::SparseMatrix* st_ptr);
 
     //! @name Public evaluation methods
 

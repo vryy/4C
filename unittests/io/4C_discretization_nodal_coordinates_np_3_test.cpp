@@ -44,7 +44,7 @@ namespace
       CreateMaterialInGlobalProblem();
 
       comm_ = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
-      test_discretization_ = Teuchos::rcp(new Discret::Discretization("dummy", comm_, 3));
+      test_discretization_ = Teuchos::rcp(new Core::FE::Discretization("dummy", comm_, 3));
 
       Core::IO::cout.setup(false, false, false, Core::IO::standard, comm_, 0, 0, "dummyFilePrefix");
 
@@ -68,7 +68,7 @@ namespace
 
    protected:
     Core::IO::GridGenerator::RectangularCuboidInputs inputData_{};
-    Teuchos::RCP<Discret::Discretization> test_discretization_;
+    Teuchos::RCP<Core::FE::Discretization> test_discretization_;
     Teuchos::RCP<Epetra_Comm> comm_;
   };
 

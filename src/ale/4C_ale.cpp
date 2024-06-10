@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ALE::Ale::Ale(Teuchos::RCP<Discret::Discretization> actdis,
+ALE::Ale::Ale(Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : discret_(actdis),
@@ -850,7 +850,7 @@ bool ALE::Ale::evaluate_element_quality()
 ////////////////////////////////////////////////////////////////////////////////
 
 /*----------------------------------------------------------------------------*/
-ALE::AleLinear::AleLinear(Teuchos::RCP<Discret::Discretization> actdis,
+ALE::AleLinear::AleLinear(Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params_in,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : Ale(actdis, solver, params_in, output), validsysmat_(false), updateeverystep_(false)

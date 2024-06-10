@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::UTILS::evaluate_initial_field(const Core::UTILS::FunctionManager& function_manager,
-    const Discret::Discretization& discret, const std::string& fieldstring,
+void Core::FE::UTILS::evaluate_initial_field(const Core::UTILS::FunctionManager& function_manager,
+    const Core::FE::Discretization& discret, const std::string& fieldstring,
     Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids)
 {
   // get initial field conditions
@@ -61,8 +61,8 @@ void Discret::UTILS::evaluate_initial_field(const Core::UTILS::FunctionManager& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::UTILS::DoInitialField(const Core::UTILS::FunctionManager& function_manager,
-    const Discret::Discretization& discret, Core::Conditions::Condition& cond,
+void Core::FE::UTILS::DoInitialField(const Core::UTILS::FunctionManager& function_manager,
+    const Core::FE::Discretization& discret, Core::Conditions::Condition& cond,
     Epetra_Vector& fieldvector, const std::vector<int>& locids)
 {
   const std::vector<int> cond_nodeids = *cond.GetNodes();

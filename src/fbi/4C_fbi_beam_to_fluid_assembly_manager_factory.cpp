@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
  */
 Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
 BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
-    Teuchos::RCP<const Discret::Discretization> discretization1,
-    Teuchos::RCP<const Discret::Discretization> discretization2,
+    Teuchos::RCP<const Core::FE::Discretization> discretization1,
+    Teuchos::RCP<const Core::FE::Discretization> discretization2,
     std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> interaction_pairs,
     const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr,
     Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy)

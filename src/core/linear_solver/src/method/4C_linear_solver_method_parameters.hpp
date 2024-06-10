@@ -19,10 +19,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::LinearSolver
 {
@@ -37,7 +37,7 @@ namespace Core::LinearSolver
       into the solver parameter list.
     */
     static void compute_solver_parameters(
-        Discret::Discretization& dis, Teuchos::ParameterList& solverlist);
+        Core::FE::Discretization& dis, Teuchos::ParameterList& solverlist);
 
     /*!
      * \brief Fix the nullspace to match a new given map

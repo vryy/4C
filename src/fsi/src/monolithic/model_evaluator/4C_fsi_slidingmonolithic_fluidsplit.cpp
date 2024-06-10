@@ -2018,8 +2018,8 @@ void FSI::SlidingMonolithicFluidSplit::create_node_owner_relationship(std::map<i
     std::map<int, std::list<int>>* inverseNodeOwner,
     std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
     std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
-    Teuchos::RCP<Discret::Discretization> structuredis,
-    Teuchos::RCP<Discret::Discretization> fluiddis, const Inpar::FSI::Redistribute domain)
+    Teuchos::RCP<Core::FE::Discretization> structuredis,
+    Teuchos::RCP<Core::FE::Discretization> fluiddis, const Inpar::FSI::Redistribute domain)
 {
   /*******************************************/
   /* distribute masternodes to future owners */

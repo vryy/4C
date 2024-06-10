@@ -99,7 +99,7 @@ double Adapter::XFluidFSI::TimeScaling() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization> Adapter::XFluidFSI::boundary_discretization()
+Teuchos::RCP<Core::FE::Discretization> Adapter::XFluidFSI::boundary_discretization()
 {
   return mesh_coupling_fsi_->GetCutterDis();
 }

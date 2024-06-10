@@ -234,7 +234,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Rigidspher
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      meier 05/12|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::RigidsphereType::Initialize(Discret::Discretization& dis) { return 0; }
+int Discret::ELEMENTS::RigidsphereType::Initialize(Core::FE::Discretization& dis) { return 0; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

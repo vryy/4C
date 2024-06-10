@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-CONSTRAINTS::Constraint::Constraint(Teuchos::RCP<Discret::Discretization> discr,
+CONSTRAINTS::Constraint::Constraint(Teuchos::RCP<Core::FE::Discretization> discr,
     const std::string& conditionname, int& minID, int& maxID)
     : actdisc_(discr)
 {
@@ -69,7 +69,7 @@ CONSTRAINTS::Constraint::Constraint(Teuchos::RCP<Discret::Discretization> discr,
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
 CONSTRAINTS::Constraint::Constraint(
-    Teuchos::RCP<Discret::Discretization> discr, const std::string& conditionname)
+    Teuchos::RCP<Core::FE::Discretization> discr, const std::string& conditionname)
     : actdisc_(discr)
 {
   actdisc_->GetCondition(conditionname, constrcond_);

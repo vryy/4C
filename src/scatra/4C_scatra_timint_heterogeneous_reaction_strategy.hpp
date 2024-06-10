@@ -17,10 +17,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace ScaTra
 {
@@ -59,7 +59,7 @@ namespace ScaTra
      Evaluate terms of your weak formulation on elements marked with a given condition.
 
     \note The implementation of evaluate_condition in this class, calls
-          \ref Discret::Discretization::evaluate_condition on the auxiliary
+          \ref Core::FE::Discretization::evaluate_condition on the auxiliary
           discretization. Since, this discretization has the dofs of both,
           the volume-bound scalars and the surface bound scalars, every
           term involving one or both kinds of scalars can easily be evaluated.
@@ -101,7 +101,7 @@ namespace ScaTra
 
    private:
     //! the discretization for the reaction
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! private copy constructor
     HeterogeneousReactionStrategy(const HeterogeneousReactionStrategy& old);

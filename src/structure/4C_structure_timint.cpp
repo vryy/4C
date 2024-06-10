@@ -74,7 +74,7 @@ void STR::TimInt::Logo()
 /* constructor */
 STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization> actdis,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : discret_(actdis),
@@ -177,7 +177,7 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // invalidate setup
   set_is_setup(false);
@@ -2348,7 +2348,8 @@ void STR::TimInt::determine_stress_strain()
 
     Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix = Teuchos::null;
     Teuchos::RCP<Epetra_Vector> system_vector = Teuchos::null;
-    Discret::UTILS::Evaluate(*discret_, p, system_matrix, system_vector, discret_->ElementRowMap());
+    Core::FE::UTILS::Evaluate(
+        *discret_, p, system_matrix, system_vector, discret_->ElementRowMap());
     discret_->ClearState();
   }
 }

@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 template <Core::FE::CellType distype, unsigned probDim>
 int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_action(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, const ScaTra::Action& action,
+    Core::FE::Discretization& discretization, const ScaTra::Action& action,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -109,7 +109,7 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_action(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, unsigned probDim>
 int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SetupCalc(
-    Core::Elements::Element* ele, Discret::Discretization& discretization)
+    Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
   // reset all managers to their default values (I feel better this way)
   diff_manager()->Reset();

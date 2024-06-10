@@ -336,7 +336,7 @@ void Discret::ELEMENTS::ElemagDiffBoundary::Print(std::ostream& os) const
  |  evaluate the element (public)                      berardocco 03/19 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::ElemagDiffBoundary::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -349,7 +349,7 @@ int Discret::ELEMENTS::ElemagDiffBoundary::Evaluate(Teuchos::ParameterList& para
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element (public) berardocco 03/19 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagDiffBoundary::LocationVector(const Discretization& dis,
+void Discret::ELEMENTS::ElemagDiffBoundary::LocationVector(const Core::FE::Discretization& dis,
     LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {
@@ -429,18 +429,18 @@ Core::Elements::Element* Discret::ELEMENTS::ElemagDiffIntFace::Clone() const
  |  create the patch location vector (public)          berardocco 03/19 |
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
-    Discret::Discretization& discretization,  ///< discretization
-    std::vector<int>& nds_master,             ///< nodal dofset w.r.t master parent element
-    std::vector<int>& nds_slave,              ///< nodal dofset w.r.t slave parent element
-    std::vector<int>& patchlm,                ///< local map for gdof ids for patch of elements
-    std::vector<int>& master_lm,              ///< local map for gdof ids for master element
-    std::vector<int>& slave_lm,               ///< local map for gdof ids for slave element
-    std::vector<int>& face_lm,                ///< local map for gdof ids for face element
-    std::vector<int>& lm_masterToPatch,       ///< local map between lm_master and lm_patch
-    std::vector<int>& lm_slaveToPatch,        ///< local map between lm_slave and lm_patch
-    std::vector<int>& lm_faceToPatch,         ///< local map between lm_face and lm_patch
-    std::vector<int>& lm_masterNodeToPatch,   ///< local map between master nodes and nodes in patch
-    std::vector<int>& lm_slaveNodeToPatch     ///< local map between slave nodes and nodes in patch
+    Core::FE::Discretization& discretization,  ///< discretization
+    std::vector<int>& nds_master,              ///< nodal dofset w.r.t master parent element
+    std::vector<int>& nds_slave,               ///< nodal dofset w.r.t slave parent element
+    std::vector<int>& patchlm,                 ///< local map for gdof ids for patch of elements
+    std::vector<int>& master_lm,               ///< local map for gdof ids for master element
+    std::vector<int>& slave_lm,                ///< local map for gdof ids for slave element
+    std::vector<int>& face_lm,                 ///< local map for gdof ids for face element
+    std::vector<int>& lm_masterToPatch,        ///< local map between lm_master and lm_patch
+    std::vector<int>& lm_slaveToPatch,         ///< local map between lm_slave and lm_patch
+    std::vector<int>& lm_faceToPatch,          ///< local map between lm_face and lm_patch
+    std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
+    std::vector<int>& lm_slaveNodeToPatch    ///< local map between slave nodes and nodes in patch
 )
 {
   // create one patch location vector containing all dofs of master, slave and

@@ -116,15 +116,15 @@ void Discret::ELEMENTS::FluidIntFace::Unpack(const std::vector<char>& data)
  |  create the patch location vector (public)              schott 06/14 |
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::FluidIntFace::PatchLocationVector(
-    Discret::Discretization& discretization,  ///< discretization
-    std::vector<int>& nds_master,             ///< nodal dofset w.r.t master parent element
-    std::vector<int>& nds_slave,              ///< nodal dofset w.r.t slave parent element
-    std::vector<int>& patchlm,                ///< local map for gdof ids for patch of elements
-    std::vector<int>& lm_masterToPatch,       ///< local map between lm_master and lm_patch
-    std::vector<int>& lm_slaveToPatch,        ///< local map between lm_slave and lm_patch
-    std::vector<int>& lm_faceToPatch,         ///< local map between lm_face and lm_patch
-    std::vector<int>& lm_masterNodeToPatch,   ///< local map between master nodes and nodes in patch
-    std::vector<int>& lm_slaveNodeToPatch,    ///< local map between slave nodes and nodes in patch
+    Core::FE::Discretization& discretization,  ///< discretization
+    std::vector<int>& nds_master,              ///< nodal dofset w.r.t master parent element
+    std::vector<int>& nds_slave,               ///< nodal dofset w.r.t slave parent element
+    std::vector<int>& patchlm,                 ///< local map for gdof ids for patch of elements
+    std::vector<int>& lm_masterToPatch,        ///< local map between lm_master and lm_patch
+    std::vector<int>& lm_slaveToPatch,         ///< local map between lm_slave and lm_patch
+    std::vector<int>& lm_faceToPatch,          ///< local map between lm_face and lm_patch
+    std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
+    std::vector<int>& lm_slaveNodeToPatch,   ///< local map between slave nodes and nodes in patch
     Teuchos::RCP<std::map<int, int>>
         pbcconnectivity  ///< connectivity between slave and PBC's master nodes
 )
@@ -325,18 +325,18 @@ void Discret::ELEMENTS::FluidIntFace::PatchLocationVector(
  |  create the patch location vector (public)              schott 03/12 |
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::FluidIntFace::PatchLocationVector(
-    Discret::Discretization& discretization,  ///< discretization
-    std::vector<int>& nds_master,             ///< nodal dofset w.r.t master parent element
-    std::vector<int>& nds_slave,              ///< nodal dofset w.r.t slave parent element
-    std::vector<int>& patchlm,                ///< local map for gdof ids for patch of elements
-    std::vector<int>& master_lm,              ///< local map for gdof ids for master element
-    std::vector<int>& slave_lm,               ///< local map for gdof ids for slave element
-    std::vector<int>& face_lm,                ///< local map for gdof ids for face element
-    std::vector<int>& lm_masterToPatch,       ///< local map between lm_master and lm_patch
-    std::vector<int>& lm_slaveToPatch,        ///< local map between lm_slave and lm_patch
-    std::vector<int>& lm_faceToPatch,         ///< local map between lm_face and lm_patch
-    std::vector<int>& lm_masterNodeToPatch,   ///< local map between master nodes and nodes in patch
-    std::vector<int>& lm_slaveNodeToPatch,    ///< local map between slave nodes and nodes in patch
+    Core::FE::Discretization& discretization,  ///< discretization
+    std::vector<int>& nds_master,              ///< nodal dofset w.r.t master parent element
+    std::vector<int>& nds_slave,               ///< nodal dofset w.r.t slave parent element
+    std::vector<int>& patchlm,                 ///< local map for gdof ids for patch of elements
+    std::vector<int>& master_lm,               ///< local map for gdof ids for master element
+    std::vector<int>& slave_lm,                ///< local map for gdof ids for slave element
+    std::vector<int>& face_lm,                 ///< local map for gdof ids for face element
+    std::vector<int>& lm_masterToPatch,        ///< local map between lm_master and lm_patch
+    std::vector<int>& lm_slaveToPatch,         ///< local map between lm_slave and lm_patch
+    std::vector<int>& lm_faceToPatch,          ///< local map between lm_face and lm_patch
+    std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
+    std::vector<int>& lm_slaveNodeToPatch,   ///< local map between slave nodes and nodes in patch
     Teuchos::RCP<std::map<int, int>>
         pbcconnectivity  ///< connectivity between slave and PBC's master nodes
 )
@@ -594,7 +594,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidIntFa
  |  evaluate the element (public)                          schott 03/12 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::FluidIntFace::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -614,7 +614,7 @@ int Discret::ELEMENTS::FluidIntFace::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a surface/line Neumann boundary condition    schott 03/12 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::FluidIntFace::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

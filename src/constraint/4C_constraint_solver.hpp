@@ -20,10 +20,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -44,7 +44,7 @@ namespace CONSTRAINTS
     /*!
     \brief Constructor
     */
-    ConstraintSolver(Teuchos::RCP<Discret::Discretization> discr,  ///< discretization
+    ConstraintSolver(Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization
         Core::LinAlg::Solver& solver,  ///< Solver to solve linear subproblem in iteration
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,  ///< Map extractor for Dirichlet DOFs
         Teuchos::ParameterList param  ///< parameterlist containing solver parameters
@@ -54,7 +54,7 @@ namespace CONSTRAINTS
     /*!
       \brief Set it up
      */
-    void Setup(Teuchos::RCP<Discret::Discretization> discr, Core::LinAlg::Solver& solver,
+    void Setup(Teuchos::RCP<Core::FE::Discretization> discr, Core::LinAlg::Solver& solver,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::ParameterList params);
 
     /*!
@@ -140,9 +140,9 @@ namespace CONSTRAINTS
         const Teuchos::RCP<Epetra_Vector> rhsconstr     ///< constraint errors
     );
 
-    Teuchos::RCP<Discret::Discretization> actdisc_;  ///< standard discretization
-    int max_iter_;                                   ///< number of maximal iterations
-    double iterationparam_;                          ///< parameter for Uzawa algorithm
+    Teuchos::RCP<Core::FE::Discretization> actdisc_;  ///< standard discretization
+    int max_iter_;                                    ///< number of maximal iterations
+    double iterationparam_;                           ///< parameter for Uzawa algorithm
     double minparam_;                           ///< minimal possible parameter for Uzawa algorithm
     double iterationtol_;                       ///< tolerance
     double tolres_;                             ///< tolerance for residual

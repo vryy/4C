@@ -37,7 +37,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public) cyron 01/08|
  *----------------------------------------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1,  // nonlinear stiffness matrix
     Core::LinAlg::SerialDenseMatrix& elemat2,  // nonlinear mass matrix
     Core::LinAlg::SerialDenseVector& elevec1,  // nonlinear internal (elastic) forces
@@ -552,7 +552,7 @@ int Discret::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public) cyron 03/08|
  *----------------------------------------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Beam3r::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

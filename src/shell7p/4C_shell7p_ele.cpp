@@ -159,7 +159,7 @@ void Discret::ELEMENTS::Shell7pType::setup_element_definition(
                             .Build();
 }
 
-int Discret::ELEMENTS::Shell7pType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::Shell7pType::Initialize(Core::FE::Discretization& dis)
 {
   STR::UTILS::Shell::Director::SetupShellElementDirectors(*this, dis);
 

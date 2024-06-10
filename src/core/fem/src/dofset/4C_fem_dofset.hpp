@@ -29,11 +29,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
-
+}  // namespace Core::FE
 /*!
 \brief A set of degrees of freedom
 
@@ -300,7 +299,7 @@ namespace Core::DOFSets
     @return Maximum dof number of this dofset
     */
     int assign_degrees_of_freedom(
-        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
+        const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// reset all internal variables
     void Reset() override;
@@ -358,10 +357,10 @@ namespace Core::DOFSets
     virtual void get_reserved_max_num_dofper_node(int& maxnodenumdf) { return; };
 
     /// get first number to be used as Dof GID in assign_degrees_of_freedom
-    virtual int get_first_gid_number_to_be_used(const Discret::Discretization& dis) const;
+    virtual int get_first_gid_number_to_be_used(const Core::FE::Discretization& dis) const;
 
     /// get minimal node GID to be used in assign_degrees_of_freedom
-    virtual int get_minimal_node_gid_if_relevant(const Discret::Discretization& dis) const;
+    virtual int get_minimal_node_gid_if_relevant(const Core::FE::Discretization& dis) const;
 
     /// filled flag
     bool filled_;

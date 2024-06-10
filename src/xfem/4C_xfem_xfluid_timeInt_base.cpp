@@ -37,8 +37,8 @@ FOUR_C_NAMESPACE_OPEN
  * basic XFEM time-integration constructor                                           schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 XFEM::XfluidTimeintBase::XfluidTimeintBase(
-    const Teuchos::RCP<Discret::Discretization> discret,      /// background discretization
-    const Teuchos::RCP<Discret::Discretization> boundarydis,  /// cut discretization
+    const Teuchos::RCP<Core::FE::Discretization> discret,      /// background discretization
+    const Teuchos::RCP<Core::FE::Discretization> boundarydis,  /// cut discretization
     Teuchos::RCP<Core::Geo::CutWizard> wizard_old,  /// cut wizard w.r.t. old interface position
     Teuchos::RCP<Core::Geo::CutWizard> wizard_new,  /// cut wizard w.r.t. new interface position
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_old,      /// XFEM dofset w.r.t. old interface position
@@ -1001,7 +1001,7 @@ void XFEM::XfluidStd::compute(std::vector<Teuchos::RCP<Epetra_Vector>>& newRowVe
 // *
 // *------------------------------------------------------------------------------------------------*/
 // void XFEM::XFLUID_STD::importNewFGIData(
-//    const Teuchos::RCP<Discret::Discretization> discret,
+//    const Teuchos::RCP<Core::FE::Discretization> discret,
 //    const Teuchos::RCP<XFEM::DofManager> newdofman,
 //    const Teuchos::RCP<COMBUST::FlameFront> flamefront,
 //    const Epetra_Map& newdofrowmap,
@@ -2278,10 +2278,10 @@ void XFEM::XfluidStd::get_projxn_line(
  *--------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, const int numdof>
 void XFEM::XfluidStd::addeidisp(
-    Core::LinAlg::SerialDenseMatrix& xyze,  ///< node coordinates of side or line
-    const Discret::Discretization& cutdis,  ///< cut discretization
-    const std::string state,                ///< state
-    const std::vector<int>& lm              ///< local map
+    Core::LinAlg::SerialDenseMatrix& xyze,   ///< node coordinates of side or line
+    const Core::FE::Discretization& cutdis,  ///< cut discretization
+    const std::string state,                 ///< state
+    const std::vector<int>& lm               ///< local map
 )
 {
   const int nen = Core::FE::num_nodes<distype>;

@@ -299,7 +299,7 @@ void Discret::ELEMENTS::SoHex18::init_gp()
  |  evaluate the element (public)                           seitz 11/14 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -518,7 +518,7 @@ int Discret::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Volume Neumann boundary condition (public)  seitz 11/14 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -847,7 +847,7 @@ void Discret::ELEMENTS::SoHex18::lumpmass(Core::LinAlg::Matrix<NUMDOF_SOH18, NUM
 /*----------------------------------------------------------------------*
  |  init the element (public)                               seitz 11/14 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex18Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex18Type::Initialize(Core::FE::Discretization& dis)
 {
   // here we order the nodes such that we have a positive definite jacobian
   //       maybe the python script generating the hex18 elements would be a better place for this.

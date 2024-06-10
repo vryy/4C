@@ -40,7 +40,7 @@ namespace Core::DOFSets
     \brief Standard Constructor
     */
     explicit TransparentDofSet(
-        Teuchos::RCP<Discret::Discretization> sourcedis, bool parallel = false);
+        Teuchos::RCP<Core::FE::Discretization> sourcedis, bool parallel = false);
 
 
 
@@ -49,11 +49,11 @@ namespace Core::DOFSets
 
     /// Assign dof numbers to all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
-        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
+        const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// Assign dof numbers for new discretization using dof numbering from source discretization.
-    void transfer_degrees_of_freedom(const Discret::Discretization& sourcedis,  ///< source discret
-        const Discret::Discretization&
+    void transfer_degrees_of_freedom(const Core::FE::Discretization& sourcedis,  ///< source discret
+        const Core::FE::Discretization&
             newdis,      ///< discretization that gets dof numbering from source discret
         const int start  ///< offset for dof numbering (obsolete)
     );
@@ -63,8 +63,8 @@ namespace Core::DOFSets
     /// for this version, newdis is allowed to be distributed completely different; the
     /// communication  of the dofs is done internally.
     void parallel_transfer_degrees_of_freedom(
-        const Discret::Discretization& sourcedis,  ///< source discret
-        const Discret::Discretization&
+        const Core::FE::Discretization& sourcedis,  ///< source discret
+        const Core::FE::Discretization&
             newdis,      ///< discretization that gets dof numbering from source discret
         const int start  ///< offset for dof numbering (obsolete)
     );
@@ -92,7 +92,7 @@ namespace Core::DOFSets
         Core::Communication::Exporter& exporter, MPI_Request& request);
 
    protected:
-    Teuchos::RCP<Discret::Discretization> sourcedis_;  ///< source discretization
+    Teuchos::RCP<Core::FE::Discretization> sourcedis_;  ///< source discretization
 
     bool parallel_;  ///< call parallel_transfer_degrees_of_freedom instead of
                      ///< transfer_degrees_of_freedom

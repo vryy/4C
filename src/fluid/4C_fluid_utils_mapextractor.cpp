@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FLD::UTILS::MapExtractor::Setup(
-    const Discret::Discretization& dis, bool withpressure, bool overlapping, const int nds_master)
+    const Core::FE::Discretization& dis, bool withpressure, bool overlapping, const int nds_master)
 {
   const int ndim = Global::Problem::Instance()->NDim();
   Core::Conditions::MultiConditionSelector mcs;
@@ -74,7 +74,7 @@ void FLD::UTILS::MapExtractor::Setup(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<std::set<int>> FLD::UTILS::MapExtractor::conditioned_element_map(
-    const Discret::Discretization& dis) const
+    const Core::FE::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int>> condelements =
       Core::Conditions::conditioned_element_map(dis, "FSICoupling");
@@ -97,7 +97,7 @@ Teuchos::RCP<std::set<int>> FLD::UTILS::MapExtractor::conditioned_element_map(
   return condelements;
 }
 
-void FLD::UTILS::VolumetricFlowMapExtractor::Setup(const Discret::Discretization& dis)
+void FLD::UTILS::VolumetricFlowMapExtractor::Setup(const Core::FE::Discretization& dis)
 {
   const int ndim = Global::Problem::Instance()->NDim();
   Core::Conditions::MultiConditionSelector mcs;
@@ -109,7 +109,7 @@ void FLD::UTILS::VolumetricFlowMapExtractor::Setup(const Discret::Discretization
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::KSPMapExtractor::Setup(const Discret::Discretization& dis)
+void FLD::UTILS::KSPMapExtractor::Setup(const Core::FE::Discretization& dis)
 {
   Core::Conditions::MultiConditionSelector mcs;
   mcs.AddSelector(
@@ -121,7 +121,7 @@ void FLD::UTILS::KSPMapExtractor::Setup(const Discret::Discretization& dis)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<std::set<int>> FLD::UTILS::KSPMapExtractor::conditioned_element_map(
-    const Discret::Discretization& dis) const
+    const Core::FE::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int>> condelements =
       Core::Conditions::conditioned_element_map(dis, "KrylovSpaceProjection");
@@ -131,7 +131,7 @@ Teuchos::RCP<std::set<int>> FLD::UTILS::KSPMapExtractor::conditioned_element_map
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::VelPressExtractor::Setup(const Discret::Discretization& dis)
+void FLD::UTILS::VelPressExtractor::Setup(const Core::FE::Discretization& dis)
 {
   const int ndim = Global::Problem::Instance()->NDim();
   Core::LinAlg::CreateMapExtractorFromDiscretization(dis, ndim, *this);
@@ -139,7 +139,7 @@ void FLD::UTILS::VelPressExtractor::Setup(const Discret::Discretization& dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::FsiMapExtractor::Setup(const Discret::Discretization& dis)
+void FLD::UTILS::FsiMapExtractor::Setup(const Core::FE::Discretization& dis)
 {
   const int ndim = Global::Problem::Instance()->NDim();
   Core::Conditions::MultiConditionSelector mcs;

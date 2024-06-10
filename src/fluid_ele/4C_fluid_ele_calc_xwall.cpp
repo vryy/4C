@@ -79,7 +79,7 @@ Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(
     Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+    Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
     Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
@@ -147,7 +147,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate_service_x_wall(
     Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+    Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
     Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
@@ -198,7 +198,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate_service_x_w
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -280,7 +280,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Evaluate(Discret::EL
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
-    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params,
     Teuchos::RCP<Core::Mat::Material>& mat)
 {
@@ -820,7 +820,7 @@ double Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::der2_spaldings_la
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::tau_w_via_gradient(
     Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseVector& elevec2)
 {
@@ -1051,7 +1051,7 @@ double Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk()
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk(Discret::ELEMENTS::Fluid* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
@@ -1075,7 +1075,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk(Discret::ELE
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(
     Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1,
     Core::LinAlg::SerialDenseMatrix& elemat2)
 {
@@ -1322,7 +1322,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_grid_disp_ale(
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::Matrix<nsd_, nen_>& edispnp)
 {
   my::extract_values_from_global_vector(

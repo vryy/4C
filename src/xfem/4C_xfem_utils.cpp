@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void XFEM::UTILS::extract_node_vectors(Teuchos::RCP<Discret::Discretization> dis,
+void XFEM::UTILS::extract_node_vectors(Teuchos::RCP<Core::FE::Discretization> dis,
     std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> idispnp)
 {
   Teuchos::RCP<const Epetra_Vector> dispcol =
@@ -146,7 +146,7 @@ void XFEM::UTILS::SafetyCheckMaterials(
 void XFEM::UTILS::ExtractQuantityAtElement(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
     const Core::Elements::Element* element,
     const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
-    Teuchos::RCP<Discret::Discretization>& dis, const int nds_vector, const int nsd)
+    Teuchos::RCP<Core::FE::Discretization>& dis, const int nds_vector, const int nsd)
 {
   // get the other nds-set which is connected to the current one via this boundary-cell
   Core::Elements::Element::LocationArray la(dis->NumDofSets());
@@ -174,7 +174,7 @@ void XFEM::UTILS::ExtractQuantityAtElement(Core::LinAlg::SerialDenseMatrix::Base
 //! Extract a quantity for a node
 void XFEM::UTILS::ExtractQuantityAtNode(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
     const Core::Nodes::Node* node, const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
-    Teuchos::RCP<Discret::Discretization>& dis, const int nds_vector, const unsigned int nsd)
+    Teuchos::RCP<Core::FE::Discretization>& dis, const int nds_vector, const unsigned int nsd)
 {
   const std::vector<int> lm = dis->Dof(nds_vector, node);
   if (lm.size() != 1) FOUR_C_THROW("assume a unique level-set dof in cutterdis-Dofset");

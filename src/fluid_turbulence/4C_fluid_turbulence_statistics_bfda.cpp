@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 */
 /*----------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params,
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params,
     const std::string& statistics_outfilename)
     : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
 {

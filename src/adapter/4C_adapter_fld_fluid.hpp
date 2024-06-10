@@ -45,11 +45,10 @@ namespace Core::Elements
   class Element;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-  class ResultTest;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::IO
 {
@@ -206,7 +205,7 @@ namespace Adapter
     virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> ShapeDerivatives() = 0;
 
     /// direct access to discretization
-    virtual const Teuchos::RCP<Discret::Discretization>& discretization() = 0;
+    virtual const Teuchos::RCP<Core::FE::Discretization>& discretization() = 0;
 
     /// direct access to dofset
     virtual Teuchos::RCP<const Core::DOFSets::DofSet> DofSet() = 0;
@@ -239,19 +238,19 @@ namespace Adapter
     ///  set scalar fields within outer iteration loop
     virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
-        Teuchos::RCP<Discret::Discretization> scatradis, int dofset = 0) = 0;
+        Teuchos::RCP<Core::FE::Discretization> scatradis, int dofset = 0) = 0;
 
     /// set scalar fields within outer iteration loop for low-Mach-number flow
     virtual void set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
         Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
         const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-        Teuchos::RCP<Discret::Discretization> scatradis) = 0;
+        Teuchos::RCP<Core::FE::Discretization> scatradis) = 0;
 
     /// set scalar fields
     virtual void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
         const double thermpressnp, Teuchos::RCP<const Epetra_Vector> scatraresidual,
-        Teuchos::RCP<Discret::Discretization> scatradis, const int whichscalar = -1) = 0;
+        Teuchos::RCP<Core::FE::Discretization> scatradis, const int whichscalar = -1) = 0;
 
     /// set velocity field (separate computation)
     virtual void set_velocity_field(Teuchos::RCP<const Epetra_Vector> velnp) = 0;

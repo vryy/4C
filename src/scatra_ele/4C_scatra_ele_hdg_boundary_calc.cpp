@@ -112,7 +112,7 @@ Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::ScaTraHDGBoundaryImpl()
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::evaluate_neumann(
     Discret::ELEMENTS::ScaTraHDGBoundary* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra)
 {

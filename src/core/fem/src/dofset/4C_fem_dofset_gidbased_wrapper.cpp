@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::DOFSets::DofSetGIDBasedWrapper::DofSetGIDBasedWrapper(
-    Teuchos::RCP<Discret::Discretization> sourcedis,
+    Teuchos::RCP<Core::FE::Discretization> sourcedis,
     Teuchos::RCP<Core::DOFSets::DofSetInterface> sourcedofset)
     : DofSetBase(),
       sourcedis_(sourcedis),
@@ -51,7 +51,7 @@ void Core::DOFSets::DofSetGIDBasedWrapper::Reset()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Core::DOFSets::DofSetGIDBasedWrapper::assign_degrees_of_freedom(
-    const Discret::Discretization& dis, const unsigned dspos, const int start)
+    const Core::FE::Discretization& dis, const unsigned dspos, const int start)
 {
   NotifyAssigned();
   return start;

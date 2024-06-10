@@ -41,7 +41,7 @@ namespace Adapter
   {
    public:
     /// Constructor
-    FluidLung(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+    FluidLung(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 

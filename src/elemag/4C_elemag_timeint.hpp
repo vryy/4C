@@ -44,12 +44,11 @@ namespace Core::LinAlg
   class MapExtractor;
   class Solver;
 }  // namespace Core::LinAlg
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
   class DiscretizationHDG;
-  class ResultTest;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::IO
 {
@@ -74,7 +73,7 @@ namespace EleMag
   {
    public:
     /// Constructor.
-    ElemagTimeInt(const Teuchos::RCP<Discret::DiscretizationHDG>& actdis,
+    ElemagTimeInt(const Teuchos::RCP<Core::FE::DiscretizationHDG>& actdis,
         const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<Core::IO::DiscretizationWriter>& output);
@@ -134,7 +133,7 @@ namespace EleMag
     \brief Import initial electric field from scatra solution
     */
     void set_initial_electric_field(
-        Teuchos::RCP<Epetra_Vector> phi, Teuchos::RCP<Discret::Discretization>& scatradis);
+        Teuchos::RCP<Epetra_Vector> phi, Teuchos::RCP<Core::FE::Discretization>& scatradis);
 
     /*!
     \brief Compare the numerical solution to the analytical one.
@@ -288,7 +287,7 @@ namespace EleMag
     /*!
     \brief returns pointer to the discretization
     */
-    Teuchos::RCP<Discret::Discretization> discretization();
+    Teuchos::RCP<Core::FE::Discretization> discretization();
 
     /*!
     \brief create result test
@@ -297,7 +296,7 @@ namespace EleMag
 
    protected:
     /// discretization, solver, parameter list and output
-    Teuchos::RCP<Discret::DiscretizationHDG> discret_;
+    Teuchos::RCP<Core::FE::DiscretizationHDG> discret_;
     Teuchos::RCP<Core::LinAlg::Solver> solver_;
     Teuchos::RCP<Teuchos::ParameterList> params_;
     Teuchos::RCP<Core::IO::DiscretizationWriter> output_;

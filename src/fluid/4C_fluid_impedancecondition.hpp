@@ -24,10 +24,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 namespace Core::IO
 {
   class DiscretizationReader;
@@ -52,7 +52,7 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidImpedanceWrapper(const Teuchos::RCP<Discret::Discretization> actdis);
+      FluidImpedanceWrapper(const Teuchos::RCP<Core::FE::Discretization> actdis);
 
       /*!
       \brief Destructor
@@ -118,7 +118,7 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidImpedanceBc(const Teuchos::RCP<Discret::Discretization> actdis, const int condid,
+      FluidImpedanceBc(const Teuchos::RCP<Core::FE::Discretization> actdis, const int condid,
           Core::Conditions::Condition* impedancecond);
 
       /*!
@@ -181,7 +181,7 @@ namespace FLD
 
      private:
       //! fluid discretization
-      const Teuchos::RCP<Discret::Discretization> discret_;
+      const Teuchos::RCP<Core::FE::Discretization> discret_;
 
       //! the processor ID from the communicator
       const int myrank_;

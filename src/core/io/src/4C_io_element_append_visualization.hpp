@@ -34,7 +34,7 @@ namespace Core::IO
    * @return Number of added points
    */
   unsigned int AppendVisualizationGeometryLagrangeEle(const Core::Elements::Element& ele,
-      const Discret::Discretization& discret, std::vector<uint8_t>& cell_types,
+      const Core::FE::Discretization& discret, std::vector<uint8_t>& cell_types,
       std::vector<double>& point_coordinates)
   {
     const unsigned int num_spatial_dimensions = 3;
@@ -118,7 +118,7 @@ namespace Core::IO
    */
   template <Core::FE::CellType celltype>
   unsigned int AppendVisualizationGeometryNURBS(const Core::Elements::Element& ele,
-      const Discret::Discretization& discret, std::vector<uint8_t>& cell_types,
+      const Core::FE::Discretization& discret, std::vector<uint8_t>& cell_types,
       std::vector<double>& point_coordinates)
   {
     constexpr int number_of_output_points = Core::FE::num_nodes<celltype>;
@@ -192,7 +192,7 @@ namespace Core::IO
    * \brief Helper function to append the coordinates of vertices of NURBS elements.
    */
   unsigned int AppendVisualizationGeometryNURBSEle(const Core::Elements::Element& ele,
-      const Discret::Discretization& discret, std::vector<uint8_t>& cell_types,
+      const Core::FE::Discretization& discret, std::vector<uint8_t>& cell_types,
       std::vector<double>& point_coordinates)
   {
     using implemented_celltypes =
@@ -219,7 +219,7 @@ namespace Core::IO
    * @return Number of points added by this element.
    */
   unsigned int AppendVisualizationDofBasedResultDataVectorLagrangeEle(
-      const Core::Elements::Element& ele, const Discret::Discretization& discret,
+      const Core::Elements::Element& ele, const Core::FE::Discretization& discret,
       const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
       unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
       std::vector<double>& vtu_point_result_data)
@@ -269,7 +269,7 @@ namespace Core::IO
    */
   template <Core::FE::CellType celltype, unsigned int result_num_dofs_per_node>
   unsigned int AppendVisualizationDofBasedResultDataVectorNURBS(const Core::Elements::Element& ele,
-      const Discret::Discretization& discret,
+      const Core::FE::Discretization& discret,
       const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
       const unsigned int read_result_data_from_dofindex, std::vector<double>& vtu_point_result_data)
   {
@@ -349,7 +349,7 @@ namespace Core::IO
    * @return Number of points added by this element.
    */
   unsigned int AppendVisualizationDofBasedResultDataVectorNURBSEle(
-      const Core::Elements::Element& ele, const Discret::Discretization& discret,
+      const Core::Elements::Element& ele, const Core::FE::Discretization& discret,
       const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
       unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
       std::vector<double>& vtu_point_result_data)

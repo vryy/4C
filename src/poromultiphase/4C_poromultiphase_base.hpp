@@ -24,10 +24,10 @@ namespace Adapter
   class Structure;
 }  // namespace Adapter
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace POROMULTIPHASE
 {

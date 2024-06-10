@@ -39,7 +39,7 @@ namespace Core::FE
    * @param nodal_data (out) : Assembled data
    */
   void ExtrapolateGaussPointQuantityToNodes(Core::Elements::Element& ele,
-      const Core::LinAlg::SerialDenseMatrix& data, const Discret::Discretization& dis,
+      const Core::LinAlg::SerialDenseMatrix& data, const Core::FE::Discretization& dis,
       Epetra_MultiVector& nodal_data);
 
   /*!

@@ -47,7 +47,7 @@ namespace Core::Nodes
     /*!
     \brief The discretization is a friend of Node
     */
-    friend class Discretization;
+    friend class Core::FE::Discretization;
 
     //@}
 

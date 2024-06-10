@@ -52,7 +52,7 @@ namespace THR
 
    private:
     //! our discretisation
-    Teuchos::RCP<Discret::Discretization> thrdisc_;
+    Teuchos::RCP<Core::FE::Discretization> thrdisc_;
     // our solution
     //! global temperature DOFs
     Teuchos::RCP<Epetra_Vector> temp_;

@@ -61,7 +61,7 @@ namespace Discret
       /*!
       \brief The discretization is a friend of the control point
       */
-      friend class Discretization;
+      friend class Core::FE::Discretization;
 
       //@}
 

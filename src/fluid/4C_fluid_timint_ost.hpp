@@ -26,7 +26,7 @@ namespace FLD
   {
    public:
     /// Standard Constructor
-    TimIntOneStepTheta(const Teuchos::RCP<Discret::Discretization>& actdis,
+    TimIntOneStepTheta(const Teuchos::RCP<Core::FE::Discretization>& actdis,
         const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid = false);

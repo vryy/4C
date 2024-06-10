@@ -74,7 +74,7 @@ void Discret::ELEMENTS::FluidHDGWeakCompType::nodal_block_information(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::FluidHDGWeakCompType::ComputeNullSpace(
-    Discret::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+    Core::FE::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
 }
 
@@ -204,7 +204,7 @@ bool Discret::ELEMENTS::FluidHDGWeakComp::ReadElement(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::FluidHDGWeakComp::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)

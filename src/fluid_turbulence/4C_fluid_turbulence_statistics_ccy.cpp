@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
                   Standard Constructor (public)
 
   ---------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Discret::Discretization> actdis,
+FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Discretization> actdis,
     bool alefluid, Teuchos::RCP<Epetra_Vector> dispnp, Teuchos::ParameterList& params,
     const std::string& statistics_outfilename, const bool withscatra)
     : discret_(actdis),
@@ -1491,7 +1491,7 @@ Add results from scalar transport fields to statistics
 
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
-    Teuchos::RCP<Discret::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp)
+    Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp)
 {
   if (withscatra_)
   {

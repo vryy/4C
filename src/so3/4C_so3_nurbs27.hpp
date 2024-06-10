@@ -37,12 +37,13 @@ const int NUMDOF_SONURBS27 = 81;  ///< total dofs per element
 const int NUMGPT_SONURBS27 = 27;  ///< total gauss points per element
 const int NUMDIM_SONURBS27 = 3;   ///< number of dimensions
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
 
 namespace Discret
 {
-  // forward declarations
-  class Discretization;
-
   namespace ELEMENTS
   {
     namespace Nurbs
@@ -61,7 +62,7 @@ namespace Discret
 
         Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-        int Initialize(Discret::Discretization& dis) override;
+        int Initialize(Core::FE::Discretization& dis) override;
 
         void nodal_block_information(
             Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -247,8 +248,9 @@ namespace Discret
         int Evaluate(
             Teuchos::ParameterList&
                 params,  ///< ParameterList for communication between control routine and elements
-            Discret::Discretization& discretization,  ///< pointer to discretization for de-assembly
-            std::vector<int>& lm,                     ///< location matrix for de-assembly
+            Core::FE::Discretization&
+                discretization,    ///< pointer to discretization for de-assembly
+            std::vector<int>& lm,  ///< location matrix for de-assembly
             Core::LinAlg::SerialDenseMatrix&
                 elemat1,  ///< (stiffness-)matrix to be filled by element.
             Core::LinAlg::SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
@@ -274,7 +276,7 @@ namespace Discret
         \return 0 if successful, negative otherwise
         */
         int evaluate_neumann(Teuchos::ParameterList& params,
-            Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+            Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
             std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
             Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
@@ -288,7 +290,7 @@ namespace Discret
          */
         void do_calc_stc_matrix(Core::LinAlg::Matrix<81, 81>& elemat1,
             const Inpar::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
-            Discret::Discretization& discretization, bool do_inverse);
+            Core::FE::Discretization& discretization, bool do_inverse);
 
        protected:
         //! action parameters recognized by So_nurbs27
@@ -325,11 +327,11 @@ namespace Discret
 
         //! init the inverse of the jacobian and its determinant in
         //! the material configuration
-        virtual void init_jacobian_mapping(Discret::Discretization& dis);
+        virtual void init_jacobian_mapping(Core::FE::Discretization& dis);
 
         //! Calculate nonlinear stiffness and mass matrix
         virtual void sonurbs27_nlnstiffmass(std::vector<int>& lm,  ///< location matrix
-            Discret::Discretization& discretization,    ///< discretisation to extract knot vector
+            Core::FE::Discretization& discretization,   ///< discretisation to extract knot vector
             std::vector<double>& disp,                  ///< current displacements
             std::vector<double>& residual,              ///< current residual displ
             Core::LinAlg::Matrix<81, 81>* stiffmatrix,  ///< element stiffness matrix
@@ -349,7 +351,7 @@ namespace Discret
         std::vector<double> sonurbs27_gpweights();
 
         //! calculate internal energy
-        double calc_int_energy(Discret::Discretization& discretization, std::vector<double>& disp,
+        double calc_int_energy(Core::FE::Discretization& discretization, std::vector<double>& disp,
             Teuchos::ParameterList& params);
 
         //! Lump mass matrix (bborn 07/08)

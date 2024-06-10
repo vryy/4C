@@ -36,10 +36,10 @@ namespace Core::IO
   class DiscretizationWriter;
   class DiscretizationReader;
 }  // namespace Core::IO
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 namespace STR
 {
   class Integrator;

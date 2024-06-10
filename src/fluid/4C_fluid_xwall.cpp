@@ -40,7 +40,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 04/14 |
  *----------------------------------------------------------------------*/
-FLD::XWall::XWall(Teuchos::RCP<Discret::Discretization> dis, int nsd,
+FLD::XWall::XWall(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
     Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
     Teuchos::RCP<FLD::UTILS::StressManager> wssmanager)
     : discret_(dis), params_(params), mystressmanager_(wssmanager), iter_(0)
@@ -375,7 +375,7 @@ void FLD::XWall::init_wall_dist()
 
   // this is very expensive in terms of memory
   // we will delete it as soon as we are ready here
-  Teuchos::RCP<Discret::Discretization> commondis = Teuchos::rcp(new Discret::Discretization(
+  Teuchos::RCP<Core::FE::Discretization> commondis = Teuchos::rcp(new Core::FE::Discretization(
       (std::string) "Commondis", newcomm, Global::Problem::Instance()->NDim()));
 
   // loop over all column nodes of underlying problem discret and add
@@ -571,7 +571,7 @@ void FLD::XWall::setup_x_wall_dis()
   // build a new discretization
   Teuchos::RCP<Epetra_Comm> newcomm = Teuchos::rcp(discret_->Comm().Clone());
 
-  xwdiscret_ = Teuchos::rcp(new Discret::Discretization(
+  xwdiscret_ = Teuchos::rcp(new Core::FE::Discretization(
       (std::string) "xwalldis", newcomm, Global::Problem::Instance()->NDim()));
 
   // loop over all xwall row nodes and add
@@ -1599,7 +1599,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 01/15 |
  *----------------------------------------------------------------------*/
-FLD::XWallAleFSI::XWallAleFSI(Teuchos::RCP<Discret::Discretization> dis, int nsd,
+FLD::XWallAleFSI::XWallAleFSI(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
     Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
     Teuchos::RCP<FLD::UTILS::StressManager> wssmanager, Teuchos::RCP<Epetra_Vector> dispnp,
     Teuchos::RCP<Epetra_Vector> gridv)

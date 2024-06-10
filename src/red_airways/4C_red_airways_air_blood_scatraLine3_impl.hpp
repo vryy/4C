@@ -42,7 +42,7 @@ namespace Discret
       /// Empty destructor
       virtual ~RedAirBloodScatraLine3ImplInterface() = default;  /// Evaluate the element
       virtual int Evaluate(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -51,26 +51,26 @@ namespace Discret
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
       virtual void Initial(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<const Core::Mat::Material> material) = 0;
 
       virtual void EvaluateTerminalBC(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
       virtual void CalcFlowRates(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::LinAlg::SerialDenseVector& a_volumen,
+          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& a_volumen,
           Core::LinAlg::SerialDenseVector& a_volumenp, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
       virtual void GetCoupledValues(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) = 0;
 
       virtual void solve_blood_air_transport(RedAirBloodScatraLine3* ele,
           Core::LinAlg::SerialDenseVector& dscatra, Core::LinAlg::SerialDenseVector& dvo2,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Teuchos::RCP<Core::Mat::Material> material) = 0;
 
       /// Internal implementation class for acinus element
@@ -107,7 +107,7 @@ namespace Discret
         The evaluate function for the general acinus case.
        */
       int Evaluate(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -137,7 +137,7 @@ namespace Discret
 
 
       void EvaluateTerminalBC(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& disctretization, std::vector<int>& lm,
+          Core::FE::Discretization& disctretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Teuchos::RCP<Core::Mat::Material> mat) override{};
 
@@ -156,14 +156,14 @@ namespace Discret
         \param dt               (i) timestep
         */
       void Initial(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<const Core::Mat::Material> material) override;
 
       /*!
        \Essential functions to compute the results of essentail matrices
       */
       void CalcFlowRates(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization,
+          Core::FE::Discretization& discretization,
           Core::LinAlg::SerialDenseVector& a_volumen_strain_np,
           Core::LinAlg::SerialDenseVector& a_volumenp, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat) override{};
@@ -172,12 +172,12 @@ namespace Discret
        \Essential functions to evaluate the coupled results
       */
       void GetCoupledValues(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) override;
 
       void solve_blood_air_transport(RedAirBloodScatraLine3* ele,
           Core::LinAlg::SerialDenseVector& dscatra, Core::LinAlg::SerialDenseVector& dvo2,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Teuchos::RCP<Core::Mat::Material> material) override{};
 
      private:

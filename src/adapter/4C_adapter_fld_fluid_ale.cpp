@@ -182,7 +182,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization> Adapter::FluidAle::discretization()
+Teuchos::RCP<Core::FE::Discretization> Adapter::FluidAle::discretization()
 {
   return fluid_field()->discretization();
 }

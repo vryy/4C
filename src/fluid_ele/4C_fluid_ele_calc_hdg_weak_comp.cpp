@@ -73,7 +73,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InitializeShapes(
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -90,7 +90,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(Discret::ELEME
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix&,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector&,
@@ -143,7 +143,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(Discret::ELEME
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_global_vectors(
-    const Core::Elements::Element& ele, Discret::Discretization& discretization,
+    const Core::Elements::Element& ele, Core::FE::Discretization& discretization,
     const std::vector<int>& lm)
 {
   // initialize the vectors
@@ -174,7 +174,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_global_vectors(
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_ale_vectors(
-    const Core::Elements::Element& ele, Discret::Discretization& discretization)
+    const Core::Elements::Element& ele, Core::FE::Discretization& discretization)
 {
   // initialize ale vectors
   ale_dis_.resize(nsd_ * nen_);
@@ -215,7 +215,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_ale_vectors(
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateService(
     Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+    Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
     Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
@@ -258,7 +258,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateService(
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(
     Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+    Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& interiorinc)
 {
   // read global vectors
@@ -327,7 +327,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::compute_error(
     Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+    Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec)
 {
   // read ale vectors
@@ -438,7 +438,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::compute_error(
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(Discret::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
   // read ale vectors
@@ -651,7 +651,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(Discret::E
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to_nodes(
-    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // read ale vectors

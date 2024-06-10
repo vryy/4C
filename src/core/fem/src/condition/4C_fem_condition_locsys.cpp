@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-------------------------------------------------------------------*
  |  ctor (public)                                         meier 06/13|
  *-------------------------------------------------------------------*/
-Core::Conditions::LocsysManager::LocsysManager(Discret::Discretization& discret, const int dim)
+Core::Conditions::LocsysManager::LocsysManager(Core::FE::Discretization& discret, const int dim)
     : discret_(discret), dim_(dim), numlocsys_(-1), locsysfunct_(false)
 {
   if (Dim() != 2 && Dim() != 3) FOUR_C_THROW("Locsys problem must be 2D or 3D");

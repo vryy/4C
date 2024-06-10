@@ -56,7 +56,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<Discret::Discretization> actdis = Teuchos::null;
+  Teuchos::RCP<Core::FE::Discretization> actdis = Teuchos::null;
 
   actdis = problem->GetDis(artery_disname);
 
@@ -106,7 +106,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
       std::cout << "<  ARTERY:  ScaTra coupling present  >" << std::endl;
       std::cout << "<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>" << std::endl;
     }
-    Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis(scatra_disname);
+    Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis(scatra_disname);
     // fill scatra discretization by cloning artery discretization
     Core::FE::CloneDiscretization<Arteries::ArteryScatraCloneStrategy>(
         actdis, scatradis, Global::Problem::Instance()->CloningMaterialMap());

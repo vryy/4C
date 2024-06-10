@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projection(
-    Discret::Discretization& dis, const Epetra_Map& noderowmap, const std::string& statename,
+    Core::FE::Discretization& dis, const Epetra_Map& noderowmap, const std::string& statename,
     const int& numvec, Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
     const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap)
 {
@@ -114,7 +114,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projectio
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_nodal_l2_projection(
-    Teuchos::RCP<Discret::Discretization> dis, const std::string& statename, const int& numvec,
+    Teuchos::RCP<Core::FE::Discretization> dis, const std::string& statename, const int& numvec,
     Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams)
 {
   // check if the statename has been set

@@ -56,7 +56,7 @@ Discret::ELEMENTS::Ale3SurfaceImpl<distype>* Discret::ELEMENTS::Ale3SurfaceImpl<
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Ale3Surface::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -94,7 +94,7 @@ int Discret::ELEMENTS::Ale3Surface::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Ale3Surface::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -105,7 +105,7 @@ int Discret::ELEMENTS::Ale3Surface::evaluate_neumann(Teuchos::ParameterList& par
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 inline void Discret::ELEMENTS::Ale3SurfaceImpl<distype>::ElementNodeNormal(Ale3Surface* ele,
-    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, std::vector<double>& mydispnp)
 {
   Core::FE::ElementNodeNormal<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_, xyze_, ele,

@@ -462,7 +462,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
     probdim>::get_material_internal_state(const Core::Elements::Element*
                                               ele,  //!< the element we are dealing with
-    Teuchos::ParameterList& params, Discret::Discretization& discretization)
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization)
 {
   // NOTE: add integral values only for elements which are NOT ghosted!
   if (ele->Owner() == discretization.Comm().MyPID())
@@ -504,7 +504,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
     probdim>::set_material_internal_state(const Core::Elements::Element*
                                               ele,  //!< the element we are dealing with
-    Teuchos::ParameterList& params, Discret::Discretization& discretization)
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization)
 {
   // NOTE: add integral values only for elements which are NOT ghosted!
   if (ele->Owner() == discretization.Comm().MyPID())

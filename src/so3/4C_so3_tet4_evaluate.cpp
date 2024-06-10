@@ -67,7 +67,7 @@ using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
  |  evaluate the element (public)                              vlf 06/07|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -713,7 +713,7 @@ int Discret::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoTet4::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
@@ -1585,7 +1585,7 @@ void Discret::ELEMENTS::SoTet4::so_tet4_lumpmass(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 05/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet4Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoTet4Type::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

@@ -50,7 +50,7 @@ namespace Discret
       //! evaluate action
       int evaluate_action(Core::Elements::FaceElement* ele,  //!< boundary element
           Teuchos::ParameterList& params,                    //!< parameter list
-          Discret::Discretization& discretization,           //!< discretization
+          Core::FE::Discretization& discretization,          //!< discretization
           ScaTra::BoundaryAction action,                     //!< action
           Core::Elements::Element::LocationArray& la,        //!< location array
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,   //!< element matrix 1
@@ -84,7 +84,7 @@ namespace Discret
       //! process an electrode kinetics boundary condition
       void calc_elch_boundary_kinetics(Core::Elements::FaceElement* ele,  ///< current element
           Teuchos::ParameterList& params,                                 ///< parameter list
-          Discret::Discretization& discretization,                        ///< discretization
+          Core::FE::Discretization& discretization,                       ///< discretization
           Core::Elements::Element::LocationArray& la,                     ///< location array
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,                ///< element matrix
           Core::LinAlg::SerialDenseVector& elevec1_epetra,  ///< element right-hand side vector
@@ -112,7 +112,7 @@ namespace Discret
 
       //! evaluate linearization of nernst equation
       void calc_nernst_linearization(Core::Elements::FaceElement* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra);
@@ -121,7 +121,7 @@ namespace Discret
       void calc_cell_voltage(
           const Core::Elements::Element* ele,          //!< the element we are dealing with
           Teuchos::ParameterList& params,              //!< parameter list
-          Discret::Discretization& discretization,     //!< discretization
+          Core::FE::Discretization& discretization,    //!< discretization
           Core::Elements::Element::LocationArray& la,  //!< location array
           Core::LinAlg::SerialDenseVector&
               scalars  //!< result vector for scalar integrals to be computed

@@ -318,7 +318,7 @@ namespace FLD
     {
      public:
       /// constructor
-      StressManager(Teuchos::RCP<Discret::Discretization> discret,
+      StressManager(Teuchos::RCP<Core::FE::Discretization> discret,
           Teuchos::RCP<Epetra_Vector> dispnp, const bool alefluid, const int numdim);
 
       /// initialize smoothing of stresses
@@ -375,7 +375,7 @@ namespace FLD
       void calc_sep_enr(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat);
 
       /// fluid discretization
-      const Teuchos::RCP<Discret::Discretization> discret_;
+      const Teuchos::RCP<Core::FE::Discretization> discret_;
 
       /// displacement at time \f$t^{n+1}\f$
       const Teuchos::RCP<Epetra_Vector> dispnp_;
@@ -408,8 +408,8 @@ namespace FLD
     };
 
 
-    void SetupFluidFluidVelPresSplit(const Discret::Discretization& fluiddis, int ndim,
-        const Discret::Discretization& alefluiddis, Core::LinAlg::MapExtractor& extractor,
+    void SetupFluidFluidVelPresSplit(const Core::FE::Discretization& fluiddis, int ndim,
+        const Core::FE::Discretization& alefluiddis, Core::LinAlg::MapExtractor& extractor,
         Teuchos::RCP<Epetra_Map> fullmap);
 
     /*!
@@ -436,7 +436,7 @@ namespace FLD
           \author chfoe
       \date 11/07
      */
-    void LiftDrag(const Teuchos::RCP<const Discret::Discretization>
+    void LiftDrag(const Teuchos::RCP<const Core::FE::Discretization>
                       dis,  //! fluid discretization (node distribution, conditions)
         const Teuchos::RCP<const Epetra_Vector> trueresidual,  //! vector of nodalforces
         const Teuchos::RCP<const Epetra_Vector>
@@ -473,9 +473,9 @@ namespace FLD
       \date 10/08
      */
     // std::map<int,double> ComputeSurfaceFlowRates(
-    //    Discret::Discretization&       dis  ,      ///< the discretisation (node distribution,
-    //    conditions) const Teuchos::RCP<Epetra_Vector>   velnp       ///< solution vector with
-    //    velocities and pressure
+    //    Core::FE::Discretization&       dis  ,      ///< the discretisation (node
+    //    distribution, conditions) const Teuchos::RCP<Epetra_Vector>   velnp       ///< solution
+    //    vector with velocities and pressure
     ///< (only velocities are used)
     //    );
 
@@ -492,7 +492,7 @@ namespace FLD
       \date 10/08
      */
     std::map<int, double> ComputeFlowRates(
-        Discret::Discretization& dis,  ///< the discretisation (node distribution, conditions)
+        Core::FE::Discretization& dis,  ///< the discretisation (node distribution, conditions)
         const Teuchos::RCP<Epetra_Vector>&
             velnp,                      ///< solution vector with velocities (and pressure)
         const std::string& condstring,  ///< name of the condition (LineFlowRate or SurfaceFlowRate)
@@ -500,7 +500,7 @@ namespace FLD
     );
 
     std::map<int, double> ComputeFlowRates(
-        Discret::Discretization& dis,  ///< the discretisation (node distribution, conditions)
+        Core::FE::Discretization& dis,  ///< the discretisation (node distribution, conditions)
         const Teuchos::RCP<Epetra_Vector>&
             velnp,  ///< solution vector with velocities (and pressure)
         const Teuchos::RCP<Epetra_Vector>& gridvel,  ///< solution vector with grid velocities (ALE)
@@ -511,7 +511,7 @@ namespace FLD
     );
 
     std::map<int, double> compute_volume(
-        Discret::Discretization& dis,  ///< the discretisation (node distribution, conditions)
+        Core::FE::Discretization& dis,  ///< the discretisation (node distribution, conditions)
         const Teuchos::RCP<Epetra_Vector>&
             velnp,  ///< solution vector with velocities (and pressure)
         const Teuchos::RCP<Epetra_Vector>& gridvel,  ///< solution vector with grid velocities (ALE)
@@ -537,7 +537,7 @@ namespace FLD
     \brief Project gradient and store vector in param list
 
     */
-    void ProjectGradientAndSetParam(Teuchos::RCP<Discret::Discretization> discret,
+    void ProjectGradientAndSetParam(Teuchos::RCP<Core::FE::Discretization> discret,
         Teuchos::ParameterList& eleparams, Teuchos::RCP<const Epetra_Vector> vel,
         const std::string paraname, bool alefluid);
 
@@ -545,7 +545,7 @@ namespace FLD
     \brief Project velocity gradient, depends on time integrator used
 
     */
-    Teuchos::RCP<Epetra_MultiVector> ProjectGradient(Teuchos::RCP<Discret::Discretization> discret,
+    Teuchos::RCP<Epetra_MultiVector> ProjectGradient(Teuchos::RCP<Core::FE::Discretization> discret,
         Teuchos::RCP<const Epetra_Vector> vel, bool alefluid);
 
     /*!
@@ -563,7 +563,7 @@ namespace FLD
       \date 10/08
      */
     std::map<int, Core::LinAlg::Matrix<3, 1>> ComputeSurfaceImpulsRates(
-        Discret::Discretization& dis,  ///< the discretisation (node distribution, conditions)
+        Core::FE::Discretization& dis,  ///< the discretisation (node distribution, conditions)
         const Teuchos::RCP<Epetra_Vector> velnp  ///< solution vector with velocities and pressure
                                                  ///< (only velocities are used)
     );

@@ -51,7 +51,7 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::compute_porosity_and_linearization
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -194,7 +194,7 @@ int Discret::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& pa
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::Wall1PoroP1<distype>::my_evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -878,7 +878,7 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::gauss_point_loop_p1_od(Teuchos::Pa
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::Wall1PoroP1<distype>::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

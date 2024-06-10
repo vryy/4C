@@ -107,7 +107,7 @@ Core::Rebalance::RebalanceCoordinates(const Epetra_MultiVector& initialCoordinat
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>>
-Core::Rebalance::BuildWeights(const Discret::Discretization& dis)
+Core::Rebalance::BuildWeights(const Core::FE::Discretization& dis)
 {
   const Epetra_Map* noderowmap = dis.NodeRowMap();
 
@@ -146,7 +146,7 @@ Core::Rebalance::BuildWeights(const Discret::Discretization& dis)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildGraph(
-    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles)
+    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles)
 {
   const int myrank = dis->Comm().MyPID();
   const int numproc = dis->Comm().NumProc();
@@ -326,7 +326,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildGraph(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildMonolithicNodeGraph(
-    const Discret::Discretization& dis, const Core::GeometricSearch::GeometricSearchParams& params)
+    const Core::FE::Discretization& dis, const Core::GeometricSearch::GeometricSearchParams& params)
 {
   // 1. Do a global geometric search
   Epetra_Vector zero_vector = Epetra_Vector(*(dis.DofColMap()), true);

@@ -72,7 +72,7 @@ void dyn_nlnstructural_drt()
   // get input lists
   const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
   // access the structural discretization
-  Teuchos::RCP<Discret::Discretization> structdis =
+  Teuchos::RCP<Core::FE::Discretization> structdis =
       Global::Problem::Instance()->GetDis("structure");
 
   // connect degrees of freedom for periodic boundary conditions

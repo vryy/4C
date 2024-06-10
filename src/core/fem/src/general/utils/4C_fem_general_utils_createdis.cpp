@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::FE::DiscretizationCreatorBase::initial_checks(
-    const Discret::Discretization& sourcedis, const Discret::Discretization& targetdis) const
+    const Core::FE::Discretization& sourcedis, const Core::FE::Discretization& targetdis) const
 {
   // are the source and target discretizations ready?
   if (!sourcedis.Filled()) FOUR_C_THROW("The source discretization is not filled!");
@@ -40,8 +40,8 @@ void Core::FE::DiscretizationCreatorBase::initial_checks(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::FE::DiscretizationCreatorBase::create_nodes(const Discret::Discretization& sourcedis,
-    Discret::Discretization& targetdis, const std::set<int>& rownodeset,
+void Core::FE::DiscretizationCreatorBase::create_nodes(const Core::FE::Discretization& sourcedis,
+    Core::FE::Discretization& targetdis, const std::set<int>& rownodeset,
     const std::set<int>& colnodeset, const bool isnurbsdis, const bool buildimmersednode) const
 {
   // prepare some variables we need
@@ -89,7 +89,7 @@ void Core::FE::DiscretizationCreatorBase::create_nodes(const Discret::Discretiza
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> Core::FE::DiscretizationCreatorBase::create_map(
-    std::set<int>& gidset, const Discret::Discretization& targetdis) const
+    std::set<int>& gidset, const Core::FE::Discretization& targetdis) const
 {
   // we get the node maps almost for free
   std::vector<int> targetgidvec(gidset.begin(), gidset.end());
@@ -104,8 +104,8 @@ Teuchos::RCP<Epetra_Map> Core::FE::DiscretizationCreatorBase::create_map(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::FE::DiscretizationCreatorBase::CopyConditions(const Discret::Discretization& sourcedis,
-    Discret::Discretization& targetdis,
+void Core::FE::DiscretizationCreatorBase::CopyConditions(const Core::FE::Discretization& sourcedis,
+    Core::FE::Discretization& targetdis,
     const std::map<std::string, std::string>& conditions_to_copy) const
 {
   // copy selected conditions to the new discretization (and rename them if desired)
@@ -126,15 +126,15 @@ void Core::FE::DiscretizationCreatorBase::CopyConditions(const Discret::Discreti
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization>
+Teuchos::RCP<Core::FE::Discretization>
 Core::FE::DiscretizationCreatorBase::create_matching_discretization(
-    const Teuchos::RCP<Discret::Discretization>& sourcedis, const std::string& targetdisname,
+    const Teuchos::RCP<Core::FE::Discretization>& sourcedis, const std::string& targetdisname,
     bool clonedofs, bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions) const
 {
   // initialize identical clone discretization
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(sourcedis->Comm().Clone());
-  Teuchos::RCP<Discret::Discretization> targetdis =
-      Teuchos::rcp(new Discret::Discretization(targetdisname, comm, sourcedis->n_dim()));
+  Teuchos::RCP<Core::FE::Discretization> targetdis =
+      Teuchos::rcp(new Core::FE::Discretization(targetdisname, comm, sourcedis->n_dim()));
 
   // clone nodes
   for (int i = 0; i < sourcedis->NodeColMap()->NumMyElements(); ++i)
@@ -200,7 +200,7 @@ Core::FE::DiscretizationCreatorBase::create_matching_discretization(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::FE::DiscretizationCreatorBase::finalize(
-    const Discret::Discretization& sourcedis, Discret::Discretization& targetdis) const
+    const Core::FE::Discretization& sourcedis, Core::FE::Discretization& targetdis) const
 {
   // export according to previously filled maps
   targetdis.ExportRowNodes(*targetnoderowmap_);

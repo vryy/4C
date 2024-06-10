@@ -27,7 +27,7 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<Discret::Discretization> actdis = Global::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<Core::FE::Discretization> actdis = Global::Problem::Instance()->GetDis("ale");
 
   // -------------------------------------------------------------------
   // ask ALE::AleBaseAlgorithm for the ale time integrator

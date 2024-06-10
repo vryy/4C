@@ -24,10 +24,13 @@ correct implementation is still missing.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
+}  // namespace Core::FE
 
+namespace Discret
+{
   namespace ELEMENTS
   {
     class ElemagBoundary;
@@ -52,14 +55,14 @@ namespace Discret
         must be defined in ElemagBoundaryImpl.
        */
       virtual int evaluate_neumann(Discret::ELEMENTS::ElemagBoundary* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseMatrix* elemat1) = 0;
 
       /// Evaluate routine for boundary elements inteface
       virtual int Evaluate(Discret::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -94,13 +97,13 @@ namespace Discret
 
       //! Evaluate a Neumann boundary condition
       int evaluate_neumann(Discret::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+          Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseMatrix* elemat1) override;
 
       /// Evaluate routine for boundary elements
       int Evaluate(Discret::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,

@@ -37,10 +37,10 @@ namespace XFEM
    public:
     //! constructor
     explicit LevelSetCoupling(
-        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Discret::Discretization>&
+        Teuchos::RCP<Core::FE::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -49,12 +49,12 @@ namespace XFEM
 
     void SetCouplingDofsets() override;
 
-    bool HaveMatchingNodes(const Teuchos::RCP<Discret::Discretization>& dis_A,
-        const Teuchos::RCP<Discret::Discretization>& dis_B);
+    bool HaveMatchingNodes(const Teuchos::RCP<Core::FE::Discretization>& dis_A,
+        const Teuchos::RCP<Core::FE::Discretization>& dis_B);
 
-    void MapCutterToBgVector(const Teuchos::RCP<Discret::Discretization>& source_dis,
+    void MapCutterToBgVector(const Teuchos::RCP<Core::FE::Discretization>& source_dis,
         const Teuchos::RCP<Epetra_Vector>& source_vec_dofbased, const int source_nds,
-        const Teuchos::RCP<Discret::Discretization>& target_dis,
+        const Teuchos::RCP<Core::FE::Discretization>& target_dis,
         const Teuchos::RCP<Epetra_Vector>& target_vec_dofbased, const int target_nds);
 
     // TODO: sort the functions...
@@ -166,10 +166,10 @@ namespace XFEM
    public:
     //! constructor
     explicit LevelSetCouplingBC(
-        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Discret::Discretization>&
+        Teuchos::RCP<Core::FE::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -194,10 +194,10 @@ namespace XFEM
    public:
     //! constructor
     explicit LevelSetCouplingWeakDirichlet(
-        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Discret::Discretization>&
+        Teuchos::RCP<Core::FE::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -249,10 +249,10 @@ namespace XFEM
    public:
     //! constructor
     explicit LevelSetCouplingNeumann(
-        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Discret::Discretization>&
+        Teuchos::RCP<Core::FE::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -317,10 +317,10 @@ namespace XFEM
    public:
     //! constructor
     explicit LevelSetCouplingNavierSlip(
-        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Discret::Discretization>&
+        Teuchos::RCP<Core::FE::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time

@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-ScaTra::ScaTraTimIntLoma::ScaTraTimIntLoma(Teuchos::RCP<Discret::Discretization> dis,
+ScaTra::ScaTraTimIntLoma::ScaTraTimIntLoma(Teuchos::RCP<Core::FE::Discretization> dis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,

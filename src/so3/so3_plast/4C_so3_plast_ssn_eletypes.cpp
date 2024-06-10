@@ -95,7 +95,7 @@ void Discret::ELEMENTS::SoHex8PlastType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                          seitz 07/13 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8PlastType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex8PlastType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -199,7 +199,7 @@ void Discret::ELEMENTS::SoHex18PlastType::setup_element_definition(
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex18PlastType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex18PlastType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -297,7 +297,7 @@ void Discret::ELEMENTS::SoHex27PlastType::setup_element_definition(
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex27PlastType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex27PlastType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -395,7 +395,7 @@ void Discret::ELEMENTS::SoTet4PlastType::setup_element_definition(
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet4PlastType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoTet4PlastType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -490,7 +490,7 @@ void Discret::ELEMENTS::SoNurbs27PlastType::setup_element_definition(
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoNurbs27PlastType::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoNurbs27PlastType::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

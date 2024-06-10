@@ -46,7 +46,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override;
+      int Initialize(Core::FE::Discretization& dis) override;
 
       static Truss3Type& Instance();
 
@@ -118,13 +118,13 @@ namespace Discret
 
       Core::Elements::ElementType& ElementType() const override { return Truss3Type::Instance(); }
 
-      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3) override;
 
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -161,7 +161,7 @@ namespace Discret
       // TODO: remove once truss3 element is fixed and no longer expects more dofs (6) than it can
       // inherently handle (3)...
       void LocationVector(
-          const Discretization& dis, LocationArray& la, bool doDirichlet) const override;
+          const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet) const override;
 
       int num_dof_per_element() const override { return 0; }
 
@@ -229,7 +229,7 @@ namespace Discret
       //! \param[in] params          parameter list
       //! \param[out] ele_state      elemental states (depending on the instantiated element)
       virtual void extract_elemental_variables(LocationArray& la,
-          const Discret::Discretization& discretization, const Teuchos::ParameterList& params,
+          const Core::FE::Discretization& discretization, const Teuchos::ParameterList& params,
           std::map<std::string, std::vector<double>>& ele_state);
 
       //! determine Gauss rule from required type of integration

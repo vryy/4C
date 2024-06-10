@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Rebalance using BinningStrategy                         rauch 08/16 |
  *----------------------------------------------------------------------*/
 void Core::Rebalance::RebalanceDiscretizationsByBinning(
-    const std::vector<Teuchos::RCP<Discret::Discretization>>& vector_of_discretizations,
+    const std::vector<Teuchos::RCP<Core::FE::Discretization>>& vector_of_discretizations,
     bool revertextendedghosting)
 {
   // safety check
@@ -86,7 +86,7 @@ void Core::Rebalance::RebalanceDiscretizationsByBinning(
  |  Ghost input discr. redundantly on all procs             rauch 09/16 |
  *----------------------------------------------------------------------*/
 void Core::Rebalance::GhostDiscretizationOnAllProcs(
-    const Teuchos::RCP<Discret::Discretization> distobeghosted)
+    const Teuchos::RCP<Core::FE::Discretization> distobeghosted)
 {
   // clone communicator of target discretization
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(distobeghosted->Comm().Clone());
@@ -172,7 +172,7 @@ void Core::Rebalance::GhostDiscretizationOnAllProcs(
 |  Rebalance Nodes Matching Template discretization     rauch 09/16    |
 *----------------------------------------------------------------------*/
 void Core::Rebalance::MatchNodalDistributionOfMatchingDiscretizations(
-    Discret::Discretization& dis_template, Discret::Discretization& dis_to_rebalance)
+    Core::FE::Discretization& dis_template, Core::FE::Discretization& dis_to_rebalance)
 {
   // clone communicator of target discretization
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(dis_template.Comm().Clone());
@@ -231,7 +231,7 @@ void Core::Rebalance::MatchNodalDistributionOfMatchingDiscretizations(
 |  Rebalance Elements Matching Template discretization     rauch 09/16 |
 *----------------------------------------------------------------------*/
 void Core::Rebalance::MatchElementDistributionOfMatchingDiscretizations(
-    Discret::Discretization& dis_template, Discret::Discretization& dis_to_rebalance)
+    Core::FE::Discretization& dis_template, Core::FE::Discretization& dis_to_rebalance)
 {
   // clone communicator of target discretization
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(dis_template.Comm().Clone());
@@ -316,7 +316,7 @@ void Core::Rebalance::MatchElementDistributionOfMatchingDiscretizations(
 |  Rebalance Conditioned Elements Matching Template        rauch 10/16 |
 *----------------------------------------------------------------------*/
 void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
-    Discret::Discretization& dis_template, Discret::Discretization& dis_to_rebalance,
+    Core::FE::Discretization& dis_template, Core::FE::Discretization& dis_to_rebalance,
     const std::string& condname_template, const std::string& condname_rebalance, const bool print)
 {
   // clone communicator of target discretization
@@ -357,7 +357,7 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
     std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator geom_it;
 
     // fill condition discretization by cloning scatra discretization
-    Teuchos::RCP<Discret::Discretization> dis_from_template_condition;
+    Teuchos::RCP<Core::FE::Discretization> dis_from_template_condition;
 
     Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discreator =
         Teuchos::rcp(new Core::FE::DiscretizationCreatorBase());
@@ -598,7 +598,7 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> Core::Rebalance::GetColVersionOfRowVector(
-    const Teuchos::RCP<const Discret::Discretization> dis,
+    const Teuchos::RCP<const Core::FE::Discretization> dis,
     const Teuchos::RCP<const Epetra_Vector> state, const int nds)
 {
   // note that this routine has the same functionality as set_state,
@@ -630,9 +630,9 @@ Teuchos::RCP<const Epetra_Vector> Core::Rebalance::GetColVersionOfRowVector(
  |nodes as of subdicretization                                          |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> Core::Rebalance::ComputeNodeColMap(
-    const Teuchos::RCP<Discret::Discretization>
+    const Teuchos::RCP<Core::FE::Discretization>
         sourcedis,  ///< standard discretization we want to rebalance
-    const Teuchos::RCP<Discret::Discretization> subdis  ///< subdiscretization prescribing ghosting
+    const Teuchos::RCP<Core::FE::Discretization> subdis  ///< subdiscretization prescribing ghosting
 )
 {
   const Epetra_Map* oldcolnodemap = sourcedis->NodeColMap();
@@ -658,8 +658,8 @@ Teuchos::RCP<Epetra_Map> Core::Rebalance::ComputeNodeColMap(
 /*----------------------------------------------------------------------*
  *                                                          rauch 10/16 |
  *----------------------------------------------------------------------*/
-void Core::Rebalance::MatchElementRowColDistribution(const Discret::Discretization& dis_template,
-    const Discret::Discretization& dis_to_rebalance, std::vector<int>& row_id_vec_to_fill,
+void Core::Rebalance::MatchElementRowColDistribution(const Core::FE::Discretization& dis_template,
+    const Core::FE::Discretization& dis_to_rebalance, std::vector<int>& row_id_vec_to_fill,
     std::vector<int>& col_id_vec_to_fill)
 {
   // preliminary work
@@ -707,8 +707,8 @@ void Core::Rebalance::MatchElementRowColDistribution(const Discret::Discretizati
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Rebalance::MatchNodalRowColDistribution(const Discret::Discretization& dis_template,
-    const Discret::Discretization& dis_to_rebalance, std::vector<int>& row_id_vec_to_fill,
+void Core::Rebalance::MatchNodalRowColDistribution(const Core::FE::Discretization& dis_template,
+    const Core::FE::Discretization& dis_to_rebalance, std::vector<int>& row_id_vec_to_fill,
     std::vector<int>& col_id_vec_to_fill)
 {
   // temp sets

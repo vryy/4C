@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    schott 03/12|
  *----------------------------------------------------------------------*/
-Discret::DiscretizationFaces::DiscretizationFaces(
+Core::FE::DiscretizationFaces::DiscretizationFaces(
     const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
     : Discretization(name, comm, n_dim),  // use base class constructor
       extension_filled_(false),
@@ -32,12 +32,12 @@ Discret::DiscretizationFaces::DiscretizationFaces(
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                          schott 03/12|
  *----------------------------------------------------------------------*/
-int Discret::DiscretizationFaces::FillCompleteFaces(bool assigndegreesoffreedom, bool initelements,
+int Core::FE::DiscretizationFaces::FillCompleteFaces(bool assigndegreesoffreedom, bool initelements,
     bool doboundaryconditions, bool createinternalfaces)
 
 {
   // call standard FillComlete of base class
-  Discret::Discretization::fill_complete(
+  Core::FE::Discretization::fill_complete(
       assigndegreesoffreedom, initelements, doboundaryconditions);
 
   if (createinternalfaces)
@@ -53,9 +53,9 @@ int Discret::DiscretizationFaces::FillCompleteFaces(bool assigndegreesoffreedom,
 /*----------------------------------------------------------------------*
  |  Build internal faces extension (public)                 schott 03/12|
  *----------------------------------------------------------------------*/
-void Discret::DiscretizationFaces::create_internal_faces_extension(const bool verbose)
+void Core::FE::DiscretizationFaces::create_internal_faces_extension(const bool verbose)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Discret::DiscretizationFaces::CreateInternalFaces");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::FE::DiscretizationFaces::CreateInternalFaces");
 
   // create internal faces for stabilization along edges
   BuildFaces(verbose);
@@ -84,7 +84,7 @@ void Discret::DiscretizationFaces::create_internal_faces_extension(const bool ve
 /*----------------------------------------------------------------------*
  |  Build internal faces geometry (public)                  schott 03/12|
  *----------------------------------------------------------------------*/
-void Discret::DiscretizationFaces::BuildFaces(const bool verbose)
+void Core::FE::DiscretizationFaces::BuildFaces(const bool verbose)
 {
   faces_.clear();
 
@@ -147,12 +147,13 @@ void Discret::DiscretizationFaces::BuildFaces(const bool verbose)
         break;
       }
       default:
-        FOUR_C_THROW("Discret::UTILS::build... not supported");
+        FOUR_C_THROW("Core::FE::UTILS::build... not supported");
         break;
     }
 
 
-    // does Discret::UTILS convention match your implementation of NumSurface() or NumLine()?
+    // does Core::FE::UTILS convention match your implementation of NumSurface() or
+    // NumLine()?
     if (nele != connectivity.size()) FOUR_C_THROW("number of surfaces or lines does not match!");
 
     // now, get the nodal information for the new surface/line faces
@@ -933,14 +934,14 @@ void Discret::DiscretizationFaces::BuildFaces(const bool verbose)
   }
 
   return;
-}  // Discret::DiscretizationFaces::BuildInternalFaces
+}  // Core::FE::DiscretizationFaces::BuildInternalFaces
 
 
 
 /*----------------------------------------------------------------------*
  |  Build intfacerowmap_ (private)                          schott 03/12|
  *----------------------------------------------------------------------*/
-void Discret::DiscretizationFaces::BuildFaceRowMap()
+void Core::FE::DiscretizationFaces::BuildFaceRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
@@ -966,7 +967,7 @@ void Discret::DiscretizationFaces::BuildFaceRowMap()
 /*----------------------------------------------------------------------*
  |  Build intfacecolmap_ (private)                          schott 03/12|
  *----------------------------------------------------------------------*/
-void Discret::DiscretizationFaces::BuildFaceColMap()
+void Core::FE::DiscretizationFaces::BuildFaceColMap()
 {
   int nummyeles = (int)faces_.size();
   std::vector<int> eleids(nummyeles);
@@ -989,7 +990,7 @@ void Discret::DiscretizationFaces::BuildFaceColMap()
 /*----------------------------------------------------------------------*
  |  get internal faces row map (public)                     schott 03/12|
  *----------------------------------------------------------------------*/
-const Epetra_Map* Discret::DiscretizationFaces::FaceRowMap() const
+const Epetra_Map* Core::FE::DiscretizationFaces::FaceRowMap() const
 {
   FOUR_C_ASSERT(Filled(), "fill_complete() must be called before call to FaceRowMap()");
   return facerowmap_.get();
@@ -999,7 +1000,7 @@ const Epetra_Map* Discret::DiscretizationFaces::FaceRowMap() const
 /*----------------------------------------------------------------------*
  |  get internal faces col map (public)                     schott 03/12|
  *----------------------------------------------------------------------*/
-const Epetra_Map* Discret::DiscretizationFaces::FaceColMap() const
+const Epetra_Map* Core::FE::DiscretizationFaces::FaceColMap() const
 {
   FOUR_C_ASSERT(Filled(), "fill_complete() must be called before call to FaceColMap()");
   return facecolmap_.get();
@@ -1009,7 +1010,7 @@ const Epetra_Map* Discret::DiscretizationFaces::FaceColMap() const
 /*----------------------------------------------------------------------*
  |  get global no of internal faces (public)                schott 03/12|
  *----------------------------------------------------------------------*/
-int Discret::DiscretizationFaces::NumGlobalFaces() const
+int Core::FE::DiscretizationFaces::NumGlobalFaces() const
 {
   FOUR_C_ASSERT(Filled(), "fill_complete() must be called before call to NumGlobalFaces()");
   return FaceRowMap()->NumGlobalElements();
@@ -1019,7 +1020,7 @@ int Discret::DiscretizationFaces::NumGlobalFaces() const
 /*----------------------------------------------------------------------*
  |  get no of my row internal faces (public)                schott 03/12|
  *----------------------------------------------------------------------*/
-int Discret::DiscretizationFaces::NumMyRowFaces() const
+int Core::FE::DiscretizationFaces::NumMyRowFaces() const
 {
   FOUR_C_ASSERT(Filled(), "fill_complete() must be called before call to NumMyRowFaces()");
   return FaceRowMap()->NumMyElements();
@@ -1029,7 +1030,7 @@ int Discret::DiscretizationFaces::NumMyRowFaces() const
 /*----------------------------------------------------------------------*
  |  get no of my column internal faces (public)             schott 03/12|
  *----------------------------------------------------------------------*/
-int Discret::DiscretizationFaces::NumMyColFaces() const
+int Core::FE::DiscretizationFaces::NumMyColFaces() const
 {
   if (Filled())
     return FaceColMap()->NumMyElements();
@@ -1042,7 +1043,7 @@ int Discret::DiscretizationFaces::NumMyColFaces() const
 /*----------------------------------------------------------------------*
  |  << operator                                             schott 03/12|
  *----------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const Discret::DiscretizationFaces& dis)
+std::ostream& operator<<(std::ostream& os, const Core::FE::DiscretizationFaces& dis)
 {
   // print standard discretization info
   dis.Print(os);
@@ -1056,7 +1057,7 @@ std::ostream& operator<<(std::ostream& os, const Discret::DiscretizationFaces& d
 /*----------------------------------------------------------------------*
  |  Print internal faces discretization (public)            schott 03/12|
  *----------------------------------------------------------------------*/
-void Discret::DiscretizationFaces::PrintFaces(std::ostream& os) const
+void Core::FE::DiscretizationFaces::PrintFaces(std::ostream& os) const
 {
   int numglobalfaces = 0;
   if (Filled())

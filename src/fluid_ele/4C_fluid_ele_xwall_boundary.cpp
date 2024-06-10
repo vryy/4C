@@ -79,7 +79,7 @@ void Discret::ELEMENTS::FluidXWallBoundary::Print(std::ostream& os) const
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis,
+void Discret::ELEMENTS::FluidXWallBoundary::LocationVector(const Core::FE::Discretization& dis,
     LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {

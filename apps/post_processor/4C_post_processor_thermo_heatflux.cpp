@@ -115,7 +115,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
 
     // create the parameters for the discretization
     Teuchos::ParameterList p;
@@ -239,7 +239,7 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
     //--------------------------------------------------------------------
     // calculate element center heatfluxes from gauss point heatfluxes
     //--------------------------------------------------------------------
-    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
     // create the parameters for the discretization

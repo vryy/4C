@@ -45,11 +45,10 @@ FOUR_C_NAMESPACE_OPEN
 class PostField;
 
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
-
+}  // namespace Core::FE
 /*!
   \brief Foundation class of the filter
 
@@ -295,11 +294,11 @@ class PostField
   // @{ \name Constructors and destructors
 
   //! Constructor
-  PostField(Teuchos::RCP<Discret::Discretization> dis,  ///< [in] discretization
-      PostProblem* problem,                             ///< [in] Instance of PostProblem
-      std::string field_name,                           ///< [in] Name of the field
-      const int numnd,                                  ///< [in] Number of nodes
-      const int numele                                  ///< [in] Number of elements
+  PostField(Teuchos::RCP<Core::FE::Discretization> dis,  ///< [in] discretization
+      PostProblem* problem,                              ///< [in] Instance of PostProblem
+      std::string field_name,                            ///< [in] Name of the field
+      const int numnd,                                   ///< [in] Number of nodes
+      const int numele                                   ///< [in] Number of elements
   );
 
   //@}
@@ -307,8 +306,8 @@ class PostField
   // @{ \name Access methods
 
   //! returns the discretization of this field
-  Teuchos::RCP<Discret::Discretization> discretization() { return dis_; }
-  Teuchos::RCP<const Discret::Discretization> discretization() const { return dis_; }
+  Teuchos::RCP<Core::FE::Discretization> discretization() { return dis_; }
+  Teuchos::RCP<const Core::FE::Discretization> discretization() const { return dis_; }
 
   //! returns the number of output processors
   int num_output_procs() const { return num_output_procs_; }
@@ -343,7 +342,7 @@ class PostField
 
  private:
   //! discretization of underlying field
-  Teuchos::RCP<Discret::Discretization> dis_;
+  Teuchos::RCP<Core::FE::Discretization> dis_;
 
   //! PostProblem of underlying field
   PostProblem* problem_;

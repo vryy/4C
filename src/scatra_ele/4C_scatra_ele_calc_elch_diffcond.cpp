@@ -1111,7 +1111,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_rhs_cu
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::correction_for_flux_across_dc(
-    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs)
 {
   // get dirichlet toggle from the discretization

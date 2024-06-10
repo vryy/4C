@@ -25,11 +25,10 @@ passive-scalar transport
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace ScaTra
 {
@@ -73,7 +72,7 @@ namespace ScaTra
     Inpar::FLUID::ForcingType forcing_type_;
 
     //! scatra discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! state vector of volume force to be computed
     Teuchos::RCP<Epetra_Vector> forcing_;

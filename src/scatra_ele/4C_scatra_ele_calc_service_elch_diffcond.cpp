@@ -112,7 +112,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_initial_time_derivative(
     Core::Elements::Element* ele, Core::LinAlg::SerialDenseMatrix& emat,
     Core::LinAlg::SerialDenseVector& erhs, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // call base class routine
   myelch::calc_initial_time_derivative(ele, emat, erhs, params, discretization, la);
@@ -144,7 +144,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_action(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, const ScaTra::Action& action,
+    Core::FE::Discretization& discretization, const ScaTra::Action& action,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -214,7 +214,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_act
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_domain_kinetics(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra)
 {
@@ -833,7 +833,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
     probdim>::calculate_mean_electrode_concentration(const Core::Elements::Element* const& ele,
-    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseVector& conc)
 {
   // for complete 1D simulation of battery:

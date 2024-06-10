@@ -29,7 +29,7 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntElchOST(Teuchos::RCP<Discret::Discretization> dis,
+    ScaTraTimIntElchOST(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -64,7 +64,7 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntElchSCLOST(Teuchos::RCP<Discret::Discretization> dis,
+    ScaTraTimIntElchSCLOST(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -102,7 +102,7 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntElchBDF2(Teuchos::RCP<Discret::Discretization> dis,
+    ScaTraTimIntElchBDF2(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -136,7 +136,7 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntElchGenAlpha(Teuchos::RCP<Discret::Discretization> dis,
+    ScaTraTimIntElchGenAlpha(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -168,7 +168,7 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntElchStationary(Teuchos::RCP<Discret::Discretization> dis,
+    ScaTraTimIntElchStationary(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,

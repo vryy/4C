@@ -65,8 +65,8 @@ namespace BEAMINTERACTION
        * \params[inout] cfb  Global stiffness matrix coupling beam to fluid DOFs
        * \params[inout] cbf  Global stiffness matrix coupling fluid to beam DOFs
        */
-      void evaluate_force_stiff(const Discret::Discretization& discretization1,
-          const Discret::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
+      void evaluate_force_stiff(const Core::FE::Discretization& discretization1,
+          const Core::FE::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
           Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<Core::LinAlg::SparseOperator> cff,
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbb,
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& cfb,

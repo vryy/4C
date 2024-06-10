@@ -69,7 +69,7 @@ namespace CONSTRAINTS
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     virtual int assign_degrees_of_freedom(
-        const Teuchos::RCP<Discret::Discretization> dis, const int ndofs, const int start);
+        const Teuchos::RCP<Core::FE::Discretization> dis, const int ndofs, const int start);
 
     //@}
 

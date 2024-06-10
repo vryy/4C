@@ -33,10 +33,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::DOFSets
 {
@@ -79,7 +79,7 @@ namespace Core::DOFSets
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
-        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
+        const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// Update the coupled nodes map of dofset
     virtual void SetCoupledNodes(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes);

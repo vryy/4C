@@ -30,10 +30,10 @@ namespace Adapter
   class PoroMultiPhase;
 }  // namespace Adapter
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace ScaTra
 {

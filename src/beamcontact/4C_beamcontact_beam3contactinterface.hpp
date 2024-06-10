@@ -57,12 +57,12 @@ namespace CONTACT
     /*!
     \brief Get problem discretization
     */
-    virtual const Discret::Discretization& ProblemDiscret() const = 0;
+    virtual const Core::FE::Discretization& ProblemDiscret() const = 0;
 
     /*!
     \brief Get beam contact discretization
     */
-    virtual const Discret::Discretization& ContactDiscret() const = 0;
+    virtual const Core::FE::Discretization& ContactDiscret() const = 0;
 
     /*!
     \brief Get offset of dofs between cdiscret and pdiscret
@@ -186,7 +186,7 @@ namespace CONTACT
 
     //! return appropriate internal implementation class (acts as a simple factory)
     static Teuchos::RCP<Beam3contactinterface> Impl(const int numnodes, const int numnodalvalues,
-        const Discret::Discretization& pdiscret, const Discret::Discretization& cdiscret,
+        const Core::FE::Discretization& pdiscret, const Core::FE::Discretization& cdiscret,
         const std::map<int, int>& dofoffsetmap, Core::Elements::Element* element1,
         Core::Elements::Element* element2, Teuchos::ParameterList& beamcontactparams);
 

@@ -32,10 +32,10 @@ namespace BINSTRATEGY
   class BinningStrategy;
 }
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::Geo
 {
@@ -70,7 +70,7 @@ namespace FBI
      * \param[in] discretizations vector containing the structure and fluid discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    virtual void Setup(std::vector<Teuchos::RCP<Discret::Discretization>>&,
+    virtual void Setup(std::vector<Teuchos::RCP<Core::FE::Discretization>>&,
         Teuchos::RCP<const Epetra_Vector> structure_displacement);
 
     /**
@@ -87,7 +87,7 @@ namespace FBI
      * \returns map relating the beam element IDs to a vector of nearby fluid element IDs
      */
     virtual Teuchos::RCP<std::map<int, std::vector<int>>> Search(
-        std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
+        std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
         Teuchos::RCP<const Epetra_Vector>& column_structure_displacement);
 
     /**
@@ -98,7 +98,7 @@ namespace FBI
      * \note For now we assume that we only have beam elements in the structure discretization
      */
 
-    virtual void ExtendBeamGhosting(Discret::Discretization& discretization);
+    virtual void ExtendBeamGhosting(Core::FE::Discretization& discretization);
 
     /**
      * \brief Handles the parallel communication necessary to create the beam-fluid pairs
@@ -115,7 +115,7 @@ namespace FBI
      * of fluid elements ids which they potentially cut
      */
     virtual void PreparePairCreation(
-        std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
+        std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
         Teuchos::RCP<std::map<int, std::vector<int>>> pairids);
 
     /** \brief Update distribution of elements to bins
@@ -123,7 +123,7 @@ namespace FBI
      * \param[in] structure_discretization structure discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    virtual void UpdateBinning(Teuchos::RCP<Discret::Discretization>& structure_discretization,
+    virtual void UpdateBinning(Teuchos::RCP<Core::FE::Discretization>& structure_discretization,
         Teuchos::RCP<const Epetra_Vector> structure_column_displacement){};
 
    protected:
@@ -140,7 +140,7 @@ namespace FBI
      * \param[in, out] positions map relating the node IDs to reference positions
      *
      */
-    virtual void compute_fixed_positions(Discret::Discretization& dis,
+    virtual void compute_fixed_positions(Core::FE::Discretization& dis,
         Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions) const;
 
     /**
@@ -150,7 +150,7 @@ namespace FBI
      * \param[in, out] positions map relating the node IDs to reference positions
      * \param[in] disp current displacements
      */
-    virtual void compute_current_positions(Discret::Discretization& dis,
+    virtual void compute_current_positions(Core::FE::Discretization& dis,
         Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions,
         Teuchos::RCP<const Epetra_Vector> disp) const;
 

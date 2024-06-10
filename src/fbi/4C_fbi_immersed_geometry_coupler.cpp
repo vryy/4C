@@ -47,7 +47,7 @@ FBI::FBIGeometryCoupler::FBIGeometryCoupler()
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIGeometryCoupler::Setup(
-    std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
+    std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector> structure_displacement)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::Setup");
@@ -69,7 +69,7 @@ void FBI::FBIGeometryCoupler::Setup(
 /*----------------------------------------------------------------------*/
 
 Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::Search(
-    std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
+    std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector>& column_structure_displacement)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::Search");
@@ -130,7 +130,7 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::Search(
 
 // todo Maybe we can use Core::Rebalance::GhostDiscretizationOnAllProcs instead
 // todo Needs to be adapted as soon as problems can contain beam and general structure nodes
-void FBI::FBIGeometryCoupler::ExtendBeamGhosting(Discret::Discretization& discretization)
+void FBI::FBIGeometryCoupler::ExtendBeamGhosting(Core::FE::Discretization& discretization)
 {
   // Core::Rebalance::GhostDiscretizationOnAllProcs(structure_->discretization());
   std::vector<int> allproc(discretization.Comm().NumProc());
@@ -180,7 +180,7 @@ void FBI::FBIGeometryCoupler::ExtendBeamGhosting(Discret::Discretization& discre
 /*----------------------------------------------------------------------*/
 
 void FBI::FBIGeometryCoupler::PreparePairCreation(
-    std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
+    std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
     Teuchos::RCP<std::map<int, std::vector<int>>> pairids)
 {
   Teuchos::RCP<Teuchos::Time> t =
@@ -293,7 +293,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
     discretizations[1]->ExportColumnNodes(*newnodecolmap);
     discretizations[1]->export_column_elements(*newelecolmap);
 
-    Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(discretizations[1], true)
+    Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discretizations[1], true)
         ->FillCompleteFaces(true, true, true, edgebased_fluidstabilization_);
   }
 
@@ -304,7 +304,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
 }
 
 /*----------------------------------------------------------------------*/
-void FBI::FBIGeometryCoupler::compute_fixed_positions(Discret::Discretization& dis,
+void FBI::FBIGeometryCoupler::compute_fixed_positions(Core::FE::Discretization& dis,
     Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions) const
 {
   positions->clear();
@@ -317,7 +317,7 @@ void FBI::FBIGeometryCoupler::compute_fixed_positions(Discret::Discretization& d
 }
 /*----------------------------------------------------------------------*/
 
-void FBI::FBIGeometryCoupler::compute_current_positions(Discret::Discretization& dis,
+void FBI::FBIGeometryCoupler::compute_current_positions(Core::FE::Discretization& dis,
     Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions,
     Teuchos::RCP<const Epetra_Vector> disp) const
 {

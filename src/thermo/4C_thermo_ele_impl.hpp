@@ -52,8 +52,8 @@ namespace Discret
       //!  This class does not provide a definition for this function, it
       //!  must be defined in TemperImpl.
       virtual int Evaluate(const Core::Elements::Element* ele,  //!< current element
-          Teuchos::ParameterList& params,                 //!< parameter list, containing e.g., dt
-          const Discret::Discretization& discretization,  //!< current discretisation
+          Teuchos::ParameterList& params,                  //!< parameter list, containing e.g., dt
+          const Core::FE::Discretization& discretization,  //!< current discretisation
           const Core::Elements::Element::LocationArray& la,  //!< location array
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,   //!< conductivity matrix
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,   //!< capacity matrix
@@ -70,7 +70,7 @@ namespace Discret
       //!  must be defined in TemperImpl.
       virtual int evaluate_neumann(const Core::Elements::Element* ele,  //!< current element
           const Teuchos::ParameterList& params,                         //!< parameter list
-          const Discret::Discretization& discretization,                //!< current discretisation
+          const Core::FE::Discretization& discretization,               //!< current discretisation
           const std::vector<int>&
               lm,  //!< location vector, EvalNeumann is called only on own discretisation
           Core::LinAlg::SerialDenseVector& elevec1_epetra,  //!< view on external force vector
@@ -135,9 +135,9 @@ namespace Discret
       static constexpr int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
 
       //! Evaluate for multiple dofsets
-      int Evaluate(const Core::Elements::Element* ele,    //!< current element
-          Teuchos::ParameterList& params,                 //!< parameter list, containing e.g., dt
-          const Discret::Discretization& discretization,  //!< current discretisation
+      int Evaluate(const Core::Elements::Element* ele,     //!< current element
+          Teuchos::ParameterList& params,                  //!< parameter list, containing e.g., dt
+          const Core::FE::Discretization& discretization,  //!< current discretisation
           const Core::Elements::Element::LocationArray& la,  //!< location array
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,   //!< conductivity matrix
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,   //!< capacity matrix
@@ -151,7 +151,7 @@ namespace Discret
       //! Evaluate the element
       int evaluate_neumann(const Core::Elements::Element* ele,  //!< current element
           const Teuchos::ParameterList& params,                 //!< parameter list
-          const Discret::Discretization& discretization,        //!< current discretisation
+          const Core::FE::Discretization& discretization,       //!< current discretisation
           const std::vector<int>&
               lm,  //!< location vector, EvalNeumann is called only on own discretisation
           Core::LinAlg::SerialDenseVector& elevec1_epetra,  //!< view on external force vector
@@ -166,7 +166,8 @@ namespace Discret
       //!
       //! builds quantitites from linear/nonlinear and thermo/TSI specific routines
       void evaluate_tang_capa_fint(const Core::Elements::Element* ele, const double time,
-          const Discretization& discretization, const Core::Elements::Element::LocationArray& la,
+          const Core::FE::Discretization& discretization,
+          const Core::Elements::Element::LocationArray& la,
           Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* etang,
           Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,
           Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapalin,
@@ -181,7 +182,8 @@ namespace Discret
        * @param params ParameterList of options
        */
       void evaluate_coupled_tang(const Core::Elements::Element* ele,
-          const Discretization& discretization, const Core::Elements::Element::LocationArray& la,
+          const Core::FE::Discretization& discretization,
+          const Core::Elements::Element::LocationArray& la,
           Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_>* etangcoupl,
           Teuchos::ParameterList& params);
 
@@ -414,8 +416,8 @@ namespace Discret
 
       //! prepare the evaluation of NURBS shape functions
       virtual void prepare_nurbs_eval(
-          const Core::Elements::Element* ele,            //!< the element whose matrix is calculated
-          const Discret::Discretization& discretization  //!< current discretisation
+          const Core::Elements::Element* ele,  //!< the element whose matrix is calculated
+          const Core::FE::Discretization& discretization  //!< current discretisation
       );
 
       //! integral of shape functions over the element
@@ -437,7 +439,7 @@ namespace Discret
       );
 
       //! extract displacement and velocity vector from discretization
-      void extract_disp_vel(const Discretization& discretization,
+      void extract_disp_vel(const Core::FE::Discretization& discretization,
           const Core::Elements::Element::LocationArray& la, std::vector<double>& mydisp,
           std::vector<double>& myvel) const;
 

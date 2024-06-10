@@ -75,7 +75,7 @@ void Mat::ScatraMultiScaleGP::Init()
   // extract micro-scale discretization
   std::stringstream microdisname;
   microdisname << "scatra_multiscale_" << microdisnum_;
-  Teuchos::RCP<Discret::Discretization> microdis = microproblem->GetDis(microdisname.str());
+  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->GetDis(microdisname.str());
 
   // instantiate and initialize micro-scale state vectors
   phin_ = Core::LinAlg::CreateVector(*microdis->dof_row_map(), true);
@@ -305,7 +305,7 @@ void Mat::ScatraMultiScaleGP::Evaluate(const std::vector<double>& phinp_macro, d
 double Mat::ScatraMultiScaleGP::evaluate_mean_concentration() const
 {
   // extract micro-scale discretization
-  Discret::Discretization& discret = *microdisnum_microtimint_map_[microdisnum_]->discretization();
+  Core::FE::Discretization& discret = *microdisnum_microtimint_map_[microdisnum_]->discretization();
 
   // set micro-scale state vector
   discret.ClearState();
@@ -338,7 +338,7 @@ double Mat::ScatraMultiScaleGP::evaluate_mean_concentration() const
 double Mat::ScatraMultiScaleGP::evaluate_mean_concentration_time_derivative() const
 {
   // extract micro-scale discretization
-  Discret::Discretization& discret = *microdisnum_microtimint_map_[microdisnum_]->discretization();
+  Core::FE::Discretization& discret = *microdisnum_microtimint_map_[microdisnum_]->discretization();
 
   // set micro-scale state vector
   discret.ClearState();
@@ -404,7 +404,7 @@ void Mat::ScatraMultiScaleGP::new_result_file()
   Global::Problem* microproblem = Global::Problem::Instance(microdisnum_);
   std::stringstream microdisname;
   microdisname << "scatra_multiscale_" << microdisnum_;
-  Teuchos::RCP<Discret::Discretization> microdis = microproblem->GetDis(microdisname.str());
+  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->GetDis(microdisname.str());
 
   // figure out prefix of micro-scale restart files
   restartname_ = new_result_file_path(microprefix);

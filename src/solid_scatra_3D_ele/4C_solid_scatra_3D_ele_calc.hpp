@@ -46,20 +46,20 @@ namespace Discret::ELEMENTS
 
     void material_post_setup(const Core::Elements::Element& ele, Mat::So3Material& solid_material);
 
-    void Recover(const Core::Elements::Element& ele, const Discret::Discretization& discretization,
+    void Recover(const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
         const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
 
     void Update(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
-        const Discret::Discretization& discretization,
+        const Core::FE::Discretization& discretization,
         const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
 
     void CalculateStress(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
         const StressIO& stressIO, const StrainIO& strainIO,
-        const Discret::Discretization& discretization,
+        const Core::FE::Discretization& discretization,
         const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
 
     double calculate_internal_energy(const Core::Elements::Element& ele,
-        Mat::So3Material& solid_material, const Discret::Discretization& discretization,
+        Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
         const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
 
     void initialize_gauss_point_data_output(const Core::Elements::Element& ele,
@@ -74,14 +74,14 @@ namespace Discret::ELEMENTS
         const Core::Elements::Element& ele, Mat::So3Material& solid_material);
 
     void evaluate_nonlinear_force_stiffness_mass(const Core::Elements::Element& ele,
-        Mat::So3Material& solid_material, const Discret::Discretization& discretization,
+        Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
         const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
         Core::LinAlg::SerialDenseVector* force_vector,
         Core::LinAlg::SerialDenseMatrix* stiffness_matrix,
         Core::LinAlg::SerialDenseMatrix* mass_matrix);
 
     void evaluate_d_stress_d_scalar(const Core::Elements::Element& ele,
-        Mat::So3Material& solid_material, const Discret::Discretization& discretization,
+        Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
         const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
         Core::LinAlg::SerialDenseMatrix& stiffness_matrix_dScalar);
 

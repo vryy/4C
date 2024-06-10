@@ -22,10 +22,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {
@@ -193,7 +193,7 @@ namespace Core::Geo
        \param dis                  discretization
        \param currentpositions     current nodal positions in discretization
        */
-      void create_children(const Discret::Discretization& dis,
+      void create_children(const Core::FE::Discretization& dis,
           const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions);
 
       /*!
@@ -306,7 +306,7 @@ namespace Core::Geo
        \param label                label of structure the query point belongs to
        \return set of node gids
        */
-      std::map<int, std::set<int>> search_elements_in_radius(const Discret::Discretization& dis,
+      std::map<int, std::set<int>> search_elements_in_radius(const Core::FE::Discretization& dis,
           const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
           const Core::LinAlg::Matrix<3, 1>& point, const double radius, const int label);
 
@@ -379,7 +379,7 @@ namespace Core::Geo
      \param treetype             octtree or quadtree
      */
     void initializeTree(const Core::LinAlg::Matrix<3, 2>& nodeBox,
-        const Discret::Discretization& dis, const TreeType treetype);
+        const Core::FE::Discretization& dis, const TreeType treetype);
 
     void initializeTree(const Core::LinAlg::Matrix<3, 2>& nodeBox, const TreeType treetype);
 
@@ -405,7 +405,7 @@ namespace Core::Geo
      \param label                label
      \return set of node gids
      */
-    std::map<int, std::set<int>> search_elements_in_radius(const Discret::Discretization& dis,
+    std::map<int, std::set<int>> search_elements_in_radius(const Core::FE::Discretization& dis,
         const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
         const Core::LinAlg::Matrix<3, 1>& point, const double radius, const int label);
 

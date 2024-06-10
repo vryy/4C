@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
  | constructor                                            pfaller Oct17 |
  *----------------------------------------------------------------------*/
 ModelOrderRed::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
-    Teuchos::RCP<Discret::Discretization> discr)
+    Teuchos::RCP<Core::FE::Discretization> discr)
     : actdisc_(discr),
       myrank_(actdisc_->Comm().MyPID()),
       morparams_(Global::Problem::Instance()->MORParams()),

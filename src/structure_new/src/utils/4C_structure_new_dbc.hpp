@@ -28,10 +28,10 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -69,7 +69,7 @@ namespace STR
     virtual ~Dbc() = default;
 
     //! Initialize class variables
-    virtual void Init(const Teuchos::RCP<Discret::Discretization>& discret,
+    virtual void Init(const Teuchos::RCP<Core::FE::Discretization>& discret,
         const Teuchos::RCP<Epetra_Vector>& freact,
         const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
 
@@ -189,8 +189,8 @@ namespace STR
     void check_init_setup() const;
 
     //! Get discretization pointer
-    Teuchos::RCP<Discret::Discretization> discret_ptr();
-    Teuchos::RCP<const Discret::Discretization> discret_ptr() const;
+    Teuchos::RCP<Core::FE::Discretization> discret_ptr();
+    Teuchos::RCP<const Core::FE::Discretization> discret_ptr() const;
 
     //! Access the reaction force
     Epetra_Vector& freact() const;
@@ -233,7 +233,7 @@ namespace STR
     bool islocsys_;
 
     //! discretization pointer
-    Teuchos::RCP<Discret::Discretization> discret_ptr_;
+    Teuchos::RCP<Core::FE::Discretization> discret_ptr_;
 
     //! pointer to the overlying time integrator (read-only)
     Teuchos::RCP<const STR::TimeInt::Base> timint_ptr_;

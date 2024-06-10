@@ -35,10 +35,10 @@ FOUR_C_NAMESPACE_OPEN
 
 
 XFEM::LevelSetCoupling::LevelSetCoupling(
-    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<Discret::Discretization>&
+    Teuchos::RCP<Core::FE::Discretization>&
         cond_dis,           ///< full discretization from which the cutter discretization is derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -113,8 +113,8 @@ void XFEM::LevelSetCoupling::set_cutter_discretization()
 // TODO: shift to Discret::Utils...
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-bool XFEM::LevelSetCoupling::HaveMatchingNodes(const Teuchos::RCP<Discret::Discretization>& dis_A,
-    const Teuchos::RCP<Discret::Discretization>& dis_B)
+bool XFEM::LevelSetCoupling::HaveMatchingNodes(const Teuchos::RCP<Core::FE::Discretization>& dis_A,
+    const Teuchos::RCP<Core::FE::Discretization>& dis_B)
 {
   // check for equal node row maps
   const Epetra_Map* noderowmap_A = dis_A->NodeRowMap();
@@ -536,9 +536,9 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
 void XFEM::LevelSetCoupling::MapCutterToBgVector(
-    const Teuchos::RCP<Discret::Discretization>& source_dis,
+    const Teuchos::RCP<Core::FE::Discretization>& source_dis,
     const Teuchos::RCP<Epetra_Vector>& source_vec_dofbased, const int source_nds,
-    const Teuchos::RCP<Discret::Discretization>& target_dis,
+    const Teuchos::RCP<Core::FE::Discretization>& target_dis,
     const Teuchos::RCP<Epetra_Vector>& target_vec_dofbased, const int target_nds)
 {
   if (HaveMatchingNodes(source_dis, target_dis))  // check for equal node positions
@@ -987,10 +987,10 @@ double XFEM::LevelSetCoupling::funct_implementation(
 // TODO: has_interface_moved_ checks its functionality and there is another flag in meshcoupling i
 // think
 XFEM::LevelSetCouplingBC::LevelSetCouplingBC(
-    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<Discret::Discretization>&
+    Teuchos::RCP<Core::FE::Discretization>&
         cond_dis,           ///< full discretization from which the cutter discretization is derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -1218,10 +1218,10 @@ void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions_old_state(
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 XFEM::LevelSetCouplingNavierSlip::LevelSetCouplingNavierSlip(
-    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<Discret::Discretization>&
+    Teuchos::RCP<Core::FE::Discretization>&
         cond_dis,           ///< full discretization from which the cutter discretization is derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time

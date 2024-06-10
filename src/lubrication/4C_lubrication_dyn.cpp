@@ -41,7 +41,7 @@ void lubrication_dyn(int restart)
       Global::Problem::Instance()->lubrication_dynamic_params();
 
   // access the lubrication discretization
-  Teuchos::RCP<Discret::Discretization> lubricationdis =
+  Teuchos::RCP<Core::FE::Discretization> lubricationdis =
       Global::Problem::Instance()->GetDis("lubrication");
 
   lubricationdis->fill_complete();

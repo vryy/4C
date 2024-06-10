@@ -43,7 +43,7 @@ Core::IO::MeshReader::MeshReader(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::MeshReader::AddAdvancedReader(Teuchos::RCP<Discret::Discretization> dis,
+void Core::IO::MeshReader::AddAdvancedReader(Teuchos::RCP<Core::FE::Discretization> dis,
     const Core::IO::DatFileReader& reader, const std::string& sectionname,
     const Core::IO::GeometryType geometrysource, const std::string* geofilepath)
 {

@@ -34,10 +34,10 @@ namespace Core::LinAlg
   class KrylovProjector;
 }  // namespace Core::LinAlg
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::IO
 {
@@ -58,7 +58,7 @@ namespace FLD
   class TimInt : public Adapter::Fluid
   {
    public:
-    TimInt(const Teuchos::RCP<Discret::Discretization>& discret,
+    TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
         const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<Core::IO::DiscretizationWriter>& output);
@@ -196,7 +196,7 @@ namespace FLD
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    const Teuchos::RCP<Discret::Discretization>& discretization() override { return discret_; }
+    const Teuchos::RCP<Core::FE::Discretization>& discretization() override { return discret_; }
     Teuchos::RCP<const Core::DOFSets::DofSet> DofSet() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
@@ -638,7 +638,7 @@ namespace FLD
     ///  set scalar fields within outer iteration loop
     void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
-        Teuchos::RCP<Discret::Discretization> scatradis, int dofset) override
+        Teuchos::RCP<Core::FE::Discretization> scatradis, int dofset) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -647,7 +647,7 @@ namespace FLD
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
         Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
         const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-        Teuchos::RCP<Discret::Discretization> scatradis) override
+        Teuchos::RCP<Core::FE::Discretization> scatradis) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -655,7 +655,7 @@ namespace FLD
     /// set scalar fields
     void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp, const double thermpressnp,
         Teuchos::RCP<const Epetra_Vector> scatraresidual,
-        Teuchos::RCP<Discret::Discretization> scatradis, const int whichscalar = -1) override
+        Teuchos::RCP<Core::FE::Discretization> scatradis, const int whichscalar = -1) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -711,7 +711,7 @@ namespace FLD
 
    protected:
     //! fluid discretization
-    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! linear solver
     Teuchos::RCP<Core::LinAlg::Solver> solver_;

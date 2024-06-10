@@ -35,11 +35,10 @@ namespace NOX
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
-
+}  // namespace Core::FE
 namespace Core::Nodes
 {
   class Node;
@@ -223,7 +222,7 @@ namespace CONTACT
         bool extend_file_name(std::string& file_name, const std::string& file_path) const;
 
         Teuchos::RCP<Epetra_Map> find_connected_dofs(
-            const Core::Nodes::Node* node, const Discret::Discretization& discret) const;
+            const Core::Nodes::Node* node, const Core::FE::Discretization& discret) const;
       };
 
       struct Options
@@ -256,7 +255,7 @@ namespace CONTACT
       const CONTACT::Aug::Strategy* strat_ = nullptr;
 
       /// full discretization
-      const Discret::Discretization* discret_ = nullptr;
+      const Core::FE::Discretization* discret_ = nullptr;
 
       STR::MODELEVALUATOR::Contact* model_ = nullptr;
 

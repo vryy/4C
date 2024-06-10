@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::UTILS::Evaluate(Discret::Discretization& discret, Teuchos::ParameterList& eparams,
+void Core::FE::UTILS::Evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
     const Teuchos::RCP<Epetra_Vector>& systemvector, const Epetra_Map* col_ele_map)
 {
@@ -34,7 +34,7 @@ void Discret::UTILS::Evaluate(Discret::Discretization& discret, Teuchos::Paramet
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::UTILS::Evaluate(Discret::Discretization& discret, Teuchos::ParameterList& eparams,
+void Core::FE::UTILS::Evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
     std::vector<Teuchos::RCP<Core::LinAlg::SparseOperator>>& systemmatrices,
     std::vector<Teuchos::RCP<Epetra_Vector>>& systemvectors, const Epetra_Map* col_ele_map)
 {
@@ -55,10 +55,10 @@ void Discret::UTILS::Evaluate(Discret::Discretization& discret, Teuchos::Paramet
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::UTILS::Evaluate(Discret::Discretization& discret, Teuchos::ParameterList& eparams,
+void Core::FE::UTILS::Evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
     Core::FE::AssembleStrategy& strategy, const Epetra_Map* col_ele_map)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Discret::UTILS::Evaluate");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate");
 
   if (!discret.Filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!discret.HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -71,7 +71,7 @@ void Discret::UTILS::Evaluate(Discret::Discretization& discret, Teuchos::Paramet
   // for most element types, just the base class dummy is called
   // that does nothing
   {
-    TEUCHOS_FUNC_TIME_MONITOR("Discret::UTILS::Evaluate pre_evaluate");
+    TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate pre_evaluate");
     Core::Communication::ParObjectFactory::Instance().pre_evaluate(discret, eparams,
         strategy.Systemmatrix1(), strategy.Systemmatrix2(), strategy.Systemvector1(),
         strategy.Systemvector2(), strategy.Systemvector3());
@@ -101,13 +101,13 @@ void Discret::UTILS::Evaluate(Discret::Discretization& discret, Teuchos::Paramet
       actele = discret.lColElement(i);
 
     {
-      TEUCHOS_FUNC_TIME_MONITOR("Discret::UTILS::Evaluate LocationVector");
+      TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate LocationVector");
       // get element location vector, dirichlet flags and ownerships
       actele->LocationVector(discret, la, false);
     }
 
     {
-      TEUCHOS_FUNC_TIME_MONITOR("Discret::UTILS::Evaluate Resize");
+      TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate Resize");
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
@@ -115,7 +115,7 @@ void Discret::UTILS::Evaluate(Discret::Discretization& discret, Teuchos::Paramet
     }
 
     {
-      TEUCHOS_FUNC_TIME_MONITOR("Discret::UTILS::Evaluate elements");
+      TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate elements");
       // call the element evaluate method
       int err = actele->Evaluate(eparams, discret, la, strategy.Elematrix1(), strategy.Elematrix2(),
           strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
@@ -125,7 +125,7 @@ void Discret::UTILS::Evaluate(Discret::Discretization& discret, Teuchos::Paramet
     }
 
     {
-      TEUCHOS_FUNC_TIME_MONITOR("Discret::UTILS::Evaluate assemble");
+      TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate assemble");
       int eid = actele->Id();
       strategy.AssembleMatrix1(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);
       strategy.AssembleMatrix2(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);

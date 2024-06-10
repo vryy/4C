@@ -89,7 +89,7 @@ namespace Discret
         Generic virtual interface function. Called via base pointer.
        */
       int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
           std::vector<Core::LinAlg::SerialDenseVector*>& elevec) override;
 
@@ -99,12 +99,12 @@ namespace Discret
       /*========================================================================*/
 
       /// Setup element evaluation
-      virtual int setup_calc(Core::Elements::Element* ele, Discret::Discretization& discretization,
+      virtual int setup_calc(Core::Elements::Element* ele, Core::FE::Discretization& discretization,
           const POROFLUIDMULTIPHASE::Action& action);
 
       //! evaluate action
       virtual int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Discret::Discretization& discretization, const POROFLUIDMULTIPHASE::Action& action,
+          Core::FE::Discretization& discretization, const POROFLUIDMULTIPHASE::Action& action,
           Core::Elements::Element::LocationArray& la,
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
           std::vector<Core::LinAlg::SerialDenseVector*>& elevec);
@@ -112,7 +112,7 @@ namespace Discret
       //! extract element based or nodal values
       //  return extracted values of phinp
       virtual void extract_element_and_node_values(Core::Elements::Element* ele,
-          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la);
 
       /// Setup element evaluation
@@ -126,7 +126,7 @@ namespace Discret
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
               elevec,                                 //!< element rhs vectors to calculate
-          Discret::Discretization& discretization,    //!< discretization
+          Core::FE::Discretization& discretization,   //!< discretization
           Core::Elements::Element::LocationArray& la  //!< location array
       );
 
@@ -136,7 +136,7 @@ namespace Discret
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
               elevec,                                 //!< element rhs vectors to calculate
-          Discret::Discretization& discretization,    //!< discretization
+          Core::FE::Discretization& discretization,   //!< discretization
           Core::Elements::Element::LocationArray& la  //!< location array
       );
 
@@ -146,7 +146,7 @@ namespace Discret
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
               elevec,                                 //!< element rhs vectors to calculate
-          Discret::Discretization& discretization,    //!< discretization
+          Core::FE::Discretization& discretization,   //!< discretization
           Core::Elements::Element::LocationArray& la  //!< location array
       );
 
@@ -155,7 +155,7 @@ namespace Discret
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
               elevec,                                 //!< element rhs vectors to calculate
-          Discret::Discretization& discretization,    //!< discretization
+          Core::FE::Discretization& discretization,   //!< discretization
           Core::Elements::Element::LocationArray& la  //!< location array
       );
 
@@ -164,7 +164,7 @@ namespace Discret
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrices to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
               elevec,                                 //!< element rhs vectors to calculate
-          Discret::Discretization& discretization,    //!< discretization
+          Core::FE::Discretization& discretization,   //!< discretization
           Core::Elements::Element::LocationArray& la  //!< location array
       );
 
@@ -173,7 +173,7 @@ namespace Discret
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
               elevec,                                 //!< element rhs vectors to calculate
-          Discret::Discretization& discretization,    //!< discretization
+          Core::FE::Discretization& discretization,   //!< discretization
           Core::Elements::Element::LocationArray& la  //!< location array
       );
 
@@ -182,7 +182,7 @@ namespace Discret
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
               elevec,                                 //!< element rhs vectors to calculate
-          Discret::Discretization& discretization,    //!< discretization
+          Core::FE::Discretization& discretization,   //!< discretization
           Core::Elements::Element::LocationArray& la  //!< location array
       );
 
@@ -208,7 +208,7 @@ namespace Discret
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
               elevec,                                  //!< element rhs vectors to calculate
-          Discret::Discretization& discretization,     //!< discretization
+          Core::FE::Discretization& discretization,    //!< discretization
           Core::Elements::Element::LocationArray& la,  //!< location array
           const bool jacobian_needed                   //!< necessary to compute Jacobian at node
       );
@@ -218,7 +218,7 @@ namespace Discret
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
               elevec,                                 //!< element rhs vectors to calculate
-          Discret::Discretization& discretization,    //!< discretization
+          Core::FE::Discretization& discretization,   //!< discretization
           Core::Elements::Element::LocationArray& la  //!< location array
       );
 

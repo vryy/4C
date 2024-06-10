@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
-    const Discret::Discretization& pdiscret, const Discret::Discretization& cdiscret,
+    const Core::FE::Discretization& pdiscret, const Core::FE::Discretization& cdiscret,
     const std::map<int, int>& dofoffsetmap, Core::Elements::Element* element1,
     Core::Elements::Element* element2, Teuchos::ParameterList& beamcontactparams)
     : pdiscret_(pdiscret),

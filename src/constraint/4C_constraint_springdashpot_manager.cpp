@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-CONSTRAINTS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<Discret::Discretization> dis)
+CONSTRAINTS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<Core::FE::Discretization> dis)
     : actdisc_(dis), havespringdashpot_(false)
 {
   // get all spring dashpot conditions
@@ -84,7 +84,7 @@ void CONSTRAINTS::SpringDashpotManager::ResetPrestress(Teuchos::RCP<Epetra_Vecto
 }
 
 void CONSTRAINTS::SpringDashpotManager::Output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
-    Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp)
+    Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp)
 {
   // row maps for export
   Teuchos::RCP<Epetra_Vector> gap =
@@ -122,7 +122,7 @@ void CONSTRAINTS::SpringDashpotManager::Output(Teuchos::RCP<Core::IO::Discretiza
 
 void CONSTRAINTS::SpringDashpotManager::output_restart(
     Teuchos::RCP<Core::IO::DiscretizationWriter> output,
-    Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp)
+    Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp)
 {
   // row maps for export
   Teuchos::RCP<Epetra_Vector> springoffsetprestr =

@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-Adapter::FluidFBI::FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+Adapter::FluidFBI::FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Discretization> dis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond)

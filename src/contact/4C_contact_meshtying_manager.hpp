@@ -15,11 +15,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace CONTACT
 {
@@ -54,7 +53,7 @@ namespace CONTACT
     \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
 
     */
-    MtManager(Discret::Discretization& discret, double alphaf = 0.0);
+    MtManager(Core::FE::Discretization& discret, double alphaf = 0.0);
 
 
 
@@ -81,7 +80,7 @@ namespace CONTACT
 
     */
     bool read_and_check_input(
-        Teuchos::ParameterList& mtparams, const Discret::Discretization& discret);
+        Teuchos::ParameterList& mtparams, const Core::FE::Discretization& discret);
 
     /*!
     \brief Write restart information for meshtying

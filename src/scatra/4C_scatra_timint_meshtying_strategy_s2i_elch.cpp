@@ -578,7 +578,7 @@ ScaTra::MortarCellCalcElch<distypeS, distypeM>::MortarCellCalcElch(
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
 void ScaTra::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition(
-    const Discret::Discretization& idiscret, Mortar::IntCell& cell, Mortar::Element& slaveelement,
+    const Core::FE::Discretization& idiscret, Mortar::IntCell& cell, Mortar::Element& slaveelement,
     Mortar::Element& masterelement, Core::Elements::Element::LocationArray& la_slave,
     Core::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseMatrix& k_ss, Core::LinAlg::SerialDenseMatrix& k_sm,
@@ -762,7 +762,7 @@ ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::MortarCellCalcElchSTITh
  *--------------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
 void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
-    const Discret::Discretization& idiscret,            //!< interface discretization
+    const Core::FE::Discretization& idiscret,           //!< interface discretization
     Mortar::IntCell& cell,                              //!< mortar integration cell
     Mortar::Element& slaveelement,                      //!< slave-side mortar element
     Mortar::Element& masterelement,                     //!< master-side mortar element
@@ -806,7 +806,7 @@ void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
 void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition_od(
-    const Discret::Discretization& idiscret,            //!< interface discretization
+    const Core::FE::Discretization& idiscret,           //!< interface discretization
     Mortar::IntCell& cell,                              //!< mortar integration cell
     Mortar::Element& slaveelement,                      //!< slave-side mortar element
     Mortar::Element& masterelement,                     //!< master-side mortar element
@@ -886,7 +886,7 @@ void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition
  *------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
 void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::extract_node_values(
-    const Discret::Discretization& idiscret,           //!< interface discretization
+    const Core::FE::Discretization& idiscret,          //!< interface discretization
     Core::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
     Core::Elements::Element::LocationArray& la_master  //!< master-side location array
 )
@@ -975,7 +975,7 @@ ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
  *--------------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
 void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
-    const Discret::Discretization& idiscret,            //!< interface discretization
+    const Core::FE::Discretization& idiscret,           //!< interface discretization
     Mortar::IntCell& cell,                              //!< mortar integration cell
     Mortar::Element& slaveelement,                      //!< slave-side mortar element
     Mortar::Element& masterelement,                     //!< master-side mortar element
@@ -1028,7 +1028,7 @@ void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
 void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
-    const Discret::Discretization& idiscret,            //!< interface discretization
+    const Core::FE::Discretization& idiscret,           //!< interface discretization
     Mortar::IntCell& cell,                              //!< mortar integration cell
     Mortar::Element& slaveelement,                      //!< slave-side mortar element
     Mortar::Element& masterelement,                     //!< master-side mortar element
@@ -1106,7 +1106,7 @@ void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
 void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
-    const Discret::Discretization& idiscret,            //!< interface discretization
+    const Core::FE::Discretization& idiscret,           //!< interface discretization
     Mortar::IntCell& cell,                              //!< mortar integration cell
     Mortar::Element& slaveelement,                      //!< slave-side mortar element
     Mortar::Element& masterelement,                     //!< master-side mortar element
@@ -1183,7 +1183,7 @@ void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
  *------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
 void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::extract_node_values(
-    const Discret::Discretization& idiscret,           //!< interface discretization
+    const Core::FE::Discretization& idiscret,          //!< interface discretization
     Core::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
     Core::Elements::Element::LocationArray& la_master  //!< master-side location array
 )

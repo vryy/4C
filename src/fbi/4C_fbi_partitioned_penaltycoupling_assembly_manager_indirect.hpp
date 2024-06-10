@@ -53,8 +53,8 @@ namespace BEAMINTERACTION
        */
       PartitionedBeamInteractionAssemblyManagerIndirect(
           std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& assembly_contact_elepairs,
-          Teuchos::RCP<const Discret::Discretization>& discretization1,
-          Teuchos::RCP<const Discret::Discretization>& discretization2,
+          Teuchos::RCP<const Core::FE::Discretization>& discretization1,
+          Teuchos::RCP<const Core::FE::Discretization>& discretization2,
           Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_contact_params_ptr);
 
       /**
@@ -64,8 +64,8 @@ namespace BEAMINTERACTION
        * @param fe_sysmat (out) Global stiffness matrix.
        * @param disp (in) Current displacement vector.
        */
-      void evaluate_force_stiff(const Discret::Discretization& discretization1,
-          const Discret::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
+      void evaluate_force_stiff(const Core::FE::Discretization& discretization1,
+          const Core::FE::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
           Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<Core::LinAlg::SparseOperator> cff,
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbb,
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& cfb,

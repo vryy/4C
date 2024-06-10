@@ -48,7 +48,7 @@ FOUR_C_NAMESPACE_OPEN
 XFEM::XFluidTimeInt::XFluidTimeInt(
     const bool is_newton_increment_transfer,  /// monolithic newton increment transfer or time step
                                               /// transfer?
-    const Teuchos::RCP<Discret::Discretization>& dis,               /// discretization
+    const Teuchos::RCP<Core::FE::Discretization>& dis,              /// discretization
     const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,  /// condition manager
     const Teuchos::RCP<Core::Geo::CutWizard>& wizard_old,           /// cut wizard at t^n
     const Teuchos::RCP<Core::Geo::CutWizard>& wizard_new,           /// cut wizard at t^(n+1)
@@ -1869,7 +1869,7 @@ bool XFEM::XFluidTimeInt::within_space_time_side(
 )
 {
   // get the right cutter discretization for the given side
-  Teuchos::RCP<Discret::Discretization> cutter_dis = condition_manager_->GetCutterDis(coup_sid);
+  Teuchos::RCP<Core::FE::Discretization> cutter_dis = condition_manager_->GetCutterDis(coup_sid);
 
   std::string state_new = "idispnp";
   std::string state_old = "";

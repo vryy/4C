@@ -45,7 +45,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
  *----------------------------------------------------------------------*/
-CONTACT::Manager::Manager(Discret::Discretization& discret, double alphaf)
+CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
     : Mortar::ManagerBase(), discret_(discret)
 {
   // overwrite base class communicator

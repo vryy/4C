@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                     gammi 09/08|
  *----------------------------------------------------------------------*/
 FLD::DynSmagFilter::DynSmagFilter(
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params)
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params)
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
@@ -130,7 +130,7 @@ FLD::DynSmagFilter::DynSmagFilter(
 /*----------------------------------------------------------------------*
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
-void FLD::DynSmagFilter::AddScatra(Teuchos::RCP<Discret::Discretization> scatradis)
+void FLD::DynSmagFilter::AddScatra(Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 

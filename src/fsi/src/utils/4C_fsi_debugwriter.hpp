@@ -27,10 +27,10 @@ namespace Core::IO
   class DiscretizationWriter;
 }  // namespace Core::IO
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace FSI
 {
@@ -43,7 +43,7 @@ namespace FSI
     {
      public:
       /// create FSI debug writer on given field discretization
-      explicit DebugWriter(Teuchos::RCP<Discret::Discretization> dis);
+      explicit DebugWriter(Teuchos::RCP<Core::FE::Discretization> dis);
 
       /// announce new time step
       /*!
@@ -63,7 +63,7 @@ namespace FSI
 
      private:
       /// internal interface discretization
-      Teuchos::RCP<Discret::Discretization> dis_;
+      Teuchos::RCP<Core::FE::Discretization> dis_;
 
       /// coupling of field discretization and interface discretization
       Teuchos::RCP<Core::Adapter::Coupling> coup_;
@@ -84,7 +84,7 @@ namespace FSI
     class SimpleDebugWriter
     {
      public:
-      SimpleDebugWriter(Teuchos::RCP<Discret::Discretization> dis, const std::string& name);
+      SimpleDebugWriter(Teuchos::RCP<Core::FE::Discretization> dis, const std::string& name);
 
       virtual ~SimpleDebugWriter() = default;
       /// announce new time step
@@ -105,7 +105,7 @@ namespace FSI
 
      private:
       /// discretization
-      Teuchos::RCP<Discret::Discretization> dis_;
+      Teuchos::RCP<Core::FE::Discretization> dis_;
 
       /// name of output file
       std::string name_;

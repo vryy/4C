@@ -35,7 +35,7 @@ namespace Arteries
     \brief Standard Constructor
 
     */
-    ArtNetImplStationary(Teuchos::RCP<Discret::Discretization> dis, const int linsolvernumber,
+    ArtNetImplStationary(Teuchos::RCP<Core::FE::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
         Core::IO::DiscretizationWriter& output);
 

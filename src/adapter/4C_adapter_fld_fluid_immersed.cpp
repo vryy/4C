@@ -30,7 +30,7 @@ Adapter::FluidImmersed::FluidImmersed(const Teuchos::ParameterList& prbdyn, std:
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Discretization> Adapter::FluidImmersed::discretization()
+Teuchos::RCP<Core::FE::Discretization> Adapter::FluidImmersed::discretization()
 {
   return fluid_field()->discretization();
 }

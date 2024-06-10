@@ -65,7 +65,7 @@ void THR::TimIntGenAlpha::VerifyCoeff()
  *----------------------------------------------------------------------*/
 THR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(ioparams, tdynparams, xparams, actdis, solver, output),
       midavg_(Core::UTILS::IntegralValue<Inpar::THR::MidAverageEnum>(

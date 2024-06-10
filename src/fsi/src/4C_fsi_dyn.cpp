@@ -91,7 +91,7 @@ void fluid_ale_drt()
   //
   // We rely on this ordering in certain non-intuitive places!
 
-  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis("fluid");
   // check for xfem discretization
   if (Core::UTILS::IntegralValue<bool>(
           (problem->XFluidDynamicParams().sublist("GENERAL")), "XFLUIDFLUID"))
@@ -103,7 +103,7 @@ void fluid_ale_drt()
     fluiddis->fill_complete();
   }
 
-  Teuchos::RCP<Discret::Discretization> aledis = problem->GetDis("ale");
+  Teuchos::RCP<Core::FE::Discretization> aledis = problem->GetDis("ale");
   aledis->fill_complete();
 
   // create ale elements if the ale discretization is empty
@@ -148,7 +148,7 @@ void fluid_xfem_drt()
 
   Global::Problem* problem = Global::Problem::Instance();
 
-  Teuchos::RCP<Discret::Discretization> soliddis = problem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> soliddis = problem->GetDis("structure");
   soliddis->fill_complete();
 
   FLD::XFluid::setup_fluid_discretization();
@@ -158,7 +158,7 @@ void fluid_xfem_drt()
 
   if (alefluid)  // in ale case
   {
-    Teuchos::RCP<Discret::Discretization> aledis = problem->GetDis("ale");
+    Teuchos::RCP<Core::FE::Discretization> aledis = problem->GetDis("ale");
     aledis->fill_complete();
 
     // create ale elements if the ale discretization is empty
@@ -251,8 +251,8 @@ void fluid_freesurf_drt()
   problem->GetDis("ale")->fill_complete();
 
   // get discretizations
-  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis("fluid");
-  Teuchos::RCP<Discret::Discretization> aledis = problem->GetDis("ale");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> aledis = problem->GetDis("ale");
 
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes() == 0)
@@ -323,7 +323,7 @@ void fsi_immersed_drt()
 {
   Global::Problem* problem = Global::Problem::Instance();
 
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis("structure");
   const Epetra_Comm& comm = structdis->Comm();
 
   // Redistribute beams in the case of point coupling conditions
@@ -341,10 +341,10 @@ void fsi_immersed_drt()
   problem->GetDis("fluid")->fill_complete();
 
   // get discretizations
-  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis("fluid");
 
   // create vector of discr.
-  std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+  std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
   dis.push_back(fluiddis);
   dis.push_back(structdis);
 
@@ -416,7 +416,7 @@ void fsi_ale_drt()
 {
   Global::Problem* problem = Global::Problem::Instance();
 
-  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis("structure");
   const Epetra_Comm& comm = structdis->Comm();
 
   // make sure the three discretizations are filled in the right order
@@ -447,8 +447,8 @@ void fsi_ale_drt()
   problem->GetDis("ale")->fill_complete();
 
   // get discretizations
-  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis("fluid");
-  Teuchos::RCP<Discret::Discretization> aledis = problem->GetDis("ale");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> aledis = problem->GetDis("ale");
 
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes() == 0)  // empty ale discretization
@@ -473,7 +473,7 @@ void fsi_ale_drt()
         (not Core::UTILS::IntegralValue<bool>(problem->FSIDynamicParams(), "MATCHGRID_STRUCTALE")))
     {
       // create vector of discr.
-      std::vector<Teuchos::RCP<Discret::Discretization>> dis;
+      std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
       dis.push_back(structdis);
       dis.push_back(fluiddis);
       dis.push_back(aledis);
@@ -782,18 +782,18 @@ void xfsi_drt()
   Global::Problem* problem = Global::Problem::Instance();
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
-  Teuchos::RCP<Discret::Discretization> soliddis = problem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> soliddis = problem->GetDis("structure");
   soliddis->fill_complete();
 
   FLD::XFluid::setup_fluid_discretization();
 
-  Teuchos::RCP<Discret::Discretization> fluiddis = Global::Problem::Instance()->GetDis(
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = Global::Problem::Instance()->GetDis(
       "fluid");  // at the moment, 'fluid'-discretization is used for ale!!!
 
   // CREATE ALE
   const Teuchos::ParameterList& xfdyn = problem->XFluidDynamicParams();
   bool ale = Core::UTILS::IntegralValue<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
-  Teuchos::RCP<Discret::Discretization> aledis;
+  Teuchos::RCP<Core::FE::Discretization> aledis;
   if (ale)
   {
     aledis = problem->GetDis("ale");
@@ -937,10 +937,10 @@ void xfpsi_drt()
 
   // setup of discretization for xfluid
   FLD::XFluid::setup_fluid_discretization();
-  Teuchos::RCP<Discret::Discretization> fluiddis = Global::Problem::Instance()->GetDis(
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = Global::Problem::Instance()->GetDis(
       "fluid");  // at the moment, 'fluid'-discretization is used for ale!!!
 
-  Teuchos::RCP<Discret::Discretization> aledis;
+  Teuchos::RCP<Core::FE::Discretization> aledis;
   const Teuchos::ParameterList& xfdyn = problem->XFluidDynamicParams();
   bool ale = Core::UTILS::IntegralValue<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
   if (ale)

@@ -22,10 +22,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::DOFSets
 {
@@ -88,7 +88,7 @@ namespace Core::DOFSets
     \param couplingcond (in) : condition to be coupled
     \param condids      (in) : set of condition ids to merge into one dofset    */
     DofSetDefinedMappingWrapper(Teuchos::RCP<DofSetInterface> dofset,
-        Teuchos::RCP<const Discret::Discretization> sourcedis, const std::string& couplingcond,
+        Teuchos::RCP<const Core::FE::Discretization> sourcedis, const std::string& couplingcond,
         const std::set<int> condids);
 
     //! destructor
@@ -147,7 +147,7 @@ namespace Core::DOFSets
          The std::set 'couplingids' contains the ids from both, VOL and SURF conditions
          given above. This way, one unique struct dofset for all scatra nodes is created.    */
     int assign_degrees_of_freedom(
-        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
+        const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// reset all internal variables
     void Reset() override;
@@ -328,7 +328,7 @@ namespace Core::DOFSets
     Teuchos::RCP<Epetra_IntVector> targetlidtosourcegidmapping_;
 
     //! source discretization
-    Teuchos::RCP<const Discret::Discretization> sourcedis_;
+    Teuchos::RCP<const Core::FE::Discretization> sourcedis_;
 
     //! condition string defining the coupling
     const std::string couplingcond_;

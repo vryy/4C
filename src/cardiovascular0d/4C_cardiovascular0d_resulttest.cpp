@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Cardiovascular0DResultTest::Cardiovascular0DResultTest(
-    UTILS::Cardiovascular0DManager& cardvasc0dman, Teuchos::RCP<Discret::Discretization> discr)
+    UTILS::Cardiovascular0DManager& cardvasc0dman, Teuchos::RCP<Core::FE::Discretization> discr)
     : Core::UTILS::ResultTest("CARDIOVASCULAR0D"),
       actdisc_(discr),
       cardvasc0d_dof_(

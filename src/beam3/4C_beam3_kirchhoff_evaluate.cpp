@@ -37,7 +37,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public) meier 01/16|
  *----------------------------------------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1,  // stiffness matrix
     Core::LinAlg::SerialDenseMatrix& elemat2,  // mass matrix
     Core::LinAlg::SerialDenseVector& elevec1,  // internal forces
@@ -2068,7 +2068,7 @@ void Discret::ELEMENTS::Beam3k::calculate_mass_matrix_contributions_analytic_wk(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

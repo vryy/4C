@@ -19,10 +19,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace FLD
 {
@@ -43,7 +43,7 @@ namespace FLD
       };
 
       /// setup the whole thing
-      void Setup(const Discret::Discretization& dis, bool withpressure = false,
+      void Setup(const Core::FE::Discretization& dis, bool withpressure = false,
           bool overlapping = false, const int nds_master = 0);
 
       /*!
@@ -61,7 +61,8 @@ namespace FLD
           const FLD::UTILS::MapExtractor& extractor);
 
       /// get all element gids those nodes are touched by any condition
-      Teuchos::RCP<std::set<int>> conditioned_element_map(const Discret::Discretization& dis) const;
+      Teuchos::RCP<std::set<int>> conditioned_element_map(
+          const Core::FE::Discretization& dis) const;
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(FSICond, cond_fsi)
@@ -83,7 +84,7 @@ namespace FLD
       };
 
       /// setup the whole thing
-      void Setup(const Discret::Discretization& dis);
+      void Setup(const Core::FE::Discretization& dis);
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(VolumetricSurfaceFlowCond, cond_vol_surf_flow)
@@ -100,10 +101,11 @@ namespace FLD
       };
 
       /// setup the whole thing
-      void Setup(const Discret::Discretization& dis);
+      void Setup(const Core::FE::Discretization& dis);
 
       /// get all element gids those nodes are touched by any condition
-      Teuchos::RCP<std::set<int>> conditioned_element_map(const Discret::Discretization& dis) const;
+      Teuchos::RCP<std::set<int>> conditioned_element_map(
+          const Core::FE::Discretization& dis) const;
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(KSPCond, cond_ksp)
@@ -114,7 +116,7 @@ namespace FLD
     {
      public:
       /// setup the whole thing
-      void Setup(const Discret::Discretization& dis);
+      void Setup(const Core::FE::Discretization& dis);
 
       MAP_EXTRACTOR_VECTOR_METHODS(Velocity, 0)
       MAP_EXTRACTOR_VECTOR_METHODS(Pressure, 1)
@@ -131,7 +133,7 @@ namespace FLD
       };
 
       /// setup the whole thing
-      void Setup(const Discret::Discretization& dis);
+      void Setup(const Core::FE::Discretization& dis);
 
       void Setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
           const FLD::UTILS::FsiMapExtractor& extractor);

@@ -24,11 +24,13 @@ namespace Core::LinAlg::Voigt
   enum class NotationType;
 }
 
+namespace Core::FE
+{
+  class Discretization;
+}  // namespace Core::FE
+
 namespace Discret
 {
-  // forward declarations
-  class Discretization;
-
   namespace ELEMENTS
   {
     // forward declarations
@@ -48,7 +50,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Discret::Discretization& dis) override;
+      int Initialize(Core::FE::Discretization& dis) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -286,10 +288,10 @@ namespace Discret
       /// Evaluate so_sh8p8 element stiffness, mass, internal forces, etc.
       ///
       /// \return 0 if successful, negative otherwise
-      int Evaluate(Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication
-                                                    ///< between control routine and elements
-          Discret::Discretization& discretization,  ///< pointer to discretization for de-assembly
-          std::vector<int>& lm,                     ///< (in) location matrix for de-assembly
+      int Evaluate(Teuchos::ParameterList& params,   ///< (in/out) ParameterList for communication
+                                                     ///< between control routine and elements
+          Core::FE::Discretization& discretization,  ///< pointer to discretization for de-assembly
+          std::vector<int>& lm,                      ///< (in) location matrix for de-assembly
           Core::LinAlg::SerialDenseMatrix&
               elemat1,  ///< (out) (stiffness-)matrix to be filled by
                         ///< element. If nullptr on input, the controling method
@@ -325,7 +327,7 @@ namespace Discret
       /// \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       ///
       /// \return 0 if successful, negative otherwise
-      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -897,7 +899,7 @@ namespace Discret
       //! Calculate the STC matrix
       virtual void do_calc_stc_matrix(Core::LinAlg::Matrix<NUMDOF_, NUMDOF_>& elemat1,
           const Inpar::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
-          Discret::Discretization& discretization, bool calcinverse);
+          Core::FE::Discretization& discretization, bool calcinverse);
 
 
      private:

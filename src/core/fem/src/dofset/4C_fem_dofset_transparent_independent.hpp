@@ -20,10 +20,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::Geo
 {
@@ -48,7 +48,7 @@ namespace Core::DOFSets
     \brief Standard Constructor
     */
     explicit TransparentIndependentDofSet(
-        Teuchos::RCP<Discret::Discretization> sourcedis, bool parallel);
+        Teuchos::RCP<Core::FE::Discretization> sourcedis, bool parallel);
 
 
 
@@ -57,7 +57,7 @@ namespace Core::DOFSets
 
     /// Assign dof numbers to all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
-        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
+        const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
    protected:
     int NumDofPerNode(const Core::Nodes::Node& node) const override;

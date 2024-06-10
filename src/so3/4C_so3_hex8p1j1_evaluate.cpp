@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoHex8P1J1::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -946,7 +946,7 @@ void Discret::ELEMENTS::SoHex8P1J1::PushPullOperator(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                   lw 12/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8P1J1Type::Initialize(Discret::Discretization& dis)
+int Discret::ELEMENTS::SoHex8P1J1Type::Initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
 UTILS::Cardiovascular0D4ElementWindkessel::Cardiovascular0D4ElementWindkessel(
-    Teuchos::RCP<Discret::Discretization> discr, const std::string& conditionname,
+    Teuchos::RCP<Core::FE::Discretization> discr, const std::string& conditionname,
     std::vector<int>& curID)
     : Cardiovascular0D(discr, conditionname, curID)
 {

@@ -39,7 +39,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 Core::Conditions::PeriodicBoundaryConditions::PeriodicBoundaryConditions(
-    Teuchos::RCP<Discret::Discretization> actdis, bool verbose)
+    Teuchos::RCP<Core::FE::Discretization> actdis, bool verbose)
     : discret_(actdis), verbose_(verbose), pbcdofset_(Teuchos::null)
 {
   // get periodic surface boundary conditions
@@ -85,7 +85,7 @@ Core::Conditions::PeriodicBoundaryConditions::PeriodicBoundaryConditions(
 
   return;
 
-}  // PeriodicBoundaryConditions(Teuchos::RCP<Discret::Discretization> actdis)
+}  // PeriodicBoundaryConditions(Teuchos::RCP<Core::FE::Discretization> actdis)
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

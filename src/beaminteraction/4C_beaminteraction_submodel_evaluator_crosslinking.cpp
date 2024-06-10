@@ -1152,7 +1152,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_stru
   visualization_output_writer_ptr_->set_geometry_from_discretization();
 
   // append all desired node and dof output data to the writer object's storage
-  Discret::Discretization const& bindis = BinDiscret();
+  Core::FE::Discretization const& bindis = BinDiscret();
   // node
   Teuchos::RCP<Epetra_Vector> numbond = Core::LinAlg::CreateVector(*bindis.NodeRowMap(), true);
   Teuchos::RCP<Epetra_Vector> owner = Core::LinAlg::CreateVector(*bindis.NodeRowMap(), true);
@@ -1268,7 +1268,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::fill_state_data_vectors_f
     Teuchos::RCP<Epetra_Vector> force) const
 {
   check_init_setup();
-  Discret::Discretization const& bindis = BinDiscret();
+  Core::FE::Discretization const& bindis = BinDiscret();
 
   const unsigned int num_spatial_dim = 3;
   Core::LinAlg::SerialDenseVector bspotforce(num_spatial_dim);

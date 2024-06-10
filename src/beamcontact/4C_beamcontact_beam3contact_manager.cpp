@@ -40,7 +40,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
  *----------------------------------------------------------------------*/
-CONTACT::Beam3cmanager::Beam3cmanager(Discret::Discretization& discret, double alphaf)
+CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double alphaf)
     : numnodes_(0),
       numnodalvalues_(0),
       pdiscret_(discret),
@@ -622,7 +622,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // the copied beam contact discretization.
 
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_.Comm().Clone());
-  btsoldiscret_ = Teuchos::rcp(new Discret::Discretization(
+  btsoldiscret_ = Teuchos::rcp(new Core::FE::Discretization(
       (std::string) "beam to solid contact", comm, Global::Problem::Instance()->NDim()));
   dofoffsetmap_.clear();
   std::map<int, std::vector<int>> nodedofs;

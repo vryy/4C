@@ -72,7 +72,7 @@ namespace
   \date 04/09
   */
 
-  void apply_nurbs_initial_condition_solve(Discret::Discretization& dis,
+  void apply_nurbs_initial_condition_solve(Core::FE::Discretization& dis,
       Core::LinAlg::Solver& solver, const Core::UTILS::FunctionOfSpaceTime& start_function,
       Teuchos::RCP<Epetra_Vector> initialvals)
   {
@@ -557,7 +557,7 @@ namespace
    of a separate solver!
 */
 /*----------------------------------------------------------------------*/
-void Discret::Nurbs::apply_nurbs_initial_condition(Discret::Discretization& dis,
+void Discret::Nurbs::apply_nurbs_initial_condition(Core::FE::Discretization& dis,
     const Teuchos::ParameterList& solverparams,
     const Core::UTILS::FunctionOfSpaceTime& start_function, Teuchos::RCP<Epetra_Vector> initialvals)
 {

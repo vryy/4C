@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Build boundary condition geometries (public)             mwgee 01/07|
  *----------------------------------------------------------------------*/
-void Discret::Discretization::boundary_conditions_geometry()
+void Core::FE::Discretization::boundary_conditions_geometry()
 {
   // As a first step we delete ALL references to any conditions
   // in the discretization
@@ -127,7 +127,7 @@ void Discret::Discretization::boundary_conditions_geometry()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Discretization::assign_global_i_ds(const Epetra_Comm& comm,
+void Core::FE::Discretization::assign_global_i_ds(const Epetra_Comm& comm,
     const std::map<std::vector<int>, Teuchos::RCP<Core::Elements::Element>>& elementmap,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& finalgeometry)
 {
@@ -230,7 +230,7 @@ void Discret::Discretization::assign_global_i_ds(const Epetra_Comm& comm,
  |  Build line geometry in a condition (public)              mwgee 01/07|
  *----------------------------------------------------------------------*/
 /* Hopefully improved by Heiner (h.kue 09/07) */
-bool Discret::Discretization::build_linesin_condition(
+bool Core::FE::Discretization::build_linesin_condition(
     const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
 {
   /* First: Create the line objects that belong to the condition. */
@@ -326,13 +326,13 @@ bool Discret::Discretization::build_linesin_condition(
   //       MeshfreeDiscretization where it does not necessarily build elements.
   return havenewelements;
 
-}  // Discret::Discretization::build_linesin_condition
+}  // Core::FE::Discretization::build_linesin_condition
 
 
 /*----------------------------------------------------------------------*
  |  Build surface geometry in a condition (public)          rauch 10/16 |
  *----------------------------------------------------------------------*/
-bool Discret::Discretization::build_surfacesin_condition(
+bool Core::FE::Discretization::build_surfacesin_condition(
     const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
 {
   // these conditions are special since associated volume conditions also need
@@ -555,13 +555,13 @@ bool Discret::Discretization::build_surfacesin_condition(
   //       MeshfreeDiscretization where it does not necessarily build elements.
   return havenewelements;
 
-}  // Discret::Discretization::build_surfacesin_condition
+}  // Core::FE::Discretization::build_surfacesin_condition
 
 
 /*----------------------------------------------------------------------*
  |  Build volume geometry in a condition (public)            mwgee 01/07|
  *----------------------------------------------------------------------*/
-bool Discret::Discretization::build_volumesin_condition(
+bool Core::FE::Discretization::build_volumesin_condition(
     const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
 {
   // get ptrs to all node ids that have this condition
@@ -605,13 +605,13 @@ bool Discret::Discretization::build_volumesin_condition(
 
   // no elements where created to assign new unique ids to
   return false;
-}  // Discret::Discretization::build_volumesin_condition
+}  // Core::FE::Discretization::build_volumesin_condition
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Discretization::find_associated_ele_i_ds(
+void Core::FE::Discretization::find_associated_ele_i_ds(
     Teuchos::RCP<Core::Conditions::Condition> cond, std::set<int>& VolEleIDs,
     const std::string& name)
 {
@@ -660,6 +660,6 @@ void Discret::Discretization::find_associated_ele_i_ds(
       }
     }
   }
-}  // Discret::Discretization::find_associated_ele_i_ds
+}  // Core::FE::Discretization::find_associated_ele_i_ds
 
 FOUR_C_NAMESPACE_CLOSE

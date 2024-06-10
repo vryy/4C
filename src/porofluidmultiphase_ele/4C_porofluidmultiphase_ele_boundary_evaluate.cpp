@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public)                             vuong 08/16 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -32,7 +32,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Evaluate(Teuchos::ParameterL
  |  evaluate the element (public)                             vuong 08/16 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Evaluate(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -66,7 +66,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Evaluate(Teuchos::ParameterL
  | evaluate Neumann boundary condition on boundary element   vuong 08/16 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::evaluate_neumann(Teuchos::ParameterList& params,
-    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {

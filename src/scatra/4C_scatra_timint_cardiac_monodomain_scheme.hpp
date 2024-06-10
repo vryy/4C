@@ -29,7 +29,7 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    TimIntCardiacMonodomainOST(Teuchos::RCP<Discret::Discretization> dis,
+    TimIntCardiacMonodomainOST(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -64,7 +64,7 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    TimIntCardiacMonodomainBDF2(Teuchos::RCP<Discret::Discretization> dis,
+    TimIntCardiacMonodomainBDF2(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
@@ -96,7 +96,7 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    TimIntCardiacMonodomainGenAlpha(Teuchos::RCP<Discret::Discretization> dis,
+    TimIntCardiacMonodomainGenAlpha(Teuchos::RCP<Core::FE::Discretization> dis,
         Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,

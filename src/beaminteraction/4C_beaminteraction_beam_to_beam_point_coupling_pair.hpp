@@ -89,7 +89,7 @@ namespace BEAMINTERACTION
      * @param stiffness_matrix (in / out) Global stiffness matrix.
      * @param displacement_vector (in) Global displacement vector.
      */
-    void EvaluateAndAssemble(const Teuchos::RCP<const Discret::Discretization>& discret,
+    void EvaluateAndAssemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
@@ -179,7 +179,7 @@ namespace BEAMINTERACTION
      * @param displacement_vector (in) Global displacement vector.
      */
     void evaluate_and_assemble_positional_coupling(
-        const Teuchos::RCP<const Discret::Discretization>& discret,
+        const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const;
@@ -194,7 +194,7 @@ namespace BEAMINTERACTION
      * @param displacement_vector (in) Global displacement vector.
      */
     void evaluate_and_assemble_rotational_coupling(
-        const Teuchos::RCP<const Discret::Discretization>& discret,
+        const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const;

@@ -164,13 +164,13 @@ namespace Adapter
     }
 
     /// direct access to discretization
-    Teuchos::RCP<Discret::Discretization> discretization() override
+    Teuchos::RCP<Core::FE::Discretization> discretization() override
     {
       return structure_->discretization();
     }
 
     /// read only access to discretization
-    [[nodiscard]] virtual Teuchos::RCP<const Discret::Discretization> GetDiscretization() const
+    [[nodiscard]] virtual Teuchos::RCP<const Core::FE::Discretization> GetDiscretization() const
     {
       return structure_->discretization();
     }

@@ -59,7 +59,7 @@ namespace CONTACT
     \param ele1pos (in): nodal coordinates of first element
     \param ele2pos (in): nodal coordinates of second element
     */
-    Beam3contact(const Discret::Discretization& pdiscret, const Discret::Discretization& cdiscret,
+    Beam3contact(const Core::FE::Discretization& pdiscret, const Core::FE::Discretization& cdiscret,
         const std::map<int, int>& dofoffsetmap, Core::Elements::Element* element1,
         Core::Elements::Element* element2, Teuchos::ParameterList& beamcontactparams);
 
@@ -71,12 +71,12 @@ namespace CONTACT
     /*!
     \brief Get problem discretization
     */
-    inline const Discret::Discretization& ProblemDiscret() const override { return pdiscret_; };
+    inline const Core::FE::Discretization& ProblemDiscret() const override { return pdiscret_; };
 
     /*!
     \brief Get beam contact discretization
     */
-    inline const Discret::Discretization& ContactDiscret() const override { return cdiscret_; };
+    inline const Core::FE::Discretization& ContactDiscret() const override { return cdiscret_; };
 
     /*!
     \brief Get offset of dofs between cdiscret and pdiscret
@@ -535,10 +535,10 @@ namespace CONTACT
     //! @name member variables
 
     //! reference to problem discretization
-    const Discret::Discretization& pdiscret_;
+    const Core::FE::Discretization& pdiscret_;
 
     //! reference to beam contact discretization
-    const Discret::Discretization& cdiscret_;
+    const Core::FE::Discretization& cdiscret_;
 
     //! dof offset between pdiscret and cdiscret
     const std::map<int, int>& dofoffsetmap_;

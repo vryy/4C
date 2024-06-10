@@ -31,10 +31,10 @@ namespace Core::IO
   class DiscretizationReader;
 }  // namespace Core::IO
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::Elements
 {

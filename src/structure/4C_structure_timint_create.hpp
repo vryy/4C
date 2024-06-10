@@ -18,10 +18,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::LinAlg
 {
@@ -50,7 +50,7 @@ namespace STR
       const Teuchos::ParameterList& ioflags,                //!< input-output-flags
       const Teuchos::ParameterList& sdyn,                   //!< structural dynamic flags
       const Teuchos::ParameterList& xparams,                //!< extra flags
-      Teuchos::RCP<Discret::Discretization>& actdis,        //!< discretisation
+      Teuchos::RCP<Core::FE::Discretization>& actdis,       //!< discretisation
       Teuchos::RCP<Core::LinAlg::Solver>& solver,           //!< the solver
       Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,    //!< the solver for contact/meshtying
       Teuchos::RCP<Core::IO::DiscretizationWriter>& output  //!< output writer
@@ -65,7 +65,7 @@ namespace STR
       const Teuchos::ParameterList& ioflags,                //!< input-output-flags
       const Teuchos::ParameterList& sdyn,                   //!< structural dynamic flags
       const Teuchos::ParameterList& xparams,                //!< extra flags
-      Teuchos::RCP<Discret::Discretization>& actdis,        //!< discretisation
+      Teuchos::RCP<Core::FE::Discretization>& actdis,       //!< discretisation
       Teuchos::RCP<Core::LinAlg::Solver>& solver,           //!< the solver
       Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,    //!< the contact solver
       Teuchos::RCP<Core::IO::DiscretizationWriter>& output  //!< output writer
@@ -80,7 +80,7 @@ namespace STR
       const Teuchos::ParameterList& ioflags,                //!< input-output-flags
       const Teuchos::ParameterList& sdyn,                   //!< structural dynamic flags
       const Teuchos::ParameterList& xparams,                //!< extra flags
-      Teuchos::RCP<Discret::Discretization>& actdis,        //!< discretisation
+      Teuchos::RCP<Core::FE::Discretization>& actdis,       //!< discretisation
       Teuchos::RCP<Core::LinAlg::Solver>& solver,           //!< the solver
       Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,    //!< the solver for contact/meshtying
       Teuchos::RCP<Core::IO::DiscretizationWriter>& output  //!< output writer

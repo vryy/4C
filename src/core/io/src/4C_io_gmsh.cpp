@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*------------------------------------------------------------------------------------------------*
  | write scalar field to Gmsh postprocessing file                                     henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
-void Core::IO::Gmsh::ScalarFieldToGmsh(const Teuchos::RCP<Discret::Discretization> discret,
+void Core::IO::Gmsh::ScalarFieldToGmsh(const Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::RCP<const Epetra_Vector> scalarfield_row, std::ostream& s)
 {
   // tranform solution vector from dof_row_map to DofColMap
@@ -75,7 +75,7 @@ void Core::IO::Gmsh::ScalarFieldToGmsh(const Teuchos::RCP<Discret::Discretizatio
 /*------------------------------------------------------------------------------------------------*
  | write scalar field to Gmsh postprocessing file                                     henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
-void Core::IO::Gmsh::ScalarFieldDofBasedToGmsh(const Teuchos::RCP<Discret::Discretization> discret,
+void Core::IO::Gmsh::ScalarFieldDofBasedToGmsh(const Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::RCP<const Epetra_Vector> scalarfield_row, const int nds, std::ostream& s)
 {
   // tranform solution vector from dof_row_map to DofColMap
@@ -144,7 +144,7 @@ void Core::IO::Gmsh::ScalarFieldDofBasedToGmsh(const Teuchos::RCP<Discret::Discr
 /*------------------------------------------------------------------------------------------------*
  | write scalar element-based field to Gmsh postprocessing file                  winklmaier 12/09 |
  *------------------------------------------------------------------------------------------------*/
-void Core::IO::Gmsh::ScalarElementFieldToGmsh(const Teuchos::RCP<Discret::Discretization> discret,
+void Core::IO::Gmsh::ScalarElementFieldToGmsh(const Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::RCP<const Epetra_Vector> scalarfield_ele_row, std::ostream& s)
 {
   if (scalarfield_ele_row->Map().SameAs(*discret->ElementRowMap()) == false)
@@ -195,7 +195,7 @@ void Core::IO::Gmsh::ScalarElementFieldToGmsh(const Teuchos::RCP<Discret::Discre
 /*------------------------------------------------------------------------------------------------*
  | write dof-based vector field to Gmsh postprocessing file                           henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
-void Core::IO::Gmsh::VectorFieldDofBasedToGmsh(const Teuchos::RCP<Discret::Discretization> discret,
+void Core::IO::Gmsh::VectorFieldDofBasedToGmsh(const Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::RCP<const Epetra_Vector> vectorfield_row, std::ostream& s, const int nds,
     bool displacenodes)
 {
@@ -258,7 +258,7 @@ void Core::IO::Gmsh::VectorFieldDofBasedToGmsh(const Teuchos::RCP<Discret::Discr
  | write multivector field to Gmsh postprocessing file                               winter 04/17 |
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::VectorFieldMultiVectorDofBasedToGmsh(
-    const Teuchos::RCP<const Discret::Discretization> discret,
+    const Teuchos::RCP<const Core::FE::Discretization> discret,
     const Teuchos::RCP<const Epetra_MultiVector> vectorfield_row, std::ostream& s, const int nds)
 {
   // TODO: Remove dependence on size of Epetra_Multivector!!!
@@ -321,7 +321,7 @@ void Core::IO::Gmsh::VectorFieldMultiVectorDofBasedToGmsh(
  | write dof-based vector field to Gmsh postprocessing file at current position      schott 12/09 |
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::SurfaceVectorFieldDofBasedToGmsh(
-    const Teuchos::RCP<Discret::Discretization> discret,
+    const Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::RCP<const Epetra_Vector> vectorfield_row,
     std::map<int, Core::LinAlg::Matrix<3, 1>>& currpos, std::ostream& s, const int nsd,
     const int numdofpernode)
@@ -383,7 +383,7 @@ void Core::IO::Gmsh::SurfaceVectorFieldDofBasedToGmsh(
  | to Gmsh postprocessing file                                                         ehrl 05/11 |
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::VelocityPressureFieldDofBasedToGmsh(
-    const Teuchos::RCP<Discret::Discretization> discret,
+    const Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::RCP<const Epetra_Vector> vectorfield_row, const std::string field,
     std::ostream& s, const int nds)
 {
@@ -474,7 +474,7 @@ void Core::IO::Gmsh::VelocityPressureFieldDofBasedToGmsh(
  | write node-based vector field to Gmsh postprocessing file                          henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::VectorFieldNodeBasedToGmsh(
-    const Teuchos::RCP<const Discret::Discretization> discret,
+    const Teuchos::RCP<const Core::FE::Discretization> discret,
     const Teuchos::RCP<const Epetra_MultiVector> vectorfield_row, std::ostream& s)
 {
   // tranform solution vector from NodeRowMap to NodeColMap
@@ -522,7 +522,7 @@ void Core::IO::Gmsh::VectorFieldNodeBasedToGmsh(
  | write node-based scalar field to Gmsh postprocessing file                      rasthofer 09/13 |
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::ScalarFieldNodeBasedToGmsh(
-    const Teuchos::RCP<const Discret::Discretization> discret,
+    const Teuchos::RCP<const Core::FE::Discretization> discret,
     const Teuchos::RCP<const Epetra_Vector> scalarfield_row, std::ostream& s)
 {
   // tranform solution vector from NodeRowMap to NodeColMap
@@ -688,7 +688,7 @@ std::string Core::IO::Gmsh::text3dToString(
 }
 
 void Core::IO::Gmsh::disToStream(const std::string& text, const double scalar,
-    const Teuchos::RCP<Discret::Discretization> dis, std::ostream& s)
+    const Teuchos::RCP<Core::FE::Discretization> dis, std::ostream& s)
 {
   s << "View \" " << text << " Elements \" {\n";
   for (int i = 0; i < dis->NumMyRowElements(); ++i)
@@ -700,7 +700,7 @@ void Core::IO::Gmsh::disToStream(const std::string& text, const double scalar,
 }
 
 std::string Core::IO::Gmsh::disToString(
-    const std::string& text, const double scalar, const Teuchos::RCP<Discret::Discretization> dis)
+    const std::string& text, const double scalar, const Teuchos::RCP<Core::FE::Discretization> dis)
 {
   std::ostringstream s;
   disToStream(text, scalar, dis, s);
@@ -708,7 +708,7 @@ std::string Core::IO::Gmsh::disToString(
 }
 
 void Core::IO::Gmsh::disToStream(const std::string& text, const double scalar,
-    const Teuchos::RCP<Discret::Discretization> dis,
+    const Teuchos::RCP<Core::FE::Discretization> dis,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions, std::ostream& s)
 {
   s << "View \" " << text << " Elements \" {\n";
@@ -723,7 +723,7 @@ void Core::IO::Gmsh::disToStream(const std::string& text, const double scalar,
 }
 
 std::string Core::IO::Gmsh::disToString(const std::string& text, const double scalar,
-    const Teuchos::RCP<Discret::Discretization> dis,
+    const Teuchos::RCP<Core::FE::Discretization> dis,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions)
 {
   std::ostringstream s;

@@ -63,8 +63,8 @@ namespace Adapter
     \brief Read Mortar Condition
 
     */
-    void read_mortar_condition(Teuchos::RCP<Discret::Discretization> masterdis,
-        Teuchos::RCP<Discret::Discretization> slavedis, std::vector<int> coupleddof,
+    void read_mortar_condition(Teuchos::RCP<Core::FE::Discretization> masterdis,
+        Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
         std::map<int, Core::Nodes::Node*>& mastergnodes,
         std::map<int, Core::Nodes::Node*>& slavegnodes,
@@ -75,8 +75,8 @@ namespace Adapter
     \brief initialize routine
 
     */
-    void Setup(Teuchos::RCP<Discret::Discretization> masterdis,
-        Teuchos::RCP<Discret::Discretization> slavedis, std::vector<int> coupleddof,
+    void Setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
+        Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond) override;
 
     /// perform interface integration
@@ -159,11 +159,11 @@ namespace Adapter
     void Evaluate() override { FOUR_C_THROW("stop"); }
     void Evaluate(Teuchos::RCP<Epetra_Vector> idisp) override { FOUR_C_THROW("stop"); }
     void evaluate_with_mesh_relocation(
-        Teuchos::RCP<Discret::Discretization> slavedis,  ///< slave discretization
-        Teuchos::RCP<Discret::Discretization> aledis,    ///< ALE discretization
-        Teuchos::RCP<Epetra_Vector>& idisp,              ///< ALE displacements
-        const Epetra_Comm& comm,                         ///< communicator
-        bool slavewithale                                ///< flag defining if slave is ALE
+        Teuchos::RCP<Core::FE::Discretization> slavedis,  ///< slave discretization
+        Teuchos::RCP<Core::FE::Discretization> aledis,    ///< ALE discretization
+        Teuchos::RCP<Epetra_Vector>& idisp,               ///< ALE displacements
+        const Epetra_Comm& comm,                          ///< communicator
+        bool slavewithale                                 ///< flag defining if slave is ALE
         ) override
     {
       FOUR_C_THROW("stop");

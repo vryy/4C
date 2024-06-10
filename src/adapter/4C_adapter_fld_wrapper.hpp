@@ -98,7 +98,7 @@ namespace Adapter
     {
       return fluid_->ShapeDerivatives();
     }
-    const Teuchos::RCP<Discret::Discretization>& discretization() override
+    const Teuchos::RCP<Core::FE::Discretization>& discretization() override
     {
       return fluid_->discretization();
     }
@@ -142,20 +142,20 @@ namespace Adapter
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
         Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
         const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-        Teuchos::RCP<Discret::Discretization> scatradis) override
+        Teuchos::RCP<Core::FE::Discretization> scatradis) override
     {
       return fluid_->set_loma_iter_scalar_fields(scalaraf, scalaram, scalardtam, fsscalaraf,
           thermpressaf, thermpressam, thermpressdtaf, thermpressdtam, scatradis);
     }
     void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
-        Teuchos::RCP<Discret::Discretization> scatradis, int dofset = 0) override
+        Teuchos::RCP<Core::FE::Discretization> scatradis, int dofset = 0) override
     {
       return fluid_->SetIterScalarFields(scalaraf, scalaram, scalardtam, scatradis, dofset);
     }
     void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp, const double thermpressnp,
         Teuchos::RCP<const Epetra_Vector> scatraresidual,
-        Teuchos::RCP<Discret::Discretization> scatradis, const int whichscalar = -1) override
+        Teuchos::RCP<Core::FE::Discretization> scatradis, const int whichscalar = -1) override
     {
       return fluid_->SetScalarFields(
           scalarnp, thermpressnp, scatraresidual, scatradis, whichscalar);

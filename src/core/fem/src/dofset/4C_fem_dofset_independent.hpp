@@ -26,10 +26,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::DOFSets
 {
@@ -70,10 +70,10 @@ namespace Core::DOFSets
 
    protected:
     /// get first number to be used as Dof GID in assign_degrees_of_freedom
-    int get_first_gid_number_to_be_used(const Discret::Discretization& dis) const override;
+    int get_first_gid_number_to_be_used(const Core::FE::Discretization& dis) const override;
 
     /// get minimal node GID to be used in assign_degrees_of_freedom
-    int get_minimal_node_gid_if_relevant(const Discret::Discretization& dis) const override;
+    int get_minimal_node_gid_if_relevant(const Core::FE::Discretization& dis) const override;
 
     bool ignoreminnodegid_;  //< bool whether minnodegid is taken from the discretization or ignored
 

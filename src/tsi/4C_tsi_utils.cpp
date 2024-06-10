@@ -122,7 +122,7 @@ bool TSI::UTILS::ThermoStructureCloneStrategy::determine_ele_type(
 void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 {
   // access the structure discretization, make sure it is filled
-  Teuchos::RCP<Discret::Discretization> structdis;
+  Teuchos::RCP<Core::FE::Discretization> structdis;
   structdis = Global::Problem::Instance()->GetDis("structure");
   // set degrees of freedom in the discretization
   if (!structdis->Filled() or !structdis->HaveDofs())
@@ -134,7 +134,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
   }
 
   // access the thermo discretization
-  Teuchos::RCP<Discret::Discretization> thermdis;
+  Teuchos::RCP<Core::FE::Discretization> thermdis;
   thermdis = Global::Problem::Instance()->GetDis("thermo");
   if (!thermdis->Filled()) thermdis->fill_complete();
 
@@ -237,8 +237,8 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
  | print TSI-logo                                            dano 03/10 |
  *----------------------------------------------------------------------*/
 void TSI::UTILS::SetMaterialPointersMatchingGrid(
-    Teuchos::RCP<const Discret::Discretization> sourcedis,
-    Teuchos::RCP<const Discret::Discretization> targetdis)
+    Teuchos::RCP<const Core::FE::Discretization> sourcedis,
+    Teuchos::RCP<const Core::FE::Discretization> targetdis)
 {
   const int numelements = targetdis->NumMyColElements();
 
@@ -260,8 +260,8 @@ void TSI::UTILS::SetMaterialPointersMatchingGrid(
  *----------------------------------------------------------------------*/
 void TSI::UTILS::TSIMaterialStrategy::AssignMaterial2To1(
     const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele1,
-    const std::vector<int>& ids_2, Teuchos::RCP<Discret::Discretization> dis1,
-    Teuchos::RCP<Discret::Discretization> dis2)
+    const std::vector<int>& ids_2, Teuchos::RCP<Core::FE::Discretization> dis1,
+    Teuchos::RCP<Core::FE::Discretization> dis2)
 {
   // call default assignment
   Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
@@ -277,8 +277,8 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterial2To1(
  *----------------------------------------------------------------------*/
 void TSI::UTILS::TSIMaterialStrategy::AssignMaterial1To2(
     const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele2,
-    const std::vector<int>& ids_1, Teuchos::RCP<Discret::Discretization> dis1,
-    Teuchos::RCP<Discret::Discretization> dis2)
+    const std::vector<int>& ids_1, Teuchos::RCP<Core::FE::Discretization> dis1,
+    Teuchos::RCP<Core::FE::Discretization> dis2)
 {
   // if no corresponding element found -> leave
   if (ids_1.empty()) return;

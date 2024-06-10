@@ -59,9 +59,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor for basic XFluid class                     schott 03/12 |
  *----------------------------------------------------------------------*/
-FLD::XFluid::XFluid(const Teuchos::RCP<Discret::Discretization>& actdis,
-    const Teuchos::RCP<Discret::Discretization>& mesh_coupdis,
-    const Teuchos::RCP<Discret::Discretization>& levelset_coupdis,
+FLD::XFluid::XFluid(const Teuchos::RCP<Core::FE::Discretization>& actdis,
+    const Teuchos::RCP<Core::FE::Discretization>& mesh_coupdis,
+    const Teuchos::RCP<Core::FE::Discretization>& levelset_coupdis,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
@@ -309,7 +309,7 @@ void FLD::XFluid::setup_fluid_discretization()
 {
   XFEM::UTILS::XFEMDiscretizationBuilder xdisbuilder;
 
-  Teuchos::RCP<Discret::Discretization> xfluiddis;
+  Teuchos::RCP<Core::FE::Discretization> xfluiddis;
 
   // TODO: we should try to resolve this confusing meaning of fluid dis and xfluid dis for xfluid
   // and xfluidfluid!!!
@@ -317,7 +317,7 @@ void FLD::XFluid::setup_fluid_discretization()
   // XFF-case
   if (Global::Problem::Instance()->DoesExistDis("xfluid"))
   {
-    Teuchos::RCP<Discret::Discretization> fluiddis = Global::Problem::Instance()->GetDis(
+    Teuchos::RCP<Core::FE::Discretization> fluiddis = Global::Problem::Instance()->GetDis(
         "fluid");  // fluid dis is here the embedded mesh (required for XFFSI)
     xfluiddis = Global::Problem::Instance()->GetDis("xfluid");  // xfluid dis is here the cut mesh
     xdisbuilder.setup_xfem_discretization(
@@ -1064,7 +1064,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
               // boundary discretization for mesh coupling and background discretization for
               // level-set coupling
-              Teuchos::RCP<Discret::Discretization> coupl_dis =
+              Teuchos::RCP<Core::FE::Discretization> coupl_dis =
                   condition_manager_->GetCouplingDis(coup_sid);
 
               std::vector<int>& patchlm = patchcouplm[coup_sid];  // []-operator creates new vector,
@@ -1313,8 +1313,8 @@ void FLD::XFluid::assemble_mat_and_rhs_face_terms(
     //------------------------------------------------------------
     // loop over row faces
 
-    Teuchos::RCP<Discret::DiscretizationFaces> xdiscret =
-        Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(discret_, true);
+    Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
+        Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discret_, true);
 
     const int numrowintfaces = xdiscret->NumMyRowFaces();
 
@@ -1341,7 +1341,7 @@ void FLD::XFluid::assemble_mat_and_rhs_face_terms(
  | integrate shape functions over domain                   schott 12/12 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
-    Discret::Discretization& discret, Teuchos::RCP<Epetra_Vector> vec)
+    Core::FE::Discretization& discret, Teuchos::RCP<Epetra_Vector> vec)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::integrate_shape_function");
 
@@ -3407,10 +3407,10 @@ bool FLD::XFluid::x_timint_check_for_monolithic_newton_restart(
                                         ///< reconstruction techniques
     const bool timint_semi_lagrangean,  ///< dofs have to be reconstructed via semi-Lagrangean
                                         ///< reconstruction techniques
-    Teuchos::RCP<Discret::Discretization> dis,  ///< discretization
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_i,    ///< dofset last iteration
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_ip,   ///< dofset current iteration
-    const bool screen_out                       ///< screen output?
+    Teuchos::RCP<Core::FE::Discretization> dis,  ///< discretization
+    Teuchos::RCP<XFEM::XFEMDofSet> dofset_i,     ///< dofset last iteration
+    Teuchos::RCP<XFEM::XFEMDofSet> dofset_ip,    ///< dofset current iteration
+    const bool screen_out                        ///< screen output?
 )
 {
   discret_->Comm().Barrier();
@@ -3476,7 +3476,7 @@ bool FLD::XFluid::x_timint_check_for_monolithic_newton_restart(
  |  did the dofsets change?                                schott 08/14 |
  *----------------------------------------------------------------------*/
 bool FLD::XFluid::x_timint_changed_dofsets(
-    Teuchos::RCP<Discret::Discretization> dis,   ///< discretization
+    Teuchos::RCP<Core::FE::Discretization> dis,  ///< discretization
     Teuchos::RCP<XFEM::XFEMDofSet> dofset,       ///< first dofset
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_other  ///< other dofset
 )
@@ -4285,7 +4285,7 @@ void FLD::XFluid::x_timint_semi_lagrangean(
   if (myrank_ == 0 and screen_out) std::cout << "\t ...SemiLagrangean Reconstruction...";
 
   Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx_);
-  Teuchos::RCP<Discret::Discretization> bounddis = mc_coupl->GetCutterDis();
+  Teuchos::RCP<Core::FE::Discretization> bounddis = mc_coupl->GetCutterDis();
 
   condition_manager_->set_state_displacement();
 

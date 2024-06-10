@@ -650,7 +650,7 @@ void STR::TimeInt::NoxInterface::get_dofs_from_elements(
 {
   check_init_setup();
 
-  Teuchos::RCP<const Discret::Discretization> discret_ptr = gstate_ptr_->get_discret();
+  Teuchos::RCP<const Core::FE::Discretization> discret_ptr = gstate_ptr_->get_discret();
 
   for (int egid : my_ele_gids)
   {

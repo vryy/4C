@@ -73,7 +73,7 @@ namespace BEAMINTERACTION
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
      * matrix. (derived)
      */
-    void EvaluateAndAssemble(const Discret::Discretization& discret,
+    void EvaluateAndAssemble(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -82,7 +82,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void evaluate_and_assemble_mortar_contributions(const Discret::Discretization& discret,
+    void evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_G_B,
         Core::LinAlg::SparseMatrix& global_G_S, Core::LinAlg::SparseMatrix& global_FB_L,
         Core::LinAlg::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -134,7 +134,7 @@ namespace BEAMINTERACTION
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
      * matrix (derived).
      */
-    void EvaluateAndAssemble(const Discret::Discretization& discret,
+    void EvaluateAndAssemble(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -143,7 +143,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void evaluate_and_assemble_mortar_contributions(const Discret::Discretization& discret,
+    void evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_GB,
         Core::LinAlg::SparseMatrix& global_GS, Core::LinAlg::SparseMatrix& global_FB,
         Core::LinAlg::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
@@ -174,7 +174,7 @@ namespace BEAMINTERACTION
      * @param gid_surface (out) GIDs for the surface that influence the rotation.
      * @param gid_rot (out) Rotational GIDs for the beam
      */
-    void get_pair_rotational_gi_ds(const Discret::Discretization& discret,
+    void get_pair_rotational_gi_ds(const Core::FE::Discretization& discret,
         std::vector<int>& gid_surface, Core::LinAlg::Matrix<n_dof_rot_, 1, int>& gid_rot) const;
   };
 

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::UTILS::ISendReceiveAny(Teuchos::RCP<Discret::Discretization> const& discret,
+void Discret::UTILS::ISendReceiveAny(Teuchos::RCP<Core::FE::Discretization> const& discret,
     std::map<int, std::vector<std::pair<int, std::vector<int>>>> const& toranktosenddata,
     std::vector<std::pair<int, std::vector<int>>>& recvdata)
 {

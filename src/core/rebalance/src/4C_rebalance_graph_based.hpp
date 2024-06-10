@@ -23,10 +23,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace Core::Rebalance
 {
@@ -103,7 +103,7 @@ namespace Core::Rebalance
   @return Node and edge weights to be used for repartitioning
   */
   std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> BuildWeights(
-      const Discret::Discretization& dis);
+      const Core::FE::Discretization& dis);
 
   /*!
   \brief Build node graph of a given  discretization
@@ -116,7 +116,7 @@ namespace Core::Rebalance
   @return Uncompleted node graph of input discretization
   */
   Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(
-      Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles);
+      Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles);
 
   /*!
   \brief Build monolithic node graph of a given discretization
@@ -131,7 +131,7 @@ namespace Core::Rebalance
 
   @return Completed monolithic node graph of input discretization
   */
-  Teuchos::RCP<const Epetra_CrsGraph> BuildMonolithicNodeGraph(const Discret::Discretization& dis,
+  Teuchos::RCP<const Epetra_CrsGraph> BuildMonolithicNodeGraph(const Core::FE::Discretization& dis,
       const Core::GeometricSearch::GeometricSearchParams& params);
 
 }  // namespace Core::Rebalance

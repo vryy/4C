@@ -16,11 +16,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Discret
+namespace Core::FE
 {
   class Discretization;
-}
+}  // namespace Core::FE
 
 namespace CONTACT
 {
@@ -53,7 +52,7 @@ namespace CONTACT
     \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
 
     */
-    Manager(Discret::Discretization& discret, double alphaf = 0.0);
+    Manager(Core::FE::Discretization& discret, double alphaf = 0.0);
 
 
 
@@ -64,7 +63,7 @@ namespace CONTACT
     \brief Get discretization
 
     */
-    const Discret::Discretization& Discret() const { return discret_; };
+    const Core::FE::Discretization& Discret() const { return discret_; };
 
     //! @}
 
@@ -149,7 +148,7 @@ namespace CONTACT
 
    protected:
     //! the underlying problem discretization
-    Discret::Discretization& discret_;
+    Core::FE::Discretization& discret_;
 
    private:
     /*!

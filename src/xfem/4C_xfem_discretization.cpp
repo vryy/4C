@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 XFEM::DiscretizationXFEM::DiscretizationXFEM(
     const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
-    : Discret::DiscretizationFaces(name, comm, n_dim),
+    : Core::FE::DiscretizationFaces(name, comm, n_dim),
       initialized_(false),
       initialfulldofrowmap_(Teuchos::null),
       initialpermdofrowmap_(Teuchos::null)
@@ -40,7 +40,7 @@ int XFEM::DiscretizationXFEM::InitialFillComplete(const std::vector<int>& nds,
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   // Call from BaseClass
-  int val = Discret::Discretization::fill_complete(
+  int val = Core::FE::Discretization::fill_complete(
       assigndegreesoffreedom, initelements, doboundaryconditions);
 
   if (!assigndegreesoffreedom)

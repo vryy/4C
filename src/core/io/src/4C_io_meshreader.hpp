@@ -83,7 +83,7 @@ namespace Core::IO
      * \param geometrysource [in] selects which reader will be created
      * \param geofilepath    [in] path to the file for the file reader (not used for the others)
      */
-    void AddAdvancedReader(Teuchos::RCP<Discret::Discretization> dis,
+    void AddAdvancedReader(Teuchos::RCP<Core::FE::Discretization> dis,
         const Core::IO::DatFileReader& reader, const std::string& sectionname,
         const Core::IO::GeometryType geometrysource, const std::string* geofilepath);
 
