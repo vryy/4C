@@ -37,7 +37,7 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            L2-projection solver for fluxes/pressure gradient
 SOLVER                          Belos
-AZSOLVE                         CG 
+AZSOLVE                         CG
 AZPREC                          ML
 AZTOL                           1.0E-6
 AZITER                          20

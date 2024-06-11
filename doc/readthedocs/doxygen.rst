@@ -39,7 +39,7 @@ Our goal is to have a fully documented code base, and the more proactive every d
 
 > **Note:** Your IDE might offer supportive capabilities to ease Doxygen-style documentation.
 Checkout the :ref:`IDE setup instructions <Set-up-your-ide>` for details.
- 
+
 Building the Doxygen Documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

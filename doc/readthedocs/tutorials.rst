@@ -6,7 +6,7 @@ Tutorials
 
 .. toctree::
    :maxdepth: 2
-   
+
    tut_fluid_preexo
    tut_fsi_preexo
    tut_fsi_preexo_2d

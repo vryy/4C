@@ -16,7 +16,7 @@ not only the mesh is converted to the .dat file, but also the boundary condition
 |FOURC| converter to other formats
 ===================================
 
-- **dattoensight:** Converts a dat file into ensight control and data files, so that the input (including all node and side sets) 
+- **dattoensight:** Converts a dat file into ensight control and data files, so that the input (including all node and side sets)
   can be viewed, e.g., in paraview.
 
 - **dat2mesh:** Converts a .dat file into a ``gmesh`` input file, so that it can be read by other pre processors.

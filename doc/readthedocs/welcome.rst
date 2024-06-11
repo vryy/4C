@@ -11,10 +11,10 @@ History
 code ``ccarat`` and its successor, written in modern C++, BACI (the Bavarian Advanced Computation Initiative).
 ``ccarat`` was started by Michael Gee in 2000 and has
 since grown in several directions. The aim back then was to provide a
-framework for parallel multifield finite element simulation, including 
-moderate parallelization, not massive parallel execution with hundreds of processes. 
-That is why there is a strong emphasis on data structures in ``ccarat`` 
-but still a lot of data redundancies. 
+framework for parallel multifield finite element simulation, including
+moderate parallelization, not massive parallel execution with hundreds of processes.
+That is why there is a strong emphasis on data structures in ``ccarat``
+but still a lot of data redundancies.
 The original ``ccarat`` is a large C project that uses
 external linear solver packages (both parallel and serial).
 

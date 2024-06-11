@@ -1,7 +1,7 @@
 -------------------------------------------------------------TITLE
 Test if periodic boundary conditions work correctly for 2D problems
 when the displacement reference vector is defined manually.
-Test linear coupled equation conditions. 
+Test linear coupled equation conditions.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    45
 //NODES       64
@@ -34,7 +34,7 @@ TOLDISP                         1.0E-5
 NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
-MAXITER                         10 
+MAXITER                         10
 INT_STRATEGY                    Standard
 --------------------------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
@@ -46,7 +46,7 @@ SOLVER                          UMFPACK
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100.0 NUE 0.3 DENS 0.5
 --------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 1 VALUES 0 1 
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 1 VALUES 0 1
 
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 3
@@ -78,12 +78,12 @@ E 2 - POSITION N2
 E 4 - POSITION N4
 -----------DESIGN POINT COUPLED DOF EQUATION CONDITIONS
 DPOINT 6
-E 3 - EQUATION 1 ADD dispx COEFFICIENT 1.0 
-E 2 - EQUATION 1 ADD dispx COEFFICIENT -1.0 
-E 4 - EQUATION 1 ADD dispx COEFFICIENT -1.0 
-E 3 - EQUATION 2 ADD dispy COEFFICIENT 1.0 
-E 2 - EQUATION 2 ADD dispy COEFFICIENT -1.0 
-E 4 - EQUATION 2 ADD dispy COEFFICIENT -1.0 
+E 3 - EQUATION 1 ADD dispx COEFFICIENT 1.0
+E 2 - EQUATION 1 ADD dispx COEFFICIENT -1.0
+E 4 - EQUATION 1 ADD dispx COEFFICIENT -1.0
+E 3 - EQUATION 2 ADD dispy COEFFICIENT 1.0
+E 2 - EQUATION 2 ADD dispy COEFFICIENT -1.0
+E 4 - EQUATION 2 ADD dispy COEFFICIENT -1.0
 -------------------------------------------------DNODE-NODE TOPOLOGY
 NODE    65 DNODE 1 // N1L & N1B
 NODE    66 DNODE 2 // N2

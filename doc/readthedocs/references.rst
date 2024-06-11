@@ -7,7 +7,7 @@ References
 
 .. [Will20] Will, Torsten T. (2020): C++: Das umfassende Handbuch zu Modern C++ (in German). Rheinwerk Computing, 2nd. edition.
 
-.. [Bancila20] Bancila, Marius (2020): Modern C++ Programming Cookbook: Master C++ core language and standard library features. Packt Publishing, 2. Edition. 
+.. [Bancila20] Bancila, Marius (2020): Modern C++ Programming Cookbook: Master C++ core language and standard library features. Packt Publishing, 2. Edition.
 
 .. [Swidzinski22] Swidzinski, Rafal (2022): Modern CMake for C++: Discover a better approach to building, testing and packaging your software. Packt Publishing.
 

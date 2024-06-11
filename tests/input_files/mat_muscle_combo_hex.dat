@@ -2,9 +2,9 @@
 Testcase for testing MAT_Muscle_Combo material (passive and active material behaviour)
 Activation prescribed through generalized active strain approach (modified, improved version)
 
-The setup of the test-case are 2 cubes, 1 for testing the passive (cube 1), and 1 for testing the active material response (cube 2). 
+The setup of the test-case are 2 cubes, 1 for testing the passive (cube 1), and 1 for testing the active material response (cube 2).
 
-Fibers are aligned in z-direction. 
+Fibers are aligned in z-direction.
 
 Boundary conditions:
     Cube 1: uniaxial compression/extension
@@ -87,9 +87,9 @@ STRUCTURE DIS structure NODE 4 QUANTITY stress_zz VALUE 1.44037950018457479e+02 
 STRUCTURE DIS structure NODE 5 QUANTITY stress_zz VALUE 1.44037950018461970e+02 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 8 QUANTITY stress_zz VALUE 1.44037950018468990e+02 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -3.16407161163365203e-01 TOLERANCE 1e-9 // top nodes active material cube
-STRUCTURE DIS structure NODE 12 QUANTITY dispz VALUE -3.16407161163366701e-01 TOLERANCE 1e-9 
-STRUCTURE DIS structure NODE 13 QUANTITY dispz VALUE -3.16407161163366035e-01 TOLERANCE 1e-9 
-STRUCTURE DIS structure NODE 16 QUANTITY dispz VALUE -3.16407161163365258e-01 TOLERANCE 1e-9 
+STRUCTURE DIS structure NODE 12 QUANTITY dispz VALUE -3.16407161163366701e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 13 QUANTITY dispz VALUE -3.16407161163366035e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 16 QUANTITY dispz VALUE -3.16407161163365258e-01 TOLERANCE 1e-9
 -------------------------------------------------------------------MATERIALS
 // passive unmixed material used for cube 1
 MAT 1 MAT_Muscle_Combo ALPHA 15.0 BETA 1.0 GAMMA 5.0 KAPPA 100.0 OMEGA0 0.8 POPT 0.0 LAMBDAMIN 0.682 LAMBDAOPT 1.192 ACTEVALTYPE function FUNCTID 2 DENS 1.0
@@ -107,21 +107,21 @@ SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0*tanh(34.40168764326955*t)
 DPOINT		16
 // Dirichlet conditions for cube 1 (passive material behaviour, uniaxial extension constraints)
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 1 // node(0 0 1)
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(0 0 0) 
-E 3 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(0 1 0) 
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(0 0 0)
+E 3 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(0 1 0)
 E 4 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 1.0 FUNCT 0 0 1 // node(0 1 1)
 E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 1 // node(1 0 1)
-E 6 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(1 0 0) 
+E 6 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(1 0 0)
 E 7 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(1 1 0)
 E 8 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 1.0 FUNCT 0 0 1 // node(1 1 1)
 
 // Dirichlet conditions for cube 2 (active material behaviour, no constraints in z-direction on top surface)
 E 9  - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(2 0 1)
-E 10 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(2 0 0) 
-E 11 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(2 1 0) 
+E 10 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(2 0 0)
+E 11 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(2 1 0)
 E 12 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(2 1 1)
 E 13 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(3 0 1)
-E 14 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(3 0 0) 
+E 14 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(3 0 0)
 E 15 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(3 1 0)
 E 16 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(3 1 1)
 ------------------------------------------------DNODE-NODE TOPOLOGY

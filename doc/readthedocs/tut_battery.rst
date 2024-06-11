@@ -15,7 +15,7 @@ Below you'll find the structure, which we are talking about.
 
 .. note::
 
-   A battery framework test exists, which could be used as a tutorial, 
+   A battery framework test exists, which could be used as a tutorial,
    but it has no description yest.
 
 

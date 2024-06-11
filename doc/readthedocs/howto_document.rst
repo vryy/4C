@@ -6,8 +6,8 @@ Writing documentation
 Usage
 -----
 
-Previously the user documentation was written in LaTeX. 
-Now we switched to a format that can be easily converted to html in order to include it in a readthedocs environment. 
+Previously the user documentation was written in LaTeX.
+Now we switched to a format that can be easily converted to html in order to include it in a readthedocs environment.
 An easy transformation is used by the following tool chain:
 
 .. figure:: figures/documentation_workflow.png
@@ -16,7 +16,7 @@ An easy transformation is used by the following tool chain:
 
    From ascii files to websites
 
-The ascii files are written in restructuredText or markdown. 
+The ascii files are written in restructuredText or markdown.
 While restructuredText conversion is the native implementation of sphinx, markdown works well, too.
 Both can be converted to an html document and provided to https://www.readthedocs.org.
 
@@ -28,11 +28,11 @@ I also like `this doc <https://books.dehlia.in/writing-with-ratatouille/toc/>`_.
   or print it in *italic* (using single asterisk before and after: ``*italic*``).
 
 - **Headers** are sorted automatically. Actually, it is not necessary to use specific header,
-  since Sphinx sorts the header by itself. However, it's good practice to use a specific format. 
+  since Sphinx sorts the header by itself. However, it's good practice to use a specific format.
   In general one has to underline the title with the following characters
 
   - Parts: Both overlining and underlining the title with ``=======``
-  - Sections: ``=====`` 
+  - Sections: ``=====``
   - Subsections: ``------``
   - Subsubsections: ``~~~~~~~~``
 
@@ -60,15 +60,15 @@ I also like `this doc <https://books.dehlia.in/writing-with-ratatouille/toc/>`_.
 
 - **Links to other headers** (internal links) can easily be included in restructuredText by
   ``:ref:`Descriptive link name <sectionname>``, e.g., :ref:`Workflow <4Cworkflow>`.
-  The link target can be a section name, but also an explicit link target. 
-  The latter is preferred, since there may be duplicate section names in the documentation. 
+  The link target can be a section name, but also an explicit link target.
+  The latter is preferred, since there may be duplicate section names in the documentation.
   A link target must be entered by ``.. _targetname:``, i.e., first two dots, then a blank followed by an underline,
   then the name of the link target, and finally a colon.
 
-  From my small experience it seems that the link to a section name does not contain spaces, 
-  even if the section title does contain them 
-  (However, I saw spaces in other documentations many times). 
-  As an example, you'll find a link to the top of this page :ref:`here <writingdocumentation>`. 
+  From my small experience it seems that the link to a section name does not contain spaces,
+  even if the section title does contain them
+  (However, I saw spaces in other documentations many times).
+  As an example, you'll find a link to the top of this page :ref:`here <writingdocumentation>`.
   Links also work between pages, of course.
 
 - **Links to other websites** are included  by, e.g., ``http://www.readthedocs.org`` (<http://www.readthedocs.org>),
@@ -91,8 +91,8 @@ I also like `this doc <https://books.dehlia.in/writing-with-ratatouille/toc/>`_.
      | Left col | Right col|
      +----------+----------+
 
-  However, this method is very time-consuming, and it may be difficult to add a new row or column, 
-  since the vertical lines must be perfectly aligned. The recommended since easier and more versatile way 
+  However, this method is very time-consuming, and it may be difficult to add a new row or column,
+  since the vertical lines must be perfectly aligned. The recommended since easier and more versatile way
   of adding a table is the following:
 
   ::
@@ -115,7 +115,7 @@ I also like `this doc <https://books.dehlia.in/writing-with-ratatouille/toc/>`_.
         :width: with should be given in pixels (e.g., 400px), but can also be given in %.
         :align: "top", "middle", "bottom", "left", "center", or "right"
 
-        After one empty line, a figure caption is given (like this one). 
+        After one empty line, a figure caption is given (like this one).
         Beware that the indentation must not change!
 
   Note that figures cannot natively be entered in markdown. However, there is a way to enter them anyway by declaring a restructuredText element within the markdown file:
@@ -128,7 +128,7 @@ I also like `this doc <https://books.dehlia.in/writing-with-ratatouille/toc/>`_.
         :width: with should be given in pixels (e.g., 400px), but can also be given in %.
         :align: "top", "middle", "bottom", "left", "center", or "right"
 
-        After one empty line, a figure caption is given (like this one). 
+        After one empty line, a figure caption is given (like this one).
         Beware that the indentation must not change!
      ```
 

@@ -28,19 +28,19 @@ Anyway, the decision on which solver to use is illustrated in the following flow
 
 At this point, the linear algebra library *Trilinos* is heavily used, which provides a number of packages on different levels:
 
-**Epetra/TPetra**: 
+**Epetra/TPetra**:
    Sparse Linear Algebra
 
-**Amesos/Amesos2**: 
+**Amesos/Amesos2**:
    Direct Solvers (UMFPACK, Superlu)
 
-**AztecOO/Belos**: 
+**AztecOO/Belos**:
    Iterative Solvers (CG, GMRES)
 
-**Ifpack**: 
+**Ifpack**:
    Preconditioner (ILU, ICHOL, GS)
 
-**ML/MueLu**: 
+**ML/MueLu**:
    Multigrid-Preconditioner
 
 
@@ -74,7 +74,7 @@ If one has to solve a system with more than 50000 degrees of freedom (approx. eq
 the iterative solver will be significantly faster.
 In addition, the iterative solver is more memory efficient, so it can solve larger system with a computer equipped with low memory.
 
-The benefit of the direct solver is that there are no parameters, which one has to provide, 
+The benefit of the direct solver is that there are no parameters, which one has to provide,
 since the direct solver does not care about the underlying physics.
 
 Iterative solver
@@ -106,7 +106,7 @@ Solver interface
 The current solver is based on Trilinos' **Belos** package, which is the successor of AztecOO.
 This package provides a bunch of KRYLOV solvers, e.g.
 
-   - CG for symmetric problems, 
+   - CG for symmetric problems,
    - GMRES (also for unsymmetric problems)
    - BICGSTAB (??)
 
@@ -114,10 +114,10 @@ The parameters are very similar to the AztecOO package,
 and therefore further information on specific details can be found in the official `AztecOO user guide <https://trilinos.github.io/pdfs/AztecOOUserGuide.pdf>`_.
 Since an iterative method approximates the correct solution iteratively,
 a residual criterion (here :ref:`AZCONV <solver1_azconv>`), a tolerance (:ref:`AZTOL <solver1_aztol>`),
-and the maximum number of iterations :ref:`AZITER <solver1_aziter>` must be given. 
+and the maximum number of iterations :ref:`AZITER <solver1_aziter>` must be given.
 The default of AZCONV (AZ_r0) is reasonable, while the default for the maximum number of iterations (1000) is rather high.
 
-In addition, the parameter :ref:`AZSUB <solver1_azsub>` is important, if the default algorithm, GMRES, is used: 
+In addition, the parameter :ref:`AZSUB <solver1_azsub>` is important, if the default algorithm, GMRES, is used:
 Krylov solvers build up a subspace of vectors, and they should be rebuilt after a number of iterations. The default of 50 is reasonable.
 
 These parameters are defined in the following way:
@@ -135,12 +135,12 @@ These parameters are defined in the following way:
 Preconditioners
 ^^^^^^^^^^^^^^^^
 
-The choice and design of the preconditioner highly affect performance. Within Belos one can choose between 
+The choice and design of the preconditioner highly affect performance. Within Belos one can choose between
 
 -	ILU
 -	Algebraic Multigrid (AMG) methods
 
-**ILU** (incomplete LU method) 
+**ILU** (incomplete LU method)
 
 Perfect scalability is not achieved with this method, but is has the advantage of being less complex.
 
@@ -182,9 +182,9 @@ It should be larger than the default of 1000, let say, 5000-10000.
 Also, the maximum number of coarsenings is given by :ref:`ML_MAXLEVEL <solver1_ml_maxlevel>` (maxlevel should always be high enough).
 
 One may define three different smoothers:
-:ref:`ML_SMOOTHERFINE <solver1_ml_smootherfine>` (for the first / fine level); 
-:ref:`Ml_SMOOTHERMED <solver1_ml_smoothermed>` (for all intermediate levels); 
-:ref:`ML_SMOOTHERCOARSE <solver1_ml_smoothercoarse>` (probably always a direct solver like UMFPACK). 
+:ref:`ML_SMOOTHERFINE <solver1_ml_smootherfine>` (for the first / fine level);
+:ref:`Ml_SMOOTHERMED <solver1_ml_smoothermed>` (for all intermediate levels);
+:ref:`ML_SMOOTHERCOARSE <solver1_ml_smoothercoarse>` (probably always a direct solver like UMFPACK).
 
 While many solvers can be used, five of them are most popular: SGS (symmetric Gauss Seidel), Jacobi, Chebychev, ILU, MLS.
 Besides that, particularly for the coarsest smoother, a direct solver can be used, as (Umfpack, SuperLU, KLU).
@@ -218,7 +218,7 @@ Transfer operator from coarse to fine
      - Symmetry
    * - Convection dominated flow
      - nonsymm
-   * - elasticity 
+   * - elasticity
      - symm
    * - Contact
      - unsymm
@@ -236,7 +236,7 @@ If, on the other hand, the interaction of the physical fields is strong, the ite
 thus a monolithic solution, solving all degrees of freedom simultaneously is beneficial.
 This so-called *monolithic solution* will be described in the following:
 
-**Monolithic solution:** all degrees of freedom appear in the linear system. 
+**Monolithic solution:** all degrees of freedom appear in the linear system.
 Since the stiffness factors of the different physics may be different by orders of magnitude,
 and the coupling between the physics may again have a different magnitude,
 the linear system may be particularly ill-conditioned.
@@ -268,6 +268,6 @@ Further reading
    :width: 400px
    :align: center
 
-   A presentation held by Max Firmbach in 2022 
+   A presentation held by Max Firmbach in 2022
 
 

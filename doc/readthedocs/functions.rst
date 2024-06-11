@@ -15,7 +15,7 @@ respective section always starts with
    ----------------FUNCT15
 
 These functions allow to define spatial and temporal conditions in terms of mathematical
-functions, e.g., in sine form etc. 
+functions, e.g., in sine form etc.
 
 The respective input line for defining the function is of the following form:
 
@@ -34,7 +34,7 @@ As the name says, the definition can be a function :math:`f`
 If the function cannot easily be given as a symbolic expression, the function may depend on additional user defined variables, which are given in the following way:
 
 ::
- 
+
    VARIABLE <num> NAME <varname> TYPE expression DESCRIPTION
    VARIABLE <num> NAME <varname> TYPE linearinterpolation NUMPOINTS <num> TIMES num*{time} VALUES num*{value}
    VARIABLE <num> NAME <varname> TYPE multifunction NUMPOINTS <num> TIMES num*{time} DESCRIPTION (num-1)*{function}
@@ -43,7 +43,7 @@ If the function cannot easily be given as a symbolic expression, the function ma
 where
 
 - **expression** is simply a symoblic expression similar to the function definition itself.
-  That is, 
+  That is,
 
   ::
 
@@ -53,16 +53,16 @@ where
   is completely equivalent to
 
   ::
-   
+
      SYMBOLIC-FUNCTION_OF_SPACE_TIME 50*t
 
-- **linearinterpolation** defines a table with a given number of sampling points leading to 
+- **linearinterpolation** defines a table with a given number of sampling points leading to
   multilinear expression. For example, one can define a trapezoidal amplitude::
 
      SYMBOLIC-FUNCTION_OF_SPACE_TIME myvar
      VARIABLE 0 NAME myvar TYPE linearinterpolation NUMPOINTS 5 TIMES 0 1 2 3 10 VALUES 0.0 1.0 1.0 0.0 0.0
 
-- **multifunction** is similar to expression, but a number of symbolic functions can be entered, 
+- **multifunction** is similar to expression, but a number of symbolic functions can be entered,
   which are  only valid in a specific time range. therefore, one has to define one point in time more than functions. As an example, see::
 
      SYMBOLIC-FUNCTION_OF_SPACE_TIME myvar
@@ -77,7 +77,7 @@ where
 
 For fluids some other keywords are available beside the ones given above:
 
-:: 
+::
 
    BELTRAMI c1 <value>
    KIMMOIN-RHS MAT <num> ISSTAT [0|1] ISSTOKES [0|1]
@@ -97,12 +97,12 @@ For fluids some other keywords are available beside the ones given above:
    WEAKLYCOMPRESSIBLE_POISEUILLE MAT <num>
    WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE MAT <num>
    ZALESAKSDISK
-   
+
    FORWARDFACINGSTEP
    MOVINGLEVELSETCYLINDER
    MOVINGLEVELSETTORUS
    MOVINGLEVELSETTORUSVELOCITY
-   MOVINGLEVELSETTORUSSLIPLENGTH 
+   MOVINGLEVELSETTORUSSLIPLENGTH
    URQUIZABOXFLOW
    URQUIZABOXFLOW_TRACTION
    URQUIZABOXFLOW_FORCE

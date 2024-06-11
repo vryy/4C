@@ -28,20 +28,20 @@ $===================== Create fluid volume
 $ create cavity and inflow
 brick x {MyWidth} y {CavityHeight+InflowHeight} z {MyDepth}
 align volume 2 surface 9 with surface 5
-$ divide cavity and inflow region into two separate volumes 
+$ divide cavity and inflow region into two separate volumes
 webcut volume 2 with plane yplane offset {CavityHeight} noimprint nomerge
 
 $$==================== GROUPS
-$$ volume groups for structure, cavity, inflow and fluid  
+$$ volume groups for structure, cavity, inflow and fluid
 $ structural volume
-group "structure_vol" add volume with y_coord<{BottomHeight}  
+group "structure_vol" add volume with y_coord<{BottomHeight}
 $ entire fluid volume
-group "fluid_vol" add volume with y_coord>{BottomHeight}      
+group "fluid_vol" add volume with y_coord>{BottomHeight}
 $ inflow fluid volume
-group "inflow_vol" add volume with y_coord>{CavityHeight}     
+group "inflow_vol" add volume with y_coord>{CavityHeight}
 $ cavity fluid volume
-group "cavity_vol" add volume in group fluid_vol              
-cavity_vol remove volume in group inflow_vol                  
+group "cavity_vol" add volume in group fluid_vol
+cavity_vol remove volume in group inflow_vol
 
 $$ surface groups for structure
 $ front surface

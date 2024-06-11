@@ -19,6 +19,5 @@ for f in "${FAILED_TESTS[@]}"; do
 done
 
 echo "Summary of failures:"
-# Note: "grep ." drops empty lines 
+# Note: "grep ." drops empty lines
 echo "${ASAN_DETAILS[*]}" | awk '{print $4};' | grep . | sort | uniq -c
-

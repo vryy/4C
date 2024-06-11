@@ -17,8 +17,8 @@ Input reader for the material model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The main input read is located in ``src/inpar/inpar_validmaterials.cpp``.
-Here, the input for the material including all mandatory and optional parameters, is defined. 
-Parameters that do not appear here, are not recognized. 
+Here, the input for the material including all mandatory and optional parameters, is defined.
+Parameters that do not appear here, are not recognized.
 A description and default values (for optional parameters) can (and should!) be defined here as well.
 
 Definition of the material model as an enumeration item
@@ -44,7 +44,7 @@ All material related classes are defined in this directory, within the namespace
 
 **Definition of a material parameter class**
 
-Define the class for Material Parameters in the namespace ``MAT::PAR`` as 
+Define the class for Material Parameters in the namespace ``MAT::PAR`` as
 
 ::
 
@@ -57,7 +57,7 @@ Here we need the methods
 
 **Definition of the material type class**
 
-Here the material type class is generated within the namespace ``MAT`` as 
+Here the material type class is generated within the namespace ``MAT`` as
 
 ::
 
@@ -72,7 +72,7 @@ This class does not even need a constructor, but only  a single private static v
    MAT::MyNewMaterial MAT::MyNewMaterial::instance_;
 
 
-and a few public methods: 
+and a few public methods:
 
 ::
 
@@ -117,7 +117,7 @@ The base classes of the material models representing a single physics environmen
 Note that not all existing materials use this heritage,
 some materials are simply derived from ``MAT::Material`` even though a more specialized class exists.
 
-It is probably a good idea to start with a clone of the material law given in the table above, and define a new class, e.g.: 
+It is probably a good idea to start with a clone of the material law given in the table above, and define a new class, e.g.:
 
 ::
 

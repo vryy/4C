@@ -1,7 +1,7 @@
 -----------------------------------------------------------------------TITLE
-Test of the templated implementation of solid elements. 
-A cylinder represented with NURBS shape functions is subjected to least 
-squares Dirichlet boundary conditions.  
+Test of the templated implementation of solid elements.
+A cylinder represented with NURBS shape functions is subjected to least
+squares Dirichlet boundary conditions.
 
 Time Integration: Standard
 Shape: nurbs27

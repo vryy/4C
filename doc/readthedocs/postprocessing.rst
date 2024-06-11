@@ -94,7 +94,7 @@ Additional post-processing options (output from ``post_processor --help``) are g
 +----------------+-----------+---------+-------------------------------------------------+
 |--outputtype    |string     |         |bin  \| ascii (only for vtu)                     |
 +----------------+-----------+---------+-------------------------------------------------+
- 
+
 For the respective filters, there are wrappers available:
 
 +-------------+--------------------------------+
@@ -143,7 +143,7 @@ The options ``--start``, ``--step`` and ``--end`` may also be useful here.
 ParaView
 ~~~~~~~~~~
 
-Paraview <https://www.paraview.org> can read various post processing data formats. 
+Paraview <https://www.paraview.org> can read various post processing data formats.
 Particularly, it can read the directly written *vtk/vtu* format, and also the *ensight* format,
 which one can extract by converting the default output with ``post_ensight``, see above.
 

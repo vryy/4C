@@ -14,7 +14,7 @@ OUTPUT_BIN                      no
 OUTPUT_EVERY_ITER               no
 OEI_FILE_COUNTER                0
 STRUCT_DISP                     Yes
-STRUCT_STRESS                  	No 
+STRUCT_STRESS                  	No
 FILESTEPS                       1000
 STRUCT_STRAIN                   yes
 VERBOSITY                       verbose

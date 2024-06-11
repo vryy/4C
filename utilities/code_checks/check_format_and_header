@@ -4,8 +4,8 @@
 #
 # This is a bash script meant for code checks concerning clang-format style, header compliance and xml formatting style.
 #
-# The test will fail if code is found that 
-#   if our header requirements for input files and source files are violated, 
+# The test will fail if code is found that
+#   if our header requirements for input files and source files are violated,
 #   if our requirements for unit and input file tests are violated
 #   if a source file is not prefixed with the module name
 #
@@ -127,7 +127,7 @@ done
 # write uncompliant files to txt file
 if [ ! -z "$uncompliant_files" ]
 then
-echo "" 
+echo ""
 (printf "$uncompliant_files")>>wrong_code_format.txt
 echo "Format check failed. Non-compliant files have been reported in wrong_code_format.txt."
 cat wrong_code_format.txt

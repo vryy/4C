@@ -222,7 +222,7 @@ Structure
 
 **General**
 
-The problemtype *Structure* considers deformations and stresses in solid mechanics. 
+The problemtype *Structure* considers deformations and stresses in solid mechanics.
 
 **Elements and Degrees of freedom**
 
@@ -233,7 +233,7 @@ so there are up to 6 DoFs.
 
 **Results**
 
-The result variables are stresses and strains within the elements, 
+The result variables are stresses and strains within the elements,
 and reaction forces at the nodes, where a Dirichlet boundary condition has been applied.
 Other internal variables may be calculated as necessary (and desired).
 
@@ -242,7 +242,7 @@ Thermo
 
 **General**
 
-The problemtype *Thermo* considers heat transfer in arbitrary structures. 
+The problemtype *Thermo* considers heat transfer in arbitrary structures.
 
 **Elements and Degrees of freedom**
 
@@ -265,12 +265,12 @@ These problems combine a number of single field problems, and are therefore some
 Atherosclerosis_Fluid_Structure_Interaction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Biofilm_Fluid_Structure_Interaction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Elastohydrodynamic_Lubrication
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -301,137 +301,137 @@ One has to define solvers for the following dynamics: STRUCTURAL | POROELASTICIT
 Fluid_Porous_Structure_Interaction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 
 
 Fluid_Porous_Structure_Scalar_Scalar_Interaction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Fluid_RedModels
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Fluid_Structure_Interaction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Fluid_Structure_Interaction_Lung
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Fluid_Structure_Interaction_RedModels
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Fluid_Structure_Interaction_XFEM
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Fluid_XFEM_LevelSet
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Gas_Fluid_Structure_Interaction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Immersed_FSI
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Low_Mach_Number_Flow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Lubrication
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Multiphase_Poroelasticity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Multiphase_Poroelasticity_ScaTra
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Multiphase_Porous_Flow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 NP_Supporting_Procs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Particle_Structure_Interaction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Poroelastic_scalar_transport
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Poroelasticity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 RedAirways_Tissue
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Scalar_Thermo_Interaction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Structure_Ale
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Structure_Scalar_Interaction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Structure_Scalar_Thermo_Interaction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Thermo_Fluid_Structure_Interaction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Thermo_Structure_Interaction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 
 Tutorial
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One has to define solvers for the following dynamics: 
+One has to define solvers for the following dynamics:
 

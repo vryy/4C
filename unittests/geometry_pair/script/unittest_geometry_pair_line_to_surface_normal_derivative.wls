@@ -204,7 +204,7 @@ replaceQAceGen:=Thread[patchDOF->qAce]
 
 
 <<AceGen`;
-SMSInitialize["averagedNormal","Environment"->"MathLink"]; 
+SMSInitialize["averagedNormal","Environment"->"MathLink"];
 SMSModule["averagedNormal",Real[q$$[nDof$$],normal$$[12],dnormal$$[12,nPatch$$],ddnormal$$[12,nPatch$$,nPatch$$]],Integer[nDof$$,nPatch$$],"Input"->{q$$,nDof$$,nPatch$$},"Output"->{normal$$,dnormal$$,ddnormal$$}];
 
 (*Current positions in AceGen*)
@@ -260,7 +260,7 @@ Export["results.txt",cppString];
 
 
 <<AceGen`;
-SMSInitialize["facePosition","Environment"->"MathLink"]; 
+SMSInitialize["facePosition","Environment"->"MathLink"];
 SMSModule["facePosition",Real[q$$[nDof$$],position$$[3],dposition$$[3,nPatch$$],ddposition$$[3,nPatch$$,nPatch$$],xi1$$,xi2$$,alpha$$],Integer[nDof$$,nPatch$$],"Input"->{q$$,xi1$$,xi2$$,alpha$$,nDof$$,nPatch$$},"Output"->{position$$,dposition$$,ddposition$$}];
 
 (*Current positions in AceGen*)
