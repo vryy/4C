@@ -12,7 +12,6 @@
 #include "4C_contact_element.hpp"
 #include "4C_contact_node.hpp"
 #include "4C_fem_discretization.hpp"
-#include "4C_fem_geometry_reference_config_utils.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -356,28 +355,22 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
     case Core::FE::CellType::tri3:
     {
       xicele1.PutScalar(1.0 / 3.0);
-      Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri3>(
-          ele1, xicele1, ele1coords);
-      Core::Geo::ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::tri3>(
-          ele1, xicele1, ele1normal);
+      LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri3>(ele1, xicele1, ele1coords);
+      ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::tri3>(ele1, xicele1, ele1normal);
     }
     break;
     case Core::FE::CellType::tri6:
     {
       xicele1.PutScalar(1.0 / 3.0);
-      Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri6>(
-          ele1, xicele1, ele1coords);
-      Core::Geo::ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::tri6>(
-          ele1, xicele1, ele1normal);
+      LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri6>(ele1, xicele1, ele1coords);
+      ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::tri6>(ele1, xicele1, ele1normal);
     }
     break;
     case Core::FE::CellType::quad4:
     {
       xicele1.PutScalar(0.0);
-      Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::quad4>(
-          ele1, xicele1, ele1coords);
-      Core::Geo::ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::quad4>(
-          ele1, xicele1, ele1normal);
+      LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::quad4>(ele1, xicele1, ele1coords);
+      ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::quad4>(ele1, xicele1, ele1normal);
     }
     break;
     default:
@@ -392,22 +385,19 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
     case Core::FE::CellType::tri3:
     {
       xicele2.PutScalar(1.0 / 3.0);
-      Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri3>(
-          ele2, xicele2, ele2coords);
+      LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri3>(ele2, xicele2, ele2coords);
     }
     break;
     case Core::FE::CellType::tri6:
     {
       xicele2.PutScalar(1.0 / 3.0);
-      Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri6>(
-          ele2, xicele2, ele2coords);
+      LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri6>(ele2, xicele2, ele2coords);
     }
     break;
     case Core::FE::CellType::quad4:
     {
       xicele2.PutScalar(0.0);
-      Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::quad4>(
-          ele2, xicele2, ele2coords);
+      LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::quad4>(ele2, xicele2, ele2coords);
     }
     break;
     default:

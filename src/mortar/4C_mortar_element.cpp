@@ -12,9 +12,7 @@
 #include "4C_contact_nitsche_utils.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
-#include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
-#include "4C_mortar_calc_utils.hpp"
 #include "4C_mortar_node.hpp"
 #include "4C_so3_surface.hpp"
 

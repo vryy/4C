@@ -38,14 +38,6 @@ namespace Core::IO
   class DiscretizationWriter;
 }  // namespace Core::IO
 
-namespace STR
-{
-  namespace TimeInt
-  {
-    class BaseDataGlobalState;
-  }  // namespace TimeInt
-}  // namespace STR
-
 namespace Mortar
 {
   class Element;
@@ -70,7 +62,6 @@ namespace Mortar
       Factory();
 
       //! initialization of class variables
-      void Init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr);
       void Init(Teuchos::RCP<Core::FE::Discretization> dis);
 
       /*! \brief Setup of class variables
@@ -144,9 +135,6 @@ namespace Mortar
       //! @name Accessors
       //!@{
 
-      //! Returns the global state data container (read-only, do not change this!!!)
-      const STR::TimeInt::BaseDataGlobalState& g_state() const;
-
       //! Returns the (structural) discretization
       Core::FE::Discretization& discret();
       const Core::FE::Discretization& discret() const;
@@ -176,10 +164,6 @@ namespace Mortar
       bool issetup_;
 
       //!@}
-
-      //! pointer to the structural global state data container
-      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
-
       //! pointer to a COPY of the structural communicator
       Teuchos::RCP<Epetra_Comm> comm_ptr_;
 
