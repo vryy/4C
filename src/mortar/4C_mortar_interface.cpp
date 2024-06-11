@@ -797,8 +797,8 @@ void Mortar::Interface::initialize_lag_mult_lin()
             break;
           }
         }  // switch(Shape)
-      }    // if (IsSlave())
-    }      // for-loop
+      }  // if (IsSlave())
+    }  // for-loop
   }
 }
 
@@ -869,8 +869,8 @@ void Mortar::Interface::initialize_lag_mult_const()
             break;
           }
         }  // switch(Shape)
-      }    // if (IsSlave())
-    }      // for-loop
+      }  // if (IsSlave())
+    }  // for-loop
   }
 }
 
@@ -1034,21 +1034,23 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> Mortar::Interface::setup_binning_stra
   }
 
   // increase XAABB by 2x cutoff radius
+  std::stringstream domain_bounding_box_stream;
   for (unsigned int dim = 0; dim < 3; ++dim)
   {
-    XAABB(dim, 0) = globmin[dim] - cutoff;
-    XAABB(dim, 1) = globmax[dim] + cutoff;
+    domain_bounding_box_stream << globmin[dim] - cutoff << " ";
+  }
+  for (unsigned int dim = 0; dim < 3; ++dim)
+  {
+    domain_bounding_box_stream << globmax[dim] + cutoff << " ";
   }
 
+  Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+
+  binning_params.set<double>("BIN_SIZE_LOWER_BOUND", cutoff);
+  binning_params.set<std::string>("DOMAINBOUNDINGBOX", domain_bounding_box_stream.str());
   Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-      Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
+      Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params));
 
-  // Set cutoff and bounding box size
-  binningstrategy->set_bin_size_lower_bound(cutoff);
-  binningstrategy->set_domain_bounding_box_corner_positions(XAABB);
-
-  // compute bins
-  binningstrategy->create_bins_based_on_bin_size_lower_bound_and_binning_domain_dimensions();
 
   return binningstrategy;
 }
@@ -2598,7 +2600,7 @@ void Mortar::Interface::FindMEles(Node& mrtrnode, std::vector<Mortar::Element*>&
       // fill vector
       meles.push_back(melement);
     }  // found eles
-  }    // loop over adjacent slave elements
+  }  // loop over adjacent slave elements
 }
 
 
@@ -2639,7 +2641,7 @@ void Mortar::Interface::find_m_nodes(
       // fill vector
       mnodes.push_back(mnode);
     }  // found eles
-  }    // loop over adjacent slave elements
+  }  // loop over adjacent slave elements
 }
 
 
@@ -3021,7 +3023,7 @@ void Mortar::Interface::evaluate_search_brute_force(const double& eps)
         selement->AddSearchElements(mgid);
       }
     }  // for all master elements
-  }    // for all slave elements
+  }  // for all slave elements
 }
 
 /*----------------------------------------------------------------------*
@@ -3082,7 +3084,7 @@ bool Mortar::Interface::MortarCoupling(Mortar::Element* sele, std::vector<Mortar
       Mortar::Coupling3dQuadManager(Discret(), Dim(), false, interface_params(), sele, mele)
           .evaluate_coupling(mparams_ptr);
     }  // quadratic
-  }    // 3D
+  }  // 3D
   else
     FOUR_C_THROW("Dimension for Mortar coupling must be either 2D or 3D.");
   // *********************************************************************

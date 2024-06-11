@@ -137,7 +137,7 @@ void Core::Adapter::MortarVolCoupl::Setup(const Teuchos::ParameterList& params)
 /*----------------------------------------------------------------------*
  |  redistribute                                             rauch 08/16|
  *----------------------------------------------------------------------*/
-void Core::Adapter::MortarVolCoupl::Redistribute()
+void Core::Adapter::MortarVolCoupl::Redistribute(const Teuchos::ParameterList& binning_params)
 {
   check_init();
 
@@ -146,7 +146,7 @@ void Core::Adapter::MortarVolCoupl::Redistribute()
   dis.push_back(masterdis_);
   dis.push_back(slavedis_);
 
-  Core::Rebalance::RebalanceDiscretizationsByBinning(dis, false);
+  Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params, dis, false);
 
   return;
 }

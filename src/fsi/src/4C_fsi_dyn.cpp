@@ -331,7 +331,8 @@ void fsi_immersed_drt()
   if (structdis->GetCondition("PointCoupling") != nullptr)
   {
     structdis->fill_complete(false, false, false);
-    Core::Rebalance::RebalanceDiscretizationsByBinning({structdis}, true);
+    Core::Rebalance::RebalanceDiscretizationsByBinning(
+        Global::Problem::Instance()->binning_strategy_params(), {structdis}, true);
   }
   else if (not structdis->Filled() || not structdis->HaveDofs())
   {
@@ -350,7 +351,8 @@ void fsi_immersed_drt()
 
   // binning strategy is created
   Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-      Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
+      Teuchos::rcp(new BINSTRATEGY::BinningStrategy(
+          Global::Problem::Instance()->binning_strategy_params(), dis));
 
   const Teuchos::ParameterList& fbidyn = problem->FBIParams();
 
@@ -362,7 +364,6 @@ void fsi_immersed_drt()
   {
     std::vector<Teuchos::RCP<Epetra_Map>> stdelecolmap;
     std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
-    binningstrategy->Init(dis);
     Teuchos::RCP<Epetra_Map> rowbins =
         binningstrategy
             ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
@@ -429,7 +430,8 @@ void fsi_ale_drt()
   if (structdis->GetCondition("PointCoupling") != nullptr)
   {
     structdis->fill_complete(false, false, false);
-    Core::Rebalance::RebalanceDiscretizationsByBinning({structdis}, true);
+    Core::Rebalance::RebalanceDiscretizationsByBinning(
+        Global::Problem::Instance()->binning_strategy_params(), {structdis}, true);
   }
   else if (not structdis->Filled() || not structdis->HaveDofs())
   {
@@ -486,8 +488,8 @@ void fsi_ale_drt()
       {
         // binning strategy is created and parallel redistribution is performed
         Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-            Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
-        binningstrategy->Init(dis);
+            Teuchos::rcp(new BINSTRATEGY::BinningStrategy(
+                Global::Problem::Instance()->binning_strategy_params(), dis));
         binningstrategy
             ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
                 dis, stdelecolmap, stdnodecolmap);

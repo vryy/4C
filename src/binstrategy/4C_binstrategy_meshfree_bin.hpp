@@ -123,7 +123,6 @@ namespace Discret
       {
         ELEMENT::nodeid_.push_back(gid);
         ELEMENT::node_.push_back(nodeptr);
-        return;
       }
 
       /*------------------------------------------------------------------------*/

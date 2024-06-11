@@ -85,7 +85,8 @@ void wear_dyn_drt(int restart)
       dis.push_back(structdis);
       dis.push_back(aledis);
 
-      Core::Rebalance::RebalanceDiscretizationsByBinning(dis, false);
+      Core::Rebalance::RebalanceDiscretizationsByBinning(
+          Global::Problem::Instance()->binning_strategy_params(), dis, false);
     }
   }
   // ***********************************************************

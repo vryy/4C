@@ -186,19 +186,6 @@ namespace Discret
 
       /*------------------------------------------------------------------------*/
       /*!
-       * \brief Return id's of associated  elements to this bin
-       *///                                                  (public) ghamm 04/13
-      /*------------------------------------------------------------------------*/
-      inline const int* AssociatedEleIds(BINSTRATEGY::UTILS::BinContentType bin_content) const
-      {
-        if (associatedeleid_[bin_content].size())
-          return associatedeleid_[bin_content].data();
-        else
-          return nullptr;
-      }
-
-      /*------------------------------------------------------------------------*/
-      /*!
        * \brief Get vector of ptrs to associated  elements
        *
        * \return Ptr to pointers to nodes of the element in local nodal ordering.
@@ -230,55 +217,11 @@ namespace Discret
 
       /*------------------------------------------------------------------------*/
       /*!
-       * \brief Delete an associated element from this bin
-       *
-       * Searches for position of element with specified gid and deletes entry in
-       * vectors associatedeleid_ and associatedele_
-       *///                                                  (public) ghamm 04/13
-      /*------------------------------------------------------------------------*/
-      virtual void DeleteAssociatedEle(BINSTRATEGY::UTILS::BinContentType
-                                           bin_content,  //!< (in): type of element to be deleteted
-          int gid  //!< (in): global id of element to be deleted
-      );
-
-      /*------------------------------------------------------------------------*/
-      /*!
-       * \brief Remove all associated elements of specific kind from this bin
-
-       *///                                                  (public) ghamm 09/13
-      /*------------------------------------------------------------------------*/
-      void remove_specific_associated_eles(BINSTRATEGY::UTILS::BinContentType bin_content);
-
-      /*------------------------------------------------------------------------*/
-      /*!
        * \brief Remove all associated elements of all kind from this bin
 
        *///                                                  (public) ghamm 09/13
       /*------------------------------------------------------------------------*/
       void remove_all_associated_eles();
-
-      /*!
-      \brief Build pointer vector from vector of element pointers
-
-      The method is used to build the variable associatedele_ in this bin.
-      It can be used to explicitly pass the element pointers to the bin.
-
-      \param eles (in): Pointer to array of pointers to elements. The array of pointers
-                        is implicitly expected to be of length NumAssociatedEle() and contain
-                        pointers to elements in the correct element local ordering scheme.
-      */
-      bool BuildElePointers(
-          BINSTRATEGY::UTILS::BinContentType bin_content, Core::Elements::Element** eles);
-
-      /*------------------------------------------------------------------------*/
-      /*!
-       * \brief Print this meshfree bin
-       *
-       * Prints basic information about this bin to std::ostream. This method would
-       * usually be called by the print method of a derived class.
-       *///                                                  (public) ghamm 11/12
-      /*------------------------------------------------------------------------*/
-      void Print(std::ostream& os) const override;
 
       /*!
       \brief Evaluate a Neumann boundary condition dummy
@@ -324,9 +267,6 @@ namespace Discret
 
   }  // namespace MeshFree
 }  // namespace Discret
-
-//! << operator
-std::ostream& operator<<(std::ostream& os, const Discret::MeshFree::MeshfreeMultiBin& bin);
 
 FOUR_C_NAMESPACE_CLOSE
 

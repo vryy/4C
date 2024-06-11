@@ -30,6 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Rebalance using BinningStrategy                         rauch 08/16 |
  *----------------------------------------------------------------------*/
 void Core::Rebalance::RebalanceDiscretizationsByBinning(
+    const Teuchos::ParameterList& binning_params,
     const std::vector<Teuchos::RCP<Core::FE::Discretization>>& vector_of_discretizations,
     bool revertextendedghosting)
 {
@@ -64,9 +65,7 @@ void Core::Rebalance::RebalanceDiscretizationsByBinning(
 
     // binning strategy is created and parallel redistribution is performed
     Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-        Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
-
-    binningstrategy->Init(vector_of_discretizations);
+        Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params, vector_of_discretizations));
 
     binningstrategy
         ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
@@ -426,8 +425,7 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
       for (const auto& it : matched_ele_map)
       {
         std::cout << "ELEMENT : " << it.first << " ->  ( " << it.second[0] << ", " << it.second[1]
-                  << ", " << it.second[2] << " )"
-                  << " on PROC " << dis_to_rebalance.Comm().MyPID()
+                  << ", " << it.second[2] << " )" << " on PROC " << dis_to_rebalance.Comm().MyPID()
                   << " map size = " << matched_ele_map.size() << std::endl;
       }
     }
@@ -531,8 +529,7 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
       for (const auto& it : matched_node_map)
       {
         std::cout << "NODE : " << it.first << " ->  ( " << it.second[0] << ", " << it.second[1]
-                  << ", " << it.second[2] << " )"
-                  << " on PROC " << dis_to_rebalance.Comm().MyPID()
+                  << ", " << it.second[2] << " )" << " on PROC " << dis_to_rebalance.Comm().MyPID()
                   << " map size = " << matched_node_map.size() << std::endl;
       }
     }

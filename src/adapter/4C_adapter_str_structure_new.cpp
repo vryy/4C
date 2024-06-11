@@ -166,7 +166,8 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   {
     std::vector<Teuchos::RCP<Core::FE::Discretization>> actdis_vec(1, actdis_);
     actdis_vec[0]->fill_complete(false, false, false);
-    Core::Rebalance::RebalanceDiscretizationsByBinning(actdis_vec, true);
+    Core::Rebalance::RebalanceDiscretizationsByBinning(
+        Global::Problem::Instance()->binning_strategy_params(), actdis_vec, true);
   }
   else if (not actdis_->Filled() || not actdis_->HaveDofs())
   {

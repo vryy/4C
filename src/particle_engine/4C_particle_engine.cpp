@@ -920,8 +920,8 @@ void PARTICLEENGINE::ParticleEngine::WriteBinDisOutput(const int step, const dou
 void PARTICLEENGINE::ParticleEngine::init_binning_strategy()
 {
   // create and init binning strategy and create bins
-  binstrategy_ = std::make_shared<BINSTRATEGY::BinningStrategy>();
-  binstrategy_->Init();
+  binstrategy_ = std::make_shared<BINSTRATEGY::BinningStrategy>(
+      Global::Problem::Instance()->binning_strategy_params());
 }
 
 void PARTICLEENGINE::ParticleEngine::setup_binning_strategy()
@@ -1134,7 +1134,7 @@ void PARTICLEENGINE::ParticleEngine::determine_bin_dis_dependent_maps_and_sets()
   std::set<int> innerbinids;
 
   // get number of bins in all spatial directions
-  const int* binperdir = binstrategy_->BinPerDir();
+  const auto binperdir = binstrategy_->BinPerDir();
 
   // safety check
   for (int dim = 0; dim < 3; ++dim)
@@ -2087,7 +2087,7 @@ void PARTICLEENGINE::ParticleEngine::relate_owned_particles_to_bins()
 void PARTICLEENGINE::ParticleEngine::determine_min_relevant_bin_size()
 {
   // get number of bins in all spatial directions
-  const int* binperdir = binstrategy_->BinPerDir();
+  const auto binperdir = binstrategy_->BinPerDir();
 
   // get bin size
   const double* binsize = binstrategy_->BinSize();

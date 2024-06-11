@@ -19,7 +19,6 @@ FOUR_C_NAMESPACE_OPEN
 template <typename ELEMENT>
 Discret::MeshFree::MeshfreeBin<ELEMENT>::MeshfreeBin(int id, int owner) : ELEMENT(id, owner)
 {
-  return;
 }
 
 /*--------------------------------------------------------------------------*
@@ -30,7 +29,6 @@ Discret::MeshFree::MeshfreeBin<ELEMENT>::MeshfreeBin(
     const Discret::MeshFree::MeshfreeBin<ELEMENT>& old)
     : ELEMENT(old)
 {
-  return;
 }
 
 

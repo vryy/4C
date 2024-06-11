@@ -77,7 +77,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     volcoupl_->Init(Global::Problem::Instance()->NDim(), structdis, thermodis, nullptr, nullptr,
         nullptr, nullptr, materialstrategy);
     // redistribute discretizations to meet needs of volmortar coupling
-    volcoupl_->Redistribute();
+    volcoupl_->Redistribute(Global::Problem::Instance()->binning_strategy_params());
     // setup projection matrices
     volcoupl_->Setup(Global::Problem::Instance()->VolmortarParams());
   }

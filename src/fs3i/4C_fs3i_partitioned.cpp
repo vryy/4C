@@ -380,7 +380,7 @@ Teuchos::RCP<Core::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_ob
 
   // setup projection matrices (use default material strategy)
   volume_coupling_object->Init(Global::Problem::Instance()->NDim(), masterdis, slavedis);
-  volume_coupling_object->Redistribute();
+  volume_coupling_object->Redistribute(Global::Problem::Instance()->binning_strategy_params());
   volume_coupling_object->Setup(Global::Problem::Instance()->VolmortarParams());
 
   return volume_coupling_object;

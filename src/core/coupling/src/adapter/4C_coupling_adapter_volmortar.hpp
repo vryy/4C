@@ -90,7 +90,7 @@ namespace Core::Adapter
     \author rauch
 
     */
-    void Redistribute();
+    void Redistribute(const Teuchos::ParameterList& binning_params);
 
 
     /*!

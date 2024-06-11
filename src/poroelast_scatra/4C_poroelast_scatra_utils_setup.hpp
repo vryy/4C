@@ -98,7 +98,8 @@ namespace PoroElastScaTra
         dis.push_back(fluiddis);
         dis.push_back(scatradis);
 
-        Core::Rebalance::RebalanceDiscretizationsByBinning(dis, false);
+        Core::Rebalance::RebalanceDiscretizationsByBinning(
+            Global::Problem::Instance()->binning_strategy_params(), dis, false);
 
         // set material pointers
         PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);

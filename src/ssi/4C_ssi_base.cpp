@@ -234,7 +234,8 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
   auto scatradis = problem->GetDis(scatra_disname);
 
   if (redistribute_struct_dis)
-    Core::Rebalance::RebalanceDiscretizationsByBinning({structdis}, false);
+    Core::Rebalance::RebalanceDiscretizationsByBinning(
+        Global::Problem::Instance()->binning_strategy_params(), {structdis}, false);
 
   if (scatradis->NumGlobalNodes() == 0)
   {
@@ -663,7 +664,8 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
     // first we bin the scatra discretization
     std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
     dis.push_back(scatradis);
-    Core::Rebalance::RebalanceDiscretizationsByBinning(dis, false);
+    Core::Rebalance::RebalanceDiscretizationsByBinning(
+        Global::Problem::Instance()->binning_strategy_params(), dis, false);
 
     Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
         *scatradis, *scatradis, "ScatraHeteroReactionMaster", "ScatraHeteroReactionSlave");
@@ -678,7 +680,8 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
     dis.push_back(structdis);
     dis.push_back(scatradis);
 
-    Core::Rebalance::RebalanceDiscretizationsByBinning(dis, false);
+    Core::Rebalance::RebalanceDiscretizationsByBinning(
+        Global::Problem::Instance()->binning_strategy_params(), dis, false);
   }
 }
 

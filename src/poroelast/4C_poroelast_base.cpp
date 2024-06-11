@@ -69,7 +69,7 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     // setup projection matrices
     volcoupl_->Init(Global::Problem::Instance()->NDim(), structdis, fluiddis, nullptr, nullptr,
         nullptr, nullptr, materialstrategy);
-    volcoupl_->Redistribute();
+    volcoupl_->Redistribute(Global::Problem::Instance()->binning_strategy_params());
     volcoupl_->Setup(Global::Problem::Instance()->VolmortarParams());
   }
 

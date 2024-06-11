@@ -47,13 +47,12 @@ namespace Core::Nodes
   class Node;
 }
 
-namespace Core::Geo
+
+namespace Core::Geo::MeshFree
 {
-  namespace MeshFree
-  {
-    class BoundingBox;
-  }
-}  // namespace Core::Geo
+  class BoundingBox;
+}
+
 
 /*----------------------------------------------------------------------*
  | binning strategy                                         ghamm 11/13 |
@@ -106,10 +105,9 @@ namespace BINSTRATEGY
   class BinningStrategy
   {
    public:
-    /*!
-     * \brief standard, empty constructor
-     */
-    BinningStrategy();
+    BinningStrategy(const Teuchos::ParameterList& binning_params,
+        const std::vector<Teuchos::RCP<Core::FE::Discretization>> discret = {},
+        std::vector<Teuchos::RCP<const Epetra_Vector>> disnp = {});
 
     /*!
      * \brief initialize binning strategy
@@ -119,17 +117,6 @@ namespace BINSTRATEGY
      * \param[in] disnp vector of column displacement states (belonging to input discrets) so that
      * current positions of elements and nodes can be considered for build up of binning domain
      */
-    void Init(std::vector<Teuchos::RCP<Core::FE::Discretization>> const discret =
-                  std::vector<Teuchos::RCP<Core::FE::Discretization>>(),
-        std::vector<Teuchos::RCP<const Epetra_Vector>> disnp =
-            std::vector<Teuchos::RCP<const Epetra_Vector>>());
-
-    /*!
-     * \brief set up binning strategy
-     */
-    inline void Setup(){
-        // nothing to do so far
-    };
 
 
     //! \name Read access functions
@@ -179,7 +166,7 @@ namespace BINSTRATEGY
      *
      * \return const pointer to array containing number of bins in all directions
      */
-    inline int const* BinPerDir() const { return bin_per_dir_; }
+    inline std::array<int, 3> BinPerDir() const { return bin_per_dir_; }
 
     /*!
      * \brief check if periodic boundary conditions are applied in at least one direction
@@ -220,39 +207,6 @@ namespace BINSTRATEGY
     inline Core::LinAlg::Matrix<3, 2> const& domain_bounding_box_corner_positions() const
     {
       return domain_bounding_box_corner_positions_;
-    }
-
-    /*!
-     * \brief get pointer to array containing inverse of size of bins in all three directions
-     *
-     * \return pointer to array containing inverses of bin sizes
-     */
-    inline double const* InvBinSize() const { return inv_bin_size_; }
-
-    //! \}
-
-    //! \name Set access functions
-    //! \{
-
-    /*!
-     * \brief set lower bound for bin size
-     *
-     * \param[in] bin_size_lower_bound_ lower bound for bin size
-     */
-    inline void set_bin_size_lower_bound(double bin_size_lower_bound)
-    {
-      bin_size_lower_bound_ = bin_size_lower_bound;
-    }
-
-    /*!
-     * \brief set binning domain dimensions
-     *
-     * \param[in] domain_bounding_box_corner_positions dimension for binning domain
-     */
-    inline void set_domain_bounding_box_corner_positions(
-        Core::LinAlg::Matrix<3, 2> const& domain_bounding_box_corner_positions)
-    {
-      domain_bounding_box_corner_positions_ = domain_bounding_box_corner_positions;
     }
 
     /*!
@@ -407,7 +361,7 @@ namespace BINSTRATEGY
     /*!
      * \brief build periodic boundary conditions
      */
-    void BuildPeriodicBC();
+    void BuildPeriodicBC(const Teuchos::ParameterList& binning_params);
 
     /*!
      * \brief determine boundary row bins
@@ -561,13 +515,6 @@ namespace BINSTRATEGY
     void GetBinContent(std::set<Core::Elements::Element*>& eles,
         std::vector<BINSTRATEGY::UTILS::BinContentType> bincontent, std::vector<int>& binIds,
         bool roweles = false) const;
-
-    /*!
-     * \brief remove elements of specific type from all bins
-     *
-     * \param[in] bincontent type of element to be removed from all bins
-     */
-    void remove_specific_eles_from_bins(BINSTRATEGY::UTILS::BinContentType bincontent);
 
     /*!
      * \brief remove all eles from bins
@@ -836,7 +783,7 @@ namespace BINSTRATEGY
     /*!
      * \brief number of bins per direction
      */
-    int bin_per_dir_[3];
+    std::array<int, 3> bin_per_dir_;
 
     /*!
      * \brief number of bins per direction for bin id calculation
