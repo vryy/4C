@@ -13,13 +13,13 @@
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_element_vtk_cell_type_register.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_so3_material.hpp"
-#include "4C_nurbs_discret.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_so3_nurbs27.hpp"
 #include "4C_so3_utils.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -244,7 +244,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
   // for isogeometric elements:
   //     o get knots
   //     o get weights
-  auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+  auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
   if (nurbsdis == nullptr)
   {
@@ -263,7 +263,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
   Core::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    auto* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
@@ -583,7 +583,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate_neumann(Teuchos::ParameterList
   // for isogeometric elements:
   //     o get knots
   //     o get weights
-  auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+  auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
   if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
@@ -593,7 +593,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate_neumann(Teuchos::ParameterList
   Core::LinAlg::Matrix<27, 1> weights;
   Core::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
-    weights(inode) = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode])->W();
+    weights(inode) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode])->W();
 
   /*------------------------------------------------------------------*/
   /*                   update element geometry                        */
@@ -688,7 +688,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::init_jacobian_mapping(Core::FE::Discre
   // for isogeometric elements:
   //     o get knots
   //     o get weights
-  auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(dis));
+  auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(dis));
 
   if (nurbsdis == nullptr)
   {
@@ -707,7 +707,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::init_jacobian_mapping(Core::FE::Discre
   Core::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    auto* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
@@ -758,7 +758,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
   // for isogeometric elements:
   //     o get knots
   //     o get weights
-  auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+  auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
   if (nurbsdis == nullptr)
   {
@@ -777,7 +777,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
   Core::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    auto* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
@@ -1088,7 +1088,7 @@ double Discret::ELEMENTS::Nurbs::SoNurbs27::calc_int_energy(
   // for isogeometric elements:
   //     o get knots
   //     o get weights
-  auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+  auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
   if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
@@ -1100,7 +1100,7 @@ double Discret::ELEMENTS::Nurbs::SoNurbs27::calc_int_energy(
   Core::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    auto* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }

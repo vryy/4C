@@ -381,6 +381,7 @@ void STR::TimInt::CreateFields()
     p.set("total time", timen_);
     p.set<const Core::UTILS::FunctionManager*>(
         "function_manager", &Global::Problem::Instance()->FunctionManager());
+    p.sublist("solver_params") = Global::Problem::Instance()->UMFPACKSolverParams();
 
     discret_->evaluate_dirichlet(p, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
@@ -1207,6 +1208,7 @@ void STR::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Vect
   p.set("total time", time);  // target time
   p.set<const Core::UTILS::FunctionManager*>(
       "function_manager", &Global::Problem::Instance()->FunctionManager());
+  p.sublist("solver_params") = Global::Problem::Instance()->UMFPACKSolverParams();
 
   // predicted Dirichlet values
   // \c dis then also holds prescribed new Dirichlet displacements

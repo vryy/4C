@@ -15,6 +15,7 @@
 #include "4C_fem_general_element_integration_select.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_parameter_std.hpp"
@@ -29,7 +30,6 @@
 #include "4C_mat_modpowerlaw.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_sutherland.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_utils_function.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -360,7 +360,7 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
     std::vector<Core::LinAlg::SerialDenseVector> mypknots(nsd_);
 
     bool zero_size =
-        Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->SurfaceNumber(),
+        Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->SurfaceNumber(),
             ele->parent_element()->Id(), discretization, mypknots, myknots, weights, normalfac);
     if (zero_size)
     {
@@ -640,7 +640,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
   if (IsNurbs<distype>::isnurbs)
   {
     bool zero_size =
-        Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->SurfaceNumber(),
+        Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->SurfaceNumber(),
             ele->parent_element()->Id(), discretization, mypknots, myknots, weights, normalfac);
     if (zero_size)
     {

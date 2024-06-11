@@ -12,12 +12,12 @@
  *----------------------------------------------------------------------*/
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_gauss_point_postprocess.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_fourieriso.hpp"
 #include "4C_mat_plasticelasthyper.hpp"
 #include "4C_mat_service.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_so3_element_service.hpp"
 #include "4C_so3_plast_ssn.hpp"
 #include "4C_so3_ssn_plast_fwd.hpp"
@@ -3300,10 +3300,10 @@ void Discret::ELEMENTS::So3Plast<distype>::get_nurbs_ele_info(Core::FE::Discreti
 
   if (dis == nullptr) dis = Global::Problem::Instance()->GetDis("structure").get();
 
-  dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(dis)->GetKnotVector()->GetEleKnots(
+  dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(dis)->GetKnotVector()->GetEleKnots(
       set_knots(), Id());
   for (int i = 0; i < nen_; ++i)
-    set_weights()(i) = dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[i])->W();
+    set_weights()(i) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[i])->W();
 }
 
 // template functions

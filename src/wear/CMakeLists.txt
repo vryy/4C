@@ -13,7 +13,6 @@ set(_dependencies
     global_data
     inpar
     mortar
-    nurbs_discret
     so3
     structure
     w1

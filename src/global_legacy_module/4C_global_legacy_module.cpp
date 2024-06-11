@@ -34,6 +34,7 @@
 #include "4C_elemag_diff_ele.hpp"
 #include "4C_elemag_ele.hpp"
 #include "4C_fem_general_immersed_node.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_hdg.hpp"
 #include "4C_fluid_ele_hdg_weak_comp.hpp"
@@ -109,7 +110,6 @@
 #include "4C_module_registry_callbacks.hpp"
 #include "4C_mortar_element.hpp"
 #include "4C_mortar_node.hpp"
-#include "4C_nurbs_discret_control_point.hpp"
 #include "4C_particle_engine_object.hpp"
 #include "4C_porofluidmultiphase_ele.hpp"
 #include "4C_poromultiphase_scatra_function.hpp"
@@ -176,7 +176,7 @@ namespace
     std::stringstream s;
 
     s << Core::Nodes::NodeType::Instance().Name() << " "
-      << Discret::Nurbs::ControlPointType::Instance().Name() << " "
+      << Core::FE::Nurbs::ControlPointType::Instance().Name() << " "
       << Core::Nodes::ImmersedNodeType::Instance().Name() << " "
       << CrossLinking::CrosslinkerNodeType::Instance().Name() << " "
       << Discret::MeshFree::MeshfreeMultiBinType::Instance().Name() << " "

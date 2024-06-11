@@ -14,9 +14,9 @@
 
 #include "4C_fem_general_utils_bspline.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_linalg_serialdensevector.hpp"
-#include "4C_nurbs_discret.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -21,6 +21,9 @@
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
+#include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_linalg_multiply.hpp"
@@ -28,9 +31,6 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_mortar_utils.hpp"
-#include "4C_nurbs_discret.hpp"
-#include "4C_nurbs_discret_control_point.hpp"
-#include "4C_nurbs_discret_knotvector.hpp"
 
 #include <Epetra_Vector.h>
 
@@ -303,7 +303,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
 
     if (isnurbs)
     {
-      Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(node);
+      Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(node);
 
       cnode->NurbsW() = cp->W();
     }
@@ -334,7 +334,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
 
     if (isnurbs)
     {
-      Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(node);
+      Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(node);
 
       cnode->NurbsW() = cp->W();
     }
@@ -402,10 +402,10 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
 
     if (isnurbs)
     {
-      Teuchos::RCP<Discret::Nurbs::NurbsDiscretization> nurbsdis =
-          Teuchos::rcp_dynamic_cast<Discret::Nurbs::NurbsDiscretization>(masterdis);
+      Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
+          Teuchos::rcp_dynamic_cast<Core::FE::Nurbs::NurbsDiscretization>(masterdis);
 
-      Teuchos::RCP<Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
       std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
@@ -439,10 +439,10 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
 
       if (isnurbs)
       {
-        Teuchos::RCP<Discret::Nurbs::NurbsDiscretization> nurbsdis =
-            Teuchos::rcp_dynamic_cast<Discret::Nurbs::NurbsDiscretization>(slavedis);
+        Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
+            Teuchos::rcp_dynamic_cast<Core::FE::Nurbs::NurbsDiscretization>(slavedis);
 
-        Teuchos::RCP<Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+        Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
         std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
         std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 

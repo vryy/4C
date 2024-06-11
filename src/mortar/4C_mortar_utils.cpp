@@ -10,14 +10,14 @@
 #include "4C_mortar_utils.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
+#include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
-#include "4C_nurbs_discret.hpp"
-#include "4C_nurbs_discret_control_point.hpp"
-#include "4C_nurbs_discret_knotvector.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -848,10 +848,10 @@ void Mortar::UTILS::create_volume_ghosting(const Core::FE::Discretization& dis_s
 void Mortar::UTILS::prepare_nurbs_element(Core::FE::Discretization& discret,
     Teuchos::RCP<Core::Elements::Element> ele, Teuchos::RCP<Mortar::Element> cele, int dim)
 {
-  Discret::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discret));
+  Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discret));
 
-  Teuchos::RCP<Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+  Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
   std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
   std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
@@ -875,7 +875,7 @@ void Mortar::UTILS::prepare_nurbs_element(Core::FE::Discretization& discret,
  *----------------------------------------------------------------------*/
 void Mortar::UTILS::prepare_nurbs_node(Core::Nodes::Node* node, Teuchos::RCP<Mortar::Node> mnode)
 {
-  Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(node);
+  Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(node);
 
   mnode->NurbsW() = cp->W();
 

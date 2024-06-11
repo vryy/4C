@@ -7,7 +7,6 @@ set(_dependencies
     core
     global_data
     inpar
-    nurbs_discret
     )
 
 four_c_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

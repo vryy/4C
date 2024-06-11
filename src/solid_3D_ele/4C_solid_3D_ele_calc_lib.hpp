@@ -19,10 +19,10 @@
 #include "4C_fem_general_utils_gauss_point_postprocess.hpp"
 #include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix_generators.hpp"
 #include "4C_mat_so3_material.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
@@ -168,7 +168,7 @@ namespace Discret::ELEMENTS
     if constexpr (Core::FE::is_nurbs<celltype>)
     {
       // Obtain the information required for a NURBS element
-      bool zero_size = Discret::Nurbs::GetMyNurbsKnotsAndWeights(
+      bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
           discretization, &ele, element_nodes.knots_, element_nodes.weights_);
       if (zero_size)
         FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size NURBS element.");

@@ -302,8 +302,8 @@ namespace
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Add the relevant nurbs information to the discretization.
-    Teuchos::RCP<Discret::Nurbs::NurbsDiscretization> structdis =
-        Teuchos::rcp(new Discret::Nurbs::NurbsDiscretization("structure", Teuchos::null, 3));
+    Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> structdis =
+        Teuchos::rcp(new Core::FE::Nurbs::NurbsDiscretization("structure", Teuchos::null, 3));
     Global::Problem::Instance()->AddDis("structure", structdis);
 
     // Get the geometry.

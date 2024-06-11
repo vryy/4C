@@ -8,15 +8,15 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#include "4C_nurbs_discret_apply_nurbs_initial_condition.hpp"
+#include "4C_fem_nurbs_discretization_initial_condition.hpp"
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_utils_function.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -78,8 +78,8 @@ namespace
   {
     // try to cast dis to a nurbs discretisation --- if possible, proceed
     // with setting initial conditions. Otherwise return.
-    Discret::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&dis);
+    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&dis);
 
     if (nurbsdis == nullptr)
     {
@@ -87,7 +87,7 @@ namespace
     }
 
     // get the knotvector from nurbs discretisation
-    Teuchos::RCP<Discret::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
+    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
 
     // get the processor ID from the communicator
     const int myrank = dis.Comm().MyPID();
@@ -225,8 +225,8 @@ namespace
 
           for (int inode = 0; inode < iel; ++inode)
           {
-            Discret::Nurbs::ControlPoint* cp =
-                dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+            Core::FE::Nurbs::ControlPoint* cp =
+                dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
             weights(inode) = cp->W();
           }
@@ -557,14 +557,14 @@ namespace
    of a separate solver!
 */
 /*----------------------------------------------------------------------*/
-void Discret::Nurbs::apply_nurbs_initial_condition(Core::FE::Discretization& dis,
+void Core::FE::Nurbs::apply_nurbs_initial_condition(Core::FE::Discretization& dis,
     const Teuchos::ParameterList& solverparams,
     const Core::UTILS::FunctionOfSpaceTime& start_function, Teuchos::RCP<Epetra_Vector> initialvals)
 {
   // try to cast dis to a nurbs discretisation --- if possible, proceed
   // with setting initial conditions. Otherwise return.
-  Discret::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&dis);
+  Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&dis);
 
   if (nurbsdis == nullptr)
   {

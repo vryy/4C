@@ -14,7 +14,7 @@
 #include "4C_fem_general_element_definition.hpp"
 #include "4C_fem_general_fiber_node.hpp"
 #include "4C_fem_general_immersed_node.hpp"
-#include "4C_nurbs_discret_control_point.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
 
 #include <istream>
 #include <utility>
@@ -167,8 +167,8 @@ void Core::IO::ReadNodes(const Core::IO::DatFileReader& reader,
           for (auto& dis : diss)
           {
             // create node/control point and add to discretization
-            Teuchos::RCP<Discret::Nurbs::ControlPoint> node =
-                Teuchos::rcp(new Discret::Nurbs::ControlPoint(cpid, coords, weight, myrank));
+            Teuchos::RCP<Core::FE::Nurbs::ControlPoint> node =
+                Teuchos::rcp(new Core::FE::Nurbs::ControlPoint(cpid, coords, weight, myrank));
             dis->AddNode(node);
           }
 

@@ -19,9 +19,9 @@ and other data are evaluated
 
 #include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_fem_general_element.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_nurbs_discret.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_fad.hpp"
 
@@ -395,7 +395,7 @@ namespace GEOMETRYPAIR
         ShapeFunctionData<t_nurbs9>& shape_function_data, const Core::Elements::Element* element)
     {
       const auto* discretization = Global::Problem::Instance()->GetDis("structure").get();
-      if (dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(discretization) == nullptr)
+      if (dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(discretization) == nullptr)
         FOUR_C_THROW(
             "Evaluation of the shape function data for nurbs requires a valid nurbs "
             "discretization "
@@ -409,7 +409,7 @@ namespace GEOMETRYPAIR
 
       std::vector<Core::LinAlg::SerialDenseVector> my_parent_knots(3);
       shape_function_data.myknots_.resize(2);
-      const bool zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(face_element,
+      const bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(face_element,
           face_element->FaceMasterNumber(), face_element->ParentElementId(), *(discretization),
           my_parent_knots, shape_function_data.myknots_, shape_function_data.weights_,
           shape_function_data.surface_normal_factor_);
@@ -428,12 +428,12 @@ namespace GEOMETRYPAIR
         ShapeFunctionData<t_nurbs27>& shape_function_data, const Core::Elements::Element* element)
     {
       const auto* discretization = Global::Problem::Instance()->GetDis("structure").get();
-      if (dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(discretization) == nullptr)
+      if (dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(discretization) == nullptr)
         FOUR_C_THROW(
             "Evaluation of the shape function data for nurbs requires a valid nurbs "
             "discretization pointer");
 
-      const bool zero_size = Discret::Nurbs::GetMyNurbsKnotsAndWeights(
+      const bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
           *discretization, element, shape_function_data.myknots_, shape_function_data.weights_);
       if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
     }

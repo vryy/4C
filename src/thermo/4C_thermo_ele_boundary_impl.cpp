@@ -18,9 +18,9 @@
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_fem_geometry_position_array.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_thermo.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_thermo_ele_action.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
@@ -1171,7 +1171,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::prepare_nurbs_eval(
   // get nurbs specific infos
   // cast to nurbs discretization
   const auto* nurbsdis =
-      dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+      dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
   if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   std::vector<Core::LinAlg::SerialDenseVector> parentknots(3);
@@ -1183,7 +1183,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::prepare_nurbs_eval(
 
   // get weights from cp's
   for (int inode = 0; inode < nen_; inode++)
-    weights_(inode) = dynamic_cast<const Discret::Nurbs::ControlPoint*>(ele->Nodes()[inode])->W();
+    weights_(inode) = dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(ele->Nodes()[inode])->W();
 }
 /*----------------------------------------------------------------------*/
 

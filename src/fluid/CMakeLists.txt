@@ -13,7 +13,6 @@ set(_dependencies
     inpar
     mat
     mortar
-    nurbs_discret
     poroelast
     red_airways
     )

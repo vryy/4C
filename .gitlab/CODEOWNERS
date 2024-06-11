@@ -216,8 +216,6 @@ mor/                       @baci/team_structure
 
 mortar/                    @baci/team_contact
 
-nurbs_discret/             @baci/team_discretization
-
 particle_algorithm/        @baci/team_particle
 
 particle_engine/           @baci/team_particle

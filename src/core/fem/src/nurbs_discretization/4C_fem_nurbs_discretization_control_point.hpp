@@ -13,8 +13,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef FOUR_C_NURBS_DISCRET_CONTROL_POINT_HPP
-#define FOUR_C_NURBS_DISCRET_CONTROL_POINT_HPP
+#ifndef FOUR_C_FEM_NURBS_DISCRETIZATION_CONTROL_POINT_HPP
+#define FOUR_C_FEM_NURBS_DISCRETIZATION_CONTROL_POINT_HPP
 
 #include "4C_config.hpp"
 
@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   namespace Nurbs
   {
@@ -85,14 +85,14 @@ namespace Discret
       \param old (in): The control point to copy
 
       */
-      ControlPoint(const Discret::Nurbs::ControlPoint& old);
+      ControlPoint(const Core::FE::Nurbs::ControlPoint& old);
 
       /*!
       \brief Deep copy the derived class and return
              pointer to it
 
       */
-      Discret::Nurbs::ControlPoint* Clone() const override;
+      Core::FE::Nurbs::ControlPoint* Clone() const override;
 
 
       /*!
@@ -157,7 +157,7 @@ namespace Discret
 
   }  // namespace Nurbs
 
-}  // namespace Discret
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

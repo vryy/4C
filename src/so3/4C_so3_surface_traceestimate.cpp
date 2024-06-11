@@ -12,13 +12,13 @@
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_densematrix_determinant.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_mat_fourieriso.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_mat_so3_material.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_so3_surface.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -196,7 +196,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
     {
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
       std::vector<Core::LinAlg::SerialDenseVector> boundaryknots(dim - 1);
-      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(
+      dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(
           Global::Problem::Instance()->GetDis("structure").get())
           ->GetKnotVector()
           ->get_boundary_ele_and_parent_knots(
@@ -204,7 +204,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
 
       Core::LinAlg::Matrix<Core::FE::num_nodes<dt_surf>, 1> weights, shapefcn;
       for (int i = 0; i < Core::FE::num_nodes<dt_surf>; ++i)
-        weights(i) = dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[i])->W();
+        weights(i) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[i])->W();
 
       Core::LinAlg::Matrix<2, 1> xi_surf;
       xi_surf(0) = ip.IP().qxg[gp][0];
@@ -255,7 +255,7 @@ void Discret::ELEMENTS::StructuralSurface::strains(
   if (dt_vol == Core::FE::CellType::nurbs27)
   {
     std::vector<Core::LinAlg::SerialDenseVector> knots;
-    dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(
+    dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(
         Global::Problem::Instance()->GetDis("structure").get())
         ->GetKnotVector()
         ->GetEleKnots(knots, ParentElementId());
@@ -263,7 +263,7 @@ void Discret::ELEMENTS::StructuralSurface::strains(
     Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 1> weights, shapefcn;
 
     for (int i = 0; i < Core::FE::num_nodes<dt_vol>; ++i)
-      weights(i) = dynamic_cast<Discret::Nurbs::ControlPoint*>(parent_element()->Nodes()[i])->W();
+      weights(i) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(parent_element()->Nodes()[i])->W();
 
     Core::FE::Nurbs::nurbs_get_3D_funct_deriv(shapefcn, deriv, xi, knots, weights, dt_vol);
   }

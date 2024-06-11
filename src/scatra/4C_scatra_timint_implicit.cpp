@@ -24,6 +24,8 @@
 #include "4C_fem_condition_periodic.hpp"
 #include "4C_fem_condition_selector.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
+#include "4C_fem_nurbs_discretization_initial_condition.hpp"
 #include "4C_fluid_rotsym_periodicbc_utils.hpp"
 #include "4C_fluid_turbulence_dyn_vreman.hpp"
 #include "4C_global_data.hpp"
@@ -39,8 +41,6 @@
 #include "4C_mat_list.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_scatra.hpp"
-#include "4C_nurbs_discret.hpp"
-#include "4C_nurbs_discret_apply_nurbs_initial_condition.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_ele_boundary_calc_elch_electrode_utils.hpp"
 #include "4C_scatra_ele_parameter_timint.hpp"
@@ -1798,7 +1798,7 @@ void ScaTra::ScaTraTimIntImpl::SetInitialField(
       const Teuchos::ParameterList& scatradyn = problem_->scalar_transport_dynamic_params();
       const int lstsolver = scatradyn.get<int>("LINEAR_SOLVER");
 
-      auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*discret_));
+      auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*discret_));
       if (nurbsdis != nullptr)
       {
         if (lstsolver == (-1))
@@ -1809,7 +1809,7 @@ void ScaTra::ScaTraTimIntImpl::SetInitialField(
               "for the least square problem. Maybe one should add a separate parameter for this.");
         }
 
-        Discret::Nurbs::apply_nurbs_initial_condition(*discret_, problem_->SolverParams(lstsolver),
+        Core::FE::Nurbs::apply_nurbs_initial_condition(*discret_, problem_->SolverParams(lstsolver),
             problem_->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1), phin_);
       }
 

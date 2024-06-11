@@ -72,9 +72,9 @@ void Core::FE::DiscretizationCreatorBase::create_nodes(const Core::FE::Discretiz
       const int gid = sourcenoderowmap->GID(i);
       if (rownodeset.find(gid) != rownodeset.end())
       {
-        Discret::Nurbs::ControlPoint* node_to_create =
-            dynamic_cast<Discret::Nurbs::ControlPoint*>(sourcedis.lRowNode(i));
-        targetdis.AddNode(Teuchos::rcp(new Discret::Nurbs::ControlPoint(
+        Core::FE::Nurbs::ControlPoint* node_to_create =
+            dynamic_cast<Core::FE::Nurbs::ControlPoint*>(sourcedis.lRowNode(i));
+        targetdis.AddNode(Teuchos::rcp(new Core::FE::Nurbs::ControlPoint(
             gid, node_to_create->X(), node_to_create->W(), myrank)));
       }
     }
@@ -212,21 +212,21 @@ void Core::FE::DiscretizationCreatorBase::finalize(
   // extra work for NURBS discretizations
 
   // try to cast sourcedis to NurbsDiscretisation
-  const Discret::Nurbs::NurbsDiscretization* nurbsdis_ptr =
-      dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&sourcedis);
+  const Core::FE::Nurbs::NurbsDiscretization* nurbsdis_ptr =
+      dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&sourcedis);
 
   if (nurbsdis_ptr != nullptr)
   {
-    Discret::Nurbs::NurbsDiscretization* targetnurbsdis_ptr =
-        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&targetdis);
+    Core::FE::Nurbs::NurbsDiscretization* targetnurbsdis_ptr =
+        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&targetdis);
 
     if (targetnurbsdis_ptr == nullptr)
     {
       FOUR_C_THROW("Nurbs source discretization but no nurbs target discretization\n");
     }
 
-    Teuchos::RCP<Discret::Nurbs::Knotvector> knots =
-        Teuchos::rcp(new Discret::Nurbs::Knotvector(*(nurbsdis_ptr->GetKnotVector())));
+    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots =
+        Teuchos::rcp(new Core::FE::Nurbs::Knotvector(*(nurbsdis_ptr->GetKnotVector())));
 
     // reset offsets
     int smallest_gid_in_dis = targetnurbsdis_ptr->ElementRowMap()->MinAllGID();

@@ -21,7 +21,6 @@ set(_dependencies
     membrane
     module_registry
     mortar
-    nurbs_discret
     particle_engine
     porofluidmultiphase_ele
     poromultiphase_scatra

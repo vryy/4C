@@ -15,9 +15,9 @@
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
@@ -120,7 +120,7 @@ namespace
     Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, 1> weights(true);
     std::vector<Core::LinAlg::SerialDenseVector> myknots(true);
 
-    const bool zero_size = Discret::Nurbs::GetMyNurbsKnotsAndWeights(dis, &ele, myknots, weights);
+    const bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(dis, &ele, myknots, weights);
     if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
 
 

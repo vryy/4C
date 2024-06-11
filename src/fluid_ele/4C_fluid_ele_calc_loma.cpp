@@ -11,11 +11,11 @@
 
 #include "4C_fluid_ele_calc_loma.hpp"
 
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_parameter_std.hpp"
 #include "4C_fluid_ele_parameter_timint.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -175,7 +175,7 @@ int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Discret::ELEMENTS:
   {
     // access knots and weights for this element
     bool zero_size =
-        Discret::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, my::myknots_, my::weights_);
+        Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, my::myknots_, my::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if (zero_size) return (0);

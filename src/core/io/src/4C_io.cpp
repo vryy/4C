@@ -12,11 +12,11 @@
 #include "4C_io.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_legacy_table.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <algorithm>
@@ -1430,13 +1430,13 @@ void Core::IO::DiscretizationWriter::write_knotvector() const
   if (binio_)
   {
     // try a dynamic cast of the discretisation to a nurbs discretisation
-    Discret::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(dis_.get());
+    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(dis_.get());
 
     if (nurbsdis != nullptr)
     {
       // get knotvector from nurbsdis
-      Teuchos::RCP<Discret::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
 
       // put knotvector into block
       Core::Communication::PackBuffer block;

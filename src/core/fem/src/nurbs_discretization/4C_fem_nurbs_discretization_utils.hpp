@@ -8,16 +8,16 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef FOUR_C_NURBS_DISCRET_NURBS_UTILS_HPP
-#define FOUR_C_NURBS_DISCRET_NURBS_UTILS_HPP
+#ifndef FOUR_C_FEM_NURBS_DISCRETIZATION_UTILS_HPP
+#define FOUR_C_FEM_NURBS_DISCRETIZATION_UTILS_HPP
 
 #include "4C_config.hpp"
 
-#include "4C_nurbs_discret.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   namespace Nurbs
   {
@@ -40,8 +40,8 @@ namespace Discret
         WG& weights)
     {
       // try to cast dis to a nurbs discretisation
-      const Discret::Nurbs::NurbsDiscretization* nurbsdis =
-          dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&(dis));
+      const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+          dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&(dis));
       if (nurbsdis == nullptr) FOUR_C_THROW("Received discretization which is not Nurbs!");
 
       // get local knot vector entries and check for zero sized elements
@@ -58,8 +58,8 @@ namespace Discret
       const int nen = ele->num_node();
       for (int inode = 0; inode < nen; inode++)
       {
-        const Discret::Nurbs::ControlPoint* cp =
-            dynamic_cast<const Discret::Nurbs::ControlPoint*>(nodes[inode]);
+        const Core::FE::Nurbs::ControlPoint* cp =
+            dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
         weights(inode) = cp->W();
       }
 
@@ -113,10 +113,10 @@ namespace Discret
         std::vector<Core::LinAlg::SerialDenseVector>& myknots, WG& weights, double& normalfac)
     {
       // get knotvector(s)
-      const Discret::Nurbs::NurbsDiscretization* nurbsdis =
-          dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+      const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+          dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
-      Teuchos::RCP<const Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      Teuchos::RCP<const Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
 
       bool zero_size = knots->get_boundary_ele_and_parent_knots(
           mypknots, myknots, normalfac, parenteleid, localsurfaceid);
@@ -132,8 +132,8 @@ namespace Discret
       const int boundarynen = boundaryele->num_node();
       for (int inode = 0; inode < boundarynen; inode++)
       {
-        const Discret::Nurbs::ControlPoint* cp =
-            dynamic_cast<const Discret::Nurbs::ControlPoint*>(nodes[inode]);
+        const Core::FE::Nurbs::ControlPoint* cp =
+            dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
         weights(inode) = cp->W();
       }
 
@@ -167,10 +167,10 @@ namespace Discret
         double& normalfac)
     {
       // get knotvector(s)
-      const Discret::Nurbs::NurbsDiscretization* nurbsdis =
-          dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+      const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+          dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
-      Teuchos::RCP<const Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      Teuchos::RCP<const Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
 
       bool zero_size = knots->get_boundary_ele_and_parent_knots(
           mypknots, myknots, normalfac, parentele->Id(), localsurfaceid);
@@ -186,8 +186,8 @@ namespace Discret
       const int boundarynen = boundaryele->num_node();
       for (int inode = 0; inode < boundarynen; inode++)
       {
-        Discret::Nurbs::ControlPoint* cp =
-            dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+        Core::FE::Nurbs::ControlPoint* cp =
+            dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
         weights(inode) = cp->W();
       }
 
@@ -195,8 +195,8 @@ namespace Discret
       const int pnen = parentele->num_node();
       for (int inode = 0; inode < pnen; inode++)
       {
-        Discret::Nurbs::ControlPoint* cp =
-            dynamic_cast<Discret::Nurbs::ControlPoint*>(pnodes[inode]);
+        Core::FE::Nurbs::ControlPoint* cp =
+            dynamic_cast<Core::FE::Nurbs::ControlPoint*>(pnodes[inode]);
         pweights(inode) = cp->W();
       }
 
@@ -206,7 +206,7 @@ namespace Discret
 
   }  // namespace Nurbs
 
-}  // namespace Discret
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

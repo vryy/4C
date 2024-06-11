@@ -31,13 +31,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   namespace Nurbs
   {
     class Knotvector;
   }
-}  // namespace Discret
+}  // namespace Core::FE
 
 namespace Core::IO
 {
@@ -129,7 +129,7 @@ namespace Core::IO
       \param  disknots       (out): node vector coordinates
 
     */
-    void ReadKnots(const std::string& name, Teuchos::RCP<Discret::Nurbs::Knotvector>& disknots);
+    void ReadKnots(const std::string& name, Teuchos::RCP<Core::FE::Nurbs::Knotvector>& disknots);
 
 
     /// print unknown section names found in the input file

@@ -13,13 +13,13 @@
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_structporo.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_w1.hpp"
@@ -166,10 +166,10 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
     }
     else if (distype == Core::FE::CellType::nurbs2 || distype == Core::FE::CellType::nurbs3)
     {
-      Discret::Nurbs::NurbsDiscretization* nurbsdis =
-          dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+      Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+          dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
-      Teuchos::RCP<Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(2);
       std::vector<Core::LinAlg::SerialDenseVector> boundknots(1);
 
@@ -182,8 +182,8 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
       Core::LinAlg::SerialDenseVector weights(num_node());
       for (int inode = 0; inode < num_node(); ++inode)
       {
-        Discret::Nurbs::ControlPoint* cp =
-            dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
+        Core::FE::Nurbs::ControlPoint* cp =
+            dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
         weights(inode) = cp->W();
       }
 

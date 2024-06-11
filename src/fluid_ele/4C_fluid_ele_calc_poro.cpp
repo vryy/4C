@@ -15,6 +15,7 @@
 #include "4C_fem_general_utils_gder2.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_fem_geometry_position_array.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_parameter_poro.hpp"
 #include "4C_fluid_ele_poro.hpp"
@@ -24,7 +25,6 @@
 #include "4C_mat_fluidporo.hpp"
 #include "4C_mat_structporo.hpp"
 #include "4C_mat_stvenantkirchhoff.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_utils_function.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -176,7 +176,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(Discret::ELEMENTS::Fl
   if (Base::isNurbs_)
   {
     // access knots and weights for this element
-    bool zero_size = Discret::Nurbs::GetMyNurbsKnotsAndWeights(
+    bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
         discretization, ele, Base::myknots_, Base::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
@@ -335,7 +335,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_od(Discret::ELEMENTS:
   if (Base::isNurbs_)
   {
     // access knots and weights for this element
-    bool zero_size = Discret::Nurbs::GetMyNurbsKnotsAndWeights(
+    bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
         discretization, ele, Base::myknots_, Base::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
@@ -6147,7 +6147,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_volume(Teuchos::Parame
   if (Base::isNurbs_)
   {
     // access knots and weights for this element
-    bool zero_size = Discret::Nurbs::GetMyNurbsKnotsAndWeights(
+    bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
         discretization, ele, Base::myknots_, Base::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here

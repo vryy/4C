@@ -7,7 +7,6 @@ set(_dependencies
     global_data
     inpar
     mat
-    nurbs_discret
     so3
     structure_new
     )

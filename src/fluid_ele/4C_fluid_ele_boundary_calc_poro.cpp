@@ -15,6 +15,7 @@
 #include "4C_fem_general_element_integration_select.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_parameter_poro.hpp"
@@ -22,7 +23,6 @@
 #include "4C_mat_fluidporo.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_structporo.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_poroelast_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -1925,7 +1925,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   // element and surface element, get weights
   if (IsNurbs<distype>::isnurbs)
   {
-    bool zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
+    bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->SurfaceNumber(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
@@ -2636,7 +2636,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   // element and surface element, get weights
   if (IsNurbs<distype>::isnurbs)
   {
-    bool zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
+    bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->SurfaceNumber(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
@@ -2949,7 +2949,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
   if (IsNurbs<distype>::isnurbs)
   {
     bool zero_size =
-        Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->SurfaceNumber(),
+        Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->SurfaceNumber(),
             ele->parent_element()->Id(), discretization, mypknots, myknots, weights, normalfac);
     if (zero_size)
     {
@@ -3338,7 +3338,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
   // element and surface element, get weights
   if (IsNurbs<distype>::isnurbs)
   {
-    bool zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
+    bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->SurfaceNumber(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
@@ -3731,7 +3731,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   // element and surface element, get weights
   if (IsNurbs<distype>::isnurbs)
   {
-    bool zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
+    bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->SurfaceNumber(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
@@ -4320,7 +4320,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   // element and surface element, get weights
   if (IsNurbs<distype>::isnurbs)
   {
-    bool zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
+    bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->SurfaceNumber(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
@@ -4682,7 +4682,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   // element and surface element, get weights
   if (IsNurbs<distype>::isnurbs)
   {
-    bool zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
+    bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->SurfaceNumber(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)

@@ -12,9 +12,9 @@
 
 #include "4C_io_inputreader.hpp"
 
+#include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
-#include "4C_nurbs_discret_knotvector.hpp"
 #include "4C_utils_string.hpp"
 
 #include <Teuchos_Time.hpp>
@@ -426,7 +426,7 @@ namespace Core::IO
   /// read a knotvector section (for isogeometric analysis)
   //----------------------------------------------------------------------
   void DatFileReader::ReadKnots(
-      const std::string& name, Teuchos::RCP<Discret::Nurbs::Knotvector>& disknots)
+      const std::string& name, Teuchos::RCP<Core::FE::Nurbs::Knotvector>& disknots)
   {
     // io to shell
     const int myrank = comm_->MyPID();
@@ -595,7 +595,7 @@ namespace Core::IO
     //--------------------------------------------------------------------
 
     // allocate knotvector for this dis
-    disknots = Teuchos::rcp(new Discret::Nurbs::Knotvector(nurbs_dim, npatches));
+    disknots = Teuchos::rcp(new Core::FE::Nurbs::Knotvector(nurbs_dim, npatches));
 
     // make sure that we have some Knotvector object to fill
     if (disknots == Teuchos::null)

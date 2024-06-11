@@ -13,20 +13,20 @@
 
 *----------------------------------------------------------------------*/
 
-#include "4C_nurbs_discret_control_point.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::Nurbs::ControlPointType Discret::Nurbs::ControlPointType::instance_;
+Core::FE::Nurbs::ControlPointType Core::FE::Nurbs::ControlPointType::instance_;
 
 
-Core::Communication::ParObject* Discret::Nurbs::ControlPointType::Create(
+Core::Communication::ParObject* Core::FE::Nurbs::ControlPointType::Create(
     const std::vector<char>& data)
 {
   std::vector<double> dummycoord(3, 999.0);
   double dummyweight = 999.;
-  Discret::Nurbs::ControlPoint* object =
-      new Discret::Nurbs::ControlPoint(-1, dummycoord, dummyweight, -1);
+  Core::FE::Nurbs::ControlPoint* object =
+      new Core::FE::Nurbs::ControlPoint(-1, dummycoord, dummyweight, -1);
   object->Unpack(data);
   return object;
 }
@@ -34,7 +34,7 @@ Core::Communication::ParObject* Discret::Nurbs::ControlPointType::Create(
 /*
   Standard ctor
  */
-Discret::Nurbs::ControlPoint::ControlPoint(
+Core::FE::Nurbs::ControlPoint::ControlPoint(
     int id, const std::vector<double>& coords, const double weight, const int owner)
     : Core::Nodes::Node(id, coords, owner), w_(weight)
 {
@@ -47,7 +47,7 @@ Discret::Nurbs::ControlPoint::ControlPoint(
   Makes a deep copy of a control point
 
 */
-Discret::Nurbs::ControlPoint::ControlPoint(const Discret::Nurbs::ControlPoint& old)
+Core::FE::Nurbs::ControlPoint::ControlPoint(const Core::FE::Nurbs::ControlPoint& old)
     : Core::Nodes::Node(old), w_(old.W())
 {
   return;
@@ -57,9 +57,9 @@ Discret::Nurbs::ControlPoint::ControlPoint(const Discret::Nurbs::ControlPoint& o
   Deep copy the derived class and return pointer to it
 
 */
-Discret::Nurbs::ControlPoint* Discret::Nurbs::ControlPoint::Clone() const
+Core::FE::Nurbs::ControlPoint* Core::FE::Nurbs::ControlPoint::Clone() const
 {
-  Discret::Nurbs::ControlPoint* newcp = new Discret::Nurbs::ControlPoint(*this);
+  Core::FE::Nurbs::ControlPoint* newcp = new Core::FE::Nurbs::ControlPoint(*this);
 
   return newcp;
 }
@@ -71,7 +71,7 @@ Discret::Nurbs::ControlPoint* Discret::Nurbs::ControlPoint::Clone() const
   Pack and Unpack are used to communicate this control point
 
 */
-void Discret::Nurbs::ControlPoint::Pack(Core::Communication::PackBuffer& data) const
+void Core::FE::Nurbs::ControlPoint::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -92,7 +92,7 @@ void Discret::Nurbs::ControlPoint::Pack(Core::Communication::PackBuffer& data) c
 
   Pack and Unpack are used to communicate this control point
 */
-void Discret::Nurbs::ControlPoint::Unpack(const std::vector<char>& data)
+void Core::FE::Nurbs::ControlPoint::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -111,7 +111,7 @@ void Discret::Nurbs::ControlPoint::Unpack(const std::vector<char>& data)
 /*
   Print this control point
 */
-void Discret::Nurbs::ControlPoint::Print(std::ostream& os) const
+void Core::FE::Nurbs::ControlPoint::Print(std::ostream& os) const
 {
   os << "Control Point :";
   Core::Nodes::Node::Print(os);

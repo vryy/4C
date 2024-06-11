@@ -9,12 +9,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "4C_nurbs_discret.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 
 #include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
-#include "4C_global_data.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -22,8 +22,8 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_utils_function.hpp"
+#include "4C_utils_function_manager.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_Time.hpp>
@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/08|
  *----------------------------------------------------------------------*/
-Discret::Nurbs::NurbsDiscretization::NurbsDiscretization(
+Core::FE::Nurbs::NurbsDiscretization::NurbsDiscretization(
     const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
     : Core::FE::Discretization::Discretization(name, comm, n_dim), knots_(Teuchos::null)
 {
@@ -44,14 +44,14 @@ Discret::Nurbs::NurbsDiscretization::NurbsDiscretization(
 /*----------------------------------------------------------------------*
  |  add a knotvector to the discretization (public)          gammi 05/08|
  *----------------------------------------------------------------------*/
-void Discret::Nurbs::NurbsDiscretization::SetKnotVector(
-    Teuchos::RCP<Discret::Nurbs::Knotvector> knots)
+void Core::FE::Nurbs::NurbsDiscretization::SetKnotVector(
+    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots)
 {
   if (knots == Teuchos::null)
   {
     FOUR_C_THROW(
         "You're trying to set an invalid knotvector in the "
-        "Discret::Nurbs::NurbsDiscretization "
+        "Core::FE::Nurbs::NurbsDiscretization "
         "'%s'. The given know vector is a null vector and can't be set as such.",
         (this->Name()).c_str());
   }
@@ -64,13 +64,13 @@ void Discret::Nurbs::NurbsDiscretization::SetKnotVector(
  |  get a pointer to knotvector from the discretization         (public)|
  |                                                           gammi 05/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Nurbs::Knotvector> Discret::Nurbs::NurbsDiscretization::GetKnotVector()
+Teuchos::RCP<Core::FE::Nurbs::Knotvector> Core::FE::Nurbs::NurbsDiscretization::GetKnotVector()
 {
   if (knots_ == Teuchos::null)
   {
     FOUR_C_THROW(
         "You're trying to access the NURBS knot vector in the "
-        "Discret::Nurbs::NurbsDiscretization "
+        "Core::FE::Nurbs::NurbsDiscretization "
         "'%s'. The required knot vector is a null vector and can't be accessed as such.",
         (this->Name()).c_str());
   }
@@ -82,14 +82,14 @@ Teuchos::RCP<Discret::Nurbs::Knotvector> Discret::Nurbs::NurbsDiscretization::Ge
  |  get a pointer to knotvector from the discretization         (public)|
  |  (const version, read-only)                               gammi 05/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Discret::Nurbs::Knotvector> Discret::Nurbs::NurbsDiscretization::GetKnotVector()
-    const
+Teuchos::RCP<const Core::FE::Nurbs::Knotvector>
+Core::FE::Nurbs::NurbsDiscretization::GetKnotVector() const
 {
   if (knots_ == Teuchos::null)
   {
     FOUR_C_THROW(
         "You're trying to access the NURBS knot vector in the "
-        "Discret::Nurbs::NurbsDiscretization "
+        "Core::FE::Nurbs::NurbsDiscretization "
         "'%s'. The required knot vector is a null vector and can't be accessed as such.",
         (this->Name()).c_str());
   }
@@ -98,7 +98,7 @@ Teuchos::RCP<const Discret::Nurbs::Knotvector> Discret::Nurbs::NurbsDiscretizati
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
+void Core::FE::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, Core::FE::UTILS::Dbc::DbcInfo& info,
     Teuchos::RCP<std::set<int>>* dbcgids) const
@@ -134,8 +134,8 @@ void Discret::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
   dbcgids_nurbs[set_col] = Teuchos::rcp<std::set<int>>(new std::set<int>());
 
   // create a new toggle vector with column layout
-  const Discret::Nurbs::NurbsDiscretization* discret_nurbs =
-      dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&discret);
+  const Core::FE::Nurbs::NurbsDiscretization* discret_nurbs =
+      dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&discret);
   if (not discret_nurbs) FOUR_C_THROW("Dynamic cast failed!");
 
   // build dummy column toggle vector and auxiliary vectors
@@ -149,7 +149,7 @@ void Discret::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
@@ -168,8 +168,8 @@ void Discret::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterLi
   const int myrank = discret.Comm().MyPID();
   if (myrank == 0) std::cout << "calculating least squares Dirichlet condition in ... ";
 
-  const Discret::Nurbs::NurbsDiscretization& nurbs_dis =
-      static_cast<const Discret::Nurbs::NurbsDiscretization&>(discret);
+  const Core::FE::Nurbs::NurbsDiscretization& nurbs_dis =
+      static_cast<const Core::FE::Nurbs::NurbsDiscretization&>(discret);
 
   // create map extractor to always (re)build dbcmapextractor which is needed later
   Teuchos::RCP<Core::LinAlg::MapExtractor> auxdbcmapextractor =
@@ -309,7 +309,7 @@ void Discret::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterLi
     {
       Teuchos::RCP<Core::Elements::Element> actele = curr->second;
 
-      static const int probdim = Global::Problem::Instance()->NDim();
+      static const int probdim = discret.n_dim();
       const Core::FE::CellType distype = actele->Shape();
       const int dim = Core::FE::getDimension(distype);
       const bool isboundary = (dim != probdim);
@@ -326,13 +326,13 @@ void Discret::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterLi
             Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(actele, true);
         double normalfac = 0.0;
         std::vector<Core::LinAlg::SerialDenseVector> pknots(probdim);
-        zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(actele.get(),
+        zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(actele.get(),
             faceele->FaceMasterNumber(), faceele->parent_element()->Id(), discret, pknots, eleknots,
             weights, normalfac);
       }
       else
         zero_size =
-            Discret::Nurbs::GetMyNurbsKnotsAndWeights(discret, actele.get(), eleknots, weights);
+            Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discret, actele.get(), eleknots, weights);
 
       // nothing to be done for a zero sized element
       if (zero_size)
@@ -386,28 +386,34 @@ void Discret::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterLi
       if (isboundary) switch (distype)
         {
           case Core::FE::CellType::nurbs2:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs2>(
-                actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs2>(actele,
+                &eleknots, lm, funct, val, deg, time, elemass, elerhs,
+                *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs3:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs3>(
-                actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs3>(actele,
+                &eleknots, lm, funct, val, deg, time, elemass, elerhs,
+                *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs4:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs4>(
-                actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs4>(actele,
+                &eleknots, lm, funct, val, deg, time, elemass, elerhs,
+                *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs9:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs9>(
-                actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs9>(actele,
+                &eleknots, lm, funct, val, deg, time, elemass, elerhs,
+                *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs8:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs8>(
-                actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs8>(actele,
+                &eleknots, lm, funct, val, deg, time, elemass, elerhs,
+                *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs27:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs27>(
-                actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs27>(actele,
+                &eleknots, lm, funct, val, deg, time, elemass, elerhs,
+                *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           default:
             FOUR_C_THROW("invalid element shape for least squares dirichlet evaluation: %s",
@@ -418,28 +424,34 @@ void Discret::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterLi
         switch (distype)
         {
           case Core::FE::CellType::nurbs2:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs2>(
-                actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs2>(actele,
+                &eleknots, lm, funct, val, deg, time, elemass, elerhs,
+                *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs3:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs3>(
-                actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs3>(actele,
+                &eleknots, lm, funct, val, deg, time, elemass, elerhs,
+                *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs4:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs4>(
-                actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs4>(actele,
+                &eleknots, lm, funct, val, deg, time, elemass, elerhs,
+                *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs9:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs9>(
-                actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs9>(actele,
+                &eleknots, lm, funct, val, deg, time, elemass, elerhs,
+                *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs8:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs8>(
-                actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs8>(actele,
+                &eleknots, lm, funct, val, deg, time, elemass, elerhs,
+                *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs27:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs27>(
-                actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs27>(actele,
+                &eleknots, lm, funct, val, deg, time, elemass, elerhs,
+                *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           default:
             FOUR_C_THROW("invalid element shape for least squares dirichlet evaluation: %s",
@@ -465,7 +477,7 @@ void Discret::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterLi
   // Owing to experience a very accurate solution has to be enforced here!
   // Thus, we allocate an own solver with VERY strict tolerance!
   // One could think of verifiying an extra solver in the input file...
-  Teuchos::ParameterList p = Global::Problem::Instance()->UMFPACKSolverParams();
+  const Teuchos::ParameterList& p = params.sublist("solver_params");
   //  const double origtol = p.get<double>("AZTOL");
   //  const double newtol  = 1.0e-11;
   //  p.set("AZTOL",newtol);
@@ -510,12 +522,13 @@ void Discret::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterLi
  |  evaluate Dirichlet conditions (public)                   vuong 08/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
+void Core::FE::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
     Teuchos::RCP<Core::Elements::Element> actele,
     const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
     const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
     const double time, Core::LinAlg::SerialDenseMatrix& elemass,
-    std::vector<Core::LinAlg::SerialDenseVector>& elerhs) const
+    std::vector<Core::LinAlg::SerialDenseVector>& elerhs,
+    const Core::UTILS::FunctionManager& function_manager) const
 {
   if (deg + 1 != elerhs.size())
     FOUR_C_THROW("given degree of time derivative does not match number or rhs vectors!");
@@ -548,7 +561,7 @@ void Discret::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
 
   for (int inode = 0; inode < nen; ++inode)
   {
-    Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+    Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
@@ -610,9 +623,9 @@ void Discret::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
       if (funct_num > 0)
       {
         // important: position has to have always three components!!
-        functimederivfac = Global::Problem::Instance()
-                               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
-                               .evaluate_time_derivative(position.values(), time, deg, rr);
+        functimederivfac =
+            function_manager.FunctionById<Core::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
+                .evaluate_time_derivative(position.values(), time, deg, rr);
       }
 
       // apply factors to Dirichlet value
@@ -652,12 +665,13 @@ void Discret::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
  |  evaluate Dirichlet conditions (public)                   vuong 08/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
+void Core::FE::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
     Teuchos::RCP<Core::Elements::Element> actele,
     const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
     const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
     const double time, Core::LinAlg::SerialDenseMatrix& elemass,
-    std::vector<Core::LinAlg::SerialDenseVector>& elerhs) const
+    std::vector<Core::LinAlg::SerialDenseVector>& elerhs,
+    const Core::UTILS::FunctionManager& function_manager) const
 {
   if (deg + 1 != elerhs.size())
     FOUR_C_THROW("given degree of time derivative does not match number or rhs vectors!");
@@ -689,7 +703,7 @@ void Discret::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
 
   for (int inode = 0; inode < nen; ++inode)
   {
-    Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+    Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
@@ -762,12 +776,11 @@ void Discret::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
       if (funct_num > 0)
       {
         // important: position has to have always three components!!
-        functimederivfac = Global::Problem::Instance()
-                               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
-                               .evaluate_time_derivative(position.values(), time, deg, rr);
+        functimederivfac =
+            function_manager.FunctionById<Core::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
+                .evaluate_time_derivative(position.values(), time, deg, rr);
 
-        functfac = Global::Problem::Instance()
-                       ->FunctionById<Core::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
+        functfac = function_manager.FunctionById<Core::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
                        .Evaluate(position.values(), time, rr);
       }
 

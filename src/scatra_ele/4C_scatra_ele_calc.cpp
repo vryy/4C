@@ -14,6 +14,7 @@
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_fem_general_utils_gder2.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
@@ -22,7 +23,6 @@
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_scatra.hpp"
 #include "4C_mat_scatra_multiscale.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
 #include "4C_scatra_ele_parameter_timint.hpp"
@@ -101,11 +101,11 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
   read_element_coordinates(ele);
 
   // Now do the nurbs specific stuff (for isogeometric elements)
-  if (Discret::Nurbs::IsNurbs(distype))
+  if (Core::FE::Nurbs::IsNurbs(distype))
   {
     // access knots and weights for this element
     bool zero_size =
-        Discret::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, myknots_, weights_);
+        Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, myknots_, weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if (zero_size) return -1;
@@ -994,7 +994,7 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_i
 
   if (nsd_ == nsd_ele_)  // standard case
   {
-    if (not Discret::Nurbs::IsNurbs(distype))
+    if (not Core::FE::Nurbs::IsNurbs(distype))
     {
       // shape functions and their first derivatives
       Core::FE::shape_function<distype>(xsi_, funct_);
@@ -1043,7 +1043,7 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_i
   {
     static Core::LinAlg::Matrix<nsd_ele_, nen_> deriv_red;
 
-    if (not Discret::Nurbs::IsNurbs(distype))
+    if (not Core::FE::Nurbs::IsNurbs(distype))
     {
       // shape functions and their first derivatives
       Core::FE::shape_function<distype>(xsi_, funct_);

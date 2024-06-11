@@ -11,8 +11,8 @@
 
 #include "4C_fem_discretization_hdg.hpp"
 #include "4C_fem_discretization_utils.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_linalg_mapextractor.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_manager.hpp"
 
@@ -41,8 +41,8 @@ Teuchos::RCP<const Core::FE::UTILS::Dbc> Core::FE::UTILS::BuildDbc(
     return Teuchos::rcp<const Core::FE::UTILS::Dbc>(new const Core::FE::UTILS::DbcHDG());
 
   // Nurbs discretization
-  if (dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(discret_ptr) != nullptr)
-    return Teuchos::rcp<const Core::FE::UTILS::Dbc>(new const Discret::UTILS::DbcNurbs());
+  if (dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(discret_ptr) != nullptr)
+    return Teuchos::rcp<const Core::FE::UTILS::Dbc>(new const Core::FE::UTILS::DbcNurbs());
 
   // default case
   return Teuchos::rcp<const Core::FE::UTILS::Dbc>(new const Core::FE::UTILS::Dbc());

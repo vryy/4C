@@ -8,15 +8,15 @@
 /*---------------------------------------------------------------------*/
 #include "4C_mortar_strategy_factory.hpp"
 
+#include "4C_fem_nurbs_discretization.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
+#include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_mortar_element.hpp"
 #include "4C_mortar_interface.hpp"
-#include "4C_nurbs_discret.hpp"
-#include "4C_nurbs_discret_control_point.hpp"
-#include "4C_nurbs_discret_knotvector.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -174,11 +174,11 @@ void Mortar::STRATEGY::Factory::CheckDimension() const
 void Mortar::STRATEGY::Factory::prepare_nurbs_element(const Core::FE::Discretization& discret,
     Teuchos::RCP<Core::Elements::Element> ele, Teuchos::RCP<Mortar::Element> cele) const
 {
-  const Discret::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&(discret));
+  const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&(discret));
   if (nurbsdis == nullptr) FOUR_C_THROW("Dynamic cast failed!");
 
-  Teuchos::RCP<const Discret::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
+  Teuchos::RCP<const Core::FE::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
   std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim());
   std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim() - 1);
 
@@ -203,7 +203,8 @@ void Mortar::STRATEGY::Factory::prepare_nurbs_element(const Core::FE::Discretiza
 void Mortar::STRATEGY::Factory::prepare_nurbs_node(
     const Core::Nodes::Node* node, Teuchos::RCP<Mortar::Node> mnode) const
 {
-  const Discret::Nurbs::ControlPoint* cp = dynamic_cast<const Discret::Nurbs::ControlPoint*>(node);
+  const Core::FE::Nurbs::ControlPoint* cp =
+      dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(node);
 
   mnode->NurbsW() = cp->W();
 

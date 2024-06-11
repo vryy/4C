@@ -11,10 +11,10 @@
 #include "4C_fem_discretization.hpp"  // for time curve in body force
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_geometry_position_array.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"  // consistency check of formulation and material
 #include "4C_mat_elchmat.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_ele_calc_elch.hpp"

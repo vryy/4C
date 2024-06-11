@@ -23,13 +23,13 @@ and Johannes Kremheller, Originates from Adapter::CouplingNonLinMortar
 #include "4C_contact_node.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
+#include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_sparsematrix.hpp"
-#include "4C_nurbs_discret.hpp"
-#include "4C_nurbs_discret_control_point.hpp"
-#include "4C_nurbs_discret_knotvector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -164,10 +164,10 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
 
     if (isnurbs)
     {
-      Teuchos::RCP<Discret::Nurbs::NurbsDiscretization> nurbsdis =
-          Teuchos::rcp_dynamic_cast<Discret::Nurbs::NurbsDiscretization>(masterdis);
+      Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
+          Teuchos::rcp_dynamic_cast<Core::FE::Nurbs::NurbsDiscretization>(masterdis);
 
-      Teuchos::RCP<Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
       std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
@@ -232,10 +232,10 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
 
     if (isnurbs)
     {
-      Teuchos::RCP<Discret::Nurbs::NurbsDiscretization> nurbsdis =
-          Teuchos::rcp_dynamic_cast<Discret::Nurbs::NurbsDiscretization>(slavedis);
+      Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
+          Teuchos::rcp_dynamic_cast<Core::FE::Nurbs::NurbsDiscretization>(slavedis);
 
-      Teuchos::RCP<Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
       std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 

@@ -9,7 +9,6 @@ set(_dependencies
     global_data
     inpar
     mat
-    nurbs_discret
     poroelast
     poroelast_scatra
     so3

@@ -27,13 +27,13 @@
 #include "4C_contact_strategy_factory.hpp"
 #include "4C_contact_utils.hpp"
 #include "4C_contact_wear_interface.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
+#include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ale.hpp"
 #include "4C_inpar_wear.hpp"
 #include "4C_mortar_manager_base.hpp"
-#include "4C_nurbs_discret.hpp"
-#include "4C_nurbs_discret_control_point.hpp"
-#include "4C_nurbs_discret_knotvector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -369,7 +369,7 @@ void Wear::Algorithm::create_material_interface()
           // get nurbs weight!
           if (cparams.get<bool>("NURBS") == true)
           {
-            Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(node);
+            Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(node);
 
             cnode->NurbsW() = cp->W();
           }
@@ -409,7 +409,7 @@ void Wear::Algorithm::create_material_interface()
           // get nurbs weight!
           if (cparams.get<bool>("NURBS") == true)
           {
-            Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(node);
+            Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(node);
 
             cnode->NurbsW() = cp->W();
           }
@@ -468,11 +468,11 @@ void Wear::Algorithm::create_material_interface()
         // get knotvector, normal factor and zero-size information for nurbs
         if (cparams.get<bool>("NURBS") == true)
         {
-          Discret::Nurbs::NurbsDiscretization* nurbsdis =
-              dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(
+          Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+              dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(
                   &(*(structure_->discretization())));
 
-          Teuchos::RCP<Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+          Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
           std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
           std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 

@@ -16,6 +16,7 @@
 #include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_geometry_position_array.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
@@ -25,7 +26,6 @@
 #include "4C_mat_modpowerlaw.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_sutherland.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
 

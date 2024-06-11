@@ -9,15 +9,15 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef FOUR_C_NURBS_DISCRET_HPP
-#define FOUR_C_NURBS_DISCRET_HPP
+#ifndef FOUR_C_FEM_NURBS_DISCRETIZATION_HPP
+#define FOUR_C_FEM_NURBS_DISCRETIZATION_HPP
 
 #include "4C_config.hpp"
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_discretization_utils.hpp"
-#include "4C_nurbs_discret_control_point.hpp"
-#include "4C_nurbs_discret_knotvector.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
+#include "4C_fem_nurbs_discretization_knotvector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -29,7 +29,7 @@ namespace Core::LinAlg
   class SparseMatrix;
 }  // namespace Core::LinAlg
 
-namespace Discret
+namespace Core::FE
 {
   namespace Nurbs
   {
@@ -70,7 +70,7 @@ namespace Discret
       \author gammi
 
       */
-      virtual void SetKnotVector(Teuchos::RCP<Discret::Nurbs::Knotvector> knots);
+      virtual void SetKnotVector(Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots);
 
       /*!
       \brief get a pointer to the knotvector from the discretization
@@ -80,8 +80,8 @@ namespace Discret
       \author gammi
 
       */
-      Teuchos::RCP<Discret::Nurbs::Knotvector> GetKnotVector();
-      Teuchos::RCP<const Discret::Nurbs::Knotvector> GetKnotVector() const;
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> GetKnotVector();
+      Teuchos::RCP<const Core::FE::Nurbs::Knotvector> GetKnotVector() const;
 
       /*!
       \brief return number of knots in each direction
@@ -146,7 +146,7 @@ namespace Discret
       NurbsDiscretization operator=(const NurbsDiscretization& old) = delete;
 
       //! don't want copy constructor
-      NurbsDiscretization(const Discret::Nurbs::NurbsDiscretization& old) = delete;
+      NurbsDiscretization(const Core::FE::Nurbs::NurbsDiscretization& old) = delete;
 
       /*!
       \brief The knot vector
@@ -155,7 +155,7 @@ namespace Discret
       dimensions u,v   : nurbs surface (n x m)
       dimensions u,v,w : nurbs volume  (n x m x l)
       */
-      Teuchos::RCP<Discret::Nurbs::Knotvector> knots_;
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots_;
 
     };  // class NurbsDiscretization
   }     // namespace Nurbs
@@ -198,11 +198,13 @@ namespace Discret
 
       */
       template <Core::FE::CellType distype>
+
       void fill_matrix_and_rhs_for_ls_dirichlet_boundary(Teuchos::RCP<Core::Elements::Element> ele,
           const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
           const double time, Core::LinAlg::SerialDenseMatrix& elemass,
-          std::vector<Core::LinAlg::SerialDenseVector>& elerhs) const;
+          std::vector<Core::LinAlg::SerialDenseVector>& elerhs,
+          const Core::UTILS::FunctionManager& function_manager) const;
 
       /*!
       \brief Fill mass matrix and rhs vector for evaluation of least squares dirichlet on a domain
@@ -223,11 +225,12 @@ namespace Discret
           const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
           const double time, Core::LinAlg::SerialDenseMatrix& elemass,
-          std::vector<Core::LinAlg::SerialDenseVector>& elerhs) const;
+          std::vector<Core::LinAlg::SerialDenseVector>& elerhs,
+          const Core::UTILS::FunctionManager& function_manager) const;
 
     };  // class DbcNurbs
   }     // namespace UTILS
-}  // namespace Discret
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 
