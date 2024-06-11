@@ -75,6 +75,7 @@
 #include "4C_mat_plastic_VarConstUpdate.hpp"
 #include "4C_mat_plasticdruckerprager.hpp"
 #include "4C_mat_plasticelasthyper.hpp"
+#include "4C_mat_plasticgtn.hpp"
 #include "4C_mat_plasticlinelast.hpp"
 #include "4C_mat_plasticnlnlogneohooke.hpp"
 #include "4C_mat_poro_density_law.hpp"
@@ -237,6 +238,10 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     case Core::Materials::m_pldruckprag:
     {
       return make_parameter_impl<Mat::PAR::PlasticDruckerPrager>(id, type, input_data);
+    }
+    case Core::Materials::m_plgtn:
+    {
+      return make_parameter_impl<Mat::PAR::PlasticGTN>(id, type, input_data);
     }
     case Core::Materials::m_thermoplhyperelast:
     {

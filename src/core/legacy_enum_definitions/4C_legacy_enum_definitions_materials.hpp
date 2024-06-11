@@ -145,6 +145,7 @@ namespace Core::Materials
     m_particle_dem,           ///< particle material for DEM
     m_particle_wall_dem,      ///< particle wall material for DEM
     m_pldruckprag,       ///< Plastic linear elastic St.Venant Kirchhoff / Drucker Prager plasticity
+    m_plgtn,             ///< Plastic linear elastic St.Venant Kirchhoff / GTN plasticity
     m_plelasthyper,      ///< general hyperelastic material for finite strain von-Mises plasticity
                          ///< using a semi-smooth Newton strategy (only in combination with such
                          ///< elements!)

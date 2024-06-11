@@ -1032,6 +1032,33 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
   }
 
   /*----------------------------------------------------------------------*/
+  // Plastic linear elastic St.Venant Kirchhoff / GTN plasticity
+  {
+    auto m = Teuchos::rcp(new Mat::MaterialDefinition("MAT_Struct_PlasticGTN",
+        "elastic St.Venant Kirchhoff / plastic GTN", Core::Materials::m_plgtn));
+
+    add_named_real(m, "YOUNG", "Young's modulus");
+    add_named_real(m, "NUE", "Poisson's ratio");
+    add_named_real(m, "DENS", "Density");
+    add_named_real(m, "YIELD", "yield stress");
+    add_named_real(m, "ISOHARD", "linear isotropic hardening");
+    add_named_int(m, "HARDENING_FUNC", "Function number for isotropic hardening", 0, true);
+    add_named_real(m, "TOL", "Local Newton iteration tolerance");
+    add_named_int(m, "MAXITER", "Maximum Neuton Raphson Iterations", 50, true);
+    add_named_real(m, "K1", "GTN Constant k1");
+    add_named_real(m, "K2", "GTN Constant k2");
+    add_named_real(m, "K3", "GTN constant k3");
+    add_named_real(m, "F0", "GTN constant f0 for initial damage");
+    add_named_real(m, "FN", "GTN constant fN for damage nucleation");
+    add_named_real(m, "EN", "GTN constant eN for damage nucleation");
+    add_named_real(m, "SN", "GTN constant sN for damage nucleation");
+    add_named_real(m, "FC", "GTN constant fC for damage coalescence");
+    add_named_real(m, "KAPPA", "GTN constant kappa for damage coalescence");
+
+    Mat::AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Finite strain superelasticity of shape memory alloys
   {
     auto m = Teuchos::rcp(new Mat::MaterialDefinition("MAT_Struct_SuperElastSMA",
