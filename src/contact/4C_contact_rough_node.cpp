@@ -88,26 +88,25 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
 void CONTACT::RoughNode::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Mortar::Node
   CONTACT::Node::Pack(data);
 
-  AddtoPack(data, hurstexponentfunction_);
-  AddtoPack(data, initialtopologystddeviationfunction_);
-  AddtoPack(data, resolution_);
-  AddtoPack(data, randomtopologyflag_);
-  AddtoPack(data, randomseedflag_);
-  AddtoPack(data, randomgeneratorseed_);
+  add_to_pack(data, hurstexponentfunction_);
+  add_to_pack(data, initialtopologystddeviationfunction_);
+  add_to_pack(data, resolution_);
+  add_to_pack(data, randomtopologyflag_);
+  add_to_pack(data, randomseedflag_);
+  add_to_pack(data, randomgeneratorseed_);
 
-  AddtoPack(data, hurstExponent_);
-  AddtoPack(data, initialTopologyStdDeviation_);
-  AddtoPack(data, topology_);
-  AddtoPack(data, maxTopologyHeight_);
+  add_to_pack(data, hurstExponent_);
+  add_to_pack(data, initialTopologyStdDeviation_);
+  add_to_pack(data, topology_);
+  add_to_pack(data, maxTopologyHeight_);
 
   return;
 }
@@ -123,7 +122,7 @@ void CONTACT::RoughNode::Unpack(const std::vector<char>& data)
 
   // extract base class CONTACT::Node
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   CONTACT::Node::Unpack(basedata);
 
   hurstexponentfunction_ = ExtractInt(position, data);
@@ -135,7 +134,7 @@ void CONTACT::RoughNode::Unpack(const std::vector<char>& data)
 
   hurstExponent_ = ExtractDouble(position, data);
   initialTopologyStdDeviation_ = ExtractDouble(position, data);
-  ExtractfromPack(position, data, topology_);
+  extract_from_pack(position, data, topology_);
   maxTopologyHeight_ = ExtractDouble(position, data);
 
   // Check

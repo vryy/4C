@@ -137,8 +137,6 @@ namespace BINSTRATEGY
         {
           Core::Communication::PackBuffer data;
           (*iter)->Pack(data);
-          data.StartPacking();
-          (*iter)->Pack(data);
           sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
         }
         targetprocs[p->first] = 1;
@@ -183,7 +181,7 @@ namespace BINSTRATEGY
           while (index < rdata.size())
           {
             std::vector<char> data;
-            Core::Communication::ParObject::ExtractfromPack(index, rdata, data);
+            Core::Communication::ParObject::extract_from_pack(index, rdata, data);
             // this Teuchos::rcp holds the memory of the node
             Teuchos::RCP<Core::Communication::ParObject> object =
                 Teuchos::rcp(Core::Communication::Factory(data), true);
@@ -239,9 +237,7 @@ namespace BINSTRATEGY
         for (iter = p->second.begin(); iter != p->second.end(); ++iter)
         {
           Core::Communication::PackBuffer data;
-          Core::Communication::ParObject::AddtoPack(data, *iter);
-          data.StartPacking();
-          Core::Communication::ParObject::AddtoPack(data, *iter);
+          Core::Communication::ParObject::add_to_pack(data, *iter);
           sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
         }
         targetprocs[p->first] = 1;
@@ -286,7 +282,7 @@ namespace BINSTRATEGY
           while (index < rdata.size())
           {
             std::pair<int, std::vector<int>> pair;
-            Core::Communication::ParObject::ExtractfromPack(index, rdata, pair);
+            Core::Communication::ParObject::extract_from_pack(index, rdata, pair);
             std::vector<int>::const_iterator j;
             for (j = pair.second.begin(); j != pair.second.end(); ++j)
               bintorowelemap[*j].insert(pair.first);

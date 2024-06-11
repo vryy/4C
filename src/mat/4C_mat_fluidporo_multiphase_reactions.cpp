@@ -133,17 +133,16 @@ void Mat::FluidPoroMultiPhaseReactions::clear()
 void Mat::FluidPoroMultiPhaseReactions::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (paramsreac_ != nullptr) matid = paramsreac_->Id();  // in case we are in post-process mode
 
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   // Pack base class material
   Mat::FluidPoroMultiPhase::Pack(data);
@@ -163,7 +162,7 @@ void Mat::FluidPoroMultiPhaseReactions::Unpack(const std::vector<char>& data)
 
   // matid and recover paramsreac_
   int matid(-1);
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   paramsreac_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -184,7 +183,7 @@ void Mat::FluidPoroMultiPhaseReactions::Unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  Mat::FluidPoroMultiPhase::ExtractfromPack(position, data, basedata);
+  Mat::FluidPoroMultiPhase::extract_from_pack(position, data, basedata);
   Mat::FluidPoroMultiPhase::Unpack(basedata);
 
   // in the postprocessing mode, we do not unpack everything we have packed

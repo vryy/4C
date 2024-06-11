@@ -26,7 +26,7 @@ Mat::CylinderCoordinateSystemAnisotropyExtension::CylinderCoordinateSystemAnisot
 void Mat::CylinderCoordinateSystemAnisotropyExtension::PackAnisotropy(
     Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(cosy_location_));
+  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(cosy_location_));
 }
 
 void Mat::CylinderCoordinateSystemAnisotropyExtension::UnpackAnisotropy(

@@ -41,28 +41,27 @@ PARTICLEENGINE::ParticleObject::ParticleObject(
 void PARTICLEENGINE::ParticleObject::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // particletype_
-  AddtoPack(data, type_);
+  add_to_pack(data, type_);
 
   // particleglobalid_
-  AddtoPack(data, globalid_);
+  add_to_pack(data, globalid_);
 
   // particle states
   int numstates = states_.size();
-  AddtoPack(data, numstates);
-  for (int i = 0; i < numstates; ++i) AddtoPack(data, states_[i]);
+  add_to_pack(data, numstates);
+  for (int i = 0; i < numstates; ++i) add_to_pack(data, states_[i]);
 
   // bingid_
-  AddtoPack(data, bingid_);
+  add_to_pack(data, bingid_);
 
   // containerindex_
-  AddtoPack(data, index_);
+  add_to_pack(data, index_);
 }
 
 void PARTICLEENGINE::ParticleObject::Unpack(const std::vector<char>& data)
@@ -72,22 +71,22 @@ void PARTICLEENGINE::ParticleObject::Unpack(const std::vector<char>& data)
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // particletype_
-  ExtractfromPack(position, data, type_);
+  extract_from_pack(position, data, type_);
 
   // particleglobalid_
-  ExtractfromPack(position, data, globalid_);
+  extract_from_pack(position, data, globalid_);
 
   // particle states
   int numstates = 0;
-  ExtractfromPack(position, data, numstates);
+  extract_from_pack(position, data, numstates);
   states_.resize(numstates);
-  for (int i = 0; i < numstates; ++i) ExtractfromPack(position, data, states_[i]);
+  for (int i = 0; i < numstates; ++i) extract_from_pack(position, data, states_[i]);
 
   // bingid_
-  ExtractfromPack(position, data, bingid_);
+  extract_from_pack(position, data, bingid_);
 
   // containerindex_
-  ExtractfromPack(position, data, index_);
+  extract_from_pack(position, data, index_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);

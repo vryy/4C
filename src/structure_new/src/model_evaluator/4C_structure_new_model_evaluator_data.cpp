@@ -89,9 +89,9 @@ namespace
     std::vector<char>::size_type index = 0;
     while (index < receiveddata.size())
     {
-      // the set gets cleared at the beginning of the ExtractfromPack routine!
+      // the set gets cleared at the beginning of the extract_from_pack routine!
       T rs;
-      Core::Communication::ParObject::ExtractfromPack(index, receiveddata, rs);
+      Core::Communication::ParObject::extract_from_pack(index, receiveddata, rs);
       collected_data.insert(rs.begin(), rs.end());
     }
     // sanity check
@@ -157,9 +157,7 @@ namespace
   {
     Core::Communication::PackBuffer pack_data;
 
-    Core::Communication::ParObject::AddtoPack(pack_data, my_data);
-    pack_data.StartPacking();
-    Core::Communication::ParObject::AddtoPack(pack_data, my_data);
+    Core::Communication::ParObject::add_to_pack(pack_data, my_data);
 
     RoundRobinLoop(comm, pack_data, collected_data);
   }

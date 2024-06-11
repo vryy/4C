@@ -166,19 +166,18 @@ Core::FE::CellType Discret::ELEMENTS::Rigidsphere::Shape() const
 void Discret::ELEMENTS::Rigidsphere::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   Element::Pack(data);
 
   // add all class variables
-  AddtoPack(data, radius_);
-  AddtoPack(data, rho_);
+  add_to_pack(data, radius_);
+  add_to_pack(data, rho_);
 
-  AddtoPack(data, static_cast<int>(mybondstobeams_.size()));
+  add_to_pack(data, static_cast<int>(mybondstobeams_.size()));
   for (auto const& iter : mybondstobeams_) iter.second->Pack(data);
 
   return;
@@ -196,19 +195,19 @@ void Discret::ELEMENTS::Rigidsphere::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
 
 
   // extract all class variables
-  ExtractfromPack(position, data, radius_);
-  ExtractfromPack(position, data, rho_);
+  extract_from_pack(position, data, radius_);
+  extract_from_pack(position, data, rho_);
 
   int unsigned numbonds = ExtractInt(position, data);
   for (int unsigned i = 0; i < numbonds; ++i)
   {
     std::vector<char> tmp;
-    ExtractfromPack(position, data, tmp);
+    extract_from_pack(position, data, tmp);
     Teuchos::RCP<Core::Communication::ParObject> object =
         Teuchos::rcp(Core::Communication::Factory(tmp), true);
     Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> link =

@@ -71,19 +71,18 @@ void Mat::StructPoroReaction::Setup(int numgp, Input::LineDefinition* linedef)
 void Mat::StructPoroReaction::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   // refporosity_
-  AddtoPack(data, refporosity_);
+  add_to_pack(data, refporosity_);
 
   // add base class material
   StructPoro::Pack(data);
@@ -99,7 +98,7 @@ void Mat::StructPoroReaction::Unpack(const std::vector<char>& data)
 
   // matid
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -115,11 +114,11 @@ void Mat::StructPoroReaction::Unpack(const std::vector<char>& data)
     }
 
   // refporosity_
-  ExtractfromPack(position, data, refporosity_);
+  extract_from_pack(position, data, refporosity_);
 
   // extract base class material
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   StructPoro::Unpack(basedata);
 }
 

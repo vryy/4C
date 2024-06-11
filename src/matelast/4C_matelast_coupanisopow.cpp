@@ -33,15 +33,15 @@ Mat::Elastic::CoupAnisoPow::CoupAnisoPow(Mat::Elastic::PAR::CoupAnisoPow* params
 
 void Mat::Elastic::CoupAnisoPow::PackSummand(Core::Communication::PackBuffer& data) const
 {
-  AddtoPack(data, a_);
-  AddtoPack(data, structural_tensor_);
+  add_to_pack(data, a_);
+  add_to_pack(data, structural_tensor_);
 }
 
 void Mat::Elastic::CoupAnisoPow::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  ExtractfromPack(position, data, a_);
-  ExtractfromPack(position, data, structural_tensor_);
+  extract_from_pack(position, data, a_);
+  extract_from_pack(position, data, structural_tensor_);
 }
 
 void Mat::Elastic::CoupAnisoPow::Setup(int numgp, Input::LineDefinition* linedef)

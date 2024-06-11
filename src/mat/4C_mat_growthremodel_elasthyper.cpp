@@ -215,35 +215,34 @@ Mat::GrowthRemodelElastHyper::GrowthRemodelElastHyper(Mat::PAR::GrowthRemodelEla
 void Mat::GrowthRemodelElastHyper::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
 
   // mass fraction of elastin
-  AddtoPack(data, cur_rho_el_);
-  AddtoPack(data, init_rho_el_);
+  add_to_pack(data, cur_rho_el_);
+  add_to_pack(data, init_rho_el_);
 
-  AddtoPack(data, v_);
-  AddtoPack(data, gp_ax_);
-  AddtoPack(data, gp_rad_);
-  AddtoPack(data, acir_m_);
-  AddtoPack(data, aax_m_);
-  AddtoPack(data, arad_m_);
-  AddtoPack(data, aradv_);
-  AddtoPack(data, apl_m_);
-  AddtoPack(data, ag_m_);
-  AddtoPack(data, gm_);
-  AddtoPack(data, radaxicirc_);
-  AddtoPack(data, mue_frac_);
-  AddtoPack(data, setup_);
-  AddtoPack(data, nr_rf_tot_);
+  add_to_pack(data, v_);
+  add_to_pack(data, gp_ax_);
+  add_to_pack(data, gp_rad_);
+  add_to_pack(data, acir_m_);
+  add_to_pack(data, aax_m_);
+  add_to_pack(data, arad_m_);
+  add_to_pack(data, aradv_);
+  add_to_pack(data, apl_m_);
+  add_to_pack(data, ag_m_);
+  add_to_pack(data, gm_);
+  add_to_pack(data, radaxicirc_);
+  add_to_pack(data, mue_frac_);
+  add_to_pack(data, setup_);
+  add_to_pack(data, nr_rf_tot_);
 
   anisotropy_.PackAnisotropy(data);
 
@@ -282,7 +281,7 @@ void Mat::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -300,23 +299,23 @@ void Mat::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
 
 
   // mass fractions of elastin and ground matrix
-  ExtractfromPack(position, data, cur_rho_el_);
-  ExtractfromPack(position, data, init_rho_el_);
+  extract_from_pack(position, data, cur_rho_el_);
+  extract_from_pack(position, data, init_rho_el_);
 
-  ExtractfromPack(position, data, v_);
-  ExtractfromPack(position, data, gp_ax_);
-  ExtractfromPack(position, data, gp_rad_);
-  ExtractfromPack(position, data, acir_m_);
-  ExtractfromPack(position, data, aax_m_);
-  ExtractfromPack(position, data, arad_m_);
-  ExtractfromPack(position, data, aradv_);
-  ExtractfromPack(position, data, apl_m_);
-  ExtractfromPack(position, data, ag_m_);
-  ExtractfromPack(position, data, gm_);
-  ExtractfromPack(position, data, radaxicirc_);
-  ExtractfromPack(position, data, mue_frac_);
-  ExtractfromPack(position, data, setup_);
-  ExtractfromPack(position, data, nr_rf_tot_);
+  extract_from_pack(position, data, v_);
+  extract_from_pack(position, data, gp_ax_);
+  extract_from_pack(position, data, gp_rad_);
+  extract_from_pack(position, data, acir_m_);
+  extract_from_pack(position, data, aax_m_);
+  extract_from_pack(position, data, arad_m_);
+  extract_from_pack(position, data, aradv_);
+  extract_from_pack(position, data, apl_m_);
+  extract_from_pack(position, data, ag_m_);
+  extract_from_pack(position, data, gm_);
+  extract_from_pack(position, data, radaxicirc_);
+  extract_from_pack(position, data, mue_frac_);
+  extract_from_pack(position, data, setup_);
+  extract_from_pack(position, data, nr_rf_tot_);
 
   anisotropy_.UnpackAnisotropy(data, position);
 

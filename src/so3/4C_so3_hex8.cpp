@@ -223,39 +223,38 @@ Core::FE::CellType Discret::ELEMENTS::SoHex8::Shape() const { return Core::FE::C
 void Discret::ELEMENTS::SoHex8::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   SoBase::Pack(data);
   // eastype_
-  AddtoPack(data, eastype_);
+  add_to_pack(data, eastype_);
   // neas_
-  AddtoPack(data, neas_);
+  add_to_pack(data, neas_);
   // analyticalmaterialtangent_
-  AddtoPack(data, analyticalmaterialtangent_);
+  add_to_pack(data, analyticalmaterialtangent_);
   // eas data
   pack_eas_data(data);
   // line search
-  AddtoPack(data, old_step_length_);
+  add_to_pack(data, old_step_length_);
   // Pack prestress type
-  AddtoPack(data, static_cast<int>(pstype_));
-  AddtoPack(data, pstime_);
-  AddtoPack(data, time_);
+  add_to_pack(data, static_cast<int>(pstype_));
+  add_to_pack(data, pstime_);
+  add_to_pack(data, time_);
   if (Prestress::IsMulf(pstype_))
   {
-    Core::Communication::ParObject::AddtoPack(data, *prestress_);
+    Core::Communication::ParObject::add_to_pack(data, *prestress_);
   }
 
   // detJ_
-  AddtoPack(data, detJ_);
+  add_to_pack(data, detJ_);
 
   // invJ_
   const auto size = (int)invJ_.size();
-  AddtoPack(data, size);
-  for (int i = 0; i < size; ++i) AddtoPack(data, invJ_[i]);
+  add_to_pack(data, size);
+  for (int i = 0; i < size; ++i) add_to_pack(data, invJ_[i]);
 
   return;
 }
@@ -273,26 +272,26 @@ void Discret::ELEMENTS::SoHex8::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   SoBase::Unpack(basedata);
   // eastype_
   eastype_ = static_cast<EASType>(ExtractInt(position, data));
   // neas_
-  ExtractfromPack(position, data, neas_);
+  extract_from_pack(position, data, neas_);
   // analyticalmaterialtangent_
   analyticalmaterialtangent_ = ExtractInt(position, data);
   // eas data
   unpack_eas_data(position, data);
   // line search
-  ExtractfromPack(position, data, old_step_length_);
+  extract_from_pack(position, data, old_step_length_);
   // Extract prestress
   pstype_ = static_cast<Inpar::STR::PreStress>(ExtractInt(position, data));
-  ExtractfromPack(position, data, pstime_);
-  ExtractfromPack(position, data, time_);
+  extract_from_pack(position, data, pstime_);
+  extract_from_pack(position, data, time_);
   if (Prestress::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
-    ExtractfromPack(position, data, tmpprestress);
+    extract_from_pack(position, data, tmpprestress);
     if (prestress_ == Teuchos::null)
     {
       int numgpt = NUMGPT_SOH8;
@@ -305,12 +304,12 @@ void Discret::ELEMENTS::SoHex8::Unpack(const std::vector<char>& data)
   }
 
   // detJ_
-  ExtractfromPack(position, data, detJ_);
+  extract_from_pack(position, data, detJ_);
   // invJ_
   int size = 0;
-  ExtractfromPack(position, data, size);
+  extract_from_pack(position, data, size);
   invJ_.resize(size, Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>(true));
-  for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
+  for (int i = 0; i < size; ++i) extract_from_pack(position, data, invJ_[i]);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

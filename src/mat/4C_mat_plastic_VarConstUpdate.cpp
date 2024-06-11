@@ -88,15 +88,14 @@ Mat::PlasticElastHyperVCU::PlasticElastHyperVCU(Mat::PAR::PlasticElastHyperVCU* 
 void Mat::PlasticElastHyperVCU::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // matid
   int matid = -1;
   if (MatParams() != nullptr) matid = MatParams()->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
   summandProperties_.Pack(data);
 
   if (MatParams() != nullptr)  // summands are not accessible in postprocessing mode
@@ -109,8 +108,8 @@ void Mat::PlasticElastHyperVCU::Pack(Core::Communication::PackBuffer& data) cons
   }
 
   // plastic history data
-  AddtoPack<3, 3>(data, last_plastic_defgrd_inverse_);
-  AddtoPack(data, last_alpha_isotropic_);
+  add_to_pack<3, 3>(data, last_plastic_defgrd_inverse_);
+  add_to_pack(data, last_alpha_isotropic_);
 
   return;
 }
@@ -130,7 +129,7 @@ void Mat::PlasticElastHyperVCU::Unpack(const std::vector<char>& data)
 
   // matid and recover MatParams()
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -168,8 +167,8 @@ void Mat::PlasticElastHyperVCU::Unpack(const std::vector<char>& data)
   }
 
   // plastic history data
-  ExtractfromPack<3, 3>(position, data, last_plastic_defgrd_inverse_);
-  ExtractfromPack(position, data, last_alpha_isotropic_);
+  extract_from_pack<3, 3>(position, data, last_plastic_defgrd_inverse_);
+  extract_from_pack(position, data, last_alpha_isotropic_);
 
   // no need to pack this
   delta_alpha_i_.resize(last_alpha_isotropic_.size(), 0.);

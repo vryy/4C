@@ -265,18 +265,6 @@ void Core::Communication::Exporter::generic_export(ExporterHelper& helper)
     std::vector<int> sendgid;
     sendgid.reserve(send_plan()[tproc].size());
 
-    // count
-
-    for (int lid : send_plan()[tproc])
-    {
-      const int gid = SourceMap().GID(lid);
-      helper.PackObject(gid, sendblock);
-    }
-
-    // pack
-
-    sendblock.StartPacking();
-
     for (int lid : send_plan()[tproc])
     {
       const int gid = SourceMap().GID(lid);

@@ -438,8 +438,6 @@ void ScaTra::LevelSet::Intersection::export_interface(
 
   Core::Communication::PackBuffer data;
   pack_boundary_int_cells(myinterface, data);
-  data.StartPacking();
-  pack_boundary_int_cells(myinterface, data);
 
   //-----------------------------------------------------------------
   // pack data (my boundary integration cell groups) for initial send
@@ -527,25 +525,25 @@ void ScaTra::LevelSet::Intersection::pack_boundary_int_cells(
   {
     // pack data of all boundary integrations cells belonging to an element
     const int elegid = cellgroup->first;
-    Core::Communication::ParObject::AddtoPack(dataSend, elegid);
+    Core::Communication::ParObject::add_to_pack(dataSend, elegid);
 
     const int numcells = (cellgroup->second).size();
-    Core::Communication::ParObject::AddtoPack(dataSend, numcells);
+    Core::Communication::ParObject::add_to_pack(dataSend, numcells);
 
     for (int icell = 0; icell < numcells; ++icell)
     {
       Core::Geo::BoundaryIntCell cell = cellgroup->second[icell];
       // get all member variables from a single boundary integration cell
       const Core::FE::CellType distype = cell.Shape();
-      Core::Communication::ParObject::AddtoPack(dataSend, distype);
+      Core::Communication::ParObject::add_to_pack(dataSend, distype);
 
       // coordinates of cell vertices in (scatra) element parameter space
       const Core::LinAlg::SerialDenseMatrix vertices_xi = cell.cell_nodal_pos_xi_domain();
-      Core::Communication::ParObject::AddtoPack(dataSend, vertices_xi);
+      Core::Communication::ParObject::add_to_pack(dataSend, vertices_xi);
 
       // coordinates of cell vertices in physical space
       const Core::LinAlg::SerialDenseMatrix vertices_xyz = cell.CellNodalPosXYZ();
-      Core::Communication::ParObject::AddtoPack(dataSend, vertices_xyz);
+      Core::Communication::ParObject::add_to_pack(dataSend, vertices_xyz);
     }
   }
 }
@@ -563,12 +561,12 @@ void ScaTra::LevelSet::Intersection::unpack_boundary_int_cells(
   {
     // extract fluid element gid
     int elegid = -1;
-    Core::Communication::ParObject::ExtractfromPack(posingroup, data, elegid);
+    Core::Communication::ParObject::extract_from_pack(posingroup, data, elegid);
     if (elegid < 0) FOUR_C_THROW("extraction of element gid failed");
 
     // extract number of boundary integration cells for this element
     int numvecs = -1;
-    Core::Communication::ParObject::ExtractfromPack(posingroup, data, numvecs);
+    Core::Communication::ParObject::extract_from_pack(posingroup, data, numvecs);
 
     // vector holding group of boundary integration cells belonging to this element
     Core::Geo::BoundaryIntCells intcellvector;
@@ -581,17 +579,17 @@ void ScaTra::LevelSet::Intersection::unpack_boundary_int_cells(
       // distype of cell
       Core::FE::CellType distype;
       int distypeint = -1;
-      Core::Communication::ParObject::ExtractfromPack(posingroup, data, distypeint);
+      Core::Communication::ParObject::extract_from_pack(posingroup, data, distypeint);
       distype = (Core::FE::CellType)distypeint;
       if (!(distype == Core::FE::CellType::tri3 || distype == Core::FE::CellType::quad4))
         FOUR_C_THROW("unexpected distype %d", distypeint);
 
       Core::LinAlg::SerialDenseMatrix vertices_xi;
-      Core::Communication::ParObject::ExtractfromPack(posingroup, data, vertices_xi);
+      Core::Communication::ParObject::extract_from_pack(posingroup, data, vertices_xi);
 
       // coordinates of cell vertices in physical space
       Core::LinAlg::SerialDenseMatrix vertices_xyz;
-      Core::Communication::ParObject::ExtractfromPack(posingroup, data, vertices_xyz);
+      Core::Communication::ParObject::extract_from_pack(posingroup, data, vertices_xyz);
 
       // store boundary integration cells in boundaryintcelllist
       Core::LinAlg::SerialDenseMatrix dummyMat;

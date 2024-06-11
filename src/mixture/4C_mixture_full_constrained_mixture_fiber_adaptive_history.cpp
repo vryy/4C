@@ -57,11 +57,11 @@ void MIXTURE::Details::MarkCoarsenedTimestepAsToBeDeleted(std::vector<bool>& ite
 
 void MIXTURE::TimestepAdaptivityInfo::Pack(Core::Communication::PackBuffer& data) const
 {
-  data.AddtoPack(GetNumberOfLevels());
+  data.add_to_pack(GetNumberOfLevels());
   for (const auto& item : list_)
   {
-    data.AddtoPack(item.level_);
-    data.AddtoPack(item.simpson_intervals_);
+    data.add_to_pack(item.level_);
+    data.add_to_pack(item.simpson_intervals_);
   }
 }
 
@@ -69,7 +69,7 @@ void MIXTURE::TimestepAdaptivityInfo::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   std::size_t size_of_adaptivity_info;
-  Core::Communication::ParObject::ExtractfromPack(position, data, size_of_adaptivity_info);
+  Core::Communication::ParObject::extract_from_pack(position, data, size_of_adaptivity_info);
   list_.clear();
   list_.reserve(size_of_adaptivity_info);
   for (std::size_t i = 0; i < size_of_adaptivity_info; ++i)

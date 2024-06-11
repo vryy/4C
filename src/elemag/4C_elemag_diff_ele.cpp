@@ -284,16 +284,15 @@ Core::Elements::Element* Discret::ELEMENTS::ElemagDiffBoundary::Clone() const
 void Discret::ELEMENTS::ElemagDiffBoundary::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   Element::Pack(data);
 
   // Discretisation type
-  // AddtoPack(data,distype_);
+  // add_to_pack(data,distype_);
 
   return;
 }
@@ -310,7 +309,7 @@ void Discret::ELEMENTS::ElemagDiffBoundary::Unpack(const std::vector<char>& data
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
 
   // distype

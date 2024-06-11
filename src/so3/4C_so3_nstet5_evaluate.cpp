@@ -295,16 +295,14 @@ int Discret::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
       //----------------------------------------------- add final stress to storage
       {
         Core::Communication::PackBuffer data;
-        AddtoPack(data, stress);
-        data.StartPacking();
-        AddtoPack(data, stress);
+
+        add_to_pack(data, stress);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
       {
         Core::Communication::PackBuffer data;
-        AddtoPack(data, strain);
-        data.StartPacking();
-        AddtoPack(data, strain);
+
+        add_to_pack(data, strain);
         std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }
     }

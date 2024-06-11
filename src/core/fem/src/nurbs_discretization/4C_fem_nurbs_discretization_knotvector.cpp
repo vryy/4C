@@ -733,35 +733,34 @@ void Core::FE::Nurbs::Knotvector::Pack(Core::Communication::PackBuffer& data) co
 {
   // we don't need the PackBuffer for the knotvector (at the moment)
   // Core::Communication::PackBuffer::SizeMarker sm( data );
-  // sm.Insert();
-
+  //
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add number of patches
-  AddtoPack(data, npatches_);
+  add_to_pack(data, npatches_);
 
   // add dimension
-  AddtoPack(data, dim_);
+  add_to_pack(data, dim_);
 
   // add degree vector
   for (int np = 0; np < npatches_; ++np)
   {
-    AddtoPack(data, degree_[np]);
+    add_to_pack(data, degree_[np]);
   }
 
   // add knotvector size
   for (int np = 0; np < npatches_; ++np)
   {
-    AddtoPack(data, n_x_m_x_l_[np]);
+    add_to_pack(data, n_x_m_x_l_[np]);
   }
 
   // add element numbers in all cartesian
   // directions
   for (int np = 0; np < npatches_; ++np)
   {
-    AddtoPack(data, nele_x_mele_x_lele_[np]);
+    add_to_pack(data, nele_x_mele_x_lele_[np]);
   }
 
   // add Knotvector types
@@ -769,19 +768,19 @@ void Core::FE::Nurbs::Knotvector::Pack(Core::Communication::PackBuffer& data) co
   {
     for (int rr = 0; rr < dim_; ++rr)
     {
-      AddtoPack(data, (interpolation_[np])[rr]);
+      add_to_pack(data, (interpolation_[np])[rr]);
     }
   }
 
   // add patch offsets
-  AddtoPack(data, offsets_);
+  add_to_pack(data, offsets_);
 
   // add Knotvector coordinates itself
   for (int np = 0; np < npatches_; ++np)
   {
     for (int rr = 0; rr < dim_; ++rr)
     {
-      AddtoPack(data, (*((knot_values_[np])[rr])));
+      add_to_pack(data, (*((knot_values_[np])[rr])));
     }
   }
 
@@ -801,10 +800,10 @@ void Core::FE::Nurbs::Knotvector::Unpack(const std::vector<char>& data)
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract number of patches
-  ExtractfromPack(position, data, npatches_);
+  extract_from_pack(position, data, npatches_);
 
   // extract dimension
-  ExtractfromPack(position, data, dim_);
+  extract_from_pack(position, data, dim_);
 
   // resize all vectors
   degree_.resize(npatches_);
@@ -825,20 +824,20 @@ void Core::FE::Nurbs::Knotvector::Unpack(const std::vector<char>& data)
   // extract degree vector
   for (int np = 0; np < npatches_; ++np)
   {
-    ExtractfromPack(position, data, degree_[np]);
+    extract_from_pack(position, data, degree_[np]);
   }
 
   // extract knotvector size
   for (int np = 0; np < npatches_; ++np)
   {
-    ExtractfromPack(position, data, n_x_m_x_l_[np]);
+    extract_from_pack(position, data, n_x_m_x_l_[np]);
   }
 
   // extract element numbers in all cartesian
   // directions
   for (int np = 0; np < npatches_; ++np)
   {
-    ExtractfromPack(position, data, nele_x_mele_x_lele_[np]);
+    extract_from_pack(position, data, nele_x_mele_x_lele_[np]);
   }
 
   // extract knotvector types
@@ -852,7 +851,7 @@ void Core::FE::Nurbs::Knotvector::Unpack(const std::vector<char>& data)
   }
 
   // extract patch offsets
-  ExtractfromPack(position, data, offsets_);
+  extract_from_pack(position, data, offsets_);
 
   // extract knotvector coordinates itself
   for (int np = 0; np < npatches_; ++np)
@@ -861,7 +860,7 @@ void Core::FE::Nurbs::Knotvector::Unpack(const std::vector<char>& data)
     {
       (knot_values_[np])[rr] = Teuchos::rcp(new std::vector<double>((n_x_m_x_l_[np])[rr]));
 
-      ExtractfromPack(position, data, (*((knot_values_[np])[rr])));
+      extract_from_pack(position, data, (*((knot_values_[np])[rr])));
     }
   }
 

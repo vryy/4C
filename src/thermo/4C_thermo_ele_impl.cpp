@@ -3353,9 +3353,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::copy_matrix_into_char_vector(
     std::vector<char>& data, const Core::LinAlg::Matrix<nquad_, nsd_>& stuff) const
 {
   Core::Communication::PackBuffer tempBuffer;
-  Core::Communication::ParObject::AddtoPack(tempBuffer, stuff);
-  tempBuffer.StartPacking();
-  Core::Communication::ParObject::AddtoPack(tempBuffer, stuff);
+  Core::Communication::ParObject::add_to_pack(tempBuffer, stuff);
   std::copy(tempBuffer().begin(), tempBuffer().end(), std::back_inserter(data));
 }
 

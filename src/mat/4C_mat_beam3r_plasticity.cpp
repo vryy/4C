@@ -167,26 +167,25 @@ template <typename T>
 void Mat::BeamPlasticMaterial<T>::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  this->AddtoPack(data, type);
+  this->add_to_pack(data, type);
 
   // Pack material id
   int matid = -1;
   if (this->Parameter() != nullptr)
     matid = this->Params().Id();  // in case we are in post-process mode
 
-  this->AddtoPack(data, matid);
+  this->add_to_pack(data, matid);
 
   // Pack all internal variables
-  this->AddtoPack(data, numgp_force_);
-  this->AddtoPack(data, numgp_moment_);
-  this->AddtoPack(data, gammaplastaccum_);
-  this->AddtoPack(data, gammaplastconv_);
-  this->AddtoPack(data, kappaplastaccum_);
-  this->AddtoPack(data, kappaplastconv_);
+  this->add_to_pack(data, numgp_force_);
+  this->add_to_pack(data, numgp_moment_);
+  this->add_to_pack(data, gammaplastaccum_);
+  this->add_to_pack(data, gammaplastconv_);
+  this->add_to_pack(data, kappaplastaccum_);
+  this->add_to_pack(data, kappaplastconv_);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -200,15 +199,15 @@ void Mat::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   int matid;
-  this->ExtractfromPack(position, data, matid);
+  this->extract_from_pack(position, data, matid);
 
-  this->ExtractfromPack(position, data, numgp_force_);
-  this->ExtractfromPack(position, data, numgp_moment_);
+  this->extract_from_pack(position, data, numgp_force_);
+  this->extract_from_pack(position, data, numgp_moment_);
   this->Setup(numgp_force_, numgp_moment_);
-  this->ExtractfromPack(position, data, gammaplastaccum_);
-  this->ExtractfromPack(position, data, gammaplastconv_);
-  this->ExtractfromPack(position, data, kappaplastaccum_);
-  this->ExtractfromPack(position, data, kappaplastconv_);
+  this->extract_from_pack(position, data, gammaplastaccum_);
+  this->extract_from_pack(position, data, gammaplastconv_);
+  this->extract_from_pack(position, data, kappaplastaccum_);
+  this->extract_from_pack(position, data, kappaplastconv_);
 
   this->set_parameter(nullptr);
 

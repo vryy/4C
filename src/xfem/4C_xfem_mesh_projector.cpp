@@ -498,10 +498,10 @@ void XFEM::MeshProjector::communicate_nodes(
       receive_block(rblock, exporter, request);
 
       std::vector<char>::size_type position = 0;
-      Core::Communication::ParObject::ExtractfromPack(position, rblock, tar_nodepositions);
-      Core::Communication::ParObject::ExtractfromPack(position, rblock, interpolated_vecs);
-      Core::Communication::ParObject::ExtractfromPack(position, rblock, projection_targetnodes);
-      Core::Communication::ParObject::ExtractfromPack(position, rblock, have_values);
+      Core::Communication::ParObject::extract_from_pack(position, rblock, tar_nodepositions);
+      Core::Communication::ParObject::extract_from_pack(position, rblock, interpolated_vecs);
+      Core::Communication::ParObject::extract_from_pack(position, rblock, projection_targetnodes);
+      Core::Communication::ParObject::extract_from_pack(position, rblock, have_values);
     }
 
     // in the last step, we keep everything on this proc
@@ -589,16 +589,10 @@ void XFEM::MeshProjector::pack_values(std::vector<Core::LinAlg::Matrix<3, 1>>& t
 {
   // Pack info into block to send
   Core::Communication::PackBuffer data;
-  Core::Communication::ParObject::AddtoPack(data, tar_nodepositions);
-  Core::Communication::ParObject::AddtoPack(data, interpolated_vecs);
-  Core::Communication::ParObject::AddtoPack(data, projection_targetnodes);
-  Core::Communication::ParObject::AddtoPack(data, have_values);
-  data.StartPacking();
-
-  Core::Communication::ParObject::AddtoPack(data, tar_nodepositions);
-  Core::Communication::ParObject::AddtoPack(data, interpolated_vecs);
-  Core::Communication::ParObject::AddtoPack(data, projection_targetnodes);
-  Core::Communication::ParObject::AddtoPack(data, have_values);
+  Core::Communication::ParObject::add_to_pack(data, tar_nodepositions);
+  Core::Communication::ParObject::add_to_pack(data, interpolated_vecs);
+  Core::Communication::ParObject::add_to_pack(data, projection_targetnodes);
+  Core::Communication::ParObject::add_to_pack(data, have_values);
   swap(sblock, data());
 }
 

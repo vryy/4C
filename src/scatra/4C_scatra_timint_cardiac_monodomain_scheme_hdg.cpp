@@ -166,16 +166,6 @@ void ScaTra::TimIntCardiacMonodomainHDG::pack_material()
     hdgele->pack_material(buffer);
   }
 
-  buffer.StartPacking();
-
-  // loop over elements
-  for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
-  {
-    Core::Elements::Element *ele = discret_->lColElement(iele);
-    const auto *hdgele = dynamic_cast<const Discret::ELEMENTS::ScaTraHDG *>(ele);
-    hdgele->pack_material(buffer);
-  }
-
   Teuchos::RCP<std::vector<char>> block = Teuchos::rcp(new std::vector<char>);
   std::swap(*block, buffer());
   data_ = block;
@@ -191,7 +181,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::unpack_material()
   {
     auto *hdgele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
     std::vector<char> data;
-    hdgele->ExtractfromPack(index, *data_, data);
+    hdgele->extract_from_pack(index, *data_, data);
     hdgele->unpack_material(data);
   }
 }

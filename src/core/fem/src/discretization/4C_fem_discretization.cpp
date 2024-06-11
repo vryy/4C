@@ -673,10 +673,6 @@ Teuchos::RCP<std::vector<char>> Core::FE::Discretization::PackMyElements() const
 
   for (auto* ele : elerowptr_) ele->Pack(buffer);
 
-  buffer.StartPacking();
-
-  for (auto* ele : elerowptr_) ele->Pack(buffer);
-
   auto block = Teuchos::rcp(new std::vector<char>);
   std::swap(*block, buffer());
   return block;
@@ -694,10 +690,6 @@ Teuchos::RCP<std::vector<char>> Core::FE::Discretization::PackMyNodes() const
 
   for (auto* node : noderowptr_) node->Pack(buffer);
 
-  buffer.StartPacking();
-
-  for (auto* node : noderowptr_) node->Pack(buffer);
-
   auto block = Teuchos::rcp(new std::vector<char>);
   std::swap(*block, buffer());
   return block;
@@ -712,7 +704,7 @@ void Core::FE::Discretization::UnPackMyElements(Teuchos::RCP<std::vector<char>> 
   while (index < e->size())
   {
     std::vector<char> data;
-    Core::Communication::ParObject::ExtractfromPack(index, *e, data);
+    Core::Communication::ParObject::extract_from_pack(index, *e, data);
     Core::Communication::ParObject* o = Core::Communication::Factory(data);
     auto* ele = dynamic_cast<Core::Elements::Element*>(o);
     FOUR_C_THROW_UNLESS(ele != nullptr,
@@ -732,7 +724,7 @@ void Core::FE::Discretization::UnPackMyNodes(Teuchos::RCP<std::vector<char>> e)
   while (index < e->size())
   {
     std::vector<char> data;
-    Core::Communication::ParObject::ExtractfromPack(index, *e, data);
+    Core::Communication::ParObject::extract_from_pack(index, *e, data);
     Core::Communication::ParObject* o = Core::Communication::Factory(data);
     auto* node = dynamic_cast<Core::Nodes::Node*>(o);
     FOUR_C_THROW_UNLESS(node != nullptr,

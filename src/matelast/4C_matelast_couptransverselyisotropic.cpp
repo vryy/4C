@@ -108,15 +108,15 @@ void Mat::Elastic::CoupTransverselyIsotropic::Setup(int numgp, Input::LineDefini
 void Mat::Elastic::CoupTransverselyIsotropic::PackSummand(
     Core::Communication::PackBuffer& data) const
 {
-  AddtoPack(data, a_);
-  AddtoPack(data, aa_);
+  add_to_pack(data, a_);
+  add_to_pack(data, aa_);
 }
 
 void Mat::Elastic::CoupTransverselyIsotropic::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  ExtractfromPack(position, data, a_);
-  ExtractfromPack(position, data, aa_);
+  extract_from_pack(position, data, a_);
+  extract_from_pack(position, data, aa_);
 }
 
 void Mat::Elastic::CoupTransverselyIsotropic::GetFiberVecs(

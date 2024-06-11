@@ -243,7 +243,7 @@ namespace Discret::ELEMENTS
 
     if constexpr (has_gauss_point_history<SolidFormulation>)
     {
-      data.AddtoPack(solid_formulation_history.gp_history.size());
+      data.add_to_pack(solid_formulation_history.gp_history.size());
       for (const auto& item : solid_formulation_history.gp_history)
       {
         SolidFormulation::Pack(item, data);
@@ -274,7 +274,7 @@ namespace Discret::ELEMENTS
     if constexpr (has_gauss_point_history<SolidFormulation>)
     {
       std::size_t num_gps;
-      Core::Communication::ParObject::ExtractfromPack(position, data, num_gps);
+      Core::Communication::ParObject::extract_from_pack(position, data, num_gps);
       solid_formulation_history.gp_history.resize(num_gps);
       for (auto& item : solid_formulation_history.gp_history)
       {

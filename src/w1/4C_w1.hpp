@@ -605,24 +605,24 @@ namespace Discret
 
       void pack_eas_data(Core::Communication::PackBuffer& data) const
       {
-        AddtoPack(data, easdata_.alpha);
-        AddtoPack(data, easdata_.alphao);
-        AddtoPack(data, easdata_.feas);
-        AddtoPack(data, easdata_.invKaa);
-        AddtoPack(data, easdata_.Kda);
-        AddtoPack(data, easdata_.Kad);
-        AddtoPack(data, easdata_.eas_inc);
+        add_to_pack(data, easdata_.alpha);
+        add_to_pack(data, easdata_.alphao);
+        add_to_pack(data, easdata_.feas);
+        add_to_pack(data, easdata_.invKaa);
+        add_to_pack(data, easdata_.Kda);
+        add_to_pack(data, easdata_.Kad);
+        add_to_pack(data, easdata_.eas_inc);
       };
 
       void unpack_eas_data(std::vector<char>::size_type& position, const std::vector<char>& data)
       {
-        ExtractfromPack(position, data, easdata_.alpha);
-        ExtractfromPack(position, data, easdata_.alphao);
-        ExtractfromPack(position, data, easdata_.feas);
-        ExtractfromPack(position, data, easdata_.invKaa);
-        ExtractfromPack(position, data, easdata_.Kda);
-        ExtractfromPack(position, data, easdata_.Kad);
-        ExtractfromPack(position, data, easdata_.eas_inc);
+        extract_from_pack(position, data, easdata_.alpha);
+        extract_from_pack(position, data, easdata_.alphao);
+        extract_from_pack(position, data, easdata_.feas);
+        extract_from_pack(position, data, easdata_.invKaa);
+        extract_from_pack(position, data, easdata_.Kda);
+        extract_from_pack(position, data, easdata_.Kad);
+        extract_from_pack(position, data, easdata_.eas_inc);
       };
       //@}
 

@@ -208,22 +208,21 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Setup(const int matnum)
 void BEAMINTERACTION::BeamLinkRigidJointed::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   BeamLink::Pack(data);
 
   // bspottriad1_
-  AddtoPack(data, bspottriad1_);
+  add_to_pack(data, bspottriad1_);
   // bspottriad2_
-  AddtoPack(data, bspottriad2_);
+  add_to_pack(data, bspottriad2_);
   // Lambdarel1_
-  AddtoPack(data, lambdarel1_);
+  add_to_pack(data, lambdarel1_);
   // Lambdarel2_
-  AddtoPack(data, lambdarel2_);
+  add_to_pack(data, lambdarel2_);
 
   return;
 }
@@ -238,17 +237,17 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Unpack(const std::vector<char>& data
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   BeamLink::Unpack(basedata);
 
   // bspottriad1_
-  ExtractfromPack(position, data, bspottriad1_);
+  extract_from_pack(position, data, bspottriad1_);
   // bspottriad2_
-  ExtractfromPack(position, data, bspottriad2_);
+  extract_from_pack(position, data, bspottriad2_);
   // Lambdarel1_
-  ExtractfromPack(position, data, lambdarel1_);
+  extract_from_pack(position, data, lambdarel1_);
   // Lambdarel2_
-  ExtractfromPack(position, data, lambdarel2_);
+  extract_from_pack(position, data, lambdarel2_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

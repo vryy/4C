@@ -101,13 +101,12 @@ Core::Elements::Element* Discret::ELEMENTS::Wall1Scatra::Clone() const
 void Discret::ELEMENTS::Wall1Scatra::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // pack scalar transport impltype
-  AddtoPack(data, impltype_);
+  add_to_pack(data, impltype_);
 
   // add base class Element
   Wall1::Pack(data);
@@ -131,7 +130,7 @@ void Discret::ELEMENTS::Wall1Scatra::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Wall1::Unpack(basedata);
 }
 

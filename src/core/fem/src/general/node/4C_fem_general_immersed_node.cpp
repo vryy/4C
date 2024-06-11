@@ -102,19 +102,18 @@ void Core::Nodes::ImmersedNode::Print(std::ostream& os) const
 void Core::Nodes::ImmersedNode::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Core::Nodes::Node
   Node::Pack(data);
 
   // add IsBoundaryImmersed_
-  AddtoPack(data, IsBoundaryImmersed_);
+  add_to_pack(data, IsBoundaryImmersed_);
   // add ismatched_
-  AddtoPack(data, ismatched_);
+  add_to_pack(data, ismatched_);
 
   return;
 }
@@ -132,7 +131,7 @@ void Core::Nodes::ImmersedNode::Unpack(const std::vector<char>& data)
 
   // extract base class Core::Nodes::Node
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Node::Unpack(basedata);
 
   // isimersedboundary_

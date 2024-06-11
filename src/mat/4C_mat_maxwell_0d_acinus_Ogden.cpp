@@ -80,19 +80,18 @@ Mat::Maxwell0dAcinusOgden::Maxwell0dAcinusOgden(Mat::PAR::Maxwell0dAcinus* param
 void Mat::Maxwell0dAcinusOgden::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // Pack type of this instance of ParObject
   int type = UniqueParObjectId();
 
-  AddtoPack(data, type);
-  AddtoPack(data, kappa_);
-  AddtoPack(data, beta_);
+  add_to_pack(data, type);
+  add_to_pack(data, kappa_);
+  add_to_pack(data, beta_);
 
   // Pack matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 }
 
 
@@ -105,12 +104,12 @@ void Mat::Maxwell0dAcinusOgden::Unpack(const std::vector<char>& data)
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // Extract kappa and beta
-  ExtractfromPack(position, data, kappa_);
-  ExtractfromPack(position, data, beta_);
+  extract_from_pack(position, data, kappa_);
+  extract_from_pack(position, data, beta_);
 
   // Extract matid
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)

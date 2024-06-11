@@ -47,7 +47,7 @@ void Mat::DefaultAnisotropyExtension<numfib>::PackAnisotropy(
   // Call base packing
   Mat::FiberAnisotropyExtension<numfib>::PackAnisotropy(data);
 
-  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(initialized_));
+  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(initialized_));
 }
 
 template <unsigned int numfib>

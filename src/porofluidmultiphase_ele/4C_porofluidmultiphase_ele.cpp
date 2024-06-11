@@ -250,18 +250,17 @@ void Discret::ELEMENTS::PoroFluidMultiPhase::initialize()
 void Discret::ELEMENTS::PoroFluidMultiPhase::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Element
   Element::Pack(data);
 
   // add internal data
-  AddtoPack(data, distype_);
-  AddtoPack(data, numdofpernode_);
+  add_to_pack(data, distype_);
+  add_to_pack(data, numdofpernode_);
 
   return;
 }
@@ -279,12 +278,12 @@ void Discret::ELEMENTS::PoroFluidMultiPhase::Unpack(const std::vector<char>& dat
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
 
   // extract internal data
   distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
-  ExtractfromPack(position, data, numdofpernode_);
+  extract_from_pack(position, data, numdofpernode_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

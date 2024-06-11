@@ -17,9 +17,10 @@ FOUR_C_NAMESPACE_OPEN
 void Discret::ELEMENTS::AddToPack(Core::Communication::PackBuffer& data,
     const Discret::ELEMENTS::SolidElementProperties& properties)
 {
-  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(properties.kintype));
-  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(properties.element_technology));
-  Core::Communication::ParObject::AddtoPack(
+  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(properties.kintype));
+  Core::Communication::ParObject::add_to_pack(
+      data, static_cast<int>(properties.element_technology));
+  Core::Communication::ParObject::add_to_pack(
       data, static_cast<int>(properties.prestress_technology));
 }
 

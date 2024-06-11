@@ -64,17 +64,17 @@ CONTACT::NodeDataContainer::NodeDataContainer()
 void CONTACT::NodeDataContainer::Pack(Core::Communication::PackBuffer& data) const
 {
   // add txi_
-  Core::Communication::ParObject::AddtoPack(data, txi_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, txi_, 3 * sizeof(double));
   // add teta_
-  Core::Communication::ParObject::AddtoPack(data, teta_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, teta_, 3 * sizeof(double));
   // add grow_
-  Core::Communication::ParObject::AddtoPack(data, grow_);
+  Core::Communication::ParObject::add_to_pack(data, grow_);
   // add kappa_
-  Core::Communication::ParObject::AddtoPack(data, kappa_);
+  Core::Communication::ParObject::add_to_pack(data, kappa_);
   // add activeold_
-  Core::Communication::ParObject::AddtoPack(data, activeold_);
+  Core::Communication::ParObject::add_to_pack(data, activeold_);
   // add n_old_
-  Core::Communication::ParObject::AddtoPack(data, n_old_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, n_old_, 3 * sizeof(double));
 
   // no need to pack derivs_
   // (these will evaluated anew anyway)
@@ -90,17 +90,17 @@ void CONTACT::NodeDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // txi_
-  Core::Communication::ParObject::ExtractfromPack(position, data, txi_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(position, data, txi_, 3 * sizeof(double));
   // teta_
-  Core::Communication::ParObject::ExtractfromPack(position, data, teta_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(position, data, teta_, 3 * sizeof(double));
   // grow_
-  Core::Communication::ParObject::ExtractfromPack(position, data, grow_);
+  Core::Communication::ParObject::extract_from_pack(position, data, grow_);
   // kappa_
-  Core::Communication::ParObject::ExtractfromPack(position, data, kappa_);
+  Core::Communication::ParObject::extract_from_pack(position, data, kappa_);
   // activeold_
   activeold_ = Core::Communication::ParObject::ExtractInt(position, data);
   // n_old_
-  Core::Communication::ParObject::ExtractfromPack(position, data, n_old_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(position, data, n_old_, 3 * sizeof(double));
 
   return;
 }
@@ -200,13 +200,13 @@ void CONTACT::Aug::NodeDataContainer::Setup()
 void CONTACT::Aug::NodeDataContainer::Pack(Core::Communication::PackBuffer& data) const
 {
   // add maxNumMasterElements
-  Core::Communication::ParObject::AddtoPack(data, mentries_);
+  Core::Communication::ParObject::add_to_pack(data, mentries_);
   // add kappa_
-  Core::Communication::ParObject::AddtoPack(data, kappa_);
+  Core::Communication::ParObject::add_to_pack(data, kappa_);
   // add grow_
-  Core::Communication::ParObject::AddtoPack(data, w_gap_);
+  Core::Communication::ParObject::add_to_pack(data, w_gap_);
   // add augA_
-  Core::Communication::ParObject::AddtoPack(data, aug_a_);
+  Core::Communication::ParObject::add_to_pack(data, aug_a_);
 
   // no need to pack derivs_
   // (these will evaluated new anyway)
@@ -220,13 +220,13 @@ void CONTACT::Aug::NodeDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // maxNumMasterElements
-  Core::Communication::ParObject::ExtractfromPack(position, data, mentries_);
+  Core::Communication::ParObject::extract_from_pack(position, data, mentries_);
   // kappa_
-  Core::Communication::ParObject::ExtractfromPack(position, data, kappa_);
+  Core::Communication::ParObject::extract_from_pack(position, data, kappa_);
   // grow_
-  Core::Communication::ParObject::ExtractfromPack(position, data, w_gap_);
+  Core::Communication::ParObject::extract_from_pack(position, data, w_gap_);
   // augA_
-  Core::Communication::ParObject::ExtractfromPack(position, data, aug_a_);
+  Core::Communication::ParObject::extract_from_pack(position, data, aug_a_);
 
   return;
 }
@@ -285,15 +285,15 @@ CONTACT::NodePoroDataContainer::NodePoroDataContainer()
 void CONTACT::NodePoroDataContainer::Pack(Core::Communication::PackBuffer& data) const
 {
   // add fvel
-  Core::Communication::ParObject::AddtoPack(data, fvel_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, fvel_, 3 * sizeof(double));
   // add fpres
-  Core::Communication::ParObject::AddtoPack(data, fpres_);
+  Core::Communication::ParObject::add_to_pack(data, fpres_);
   // add svel
-  Core::Communication::ParObject::AddtoPack(data, svel_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, svel_, 3 * sizeof(double));
   // add poroLM
-  Core::Communication::ParObject::AddtoPack(data, porolm_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, porolm_, 3 * sizeof(double));
   // add ncoup
-  Core::Communication::ParObject::AddtoPack(data, ncouprow_);
+  Core::Communication::ParObject::add_to_pack(data, ncouprow_);
   return;
 }
 
@@ -305,15 +305,15 @@ void CONTACT::NodePoroDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // fvel
-  Core::Communication::ParObject::ExtractfromPack(position, data, fvel_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(position, data, fvel_, 3 * sizeof(double));
   // fpres
-  Core::Communication::ParObject::ExtractfromPack(position, data, fpres_);
+  Core::Communication::ParObject::extract_from_pack(position, data, fpres_);
   // svel
-  Core::Communication::ParObject::ExtractfromPack(position, data, svel_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(position, data, svel_, 3 * sizeof(double));
   // poroLM
-  Core::Communication::ParObject::ExtractfromPack(position, data, porolm_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(position, data, porolm_, 3 * sizeof(double));
   // ncoup
-  Core::Communication::ParObject::ExtractfromPack(position, data, ncouprow_);
+  Core::Communication::ParObject::extract_from_pack(position, data, ncouprow_);
   return;
 }
 
@@ -332,11 +332,11 @@ CONTACT::NodeTSIDataContainer::NodeTSIDataContainer(double t_ref, double t_dam)
  *----------------------------------------------------------------------*/
 void CONTACT::NodeTSIDataContainer::Pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::ParObject::AddtoPack(data, temp_master_);
-  Core::Communication::ParObject::AddtoPack(data, t_ref_);
-  Core::Communication::ParObject::AddtoPack(data, t_dam_);
-  Core::Communication::ParObject::AddtoPack(data, derivTempMasterDisp_);
-  Core::Communication::ParObject::AddtoPack(data, derivTempMasterTemp_);
+  Core::Communication::ParObject::add_to_pack(data, temp_master_);
+  Core::Communication::ParObject::add_to_pack(data, t_ref_);
+  Core::Communication::ParObject::add_to_pack(data, t_dam_);
+  Core::Communication::ParObject::add_to_pack(data, derivTempMasterDisp_);
+  Core::Communication::ParObject::add_to_pack(data, derivTempMasterTemp_);
   return;
 }
 
@@ -347,11 +347,11 @@ void CONTACT::NodeTSIDataContainer::Pack(Core::Communication::PackBuffer& data) 
 void CONTACT::NodeTSIDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  Core::Communication::ParObject::ExtractfromPack(position, data, temp_master_);
-  Core::Communication::ParObject::ExtractfromPack(position, data, t_ref_);
-  Core::Communication::ParObject::ExtractfromPack(position, data, t_dam_);
-  Core::Communication::ParObject::ExtractfromPack(position, data, derivTempMasterDisp_);
-  Core::Communication::ParObject::ExtractfromPack(position, data, derivTempMasterTemp_);
+  Core::Communication::ParObject::extract_from_pack(position, data, temp_master_);
+  Core::Communication::ParObject::extract_from_pack(position, data, t_ref_);
+  Core::Communication::ParObject::extract_from_pack(position, data, t_dam_);
+  Core::Communication::ParObject::extract_from_pack(position, data, derivTempMasterDisp_);
+  Core::Communication::ParObject::extract_from_pack(position, data, derivTempMasterTemp_);
   return;
 }
 
@@ -444,41 +444,40 @@ void CONTACT::Node::Print(std::ostream& os) const
 void CONTACT::Node::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Mortar::Node
   Mortar::Node::Pack(data);
 
   // add active_
-  AddtoPack(data, active_);
+  add_to_pack(data, active_);
   // add initactive_
-  AddtoPack(data, initactive_);
+  add_to_pack(data, initactive_);
   // add involved
-  AddtoPack(data, involvedm_);
+  add_to_pack(data, involvedm_);
   // add linsize_
-  AddtoPack(data, linsize_);
+  add_to_pack(data, linsize_);
   // add data_
   bool hasdata = (codata_ != Teuchos::null);
-  AddtoPack(data, hasdata);
+  add_to_pack(data, hasdata);
   if (hasdata) codata_->Pack(data);
 
   // add augdata_
   bool hasdataaug = (augdata_ != Teuchos::null);
-  AddtoPack(data, hasdataaug);
+  add_to_pack(data, hasdataaug);
   if (hasdataaug) augdata_->Pack(data);
 
   // add porodata_
   bool hasdataporo = (coporodata_ != Teuchos::null);
-  AddtoPack(data, hasdataporo);
+  add_to_pack(data, hasdataporo);
   if (hasdataporo) coporodata_->Pack(data);
 
   // add tsidata
   bool hasTSIdata = (cTSIdata_ != Teuchos::null);
-  AddtoPack(data, (int)hasTSIdata);
+  add_to_pack(data, (int)hasTSIdata);
   if (hasTSIdata) cTSIdata_->Pack(data);
 
   return;
@@ -497,7 +496,7 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
 
   // extract base class Mortar::Node
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Mortar::Node::Unpack(basedata);
 
   // active_

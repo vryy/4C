@@ -171,20 +171,19 @@ Mat::PlasticElastHyper::PlasticElastHyper(Mat::PAR::PlasticElastHyper* params)
 void Mat::PlasticElastHyper::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // matid
   int matid = -1;
   if (MatParams() != nullptr) matid = MatParams()->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
   summandProperties_.Pack(data);
 
   // plastic anisotropy
-  AddtoPack(data, PlAniso_full_);
-  AddtoPack(data, InvPlAniso_full_);
+  add_to_pack(data, PlAniso_full_);
+  add_to_pack(data, InvPlAniso_full_);
 
   if (MatParams() != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -196,28 +195,29 @@ void Mat::PlasticElastHyper::Pack(Core::Communication::PackBuffer& data) const
   }
 
   // plastic history data
-  AddtoPack<3, 3>(data, last_plastic_defgrd_inverse_);
-  AddtoPack(data, last_alpha_isotropic_);
-  AddtoPack<3, 3>(data, last_alpha_kinematic_);
+  add_to_pack<3, 3>(data, last_plastic_defgrd_inverse_);
+  add_to_pack(data, last_alpha_isotropic_);
+  add_to_pack<3, 3>(data, last_alpha_kinematic_);
 
-  AddtoPack(data, (int)activity_state_.size());
-  for (int i = 0; i < (int)activity_state_.size(); ++i) AddtoPack(data, (int)activity_state_.at(i));
+  add_to_pack(data, (int)activity_state_.size());
+  for (int i = 0; i < (int)activity_state_.size(); ++i)
+    add_to_pack(data, (int)activity_state_.at(i));
 
-  AddtoPack(data, (int)delta_alpha_i_.size());
-  for (int i = 0; i < (int)delta_alpha_i_.size(); ++i) AddtoPack(data, delta_alpha_i_.at(i));
+  add_to_pack(data, (int)delta_alpha_i_.size());
+  for (int i = 0; i < (int)delta_alpha_i_.size(); ++i) add_to_pack(data, delta_alpha_i_.at(i));
 
   // tsi data
   bool tsi = HepDiss_ != Teuchos::null;
-  AddtoPack(data, (int)tsi);
+  add_to_pack(data, (int)tsi);
   bool tsi_eas = dHepDissdTeas_ != Teuchos::null;
-  AddtoPack(data, (int)tsi_eas);
-  if (tsi) AddtoPack(data, (int)dHepDissdd_->at(0).numRows());
+  add_to_pack(data, (int)tsi_eas);
+  if (tsi) add_to_pack(data, (int)dHepDissdd_->at(0).numRows());
 
   // dissipation mode
-  AddtoPack(data, (int)DisMode());
+  add_to_pack(data, (int)DisMode());
 
-  AddtoPack(data, cpl());
-  AddtoPack(data, s());
+  add_to_pack(data, cpl());
+  add_to_pack(data, s());
 
   anisotropy_.PackAnisotropy(data);
 
@@ -239,7 +239,7 @@ void Mat::PlasticElastHyper::Unpack(const std::vector<char>& data)
 
   // matid and recover MatParams()
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -258,8 +258,8 @@ void Mat::PlasticElastHyper::Unpack(const std::vector<char>& data)
   summandProperties_.Unpack(position, data);
 
   // plastic anisotropy
-  ExtractfromPack(position, data, PlAniso_full_);
-  ExtractfromPack(position, data, InvPlAniso_full_);
+  extract_from_pack(position, data, PlAniso_full_);
+  extract_from_pack(position, data, InvPlAniso_full_);
 
   if (MatParams() != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -282,9 +282,9 @@ void Mat::PlasticElastHyper::Unpack(const std::vector<char>& data)
   }
 
   // plastic history data
-  ExtractfromPack<3, 3>(position, data, last_plastic_defgrd_inverse_);
-  ExtractfromPack(position, data, last_alpha_isotropic_);
-  ExtractfromPack<3, 3>(position, data, last_alpha_kinematic_);
+  extract_from_pack<3, 3>(position, data, last_plastic_defgrd_inverse_);
+  extract_from_pack(position, data, last_alpha_isotropic_);
+  extract_from_pack<3, 3>(position, data, last_alpha_kinematic_);
 
   activity_state_.resize(ExtractInt(position, data));
   for (int i = 0; i < (int)activity_state_.size(); ++i)

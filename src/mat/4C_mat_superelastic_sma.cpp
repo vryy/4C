@@ -165,17 +165,16 @@ Mat::SuperElasticSMA::SuperElasticSMA(Mat::PAR::SuperElasticSMA* params) : param
 void Mat::SuperElasticSMA::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   // pack history data
   int histsize;
@@ -189,14 +188,14 @@ void Mat::SuperElasticSMA::Pack(Core::Communication::PackBuffer& data) const
     // if material is initialized (restart): size equates number of gausspoints
     histsize = xi_s_curr_->size();
   }
-  AddtoPack(data, histsize);  // Length of history vector(s)
+  add_to_pack(data, histsize);  // Length of history vector(s)
   for (int var = 0; var < histsize; ++var)
   {
-    // insert history vectors to AddtoPack
-    AddtoPack(data, druckerpragerloadingcurr_->at(var));
-    AddtoPack(data, druckerpragerloadinglast_->at(var));
-    AddtoPack(data, xi_s_curr_->at(var));
-    AddtoPack(data, xi_s_last_->at(var));
+    // insert history vectors to add_to_pack
+    add_to_pack(data, druckerpragerloadingcurr_->at(var));
+    add_to_pack(data, druckerpragerloadinglast_->at(var));
+    add_to_pack(data, xi_s_curr_->at(var));
+    add_to_pack(data, xi_s_last_->at(var));
   }
 
   return;
@@ -216,7 +215,7 @@ void Mat::SuperElasticSMA::Unpack(const std::vector<char>& data)
 
   // matid
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -233,7 +232,7 @@ void Mat::SuperElasticSMA::Unpack(const std::vector<char>& data)
 
   // history data
   int histsize;
-  ExtractfromPack(position, data, histsize);
+  extract_from_pack(position, data, histsize);
 
   // if system is not yet initialized, the history vectors have to be intialized
   if (histsize == 0) isinit_ = false;
@@ -249,16 +248,16 @@ void Mat::SuperElasticSMA::Unpack(const std::vector<char>& data)
 
     // vectors of last converged state are unpacked
 
-    ExtractfromPack(position, data, tmpDouble);
+    extract_from_pack(position, data, tmpDouble);
     druckerpragerloadingcurr_->push_back(tmpDouble);
 
-    ExtractfromPack(position, data, tmpDouble);
+    extract_from_pack(position, data, tmpDouble);
     druckerpragerloadinglast_->push_back(tmpDouble);
 
-    ExtractfromPack(position, data, tmpDouble);
+    extract_from_pack(position, data, tmpDouble);
     xi_s_curr_->push_back(tmpDouble);
 
-    ExtractfromPack(position, data, tmpDouble);
+    extract_from_pack(position, data, tmpDouble);
     xi_s_last_->push_back(tmpDouble);
   }
 

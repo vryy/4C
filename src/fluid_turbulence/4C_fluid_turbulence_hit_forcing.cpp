@@ -144,13 +144,7 @@ namespace FLD
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          Core::Communication::ParObject::AddtoPack(data, *x1line);
-        }
-        data.StartPacking();
-        for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
-             x1line != coords.end(); ++x1line)
-        {
-          Core::Communication::ParObject::AddtoPack(data, *x1line);
+          Core::Communication::ParObject::add_to_pack(data, *x1line);
         }
         std::swap(sblock, data());
 
@@ -192,7 +186,7 @@ namespace FLD
           while (index < rblock.size())
           {
             double onecoord;
-            Core::Communication::ParObject::ExtractfromPack(index, rblock, onecoord);
+            Core::Communication::ParObject::extract_from_pack(index, rblock, onecoord);
             coords.insert(onecoord);
           }
         }

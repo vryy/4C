@@ -78,16 +78,15 @@ Mat::ViscoNeoHooke::ViscoNeoHooke(Mat::PAR::ViscoNeoHooke* params) : params_(par
 void Mat::ViscoNeoHooke::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   //  pack history data
   int histsize;
@@ -99,11 +98,11 @@ void Mat::ViscoNeoHooke::Pack(Core::Communication::PackBuffer& data) const
   {
     histsize = histstresslast_->size();
   }
-  AddtoPack(data, 2 * histsize);  // Length of history vector(s)
+  add_to_pack(data, 2 * histsize);  // Length of history vector(s)
   for (int var = 0; var < histsize; ++var)
   {
-    AddtoPack(data, histstresslast_->at(var));
-    AddtoPack(data, artstresslast_->at(var));
+    add_to_pack(data, histstresslast_->at(var));
+    add_to_pack(data, artstresslast_->at(var));
   }
   return;
 }
@@ -121,7 +120,7 @@ void Mat::ViscoNeoHooke::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -138,7 +137,7 @@ void Mat::ViscoNeoHooke::Unpack(const std::vector<char>& data)
 
   // history data
   int twicehistsize;
-  ExtractfromPack(position, data, twicehistsize);
+  extract_from_pack(position, data, twicehistsize);
 
   if (twicehistsize == 0) isinit_ = false;
 
@@ -151,9 +150,9 @@ void Mat::ViscoNeoHooke::Unpack(const std::vector<char>& data)
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> tmp(true);
     histstresscurr_->push_back(tmp);
     artstresscurr_->push_back(tmp);
-    ExtractfromPack(position, data, tmp);
+    extract_from_pack(position, data, tmp);
     histstresslast_->push_back(tmp);
-    ExtractfromPack(position, data, tmp);
+    extract_from_pack(position, data, tmp);
     artstresslast_->push_back(tmp);
   }
 

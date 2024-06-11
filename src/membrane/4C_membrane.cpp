@@ -137,20 +137,19 @@ template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Membrane<distype>::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Element
   Element::Pack(data);
 
   // thickness_
-  AddtoPack(data, thickness_);
+  add_to_pack(data, thickness_);
 
   // current thickness_
-  AddtoPack(data, cur_thickness_);
+  add_to_pack(data, cur_thickness_);
 
   return;
 }
@@ -168,12 +167,12 @@ void Discret::ELEMENTS::Membrane<distype>::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
   // thickness_
-  ExtractfromPack(position, data, thickness_);
+  extract_from_pack(position, data, thickness_);
   // current thickness_
-  ExtractfromPack(position, data, cur_thickness_);
+  extract_from_pack(position, data, cur_thickness_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

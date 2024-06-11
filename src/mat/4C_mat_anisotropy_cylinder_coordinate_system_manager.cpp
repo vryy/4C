@@ -23,18 +23,18 @@ Mat::CylinderCoordinateSystemManager::CylinderCoordinateSystemManager() = defaul
 
 void Mat::CylinderCoordinateSystemManager::Pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::ParObject::AddtoPack(data, radial_);
-  Core::Communication::ParObject::AddtoPack(data, axial_);
-  Core::Communication::ParObject::AddtoPack(data, circumferential_);
-  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(is_defined_));
+  Core::Communication::ParObject::add_to_pack(data, radial_);
+  Core::Communication::ParObject::add_to_pack(data, axial_);
+  Core::Communication::ParObject::add_to_pack(data, circumferential_);
+  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(is_defined_));
 }
 
 void Mat::CylinderCoordinateSystemManager::Unpack(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  Core::Communication::ParObject::ExtractfromPack(position, data, radial_);
-  Core::Communication::ParObject::ExtractfromPack(position, data, axial_);
-  Core::Communication::ParObject::ExtractfromPack(position, data, circumferential_);
+  Core::Communication::ParObject::extract_from_pack(position, data, radial_);
+  Core::Communication::ParObject::extract_from_pack(position, data, axial_);
+  Core::Communication::ParObject::extract_from_pack(position, data, circumferential_);
   is_defined_ = static_cast<bool>(Core::Communication::ParObject::ExtractInt(position, data));
 }
 

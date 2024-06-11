@@ -203,9 +203,7 @@ namespace Discret::ELEMENTS
       const Core::LinAlg::SerialDenseMatrix& matrix, std::vector<char>& serialized_matrix)
   {
     Core::Communication::PackBuffer packBuffer;
-    Core::Communication::ParObject::AddtoPack(packBuffer, matrix);
-    packBuffer.StartPacking();
-    Core::Communication::ParObject::AddtoPack(packBuffer, matrix);
+    Core::Communication::ParObject::add_to_pack(packBuffer, matrix);
     std::copy(packBuffer().begin(), packBuffer().end(), std::back_inserter(serialized_matrix));
   }
 

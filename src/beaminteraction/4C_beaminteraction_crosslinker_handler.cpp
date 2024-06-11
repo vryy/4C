@@ -100,15 +100,6 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
                homelesslinker.begin();
            currlinker != homelesslinker.end(); ++currlinker)
       {
-        //        cout << " Id:" << (*currlinker)->Id() << " was packed on proc: " << myrank_ <<
-        //        endl;
-        (*currlinker)->Pack(data);
-      }
-      data.StartPacking();
-      for (std::list<Teuchos::RCP<Core::Nodes::Node>>::const_iterator currlinker =
-               homelesslinker.begin();
-           currlinker != homelesslinker.end(); ++currlinker)
-      {
         (*currlinker)->Pack(data);
         binstrategy_->BinDiscret()->DeleteNode((*currlinker)->Id());
       }
@@ -139,7 +130,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
       while (index < rdata.size())
       {
         std::vector<char> data;
-        Core::Communication::ParObject::ExtractfromPack(index, rdata, data);
+        Core::Communication::ParObject::extract_from_pack(index, rdata, data);
         // this Teuchos::rcp holds the memory of the node
         Teuchos::RCP<Core::Communication::ParObject> object =
             Teuchos::rcp(Core::Communication::Factory(data), true);
@@ -230,8 +221,6 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
     if (targetproc != -1)
     {
       Core::Communication::PackBuffer data;
-      iterhomelesslinker->Pack(data);
-      data.StartPacking();
       iterhomelesslinker->Pack(data);
       binstrategy_->BinDiscret()->DeleteNode(iterhomelesslinker->Id());
       sdata[targetproc].insert(sdata[targetproc].end(), data().begin(), data().end());
@@ -336,8 +325,6 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
       {
         Core::Communication::PackBuffer data;
         (*iter)->Pack(data);
-        data.StartPacking();
-        (*iter)->Pack(data);
         binstrategy_->BinDiscret()->DeleteNode((*iter)->Id());
         sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
       }
@@ -419,7 +406,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::receive_linker_and_fill_them_in_bi
       while (index < rdata.size())
       {
         std::vector<char> data;
-        Core::Communication::ParObject::ExtractfromPack(index, rdata, data);
+        Core::Communication::ParObject::extract_from_pack(index, rdata, data);
         // this Teuchos::rcp holds the memory of the node
         Teuchos::RCP<Core::Communication::ParObject> object =
             Teuchos::rcp(Core::Communication::Factory(data), true);

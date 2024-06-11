@@ -158,17 +158,16 @@ Core::FE::CellType Discret::ELEMENTS::Lubrication::Shape() const { return distyp
 void Discret::ELEMENTS::Lubrication::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Element
   Element::Pack(data);
 
   // add internal data
-  AddtoPack(data, distype_);
+  add_to_pack(data, distype_);
 
   return;
 }
@@ -186,7 +185,7 @@ void Discret::ELEMENTS::Lubrication::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
 
   // extract internal data

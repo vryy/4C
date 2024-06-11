@@ -39,11 +39,10 @@ template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Wall1PoroP1<distype>::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  Base::AddtoPack(data, type);
+  Base::add_to_pack(data, type);
 
   // add base class Element
   Base::Pack(data);
@@ -58,7 +57,7 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::Unpack(const std::vector<char>& da
 
   // extract base class Element
   std::vector<char> basedata(0);
-  Base::ExtractfromPack(position, data, basedata);
+  Base::extract_from_pack(position, data, basedata);
   Base::Unpack(basedata);
 
   if (position != data.size())

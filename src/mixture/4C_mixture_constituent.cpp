@@ -126,9 +126,9 @@ void MIXTURE::MixtureConstituent::Setup(Teuchos::ParameterList& params, const in
 // Pack everything for distribution to other processors
 void MIXTURE::MixtureConstituent::PackConstituent(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::ParObject::AddtoPack(data, numgp_);
-  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(has_read_element_));
-  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(is_setup_));
+  Core::Communication::ParObject::add_to_pack(data, numgp_);
+  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(has_read_element_));
+  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(is_setup_));
 }
 
 // Unpack base constituent data, need to be called by every derived class
@@ -140,7 +140,7 @@ void MIXTURE::MixtureConstituent::UnpackConstituent(
   numgp_ = 0;
   is_setup_ = false;
 
-  Core::Communication::ParObject::ExtractfromPack(position, data, numgp_);
+  Core::Communication::ParObject::extract_from_pack(position, data, numgp_);
 
   has_read_element_ = (bool)Core::Communication::ParObject::ExtractInt(position, data);
   is_setup_ = (bool)Core::Communication::ParObject::ExtractInt(position, data);

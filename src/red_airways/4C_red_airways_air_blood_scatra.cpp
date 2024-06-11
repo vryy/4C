@@ -114,11 +114,10 @@ Core::FE::CellType Discret::ELEMENTS::RedAirBloodScatra::Shape() const
 void Discret::ELEMENTS::RedAirBloodScatra::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Element
   Element::Pack(data);
@@ -126,14 +125,14 @@ void Discret::ELEMENTS::RedAirBloodScatra::Pack(Core::Communication::PackBuffer&
 
   std::map<std::string, double>::const_iterator it;
 
-  AddtoPack(data, (int)(elem_params_.size()));
+  add_to_pack(data, (int)(elem_params_.size()));
   for (it = elem_params_.begin(); it != elem_params_.end(); it++)
   {
-    AddtoPack(data, it->first);
-    AddtoPack(data, it->second);
+    add_to_pack(data, it->first);
+    add_to_pack(data, it->second);
   }
 
-  AddtoPack(data, generation_);
+  add_to_pack(data, generation_);
 
   return;
 }
@@ -151,25 +150,25 @@ void Discret::ELEMENTS::RedAirBloodScatra::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
 
   std::map<std::string, double> it;
   int n = 0;
 
-  ExtractfromPack(position, data, n);
+  extract_from_pack(position, data, n);
 
   for (int i = 0; i < n; i++)
   {
     std::string name;
     double val;
-    ExtractfromPack(position, data, name);
-    ExtractfromPack(position, data, val);
+    extract_from_pack(position, data, name);
+    extract_from_pack(position, data, val);
     elem_params_[name] = val;
   }
 
   // extract generation
-  ExtractfromPack(position, data, generation_);
+  extract_from_pack(position, data, generation_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

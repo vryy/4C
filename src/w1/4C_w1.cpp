@@ -219,35 +219,34 @@ Core::FE::CellType Discret::ELEMENTS::Wall1::Shape() const { return distype_; }
 void Discret::ELEMENTS::Wall1::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   SoBase::Pack(data);
   // material_
-  AddtoPack(data, material_);
+  add_to_pack(data, material_);
   // thickness
-  AddtoPack(data, thickness_);
+  add_to_pack(data, thickness_);
   // plane strain or plane stress information
-  AddtoPack(data, wtype_);
+  add_to_pack(data, wtype_);
   // gaussrule_
-  AddtoPack(data, gaussrule_);
+  add_to_pack(data, gaussrule_);
   // stresstype
-  AddtoPack(data, stresstype_);
+  add_to_pack(data, stresstype_);
   // eas
-  AddtoPack(data, iseas_);
+  add_to_pack(data, iseas_);
   // eas type
-  AddtoPack(data, eastype_);
+  add_to_pack(data, eastype_);
   // eas data
   pack_eas_data(data);
   // structale
-  AddtoPack(data, structale_);
+  add_to_pack(data, structale_);
   // distype
-  AddtoPack(data, distype_);
+  add_to_pack(data, distype_);
   // line search
-  AddtoPack(data, old_step_length_);
+  add_to_pack(data, old_step_length_);
 
   return;
 }
@@ -265,16 +264,16 @@ void Discret::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   SoBase::Unpack(basedata);
   // material_
-  ExtractfromPack(position, data, material_);
+  extract_from_pack(position, data, material_);
   // thickness_
-  ExtractfromPack(position, data, thickness_);
+  extract_from_pack(position, data, thickness_);
   // plane strain or plane stress information_
   wtype_ = static_cast<DimensionalReduction>(ExtractInt(position, data));
   // gaussrule_
-  ExtractfromPack(position, data, gaussrule_);
+  extract_from_pack(position, data, gaussrule_);
   // stresstype_
   stresstype_ = static_cast<StressType>(ExtractInt(position, data));
   // iseas_
@@ -288,7 +287,7 @@ void Discret::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   // distype_
   distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
   // line search
-  ExtractfromPack(position, data, old_step_length_);
+  extract_from_pack(position, data, old_step_length_);
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;

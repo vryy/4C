@@ -55,14 +55,13 @@ template <Core::FE::CellType distype>
 void Discret::ELEMENTS::MembraneScatra<distype>::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  Core::Communication::ParObject::AddtoPack(data, type);
+  Core::Communication::ParObject::add_to_pack(data, type);
 
   // pack scalar transport impltype_
-  Core::Communication::ParObject::AddtoPack(data, impltype_);
+  Core::Communication::ParObject::add_to_pack(data, impltype_);
 
   // add base class Element
   Membrane<distype>::Pack(data);
@@ -87,7 +86,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::Unpack(const std::vector<char>&
 
   // extract base class Element
   std::vector<char> basedata(0);
-  Core::Communication::ParObject::ExtractfromPack(position, data, basedata);
+  Core::Communication::ParObject::extract_from_pack(position, data, basedata);
   Membrane<distype>::Unpack(basedata);
 
   if (position != data.size())

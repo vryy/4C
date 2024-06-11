@@ -61,7 +61,7 @@ namespace
 void Discret::ELEMENTS::AddToPack(Core::Communication::PackBuffer& data,
     const Discret::ELEMENTS::SolidScatraElementProperties& properties)
 {
-  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(properties.impltype));
+  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(properties.impltype));
 
   AddToPack(data, properties.solid);
 }

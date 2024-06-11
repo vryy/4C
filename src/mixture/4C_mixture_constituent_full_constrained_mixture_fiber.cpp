@@ -127,7 +127,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::PackConstituent(
   for (const FullConstrainedMixtureFiber<double>& fiber : full_constrained_mixture_fiber_)
     fiber.Pack(data);
 
-  Core::Communication::ParObject::AddtoPack(data, last_lambda_f_);
+  Core::Communication::ParObject::add_to_pack(data, last_lambda_f_);
 }
 
 void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::UnpackConstituent(
@@ -141,7 +141,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::UnpackConstituent(
   for (FullConstrainedMixtureFiber<double>& fiber : full_constrained_mixture_fiber_)
     fiber.Unpack(position, data);
 
-  Core::Communication::ParObject::ExtractfromPack(position, data, last_lambda_f_);
+  Core::Communication::ParObject::extract_from_pack(position, data, last_lambda_f_);
 
   if (params_->growth_enabled_)
   {

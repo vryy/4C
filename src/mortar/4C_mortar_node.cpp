@@ -51,15 +51,15 @@ Mortar::NodeDataContainer::NodeDataContainer()
 void Mortar::NodeDataContainer::Pack(Core::Communication::PackBuffer& data) const
 {
   // add n_
-  Core::Communication::ParObject::AddtoPack(data, n_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, n_, 3 * sizeof(double));
   // add edgetangent_
-  Core::Communication::ParObject::AddtoPack(data, edgeTangent_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, edgeTangent_, 3 * sizeof(double));
   // add lm_
-  Core::Communication::ParObject::AddtoPack(data, lm_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, lm_, 3 * sizeof(double));
   // add lmold_
-  Core::Communication::ParObject::AddtoPack(data, lmold_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, lmold_, 3 * sizeof(double));
   // add lmuzawa_
-  Core::Communication::ParObject::AddtoPack(data, lmuzawa_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, lmuzawa_, 3 * sizeof(double));
 
   // no need to pack drows_, mrows_ and mmodrows_
   // (these will evaluated anew anyway)
@@ -72,15 +72,16 @@ void Mortar::NodeDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // n_
-  Core::Communication::ParObject::ExtractfromPack(position, data, n_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(position, data, n_, 3 * sizeof(double));
   // edgetangent_
-  Core::Communication::ParObject::ExtractfromPack(position, data, edgeTangent_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(
+      position, data, edgeTangent_, 3 * sizeof(double));
   // lm_
-  Core::Communication::ParObject::ExtractfromPack(position, data, lm_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(position, data, lm_, 3 * sizeof(double));
   // lmold_
-  Core::Communication::ParObject::ExtractfromPack(position, data, lmold_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(position, data, lmold_, 3 * sizeof(double));
   // lmuzawa_
-  Core::Communication::ParObject::ExtractfromPack(position, data, lmuzawa_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(position, data, lmuzawa_, 3 * sizeof(double));
 }
 
 
@@ -177,47 +178,46 @@ void Mortar::Node::Print(std::ostream& os) const
 void Mortar::Node::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Core::Nodes::Node
   Core::Nodes::Node::Pack(data);
   // add isslave_
-  AddtoPack(data, isslave_);
+  add_to_pack(data, isslave_);
   // add istiedslave_
-  AddtoPack(data, istiedslave_);
+  add_to_pack(data, istiedslave_);
   // add isonbound_
-  AddtoPack(data, isonbound_);
+  add_to_pack(data, isonbound_);
   // add isonbound_
-  AddtoPack(data, isonedge_);
+  add_to_pack(data, isonedge_);
   // add isonbound_
-  AddtoPack(data, isoncorner_);
+  add_to_pack(data, isoncorner_);
   // add isdbc_
-  AddtoPack(data, isdbc_);
+  add_to_pack(data, isdbc_);
   // add dbcdofs_
-  AddtoPack(data, dbcdofs_[0]);
-  AddtoPack(data, dbcdofs_[1]);
-  AddtoPack(data, dbcdofs_[2]);
+  add_to_pack(data, dbcdofs_[0]);
+  add_to_pack(data, dbcdofs_[1]);
+  add_to_pack(data, dbcdofs_[2]);
   // dentries_
-  AddtoPack(data, dentries_);
+  add_to_pack(data, dentries_);
   // add dofs_
-  AddtoPack(data, dofs_);
+  add_to_pack(data, dofs_);
   // add xspatial_
-  AddtoPack(data, xspatial_, 3 * sizeof(double));
+  add_to_pack(data, xspatial_, 3 * sizeof(double));
   // add uold_
-  AddtoPack(data, uold_, 3 * sizeof(double));
+  add_to_pack(data, uold_, 3 * sizeof(double));
   // add hasproj_
-  AddtoPack(data, hasproj_);
+  add_to_pack(data, hasproj_);
   // add hassegment_
-  AddtoPack(data, hassegment_);
+  add_to_pack(data, hassegment_);
   // add nurbsw_
-  AddtoPack(data, nurbsw_);
+  add_to_pack(data, nurbsw_);
 
   // add data_
   bool hasdata = (modata_ != Teuchos::null);
-  AddtoPack(data, hasdata);
+  add_to_pack(data, hasdata);
   if (hasdata) modata_->Pack(data);
 }
 
@@ -232,7 +232,7 @@ void Mortar::Node::Unpack(const std::vector<char>& data)
 
   // extract base class Core::Nodes::Node
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Core::Nodes::Node::Unpack(basedata);
   // isslave_
   isslave_ = ExtractInt(position, data);
@@ -251,13 +251,13 @@ void Mortar::Node::Unpack(const std::vector<char>& data)
   dbcdofs_[1] = ExtractInt(position, data);
   dbcdofs_[2] = ExtractInt(position, data);
   // dentries_
-  ExtractfromPack(position, data, dentries_);
+  extract_from_pack(position, data, dentries_);
   // dofs_
-  ExtractfromPack(position, data, dofs_);
+  extract_from_pack(position, data, dofs_);
   // xspatial_
-  ExtractfromPack(position, data, xspatial_, 3 * sizeof(double));
+  extract_from_pack(position, data, xspatial_, 3 * sizeof(double));
   // uold_
-  ExtractfromPack(position, data, uold_, 3 * sizeof(double));
+  extract_from_pack(position, data, uold_, 3 * sizeof(double));
   // hasproj_
   hasproj_ = ExtractInt(position, data);
   // hassegment_

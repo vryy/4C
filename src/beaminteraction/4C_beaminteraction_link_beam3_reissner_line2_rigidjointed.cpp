@@ -142,11 +142,10 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Pack(
   check_init_setup();
 
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class
   BeamLinkRigidJointed::Pack(data);
 
@@ -166,12 +165,12 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Unpack(const std::vector<
 
   // extract base class
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   BeamLinkRigidJointed::Unpack(basedata);
 
   // Unpack data of sub material (these lines are copied from element.cpp)
   std::vector<char> dataele;
-  ExtractfromPack(position, data, dataele);
+  extract_from_pack(position, data, dataele);
   if (dataele.size() > 0)
   {
     Core::Communication::ParObject* object =

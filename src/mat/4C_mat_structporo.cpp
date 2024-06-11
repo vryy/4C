@@ -139,34 +139,33 @@ void Mat::StructPoro::Pack(Core::Communication::PackBuffer& data) const
   if (not is_initialized_) FOUR_C_THROW("poro material not initialized. Not a poro element?");
 
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   // porosity_
   int size = static_cast<int>(porosity_->size());
-  AddtoPack(data, size);
+  add_to_pack(data, size);
   for (int i = 0; i < size; ++i)
   {
-    AddtoPack(data, (*porosity_)[i]);
+    add_to_pack(data, (*porosity_)[i]);
   }
 
   // surf_porosity_
   size = static_cast<int>(surf_porosity_->size());
-  AddtoPack(data, size);
+  add_to_pack(data, size);
   // iterator
   std::map<int, std::vector<double>>::const_iterator iter;
   for (iter = surf_porosity_->begin(); iter != surf_porosity_->end(); ++iter)
   {
-    AddtoPack(data, iter->first);
-    AddtoPack(data, iter->second);
+    add_to_pack(data, iter->first);
+    add_to_pack(data, iter->second);
   }
 
   // Pack data of underlying material
@@ -181,7 +180,7 @@ void Mat::StructPoro::Unpack(const std::vector<char>& data)
 
   // matid
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
@@ -200,24 +199,24 @@ void Mat::StructPoro::Unpack(const std::vector<char>& data)
 
   // porosity_
   int size = 0;
-  ExtractfromPack(position, data, size);
+  extract_from_pack(position, data, size);
   porosity_ = Teuchos::rcp(new std::vector<double>);
   double tmp = 0.0;
   for (int i = 0; i < size; ++i)
   {
-    ExtractfromPack(position, data, tmp);
+    extract_from_pack(position, data, tmp);
     porosity_->push_back(tmp);
   }
 
   // surface porosity (i think it is not necessary to pack/unpack this...)
-  ExtractfromPack(position, data, size);
+  extract_from_pack(position, data, size);
   surf_porosity_ = Teuchos::rcp(new std::map<int, std::vector<double>>);
   for (int i = 0; i < size; i++)
   {
     int dof;
     std::vector<double> value;
-    ExtractfromPack(position, data, dof);
-    ExtractfromPack(position, data, value);
+    extract_from_pack(position, data, dof);
+    extract_from_pack(position, data, value);
 
     // add to map
     surf_porosity_->insert(std::pair<int, std::vector<double>>(dof, value));
@@ -225,7 +224,7 @@ void Mat::StructPoro::Unpack(const std::vector<char>& data)
 
   // Unpack data of sub material (these lines are copied from element.cpp)
   std::vector<char> datamat;
-  ExtractfromPack(position, data, datamat);
+  extract_from_pack(position, data, datamat);
   if (datamat.size() > 0)
   {
     Core::Communication::ParObject* o =

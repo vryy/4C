@@ -121,16 +121,15 @@ Mat::ConstraintMixture::ConstraintMixture(Mat::PAR::ConstraintMixture* params) :
 void Mat::ConstraintMixture::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   int numgp;
   if (!isinit_)
@@ -141,34 +140,34 @@ void Mat::ConstraintMixture::Pack(Core::Communication::PackBuffer& data) const
   {
     numgp = a1_->size();  // size is number of gausspoints
   }
-  AddtoPack(data, numgp);
+  add_to_pack(data, numgp);
   // Pack internal variables
   for (int gp = 0; gp < numgp; gp++)
   {
-    AddtoPack(data, a1_->at(gp));
-    AddtoPack(data, a2_->at(gp));
-    AddtoPack(data, a3_->at(gp));
-    AddtoPack(data, a4_->at(gp));
-    AddtoPack(data, vismassstress_->at(gp));
-    AddtoPack(data, refmassdens_->at(gp));
-    AddtoPack(data, visrefmassdens_->at(gp));
-    AddtoPack(data, localprestretch_->at(gp));
-    AddtoPack(data, localhomstress_->at(gp));
+    add_to_pack(data, a1_->at(gp));
+    add_to_pack(data, a2_->at(gp));
+    add_to_pack(data, a3_->at(gp));
+    add_to_pack(data, a4_->at(gp));
+    add_to_pack(data, vismassstress_->at(gp));
+    add_to_pack(data, refmassdens_->at(gp));
+    add_to_pack(data, visrefmassdens_->at(gp));
+    add_to_pack(data, localprestretch_->at(gp));
+    add_to_pack(data, localhomstress_->at(gp));
   }
   if (numgp > 0)
   {
-    AddtoPack(data, massprodbasal_);
-    AddtoPack(data, homradius_);
+    add_to_pack(data, massprodbasal_);
+    add_to_pack(data, homradius_);
 
     int delsize = deletemass_->size();
-    AddtoPack(data, delsize);
-    for (int iddel = 0; iddel < delsize; iddel++) AddtoPack(data, deletemass_->at(iddel));
+    add_to_pack(data, delsize);
+    for (int iddel = 0; iddel < delsize; iddel++) add_to_pack(data, deletemass_->at(iddel));
 
     // Pack history
     int minindex = minindex_;
-    AddtoPack(data, minindex);
+    add_to_pack(data, minindex);
     int sizehistory = history_->size();
-    AddtoPack(data, sizehistory);
+    add_to_pack(data, sizehistory);
     for (int idpast = 0; idpast < sizehistory; idpast++) history_->at(idpast).Pack(data);
   }
 
@@ -188,7 +187,7 @@ void Mat::ConstraintMixture::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -204,7 +203,7 @@ void Mat::ConstraintMixture::Unpack(const std::vector<char>& data)
     }
 
   int numgp;
-  ExtractfromPack(position, data, numgp);
+  extract_from_pack(position, data, numgp);
   if (numgp == 0)
   {  // no history data to unpack
     isinit_ = false;
@@ -227,53 +226,53 @@ void Mat::ConstraintMixture::Unpack(const std::vector<char>& data)
   for (int gp = 0; gp < numgp; gp++)
   {
     Core::LinAlg::Matrix<3, 1> alin;
-    ExtractfromPack(position, data, alin);
+    extract_from_pack(position, data, alin);
     a1_->at(gp) = alin;
-    ExtractfromPack(position, data, alin);
+    extract_from_pack(position, data, alin);
     a2_->at(gp) = alin;
-    ExtractfromPack(position, data, alin);
+    extract_from_pack(position, data, alin);
     a3_->at(gp) = alin;
-    ExtractfromPack(position, data, alin);
+    extract_from_pack(position, data, alin);
     a4_->at(gp) = alin;
-    ExtractfromPack(position, data, alin);
+    extract_from_pack(position, data, alin);
     vismassstress_->at(gp) = alin;
     double a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     refmassdens_->at(gp) = a;
-    ExtractfromPack(position, data, alin);
+    extract_from_pack(position, data, alin);
     visrefmassdens_->at(gp) = alin;
     Core::LinAlg::Matrix<4, 1> pre;
-    ExtractfromPack(position, data, pre);
+    extract_from_pack(position, data, pre);
     localprestretch_->at(gp) = pre;
-    ExtractfromPack(position, data, pre);
+    extract_from_pack(position, data, pre);
     localhomstress_->at(gp) = pre;
   }
   double basal;
-  ExtractfromPack(position, data, basal);
+  extract_from_pack(position, data, basal);
   massprodbasal_ = basal;
-  ExtractfromPack(position, data, basal);
+  extract_from_pack(position, data, basal);
   homradius_ = basal;
 
   int delsize = 0;
-  ExtractfromPack(position, data, delsize);
+  extract_from_pack(position, data, delsize);
   deletemass_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(delsize));
   for (int iddel = 0; iddel < delsize; iddel++)
   {
     Core::LinAlg::Matrix<3, 1> deldata;
-    ExtractfromPack(position, data, deldata);
+    extract_from_pack(position, data, deldata);
     deletemass_->at(iddel) = deldata;
   }
 
   // unpack history
-  ExtractfromPack(position, data, delsize);
+  extract_from_pack(position, data, delsize);
   minindex_ = delsize;
   int sizehistory;
-  ExtractfromPack(position, data, sizehistory);
+  extract_from_pack(position, data, sizehistory);
   history_ = Teuchos::rcp(new std::vector<ConstraintMixtureHistory>(sizehistory));
   for (int idpast = 0; idpast < sizehistory; idpast++)
   {
     std::vector<char> datahistory;
-    ExtractfromPack(position, data, datahistory);
+    extract_from_pack(position, data, datahistory);
     history_->at(idpast).Unpack(datahistory);
   }
 

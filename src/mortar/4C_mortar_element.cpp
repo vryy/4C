@@ -76,7 +76,7 @@ Mortar::MortarEleDataContainer::MortarEleDataContainer()
 void Mortar::MortarEleDataContainer::Pack(Core::Communication::PackBuffer& data) const
 {
   // add area_
-  Core::Communication::ParObject::AddtoPack(data, area_);
+  Core::Communication::ParObject::add_to_pack(data, area_);
 
   return;
 }
@@ -89,7 +89,7 @@ void Mortar::MortarEleDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // area_
-  Core::Communication::ParObject::ExtractfromPack(position, data, area_);
+  Core::Communication::ParObject::extract_from_pack(position, data, area_);
 
   dualshapecoeff_ = Teuchos::null;
   derivdualshapecoeff_ = Teuchos::null;
@@ -182,48 +182,47 @@ void Mortar::Element::Print(std::ostream& os) const
 void Mortar::Element::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Core::Elements::FaceElement
   Core::Elements::FaceElement::Pack(data);
   // add shape_
-  AddtoPack(data, shape_);
+  add_to_pack(data, shape_);
   // add isslave_
-  AddtoPack(data, isslave_);
+  add_to_pack(data, isslave_);
   // add nurbs_
-  AddtoPack(data, nurbs_);
+  add_to_pack(data, nurbs_);
 
   // for nurbs:
   if (nurbs_)
   {
     // add normalfac
-    AddtoPack(data, normalfac_);
+    add_to_pack(data, normalfac_);
     // add zero_sized_
-    AddtoPack(data, zero_sized_);
+    add_to_pack(data, zero_sized_);
     // knots
     int nr = mortarknots_.size();
-    Core::Communication::ParObject::AddtoPack(data, nr);
+    Core::Communication::ParObject::add_to_pack(data, nr);
     if (nr != 0)
     {
       for (int i = 0; i < nr; i++)
-        Core::Communication::ParObject::AddtoPack(data, (mortarknots_[i]));
+        Core::Communication::ParObject::add_to_pack(data, (mortarknots_[i]));
     }
   }
 
   // add modata_
   bool hasdata = (modata_ != Teuchos::null);
-  AddtoPack(data, hasdata);
+  add_to_pack(data, hasdata);
   if (hasdata) modata_->Pack(data);
 
   // add physicaltype
-  AddtoPack(data, static_cast<int>(physicaltype_));
+  add_to_pack(data, static_cast<int>(physicaltype_));
 
   // mesh size
-  AddtoPack(data, traceHE_);
-  AddtoPack(data, traceHCond_);
+  add_to_pack(data, traceHE_);
+  add_to_pack(data, traceHCond_);
 
   return;
 }
@@ -241,7 +240,7 @@ void Mortar::Element::Unpack(const std::vector<char>& data)
 
   // extract base class Core::Elements::FaceElement
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Core::Elements::FaceElement::Unpack(basedata);
   // shape_
   shape_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
@@ -259,13 +258,13 @@ void Mortar::Element::Unpack(const std::vector<char>& data)
     zero_sized_ = ExtractInt(position, data);
     // knots
     int nr;
-    Core::Communication::ParObject::ExtractfromPack(position, data, nr);
+    Core::Communication::ParObject::extract_from_pack(position, data, nr);
 
     if (nr != 0)
     {
       mortarknots_.resize(nr);
       for (int i = 0; i < nr; i++)
-        Core::Communication::ParObject::ExtractfromPack(position, data, mortarknots_[i]);
+        Core::Communication::ParObject::extract_from_pack(position, data, mortarknots_[i]);
     }
   }
 

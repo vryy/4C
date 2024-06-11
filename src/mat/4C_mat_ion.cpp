@@ -62,16 +62,15 @@ Mat::Ion::Ion(Mat::PAR::Ion* params) : params_(params) {}
 void Mat::Ion::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   /*
   for (unsigned i=0;i<data().size();i++)
@@ -82,7 +81,7 @@ void Mat::Ion::Pack(Core::Communication::PackBuffer& data) const
   std::vector<char>::size_type posit = 0;
   std::vector<char> pbtest;
   int typio = 0;
-  ExtractfromPack(posit,data(),typio);
+  extract_from_pack(posit,data(),typio);
   std::cout<<"ION Pack: Type will be "<<typio<<std::endl;
 */
   // std::cout<<"Ion Pack: "<<data().size()<<std::endl;
@@ -101,7 +100,7 @@ void Mat::Ion::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)

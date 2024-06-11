@@ -122,22 +122,6 @@ void CONTACT::Interface::round_robin_change_ownership()
   // create data buffer
   Core::Communication::PackBuffer dataeles;
 
-  // pack data - first just reserving the mem.
-  for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
-  {
-    int gid = MasterColelesdummy->GID(i);
-    Core::Elements::Element* ele = Discret().gElement(gid);
-    if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
-    Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
-
-    mele->Pack(dataeles);
-
-    int ghost = 0;
-    Core::Communication::ParObject::AddtoPack(dataeles, ghost);
-  }
-
-  dataeles.StartPacking();
-
   // now pack/store
   for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
   {
@@ -149,13 +133,8 @@ void CONTACT::Interface::round_robin_change_ownership()
     mele->Pack(dataeles);
 
     // check for ghosting
-    int ghost;
-    if (mele->Owner() == myrank)
-      ghost = 1;
-    else
-      ghost = 0;
-
-    Core::Communication::ParObject::AddtoPack(dataeles, ghost);
+    const int ghost = (mele->Owner() == myrank) ? 1 : 0;
+    Core::Communication::ParObject::add_to_pack(dataeles, ghost);
   }
   std::swap(sdataeles, dataeles());
 
@@ -195,8 +174,8 @@ void CONTACT::Interface::round_robin_change_ownership()
     {
       std::vector<char> data;
       int ghost = -1;
-      Core::Communication::ParObject::ExtractfromPack(index, rdataeles, data);
-      Core::Communication::ParObject::ExtractfromPack(index, rdataeles, ghost);
+      Core::Communication::ParObject::extract_from_pack(index, rdataeles, data);
+      Core::Communication::ParObject::extract_from_pack(index, rdataeles, ghost);
       if (ghost == -1) FOUR_C_THROW("UNPACK ERROR!!!!!!!!!");
 
       // this Teuchos::rcp holds the memory of the ele
@@ -237,29 +216,6 @@ void CONTACT::Interface::round_robin_change_ownership()
 
   Core::Communication::PackBuffer datanodes;
 
-  // pack data -- col map --> should prevent further ghosting!
-  for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
-  {
-    int gid = MasterColNodesdummy->GID(i);
-    Core::Nodes::Node* node = Discret().gNode(gid);
-    if (!node) FOUR_C_THROW("Cannot find ele with gid %i", gid);
-
-    if (ftype == Inpar::CONTACT::friction_none)
-    {
-      Mortar::Node* cnode = dynamic_cast<Mortar::Node*>(node);
-      cnode->Pack(datanodes);
-    }
-    else
-    {
-      FriNode* cnode = dynamic_cast<FriNode*>(node);
-      cnode->Pack(datanodes);
-    }
-
-    int ghost = 0;
-    Core::Communication::ParObject::AddtoPack(datanodes, ghost);
-  }
-
-  datanodes.StartPacking();
   for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColNodesdummy->GID(i);
@@ -290,7 +246,7 @@ void CONTACT::Interface::round_robin_change_ownership()
         ghost = 0;
     }
 
-    Core::Communication::ParObject::AddtoPack(datanodes, ghost);
+    Core::Communication::ParObject::add_to_pack(datanodes, ghost);
   }
   std::swap(sdatanodes, datanodes());
 
@@ -335,8 +291,8 @@ void CONTACT::Interface::round_robin_change_ownership()
       std::vector<char> data;
 
       int ghost = -1;
-      Core::Communication::ParObject::ExtractfromPack(index, rdatanodes, data);
-      Core::Communication::ParObject::ExtractfromPack(index, rdatanodes, ghost);
+      Core::Communication::ParObject::extract_from_pack(index, rdatanodes, data);
+      Core::Communication::ParObject::extract_from_pack(index, rdatanodes, ghost);
       if (ghost == -1) FOUR_C_THROW("UNPACK ERROR!!!!!!!!!");
 
       // this Teuchos::rcp holds the memory of the node

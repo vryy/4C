@@ -220,17 +220,16 @@ Core::FE::CellType Discret::ELEMENTS::Thermo::Shape() const { return distype_; }
 void Discret::ELEMENTS::Thermo::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   Element::Pack(data);
   // kintype
-  AddtoPack(data, kintype_);
+  add_to_pack(data, kintype_);
   // distype
-  AddtoPack(data, distype_);
+  add_to_pack(data, distype_);
 
   return;
 }  // Pack()
@@ -247,7 +246,7 @@ void Discret::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
   // kintype_
   kintype_ = static_cast<Inpar::STR::KinemType>(ExtractInt(position, data));

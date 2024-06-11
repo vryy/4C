@@ -231,16 +231,15 @@ Mat::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(Mat::PAR::PlasticNlnLogNeoHook
 void Mat::PlasticNlnLogNeoHooke::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   // pack history data
   int histsize;
@@ -254,12 +253,12 @@ void Mat::PlasticNlnLogNeoHooke::Pack(Core::Communication::PackBuffer& data) con
     // if material is initialized (restart): size equates number of gausspoints
     histsize = accplstrainlast_.size();
   }
-  AddtoPack(data, histsize);  // Length of history vector(s)
+  add_to_pack(data, histsize);  // Length of history vector(s)
   for (int var = 0; var < histsize; ++var)
   {
-    // insert history vectors to AddtoPack
-    AddtoPack(data, accplstrainlast_.at(var));
-    AddtoPack(data, invplrcglast_.at(var));
+    // insert history vectors to add_to_pack
+    add_to_pack(data, accplstrainlast_.at(var));
+    add_to_pack(data, invplrcglast_.at(var));
   }
 
   return;
@@ -278,7 +277,7 @@ void Mat::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
 
   // matid
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -295,7 +294,7 @@ void Mat::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
 
   // history data
   int histsize;
-  ExtractfromPack(position, data, histsize);
+  extract_from_pack(position, data, histsize);
 
   // if system is not yet initialized, the history vectors have to be intialized
   if (histsize == 0) isinit_ = false;
@@ -304,12 +303,12 @@ void Mat::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
   {
     double tmp1 = 0.0;
     // scalar-valued vector of last converged state are unpacked
-    ExtractfromPack(position, data, tmp1);
+    extract_from_pack(position, data, tmp1);
     accplstrainlast_.push_back(tmp1);
 
     Core::LinAlg::Matrix<3, 3> tmp(true);
     // vectors of last converged state are unpacked
-    ExtractfromPack(position, data, tmp);
+    extract_from_pack(position, data, tmp);
     invplrcglast_.push_back(tmp);
 
     // current vectors have to be initialized

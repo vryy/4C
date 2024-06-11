@@ -44,9 +44,7 @@ void Discret::UTILS::ISendReceiveAny(Teuchos::RCP<Core::FE::Discretization> cons
     for (iter = p->second.begin(); iter != p->second.end(); ++iter)
     {
       Core::Communication::PackBuffer data;
-      Core::Communication::ParObject::AddtoPack(data, *iter);
-      data.StartPacking();
-      Core::Communication::ParObject::AddtoPack(data, *iter);
+      Core::Communication::ParObject::add_to_pack(data, *iter);
       sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
     }
     targetprocs[p->first] = 1;
@@ -89,7 +87,7 @@ void Discret::UTILS::ISendReceiveAny(Teuchos::RCP<Core::FE::Discretization> cons
       while (index < rdata.size())
       {
         std::pair<int, std::vector<int>> pair;
-        Core::Communication::ParObject::ExtractfromPack(index, rdata, pair);
+        Core::Communication::ParObject::extract_from_pack(index, rdata, pair);
         recvdata.push_back(pair);
       }
       if (index != rdata.size())

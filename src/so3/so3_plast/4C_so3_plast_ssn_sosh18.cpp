@@ -144,11 +144,10 @@ Core::Elements::Element* Discret::ELEMENTS::SoSh18Plast::Clone() const
 void Discret::ELEMENTS::SoSh18Plast::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class So3Plast Element
   Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::Pack(data);
@@ -170,9 +169,9 @@ void Discret::ELEMENTS::SoSh18Plast::Unpack(const std::vector<char>& data)
 
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::Unpack(basedata);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Discret::ELEMENTS::SoSh18::Unpack(basedata);
 
   SyncEAS();

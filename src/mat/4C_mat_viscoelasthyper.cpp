@@ -111,20 +111,19 @@ Mat::ViscoElastHyper::ViscoElastHyper(Mat::PAR::ViscoElastHyper* params)
 void Mat::ViscoElastHyper::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
   summandProperties_.Pack(data);
-  AddtoPack(data, isovisco_);
-  AddtoPack(data, viscogenmax_);
-  AddtoPack(data, viscogeneralizedgenmax_);
-  AddtoPack(data, viscofract_);
+  add_to_pack(data, isovisco_);
+  add_to_pack(data, viscogenmax_);
+  add_to_pack(data, viscogeneralizedgenmax_);
+  add_to_pack(data, viscofract_);
 
   anisotropy_.PackAnisotropy(data);
 
@@ -147,21 +146,21 @@ void Mat::ViscoElastHyper::Pack(Core::Communication::PackBuffer& data) const
   {
     histsize = histscglast_->size();
   }
-  AddtoPack(data, histsize);  // Length of history vector(s)
+  add_to_pack(data, histsize);  // Length of history vector(s)
   for (int var = 0; var < histsize; ++var)
   {
-    AddtoPack(data, histscglast_->at(var));
-    AddtoPack(data, histmodrcglast_->at(var));
-    AddtoPack(data, histstresslast_->at(var));
-    AddtoPack(data, histartstresslast_->at(var));
+    add_to_pack(data, histscglast_->at(var));
+    add_to_pack(data, histmodrcglast_->at(var));
+    add_to_pack(data, histstresslast_->at(var));
+    add_to_pack(data, histartstresslast_->at(var));
   }
 
   if (viscogeneralizedgenmax_)
   {
     for (int var = 0; var < histsize; ++var)
     {
-      AddtoPack(data, histbranchstresslast_->at(var));
-      AddtoPack(data, histbranchelaststresslast_->at(var));
+      add_to_pack(data, histbranchstresslast_->at(var));
+      add_to_pack(data, histbranchelaststresslast_->at(var));
     }
   }
 
@@ -169,16 +168,16 @@ void Mat::ViscoElastHyper::Pack(Core::Communication::PackBuffer& data) const
   if (viscofract_)
   {
     // check if history exists
-    AddtoPack(data, (int)(histfractartstresslastall_ != Teuchos::null));
+    add_to_pack(data, (int)(histfractartstresslastall_ != Teuchos::null));
     if (!(int)(histfractartstresslastall_ != Teuchos::null))
       FOUR_C_THROW("Something got wrong with your history data.");
 
     // pack stepsize
-    AddtoPack(data, (int)histfractartstresslastall_->at(0).size());
+    add_to_pack(data, (int)histfractartstresslastall_->at(0).size());
     // pack history values
     for (int gp = 0; gp < (int)histfractartstresslastall_->size(); ++gp)
       for (int step = 0; step < (int)histfractartstresslastall_->at(gp).size(); ++step)
-        AddtoPack(data, histfractartstresslastall_->at(gp).at(step));
+        add_to_pack(data, histfractartstresslastall_->at(gp).at(step));
   }
 }
 
@@ -203,7 +202,7 @@ void Mat::ViscoElastHyper::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -249,7 +248,7 @@ void Mat::ViscoElastHyper::Unpack(const std::vector<char>& data)
     // history data 09/13
     isinitvis_ = true;
     int histsize;
-    ExtractfromPack(position, data, histsize);
+    extract_from_pack(position, data, histsize);
 
     if (histsize == 0) isinitvis_ = false;
 
@@ -274,10 +273,10 @@ void Mat::ViscoElastHyper::Unpack(const std::vector<char>& data)
 
     for (int gp = 0; gp < histsize; ++gp)
     {
-      ExtractfromPack(position, data, histscglast_->at(gp));
-      ExtractfromPack(position, data, histmodrcglast_->at(gp));
-      ExtractfromPack(position, data, histstresslast_->at(gp));
-      ExtractfromPack(position, data, histartstresslast_->at(gp));
+      extract_from_pack(position, data, histscglast_->at(gp));
+      extract_from_pack(position, data, histmodrcglast_->at(gp));
+      extract_from_pack(position, data, histstresslast_->at(gp));
+      extract_from_pack(position, data, histartstresslast_->at(gp));
     }
 
     if (viscogeneralizedgenmax_)
@@ -293,8 +292,8 @@ void Mat::ViscoElastHyper::Unpack(const std::vector<char>& data)
 
       for (int gp = 0; gp < histsize; ++gp)
       {
-        ExtractfromPack(position, data, histbranchstresslast_->at(gp));
-        ExtractfromPack(position, data, histbranchelaststresslast_->at(gp));
+        extract_from_pack(position, data, histbranchstresslast_->at(gp));
+        extract_from_pack(position, data, histbranchelaststresslast_->at(gp));
       }
     }
 
@@ -314,7 +313,7 @@ void Mat::ViscoElastHyper::Unpack(const std::vector<char>& data)
               histsize, std::vector<Core::LinAlg::Matrix<6, 1>>(histfractartstressall_stepsize)));
       for (int gp = 0; gp < histsize; ++gp)
         for (int step = 0; step < histfractartstressall_stepsize; ++step)
-          ExtractfromPack(position, data, histfractartstresslastall_->at(gp).at(step));
+          extract_from_pack(position, data, histfractartstresslastall_->at(gp).at(step));
     }
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case

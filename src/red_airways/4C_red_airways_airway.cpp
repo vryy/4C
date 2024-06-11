@@ -146,35 +146,34 @@ Core::FE::CellType Discret::ELEMENTS::RedAirway::Shape() const
 void Discret::ELEMENTS::RedAirway::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Element
   Element::Pack(data);
 
-  AddtoPack(data, elem_type_);
-  AddtoPack(data, resistance_);
-  AddtoPack(data, elemsolving_type_);
+  add_to_pack(data, elem_type_);
+  add_to_pack(data, resistance_);
+  add_to_pack(data, elemsolving_type_);
 
-  AddtoPack(data, airway_params_.power_velocity_profile);
-  AddtoPack(data, airway_params_.wall_elasticity);
-  AddtoPack(data, airway_params_.poisson_ratio);
-  AddtoPack(data, airway_params_.wall_thickness);
-  AddtoPack(data, airway_params_.area);
-  AddtoPack(data, airway_params_.viscous_Ts);
-  AddtoPack(data, airway_params_.viscous_phase_shift);
-  AddtoPack(data, airway_params_.branch_length);
-  AddtoPack(data, airway_params_.generation);
+  add_to_pack(data, airway_params_.power_velocity_profile);
+  add_to_pack(data, airway_params_.wall_elasticity);
+  add_to_pack(data, airway_params_.poisson_ratio);
+  add_to_pack(data, airway_params_.wall_thickness);
+  add_to_pack(data, airway_params_.area);
+  add_to_pack(data, airway_params_.viscous_Ts);
+  add_to_pack(data, airway_params_.viscous_phase_shift);
+  add_to_pack(data, airway_params_.branch_length);
+  add_to_pack(data, airway_params_.generation);
 
-  AddtoPack(data, airway_params_.airway_coll);
-  AddtoPack(data, airway_params_.s_close);
-  AddtoPack(data, airway_params_.s_open);
-  AddtoPack(data, airway_params_.p_crit_open);
-  AddtoPack(data, airway_params_.p_crit_close);
-  AddtoPack(data, airway_params_.open_init);
+  add_to_pack(data, airway_params_.airway_coll);
+  add_to_pack(data, airway_params_.s_close);
+  add_to_pack(data, airway_params_.s_open);
+  add_to_pack(data, airway_params_.p_crit_open);
+  add_to_pack(data, airway_params_.p_crit_close);
+  add_to_pack(data, airway_params_.open_init);
 
   return;
 }
@@ -192,29 +191,29 @@ void Discret::ELEMENTS::RedAirway::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
 
-  ExtractfromPack(position, data, elem_type_);
-  ExtractfromPack(position, data, resistance_);
-  ExtractfromPack(position, data, elemsolving_type_);
+  extract_from_pack(position, data, elem_type_);
+  extract_from_pack(position, data, resistance_);
+  extract_from_pack(position, data, elemsolving_type_);
 
-  ExtractfromPack(position, data, airway_params_.power_velocity_profile);
-  ExtractfromPack(position, data, airway_params_.wall_elasticity);
-  ExtractfromPack(position, data, airway_params_.poisson_ratio);
-  ExtractfromPack(position, data, airway_params_.wall_thickness);
-  ExtractfromPack(position, data, airway_params_.area);
-  ExtractfromPack(position, data, airway_params_.viscous_Ts);
-  ExtractfromPack(position, data, airway_params_.viscous_phase_shift);
-  ExtractfromPack(position, data, airway_params_.branch_length);
-  ExtractfromPack(position, data, airway_params_.generation);
+  extract_from_pack(position, data, airway_params_.power_velocity_profile);
+  extract_from_pack(position, data, airway_params_.wall_elasticity);
+  extract_from_pack(position, data, airway_params_.poisson_ratio);
+  extract_from_pack(position, data, airway_params_.wall_thickness);
+  extract_from_pack(position, data, airway_params_.area);
+  extract_from_pack(position, data, airway_params_.viscous_Ts);
+  extract_from_pack(position, data, airway_params_.viscous_phase_shift);
+  extract_from_pack(position, data, airway_params_.branch_length);
+  extract_from_pack(position, data, airway_params_.generation);
 
-  ExtractfromPack(position, data, airway_params_.airway_coll);
-  ExtractfromPack(position, data, airway_params_.s_close);
-  ExtractfromPack(position, data, airway_params_.s_open);
-  ExtractfromPack(position, data, airway_params_.p_crit_open);
-  ExtractfromPack(position, data, airway_params_.p_crit_close);
-  ExtractfromPack(position, data, airway_params_.open_init);
+  extract_from_pack(position, data, airway_params_.airway_coll);
+  extract_from_pack(position, data, airway_params_.s_close);
+  extract_from_pack(position, data, airway_params_.s_open);
+  extract_from_pack(position, data, airway_params_.p_crit_open);
+  extract_from_pack(position, data, airway_params_.p_crit_close);
+  extract_from_pack(position, data, airway_params_.open_init);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

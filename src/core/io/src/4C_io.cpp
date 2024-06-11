@@ -151,7 +151,7 @@ void Core::IO::DiscretizationReader::read_serial_dense_matrix(
   {
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> matrix =
         Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
-    Core::Communication::ParObject::ExtractfromPack(position, *data, *matrix);
+    Core::Communication::ParObject::extract_from_pack(position, *data, *matrix);
     (*mapdata)[elemap->GID(i)] = matrix;
   }
 }
@@ -1440,8 +1440,6 @@ void Core::IO::DiscretizationWriter::write_knotvector() const
 
       // put knotvector into block
       Core::Communication::PackBuffer block;
-      knots->Pack(block);
-      block.StartPacking();
       knots->Pack(block);
 
       // write block to file

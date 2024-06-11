@@ -74,15 +74,14 @@ Core::FE::Nurbs::ControlPoint* Core::FE::Nurbs::ControlPoint::Clone() const
 void Core::FE::Nurbs::ControlPoint::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  Core::Nodes::Node::AddtoPack(data, type);
+  Core::Nodes::Node::add_to_pack(data, type);
   // add base class of control point
   Core::Nodes::Node::Pack(data);
   // add weight
-  Core::Nodes::Node::AddtoPack(data, &w_, sizeof(double));
+  Core::Nodes::Node::add_to_pack(data, &w_, sizeof(double));
 
   return;
 }
@@ -100,10 +99,10 @@ void Core::FE::Nurbs::ControlPoint::Unpack(const std::vector<char>& data)
 
   // extract base class Node
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Core::Nodes::Node::Unpack(basedata);
   // extract weight
-  Core::Nodes::Node::ExtractfromPack(position, data, w_);
+  Core::Nodes::Node::extract_from_pack(position, data, w_);
 
   return;
 }

@@ -142,23 +142,22 @@ Core::FE::CellType Discret::ELEMENTS::Truss3::Shape() const { return Core::FE::C
 void Discret::ELEMENTS::Truss3::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   Element::Pack(data);
-  AddtoPack(data, isinit_);
-  AddtoPack<6, 1>(data, x_);
-  AddtoPack<1, 3>(data, diff_disp_ref_);
-  AddtoPack(data, material_);
-  AddtoPack(data, lrefe_);
-  AddtoPack(data, jacobimass_);
-  AddtoPack(data, jacobinode_);
-  AddtoPack(data, crosssec_);
-  AddtoPack(data, gaussrule_);
-  AddtoPack(data, kintype_);
+  add_to_pack(data, isinit_);
+  add_to_pack<6, 1>(data, x_);
+  add_to_pack<1, 3>(data, diff_disp_ref_);
+  add_to_pack(data, material_);
+  add_to_pack(data, lrefe_);
+  add_to_pack(data, jacobimass_);
+  add_to_pack(data, jacobinode_);
+  add_to_pack(data, crosssec_);
+  add_to_pack(data, gaussrule_);
+  add_to_pack(data, kintype_);
 }
 
 
@@ -174,17 +173,17 @@ void Discret::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
   isinit_ = ExtractInt(position, data);
-  ExtractfromPack<6, 1>(position, data, x_);
-  ExtractfromPack<1, 3>(position, data, diff_disp_ref_);
-  ExtractfromPack(position, data, material_);
-  ExtractfromPack(position, data, lrefe_);
-  ExtractfromPack(position, data, jacobimass_);
-  ExtractfromPack(position, data, jacobinode_);
-  ExtractfromPack(position, data, crosssec_);
-  ExtractfromPack(position, data, gaussrule_);
+  extract_from_pack<6, 1>(position, data, x_);
+  extract_from_pack<1, 3>(position, data, diff_disp_ref_);
+  extract_from_pack(position, data, material_);
+  extract_from_pack(position, data, lrefe_);
+  extract_from_pack(position, data, jacobimass_);
+  extract_from_pack(position, data, jacobinode_);
+  extract_from_pack(position, data, crosssec_);
+  extract_from_pack(position, data, gaussrule_);
   // kinematic type
   kintype_ = static_cast<KinematicType>(ExtractInt(position, data));
 

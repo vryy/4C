@@ -218,15 +218,14 @@ bool Discret::MeshFree::MeshfreeMultiBin::BuildElePointers(
 void Discret::MeshFree::MeshfreeMultiBin::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Core::Elements::Element
   Core::Elements::Element::Pack(data);
   // add vector associatedeleid_
-  for (int i = 0; i < BINSTRATEGY::UTILS::enumsize; ++i) AddtoPack(data, associatedeleid_[i]);
+  for (int i = 0; i < BINSTRATEGY::UTILS::enumsize; ++i) add_to_pack(data, associatedeleid_[i]);
 
   return;
 }
@@ -242,12 +241,12 @@ void Discret::MeshFree::MeshfreeMultiBin::Unpack(const std::vector<char>& data)
 
   // extract base class Core::Elements::Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Core::Elements::Element::Unpack(basedata);
   // extract associatedeleid_
   for (int i = 0; i < BINSTRATEGY::UTILS::enumsize; ++i)
   {
-    ExtractfromPack(position, data, associatedeleid_[i]);
+    extract_from_pack(position, data, associatedeleid_[i]);
     // associatedele_ is NOT communicated
     associatedele_[i].clear();
   }

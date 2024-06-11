@@ -96,19 +96,18 @@ Core::Elements::Element* Discret::ELEMENTS::FluidImmersed::Clone() const
 void Discret::ELEMENTS::FluidImmersed::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   Discret::ELEMENTS::Fluid::Pack(data);
   // Part of immersion domain?
-  AddtoPack(data, is_immersed_);
+  add_to_pack(data, is_immersed_);
   // Part of immersion domain for immersed boundary?
-  AddtoPack(data, is_immersed_bdry_);
+  add_to_pack(data, is_immersed_bdry_);
   // has dirichletvals projected?
-  AddtoPack(data, has_projected_dirichletvalues_);
+  add_to_pack(data, has_projected_dirichletvalues_);
 
   return;
 }
@@ -126,7 +125,7 @@ void Discret::ELEMENTS::FluidImmersed::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Discret::ELEMENTS::Fluid::Unpack(basedata);
   // Part of immersion domain?
   is_immersed_ = ExtractInt(position, data);

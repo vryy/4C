@@ -149,9 +149,7 @@ void Core::Geo::Cut::Parallel::export_communication_finished(bool& procDone)
   {
     Core::Communication::PackBuffer dataSend;
 
-    Core::Communication::ParObject::AddtoPack(dataSend, static_cast<int>(procDone));
-    dataSend.StartPacking();
-    Core::Communication::ParObject::AddtoPack(dataSend, static_cast<int>(procDone));
+    Core::Communication::ParObject::add_to_pack(dataSend, static_cast<int>(procDone));
 
     std::vector<char> dataRecv;
     send_data(dataSend, dest, source, dataRecv);
@@ -161,7 +159,7 @@ void Core::Geo::Cut::Parallel::export_communication_finished(bool& procDone)
     int allProcsDone = 0;
 
     // unpack received data
-    Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, allProcsDone);
+    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, allProcsDone);
 
     // if the received information is allProcsDone==false, then set the current proc also to
     // procDone=false within the next round-iteration the next proc is also set to procDone=false
@@ -227,14 +225,8 @@ void Core::Geo::Cut::Parallel::export_node_position_data()
 
       Core::Communication::PackBuffer dataSend;  // data to be sent
 
-      Core::Communication::ParObject::AddtoPack(dataSend, curr_undecided_node_pos_);
-      Core::Communication::ParObject::AddtoPack(dataSend, tmp_curr_undecidedNodePos_shadow);
-
-      dataSend.StartPacking();
-
-      Core::Communication::ParObject::AddtoPack(dataSend, curr_undecided_node_pos_);
-      Core::Communication::ParObject::AddtoPack(dataSend, tmp_curr_undecidedNodePos_shadow);
-
+      Core::Communication::ParObject::add_to_pack(dataSend, curr_undecided_node_pos_);
+      Core::Communication::ParObject::add_to_pack(dataSend, tmp_curr_undecidedNodePos_shadow);
 
       std::vector<char> dataRecv;
       send_data(dataSend, dest, source, dataRecv);
@@ -250,9 +242,9 @@ void Core::Geo::Cut::Parallel::export_node_position_data()
       // unpack received data
       while (posinData < dataRecv.size())
       {
-        Core::Communication::ParObject::ExtractfromPack(
+        Core::Communication::ParObject::extract_from_pack(
             posinData, dataRecv, curr_undecided_node_pos_);
-        Core::Communication::ParObject::ExtractfromPack(
+        Core::Communication::ParObject::extract_from_pack(
             posinData, dataRecv, tmp_curr_undecidedNodePos_shadow);
 
         //--------------------
@@ -526,31 +518,15 @@ void Core::Geo::Cut::Parallel::export_dof_set_data(bool include_inner)
     // send current DofSetData to next proc and receive a new map from previous proc
     {
       Core::Communication::PackBuffer dataSend;  // data to be sent
-
-      // packing the data
       for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator data =
                dof_set_data_.begin();
            data != dof_set_data_.end(); data++)
       {
-        Core::Communication::ParObject::AddtoPack(dataSend, (*data)->set_index_);
-        Core::Communication::ParObject::AddtoPack(dataSend, (int)(*data)->inside_cell_);
+        Core::Communication::ParObject::add_to_pack(dataSend, (*data)->set_index_);
+        Core::Communication::ParObject::add_to_pack(dataSend, (int)(*data)->inside_cell_);
         pack_points(dataSend, (*data)->cut_points_coords_);
-        Core::Communication::ParObject::AddtoPack(dataSend, (*data)->peid_);
-        Core::Communication::ParObject::AddtoPack(dataSend, (*data)->node_dofsetnumber_map_);
-      }
-
-      dataSend.StartPacking();
-
-      // packing the data
-      for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator data =
-               dof_set_data_.begin();
-           data != dof_set_data_.end(); data++)
-      {
-        Core::Communication::ParObject::AddtoPack(dataSend, (*data)->set_index_);
-        Core::Communication::ParObject::AddtoPack(dataSend, (int)(*data)->inside_cell_);
-        pack_points(dataSend, (*data)->cut_points_coords_);
-        Core::Communication::ParObject::AddtoPack(dataSend, (*data)->peid_);
-        Core::Communication::ParObject::AddtoPack(dataSend, (*data)->node_dofsetnumber_map_);
+        Core::Communication::ParObject::add_to_pack(dataSend, (*data)->peid_);
+        Core::Communication::ParObject::add_to_pack(dataSend, (*data)->node_dofsetnumber_map_);
       }
 
       std::vector<char> dataRecv;
@@ -573,11 +549,12 @@ void Core::Geo::Cut::Parallel::export_dof_set_data(bool include_inner)
         std::map<int, int> node_dofsetnumber_map;  // map <nid, current dofset number>
 
         // unpack volumecell data
-        Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, set_index);
-        Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, inside_cell);
+        Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, set_index);
+        Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, inside_cell);
         unpack_points(posinData, dataRecv, cut_points_coords);
-        Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, peid);
-        Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, node_dofsetnumber_map);
+        Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, peid);
+        Core::Communication::ParObject::extract_from_pack(
+            posinData, dataRecv, node_dofsetnumber_map);
 
         // create a new dofSetData object with unpacked data
         dof_set_data_.push_back(Teuchos::rcp(new Core::Geo::Cut::MeshIntersection::DofSetData(
@@ -1150,13 +1127,13 @@ void Core::Geo::Cut::Parallel::pack_points(Core::Communication::PackBuffer& data
     std::vector<Core::LinAlg::Matrix<3, 1>>& points_coords) const
 {
   // pack number of points for current volumecell
-  Core::Communication::ParObject::AddtoPack(dataSend, (int)points_coords.size());
+  Core::Communication::ParObject::add_to_pack(dataSend, (int)points_coords.size());
 
   for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator p = points_coords.begin();
        p != points_coords.end(); p++)
   {
     // pack xyz-coordinates
-    Core::Communication::ParObject::AddtoPack(dataSend, *p);
+    Core::Communication::ParObject::add_to_pack(dataSend, *p);
   }
 
 }  // end packNodes
@@ -1175,7 +1152,7 @@ void Core::Geo::Cut::Parallel::unpack_points(std::vector<char>::size_type& posin
   int num_points = 0;
 
   // unpack number of points for current volumecell
-  Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, num_points);
+  Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, num_points);
 
 
   Core::LinAlg::Matrix<nsd, 1> coords(true);
@@ -1185,7 +1162,7 @@ void Core::Geo::Cut::Parallel::unpack_points(std::vector<char>::size_type& posin
     coords.Clear();
 
     // pack xyz-coordinates for point
-    Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, coords);
+    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, coords);
 
     points_coords.push_back(coords);
   }

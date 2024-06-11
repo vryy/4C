@@ -141,11 +141,10 @@ Core::Elements::Element* Discret::ELEMENTS::SoPyramid5fbar::Clone() const
 void Discret::ELEMENTS::SoPyramid5fbar::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class So_pyramid5 Element
   Discret::ELEMENTS::SoPyramid5::Pack(data);
 
@@ -164,7 +163,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::Unpack(const std::vector<char>& data)
 
   // extract base class So_pyramid5 Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Discret::ELEMENTS::SoPyramid5::Unpack(basedata);
 
   if (position != data.size())

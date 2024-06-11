@@ -924,7 +924,7 @@ PostResult::read_result_serialdensematrix(const std::string name)
   {
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> gpstress =
         Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
-    Core::Communication::ParObject::ExtractfromPack(position, *data, *gpstress);
+    Core::Communication::ParObject::extract_from_pack(position, *data, *gpstress);
     (*mapdata)[elemap->GID(i)] = gpstress;
   }
 

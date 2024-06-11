@@ -93,17 +93,16 @@ Mat::PlasticLinElast::PlasticLinElast(Mat::PAR::PlasticLinElast* params) : param
 void Mat::PlasticLinElast::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   // in case we are in post-process mode
   if (params_ != nullptr) matid = params_->Id();
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   // pack history data
   int histsize;
@@ -117,17 +116,17 @@ void Mat::PlasticLinElast::Pack(Core::Communication::PackBuffer& data) const
     // if material is initialised (restart): size equates number of gausspoints
     histsize = strainpllast_->size();
   }
-  AddtoPack(data, histsize);  // Length of history vector(s)
+  add_to_pack(data, histsize);  // Length of history vector(s)
   for (int var = 0; var < histsize; ++var)
   {
-    // insert history vectors to AddtoPack
-    AddtoPack(data, strainpllast_->at(var));
-    AddtoPack(data, backstresslast_->at(var));
+    // insert history vectors to add_to_pack
+    add_to_pack(data, strainpllast_->at(var));
+    add_to_pack(data, backstresslast_->at(var));
 
-    AddtoPack(data, strainbarpllast_->at(var));
+    add_to_pack(data, strainbarpllast_->at(var));
   }
 
-  AddtoPack(data, plastic_step_);
+  add_to_pack(data, plastic_step_);
 
   return;
 }  // Pack()
@@ -145,7 +144,7 @@ void Mat::PlasticLinElast::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -162,7 +161,7 @@ void Mat::PlasticLinElast::Unpack(const std::vector<char>& data)
 
   // history data
   int histsize;
-  ExtractfromPack(position, data, histsize);
+  extract_from_pack(position, data, histsize);
 
   // if system is not yet initialised, the history vectors have to be intialized
   if (histsize == 0) isinit_ = false;
@@ -183,13 +182,13 @@ void Mat::PlasticLinElast::Unpack(const std::vector<char>& data)
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> tmp_vect(true);
     double tmp_scalar = 0.0;
     // vectors of last converged state are unpacked
-    ExtractfromPack(position, data, tmp_vect);
+    extract_from_pack(position, data, tmp_vect);
     strainpllast_->push_back(tmp_vect);
-    ExtractfromPack(position, data, tmp_vect);
+    extract_from_pack(position, data, tmp_vect);
     backstresslast_->push_back(tmp_vect);
 
     // scalar-valued vector of last converged state are unpacked
-    ExtractfromPack(position, data, tmp_scalar);
+    extract_from_pack(position, data, tmp_scalar);
     strainbarpllast_->push_back(tmp_scalar);
 
     // current vectors have to be initialised
@@ -201,7 +200,7 @@ void Mat::PlasticLinElast::Unpack(const std::vector<char>& data)
 
   plastic_step_ = false;
   int plastic_step;
-  ExtractfromPack(position, data, plastic_step);
+  extract_from_pack(position, data, plastic_step);
 
   // if it was already plastic before
   if (plastic_step != 0) plastic_step_ = true;

@@ -57,23 +57,22 @@ Discret::ELEMENTS::PreStress::PreStress(const Discret::ELEMENTS::PreStress& old)
 void Discret::ELEMENTS::PreStress::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // pack isinit_
-  AddtoPack(data, isinit_);
+  add_to_pack(data, isinit_);
 
   // pack numnode_
-  AddtoPack(data, numnode_);
+  add_to_pack(data, numnode_);
 
   // pack Fhist_
-  AddtoPack(data, *fhist_);
+  add_to_pack(data, *fhist_);
 
   // pack invJhist_
-  AddtoPack(data, *inv_jhist_);
+  add_to_pack(data, *inv_jhist_);
 
   return;
 }
@@ -93,13 +92,13 @@ void Discret::ELEMENTS::PreStress::Unpack(const std::vector<char>& data)
   isinit_ = ExtractInt(position, data);
 
   // extract numnode_
-  ExtractfromPack(position, data, numnode_);
+  extract_from_pack(position, data, numnode_);
 
   // extract Fhist_
-  ExtractfromPack(position, data, *fhist_);
+  extract_from_pack(position, data, *fhist_);
 
   // extract invJhist_
-  ExtractfromPack(position, data, *inv_jhist_);
+  extract_from_pack(position, data, *inv_jhist_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

@@ -55,13 +55,12 @@ template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Wall1PoroScatra<distype>::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  my::AddtoPack(data, type);
+  my::add_to_pack(data, type);
   // pack scalar transport impltype
-  my::AddtoPack(data, impltype_);
+  my::add_to_pack(data, impltype_);
 
   // add base class Element
   my::Pack(data);
@@ -84,7 +83,7 @@ void Discret::ELEMENTS::Wall1PoroScatra<distype>::Unpack(const std::vector<char>
 
   // extract base class Element
   std::vector<char> basedata(0);
-  my::ExtractfromPack(position, data, basedata);
+  my::extract_from_pack(position, data, basedata);
   my::Unpack(basedata);
 
   if (position != data.size())

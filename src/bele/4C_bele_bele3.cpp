@@ -186,15 +186,14 @@ Core::FE::CellType Discret::ELEMENTS::Bele3::Shape() const
 void Discret::ELEMENTS::Bele3::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   Element::Pack(data);
   // numdofpernode_
-  AddtoPack(data, numdofpernode_);
+  add_to_pack(data, numdofpernode_);
 
   return;
 }
@@ -210,7 +209,7 @@ void Discret::ELEMENTS::Bele3::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
   // numdofpernode_
   numdofpernode_ = ExtractInt(position, data);

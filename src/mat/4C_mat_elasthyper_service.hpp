@@ -401,13 +401,13 @@ namespace Mat
      */
     void Pack(Core::Communication::PackBuffer& data) const
     {
-      Core::Communication::ParObject::AddtoPack(data, isoprinc);
-      Core::Communication::ParObject::AddtoPack(data, isomod);
-      Core::Communication::ParObject::AddtoPack(data, anisoprinc);
-      Core::Communication::ParObject::AddtoPack(data, anisomod);
-      Core::Communication::ParObject::AddtoPack(data, coeffStretchesPrinc);
-      Core::Communication::ParObject::AddtoPack(data, coeffStretchesMod);
-      Core::Communication::ParObject::AddtoPack(data, viscoGeneral);
+      Core::Communication::ParObject::add_to_pack(data, isoprinc);
+      Core::Communication::ParObject::add_to_pack(data, isomod);
+      Core::Communication::ParObject::add_to_pack(data, anisoprinc);
+      Core::Communication::ParObject::add_to_pack(data, anisomod);
+      Core::Communication::ParObject::add_to_pack(data, coeffStretchesPrinc);
+      Core::Communication::ParObject::add_to_pack(data, coeffStretchesMod);
+      Core::Communication::ParObject::add_to_pack(data, viscoGeneral);
     }
 
     /**

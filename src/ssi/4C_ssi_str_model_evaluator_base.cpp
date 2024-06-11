@@ -43,7 +43,7 @@ void STR::MODELEVALUATOR::BaseSSI::determine_stress_strain()
     const auto stresses_ele = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
 
     // extract stresses
-    Core::Communication::ParObject::ExtractfromPack(position, stressdata, *stresses_ele);
+    Core::Communication::ParObject::extract_from_pack(position, stressdata, *stresses_ele);
 
     // store stresses
     (*stresses)[discret().ElementRowMap()->GID(i)] = stresses_ele;

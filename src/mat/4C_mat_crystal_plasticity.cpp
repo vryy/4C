@@ -199,16 +199,15 @@ Mat::CrystalPlasticity::CrystalPlasticity(Mat::PAR::CrystalPlasticity* params) :
 void Mat::CrystalPlasticity::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // pack matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   // pack history data
   int histsize;
@@ -222,15 +221,15 @@ void Mat::CrystalPlasticity::Pack(Core::Communication::PackBuffer& data) const
     // if material is initialized already (restart): size equates number of Gauss points
     histsize = deform_grad_last_->size();
   }
-  AddtoPack(data, histsize);  // length of history vector(s)
+  add_to_pack(data, histsize);  // length of history vector(s)
 
   for (int var = 0; var < histsize; ++var)
   {
-    // insert history vectors to AddtoPack
-    AddtoPack(data, (*deform_grad_last_)[var]);
-    AddtoPack(data, (*plastic_deform_grad_last_)[var]);
-    AddtoPack(data, (*gamma_last_)[var]);
-    AddtoPack(data, (*defect_densities_last_)[var]);
+    // insert history vectors to add_to_pack
+    add_to_pack(data, (*deform_grad_last_)[var]);
+    add_to_pack(data, (*plastic_deform_grad_last_)[var]);
+    add_to_pack(data, (*gamma_last_)[var]);
+    add_to_pack(data, (*defect_densities_last_)[var]);
   }
 }  // Pack()
 
@@ -245,7 +244,7 @@ void Mat::CrystalPlasticity::Unpack(const std::vector<char>& data)
 
   // recover matid and params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -263,7 +262,7 @@ void Mat::CrystalPlasticity::Unpack(const std::vector<char>& data)
 
   // history data
   int histsize;
-  ExtractfromPack(position, data, histsize);
+  extract_from_pack(position, data, histsize);
 
   // if system is not yet initialised, the history vectors have to be intialized
   if (histsize == 0) isinit_ = false;
@@ -280,16 +279,16 @@ void Mat::CrystalPlasticity::Unpack(const std::vector<char>& data)
       Core::LinAlg::Matrix<3, 3> tmp_matrix(true);
       std::vector<double> tmp_vect(def_system_count_);
 
-      ExtractfromPack(position, data, tmp_matrix);
+      extract_from_pack(position, data, tmp_matrix);
       deform_grad_last_->push_back(tmp_matrix);
 
-      ExtractfromPack(position, data, tmp_matrix);
+      extract_from_pack(position, data, tmp_matrix);
       plastic_deform_grad_last_->push_back(tmp_matrix);
 
-      ExtractfromPack(position, data, tmp_vect);
+      extract_from_pack(position, data, tmp_vect);
       gamma_last_->push_back(tmp_vect);
 
-      ExtractfromPack(position, data, tmp_vect);
+      extract_from_pack(position, data, tmp_vect);
       defect_densities_last_->push_back(tmp_vect);
     }
 

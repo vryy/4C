@@ -132,17 +132,16 @@ Mat::Robinson::Robinson(Mat::PAR::Robinson* params) : plastic_step(false), param
 void Mat::Robinson::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   // in case we are in post-process mode
   if (params_ != nullptr) matid = params_->Id();
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   // pack history data
   int numgp;
@@ -156,16 +155,16 @@ void Mat::Robinson::Pack(Core::Communication::PackBuffer& data) const
     // if material is initialised (restart): size equates number of gausspoints
     numgp = strainpllast_->size();
   }
-  AddtoPack(data, numgp);  // Length of history vector(s)
+  add_to_pack(data, numgp);  // Length of history vector(s)
   for (int var = 0; var < numgp; ++var)
   {
     // pack history data
-    AddtoPack(data, strainpllast_->at(var));
-    AddtoPack(data, backstresslast_->at(var));
+    add_to_pack(data, strainpllast_->at(var));
+    add_to_pack(data, backstresslast_->at(var));
 
-    AddtoPack(data, kvarva_->at(var));
-    AddtoPack(data, kvakvae_->at(var));
-    AddtoPack(data, strain_last_.at(var));
+    add_to_pack(data, kvarva_->at(var));
+    add_to_pack(data, kvakvae_->at(var));
+    add_to_pack(data, strain_last_.at(var));
   }
 
   return;
@@ -185,7 +184,7 @@ void Mat::Robinson::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -202,7 +201,7 @@ void Mat::Robinson::Unpack(const std::vector<char>& data)
 
   // history data
   int numgp;
-  ExtractfromPack(position, data, numgp);
+  extract_from_pack(position, data, numgp);
 
   // if system is not yet initialised, the history vectors have to be intialized
   if (numgp == 0) isinit_ = false;
@@ -227,18 +226,18 @@ void Mat::Robinson::Unpack(const std::vector<char>& data)
     Core::LinAlg::Matrix<2 * Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> tmp2(true);
 
     // unpack strain/stress vectors of last converged state
-    ExtractfromPack(position, data, tmp);
+    extract_from_pack(position, data, tmp);
     strainpllast_->push_back(tmp);
-    ExtractfromPack(position, data, tmp);
+    extract_from_pack(position, data, tmp);
     backstresslast_->push_back(tmp);
 
     // unpack matrices of last converged state
-    ExtractfromPack(position, data, tmp1);
+    extract_from_pack(position, data, tmp1);
     kvarva_->push_back(tmp1);
-    ExtractfromPack(position, data, tmp2);
+    extract_from_pack(position, data, tmp2);
     kvakvae_->push_back(tmp2);
 
-    ExtractfromPack(position, data, tmp);
+    extract_from_pack(position, data, tmp);
     strain_last_.push_back(tmp);
 
     // current vectors have to be initialised

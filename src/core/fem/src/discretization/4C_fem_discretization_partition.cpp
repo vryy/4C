@@ -116,15 +116,6 @@ void Core::FE::Discretization::proc_zero_distribute_elements_to_all(
       Core::Elements::Element* actele = gElement(gidlist[i]);
       if (!actele) FOUR_C_THROW("Cannot find global element %d", gidlist[i]);
       actele->Pack(sendpb[pidlist[i]]);
-    }
-    for (std::map<int, Core::Communication::PackBuffer>::iterator fool = sendpb.begin();
-         fool != sendpb.end(); ++fool)
-      fool->second.StartPacking();
-    for (int i = 0; i < size; ++i)
-    {
-      if (pidlist[i] == myrank or pidlist[i] < 0) continue;  // do not send to myself
-      Core::Elements::Element* actele = gElement(gidlist[i]);
-      actele->Pack(sendpb[pidlist[i]]);
       element_.erase(actele->Id());
     }
     for (std::map<int, Core::Communication::PackBuffer>::iterator fool = sendpb.begin();
@@ -182,7 +173,11 @@ void Core::FE::Discretization::proc_zero_distribute_elements_to_all(
     while (index < recvdata.size())
     {
       std::vector<char> data;
-      Core::Communication::ParObject::ExtractfromPack(index, recvdata, data);
+      // Extract the size and raw data. This operation is asymmetric to the packing operation which
+      // did store the size via a manual SizeMarker insertion.
+      Core::Communication::ParObject::extract_from_pack(index, recvdata, data);
+      // Pass on the raw data to the factory that selects the specialized implementation based on
+      // the unique id stored as first entry.
       Core::Communication::ParObject* object = Core::Communication::Factory(data);
       Core::Elements::Element* ele = dynamic_cast<Core::Elements::Element*>(object);
       if (!ele) FOUR_C_THROW("Received object is not an element");
@@ -229,16 +224,6 @@ void Core::FE::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& tar
       if (pidlist[i] == myrank || pidlist[i] == -1) continue;
       Core::Nodes::Node* node = gNode(oldmap.MyGlobalElements()[i]);
       if (!node) FOUR_C_THROW("Proc 0 cannot find global node %d", oldmap.MyGlobalElements()[i]);
-      node->Pack(sendpb[pidlist[i]]);
-    }
-    for (std::map<int, Core::Communication::PackBuffer>::iterator fool = sendpb.begin();
-         fool != sendpb.end(); ++fool)
-      fool->second.StartPacking();
-    for (int i = 0; i < size; ++i)
-    {
-      // proc 0 does not send to itself
-      if (pidlist[i] == myrank || pidlist[i] == -1) continue;
-      Core::Nodes::Node* node = gNode(oldmap.MyGlobalElements()[i]);
       node->Pack(sendpb[pidlist[i]]);
       node_.erase(node->Id());
     }
@@ -297,7 +282,7 @@ void Core::FE::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& tar
     while (index < recvdata.size())
     {
       std::vector<char> data;
-      Core::Communication::ParObject::ExtractfromPack(index, recvdata, data);
+      Core::Communication::ParObject::extract_from_pack(index, recvdata, data);
       Core::Communication::ParObject* object = Core::Communication::Factory(data);
       Core::Nodes::Node* node = dynamic_cast<Core::Nodes::Node*>(object);
       if (!node) FOUR_C_THROW("Received object is not a node");

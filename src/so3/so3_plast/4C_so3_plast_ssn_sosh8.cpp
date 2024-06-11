@@ -355,18 +355,17 @@ Core::Elements::Element* Discret::ELEMENTS::SoSh8Plast::Clone() const
 void Discret::ELEMENTS::SoSh8Plast::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class So3Plast Element
   Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::Pack(data);
   // thickdir
-  AddtoPack(data, thickdir_);
-  AddtoPack(data, thickvec_);
-  AddtoPack(data, anstype_);
-  AddtoPack(data, nodes_rearranged_);
+  add_to_pack(data, thickdir_);
+  add_to_pack(data, thickvec_);
+  add_to_pack(data, anstype_);
+  add_to_pack(data, nodes_rearranged_);
 
   return;
 }
@@ -382,11 +381,11 @@ void Discret::ELEMENTS::SoSh8Plast::Unpack(const std::vector<char>& data)
 
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::Unpack(basedata);
   // thickdir
   thickdir_ = static_cast<ThicknessDirection>(ExtractInt(position, data));
-  ExtractfromPack(position, data, thickvec_);
+  extract_from_pack(position, data, thickvec_);
   anstype_ = static_cast<ANSType>(ExtractInt(position, data));
   nodes_rearranged_ = ExtractInt(position, data);
 

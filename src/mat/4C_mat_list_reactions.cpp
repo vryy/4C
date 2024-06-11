@@ -142,17 +142,16 @@ void Mat::MatListReactions::clear()
 void Mat::MatListReactions::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (paramsreac_ != nullptr) matid = paramsreac_->Id();  // in case we are in post-process mode
 
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   // Pack base class material
   Mat::MatList::Pack(data);
@@ -184,7 +183,7 @@ void Mat::MatListReactions::Unpack(const std::vector<char>& data)
 
   // matid and recover paramsreac_
   int matid(-1);
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   paramsreac_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -205,7 +204,7 @@ void Mat::MatListReactions::Unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  Mat::MatList::ExtractfromPack(position, data, basedata);
+  Mat::MatList::extract_from_pack(position, data, basedata);
   Mat::MatList::Unpack(basedata);
 
   if (paramsreac_ != nullptr)  // paramsreac_ are not accessible in postprocessing mode
@@ -227,7 +226,7 @@ void Mat::MatListReactions::Unpack(const std::vector<char>& data)
       for (m = paramsreac_->ReacIds()->begin(); m != paramsreac_->ReacIds()->end(); m++)
       {
         std::vector<char> pbtest;
-        ExtractfromPack(position, data, pbtest);
+        extract_from_pack(position, data, pbtest);
         (material_map_write()->find(*m))->second->Unpack(pbtest);
       }
     }
