@@ -21,9 +21,11 @@ FOUR_C_NAMESPACE_OPEN
  */
 BEAMINTERACTION::BeamToSolidSurfaceContactParams::BeamToSolidSurfaceContactParams()
     : BeamToSolidParamsBase(),
-      contact_type_(Inpar::BeamToSolid::BeamToSolidSurfaceContact::gap_variation),
+      contact_type_(Inpar::BeamToSolid::BeamToSolidSurfaceContact::none),
       penalty_law_(Inpar::BeamToSolid::BeamToSolidSurfaceContactPenaltyLaw::none),
       penalty_parameter_g0_(0.0),
+      mortar_contact_configuration_(
+          Inpar::BeamToSolid::BeamToSolidSurfaceContactMortarDefinedIn::none),
       output_params_ptr_(Teuchos::null)
 {
   // Empty Constructor.
@@ -53,6 +55,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactParams::Init()
             beam_to_solid_contact_params_list, "PENALTY_LAW");
 
     penalty_parameter_g0_ = beam_to_solid_contact_params_list.get<double>("PENALTY_PARAMETER_G0");
+
+    mortar_contact_configuration_ =
+        Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidSurfaceContactMortarDefinedIn>(
+            beam_to_solid_contact_params_list, "MORTAR_CONTACT_DEFINED_IN");
   }
 
   // Setup the output parameter object.

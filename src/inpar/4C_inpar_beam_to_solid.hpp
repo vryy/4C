@@ -187,6 +187,19 @@ namespace Inpar
     };
 
     /**
+     * \brief Configuration in which the mortar contact is defined
+     */
+    enum class BeamToSolidSurfaceContactMortarDefinedIn
+    {
+      //! Default value.
+      none,
+      //! Lagrange multiplier field is defined in the reference configuration.
+      reference_configuration,
+      //! Lagrange multiplier field is defined in the current configuration.
+      current_configuration
+    };
+
+    /**
     \brief Set the beam-to-solid parameters
     */
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);

@@ -247,9 +247,10 @@ void Inpar::BeamToSolid::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   {
     setStringToIntegralParameter<BeamToSolidContactDiscretization>("CONTACT_DISCRETIZATION", "none",
         "Type of employed contact discretization",
-        tuple<std::string>("none", "gauss_point_to_segment"),
+        tuple<std::string>("none", "gauss_point_to_segment", "mortar"),
         tuple<BeamToSolidContactDiscretization>(BeamToSolidContactDiscretization::none,
-            BeamToSolidContactDiscretization::gauss_point_to_segment),
+            BeamToSolidContactDiscretization::gauss_point_to_segment,
+            BeamToSolidContactDiscretization::mortar),
         &beam_to_solid_surface_contact);
 
     setStringToIntegralParameter<BeamToSolidConstraintEnforcement>("CONSTRAINT_STRATEGY", "none",
@@ -279,16 +280,26 @@ void Inpar::BeamToSolid::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         "First penalty regularization parameter G0 >=0: For gap<G0 contact is active",
         &beam_to_solid_surface_contact);
 
+    setStringToIntegralParameter<BeamToSolidSurfaceContactMortarDefinedIn>(
+        "MORTAR_CONTACT_DEFINED_IN", "none", "Configuration where the mortar contact is defined",
+        tuple<std::string>("none", "reference_configuration", "current_configuration"),
+        tuple<BeamToSolidSurfaceContactMortarDefinedIn>(
+            BeamToSolidSurfaceContactMortarDefinedIn::none,
+            BeamToSolidSurfaceContactMortarDefinedIn::reference_configuration,
+            BeamToSolidSurfaceContactMortarDefinedIn::current_configuration),
+        &beam_to_solid_surface_contact);
+
     // Add the geometry pair input parameters.
     Inpar::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_surface_contact);
 
     // Add the surface options.
     Inpar::GEOMETRYPAIR::SetValidParametersLineToSurface(beam_to_solid_surface_contact);
 
-    // This is only needed because the base parameter class requires mortar shape functions.
+    // Define the mortar shape functions for contact
     setStringToIntegralParameter<BeamToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION", "none",
-        "Shape function for the mortar Lagrange-multipliers", tuple<std::string>("none"),
-        tuple<BeamToSolidMortarShapefunctions>(BeamToSolidMortarShapefunctions::none),
+        "Shape function for the mortar Lagrange-multipliers", tuple<std::string>("none", "line2"),
+        tuple<BeamToSolidMortarShapefunctions>(
+            BeamToSolidMortarShapefunctions::none, BeamToSolidMortarShapefunctions::line2),
         &beam_to_solid_surface_contact);
   }
 
