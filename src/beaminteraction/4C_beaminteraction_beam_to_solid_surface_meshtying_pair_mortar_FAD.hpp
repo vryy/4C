@@ -83,10 +83,14 @@ namespace BEAMINTERACTION
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
     void evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
-        const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_G_B,
-        Core::LinAlg::SparseMatrix& global_G_S, Core::LinAlg::SparseMatrix& global_FB_L,
-        Core::LinAlg::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
-        Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
+        const BeamToSolidMortarManager* mortar_manager,
+        Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
+        Core::LinAlg::SparseMatrix& global_constraint_lin_solid,
+        Core::LinAlg::SparseMatrix& global_force_beam_lin_lambda,
+        Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda,
+        Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
+        Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
+        Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
   };
 
@@ -144,10 +148,14 @@ namespace BEAMINTERACTION
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
     void evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
-        const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_GB,
-        Core::LinAlg::SparseMatrix& global_GS, Core::LinAlg::SparseMatrix& global_FB,
-        Core::LinAlg::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
-        Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
+        const BeamToSolidMortarManager* mortar_manager,
+        Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
+        Core::LinAlg::SparseMatrix& global_constraint_lin_solid,
+        Core::LinAlg::SparseMatrix& global_force_beam_lin_lambda,
+        Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda,
+        Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
+        Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
+        Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
    private:

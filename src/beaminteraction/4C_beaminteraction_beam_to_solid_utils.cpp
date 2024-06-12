@@ -743,10 +743,11 @@ void BEAMINTERACTION::CheckPlaneRotations(
 template <typename beam, typename other, typename mortar>
 void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::BeamContactPair* pair,
     const Core::FE::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
-    Core::LinAlg::SparseMatrix& global_G_B, Core::LinAlg::SparseMatrix& global_G_S,
-    Core::LinAlg::SparseMatrix& global_FB_L, Core::LinAlg::SparseMatrix& global_FS_L,
-    Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
-    Epetra_FEVector& global_lambda_active,
+    Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
+    Core::LinAlg::SparseMatrix& global_constraint_lin_solid,
+    Core::LinAlg::SparseMatrix& global_force_beam_lin_lambda,
+    Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
+    Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
     const Core::LinAlg::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
     const Core::LinAlg::Matrix<mortar::n_dof_, other::n_dof_, double>& local_M,
     const Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_kappa,
@@ -774,16 +775,16 @@ void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::Be
   {
     for (unsigned int i_beam = 0; i_beam < beam::n_dof_; ++i_beam)
     {
-      global_G_B.FEAssemble(
+      global_constraint_lin_beam.FEAssemble(
           local_D(i_lambda, i_beam), lambda_gid_pos[i_lambda], beam_centerline_gid(i_beam));
-      global_FB_L.FEAssemble(
+      global_force_beam_lin_lambda.FEAssemble(
           local_D(i_lambda, i_beam), beam_centerline_gid(i_beam), lambda_gid_pos[i_lambda]);
     }
     for (unsigned int i_other = 0; i_other < other::n_dof_; ++i_other)
     {
-      global_G_S.FEAssemble(
+      global_constraint_lin_solid.FEAssemble(
           -local_M(i_lambda, i_other), lambda_gid_pos[i_lambda], other_row[i_other]);
-      global_FS_L.FEAssemble(
+      global_force_solid_lin_lambda.FEAssemble(
           -local_M(i_lambda, i_other), other_row[i_other], lambda_gid_pos[i_lambda]);
     }
   }

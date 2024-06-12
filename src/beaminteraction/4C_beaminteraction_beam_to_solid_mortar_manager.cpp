@@ -20,7 +20,6 @@
 #include "4C_geometry_pair.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_multiply.hpp"
-#include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -60,6 +59,8 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
       force_beam_lin_lambda_(Teuchos::null),
       force_solid_lin_lambda_(Teuchos::null),
       kappa_(Teuchos::null),
+      kappa_lin_beam_(Teuchos::null),
+      kappa_lin_solid_(Teuchos::null),
       lambda_active_(Teuchos::null),
       contact_pairs_(Teuchos::null)
 {
@@ -246,6 +247,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
   force_solid_lin_lambda_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       *solid_dof_rowmap_, 100, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
   kappa_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
+  kappa_lin_beam_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *lambda_dof_rowmap_, 30, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  kappa_lin_solid_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *lambda_dof_rowmap_, 100, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
   lambda_active_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
 
   // Set flag for successful setup.
@@ -480,6 +485,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_global_coupling_contrib
   force_beam_lin_lambda_->PutScalar(0.);
   force_solid_lin_lambda_->PutScalar(0.);
   kappa_->PutScalar(0.);
+  kappa_lin_beam_->PutScalar(0.);
+  kappa_lin_solid_->PutScalar(0.);
   lambda_active_->PutScalar(0.);
 
   for (auto& elepairptr : contact_pairs_)
@@ -488,7 +495,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_global_coupling_contrib
     // global matrices.
     elepairptr->evaluate_and_assemble_mortar_contributions(*discret_, this, *constraint_lin_beam_,
         *constraint_lin_solid_, *force_beam_lin_lambda_, *force_solid_lin_lambda_, *constraint_,
-        *kappa_, *lambda_active_, displacement_vector);
+        *kappa_, *kappa_lin_beam_, *kappa_lin_solid_, *lambda_active_, displacement_vector);
   }
 
   // Complete the global mortar matrices.
@@ -496,6 +503,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_global_coupling_contrib
   constraint_lin_solid_->Complete(*solid_dof_rowmap_, *lambda_dof_rowmap_);
   force_beam_lin_lambda_->Complete(*lambda_dof_rowmap_, *beam_dof_rowmap_);
   force_solid_lin_lambda_->Complete(*lambda_dof_rowmap_, *solid_dof_rowmap_);
+  kappa_lin_beam_->Complete(*beam_dof_rowmap_, *lambda_dof_rowmap_);
+  kappa_lin_solid_->Complete(*solid_dof_rowmap_, *lambda_dof_rowmap_);
 
   // Complete the global scaling vector.
   if (0 != kappa_->GlobalAssemble(Add, false)) FOUR_C_THROW("Error in GlobalAssemble!");
@@ -513,36 +522,59 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
   check_setup();
   check_global_maps();
 
+  // Get the penalty regularization
+  const bool is_stiff = stiff != Teuchos::null;
+  auto penalty_regularization = get_penalty_regularization(is_stiff);
+  const auto lambda = std::get<0>(penalty_regularization);
+
   int linalg_error = 0;
 
-  if (stiff != Teuchos::null)
+  if (is_stiff)
   {
-    // Scale the linearizations of the constraint equations.
-    Teuchos::RCP<Epetra_Vector> global_penalty_kappa_inv = penalty_invert_kappa();
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> penalty_kappa_inv_mat =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*global_penalty_kappa_inv));
-    penalty_kappa_inv_mat->Complete();
+    // Penalty regularization linearized w.r.t. the constraint equations
+    auto penalty_regularization_lin_constaint =
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*std::get<1>(penalty_regularization)));
+    penalty_regularization_lin_constaint->Complete();
+    auto regularized_constraint_lin_beam =
+        Core::LinAlg::MLMultiply(*penalty_regularization_lin_constaint, false,
+            *constraint_lin_beam_, false, false, false, true);
+    auto regularized_constraint_lin_solid =
+        Core::LinAlg::MLMultiply(*penalty_regularization_lin_constaint, false,
+            *constraint_lin_solid_, false, false, false, true);
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_G_B_scaled = Core::LinAlg::MLMultiply(
-        *penalty_kappa_inv_mat, false, *constraint_lin_beam_, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_G_S_scaled = Core::LinAlg::MLMultiply(
-        *penalty_kappa_inv_mat, false, *constraint_lin_solid_, false, false, false, true);
+    // Penalty regularization linearized w.r.t. the scaling vector
+    if (kappa_lin_beam_->NormInf() > 1e-12 && kappa_lin_solid_->NormInf() > 1e-12)
+    {
+      auto penalty_regularization_lin_kappa =
+          Teuchos::rcp(new Core::LinAlg::SparseMatrix(*std::get<2>(penalty_regularization)));
+      penalty_regularization_lin_kappa->Complete();
+      const auto kappa_lin_beam_scaled = Core::LinAlg::MLMultiply(
+          *penalty_regularization_lin_kappa, false, *kappa_lin_beam_, false, false, false, true);
+      const auto kappa_lin_solid_scaled = Core::LinAlg::MLMultiply(
+          *penalty_regularization_lin_kappa, false, *kappa_lin_solid_, false, false, false, true);
+      regularized_constraint_lin_beam->Add(*kappa_lin_beam_scaled, false, 1.0, 1.0);
+      regularized_constraint_lin_solid->Add(*kappa_lin_solid_scaled, false, 1.0, 1.0);
+    }
 
-    // Calculate the needed submatrices.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FB_L_times_G_B = Core::LinAlg::MLMultiply(
-        *force_beam_lin_lambda_, false, *global_G_B_scaled, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FB_L_times_G_S = Core::LinAlg::MLMultiply(
-        *force_beam_lin_lambda_, false, *global_G_S_scaled, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FS_L_times_G_B = Core::LinAlg::MLMultiply(
-        *force_solid_lin_lambda_, false, *global_G_B_scaled, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FS_L_times_G_S = Core::LinAlg::MLMultiply(
-        *force_solid_lin_lambda_, false, *global_G_S_scaled, false, false, false, true);
+    // Calculate the needed submatrices
+    const auto force_beam_lin_lambda_times_constaint_lin_beam =
+        Core::LinAlg::MLMultiply(*force_beam_lin_lambda_, false, *regularized_constraint_lin_beam,
+            false, false, false, true);
+    const auto force_beam_lin_lambda_times_constaint_lin_solid =
+        Core::LinAlg::MLMultiply(*force_beam_lin_lambda_, false, *regularized_constraint_lin_solid,
+            false, false, false, true);
+    const auto force_solid_lin_lambda_times_constaint_lin_beam =
+        Core::LinAlg::MLMultiply(*force_solid_lin_lambda_, false, *regularized_constraint_lin_beam,
+            false, false, false, true);
+    const auto force_solid_lin_lambda_times_constaint_lin_solid =
+        Core::LinAlg::MLMultiply(*force_solid_lin_lambda_, false, *regularized_constraint_lin_solid,
+            false, false, false, true);
 
-    // Add contributions to the global stiffness matrix.
-    stiff->Add(*FB_L_times_G_B, false, 1.0, 1.0);
-    stiff->Add(*FB_L_times_G_S, false, 1.0, 1.0);
-    stiff->Add(*FS_L_times_G_B, false, 1.0, 1.0);
-    stiff->Add(*FS_L_times_G_S, false, 1.0, 1.0);
+    // Add contributions to the global stiffness matrix
+    stiff->Add(*force_beam_lin_lambda_times_constaint_lin_beam, false, 1.0, 1.0);
+    stiff->Add(*force_beam_lin_lambda_times_constaint_lin_solid, false, 1.0, 1.0);
+    stiff->Add(*force_solid_lin_lambda_times_constaint_lin_beam, false, 1.0, 1.0);
+    stiff->Add(*force_solid_lin_lambda_times_constaint_lin_solid, false, 1.0, 1.0);
   }
 
   if (force != Teuchos::null)
@@ -550,9 +582,6 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
     // Factor for right hand side (forces). 1 corresponds to the mesh-tying forces being added to
     // the right hand side, -1 to the left hand side.
     const double rhs_factor = -1.0;
-
-    // Get the penalty Lagrange multiplier vector.
-    Teuchos::RCP<Epetra_Vector> lambda = GetGlobalLambda();
 
     // Multiply the lambda vector with FB_L and FS_L to get the forces on the beam and solid,
     // respectively.
@@ -575,7 +604,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
   }
 
   // Add the force and stiffness contributions that are assembled directly by the pairs.
-  Teuchos::RCP<Epetra_Vector> lambda_col = GetGlobalLambdaCol();
+  auto lambda_col = Teuchos::rcp(new Epetra_Vector(*lambda_dof_colmap_));
+  Core::LinAlg::Export(*lambda, *lambda_col);
   for (const auto& elepairptr : contact_pairs_)
     elepairptr->EvaluateAndAssemble(
         *discret_, this, force, stiff, *lambda_col, *data_state->GetDisColNp());
@@ -584,7 +614,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
 /**
  *
  */
-Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobalLambda() const
+std::tuple<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_Vector>>
+BEAMINTERACTION::BeamToSolidMortarManager::get_penalty_regularization(
+    const bool compute_linearization) const
 {
   check_setup();
   check_global_maps();
@@ -595,13 +627,28 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobal
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*penalty_kappa_inv));
   penalty_kappa_inv_mat->Complete();
 
-  // Multiply the inverted kappa matrix with the constraint equations and scale them with the
-  // penalty parameter.
+  // Multiply the inverted kappa matrix with the constraint equations.
   Teuchos::RCP<Epetra_Vector> lambda = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
   int linalg_error = penalty_kappa_inv_mat->Multiply(false, *constraint_, *lambda);
   if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
 
-  return lambda;
+  if (compute_linearization)
+  {
+    return {lambda, penalty_kappa_inv, Teuchos::null};
+  }
+  else
+  {
+    return {lambda, Teuchos::null, Teuchos::null};
+  }
+}
+
+/**
+ *
+ */
+Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobalLambda() const
+{
+  auto penalty_regularization = get_penalty_regularization(false);
+  return std::get<0>(penalty_regularization);
 }
 
 /**

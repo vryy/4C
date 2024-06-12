@@ -163,10 +163,20 @@ namespace BEAMINTERACTION
         Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const;
 
     /**
+     * \brief Get the penalty regularization of the constraint vector
+     * @param compute_linearization If the linearization of the regularization should be returned
+     * @return The regularized Lagrange multipliers and (optionally) their derivative w.r.t. the
+     * constraint vector and the scaling vector
+     */
+    [[nodiscard]] virtual std::tuple<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_Vector>,
+        Teuchos::RCP<Epetra_Vector>>
+    get_penalty_regularization(const bool compute_linearization = false) const;
+
+    /**
      * \brief Get the global vector of Lagrange multipliers.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> GetGlobalLambda() const;
+    [[nodiscard]] virtual Teuchos::RCP<Epetra_Vector> GetGlobalLambda() const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
@@ -220,7 +230,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Invert the scaling vector \ref kappa_ vector.
      *
-     * The invertion is performed with accounting for non active Lagrange multipliers. Furthermore,
+     * The inversion is performed with accounting for non active Lagrange multipliers. Furthermore,
      * the inverted matrix is scaled with the the corresponding penalty parameter.
      *
      * @return Inverted kappa_ vector.
@@ -322,6 +332,12 @@ namespace BEAMINTERACTION
     //! 37). With this scaling correct units and pass patch tests are achieved (in the penalty
     //! case).
     Teuchos::RCP<Epetra_FEVector> kappa_;
+
+    //! Derivative of the scaling vector w.r.t the beam DOF.
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kappa_lin_beam_;
+
+    //! Derivative of the scaling vector w.r.t the solid DOF.
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kappa_lin_solid_;
 
     //! This vector keeps tack of all Lagrange multipliers that are active. This is needed when the
     //! kappa vector is inverted and some entries are zero, because no active contributions act on

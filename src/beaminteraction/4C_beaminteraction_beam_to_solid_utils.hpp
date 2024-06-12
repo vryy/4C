@@ -272,16 +272,19 @@ namespace BEAMINTERACTION
    * \brief Assemble local mortar contributions from the classical mortar matrices D and M into the
    * global matrices.
    *
-   * This function assumes that the mortar contributions are symmetric, i.e. global_G_B =
-   * global_FB_L^T and global_G_S = global_FS_L^T.
+   * This function assumes that the mortar contributions are symmetric, i.e.
+   * global_constraint_lin_beam = global_force_beam_lin_lambda^T and global_constraint_lin_solid =
+   * global_force_solid_lin_lambda^T.
    *
    * @param pair (in) The beam-to-solid pair.
    * @param discret (in) discretization
    * @param mortar_manager (in) Mortar manager for the beam-to-solid condition
-   * @param global_G_B (in/out) Constraint equations derived w.r.t the beam DOFs
-   * @param global_G_S (in/out) Constraint equations derived w.r.t the solid DOFs
-   * @param global_FB_L (in/out) Beam force vector derived w.r.t the Lagrange multipliers
-   * @param global_FS_L (in/out) Solid force vector derived w.r.t the Lagrange multipliers
+   * @param global_constraint_lin_beam (in/out) Constraint equations derived w.r.t the beam DOFs
+   * @param global_constraint_lin_solid (in/out) Constraint equations derived w.r.t the solid DOFs
+   * @param global_force_beam_lin_lambda (in/out) Beam force vector derived w.r.t the Lagrange
+   * multipliers
+   * @param global_force_solid_lin_lambda (in/out) Solid force vector derived w.r.t the Lagrange
+   * multipliers
    * @param global_constraint (in/out) Global constraint equations
    * @param global_kappa (in/out) Global penalty scaling vector equations
    * @param global_lambda_active (in/out) Global vector keeping track of active lagrange multipliers
@@ -294,10 +297,11 @@ namespace BEAMINTERACTION
   template <typename beam, typename other, typename mortar>
   void AssembleLocalMortarContributions(const BEAMINTERACTION::BeamContactPair* pair,
       const Core::FE::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
-      Core::LinAlg::SparseMatrix& global_G_B, Core::LinAlg::SparseMatrix& global_G_S,
-      Core::LinAlg::SparseMatrix& global_FB_L, Core::LinAlg::SparseMatrix& global_FS_L,
-      Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
-      Epetra_FEVector& global_lambda_active,
+      Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
+      Core::LinAlg::SparseMatrix& global_constraint_lin_solid,
+      Core::LinAlg::SparseMatrix& global_force_beam_lin_lambda,
+      Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
+      Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
       const Core::LinAlg::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
       const Core::LinAlg::Matrix<mortar::n_dof_, other::n_dof_, double>& local_M,
       const Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_kappa,
