@@ -229,7 +229,7 @@ namespace BEAMINTERACTION
      * @param stiff (out) Global stiffness matrix. Mortar terms are added to it.
      * @param force (out) Global force vector. Mortar terms are added to it.
      */
-    void add_global_force_stiffness_penalty_contributions(
+    virtual void add_global_force_stiffness_penalty_contributions(
         const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const;
 
@@ -253,7 +253,7 @@ namespace BEAMINTERACTION
      */
     Teuchos::RCP<Epetra_Vector> penalty_invert_kappa() const;
 
-   private:
+   protected:
     //! Flag if setup was called.
     bool is_setup_;
 

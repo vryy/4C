@@ -2,8 +2,6 @@
 Test the beam-to-solid contact implementation with segment based
 integration.
 --------------------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    16
-//NODES       45
 DIM                                   3
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 OUTPUT_DATA_FORMAT                    binary

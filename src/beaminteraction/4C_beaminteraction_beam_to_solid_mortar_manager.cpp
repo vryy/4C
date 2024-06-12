@@ -9,6 +9,7 @@
 
 #include "4C_beaminteraction_beam_to_solid_mortar_manager.hpp"
 
+#include "4C_beaminteraction_beam_to_solid_surface_contact_params.hpp"
 #include "4C_beaminteraction_beam_to_solid_surface_meshtying_params.hpp"
 #include "4C_beaminteraction_beam_to_solid_utils.hpp"
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_params.hpp"
@@ -46,10 +47,16 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
       discret_(discret),
       beam_to_solid_params_(params)
 {
+  // Get the dimension of the Lagrange multiplier field
+  const bool is_contact =
+      !(Teuchos::rcp_dynamic_cast<const BeamToSolidSurfaceContactParams>(beam_to_solid_params_)
+              .is_null());
+  const unsigned int n_dim = is_contact ? 1 : 3;
+
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
   const auto& [n_lambda_node_pos, n_lambda_element_pos] =
       MortarShapeFunctionsToNumberOfLagrangeValues(
-          beam_to_solid_params_->get_mortar_shape_function_type(), 3);
+          beam_to_solid_params_->get_mortar_shape_function_type(), n_dim);
   n_lambda_node_ = n_lambda_node_pos;
   n_lambda_node_translational_ = n_lambda_node_pos;
   n_lambda_element_ = n_lambda_element_pos;
@@ -83,7 +90,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
     // Get the number of Lagrange multiplier DOF for rotational coupling on a beam node and on a
     // beam element.
     const auto& [n_lambda_node_rot, n_lambda_element_rot] =
-        MortarShapeFunctionsToNumberOfLagrangeValues(mortar_shape_function_rotation, 3);
+        MortarShapeFunctionsToNumberOfLagrangeValues(mortar_shape_function_rotation, n_dim);
     n_lambda_node_ += n_lambda_node_rot;
     n_lambda_node_rotational_ = n_lambda_node_rot;
     n_lambda_element_ += n_lambda_element_rot;
