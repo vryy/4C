@@ -11,6 +11,7 @@
 
 #include "4C_beam3_euler_bernoulli.hpp"
 #include "4C_beam3_reissner.hpp"
+#include "4C_beaminteraction_beam_to_solid_mortar_manager.hpp"
 #include "4C_beaminteraction_beam_to_solid_surface_contact_pair.hpp"
 #include "4C_beaminteraction_beam_to_solid_surface_contact_params.hpp"
 #include "4C_beaminteraction_beam_to_solid_surface_meshtying_pair_gauss_point.hpp"
@@ -116,8 +117,20 @@ BEAMINTERACTION::BeamToSolidCondition::create_indirect_assembly_manager(
 {
   if (beam_to_solid_params_->get_contact_discretization() ==
       Inpar::BeamToSolid::BeamToSolidContactDiscretization::mortar)
-    return Teuchos::rcp(new SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect(
-        condition_contact_pairs_, discret, beam_to_solid_params_));
+  {
+    // Create the mortar manager. We add 1 to the MaxAllGID since this gives the maximum GID and NOT
+    // the length of the GIDs.
+    const auto mortar_manager = Teuchos::rcp<BEAMINTERACTION::BeamToSolidMortarManager>(
+        new BEAMINTERACTION::BeamToSolidMortarManager(
+            discret, beam_to_solid_params_, discret->dof_row_map()->MaxAllGID() + 1));
+
+    // Setup the mortar manager.
+    mortar_manager->Setup();
+    mortar_manager->SetLocalMaps(condition_contact_pairs_);
+
+    // Create the indirect assembly manager with the mortar manager
+    return Teuchos::rcp(new SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect(mortar_manager));
+  }
   return Teuchos::null;
 }
 
