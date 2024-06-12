@@ -79,6 +79,47 @@ namespace
     EXPECT_EQ(map_out, map_expected);
   }
 
+  TEST(BroadcastMapVector, UnorderedMap)
+  {
+    Epetra_MpiComm comm(MPI_COMM_WORLD);
+
+    // at least two procs required
+    ASSERT_GT(comm.NumProc(), 1);
+
+    const int myPID = comm.MyPID();
+    const std::unordered_map<int, double> map_in = {
+        std::make_pair(myPID, static_cast<double>(myPID))};
+    const auto map_out = Core::Communication::BroadcastMap(map_in, comm);
+
+    std::unordered_map<int, double> map_expected;
+    for (int pid = 0; pid < comm.NumProc(); ++pid)
+    {
+      map_expected.insert(std::make_pair(pid, static_cast<double>(pid)));
+    }
+
+    EXPECT_EQ(map_out, map_expected);
+  }
+
+  TEST(BroadcastMapVector, UnorderedMultiMap)
+  {
+    Epetra_MpiComm comm(MPI_COMM_WORLD);
+
+    // at least two procs required
+    ASSERT_GT(comm.NumProc(), 1);
+
+    const int myPID = comm.MyPID();
+    const std::unordered_multimap<int, int> map_in = {std::make_pair(1, myPID)};
+    const auto map_out = Core::Communication::BroadcastMap(map_in, comm);
+
+    std::unordered_multimap<int, int> map_expected;
+    for (int pid = 0; pid < comm.NumProc(); ++pid)
+    {
+      map_expected.insert(std::make_pair(1, pid));
+    }
+
+    EXPECT_EQ(map_out, map_expected);
+  }
+
   TEST(BroadcastMapVector, Set)
   {
     Epetra_MpiComm comm(MPI_COMM_WORLD);

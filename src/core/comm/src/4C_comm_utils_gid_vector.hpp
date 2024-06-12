@@ -70,6 +70,16 @@ namespace Core::Communication
   template <typename T, typename U>
   std::map<T, U> BroadcastMap(const std::map<T, U>& map_in, const Epetra_Comm& comm);
 
+  // ! This function is an overload of the above defined function for unordered maps.
+  template <typename T, typename U>
+  std::unordered_map<T, U> BroadcastMap(
+      const std::unordered_map<T, U>& map_in, const Epetra_Comm& comm);
+
+  // ! This function is an overload of the above defined function for unordered multimaps.
+  template <typename T, typename U>
+  std::unordered_multimap<T, U> BroadcastMap(
+      const std::unordered_multimap<T, U>& map_in, const Epetra_Comm& comm);
+
   //! Merge vector of pairs @p pairs_in (items of type @p T and @p U) from all procs to a merged
   //! vector (items of type @p T and @p U). The merged items are in an unspecified order. It is
   //! distributed to to all procs.
@@ -132,6 +142,34 @@ std::map<T, U> Core::Communication::BroadcastMap(
   std::vector<U> vec2;
   DETAIL::BroadcastMapLikeToVetors<T, U>(map_in, vec1, vec2, comm);
   std::map<T, U> map_out;
+  for (unsigned i = 0; i < vec1.size(); ++i) map_out.insert(std::make_pair(vec1[i], vec2[i]));
+  return map_out;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <typename T, typename U>
+std::unordered_map<T, U> Core::Communication::BroadcastMap(
+    const std::unordered_map<T, U>& map_in, const Epetra_Comm& comm)
+{
+  std::vector<T> vec1;
+  std::vector<U> vec2;
+  DETAIL::BroadcastMapLikeToVetors<T, U>(map_in, vec1, vec2, comm);
+  std::unordered_map<T, U> map_out;
+  for (unsigned i = 0; i < vec1.size(); ++i) map_out.insert(std::make_pair(vec1[i], vec2[i]));
+  return map_out;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <typename T, typename U>
+std::unordered_multimap<T, U> Core::Communication::BroadcastMap(
+    const std::unordered_multimap<T, U>& map_in, const Epetra_Comm& comm)
+{
+  std::vector<T> vec1;
+  std::vector<U> vec2;
+  DETAIL::BroadcastMapLikeToVetors<T, U>(map_in, vec1, vec2, comm);
+  std::unordered_multimap<T, U> map_out;
   for (unsigned i = 0; i < vec1.size(); ++i) map_out.insert(std::make_pair(vec1[i], vec2[i]));
   return map_out;
 }

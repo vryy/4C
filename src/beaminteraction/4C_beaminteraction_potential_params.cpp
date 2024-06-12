@@ -34,7 +34,8 @@ BEAMINTERACTION::BeamPotentialParams::BeamPotentialParams()
       use_fad_(false),
       choice_master_slave_(Inpar::BEAMPOTENTIAL::MasterSlaveChoice::choice_master_slave_vague),
       visualization_output_(false),
-      params_runtime_visualization_output_btb_potential_(Teuchos::null)
+      params_runtime_visualization_output_btb_potential_(Teuchos::null),
+      potential_reduction_length_(0.0)
 {
   // empty constructor
 }
@@ -177,6 +178,12 @@ void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
     params_runtime_visualization_output_btb_potential_->Setup();
   }
 
+  /****************************************************************************/
+  potential_reduction_length_ =
+      beam_potential_params_list.get<double>("POTENTIAL_REDUCTION_LENGTH");
+
+  if (potential_reduction_length_ != -1.0 and potential_reduction_length_ <= 0.0)
+    FOUR_C_THROW("Invalid potential reduction length! Must be positive value or -1 to deactivate.");
 
   /****************************************************************************/
   // safety checks for currently unsupported parameter settings
