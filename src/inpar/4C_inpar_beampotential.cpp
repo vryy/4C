@@ -109,6 +109,11 @@ void Inpar::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
   Core::UTILS::IntParameter(
       "BEAMPOT_BOXESINOCT", 8, "max number of bounding boxes in any leaf octant", &beampotential);
 
+  Core::UTILS::DoubleParameter("POTENTIAL_REDUCTION_LENGTH", -1.0,
+      "Within this length of the master beam end point the potential is smoothly reduced to one "
+      "half to account for infinitely long master beam surrogates.",
+      &beampotential);
+
   /*------------------------------------------------------------------------*/
   /* parameters for visualization of potential-based beam interactions via output at runtime */
 

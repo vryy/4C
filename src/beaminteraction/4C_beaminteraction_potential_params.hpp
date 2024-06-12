@@ -132,6 +132,16 @@ namespace BEAMINTERACTION
       return params_runtime_visualization_output_btb_potential_;
     }
 
+    inline double PotentialReductionLength() const
+    {
+      throw_error_if_not_init_and_setup();
+      return potential_reduction_length_;
+    }
+
+    //! data container for prior element lengths for potential reduction strategy
+    //! first entry is left prior length and second entry is right prior length
+    std::unordered_map<int, std::pair<double, double>> ele_gid_prior_length_map_ = {};
+
    private:
     bool isinit_;
 
@@ -178,6 +188,11 @@ namespace BEAMINTERACTION
     //! runtime
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>
         params_runtime_visualization_output_btb_potential_;
+
+    //! within this length starting from the master beam end point the potential is smoothly
+    //! reduced to zero to account for infinitely long master beam surrogates and enable an
+    //! axial pull-off force.
+    double potential_reduction_length_;
   };
 
 }  // namespace BEAMINTERACTION

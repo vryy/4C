@@ -776,7 +776,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             std::cout << "\nGP pair: igp1_total=" << igp1_total << " & igp2_total=" << igp2_total
                       << ": |r1-r2|=" << norm_dist;
 
-            FOUR_C_THROW("centerline separation |r1-r2|=0! Fatal error.");
+            FOUR_C_THROW("centerline separation |r1-r2|=0!");
           }
 
           // check cutoff criterion: if specified, contributions are neglected at larger separation
@@ -1070,20 +1070,44 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         "potential requires automatic differentiation via FAD!");
   }
 
+  if (Params()->Strategy() == Inpar::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox &&
+      Params()->PotentialReductionLength() != -1.0)
+  {
+    FOUR_C_THROW(
+        "The potential reduction strategy is currently not implemented for the beam interaction "
+        "strategy 'SingleLengthSpecific_SmallSepApprox'!");
+  }
+
   if (radius1_ != radius2_)
     FOUR_C_THROW(
         "The strategy 'SingleLengthSpecific_SmallSepApprox' to evaluate the interaction "
         "potential requires the beam radii to be identical!");
 
-
   // get cutoff radius
   const double cutoff_radius = Params()->CutoffRadius();
 
-  // get regularization type and separation
-  const Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type =
-      Params()->RegularizationType();
+  // get potential reduction length
+  const double potential_reduction_length = Params()->PotentialReductionLength();
 
-  const double regularization_separation = Params()->regularization_separation();
+  // get length from current master beam element to beam edge
+  double length_prior_left = 0.0;
+  double length_prior_right = 0.0;
+
+  if (potential_reduction_length > 0.0)
+  {
+    std::tie(length_prior_left, length_prior_right) =
+        Params()->ele_gid_prior_length_map_.at(Element2()->Id());
+
+    if ((length_prior_left >= 0.0) && (length_prior_right >= 0.0) &&
+        ((ele2length_ - 2 * potential_reduction_length + length_prior_left + length_prior_right) <
+            0.0))
+    {
+      FOUR_C_THROW(
+          "ERROR: Master beam endpoint reduction strategy would interfere on current master beam "
+          "element! Potential reduction would overlap due to too small prior element lengths on "
+          "both sides");
+    }
+  }
 
   /* parameter coordinate of the closest point on the master beam,
    * determined via point-to-curve projection */
@@ -1153,59 +1177,13 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   T norm_r_xi_slave = 0.0;
   T norm_r_xi_master = 0.0;
 
-  T signum_tangentsscalarproduct = 0.0;
-
   Core::LinAlg::Matrix<3, 1, T> dist_ul(true);  // = r_slave-r_master
   T norm_dist_ul = 0.0;
-
-  // unilateral normal vector
-  Core::LinAlg::Matrix<3, 1, T> normal_ul(true);
-
-  // gap of unilateral closest points
-  T gap_ul = 0.0;
-  // regularized gap of unilateral closest points
-  T gap_ul_regularized = 0.0;
 
   T alpha = 0.0;      // mutual angle of tangent vectors
   T cos_alpha = 0.0;  // cosine of mutual angle of tangent vectors
 
-  // auxiliary quantity
-  T a = 0.0;
-
   T interaction_potential_GP = 0.0;
-
-
-  // derivatives of the interaction potential w.r.t. gap_ul and cos(alpha)
-  T pot_ia_deriv_gap_ul = 0.0;
-  T pot_ia_deriv_cos_alpha = 0.0;
-
-  T pot_ia_2ndderiv_gap_ul = 0.0;
-  T pot_ia_2ndderiv_cos_alpha = 0.0;
-  T pot_ia_deriv_gap_ul_deriv_cos_alpha = 0.0;
-
-  // third derivatives
-  T pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep = 0.0;
-  T pot_ia_deriv_gap_ul_2ndderiv_cos_alpha_at_regsep = 0.0;
-
-  // fourth derivative
-  T pot_ia_2ndderiv_gap_ul_2ndderiv_cos_alpha_at_regsep = 0.0;
-
-
-  // components from variation of unilateral gap
-  Core::LinAlg::Matrix<3, 1, T> gap_ul_deriv_r_slave(true);
-  Core::LinAlg::Matrix<3, 1, T> gap_ul_deriv_r_master(true);
-
-  // components from variation of cosine of enclosed angle
-  Core::LinAlg::Matrix<3, 1, T> cos_alpha_partial_r_xi_slave(true);
-  Core::LinAlg::Matrix<3, 1, T> cos_alpha_partial_r_xi_master(true);
-  T cos_alpha_partial_xi_master = 0.0;
-
-  Core::LinAlg::Matrix<3, 1, T> cos_alpha_deriv_r_slave(true);
-  Core::LinAlg::Matrix<3, 1, T> cos_alpha_deriv_r_master(true);
-  Core::LinAlg::Matrix<3, 1, T> cos_alpha_deriv_r_xi_slave(true);
-  Core::LinAlg::Matrix<3, 1, T> cos_alpha_deriv_r_xi_master(true);
-
-  T a_deriv_cos_alpha = 0.0;
 
   // components from variation of parameter coordinate on master beam
   Core::LinAlg::Matrix<1, 3, T> xi_master_partial_r_slave(true);
@@ -1221,12 +1199,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
    * from xi_master) */
   Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T> force_pot_slave_GP(true);
   Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T> force_pot_master_GP(true);
-
-  // Todo remove the following two variables, which are required for verification via FAD
-  Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, double> force_pot_slave_GP_calc_via_FAD(
-      true);
-  Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, double> force_pot_master_GP_calc_via_FAD(
-      true);
 
   // evaluate charge/particle densities from DLINE charge condition specified in input file
   double rho1 = linechargeconds_[0]->parameters().Get<double>("val");
@@ -1271,13 +1243,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   // store for visualization
   double prefactor_visualization_data = -1.0 * prefactor * rho1 * rho2;
 
-  //************************** DEBUG ******************************************
-  //  this->Print(std::cout);
-  //  std::cout << "\n\n\nStart evaluation via Gauss integration..." << std::endl;
-  //  std::cout << "\nnumgp_total=" << numgp_total;
-  //*********************** END DEBUG *****************************************
-
-
   // prepare data storage for visualization
   centerline_coords_gp_1_.resize(numgp_total);
   centerline_coords_gp_2_.resize(numgp_total);
@@ -1285,10 +1250,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   forces_pot_gp_2_.resize(numgp_total, Core::LinAlg::Matrix<3, 1, double>(true));
   moments_pot_gp_1_.resize(numgp_total, Core::LinAlg::Matrix<3, 1, double>(true));
   moments_pot_gp_2_.resize(numgp_total, Core::LinAlg::Matrix<3, 1, double>(true));
-
-
-  Core::LinAlg::Matrix<3, 1, double> moment_pot_tmp(true);
-  Core::LinAlg::Matrix<3, 3, double> spin_pseudo_moment_tmp(true);
 
 
   for (unsigned int isegment = 0; isegment < num_integration_segments; ++isegment)
@@ -1313,11 +1274,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     {
       igp_total = isegment * numgp_persegment + igp;
 
-      //************************** DEBUG ******************************************
-      //      std::cout << "\nEvaluate igp_total=" << igp_total;
-      //*********************** END DEBUG *****************************************
-
-
       // Get location of GP in element parameter space xi \in [-1;1]
       xi_GP_tilde = gausspoints.qxg[igp][0];
 
@@ -1341,19 +1297,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       rho1rho2_JacFac_GaussWeight = rho1 * rho2 * jacobifactor_segment *
                                     BeamElement1()->GetJacobiFacAtXi(xi_GP) * gausspoints.qwgt[igp];
 
-      //************************** DEBUG ******************************************
-      //      std::cout << "\n\nGP " << igp_total << ":";
-      //      std::cout << "\nr_slave: " << Core::FADUtils::CastToDouble<T, 3, 1>(r_slave);
-      //      std::cout << "\nr_xi_slave: " << Core::FADUtils::CastToDouble<T, 3, 1>(r_xi_slave);
-      //      std::cout << "\n|r_xi_slave|: "
-      //                << Core::FADUtils::VectorNorm<3>(Core::FADUtils::CastToDouble<T, 3,
-      //                1>(r_xi_slave));
-      //      std::cout << "\ng1_slave: " << Core::FADUtils::CastToDouble<T, 3, 1>(g1_slave);
-      //      std::cout << "\n|g1_slave|: "
-      //                << Core::FADUtils::VectorNorm<3>(Core::FADUtils::CastToDouble<T, 3,
-      //                1>(g1_slave));
-      //*********************** END DEBUG *****************************************
-
       /* point-to-curve projection, i.e. 'unilateral' closest-point projection
        * to determine point on master beam (i.e. parameter coordinate xi_master) */
       iter_projection = 0;
@@ -1376,27 +1319,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         continue;
       }
 
-      //************************** DEBUG ******************************************
-      //    if ( i!=0 )
-      //    {
-      //      std::cout << "\n\nINFO: Point-to-Curve Projection succeeded with initial guess "
-      //          << xi_master_initial_guess_values[i] << ": xi_master="
-      //          << Core::FADUtils::CastToDouble(xi_master) << std::endl;
-      //    }
-      //*********************** END DEBUG *****************************************
-
-      //************************** DEBUG ******************************************
-      //    std::cout << "\nxi_master: " << Core::FADUtils::CastToDouble( xi_master );
-      //*********************** END DEBUG *****************************************
-
       // Todo: specify tolerance value in a more central place
       if (Core::FADUtils::Norm(xi_master) > 1.0 + 1.0e-10)
       {
-        //************************** DEBUG ******************************************
-        //      std::cout << "\nxi_master not in valid range ... proceed to next GP\n";
-        //*********************** END DEBUG *****************************************
         continue;
       }
+      // ensure no end node is utilized to prevent a possible doubled potential contribution
       else if (Core::FADUtils::Norm(xi_master) >= 1.0 - 1.0e-10)
       {
         FOUR_C_THROW(
@@ -1419,19 +1347,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       t_master.Update(1.0 / norm_r_xi_master, r_xi_master);
 
-
-      //************************** DEBUG ******************************************
-      //      std::cout << "\nr_master: " << Core::FADUtils::CastToDouble<T, 3, 1>(r_master);
-      //      std::cout << "\nr_xi_master: " << Core::FADUtils::CastToDouble<T, 3, 1>(r_xi_master);
-      //      std::cout << "\n|r_xi_master|: "
-      //                << Core::FADUtils::VectorNorm<3>(Core::FADUtils::CastToDouble<T, 3,
-      //                1>(r_xi_master));
-      //      std::cout << "\ng1_master: " << Core::FADUtils::CastToDouble<T, 3, 1>(g1_master);
-      //      std::cout << "\n|g1_master|: "
-      //                << Core::FADUtils::VectorNorm<3>(Core::FADUtils::CastToDouble<T, 3,
-      //                1>(g1_master));
-      //*********************** END DEBUG *****************************************
-
       // store for visualization
       centerline_coords_gp_2_[igp_total] = Core::FADUtils::CastToDouble<T, 3, 1>(r_master);
 
@@ -1443,44 +1358,20 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       if (Core::FADUtils::CastToDouble(norm_dist_ul) == 0.0)
       {
         this->Print(std::cout);
-        FOUR_C_THROW("centerline separation |r1-r2|=0! Fatal error.");
+        FOUR_C_THROW("centerline separation |r1-r2|=0!");
       }
-
-      //************************** DEBUG ******************************************
-      //      std::cout << "\ndist_ul: " << Core::FADUtils::CastToDouble<T, 3, 1>(dist_ul);
-      //*********************** END DEBUG *****************************************
 
       // check cutoff criterion: if specified, contributions are neglected at larger separation
       if (cutoff_radius != -1.0 and Core::FADUtils::CastToDouble(norm_dist_ul) > cutoff_radius)
       {
-        //************************** DEBUG ******************************************
-        // std::cout << "\nINFO: Ignored GP (ele GIDs " << Element1()->Id() << "&" <<
-        // Element2()->Id()
-        //          << ": iGP " << igp_total
-        //          << ") with |dist_ul|=" <<
-        //          Core::FADUtils::CastToDouble(Core::FADUtils::Norm(dist_ul))
-        //          << " > cutoff=" << cutoff_radius << std::endl;
-        //*********************** END DEBUG *****************************************
         continue;
       }
 
       // mutual angle of tangent vectors at unilateral closest points
       BEAMINTERACTION::Geo::CalcEnclosedAngle(alpha, cos_alpha, r_xi_slave, r_xi_master);
 
-
-      //************************** DEBUG ******************************************
-      //    std::cout << "\nalpha: " << Core::FADUtils::CastToDouble(alpha * 180 / M_PI) <<
-      //    "degrees"; std::cout << "\ncos(alpha): " << Core::FADUtils::CastToDouble( cos_alpha );
-      //    std::cout << "\nsin(alpha): " << Core::FADUtils::CastToDouble( sin_alpha );
-      //*********************** END DEBUG *****************************************
-
-
-      //************************** DEBUG ******************************************
       if (alpha < 0.0 or alpha > M_PI_2)
         FOUR_C_THROW("alpha=%f, should be in [0,pi/2]", Core::FADUtils::CastToDouble(alpha));
-      //*********************** END DEBUG *****************************************
-
-
 
       // Todo: maybe avoid this assembly of shape fcns into matrices
       // Fixme: at least, do this only in case of FAD-based linearization
@@ -1500,7 +1391,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           dist_ul, r_xi_master, r_xixi_master);
 
 
-      // evaluate all quantities which depend on the the applied disk-cylinder potential law
+      // evaluate all quantities which depend on the applied disk-cylinder potential law
 
       // 'full' disk-cylinder interaction potential
       if (Params()->Strategy() == Inpar::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox)
@@ -1519,314 +1410,18 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       else if (Params()->Strategy() ==
                Inpar::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox_simple)
       {
-        // gap of unilateral closest points
-        gap_ul = norm_dist_ul - radius1_ - radius2_;
-
-        // regularized gap of unilateral closest points
-        gap_ul_regularized = gap_ul;
-
-
-        if (regularization_type != Inpar::BEAMPOTENTIAL::regularization_none and
-            gap_ul < regularization_separation)
-        {
-          gap_ul_regularized = regularization_separation;
-
-          //************************** DEBUG ******************************************
-          //          std::cout << "\ngap_ul: " << Core::FADUtils::CastToDouble(gap_ul) << ":
-          //          regularization active!"; std::cout << "\ngap_ul_regularized: " <<
-          //          Core::FADUtils::CastToDouble(gap_ul_regularized);
-          // this->Print(std::cout);
-          // std::cout << "\nigp_total: " << igp_total;
-          //*********************** END DEBUG *****************************************
-        }
-        else if (regularization_type == Inpar::BEAMPOTENTIAL::regularization_none and
-                 gap_ul < 1e-14)
-        {
-          this->Print(std::cout);
-
-          std::cout << "\ngap_ul: " << Core::FADUtils::CastToDouble(gap_ul);
-          std::cout << "\nalpha: " << Core::FADUtils::CastToDouble(alpha * 180 / M_PI) << "degrees";
-
-          FOUR_C_THROW(
-              "gap_ul=%f is negative or very close to zero! Fatal error. Use regularization to"
-              " handle this!",
-              Core::FADUtils::CastToDouble(gap_ul));
-        }
-
-
-        // unilateral normal vector
-        normal_ul.Update(1.0 / norm_dist_ul, dist_ul);
-
-
-        // auxiliary quantity
-        a = 0.5 / radius1_ + 0.5 * cos_alpha * cos_alpha / radius2_;
-
-        // safety check
-        if (Core::FADUtils::CastToDouble(a) <= 0.0)
-        {
-          this->Print(std::cout);
-          FOUR_C_THROW("auxiliary quantity a<=0! Fatal error.");
-        }
-
-        // interaction potential
-        interaction_potential_GP =
-            std::pow(4 * gap_ul_regularized, -m_ + 4.5) / Core::FADUtils::sqrt(a);
-
-
-        // compute derivatives of the interaction potential w.r.t. gap_ul and cos(alpha)
-        pot_ia_deriv_gap_ul = (-m_ + 4.5) / gap_ul_regularized * interaction_potential_GP;
-
-        a_deriv_cos_alpha = cos_alpha / radius2_;
-        pot_ia_deriv_cos_alpha = -0.5 / a * interaction_potential_GP * a_deriv_cos_alpha;
-
-
-        // Todo: strictly speaking, the following second derivatives of the interaction potential
-        // are only required in case of active regularization OR for analytic linearization
-
-        pot_ia_deriv_gap_ul_deriv_cos_alpha =
-            (-m_ + 4.5) / gap_ul_regularized * pot_ia_deriv_cos_alpha;
-
-        pot_ia_2ndderiv_gap_ul = (-m_ + 3.5) / gap_ul_regularized * pot_ia_deriv_gap_ul;
-
-        pot_ia_2ndderiv_cos_alpha =
-            -0.5 / (a * radius2_) * interaction_potential_GP +
-            0.75 * a_deriv_cos_alpha * a_deriv_cos_alpha / (a * a) * interaction_potential_GP;
-
-        // third derivatives
-        pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep =
-            (-m_ + 4.5) * (-m_ + 3.5) / (gap_ul_regularized * gap_ul_regularized) *
-            pot_ia_deriv_cos_alpha;
-
-        pot_ia_deriv_gap_ul_2ndderiv_cos_alpha_at_regsep =
-            (-m_ + 4.5) / gap_ul_regularized * pot_ia_2ndderiv_cos_alpha;
-
-        // fourth derivative
-        pot_ia_2ndderiv_gap_ul_2ndderiv_cos_alpha_at_regsep =
-            (-m_ + 4.5) * (-m_ + 3.5) / (gap_ul_regularized * gap_ul_regularized) *
-            pot_ia_2ndderiv_cos_alpha;
-
-        /* now that we don't need the interaction potential at gap_ul=regularization_separation as
-         * an intermediate result anymore, we can add the additional (linear and quadratic)
-         * contributions in case of active regularization to the interaction potential */
-        if (regularization_type != Inpar::BEAMPOTENTIAL::regularization_none and
-            gap_ul < regularization_separation)
-        {
-          //************************** DEBUG ******************************************
-          //          std::cout << "\ninteraction_potential_GP_atregsep: "
-          //                    << Core::FADUtils::CastToDouble(interaction_potential_GP);
-          //          std::cout << "\npot_ia_deriv_gap_ul_atregsep: "
-          //                    << Core::FADUtils::CastToDouble(pot_ia_deriv_gap_ul);
-          //          std::cout << "\npot_ia_deriv_cos_alpha_atregsep: "
-          //                    << Core::FADUtils::CastToDouble(pot_ia_deriv_cos_alpha);
-          // this->Print(std::cout);
-          // std::cout << "\nigp_total: " << igp_total;
-          //*********************** END DEBUG *****************************************
-
-          interaction_potential_GP += pot_ia_deriv_gap_ul * (gap_ul - regularization_separation);
-
-          pot_ia_deriv_cos_alpha +=
-              pot_ia_deriv_gap_ul_deriv_cos_alpha * (gap_ul - regularization_separation);
-
-
-          if (regularization_type == Inpar::BEAMPOTENTIAL::regularization_linear)
-          {
-            interaction_potential_GP += 0.5 * pot_ia_2ndderiv_gap_ul *
-                                        (gap_ul - regularization_separation) *
-                                        (gap_ul - regularization_separation);
-
-            pot_ia_deriv_gap_ul += pot_ia_2ndderiv_gap_ul * (gap_ul - regularization_separation);
-
-            pot_ia_deriv_cos_alpha += 0.5 * pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep *
-                                      (gap_ul - regularization_separation) *
-                                      (gap_ul - regularization_separation);
-          }
-
-          //************************** DEBUG ******************************************
-          //          std::cout << "\ninteraction_potential_GP_regularized: "
-          //                    << Core::FADUtils::CastToDouble(interaction_potential_GP);
-          //          std::cout << "\npot_ia_deriv_gap_ul_regularized: "
-          //                    << Core::FADUtils::CastToDouble(pot_ia_deriv_gap_ul);
-          //          std::cout << "\npot_ia_deriv_cos_alpha_regularized: "
-          //                    << Core::FADUtils::CastToDouble(pot_ia_deriv_cos_alpha);
-          // this->Print(std::cout);
-          // std::cout << "\nigp_total: " << igp_total;
-          //*********************** END DEBUG *****************************************
-        }
-
-        /* adapt also the second derivatives (required for analytic linearization) in
-         * case of active regularization*/
-        if (regularization_type != Inpar::BEAMPOTENTIAL::regularization_none and
-            gap_ul < regularization_separation)
-        {
-          if (regularization_type == Inpar::BEAMPOTENTIAL::regularization_constant)
-            pot_ia_2ndderiv_gap_ul = 0.0;
-
-          pot_ia_2ndderiv_cos_alpha += pot_ia_deriv_gap_ul_2ndderiv_cos_alpha_at_regsep *
-                                       (gap_ul - regularization_separation);
-
-          if (regularization_type == Inpar::BEAMPOTENTIAL::regularization_linear)
-          {
-            pot_ia_deriv_gap_ul_deriv_cos_alpha += pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep *
-                                                   (gap_ul - regularization_separation);
-
-            pot_ia_2ndderiv_cos_alpha += 0.5 * pot_ia_2ndderiv_gap_ul_2ndderiv_cos_alpha_at_regsep *
-                                         (gap_ul - regularization_separation) *
-                                         (gap_ul - regularization_separation);
-          }
-        }
-
-
-        // compute components from variation of cosine of enclosed angle
-        signum_tangentsscalarproduct = Core::FADUtils::Signum(r_xi_slave.Dot(r_xi_master));
-        // auxiliary variables
-        Core::LinAlg::Matrix<3, 3, T> v_mat_tmp(true);
-
-        for (unsigned int i = 0; i < 3; ++i)
-        {
-          v_mat_tmp(i, i) += 1.0;
-          for (unsigned int j = 0; j < 3; ++j) v_mat_tmp(i, j) -= t_slave(i) * t_slave(j);
-        }
-
-        cos_alpha_partial_r_xi_slave.Multiply(
-            signum_tangentsscalarproduct / Core::FADUtils::VectorNorm(r_xi_slave), v_mat_tmp,
-            t_master);
-
-        v_mat_tmp.Clear();
-        for (unsigned int i = 0; i < 3; ++i)
-        {
-          v_mat_tmp(i, i) += 1.0;
-          for (unsigned int j = 0; j < 3; ++j) v_mat_tmp(i, j) -= t_master(i) * t_master(j);
-        }
-
-        cos_alpha_partial_r_xi_master.Multiply(
-            signum_tangentsscalarproduct / Core::FADUtils::VectorNorm(r_xi_master), v_mat_tmp,
-            t_slave);
-
-        cos_alpha_partial_xi_master = r_xixi_master.Dot(cos_alpha_partial_r_xi_master);
-
-
-        cos_alpha_deriv_r_slave.UpdateT(cos_alpha_partial_xi_master, xi_master_partial_r_slave);
-        cos_alpha_deriv_r_master.UpdateT(cos_alpha_partial_xi_master, xi_master_partial_r_master);
-
-        cos_alpha_deriv_r_xi_slave.Update(cos_alpha_partial_r_xi_slave);
-        cos_alpha_deriv_r_xi_master.Update(1.0, cos_alpha_partial_r_xi_master);
-        cos_alpha_deriv_r_xi_master.UpdateT(
-            cos_alpha_partial_xi_master, xi_master_partial_r_xi_master, 1.0);
-
-
-        // compute components from variation of the unilateral gap
-        gap_ul_deriv_r_slave.Update(normal_ul);
-        gap_ul_deriv_r_master.Update(-1.0, normal_ul);
-
-
-
-        // store for visualization
-        forces_pot_gp_1_[igp_total].Update(
-            prefactor_visualization_data * Core::FADUtils::CastToDouble(pot_ia_deriv_gap_ul),
-            Core::FADUtils::CastToDouble<T, 3, 1>(gap_ul_deriv_r_slave), 1.0);
-
-        forces_pot_gp_1_[igp_total].Update(
-            prefactor_visualization_data * Core::FADUtils::CastToDouble(pot_ia_deriv_cos_alpha),
-            Core::FADUtils::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_slave), 1.0);
-
-
-
-        moment_pot_tmp.Update(Core::FADUtils::CastToDouble(pot_ia_deriv_cos_alpha),
-            Core::FADUtils::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_xi_slave));
-
-        /* note: relation between variation of tangent vector r_xi and variation of (transversal
-         * part of) rotation vector theta_perp describing cross-section orientation can be used to
-         *       identify (distributed) moments as follows: m_pot = 1/|r_xi| * ( m_pot_pseudo x g1 )
-         */
-        Core::LargeRotations::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
-
-        moment_pot_tmp.Multiply(1.0 / Core::FADUtils::CastToDouble(norm_r_xi_slave),
-            spin_pseudo_moment_tmp, Core::FADUtils::CastToDouble<T, 3, 1>(t_slave));
-
-        moments_pot_gp_1_[igp_total].Update(prefactor_visualization_data, moment_pot_tmp, 1.0);
-
-
-        forces_pot_gp_2_[igp_total].Update(
-            prefactor_visualization_data * Core::FADUtils::CastToDouble(pot_ia_deriv_gap_ul),
-            Core::FADUtils::CastToDouble<T, 3, 1>(gap_ul_deriv_r_master), 1.0);
-
-        forces_pot_gp_2_[igp_total].Update(
-            prefactor_visualization_data * Core::FADUtils::CastToDouble(pot_ia_deriv_cos_alpha),
-            Core::FADUtils::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_master), 1.0);
-
-
-        moment_pot_tmp.Update(Core::FADUtils::CastToDouble(pot_ia_deriv_cos_alpha),
-            Core::FADUtils::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_xi_master));
-
-        Core::LargeRotations::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
-
-        moment_pot_tmp.Multiply(1.0 / Core::FADUtils::CastToDouble(norm_r_xi_master),
-            spin_pseudo_moment_tmp, Core::FADUtils::CastToDouble<T, 3, 1>(t_master));
-
-        moments_pot_gp_2_[igp_total].Update(prefactor_visualization_data, moment_pot_tmp, 1.0);
-
-
-
-        // now apply scalar integration factor
-        // (after computing and storing distributed force/moment for vtk output)
-        pot_ia_deriv_gap_ul *= rho1rho2_JacFac_GaussWeight;
-        pot_ia_deriv_cos_alpha *= rho1rho2_JacFac_GaussWeight;
-
-        pot_ia_2ndderiv_gap_ul *= rho1rho2_JacFac_GaussWeight;
-        pot_ia_deriv_gap_ul_deriv_cos_alpha *= rho1rho2_JacFac_GaussWeight;
-        pot_ia_2ndderiv_cos_alpha *= rho1rho2_JacFac_GaussWeight;
-
-
-        //********************************************************************
-        // calculate force/residual vector of slave and master element
-        //********************************************************************
-        force_pot_slave_GP.Clear();
-        force_pot_master_GP.Clear();
-
-        // sum up the contributions of all nodes (in all dimensions)
-        for (unsigned int idofperdim = 0; idofperdim < (numnodes * numnodalvalues); ++idofperdim)
-        {
-          // loop over dimensions
-          for (unsigned int jdim = 0; jdim < 3; ++jdim)
-          {
-            force_pot_slave_GP(3 * idofperdim + jdim) +=
-                N_i_slave[igp](idofperdim) * pot_ia_deriv_gap_ul * gap_ul_deriv_r_slave(jdim);
-
-            force_pot_slave_GP(3 * idofperdim + jdim) +=
-                N_i_slave[igp](idofperdim) * pot_ia_deriv_cos_alpha * cos_alpha_deriv_r_slave(jdim);
-
-            force_pot_slave_GP(3 * idofperdim + jdim) += N_i_xi_slave[igp](idofperdim) *
-                                                         pot_ia_deriv_cos_alpha *
-                                                         cos_alpha_deriv_r_xi_slave(jdim);
-
-
-            force_pot_master_GP(3 * idofperdim + jdim) +=
-                N_i_master(idofperdim) * pot_ia_deriv_gap_ul * gap_ul_deriv_r_master(jdim);
-
-            force_pot_master_GP(3 * idofperdim + jdim) +=
-                N_i_master(idofperdim) * pot_ia_deriv_cos_alpha * cos_alpha_deriv_r_master(jdim);
-
-            force_pot_master_GP(3 * idofperdim + jdim) += N_i_xi_master(idofperdim) *
-                                                          pot_ia_deriv_cos_alpha *
-                                                          cos_alpha_deriv_r_xi_master(jdim);
-          }
-        }
-
-
-        if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
-            stiffmat22 != nullptr)
-        {
-          // evaluate contributions to linearization based on analytical expression
-          evaluate_stiffpot_analytic_contributions_single_length_specific_small_sep_approx_simple(
-              N_i_slave[igp], N_i_xi_slave[igp], N_i_master, N_i_xi_master, N_i_xixi_master,
-              xi_master, r_xi_slave, r_xi_master, r_xixi_master, norm_dist_ul, normal_ul,
-              pot_ia_deriv_gap_ul, pot_ia_deriv_cos_alpha, pot_ia_2ndderiv_gap_ul,
-              pot_ia_deriv_gap_ul_deriv_cos_alpha, pot_ia_2ndderiv_cos_alpha, gap_ul_deriv_r_slave,
-              gap_ul_deriv_r_master, cos_alpha_deriv_r_slave, cos_alpha_deriv_r_master,
-              cos_alpha_deriv_r_xi_slave, cos_alpha_deriv_r_xi_master, xi_master_partial_r_slave,
-              xi_master_partial_r_master, xi_master_partial_r_xi_master, *stiffmat11, *stiffmat12,
-              *stiffmat21, *stiffmat22);
-        }
+        if (not evaluate_simple_disk_cylinder_potential(dist_ul, norm_dist_ul, alpha, cos_alpha,
+                r_slave, r_xi_slave, norm_r_xi_slave, t_slave, r_master, r_xi_master,
+                norm_r_xi_master, r_xixi_master, t_master, xi_master, xi_master_partial_r_slave,
+                xi_master_partial_r_master, xi_master_partial_r_xi_master,
+                potential_reduction_length, length_prior_right, length_prior_left,
+                interaction_potential_GP, N_i_slave[igp], N_i_xi_slave[igp], N_i_master,
+                N_i_xi_master, N_i_xixi_master, force_pot_slave_GP, force_pot_master_GP,
+                prefactor_visualization_data, rho1rho2_JacFac_GaussWeight,
+                forces_pot_gp_1_[igp_total], forces_pot_gp_2_[igp_total],
+                moments_pot_gp_1_[igp_total], moments_pot_gp_2_[igp_total], stiffmat11, stiffmat12,
+                stiffmat21, stiffmat22))
+          continue;
       }
 
       // apply constant prefactor
@@ -1847,15 +1442,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       // do this scaling down here, because the value without the prefactors is meant to be used
       // in the force calculation above!
-      interaction_potential_GP *= rho1rho2_JacFac_GaussWeight * prefactor;
+      interaction_potential_GP *= prefactor;
 
       // store for energy output
       interaction_potential_ += Core::FADUtils::CastToDouble(interaction_potential_GP);
-
-      //************************** DEBUG ******************************************
-      //      std::cout << "\ninteraction_potential_GP: "
-      //                << Core::FADUtils::CastToDouble(interaction_potential_GP);
-      //*********************** END DEBUG *****************************************
 
     }  // end loop over Gauss points per segment
   }    // end loop over integration segments
@@ -1886,7 +1476,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         double const& xi_master, Core::LinAlg::Matrix<3, 1, double> const& r_xi_slave,
         Core::LinAlg::Matrix<3, 1, double> const& r_xi_master,
         Core::LinAlg::Matrix<3, 1, double> const& r_xixi_master, double const& norm_dist_ul,
-        Core::LinAlg::Matrix<3, 1, double> const& normal_ul, double const& pot_ia_deriv_gap_ul,
+        Core::LinAlg::Matrix<3, 1, double> const& normal_ul, double const& pot_red_fac,
+        double const& pot_red_fac_deriv_xi_master, double const& pot_red_fac_2ndderiv_xi_master,
+        double const& pot_ia, double const& pot_ia_deriv_gap_ul,
         double const& pot_ia_deriv_cos_alpha, double const& pot_ia_2ndderiv_gap_ul,
         double const& pot_ia_deriv_gap_ul_deriv_cos_alpha, double const& pot_ia_2ndderiv_cos_alpha,
         Core::LinAlg::Matrix<3, 1, double> const& gap_ul_deriv_r_slave,
@@ -2434,58 +2026,185 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       {
         for (unsigned int icolumndim = 0; icolumndim < num_spatial_dimensions; ++icolumndim)
         {
-          // variation of gap_ul * linearization of pot_ia_deriv_gap_ul
+          // variation of xi_master * linearization of (pot_red_fac_deriv_xi_master * pot_ia)
+          stiffmat11(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
+              N_i_slave(irowdofperdim) * xi_master_partial_r_slave(irowdim) *
+              (pot_red_fac_2ndderiv_xi_master * xi_master_partial_r_slave(icolumndim) *
+                      N_i_slave(icolumndofperdim) * pot_ia +
+                  pot_red_fac_deriv_xi_master *
+                      (pot_ia_deriv_gap_ul * gap_ul_deriv_r_slave(icolumndim) *
+                              N_i_slave(icolumndofperdim) +
+                          pot_ia_deriv_cos_alpha * cos_alpha_deriv_r_slave(icolumndim) *
+                              N_i_slave(icolumndofperdim) +
+                          pot_ia_deriv_cos_alpha * cos_alpha_deriv_r_xi_slave(icolumndim) *
+                              N_i_xi_slave(icolumndofperdim)));
+
+          stiffmat12(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
+              N_i_slave(irowdofperdim) * xi_master_partial_r_slave(irowdim) *
+              (pot_red_fac_2ndderiv_xi_master *
+                      (xi_master_partial_r_master(icolumndim) * N_i_master(icolumndofperdim) +
+                          xi_master_partial_r_xi_master(icolumndim) *
+                              N_i_xi_master(icolumndofperdim)) *
+                      pot_ia +
+                  pot_red_fac_deriv_xi_master *
+                      (pot_ia_deriv_gap_ul * gap_ul_deriv_r_master(icolumndim) *
+                              N_i_master(icolumndofperdim) +
+                          pot_ia_deriv_cos_alpha * cos_alpha_deriv_r_master(icolumndim) *
+                              N_i_master(icolumndofperdim) +
+                          pot_ia_deriv_cos_alpha * cos_alpha_deriv_r_xi_master(icolumndim) *
+                              N_i_xi_master(icolumndofperdim)));
+
+          stiffmat21(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
+              (N_i_master(irowdofperdim) * xi_master_partial_r_master(irowdim) +
+                  N_i_xi_master(irowdofperdim) * xi_master_partial_r_xi_master(irowdim)) *
+              (pot_red_fac_2ndderiv_xi_master * xi_master_partial_r_slave(icolumndim) *
+                      N_i_slave(icolumndofperdim) * pot_ia +
+                  pot_red_fac_deriv_xi_master *
+                      (pot_ia_deriv_gap_ul * gap_ul_deriv_r_slave(icolumndim) *
+                              N_i_slave(icolumndofperdim) +
+                          pot_ia_deriv_cos_alpha * cos_alpha_deriv_r_slave(icolumndim) *
+                              N_i_slave(icolumndofperdim) +
+                          pot_ia_deriv_cos_alpha * cos_alpha_deriv_r_xi_slave(icolumndim) *
+                              N_i_xi_slave(icolumndofperdim)));
+
+          stiffmat22(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
+              (N_i_master(irowdofperdim) * xi_master_partial_r_master(irowdim) +
+                  N_i_xi_master(irowdofperdim) * xi_master_partial_r_xi_master(irowdim)) *
+              (pot_red_fac_2ndderiv_xi_master *
+                      (xi_master_partial_r_master(icolumndim) * N_i_master(icolumndofperdim) +
+                          xi_master_partial_r_xi_master(icolumndim) *
+                              N_i_xi_master(icolumndofperdim)) *
+                      pot_ia +
+                  pot_red_fac_deriv_xi_master *
+                      (pot_ia_deriv_gap_ul * gap_ul_deriv_r_master(icolumndim) *
+                              N_i_master(icolumndofperdim) +
+                          pot_ia_deriv_cos_alpha * cos_alpha_deriv_r_master(icolumndim) *
+                              N_i_master(icolumndofperdim) +
+                          pot_ia_deriv_cos_alpha * cos_alpha_deriv_r_xi_master(icolumndim) *
+                              N_i_xi_master(icolumndofperdim)));
+
+          // linearization of the (variation of xi_master) * (pot_red_fac_deriv_xi_master * pot_ia)
+          stiffmat11(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
+              pot_red_fac_deriv_xi_master * pot_ia * N_i_slave(irowdofperdim) *
+              xi_master_partial_r_slave_partial_r_slave(irowdim, icolumndim) *
+              N_i_slave(icolumndofperdim);
+
+          stiffmat12(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
+              pot_red_fac_deriv_xi_master * pot_ia * N_i_slave(irowdofperdim) *
+              (xi_master_partial_r_slave_partial_r_master(irowdim, icolumndim) *
+                      N_i_master(icolumndofperdim) +
+                  xi_master_partial_r_slave_partial_r_xi_master(irowdim, icolumndim) *
+                      N_i_xi_master(icolumndofperdim) +
+                  xi_master_partial_r_slave_partial_r_xixi_master(irowdim, icolumndim) *
+                      N_i_xixi_master(icolumndofperdim));
+
+          stiffmat21(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
+              pot_red_fac_deriv_xi_master * pot_ia *
+              (N_i_master(irowdofperdim) *
+                      xi_master_partial_r_master_partial_r_slave(irowdim, icolumndim) *
+                      N_i_slave(icolumndofperdim) +
+                  N_i_xi_master(irowdofperdim) *
+                      xi_master_partial_r_xi_master_partial_r_slave(irowdim, icolumndim) *
+                      N_i_slave(icolumndofperdim) +
+                  N_i_xixi_master(irowdofperdim) *
+                      (xi_master_partial_r_xixi_master_partial_r_slave(irowdim, icolumndim) *
+                          N_i_slave(icolumndofperdim)));
+
+          stiffmat22(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
+              pot_red_fac_deriv_xi_master * pot_ia *
+              (N_i_master(irowdofperdim) *
+                      (xi_master_partial_r_master_partial_r_master(irowdim, icolumndim) *
+                              N_i_master(icolumndofperdim) +
+                          xi_master_partial_r_master_partial_r_xi_master(irowdim, icolumndim) *
+                              N_i_xi_master(icolumndofperdim) +
+                          xi_master_partial_r_master_partial_r_xixi_master(irowdim, icolumndim) *
+                              N_i_xixi_master(icolumndofperdim)) +
+                  N_i_xi_master(irowdofperdim) *
+                      (xi_master_partial_r_xi_master_partial_r_master(irowdim, icolumndim) *
+                              N_i_master(icolumndofperdim) +
+                          xi_master_partial_r_xi_master_partial_r_xi_master(irowdim, icolumndim) *
+                              N_i_xi_master(icolumndofperdim) +
+                          xi_master_partial_r_xi_master_partial_r_xixi_master(irowdim, icolumndim) *
+                              N_i_xixi_master(icolumndofperdim)) +
+                  N_i_xixi_master(irowdofperdim) *
+                      (xi_master_partial_r_xixi_master_partial_r_master(irowdim, icolumndim) *
+                              N_i_master(icolumndofperdim) +
+                          xi_master_partial_r_xixi_master_partial_r_xi_master(irowdim, icolumndim) *
+                              N_i_xi_master(icolumndofperdim)));
+
+          // variation of gap_ul * linearization of (pot_red_fac * pot_ia_deriv_gap_ul)
           stiffmat11(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
               N_i_slave(irowdofperdim) * gap_ul_deriv_r_slave(irowdim) *
-              (pot_ia_2ndderiv_gap_ul * gap_ul_deriv_r_slave(icolumndim) *
-                      N_i_slave(icolumndofperdim) +
-                  pot_ia_deriv_gap_ul_deriv_cos_alpha * cos_alpha_deriv_r_slave(icolumndim) *
-                      N_i_slave(icolumndofperdim) +
-                  pot_ia_deriv_gap_ul_deriv_cos_alpha * cos_alpha_deriv_r_xi_slave(icolumndim) *
-                      N_i_xi_slave(icolumndofperdim));
+              (pot_red_fac_deriv_xi_master * xi_master_partial_r_slave(icolumndim) *
+                      N_i_slave(icolumndofperdim) * pot_ia_deriv_gap_ul +
+                  pot_red_fac *
+                      (pot_ia_2ndderiv_gap_ul * gap_ul_deriv_r_slave(icolumndim) *
+                              N_i_slave(icolumndofperdim) +
+                          pot_ia_deriv_gap_ul_deriv_cos_alpha *
+                              cos_alpha_deriv_r_slave(icolumndim) * N_i_slave(icolumndofperdim) +
+                          pot_ia_deriv_gap_ul_deriv_cos_alpha *
+                              cos_alpha_deriv_r_xi_slave(icolumndim) *
+                              N_i_xi_slave(icolumndofperdim)));
 
           stiffmat12(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
               N_i_slave(irowdofperdim) * gap_ul_deriv_r_slave(irowdim) *
-              (pot_ia_2ndderiv_gap_ul * gap_ul_deriv_r_master(icolumndim) *
-                      N_i_master(icolumndofperdim) +
-                  pot_ia_deriv_gap_ul_deriv_cos_alpha * cos_alpha_deriv_r_master(icolumndim) *
-                      N_i_master(icolumndofperdim) +
-                  pot_ia_deriv_gap_ul_deriv_cos_alpha * cos_alpha_deriv_r_xi_master(icolumndim) *
-                      N_i_xi_master(icolumndofperdim));
+              (pot_red_fac_deriv_xi_master *
+                      (xi_master_partial_r_master(icolumndim) * N_i_master(icolumndofperdim) +
+                          xi_master_partial_r_xi_master(icolumndim) *
+                              N_i_xi_master(icolumndofperdim)) *
+                      pot_ia_deriv_gap_ul +
+                  pot_red_fac *
+                      (pot_ia_2ndderiv_gap_ul * gap_ul_deriv_r_master(icolumndim) *
+                              N_i_master(icolumndofperdim) +
+                          pot_ia_deriv_gap_ul_deriv_cos_alpha *
+                              cos_alpha_deriv_r_master(icolumndim) * N_i_master(icolumndofperdim) +
+                          pot_ia_deriv_gap_ul_deriv_cos_alpha *
+                              cos_alpha_deriv_r_xi_master(icolumndim) *
+                              N_i_xi_master(icolumndofperdim)));
 
           stiffmat21(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
               N_i_master(irowdofperdim) * gap_ul_deriv_r_master(irowdim) *
-              (pot_ia_2ndderiv_gap_ul * gap_ul_deriv_r_slave(icolumndim) *
-                      N_i_slave(icolumndofperdim) +
-                  pot_ia_deriv_gap_ul_deriv_cos_alpha * cos_alpha_deriv_r_slave(icolumndim) *
-                      N_i_slave(icolumndofperdim) +
-                  pot_ia_deriv_gap_ul_deriv_cos_alpha * cos_alpha_deriv_r_xi_slave(icolumndim) *
-                      N_i_xi_slave(icolumndofperdim));
+              (pot_red_fac_deriv_xi_master * xi_master_partial_r_slave(icolumndim) *
+                      N_i_slave(icolumndofperdim) * pot_ia_deriv_gap_ul +
+                  pot_red_fac *
+                      (pot_ia_2ndderiv_gap_ul * gap_ul_deriv_r_slave(icolumndim) *
+                              N_i_slave(icolumndofperdim) +
+                          pot_ia_deriv_gap_ul_deriv_cos_alpha *
+                              cos_alpha_deriv_r_slave(icolumndim) * N_i_slave(icolumndofperdim) +
+                          pot_ia_deriv_gap_ul_deriv_cos_alpha *
+                              cos_alpha_deriv_r_xi_slave(icolumndim) *
+                              N_i_xi_slave(icolumndofperdim)));
 
           stiffmat22(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
               N_i_master(irowdofperdim) * gap_ul_deriv_r_master(irowdim) *
-              (pot_ia_2ndderiv_gap_ul * gap_ul_deriv_r_master(icolumndim) *
-                      N_i_master(icolumndofperdim) +
-                  pot_ia_deriv_gap_ul_deriv_cos_alpha * cos_alpha_deriv_r_master(icolumndim) *
-                      N_i_master(icolumndofperdim) +
-                  pot_ia_deriv_gap_ul_deriv_cos_alpha * cos_alpha_deriv_r_xi_master(icolumndim) *
-                      N_i_xi_master(icolumndofperdim));
+              (pot_red_fac_deriv_xi_master *
+                      (xi_master_partial_r_master(icolumndim) * N_i_master(icolumndofperdim) +
+                          xi_master_partial_r_xi_master(icolumndim) *
+                              N_i_xi_master(icolumndofperdim)) *
+                      pot_ia_deriv_gap_ul +
+                  pot_red_fac *
+                      (pot_ia_2ndderiv_gap_ul * gap_ul_deriv_r_master(icolumndim) *
+                              N_i_master(icolumndofperdim) +
+                          pot_ia_deriv_gap_ul_deriv_cos_alpha *
+                              cos_alpha_deriv_r_master(icolumndim) * N_i_master(icolumndofperdim) +
+                          pot_ia_deriv_gap_ul_deriv_cos_alpha *
+                              cos_alpha_deriv_r_xi_master(icolumndim) *
+                              N_i_xi_master(icolumndofperdim)));
 
-
-          // linearization of the (variation of gap_ul) * pot_ia_deriv_gap_ul
+          // linearization of the (variation of gap_ul) * (pot_red_fac * pot_ia_deriv_gap_ul)
           stiffmat11(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
-              pot_ia_deriv_gap_ul * N_i_slave(irowdofperdim) *
+              pot_red_fac * pot_ia_deriv_gap_ul * N_i_slave(irowdofperdim) *
               gap_ul_deriv_r_slave_deriv_r_slave(irowdim, icolumndim) * N_i_slave(icolumndofperdim);
 
           stiffmat12(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
-              pot_ia_deriv_gap_ul * N_i_slave(irowdofperdim) *
+              pot_red_fac * pot_ia_deriv_gap_ul * N_i_slave(irowdofperdim) *
               (gap_ul_deriv_r_slave_deriv_r_master(irowdim, icolumndim) *
                       N_i_master(icolumndofperdim) +
                   gap_ul_deriv_r_slave_deriv_r_xi_master(irowdim, icolumndim) *
                       N_i_xi_master(icolumndofperdim));
 
           stiffmat21(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
-              pot_ia_deriv_gap_ul *
+              pot_red_fac * pot_ia_deriv_gap_ul *
               (N_i_master(irowdofperdim) *
                       gap_ul_deriv_r_master_deriv_r_slave(irowdim, icolumndim) +
                   N_i_xi_master(irowdofperdim) *
@@ -2493,7 +2212,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
               N_i_slave(icolumndofperdim);
 
           stiffmat22(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
-              pot_ia_deriv_gap_ul *
+              pot_red_fac * pot_ia_deriv_gap_ul *
               (N_i_master(irowdofperdim) *
                       (gap_ul_deriv_r_master_deriv_r_master(irowdim, icolumndim) *
                               N_i_master(icolumndofperdim) +
@@ -2506,51 +2225,69 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                               N_i_xi_master(icolumndofperdim)));
 
 
-          // variation of cos_alpha * linearization of pot_ia_deriv_cos_alpha
+          // variation of cos_alpha * linearization of (pot_red_fac * pot_ia_deriv_cos_alpha)
           stiffmat11(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
               (N_i_slave(irowdofperdim) * cos_alpha_deriv_r_slave(irowdim) +
                   N_i_xi_slave(irowdofperdim) * cos_alpha_deriv_r_xi_slave(irowdim)) *
-              (pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_slave(icolumndim) *
-                      N_i_slave(icolumndofperdim) +
-                  pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_xi_slave(icolumndim) *
-                      N_i_xi_slave(icolumndofperdim) +
-                  pot_ia_deriv_gap_ul_deriv_cos_alpha * gap_ul_deriv_r_slave(icolumndim) *
-                      N_i_slave(icolumndofperdim));
+              (pot_red_fac_deriv_xi_master * xi_master_partial_r_slave(icolumndim) *
+                      N_i_slave(icolumndofperdim) * pot_ia_deriv_cos_alpha +
+                  pot_red_fac *
+                      (pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_slave(icolumndim) *
+                              N_i_slave(icolumndofperdim) +
+                          pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_xi_slave(icolumndim) *
+                              N_i_xi_slave(icolumndofperdim) +
+                          pot_ia_deriv_gap_ul_deriv_cos_alpha * gap_ul_deriv_r_slave(icolumndim) *
+                              N_i_slave(icolumndofperdim)));
 
           stiffmat12(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
               (N_i_slave(irowdofperdim) * cos_alpha_deriv_r_slave(irowdim) +
                   N_i_xi_slave(irowdofperdim) * cos_alpha_deriv_r_xi_slave(irowdim)) *
-              (pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_master(icolumndim) *
-                      N_i_master(icolumndofperdim) +
-                  pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_xi_master(icolumndim) *
-                      N_i_xi_master(icolumndofperdim) +
-                  pot_ia_deriv_gap_ul_deriv_cos_alpha * gap_ul_deriv_r_master(icolumndim) *
-                      N_i_master(icolumndofperdim));
+              (pot_red_fac_deriv_xi_master *
+                      (xi_master_partial_r_master(icolumndim) * N_i_master(icolumndofperdim) +
+                          xi_master_partial_r_xi_master(icolumndim) *
+                              N_i_xi_master(icolumndofperdim)) *
+                      pot_ia_deriv_cos_alpha +
+                  pot_red_fac *
+                      (pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_master(icolumndim) *
+                              N_i_master(icolumndofperdim) +
+                          pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_xi_master(icolumndim) *
+                              N_i_xi_master(icolumndofperdim) +
+                          pot_ia_deriv_gap_ul_deriv_cos_alpha * gap_ul_deriv_r_master(icolumndim) *
+                              N_i_master(icolumndofperdim)));
 
           stiffmat21(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
               (N_i_master(irowdofperdim) * cos_alpha_deriv_r_master(irowdim) +
                   N_i_xi_master(irowdofperdim) * cos_alpha_deriv_r_xi_master(irowdim)) *
-              (pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_slave(icolumndim) *
-                      N_i_slave(icolumndofperdim) +
-                  pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_xi_slave(icolumndim) *
-                      N_i_xi_slave(icolumndofperdim) +
-                  pot_ia_deriv_gap_ul_deriv_cos_alpha * gap_ul_deriv_r_slave(icolumndim) *
-                      N_i_slave(icolumndofperdim));
+              (pot_red_fac_deriv_xi_master * xi_master_partial_r_slave(icolumndim) *
+                      N_i_slave(icolumndofperdim) * pot_ia_deriv_cos_alpha +
+                  pot_red_fac *
+                      (pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_slave(icolumndim) *
+                              N_i_slave(icolumndofperdim) +
+                          pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_xi_slave(icolumndim) *
+                              N_i_xi_slave(icolumndofperdim) +
+                          pot_ia_deriv_gap_ul_deriv_cos_alpha * gap_ul_deriv_r_slave(icolumndim) *
+                              N_i_slave(icolumndofperdim)));
 
           stiffmat22(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
               (N_i_master(irowdofperdim) * cos_alpha_deriv_r_master(irowdim) +
                   N_i_xi_master(irowdofperdim) * cos_alpha_deriv_r_xi_master(irowdim)) *
-              (pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_master(icolumndim) *
-                      N_i_master(icolumndofperdim) +
-                  pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_xi_master(icolumndim) *
-                      N_i_xi_master(icolumndofperdim) +
-                  pot_ia_deriv_gap_ul_deriv_cos_alpha * gap_ul_deriv_r_master(icolumndim) *
-                      N_i_master(icolumndofperdim));
+              (pot_red_fac_deriv_xi_master *
+                      (xi_master_partial_r_master(icolumndim) * N_i_master(icolumndofperdim) +
+                          xi_master_partial_r_xi_master(icolumndim) *
+                              N_i_xi_master(icolumndofperdim)) *
+                      pot_ia_deriv_cos_alpha +
+                  pot_red_fac *
+                      (pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_master(icolumndim) *
+                              N_i_master(icolumndofperdim) +
+                          pot_ia_2ndderiv_cos_alpha * cos_alpha_deriv_r_xi_master(icolumndim) *
+                              N_i_xi_master(icolumndofperdim) +
+                          pot_ia_deriv_gap_ul_deriv_cos_alpha * gap_ul_deriv_r_master(icolumndim) *
+                              N_i_master(icolumndofperdim)));
 
 
-          // linearization of the (variation of cos_alpha) * pot_ia_deriv_cos_alpha
+          // linearization of the (variation of cos_alpha) * (pot_red_fac * pot_ia_deriv_cos_alpha)
           stiffmat11(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
-              pot_ia_deriv_cos_alpha *
+              pot_red_fac * pot_ia_deriv_cos_alpha *
               (N_i_slave(irowdofperdim) *
                       (cos_alpha_deriv_r_slave_deriv_r_slave(irowdim, icolumndim) *
                               N_i_slave(icolumndofperdim) +
@@ -2563,7 +2300,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                               N_i_xi_slave(icolumndofperdim)));
 
           stiffmat12(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
-              pot_ia_deriv_cos_alpha *
+              pot_red_fac * pot_ia_deriv_cos_alpha *
               (N_i_slave(irowdofperdim) *
                       (cos_alpha_deriv_r_slave_deriv_r_master(irowdim, icolumndim) *
                               N_i_master(icolumndofperdim) +
@@ -2578,7 +2315,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                               N_i_xi_master(icolumndofperdim)));
 
           stiffmat21(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
-              pot_ia_deriv_cos_alpha *
+              pot_red_fac * pot_ia_deriv_cos_alpha *
               (N_i_master(irowdofperdim) *
                       (cos_alpha_deriv_r_master_deriv_r_slave(irowdim, icolumndim) *
                               N_i_slave(icolumndofperdim) +
@@ -2594,7 +2331,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                           N_i_slave(icolumndofperdim)));
 
           stiffmat22(3 * irowdofperdim + irowdim, 3 * icolumndofperdim + icolumndim) +=
-              pot_ia_deriv_cos_alpha *
+              pot_red_fac * pot_ia_deriv_cos_alpha *
               (N_i_master(irowdofperdim) *
                       (cos_alpha_deriv_r_master_deriv_r_master(irowdim, icolumndim) *
                               N_i_master(icolumndofperdim) +
@@ -2736,12 +2473,6 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
   if (Core::FADUtils::Norm(alpha) < BEAMSCOLINEARANGLETHRESHOLD)
   {
-    //************************** DEBUG ******************************************
-    //      std::cout << "\n\nINFO: Enclosed angle is close to zero: alpha="
-    //          << Core::FADUtils::CastToDouble(alpha)*180/M_PI << "degrees\n"
-    //          << std::endl;
-    //*********************** END DEBUG *****************************************
-
     // there is no unique bilateral closest point pair in case of alpha=0
     // hence, we can use the current (unilateral) closest point pair
     normal_bl = dist_ul;
@@ -2775,18 +2506,6 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   if (Core::FADUtils::Norm(alpha) >= BEAMSCOLINEARANGLETHRESHOLD and
       gap_bl < MAXNEGATIVEBILATERALGAP)
   {
-    //************************** DEBUG **********************************************
-    // std::cout << "\nINFO: Ignored GP (ele GIDs " << Element1()->Id() << "&" <<
-    // Element2()->Id()
-    //          << ": iGP " << igp_total
-    //          << ") with alpha=" << Core::FADUtils::CastToDouble(alpha) * 180 / M_PI
-    //          << "degrees >= " << BEAMSCOLINEARANGLETHRESHOLD * 180 / M_PI
-    //          << "degrees and gap_bl/R=" << Core::FADUtils::CastToDouble(gap_bl) / radius2_ << " <
-    //          "
-    //          << MAXNEGATIVEBILATERALGAP / radius2_
-    //          << " and x/R=" << Core::FADUtils::CastToDouble(x) / radius2_ << std::endl;
-    //*********************** END DEBUG *********************************************
-
     if (Core::FADUtils::Norm(x) < 20 * radius2_)
     {
       FOUR_C_THROW(
@@ -2805,14 +2524,6 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
         "close to singular! Fatal error. Take care of this case!",
         Core::FADUtils::CastToDouble(gap_bl));
 
-  //************************** DEBUG ******************************************
-  //      std::cout << "\nnormal_bl: " << Core::FADUtils::CastToDouble<T, 3, 1>(normal_bl);
-  //      std::cout << "\ngap_bl: " << Core::FADUtils::CastToDouble(gap_bl);
-  //      std::cout << "\naux_plane_normal: " << Core::FADUtils::CastToDouble<T, 3,
-  //      1>(aux_plane_normal); std::cout << "\nx: " << Core::FADUtils::CastToDouble(x) <<
-  //      std::endl;
-  //*********************** END DEBUG *****************************************
-
   beta = Core::FADUtils::sqrt<T>(
       (gap_bl + radius2_) * (gap_bl + radius2_) + x * x * sin_alpha * sin_alpha);
 
@@ -2829,32 +2540,6 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
           x * x * sin_2alpha * sin_2alpha / (4.0 * beta_exp2));
 
   Delta = 4 * a * (beta - radius2_) - x * x * sin_2alpha * sin_2alpha / (4 * beta_exp2);
-
-
-  //      if (gap_bl < 0.0)
-  //      {
-  //      ************************** DEBUG **********************************************
-  //      std::cout << "\nINFO: GP with negative gap_bl (ele GIDs " << Element1()->Id() << "&"
-  //                << Element2()->Id() << ": iGP " << igp_total
-  //                << ") with alpha=" << Core::FADUtils::CastToDouble(alpha) * 180 / M_PI
-  //                << "degrees and gap_bl/R=" << Core::FADUtils::CastToDouble(gap_bl) / radius2_
-  //                << " and x/R=" << Core::FADUtils::CastToDouble(x) / radius2_;
-  //
-  //      std::cout << "\n|dist_ul|: " <<
-  //      Core::FADUtils::CastToDouble(Core::FADUtils::Norm(dist_ul)); std::cout << "\nbeta: " <<
-  //      Core::FADUtils::CastToDouble(beta); std::cout << "\na: " <<
-  //      Core::FADUtils::CastToDouble(a); std::cout << "\nDelta: " <<
-  //      Core::FADUtils::CastToDouble(Delta);
-  //      *********************** END DEBUG *********************************************
-  //      }
-
-  //************************** DEBUG ******************************************
-  //    std::cout << "\nbeta: " << Core::FADUtils::CastToDouble(beta);
-  //    std::cout << "\nbeta^2: " << Core::FADUtils::CastToDouble( beta*beta );
-  //    std::cout << "\nbeta^3: " << Core::FADUtils::CastToDouble( beta*beta*beta );
-  //    std::cout << "\nDelta: " << Core::FADUtils::CastToDouble(Delta);
-  //*********************** END DEBUG *****************************************
-
 
   if (regularization_type == Inpar::BEAMPOTENTIAL::regularization_none and Delta < 1e-14)
   {
@@ -2877,22 +2562,6 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
       Delta < regularization_separation)
   {
     Delta_regularized = regularization_separation;
-
-    //************************** DEBUG ******************************************
-    //    std::cout << "\nDelta: " << Core::FADUtils::CastToDouble(Delta) << ": regularization
-    //    active!"; std::cout << "\nDelta_regularized: " <<
-    //    Core::FADUtils::CastToDouble(Delta_regularized);
-    //
-    // this->Print(std::cout);
-    // std::cout << "\nigp_total: " << igp_total;
-    //
-    // std::cout << "\ngap_bl: " << Core::FADUtils::CastToDouble(gap_bl);
-    // std::cout << "\nalpha: " << Core::FADUtils::CastToDouble(alpha * 180 / M_PI) <<  "degrees";
-    // std::cout << "\nx: " << Core::FADUtils::CastToDouble(x) << std::endl;
-    //
-    // std::cout << "\nbeta: " << Core::FADUtils::CastToDouble(beta);
-    // std::cout << "\na: " << Core::FADUtils::CastToDouble(a);
-    //*********************** END DEBUG *****************************************
   }
 
   if (Delta_regularized <= 0)
@@ -2942,15 +2611,6 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
           (beta - radius2_) -
       2.0 * x * x * (cos_alpha - 2.0 * cos_alpha * cos_alpha * cos_alpha) / beta_exp2;
 
-
-  //************************** DEBUG ******************************************
-  //    std::cout << "\nDelta_partial_beta: " << Core::FADUtils::CastToDouble( Delta_partial_beta );
-  //    std::cout << "\nbeta_partial_cos_alpha: " << Core::FADUtils::CastToDouble(
-  //    beta_partial_cos_alpha ); std::cout << "\nDelta_partial_cos_alpha: " <<
-  //    Core::FADUtils::CastToDouble( Delta_partial_cos_alpha );
-  //*********************** END DEBUG *****************************************
-
-
   // partial derivatives of single length specific interaction potential
 
   pot_ia_partial_beta = interaction_potential_GP / beta;
@@ -2968,17 +2628,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     // store this as an intermediate result that is needed below
     pot_ia_partial_Delta_atregsep = pot_ia_partial_Delta;
 
-    //************************** DEBUG ******************************************
-    //        std::cout << "\npot_ia_partial_Delta_atregsep: "
-    //                  << Core::FADUtils::CastToDouble(pot_ia_partial_Delta_atregsep);
-    //*********************** END DEBUG *****************************************
-
     pot_ia_partial_2ndderiv_Delta = (-m_ + 3.5) / Delta_regularized * pot_ia_partial_Delta_atregsep;
-
-    //************************** DEBUG ******************************************
-    //        std::cout << "\npot_ia_partial_2ndderiv_Delta_atregsep: "
-    //                  << Core::FADUtils::CastToDouble(pot_ia_partial_2ndderiv_Delta);
-    //*********************** END DEBUG *****************************************
 
     pot_ia_partial_Delta += pot_ia_partial_2ndderiv_Delta * (Delta - regularization_separation);
 
@@ -2999,12 +2649,6 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
                         0.5 * pot_ia_partial_2ndderiv_Delta_partial_a *
                             (Delta - regularization_separation) *
                             (Delta - regularization_separation);
-
-
-    //************************** DEBUG ******************************************
-    //        std::cout << ", pot_ia_partial_Delta: " <<
-    //        Core::FADUtils::CastToDouble(pot_ia_partial_Delta);
-    //*********************** END DEBUG *****************************************
   }
 
   pot_ia_partial_x = pot_ia_partial_beta * beta_partial_x + pot_ia_partial_a * a_partial_x +
@@ -3287,22 +2931,10 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
 
   // integration factor
+  interaction_potential_GP *= rho1rho2_JacFac_GaussWeight;
   pot_ia_partial_gap_bl *= rho1rho2_JacFac_GaussWeight;
   pot_ia_partial_cos_alpha *= rho1rho2_JacFac_GaussWeight;
   pot_ia_partial_x *= rho1rho2_JacFac_GaussWeight;
-
-  //************************** DEBUG ******************************************
-  //      std::cout << "\nprefactor: " << Core::FADUtils::CastToDouble(prefactor);
-  //      std::cout << "\nrho1rho2_JacFac_GaussWeight: "
-  //                << Core::FADUtils::CastToDouble(rho1rho2_JacFac_GaussWeight);
-  //
-  //      std::cout << "\npot_ia_partial_x: " << Core::FADUtils::CastToDouble(pot_ia_partial_x);
-  //      std::cout << "\npot_ia_partial_gap_bl: " <<
-  //      Core::FADUtils::CastToDouble(pot_ia_partial_gap_bl); std::cout <<
-  //      "\npot_ia_partial_cos_alpha: "
-  //                << Core::FADUtils::CastToDouble(pot_ia_partial_cos_alpha);
-  //*********************** END DEBUG *****************************************
-
 
   //********************************************************************
   // calculate fpot1: force/residual vector on slave element
@@ -3380,6 +3012,455 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
           (x_partial_r_xi_master(jdim) + x_partial_xi_master * xi_master_partial_r_xi_master(jdim));
     }
   }
+
+  return true;
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
+bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
+    T>::evaluate_simple_disk_cylinder_potential(Core::LinAlg::Matrix<3, 1, T> const& dist_ul,
+    T norm_dist_ul, T alpha, T cos_alpha, Core::LinAlg::Matrix<3, 1, T> const& r_slave,
+    Core::LinAlg::Matrix<3, 1, T> const& r_xi_slave, T norm_r_xi_slave,
+    Core::LinAlg::Matrix<3, 1, T> const& t_slave, Core::LinAlg::Matrix<3, 1, T> const& r_master,
+    Core::LinAlg::Matrix<3, 1, T> const& r_xi_master, T norm_r_xi_master,
+    Core::LinAlg::Matrix<3, 1, T> const& r_xixi_master,
+    Core::LinAlg::Matrix<3, 1, T> const& t_master, T xi_master,
+    Core::LinAlg::Matrix<1, 3, T> const& xi_master_partial_r_slave,
+    Core::LinAlg::Matrix<1, 3, T> const& xi_master_partial_r_master,
+    Core::LinAlg::Matrix<1, 3, T> const& xi_master_partial_r_xi_master,
+    double potential_reduction_length, double length_prior_right, double length_prior_left,
+    T& interaction_potential_GP,
+    Core::LinAlg::Matrix<1, numnodes * numnodalvalues, double> const& N_i_slave,
+    Core::LinAlg::Matrix<1, numnodes * numnodalvalues, double> const& N_i_xi_slave,
+    Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T> const& N_i_master,
+    Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T> const& N_i_xi_master,
+    Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T> const& N_i_xixi_master,
+    Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot_slave_GP,
+    Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot_master_GP,
+    double prefactor_visualization_data, double rho1rho2_JacFac_GaussWeight,
+    Core::LinAlg::Matrix<3, 1, double>& vtk_force_pot_slave_GP,
+    Core::LinAlg::Matrix<3, 1, double>& vtk_force_pot_master_GP,
+    Core::LinAlg::Matrix<3, 1, double>& vtk_moment_pot_slave_GP,
+    Core::LinAlg::Matrix<3, 1, double>& vtk_moment_pot_master_GP,
+    Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
+    Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
+{
+  // get regularization type and separation
+  const Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type =
+      Params()->RegularizationType();
+
+  const double regularization_separation = Params()->regularization_separation();
+
+  T signum_tangentsscalarproduct = 0.0;
+
+  // unilateral normal vector
+  Core::LinAlg::Matrix<3, 1, T> normal_ul(true);
+
+  // gap of unilateral closest points
+  T gap_ul = 0.0;
+  // regularized gap of unilateral closest points
+  T gap_ul_regularized = 0.0;
+
+  // auxiliary quantity
+  T a = 0.0;
+  T a_deriv_cos_alpha = 0.0;
+
+  T potential_reduction_factor_GP = 1.0;
+
+  // derivatives of the interaction potential w.r.t. gap_ul and cos(alpha)
+  T pot_ia_deriv_gap_ul = 0.0;
+  T pot_ia_deriv_cos_alpha = 0.0;
+
+  T pot_ia_2ndderiv_gap_ul = 0.0;
+  T pot_ia_2ndderiv_cos_alpha = 0.0;
+  T pot_ia_deriv_gap_ul_deriv_cos_alpha = 0.0;
+
+  // third derivatives
+  T pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep = 0.0;
+  T pot_ia_deriv_gap_ul_2ndderiv_cos_alpha_at_regsep = 0.0;
+
+  // fourth derivative
+  T pot_ia_2ndderiv_gap_ul_2ndderiv_cos_alpha_at_regsep = 0.0;
+
+  // derivatives of the potential reduction factor w.r.t. xi_master
+  T pot_red_fac_deriv_l_edge = 0.0;
+  T pot_red_fac_2ndderiv_l_edge = 0.0;
+  T l_edge_deriv_xi_master = 0.0;
+  T pot_red_fac_deriv_xi_master = 0.0;
+  T pot_red_fac_2ndderiv_xi_master = 0.0;
+
+  // components from variation of unilateral gap
+  Core::LinAlg::Matrix<3, 1, T> gap_ul_deriv_r_slave(true);
+  Core::LinAlg::Matrix<3, 1, T> gap_ul_deriv_r_master(true);
+
+  // components from variation of cosine of enclosed angle
+  Core::LinAlg::Matrix<3, 1, T> cos_alpha_partial_r_xi_slave(true);
+  Core::LinAlg::Matrix<3, 1, T> cos_alpha_partial_r_xi_master(true);
+  T cos_alpha_partial_xi_master = 0.0;
+
+  Core::LinAlg::Matrix<3, 1, T> cos_alpha_deriv_r_slave(true);
+  Core::LinAlg::Matrix<3, 1, T> cos_alpha_deriv_r_master(true);
+  Core::LinAlg::Matrix<3, 1, T> cos_alpha_deriv_r_xi_slave(true);
+  Core::LinAlg::Matrix<3, 1, T> cos_alpha_deriv_r_xi_master(true);
+
+  // gap of unilateral closest points
+  gap_ul = norm_dist_ul - radius1_ - radius2_;
+
+  // regularized gap of unilateral closest points
+  gap_ul_regularized = gap_ul;
+
+
+  if (regularization_type != Inpar::BEAMPOTENTIAL::regularization_none and
+      gap_ul < regularization_separation)
+  {
+    gap_ul_regularized = regularization_separation;
+  }
+  else if (regularization_type == Inpar::BEAMPOTENTIAL::regularization_none and gap_ul < 1e-14)
+  {
+    this->Print(std::cout);
+
+    std::cout << "\ngap_ul: " << Core::FADUtils::CastToDouble(gap_ul);
+    std::cout << "\nalpha: " << Core::FADUtils::CastToDouble(alpha * 180 / M_PI) << "degrees";
+
+    FOUR_C_THROW(
+        "gap_ul=%f is negative or very close to zero! Fatal error. Use regularization to"
+        " handle this!",
+        Core::FADUtils::CastToDouble(gap_ul));
+  }
+
+
+  // unilateral normal vector
+  normal_ul.Update(1.0 / norm_dist_ul, dist_ul);
+
+
+  // auxiliary quantity
+  a = 0.5 / radius1_ + 0.5 * cos_alpha * cos_alpha / radius2_;
+
+  // safety check
+  if (Core::FADUtils::CastToDouble(a) <= 0.0)
+  {
+    this->Print(std::cout);
+    FOUR_C_THROW("auxiliary quantity a<=0!");
+  }
+
+  // interaction potential
+  interaction_potential_GP = std::pow(4 * gap_ul_regularized, -m_ + 4.5) / Core::FADUtils::sqrt(a);
+
+
+  // compute derivatives of the interaction potential w.r.t. gap_ul and cos(alpha)
+  pot_ia_deriv_gap_ul = (-m_ + 4.5) / gap_ul_regularized * interaction_potential_GP;
+
+  a_deriv_cos_alpha = cos_alpha / radius2_;
+  pot_ia_deriv_cos_alpha = -0.5 / a * interaction_potential_GP * a_deriv_cos_alpha;
+
+
+  // Todo: strictly speaking, the following second derivatives of the interaction potential
+  // are only required in case of active regularization OR for analytic linearization
+
+  pot_ia_deriv_gap_ul_deriv_cos_alpha = (-m_ + 4.5) / gap_ul_regularized * pot_ia_deriv_cos_alpha;
+
+  pot_ia_2ndderiv_gap_ul = (-m_ + 3.5) / gap_ul_regularized * pot_ia_deriv_gap_ul;
+
+  pot_ia_2ndderiv_cos_alpha =
+      -0.5 / (a * radius2_) * interaction_potential_GP +
+      0.75 * a_deriv_cos_alpha * a_deriv_cos_alpha / (a * a) * interaction_potential_GP;
+
+  // third derivatives
+  pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep = (-m_ + 4.5) * (-m_ + 3.5) /
+                                                    (gap_ul_regularized * gap_ul_regularized) *
+                                                    pot_ia_deriv_cos_alpha;
+
+  pot_ia_deriv_gap_ul_2ndderiv_cos_alpha_at_regsep =
+      (-m_ + 4.5) / gap_ul_regularized * pot_ia_2ndderiv_cos_alpha;
+
+  // fourth derivative
+  pot_ia_2ndderiv_gap_ul_2ndderiv_cos_alpha_at_regsep = (-m_ + 4.5) * (-m_ + 3.5) /
+                                                        (gap_ul_regularized * gap_ul_regularized) *
+                                                        pot_ia_2ndderiv_cos_alpha;
+
+  /* now that we don't need the interaction potential at gap_ul=regularization_separation as
+   * an intermediate result anymore, we can add the additional (linear and quadratic)
+   * contributions in case of active regularization to the interaction potential */
+  if (regularization_type != Inpar::BEAMPOTENTIAL::regularization_none and
+      gap_ul < regularization_separation)
+  {
+    interaction_potential_GP += pot_ia_deriv_gap_ul * (gap_ul - regularization_separation);
+
+    pot_ia_deriv_cos_alpha +=
+        pot_ia_deriv_gap_ul_deriv_cos_alpha * (gap_ul - regularization_separation);
+
+
+    if (regularization_type == Inpar::BEAMPOTENTIAL::regularization_linear)
+    {
+      interaction_potential_GP += 0.5 * pot_ia_2ndderiv_gap_ul *
+                                  (gap_ul - regularization_separation) *
+                                  (gap_ul - regularization_separation);
+
+      pot_ia_deriv_gap_ul += pot_ia_2ndderiv_gap_ul * (gap_ul - regularization_separation);
+
+      pot_ia_deriv_cos_alpha += 0.5 * pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep *
+                                (gap_ul - regularization_separation) *
+                                (gap_ul - regularization_separation);
+    }
+  }
+
+  /* adapt also the second derivatives (required for analytic linearization) in
+   * case of active regularization*/
+  if (regularization_type != Inpar::BEAMPOTENTIAL::regularization_none and
+      gap_ul < regularization_separation)
+  {
+    if (regularization_type == Inpar::BEAMPOTENTIAL::regularization_constant)
+      pot_ia_2ndderiv_gap_ul = 0.0;
+
+    pot_ia_2ndderiv_cos_alpha +=
+        pot_ia_deriv_gap_ul_2ndderiv_cos_alpha_at_regsep * (gap_ul - regularization_separation);
+
+    if (regularization_type == Inpar::BEAMPOTENTIAL::regularization_linear)
+    {
+      pot_ia_deriv_gap_ul_deriv_cos_alpha +=
+          pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep * (gap_ul - regularization_separation);
+
+      pot_ia_2ndderiv_cos_alpha += 0.5 * pot_ia_2ndderiv_gap_ul_2ndderiv_cos_alpha_at_regsep *
+                                   (gap_ul - regularization_separation) *
+                                   (gap_ul - regularization_separation);
+    }
+  }
+
+  // determine potential reduction factor for master beam endpoint strategy
+  if (potential_reduction_length > 0.0)
+  {
+    T left_length_to_edge = length_prior_left + ele2length_ * 0.5 * (1 + xi_master);
+    T right_length_to_edge = length_prior_right + ele2length_ * 0.5 * (1 - xi_master);
+    T length_to_edge = -1.0;
+    bool right_node = false;
+
+    // determine potential reduction factor (master beam can only consist of one element!)
+    if (left_length_to_edge < potential_reduction_length)
+    {
+      potential_reduction_factor_GP =
+          0.5 - 0.5 * std::cos(M_PI * left_length_to_edge / potential_reduction_length);
+      length_to_edge = left_length_to_edge;
+    }
+    else if (right_length_to_edge < potential_reduction_length)
+    {
+      potential_reduction_factor_GP =
+          0.5 - 0.5 * std::cos(M_PI * right_length_to_edge / potential_reduction_length);
+      length_to_edge = right_length_to_edge;
+      right_node = true;
+    }
+
+    if ((length_to_edge < potential_reduction_length) && (length_to_edge != -1.0))
+    {
+      pot_red_fac_deriv_l_edge = 0.5 * M_PI / potential_reduction_length *
+                                 std::sin(M_PI * length_to_edge / potential_reduction_length);
+      pot_red_fac_2ndderiv_l_edge = 0.5 * M_PI * M_PI /
+                                    (potential_reduction_length * potential_reduction_length) *
+                                    std::cos(M_PI * length_to_edge / potential_reduction_length);
+    }
+
+    l_edge_deriv_xi_master = 0.5 * ele2length_;
+
+    if (right_node) l_edge_deriv_xi_master *= -1.0;
+
+    pot_red_fac_deriv_xi_master = pot_red_fac_deriv_l_edge * l_edge_deriv_xi_master;
+    pot_red_fac_2ndderiv_xi_master =
+        pot_red_fac_2ndderiv_l_edge * l_edge_deriv_xi_master * l_edge_deriv_xi_master;
+  }
+
+  // compute components from variation of cosine of enclosed angle
+  signum_tangentsscalarproduct = Core::FADUtils::Signum(r_xi_slave.Dot(r_xi_master));
+  // auxiliary variables
+  Core::LinAlg::Matrix<3, 3, T> v_mat_tmp(true);
+
+  for (unsigned int i = 0; i < 3; ++i)
+  {
+    v_mat_tmp(i, i) += 1.0;
+    for (unsigned int j = 0; j < 3; ++j) v_mat_tmp(i, j) -= t_slave(i) * t_slave(j);
+  }
+
+  cos_alpha_partial_r_xi_slave.Multiply(
+      signum_tangentsscalarproduct / Core::FADUtils::VectorNorm(r_xi_slave), v_mat_tmp, t_master);
+
+  v_mat_tmp.Clear();
+  for (unsigned int i = 0; i < 3; ++i)
+  {
+    v_mat_tmp(i, i) += 1.0;
+    for (unsigned int j = 0; j < 3; ++j) v_mat_tmp(i, j) -= t_master(i) * t_master(j);
+  }
+
+  cos_alpha_partial_r_xi_master.Multiply(
+      signum_tangentsscalarproduct / Core::FADUtils::VectorNorm(r_xi_master), v_mat_tmp, t_slave);
+
+  cos_alpha_partial_xi_master = r_xixi_master.Dot(cos_alpha_partial_r_xi_master);
+
+
+  cos_alpha_deriv_r_slave.UpdateT(cos_alpha_partial_xi_master, xi_master_partial_r_slave);
+  cos_alpha_deriv_r_master.UpdateT(cos_alpha_partial_xi_master, xi_master_partial_r_master);
+
+  cos_alpha_deriv_r_xi_slave.Update(cos_alpha_partial_r_xi_slave);
+  cos_alpha_deriv_r_xi_master.Update(1.0, cos_alpha_partial_r_xi_master);
+  cos_alpha_deriv_r_xi_master.UpdateT(
+      cos_alpha_partial_xi_master, xi_master_partial_r_xi_master, 1.0);
+
+
+  // compute components from variation of the unilateral gap
+  gap_ul_deriv_r_slave.Update(normal_ul);
+  gap_ul_deriv_r_master.Update(-1.0, normal_ul);
+
+
+
+  // store for visualization
+  vtk_force_pot_slave_GP.UpdateT(prefactor_visualization_data *
+                                     Core::FADUtils::CastToDouble(pot_red_fac_deriv_xi_master) *
+                                     Core::FADUtils::CastToDouble(interaction_potential_GP),
+      Core::FADUtils::CastToDouble<T, 1, 3>(xi_master_partial_r_slave), 1.0);
+
+  vtk_force_pot_slave_GP.Update(prefactor_visualization_data *
+                                    Core::FADUtils::CastToDouble(potential_reduction_factor_GP) *
+                                    Core::FADUtils::CastToDouble(pot_ia_deriv_gap_ul),
+      Core::FADUtils::CastToDouble<T, 3, 1>(gap_ul_deriv_r_slave), 1.0);
+
+  vtk_force_pot_slave_GP.Update(prefactor_visualization_data *
+                                    Core::FADUtils::CastToDouble(potential_reduction_factor_GP) *
+                                    Core::FADUtils::CastToDouble(pot_ia_deriv_cos_alpha),
+      Core::FADUtils::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_slave), 1.0);
+
+
+  Core::LinAlg::Matrix<3, 1, double> moment_pot_tmp(true);
+  Core::LinAlg::Matrix<3, 3, double> spin_pseudo_moment_tmp(true);
+
+
+  moment_pot_tmp.Update(Core::FADUtils::CastToDouble(potential_reduction_factor_GP) *
+                            Core::FADUtils::CastToDouble(pot_ia_deriv_cos_alpha),
+      Core::FADUtils::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_xi_slave));
+
+  // TODO understand definition of distributed moments on cross-section
+  /* note: relation between variation of tangent vector r_xi and variation of (transversal
+   * part of) rotation vector theta_perp describing cross-section orientation can be used to
+   *       identify (distributed) moments as follows: m_pot = 1/|r_xi| * ( m_pot_pseudo x g1 )
+   */
+  Core::LargeRotations::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
+
+  moment_pot_tmp.Multiply(1.0 / Core::FADUtils::CastToDouble(norm_r_xi_slave),
+      spin_pseudo_moment_tmp, Core::FADUtils::CastToDouble<T, 3, 1>(t_slave));
+
+  vtk_moment_pot_slave_GP.Update(prefactor_visualization_data, moment_pot_tmp, 1.0);
+
+
+  vtk_force_pot_master_GP.UpdateT(prefactor_visualization_data *
+                                      Core::FADUtils::CastToDouble(pot_red_fac_deriv_xi_master) *
+                                      Core::FADUtils::CastToDouble(interaction_potential_GP),
+      Core::FADUtils::CastToDouble<T, 1, 3>(xi_master_partial_r_master), 1.0);
+
+  vtk_force_pot_master_GP.Update(prefactor_visualization_data *
+                                     Core::FADUtils::CastToDouble(potential_reduction_factor_GP) *
+                                     Core::FADUtils::CastToDouble(pot_ia_deriv_gap_ul),
+      Core::FADUtils::CastToDouble<T, 3, 1>(gap_ul_deriv_r_master), 1.0);
+
+  vtk_force_pot_master_GP.Update(prefactor_visualization_data *
+                                     Core::FADUtils::CastToDouble(potential_reduction_factor_GP) *
+                                     Core::FADUtils::CastToDouble(pot_ia_deriv_cos_alpha),
+      Core::FADUtils::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_master), 1.0);
+
+  moment_pot_tmp.UpdateT(Core::FADUtils::CastToDouble(pot_red_fac_deriv_xi_master) *
+                             Core::FADUtils::CastToDouble(interaction_potential_GP),
+      Core::FADUtils::CastToDouble<T, 1, 3>(xi_master_partial_r_xi_master));
+
+  moment_pot_tmp.Update(Core::FADUtils::CastToDouble(potential_reduction_factor_GP) *
+                            Core::FADUtils::CastToDouble(pot_ia_deriv_cos_alpha),
+      Core::FADUtils::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_xi_master), 1.0);
+
+  Core::LargeRotations::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
+
+  moment_pot_tmp.Multiply(1.0 / Core::FADUtils::CastToDouble(norm_r_xi_master),
+      spin_pseudo_moment_tmp, Core::FADUtils::CastToDouble<T, 3, 1>(t_master));
+
+  vtk_moment_pot_master_GP.Update(prefactor_visualization_data, moment_pot_tmp, 1.0);
+
+
+
+  // now apply scalar integration factor
+  // (after computing and storing distributed force/moment for vtk output)
+  interaction_potential_GP *= rho1rho2_JacFac_GaussWeight;
+
+  pot_ia_deriv_gap_ul *= rho1rho2_JacFac_GaussWeight;
+  pot_ia_deriv_cos_alpha *= rho1rho2_JacFac_GaussWeight;
+
+  pot_ia_2ndderiv_gap_ul *= rho1rho2_JacFac_GaussWeight;
+  pot_ia_deriv_gap_ul_deriv_cos_alpha *= rho1rho2_JacFac_GaussWeight;
+  pot_ia_2ndderiv_cos_alpha *= rho1rho2_JacFac_GaussWeight;
+
+
+  //********************************************************************
+  // calculate force/residual vector of slave and master element
+  //********************************************************************
+  force_pot_slave_GP.Clear();
+  force_pot_master_GP.Clear();
+
+  // sum up the contributions of all nodes (in all dimensions)
+  for (unsigned int idofperdim = 0; idofperdim < (numnodes * numnodalvalues); ++idofperdim)
+  {
+    // loop over dimensions
+    for (unsigned int jdim = 0; jdim < 3; ++jdim)
+    {
+      force_pot_slave_GP(3 * idofperdim + jdim) +=
+          N_i_slave(idofperdim) * pot_red_fac_deriv_xi_master * interaction_potential_GP *
+          xi_master_partial_r_slave(jdim);
+
+      force_pot_slave_GP(3 * idofperdim + jdim) += N_i_slave(idofperdim) *
+                                                   potential_reduction_factor_GP *
+                                                   pot_ia_deriv_gap_ul * gap_ul_deriv_r_slave(jdim);
+
+      force_pot_slave_GP(3 * idofperdim + jdim) +=
+          N_i_slave(idofperdim) * potential_reduction_factor_GP * pot_ia_deriv_cos_alpha *
+          cos_alpha_deriv_r_slave(jdim);
+
+      force_pot_slave_GP(3 * idofperdim + jdim) +=
+          N_i_xi_slave(idofperdim) * potential_reduction_factor_GP * pot_ia_deriv_cos_alpha *
+          cos_alpha_deriv_r_xi_slave(jdim);
+
+      force_pot_master_GP(3 * idofperdim + jdim) +=
+          N_i_master(idofperdim) * pot_red_fac_deriv_xi_master * interaction_potential_GP *
+          xi_master_partial_r_master(jdim);
+
+      force_pot_master_GP(3 * idofperdim + jdim) +=
+          N_i_xi_master(idofperdim) * pot_red_fac_deriv_xi_master * interaction_potential_GP *
+          xi_master_partial_r_xi_master(jdim);
+
+      force_pot_master_GP(3 * idofperdim + jdim) +=
+          N_i_master(idofperdim) * potential_reduction_factor_GP * pot_ia_deriv_gap_ul *
+          gap_ul_deriv_r_master(jdim);
+
+      force_pot_master_GP(3 * idofperdim + jdim) +=
+          N_i_master(idofperdim) * potential_reduction_factor_GP * pot_ia_deriv_cos_alpha *
+          cos_alpha_deriv_r_master(jdim);
+
+      force_pot_master_GP(3 * idofperdim + jdim) +=
+          N_i_xi_master(idofperdim) * potential_reduction_factor_GP * pot_ia_deriv_cos_alpha *
+          cos_alpha_deriv_r_xi_master(jdim);
+    }
+  }
+
+  if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
+      stiffmat22 != nullptr)
+  {
+    // evaluate contributions to linearization based on analytical expression
+    evaluate_stiffpot_analytic_contributions_single_length_specific_small_sep_approx_simple(
+        N_i_slave, N_i_xi_slave, N_i_master, N_i_xi_master, N_i_xixi_master, xi_master, r_xi_slave,
+        r_xi_master, r_xixi_master, norm_dist_ul, normal_ul, potential_reduction_factor_GP,
+        pot_red_fac_deriv_xi_master, pot_red_fac_2ndderiv_xi_master, interaction_potential_GP,
+        pot_ia_deriv_gap_ul, pot_ia_deriv_cos_alpha, pot_ia_2ndderiv_gap_ul,
+        pot_ia_deriv_gap_ul_deriv_cos_alpha, pot_ia_2ndderiv_cos_alpha, gap_ul_deriv_r_slave,
+        gap_ul_deriv_r_master, cos_alpha_deriv_r_slave, cos_alpha_deriv_r_master,
+        cos_alpha_deriv_r_xi_slave, cos_alpha_deriv_r_xi_master, xi_master_partial_r_slave,
+        xi_master_partial_r_master, xi_master_partial_r_xi_master, *stiffmat11, *stiffmat12,
+        *stiffmat21, *stiffmat22);
+  }
+
+  // add potential reduction factor to interaction potential for correct energy output
+  interaction_potential_GP *= potential_reduction_factor_GP;
 
   return true;
 }
@@ -3480,6 +3561,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot1,
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot2,
         Sacado::Fad::DFad<double> const& interaction_potential,
+        Sacado::Fad::DFad<double> const& potential_reduction_factor,
         Core::LinAlg::Matrix<1, 3 * numnodes * numnodalvalues, Sacado::Fad::DFad<double>> const&
             lin_xi_master_slaveDofs,
         Core::LinAlg::Matrix<1, 3 * numnodes * numnodalvalues, Sacado::Fad::DFad<double>> const&
@@ -3489,12 +3571,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   for (unsigned int idof = 0; idof < dim; ++idof)
   {
-    force_pot1(idof) = interaction_potential.dx(idof) +
-                       interaction_potential.dx(2 * dim) *
+    force_pot1(idof) = (potential_reduction_factor * interaction_potential).dx(idof) +
+                       (potential_reduction_factor * interaction_potential).dx(2 * dim) *
                            Core::FADUtils::CastToDouble(lin_xi_master_slaveDofs(idof));
 
-    force_pot2(idof) = interaction_potential.dx(dim + idof) +
-                       interaction_potential.dx(2 * dim) *
+    force_pot2(idof) = (potential_reduction_factor * interaction_potential).dx(dim + idof) +
+                       (potential_reduction_factor * interaction_potential).dx(2 * dim) *
                            Core::FADUtils::CastToDouble(lin_xi_master_masterDofs(idof));
   }
 }
@@ -3509,6 +3591,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
             force_pot2,
         Sacado::Fad::DFad<double> const& interaction_potential,
+        Sacado::Fad::DFad<double> const& potential_reduction_factor,
         Core::LinAlg::Matrix<1, 3 * numnodes * numnodalvalues, Sacado::Fad::DFad<double>> const&
             lin_xi_master_slaveDofs,
         Core::LinAlg::Matrix<1, 3 * numnodes * numnodalvalues, Sacado::Fad::DFad<double>> const&
@@ -3518,11 +3601,13 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   for (unsigned int idof = 0; idof < dim; ++idof)
   {
-    force_pot1(idof) = interaction_potential.dx(idof) +
-                       interaction_potential.dx(2 * dim) * lin_xi_master_slaveDofs(idof);
+    force_pot1(idof) = (potential_reduction_factor * interaction_potential).dx(idof) +
+                       (potential_reduction_factor * interaction_potential).dx(2 * dim) *
+                           lin_xi_master_slaveDofs(idof);
 
-    force_pot2(idof) = interaction_potential.dx(dim + idof) +
-                       interaction_potential.dx(2 * dim) * lin_xi_master_masterDofs(idof);
+    force_pot2(idof) = (potential_reduction_factor * interaction_potential).dx(dim + idof) +
+                       (potential_reduction_factor * interaction_potential).dx(2 * dim) *
+                           lin_xi_master_masterDofs(idof);
   }
 }
 

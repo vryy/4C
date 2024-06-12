@@ -168,6 +168,11 @@ namespace BEAMINTERACTION
       //  to get force and stiffness contributions from beam interactions
       void create_beam_potential_element_pairs();
 
+
+      /// crucial setup for potential reduction strategy for single length specific
+      /// potential determination, i.e., determine length to fiber edge for each beam element
+      void setup_potential_reduction_strategy();
+
       void get_beam_potential_conditions_applied_to_this_element_pair(
           BEAMINTERACTION::BeamPotentialPair const& elementpair,
           std::vector<Core::Conditions::Condition*>& conditions_element1,

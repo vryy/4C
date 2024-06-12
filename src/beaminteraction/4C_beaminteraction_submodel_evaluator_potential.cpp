@@ -18,6 +18,7 @@
 #include "4C_beaminteraction_potential_params.hpp"
 #include "4C_beaminteraction_potential_runtime_visualization_output_params.hpp"
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
+#include "4C_comm_utils_gid_vector.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_io_visualization_manager.hpp"
@@ -30,7 +31,85 @@
 #include <NOX_Solver_Generic.H>
 #include <Teuchos_TimeMonitor.hpp>
 
+#include <unordered_set>
 FOUR_C_NAMESPACE_OPEN
+
+namespace
+{
+  namespace LengthToEdgeImplementation
+
+  {
+    struct DataMaps
+    {
+      // data maps to determine prior element length for potential reduction strategy for single
+      // length specific potential determination (maps are utilized for simple conversion into
+      // vectors during communication)
+      std::unordered_map<int, double> ele_gid_length_map;
+      std::unordered_map<int, int> ele_gid_left_node_gid_map;
+      std::unordered_map<int, int> ele_gid_right_node_gid_map;
+      std::unordered_multimap<int, int> left_node_gid_ele_gid_map;
+      std::unordered_multimap<int, int> right_node_gid_ele_gid_map;
+    };
+
+    // recursively determine length from beam element to the fiber's
+    // end points for usage within potential reduction strategy
+    double determine_length_to_edge(
+        const DataMaps& maps, int ele_gid, int connecting_node_gid, double prior_length = 0.0)
+    {
+      // determine number of elements at connecting node
+      // due to ghosting multiple entries of nodes->elements are possible
+      std::unordered_set<int> elements_at_connecting_node;
+
+      for (auto it = maps.left_node_gid_ele_gid_map.equal_range(connecting_node_gid).first;
+           it != maps.left_node_gid_ele_gid_map.equal_range(connecting_node_gid).second; ++it)
+      {
+        elements_at_connecting_node.insert(it->second);
+      }
+      for (auto it = maps.right_node_gid_ele_gid_map.equal_range(connecting_node_gid).first;
+           it != maps.right_node_gid_ele_gid_map.equal_range(connecting_node_gid).second; ++it)
+      {
+        elements_at_connecting_node.insert(it->second);
+      }
+
+      // if only one element is present => edge of fiber is reached
+      // start recursive length evaluation if two elements are present at connecting node
+      if (elements_at_connecting_node.size() == 2)
+      {
+        // determine neighbor element
+        int neighbor_ele_gid;
+        for (const int& possible_neighbor_ele_gid : elements_at_connecting_node)
+        {
+          if (possible_neighbor_ele_gid != ele_gid) neighbor_ele_gid = possible_neighbor_ele_gid;
+        }
+
+        // determine next connecting node of neighbor element
+        int neighbor_connecting_node_gid;
+        if (maps.ele_gid_left_node_gid_map.at(neighbor_ele_gid) != connecting_node_gid)
+          neighbor_connecting_node_gid = maps.ele_gid_left_node_gid_map.at(neighbor_ele_gid);
+        else if (maps.ele_gid_right_node_gid_map.at(neighbor_ele_gid) != connecting_node_gid)
+          neighbor_connecting_node_gid = maps.ele_gid_right_node_gid_map.at(neighbor_ele_gid);
+        else
+          FOUR_C_THROW("Next connecting node for prior length determination not found!");
+
+        // add neighbor element length to prior length
+        prior_length += maps.ele_gid_length_map.at(neighbor_ele_gid);
+
+        // call function recursively for next neighbor
+        prior_length = determine_length_to_edge(
+            maps, neighbor_ele_gid, neighbor_connecting_node_gid, prior_length);
+      }
+      else if (elements_at_connecting_node.size() > 2)
+      {
+        FOUR_C_THROW(
+            "More than two beam elements are connected via a single node! Determination of length "
+            "to edge for potential reduction strategy is only possible for a maximum number of two "
+            "elements per node!");
+      }
+
+      return prior_length;
+    }
+  }  // namespace LengthToEdgeImplementation
+}  // namespace
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -66,6 +145,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Setup()
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::post_setup()
 {
   check_init_setup();
+
+  if (beam_potential_params().PotentialReductionLength() != -1.0)
+    setup_potential_reduction_strategy();
 
   nearby_elements_map_.clear();
   find_and_store_neighboring_elements();
@@ -516,6 +598,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::read_restart(
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PostReadRestart()
 {
   check_init_setup();
+
+  if (beam_potential_params().PotentialReductionLength() != -1.0)
+    setup_potential_reduction_strategy();
+
   nearby_elements_map_.clear();
   find_and_store_neighboring_elements();
   create_beam_potential_element_pairs();
@@ -709,6 +795,57 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
       neighbors.erase(eiter++);
     else
       ++eiter;
+  }
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::setup_potential_reduction_strategy()
+{
+  LengthToEdgeImplementation::DataMaps data_maps;
+
+  // get element data on current proc
+  for (int rowele_i = 0; rowele_i < ele_type_map_extractor_ptr()->BeamMap()->NumMyElements();
+       ++rowele_i)
+  {
+    const int ele_gid = ele_type_map_extractor_ptr()->BeamMap()->GID(rowele_i);
+    Core::Elements::Element* ele_ptr = DiscretPtr()->gElement(ele_gid);
+
+    data_maps.ele_gid_length_map.insert(
+        std::make_pair(ele_gid, dynamic_cast<Discret::ELEMENTS::Beam3Base*>(ele_ptr)->RefLength()));
+
+    int left_node_gid = *ele_ptr->NodeIds();
+    // n_right is the local node-ID of the elements right node (at xi = 1) whereas the elements left
+    // node (at xi = -1) allways has the local ID 1
+    const int n_right = (ele_ptr->num_node() == 2) ? 1 : (ele_ptr->num_node() - 2);
+    int right_node_gid = *(ele_ptr->NodeIds() + n_right);
+
+    data_maps.ele_gid_left_node_gid_map.insert(std::make_pair(ele_gid, left_node_gid));
+    data_maps.ele_gid_right_node_gid_map.insert(std::make_pair(ele_gid, right_node_gid));
+    data_maps.left_node_gid_ele_gid_map.insert(std::make_pair(left_node_gid, ele_gid));
+    data_maps.right_node_gid_ele_gid_map.insert(std::make_pair(right_node_gid, ele_gid));
+  }
+
+  // broadcast all data maps to all procs
+  data_maps.ele_gid_length_map =
+      Core::Communication::BroadcastMap(data_maps.ele_gid_length_map, Discret().Comm());
+  data_maps.ele_gid_left_node_gid_map =
+      Core::Communication::BroadcastMap(data_maps.ele_gid_left_node_gid_map, Discret().Comm());
+  data_maps.ele_gid_right_node_gid_map =
+      Core::Communication::BroadcastMap(data_maps.ele_gid_right_node_gid_map, Discret().Comm());
+  data_maps.left_node_gid_ele_gid_map =
+      Core::Communication::BroadcastMap(data_maps.left_node_gid_ele_gid_map, Discret().Comm());
+  data_maps.right_node_gid_ele_gid_map =
+      Core::Communication::BroadcastMap(data_maps.right_node_gid_ele_gid_map, Discret().Comm());
+
+  // determine length to edge for each element and add to map
+  for (const auto& [ele_gid, _] : data_maps.ele_gid_length_map)
+  {
+    beam_potential_params().ele_gid_prior_length_map_.insert(std::make_pair(
+        ele_gid, std::make_pair(LengthToEdgeImplementation::determine_length_to_edge(data_maps,
+                                    ele_gid, data_maps.ele_gid_left_node_gid_map.at(ele_gid)),
+                     LengthToEdgeImplementation::determine_length_to_edge(
+                         data_maps, ele_gid, data_maps.ele_gid_right_node_gid_map.at(ele_gid)))));
   }
 }
 

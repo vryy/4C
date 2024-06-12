@@ -283,6 +283,34 @@ namespace BEAMINTERACTION
         Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T> const& N_i_master,
         Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T> const& N_i_xi_master);
 
+    /** \brief Evaluate all quantities for the simple disk-cylinder potential law */
+    bool evaluate_simple_disk_cylinder_potential(Core::LinAlg::Matrix<3, 1, T> const& dist_ul,
+        T norm_dist_ul, T alpha, T cos_alpha, Core::LinAlg::Matrix<3, 1, T> const& r_slave,
+        Core::LinAlg::Matrix<3, 1, T> const& r_xi_slave, T norm_r_xi_slave,
+        Core::LinAlg::Matrix<3, 1, T> const& t_slave, Core::LinAlg::Matrix<3, 1, T> const& r_master,
+        Core::LinAlg::Matrix<3, 1, T> const& r_xi_master, T norm_r_xi_master,
+        Core::LinAlg::Matrix<3, 1, T> const& r_xixi_master,
+        Core::LinAlg::Matrix<3, 1, T> const& t_master, T xi_master,
+        Core::LinAlg::Matrix<1, 3, T> const& xi_master_partial_r_slave,
+        Core::LinAlg::Matrix<1, 3, T> const& xi_master_partial_r_master,
+        Core::LinAlg::Matrix<1, 3, T> const& xi_master_partial_r_xi_master,
+        double potential_reduction_length, double length_prior_right, double length_prior_left,
+        T& interaction_potential_GP,
+        Core::LinAlg::Matrix<1, numnodes * numnodalvalues, double> const& N_i_slave,
+        Core::LinAlg::Matrix<1, numnodes * numnodalvalues, double> const& N_i_xi_slave,
+        Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T> const& N_i_master,
+        Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T> const& N_i_xi_master,
+        Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T> const& N_i_xixi_master,
+        Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot_slave_GP,
+        Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot_master_GP,
+        double prefactor_visualization_data, double rho1rho2_JacFac_GaussWeight,
+        Core::LinAlg::Matrix<3, 1, double>& vtk_force_pot_slave_GP,
+        Core::LinAlg::Matrix<3, 1, double>& vtk_force_pot_master_GP,
+        Core::LinAlg::Matrix<3, 1, double>& vtk_moment_pot_slave_GP,
+        Core::LinAlg::Matrix<3, 1, double>& vtk_moment_pot_master_GP,
+        Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
+        Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22);
+
     /** \brief scale given stiffness matrices by given scalar factor
      *
      *  \author grill
@@ -380,6 +408,7 @@ namespace BEAMINTERACTION
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot1,
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot2,
         Sacado::Fad::DFad<double> const& interaction_potential,
+        Sacado::Fad::DFad<double> const& potential_reduction_factor,
         Core::LinAlg::Matrix<1, 3 * numnodes * numnodalvalues, Sacado::Fad::DFad<double>> const&
             lin_xi_master_slaveDofs,
         Core::LinAlg::Matrix<1, 3 * numnodes * numnodalvalues, Sacado::Fad::DFad<double>> const&
@@ -395,6 +424,7 @@ namespace BEAMINTERACTION
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
             force_pot2,
         Sacado::Fad::DFad<double> const& interaction_potential,
+        Sacado::Fad::DFad<double> const& potential_reduction_factor,
         Core::LinAlg::Matrix<1, 3 * numnodes * numnodalvalues, Sacado::Fad::DFad<double>> const&
             lin_xi_master_slaveDofs,
         Core::LinAlg::Matrix<1, 3 * numnodes * numnodalvalues, Sacado::Fad::DFad<double>> const&
@@ -405,9 +435,10 @@ namespace BEAMINTERACTION
      *  \author grill
      *  \date 02/19 */
     void calc_fpot_gausspoint_automatic_differentiation_if_required(
+
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot1,
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot2,
-        double const& interaction_potential,
+        double const& interaction_potential, double const& potential_reduction_factor,
         Core::LinAlg::Matrix<1, 3 * numnodes * numnodalvalues, double> const&
             lin_xi_master_slaveDofs,
         Core::LinAlg::Matrix<1, 3 * numnodes * numnodalvalues, double> const&
@@ -431,7 +462,9 @@ namespace BEAMINTERACTION
         double const& xi_master, Core::LinAlg::Matrix<3, 1, double> const& r_xi_slave,
         Core::LinAlg::Matrix<3, 1, double> const& r_xi_master,
         Core::LinAlg::Matrix<3, 1, double> const& r_xixi_master, double const& norm_dist_ul,
-        Core::LinAlg::Matrix<3, 1, double> const& normal_ul, double const& pot_ia_deriv_gap_ul,
+        Core::LinAlg::Matrix<3, 1, double> const& normal_ul, double const& pot_red_fac,
+        double const& pot_red_fac_deriv_xi_master, double const& pot_red_fac_2ndderiv_xi_master,
+        double const& pot_ia, double const& pot_ia_deriv_gap_ul,
         double const& pot_ia_deriv_cos_alpha, double const& pot_ia_2ndderiv_gap_ul,
         double const& pot_ia_deriv_gap_ul_deriv_cos_alpha, double const& pot_ia_2ndderiv_cos_alpha,
         Core::LinAlg::Matrix<3, 1, double> const& gap_ul_deriv_r_slave,
@@ -466,6 +499,10 @@ namespace BEAMINTERACTION
         Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>> const& r_xixi_master,
         Sacado::Fad::DFad<double> const& norm_dist_ul,
         Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>> const& normal_ul,
+        Sacado::Fad::DFad<double> const& pot_red_fac,
+        Sacado::Fad::DFad<double> const& pot_red_fac_deriv_xi_master,
+        Sacado::Fad::DFad<double> const& pot_red_fac_2ndderiv_xi_master,
+        Sacado::Fad::DFad<double> const& pot_ia,
         Sacado::Fad::DFad<double> const& pot_ia_deriv_gap_ul,
         Sacado::Fad::DFad<double> const& pot_ia_deriv_cos_alpha,
         Sacado::Fad::DFad<double> const& pot_ia_2ndderiv_gap_ul,
