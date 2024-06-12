@@ -693,7 +693,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
   // Get the rotational GIDs of the surface and beam.
   std::vector<int> gid_surface;
   Core::LinAlg::Matrix<n_dof_rot_, 1, int> gid_rot;
-  get_pair_rotational_gi_ds(discret, gid_surface, gid_rot);
+  get_pair_rotational_gid(discret, gid_surface, gid_rot);
 
   // Assemble into global matrix.
   for (unsigned int i_dof_beam = 0; i_dof_beam < n_dof_rot_; i_dof_beam++)
@@ -934,7 +934,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
   // Get the rotational GIDs of the surface and beam.
   std::vector<int> gid_surface;
   Core::LinAlg::Matrix<n_dof_rot_, 1, int> gid_rot;
-  get_pair_rotational_gi_ds(discret, gid_surface, gid_rot);
+  get_pair_rotational_gid(discret, gid_surface, gid_rot);
 
   // Get the Lagrange multiplier GIDs.
   const auto& [_, lambda_gid_rot] = mortar_manager->LocationVector(*this);
@@ -971,7 +971,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::get_pair_rotational_gi_ds(const Core::FE::Discretization& discret,
+    mortar>::get_pair_rotational_gid(const Core::FE::Discretization& discret,
     std::vector<int>& gid_surface, Core::LinAlg::Matrix<n_dof_rot_, 1, int>& gid_rot) const
 {
   // Get the GIDs of the surface and beam.

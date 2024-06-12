@@ -174,7 +174,7 @@ namespace BEAMINTERACTION
      * @param gid_surface (out) GIDs for the surface that influence the rotation.
      * @param gid_rot (out) Rotational GIDs for the beam
      */
-    void get_pair_rotational_gi_ds(const Core::FE::Discretization& discret,
+    void get_pair_rotational_gid(const Core::FE::Discretization& discret,
         std::vector<int>& gid_surface, Core::LinAlg::Matrix<n_dof_rot_, 1, int>& gid_rot) const;
   };
 
