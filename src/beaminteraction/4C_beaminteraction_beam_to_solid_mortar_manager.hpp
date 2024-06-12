@@ -218,12 +218,12 @@ namespace BEAMINTERACTION
     }
 
     /**
-     * \brief Invert the scaling vector \ref global_kappa_ vector.
+     * \brief Invert the scaling vector \ref kappa_ vector.
      *
      * The invertion is performed with accounting for non active Lagrange multipliers. Furthermore,
      * the inverted matrix is scaled with the the corresponding penalty parameter.
      *
-     * @return Inverted global_kappa_ vector.
+     * @return Inverted kappa_ vector.
      */
     Teuchos::RCP<Epetra_Vector> penalty_invert_kappa() const;
 
@@ -303,30 +303,30 @@ namespace BEAMINTERACTION
     std::map<int, std::vector<int>> element_gid_to_lambda_gid_map_;
 
     //! Global constraint vector.
-    Teuchos::RCP<Epetra_FEVector> global_constraint_;
+    Teuchos::RCP<Epetra_FEVector> constraint_;
 
     //! Derivative of constraint vector w.r.t the beam DOF.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_g_b_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> constraint_lin_beam_;
 
     //! Derivative of constraint vector w.r.t the solid DOF.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_g_s_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> constraint_lin_solid_;
 
     //! Derivative of the beam coupling forces w.r.t the Lagrange multipliers.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_fb_l_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> force_beam_lin_lambda_;
 
     //! Derivative of the solid coupling forces w.r.t the Lagrange multipliers.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_fs_l_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> force_solid_lin_lambda_;
 
     //! Global \f$\kappa\f$ vector. This vector is used to scale the mortar matrices. See Yang et
     //! al: Two dimensional mortar contact methods for large deformation frictional sliding (eq.
     //! 37). With this scaling correct units and pass patch tests are achieved (in the penalty
     //! case).
-    Teuchos::RCP<Epetra_FEVector> global_kappa_;
+    Teuchos::RCP<Epetra_FEVector> kappa_;
 
     //! This vector keeps tack of all Lagrange multipliers that are active. This is needed when the
     //! kappa vector is inverted and some entries are zero, because no active contributions act on
     //! that Lagrange multiplier.
-    Teuchos::RCP<Epetra_FEVector> global_active_lambda_;
+    Teuchos::RCP<Epetra_FEVector> lambda_active_;
 
     //! Vector with all contact pairs to be evaluated by this mortar manager.
     std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> contact_pairs_;
