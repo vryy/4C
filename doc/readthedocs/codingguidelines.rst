@@ -58,7 +58,7 @@ The following guidelines are especially relevant for the current state of |FOURC
 |FOURC|-specific Naming Conventions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **Namespaces** are spelled in all caps: ``LINALG::``
+- **Namespaces** use CamelCase: ``LinAlg::``
 - **Class names** / **function** names / **enum types** use camel case, starting with a capital letter:
   ``ClassToDoSomething / FunctionToPerformAnOperation()``
 - **Variables** and **enum values** use

@@ -44,16 +44,16 @@ All material related classes are defined in this directory, within the namespace
 
 **Definition of a material parameter class**
 
-Define the class for Material Parameters in the namespace ``MAT::PAR`` as
+Define the class for Material Parameters in the namespace ``Mat::PAR`` as
 
 ::
 
-   class MyNewMaterial : public CORE::MAT::PAR::Parameter
+   class MyNewMaterial : public Core::Mat::PAR::Parameter
 
 Here we need the methods
 
--	Constructor ``MyNewMaterial(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)``
--	``Teuchos::RCP<CORE::MAT::Material> CreateMaterial()``
+-	Constructor ``MyNewMaterial(Teuchos::RCP<Core::Mat::PAR::Material> matdata)``
+-	``Teuchos::RCP<Core::Mat::Material> CreateMaterial()``
 
 **Definition of the material type class**
 
@@ -61,7 +61,7 @@ Here the material type class is generated within the namespace ``MAT`` as
 
 ::
 
-  class MyNewMaterialType : public CORE::COMM::ParObjectType
+  class MyNewMaterialType : public Core::COMM::ParObjectType
 
 This class is just to define the material itself, together with its respective parameter set.
 
@@ -69,16 +69,16 @@ This class does not even need a constructor, but only  a single private static v
 
 ::
 
-   MAT::MyNewMaterial MAT::MyNewMaterial::instance_;
+   Mat::MyNewMaterial Mat::MyNewMaterial::instance_;
 
 
 and a few public methods:
 
 ::
 
-   CORE::COMM::ParObject* MAT::MyNewMaterialType::Create(const std::vector<char>& data)
+   Core::COMM::ParObject* Mat::MyNewMaterialType::Create(const std::vector<char>& data)
    {
-     MAT::MyNewMaterial* mymaterial = new MAT::MyNewMaterial();
+     Mat::MyNewMaterial* mymaterial = new Mat::MyNewMaterial();
      mymaterial->Unpack(data);
      return mymaterial;
    }
@@ -89,7 +89,7 @@ and a few public methods:
 
 **Definition of the material class**
 
-The main work happens in the material class in the ``MAT`` namespace, which is derived from the parent class.
+The main work happens in the material class in the ``Mat`` namespace, which is derived from the parent class.
 This can be the class ``Material``, which is independent from the underlying physics,
 but there are also classes for specific physical representations the material model happen.
 The base classes of the material models representing a single physics environment, are given in the following table:
@@ -100,22 +100,22 @@ The base classes of the material models representing a single physics environmen
    * - Physics
      - base class
    * - Structure (3D solid)
-     - ``MAT::So3Material``
+     - ``Mat::So3Material``
    * - Structure (Beams)
-     - ``MAT::BeamMaterialTemplated``
+     - ``Mat::BeamMaterialTemplated``
    * - Thermo
-     - ``MAT::ThermoMaterial``
+     - ``Mat::ThermoMaterial``
    * - Fluid
-     - ``MAT::Material``
+     - ``Mat::Material``
    * - Electrochemistry
-     - ``MAT::ElchSingleMat``
+     - ``Mat::ElchSingleMat``
    * - Electromagnetics
-     - ``MAT::``
+     - ``Mat::``
    * - Sclar transport
-     - ``MAT::Material``
+     - ``Mat::Material``
 
 Note that not all existing materials use this heritage,
-some materials are simply derived from ``MAT::Material`` even though a more specialized class exists.
+some materials are simply derived from ``Mat::Material`` even though a more specialized class exists.
 
 It is probably a good idea to start with a clone of the material law given in the table above, and define a new class, e.g.:
 
@@ -140,16 +140,16 @@ Selection of the material model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The selection of the material model happens in the file ``mat/mat_material.cpp``.
-Based on the enum ``CORE::Materials::MaterialType``, a switch creates the material and provides the parameters.
+Based on the enum ``Core::Materials::MaterialType``, a switch creates the material and provides the parameters.
 Each case within the switch condition has a very similar layout, so for our material it looks like this:
 
 ::
 
-    case CORE::Materials::m_mynewmaterial:
+    case Core::Materials::m_mynewmaterial:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::MyNewMaterial(curmat));
-      auto* params = static_cast<MAT::PAR::MyNewMaterial*>(curmat->Parameter());
+        curmat->SetParameter(new Mat::PAR::MyNewMaterial(curmat));
+      auto* params = static_cast<Mat::PAR::MyNewMaterial*>(curmat->Parameter());
       return params->CreateMaterial();
     }
 

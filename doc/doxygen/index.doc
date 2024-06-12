@@ -1,11 +1,11 @@
-/*! \mainpage DRT/LINALG: The discretization handling module and linear algebra subsystem
+/*! \mainpage DRT/LinAlg: The discretization handling module and linear algebra subsystem
 \htmlonly
 \endhtmlonly
 
 \section drt_intro Introduction
 
 DRT provides fundamental services to construct and manage 2D/3D discretizations
-in parallel and serial. LINALG provides parallel sparse and dense matrix/vector operations.
+in parallel and serial. LinAlg provides parallel sparse and dense matrix/vector operations.
 
 \section Overviewdrt Overview of DRT
 
@@ -20,15 +20,15 @@ processors. DRT is based on MPI and therefore works on distributed and shared me
 DRT makes use of Sandia National Laboratories software package 'Trilinos'
 ( http://software.sandia.gov/trilinos) and can not be compiled without.
 
-\section Overviewlinalg Overview of LINALG
+\section Overviewlinalg Overview of LinAlg
 
-LINALG is a collection of methods and classes that facilitate parallel sparse matrix vector operations
+LinAlg is a collection of methods and classes that facilitate parallel sparse matrix vector operations
 such as matrix-vector products, solution of linear systems and the like. It makes heavy use of
 Sandia National Laboratories software package 'Trilinos' ( http://software.sandia.gov/trilinos ).
-LINALG is actually only little more then a wrapper for Trilinos methods and classes. It simply
+LinAlg is actually only little more then a wrapper for Trilinos methods and classes. It simply
 supplies a generalized interface to Trilinos subpackages and methods and hides some of the details
-from the user. Additionally, LINALG supplies algebra services such as e.g. assembly of dense matrices/vectors
-into sparse distributed matrices/vectors to DRT. LINALG can not be compiled or used without Trilinos
+from the user. Additionally, LinAlg supplies algebra services such as e.g. assembly of dense matrices/vectors
+into sparse distributed matrices/vectors to DRT. LinAlg can not be compiled or used without Trilinos
 
 \section caps_drt Capabilities of DRT
 
@@ -52,9 +52,9 @@ What DRT can do:
      be associated with its own mpi communicator. DRT uses the partitioning package Metis to propose
      a good partitioning of a discretization.
 
-<li> Redistribute a discretization during simulation if desired. Also cooperate with LINALG by returning
+<li> Redistribute a discretization during simulation if desired. Also cooperate with LinAlg by returning
      the new parallel maps of matrices and vectors matching the new distribution and supporting
-     LINALG exports and imports of distributed vectors.
+     LinAlg exports and imports of distributed vectors.
 
 <li> Support adaptivity by allowing insertation and deletion of nodes/elements at any moment.
 </ul>
