@@ -534,7 +534,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
 
   // todo: somewhat illegal as of const correctness
   tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box()->ApplyDirichlet(
-      global_state().get_time_n());
+      global_state().get_time_n(), Global::Problem::Instance()->FunctionManager());
 
   // get current displacement state and export to interaction discretization dofmap
   BEAMINTERACTION::UTILS::UpdateDofMapOfVector(

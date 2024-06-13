@@ -724,7 +724,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::add_crosslinker_to_bin_di
       {
         // random reference position of crosslinker in bounding box
         Core::LinAlg::Matrix<3, 1> Xmat;
-        linker_init_box->RandomPosWithin(Xmat);
+        linker_init_box->RandomPosWithin(Xmat, Global::Problem::Instance()->Random());
 
         std::vector<double> X(3);
         for (int dim = 0; dim < 3; ++dim) X[dim] = Xmat(dim);

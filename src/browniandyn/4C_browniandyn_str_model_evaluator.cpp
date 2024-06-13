@@ -115,7 +115,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Reset(const Epetra_Vector& x)
 
   // todo: somewhat illegal considering of const correctness
   tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box()->ApplyDirichlet(
-      global_state().get_time_n());
+      global_state().get_time_n(), Global::Problem::Instance()->FunctionManager());
 
   // -------------------------------------------------------------------------
   // reset brownian (stochastic and damping) forces

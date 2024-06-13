@@ -152,7 +152,8 @@ int Discret::ELEMENTS::Beam3kType::Initialize(Core::FE::Discretization& dis)
     // configuration (i.e. elements cut by the periodic boundary) in the input file
     Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox =
         Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
-    periodic_boundingbox->Init();  // no Setup() call needed here
+    periodic_boundingbox->Init(
+        Global::Problem::Instance()->binning_strategy_params());  // no Setup() call needed here
 
     std::vector<double> disp_shift;
     int numdof = currele->NumDofPerNode(*(currele->Nodes()[0]));
