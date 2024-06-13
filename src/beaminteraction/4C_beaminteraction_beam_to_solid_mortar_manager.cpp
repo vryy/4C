@@ -517,12 +517,7 @@ double BEAMINTERACTION::BeamToSolidMortarManager::get_energy() const
   Teuchos::RCP<Epetra_Vector> lambda = GetGlobalLambda();
   double dot_product = 0.0;
   constraint_->Dot(*lambda, &dot_product);
-
-  // Only rank 0 should return the global energy value.
-  if (constraint_->Comm().MyPID() == 0)
-    return 0.5 * dot_product;
-  else
-    return 0.0;
+  return 0.5 * dot_product;
 }
 
 /**

@@ -38,7 +38,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::eva
 double BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::get_energy(
     const Teuchos::RCP<const Epetra_Vector>& disp) const
 {
-  return mortar_manager_->get_energy();
+  const double global_mortar_energy = mortar_manager_->get_energy();
+
+  // The value we returned here is summed up over all processors. Since we already have the global
+  // energy here, we only return it on rank 0.
+  if (disp->Comm().MyPID() == 0)
+    return global_mortar_energy;
+  else
+    return 0.0;
 }
 
 FOUR_C_NAMESPACE_CLOSE
