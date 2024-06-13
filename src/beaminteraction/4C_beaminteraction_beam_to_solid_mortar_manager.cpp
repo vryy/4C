@@ -472,6 +472,62 @@ BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
 /**
  *
  */
+void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_force_stiff_penalty_regularization(
+    const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force)
+{
+  // Evaluate the global coupling terms
+  evaluate_global_coupling_contributions(data_state->GetDisColNp());
+
+  // Add the penalty terms to the global force and stiffness matrix
+  add_global_force_stiffness_penalty_contributions(data_state, stiff, force);
+}
+
+/**
+ *
+ */
+Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobalLambda() const
+{
+  auto penalty_regularization = get_penalty_regularization(false);
+  return std::get<0>(penalty_regularization);
+}
+
+/**
+ *
+ */
+Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobalLambdaCol() const
+{
+  Teuchos::RCP<Epetra_Vector> lambda_col = Teuchos::rcp(new Epetra_Vector(*lambda_dof_colmap_));
+  Core::LinAlg::Export(*GetGlobalLambda(), *lambda_col);
+  return lambda_col;
+}
+
+/**
+ *
+ */
+double BEAMINTERACTION::BeamToSolidMortarManager::get_energy() const
+{
+  // Since this value is also computed for the reference configuration, where the global mortar
+  // matrices are not build yet we return 0 in this case.
+  if (not constraint_lin_beam_->Filled() or not constraint_lin_solid_->Filled() or
+      not force_beam_lin_lambda_->Filled() or not force_solid_lin_lambda_->Filled())
+    return 0.0;
+
+  // Calculate the penalty potential.
+  Teuchos::RCP<Epetra_Vector> lambda = GetGlobalLambda();
+  double dot_product = 0.0;
+  constraint_->Dot(*lambda, &dot_product);
+
+  // Only rank 0 should return the global energy value.
+  if (constraint_->Comm().MyPID() == 0)
+    return 0.5 * dot_product;
+  else
+    return 0.0;
+}
+
+/**
+ *
+ */
 void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_global_coupling_contributions(
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
@@ -640,48 +696,6 @@ BEAMINTERACTION::BeamToSolidMortarManager::get_penalty_regularization(
   {
     return {lambda, Teuchos::null, Teuchos::null};
   }
-}
-
-/**
- *
- */
-Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobalLambda() const
-{
-  auto penalty_regularization = get_penalty_regularization(false);
-  return std::get<0>(penalty_regularization);
-}
-
-/**
- *
- */
-Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobalLambdaCol() const
-{
-  Teuchos::RCP<Epetra_Vector> lambda_col = Teuchos::rcp(new Epetra_Vector(*lambda_dof_colmap_));
-  Core::LinAlg::Export(*GetGlobalLambda(), *lambda_col);
-  return lambda_col;
-}
-
-/**
- *
- */
-double BEAMINTERACTION::BeamToSolidMortarManager::get_energy() const
-{
-  // Since this value is also computed for the reference configuration, where the global mortar
-  // matrices are not build yet we return 0 in this case.
-  if (not constraint_lin_beam_->Filled() or not constraint_lin_solid_->Filled() or
-      not force_beam_lin_lambda_->Filled() or not force_solid_lin_lambda_->Filled())
-    return 0.0;
-
-  // Calculate the penalty potential.
-  Teuchos::RCP<Epetra_Vector> lambda = GetGlobalLambda();
-  double dot_product = 0.0;
-  constraint_->Dot(*lambda, &dot_product);
-
-  // Only rank 0 should return the global energy value.
-  if (constraint_->Comm().MyPID() == 0)
-    return 0.5 * dot_product;
-  else
-    return 0.0;
 }
 
 /**

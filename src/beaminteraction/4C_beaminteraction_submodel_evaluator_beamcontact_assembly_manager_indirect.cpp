@@ -31,12 +31,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::eva
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
     Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat)
 {
-  // Evaluate the global coupling terms
-  mortar_manager_->evaluate_global_coupling_contributions(data_state->GetDisColNp());
-
-  // Add the global mortar matrices to the force vector and stiffness matrix
-  mortar_manager_->add_global_force_stiffness_penalty_contributions(
-      data_state, fe_sysmat, fe_sysvec);
+  mortar_manager_->evaluate_force_stiff_penalty_regularization(data_state, fe_sysmat, fe_sysvec);
 }
 
 

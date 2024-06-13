@@ -145,32 +145,15 @@ namespace BEAMINTERACTION
         const BEAMINTERACTION::BeamContactPair& contact_pair) const;
 
     /**
-     * \brief Evaluate mortar coupling contributions on all pairs and assemble them into the global
-     * matrices.
-     * @param displacement_vector (in) global displacement vector.
-     */
-    void evaluate_global_coupling_contributions(
-        const Teuchos::RCP<const Epetra_Vector>& displacement_vector);
-
-    /**
-     * \brief Add the mortar penalty contributions to the global force vector and stiffness matrix.
+     * \brief Evaluate the force and stiffness contributions resulting from a penalty
+     * regularization.
      * @param data_state (in) Beam interaction data state.
      * @param stiff (out) Global stiffness matrix. Mortar terms are added to it.
      * @param force (out) Global force vector. Mortar terms are added to it.
      */
-    void add_global_force_stiffness_penalty_contributions(
+    void evaluate_force_stiff_penalty_regularization(
         const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const;
-
-    /**
-     * \brief Get the penalty regularization of the constraint vector
-     * @param compute_linearization If the linearization of the regularization should be returned
-     * @return The regularized Lagrange multipliers and (optionally) their derivative w.r.t. the
-     * constraint vector and the scaling vector
-     */
-    [[nodiscard]] virtual std::tuple<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_Vector>,
-        Teuchos::RCP<Epetra_Vector>>
-    get_penalty_regularization(const bool compute_linearization = false) const;
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force);
 
     /**
      * \brief Get the global vector of Lagrange multipliers.
@@ -226,6 +209,34 @@ namespace BEAMINTERACTION
       if (!is_local_maps_build_)
         FOUR_C_THROW("Local maps are not build in BeamToSolidMortarManager!");
     }
+
+    /**
+     * \brief Evaluate mortar coupling contributions on all pairs and assemble them into the global
+     * matrices.
+     * @param displacement_vector (in) global displacement vector.
+     */
+    void evaluate_global_coupling_contributions(
+        const Teuchos::RCP<const Epetra_Vector>& displacement_vector);
+
+    /**
+     * \brief Add the mortar penalty contributions to the global force vector and stiffness matrix.
+     * @param data_state (in) Beam interaction data state.
+     * @param stiff (out) Global stiffness matrix. Mortar terms are added to it.
+     * @param force (out) Global force vector. Mortar terms are added to it.
+     */
+    void add_global_force_stiffness_penalty_contributions(
+        const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const;
+
+    /**
+     * \brief Get the penalty regularization of the constraint vector
+     * @param compute_linearization If the linearization of the regularization should be returned
+     * @return The regularized Lagrange multipliers and (optionally) their derivative w.r.t. the
+     * constraint vector and the scaling vector
+     */
+    [[nodiscard]] virtual std::tuple<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_Vector>,
+        Teuchos::RCP<Epetra_Vector>>
+    get_penalty_regularization(const bool compute_linearization = false) const;
 
     /**
      * \brief Invert the scaling vector \ref kappa_ vector.
