@@ -15,8 +15,8 @@
 
 #include "4C_beam3_base.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
-#include "4C_beaminteraction_periodic_boundingbox.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_geometry_periodic_boundingbox.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_linalg_serialdensematrix.hpp"

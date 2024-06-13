@@ -797,8 +797,8 @@ void Mortar::Interface::initialize_lag_mult_lin()
             break;
           }
         }  // switch(Shape)
-      }  // if (IsSlave())
-    }  // for-loop
+      }    // if (IsSlave())
+    }      // for-loop
   }
 }
 
@@ -869,8 +869,8 @@ void Mortar::Interface::initialize_lag_mult_const()
             break;
           }
         }  // switch(Shape)
-      }  // if (IsSlave())
-    }  // for-loop
+      }    // if (IsSlave())
+    }      // for-loop
   }
 }
 
@@ -2603,7 +2603,7 @@ void Mortar::Interface::FindMEles(Node& mrtrnode, std::vector<Mortar::Element*>&
       // fill vector
       meles.push_back(melement);
     }  // found eles
-  }  // loop over adjacent slave elements
+  }    // loop over adjacent slave elements
 }
 
 
@@ -2644,7 +2644,7 @@ void Mortar::Interface::find_m_nodes(
       // fill vector
       mnodes.push_back(mnode);
     }  // found eles
-  }  // loop over adjacent slave elements
+  }    // loop over adjacent slave elements
 }
 
 
@@ -3026,7 +3026,7 @@ void Mortar::Interface::evaluate_search_brute_force(const double& eps)
         selement->AddSearchElements(mgid);
       }
     }  // for all master elements
-  }  // for all slave elements
+  }    // for all slave elements
 }
 
 /*----------------------------------------------------------------------*
@@ -3087,7 +3087,7 @@ bool Mortar::Interface::MortarCoupling(Mortar::Element* sele, std::vector<Mortar
       Mortar::Coupling3dQuadManager(Discret(), Dim(), false, interface_params(), sele, mele)
           .evaluate_coupling(mparams_ptr);
     }  // quadratic
-  }  // 3D
+  }    // 3D
   else
     FOUR_C_THROW("Dimension for Mortar coupling must be either 2D or 3D.");
   // *********************************************************************

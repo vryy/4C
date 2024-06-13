@@ -14,8 +14,8 @@
 
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_crosslinker_handler.hpp"
-#include "4C_beaminteraction_periodic_boundingbox.hpp"
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
+#include "4C_fem_geometry_periodic_boundingbox.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN

@@ -427,7 +427,8 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
       for (const auto& it : matched_ele_map)
       {
         std::cout << "ELEMENT : " << it.first << " ->  ( " << it.second[0] << ", " << it.second[1]
-                  << ", " << it.second[2] << " )" << " on PROC " << dis_to_rebalance.Comm().MyPID()
+                  << ", " << it.second[2] << " )"
+                  << " on PROC " << dis_to_rebalance.Comm().MyPID()
                   << " map size = " << matched_ele_map.size() << std::endl;
       }
     }
@@ -531,7 +532,8 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
       for (const auto& it : matched_node_map)
       {
         std::cout << "NODE : " << it.first << " ->  ( " << it.second[0] << ", " << it.second[1]
-                  << ", " << it.second[2] << " )" << " on PROC " << dis_to_rebalance.Comm().MyPID()
+                  << ", " << it.second[2] << " )"
+                  << " on PROC " << dis_to_rebalance.Comm().MyPID()
                   << " map size = " << matched_node_map.size() << std::endl;
       }
     }

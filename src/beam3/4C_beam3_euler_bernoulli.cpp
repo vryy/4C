@@ -10,8 +10,8 @@
 
 #include "4C_beam3_euler_bernoulli.hpp"
 
-#include "4C_beaminteraction_periodic_boundingbox.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_geometry_periodic_boundingbox.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
@@ -485,7 +485,7 @@ void Discret::ELEMENTS::Beam3eb::set_up_reference_geometry(
         {
           Tref_[numgp](dof) += shapefuncderiv(node) * xrefe[3 * node + dof];
         }  // for(int dof=0; dof<3 ; dof++)
-      }  // for(int node=0; node<nnode; node++)
+      }    // for(int node=0; node<nnode; node++)
 
       // Store length factor for every GP
       // note: the length factor jacobi replaces the determinant and refers to the reference

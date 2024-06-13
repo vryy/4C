@@ -9,7 +9,7 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "4C_beaminteraction_periodic_boundingbox.hpp"
+#include "4C_fem_geometry_periodic_boundingbox.hpp"
 
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_dofset_independent.hpp"

@@ -10,12 +10,12 @@
 #include "4C_binstrategy.hpp"
 
 #include "4C_beam3_base.hpp"
-#include "4C_beaminteraction_periodic_boundingbox.hpp"
 #include "4C_binstrategy_meshfree_multibin.hpp"
 #include "4C_binstrategy_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_dofset_independent.hpp"
 #include "4C_fem_geometry_intersection_math.hpp"
+#include "4C_fem_geometry_periodic_boundingbox.hpp"
 #include "4C_inpar_binningstrategy.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
@@ -170,8 +170,8 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(
           }
         }
       }  // end for int k
-    }  // end for int j
-  }  // end for int i
+    }    // end for int j
+  }      // end for int i
 }
 
 void BINSTRATEGY::BinningStrategy::GidsInijkRange(
@@ -201,8 +201,8 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(
           }
         }
       }  // end for int k
-    }  // end for int j
-  }  // end for int i
+    }    // end for int j
+  }      // end for int i
 }
 
 int BINSTRATEGY::BinningStrategy::get_number_of_bins_inijk_range(int const ijk_range[6]) const
@@ -427,8 +427,8 @@ void BINSTRATEGY::BinningStrategy::GetBinCorners(
         bincorners.push_back(curr_corner);
 
       }  // end for int k
-    }  // end for int j
-  }  // end for int i
+    }    // end for int j
+  }      // end for int i
 
   // change entries to get node numbering according to 4C convention
   std::swap(bincorners[2], bincorners[3]);
