@@ -121,7 +121,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::UnpackConstituent(
     if (Teuchos::is_null(so3mat)) FOUR_C_THROW("Failed to allocate");
 
     // solid material packed: 1. the data size, 2. the packed data of size sm
-    // ExtractFromPack extracts a sub_vec of size sm from data and updates the position vector
+    // extract_from_pack extracts a sub_vec of size sm from data and updates the position vector
     std::vector<char> sub_vec;
     Core::Communication::ParObject::extract_from_pack(position, data, sub_vec);
     material_->Unpack(sub_vec);
