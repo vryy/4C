@@ -167,7 +167,7 @@ namespace Discret::ELEMENTS::Shell::EAS
    * space M
    */
   template <Core::FE::CellType distype>
-  Core::LinAlg::SerialDenseMatrix EvaluateEASShapeFunctionsParameterSpace(
+  Core::LinAlg::SerialDenseMatrix evaluate_eas_shape_functions_parameter_space(
       const std::array<double, 2>& xi_gp, const STR::ELEMENTS::ShellLockingTypes& locking_types)
   {
     // evaluation of the shape function matrix to interpolate the enhanced strains alpha
@@ -686,7 +686,7 @@ namespace Discret::ELEMENTS::Shell::EAS
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& metrics_centroid_reference)
   {
     Core::LinAlg::SerialDenseMatrix M =
-        EAS::EvaluateEASShapeFunctionsParameterSpace<distype>(xi_gp, locking_types);
+        EAS::evaluate_eas_shape_functions_parameter_space<distype>(xi_gp, locking_types);
     Core::LinAlg::SerialDenseMatrix M_gp = MapEasShapeFunctionsToGaussPoint(
         locking_types.total, a_reference, metrics_centroid_reference, M);
     return M_gp;
@@ -708,7 +708,7 @@ namespace Discret::ELEMENTS::Shell::EAS
    * @param RTilde (in) : RTilde
    * @param force (in/out) : internal force vector where the local contribution is added to
    */
-  void AddEASInternalForce(const Core::LinAlg::SerialDenseMatrix& LinvDTilde,
+  void add_eas_internal_force(const Core::LinAlg::SerialDenseMatrix& LinvDTilde,
       const Core::LinAlg::SerialDenseMatrix& RTilde, Core::LinAlg::SerialDenseVector& force_vector)
   {
     // EAS internal force vector is: R - L * DTilde^-1 * RTilde (R is the usual unenhanced
@@ -724,7 +724,7 @@ namespace Discret::ELEMENTS::Shell::EAS
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added
    * to
    */
-  void AddEASStiffnessMatrix(const Core::LinAlg::SerialDenseMatrix& LinvDTilde,
+  void add_eas_stiffness_matrix(const Core::LinAlg::SerialDenseMatrix& LinvDTilde,
       const Core::LinAlg::SerialDenseMatrix& transL,
       Core::LinAlg::SerialDenseMatrix& stiffness_matrix)
   {

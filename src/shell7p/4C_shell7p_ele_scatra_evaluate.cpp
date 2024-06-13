@@ -50,7 +50,7 @@ namespace
     }
   }
 
-  inline Inpar::STR::StressType GetIOStressType(
+  inline Inpar::STR::StressType get_io_stress_type(
       const Discret::ELEMENTS::Shell7pScatra& ele, const Teuchos::ParameterList& params)
   {
     if (ele.IsParamsInterface())
@@ -63,7 +63,7 @@ namespace
     }
   }
 
-  inline Inpar::STR::StrainType GetIOStrainType(
+  inline Inpar::STR::StrainType get_io_strain_type(
       const Discret::ELEMENTS::Shell7pScatra& ele, const Teuchos::ParameterList& params)
   {
     if (ele.IsParamsInterface())
@@ -142,8 +142,8 @@ int Discret::ELEMENTS::Shell7pScatra::Evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_stress:
     {
       shell_interface_->calculate_stresses_strains(*this, *SolidMaterial(),
-          ShellStressIO{GetIOStressType(*this, params), GetMutableStressData(*this, params)},
-          ShellStrainIO{GetIOStrainType(*this, params), GetMutableStrainData(*this, params)},
+          ShellStressIO{get_io_stress_type(*this, params), GetMutableStressData(*this, params)},
+          ShellStrainIO{get_io_strain_type(*this, params), GetMutableStrainData(*this, params)},
           discretization, nodal_directors_, la[0].lm_, params);
     }
     break;

@@ -179,7 +179,7 @@ namespace Discret::ELEMENTS::Shell
    * @return Core::FE::IntegrationPoints2D : Integration points
    */
   template <Core::FE::CellType distype, typename GaussRuleType>
-  Core::FE::IntegrationPoints2D CreateGaussIntegrationPoints(GaussRuleType gaussrule)
+  Core::FE::IntegrationPoints2D create_gauss_integration_points(GaussRuleType gaussrule)
   {
     return Core::FE::IntegrationPoints2D(gaussrule);
   }
@@ -924,7 +924,7 @@ namespace Discret::ELEMENTS::Shell
    * tensors of the shell body
    */
   template <Core::FE::CellType distype>
-  void EvaluateGreenLagrangeStrain(Strains& strains,
+  void evaluate_green_lagrange_strain(Strains& strains,
       const BasisVectorsAndMetrics<distype>& g_reference,
       const BasisVectorsAndMetrics<distype>& g_current)
   {
@@ -1093,7 +1093,7 @@ namespace Discret::ELEMENTS::Shell
    * @param ea (in/out) : Euler-Almansi strains
    */
   template <Core::FE::CellType distype>
-  void GreenLagrangeToEulerAlmansi(const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& gl,
+  void green_lagrange_to_euler_almansi(const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& gl,
       const Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim>& defgrd,
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& ea)
   {
@@ -1146,7 +1146,7 @@ namespace Discret::ELEMENTS::Shell
    * @param thickness_weight (in) : Weighting factor to consider thickness integration
    */
   template <unsigned num_internal_variables>
-  void AssembleVectorToMatrixRow(Core::LinAlg::Matrix<num_internal_variables, 1> vector,
+  void assemble_vector_to_matrix_row(Core::LinAlg::Matrix<num_internal_variables, 1> vector,
       Core::LinAlg::SerialDenseMatrix& data, int row, double thickness_weight)
   {
     for (unsigned int i = 0; i < num_internal_variables; ++i)
@@ -1173,16 +1173,16 @@ namespace Discret::ELEMENTS::Shell
       {
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> gl_strain_stress_like;
         Core::LinAlg::Voigt::Strains::ToStressLike(strains.gl_strain_, gl_strain_stress_like);
-        AssembleVectorToMatrixRow(gl_strain_stress_like, data, row, thickness_weight);
+        assemble_vector_to_matrix_row(gl_strain_stress_like, data, row, thickness_weight);
         return;
       }
       case Inpar::STR::strain_ea:
       {
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> ea;
-        GreenLagrangeToEulerAlmansi<distype>(strains.gl_strain_, strains.defgrd_, ea);
+        green_lagrange_to_euler_almansi<distype>(strains.gl_strain_, strains.defgrd_, ea);
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> ea_stress_like;
         Core::LinAlg::Voigt::Strains::ToStressLike(ea, ea_stress_like);
-        AssembleVectorToMatrixRow(ea_stress_like, data, row, thickness_weight);
+        assemble_vector_to_matrix_row(ea_stress_like, data, row, thickness_weight);
         return;
       }
       case Inpar::STR::strain_none:
@@ -1202,7 +1202,7 @@ namespace Discret::ELEMENTS::Shell
    * @param thickness_weight (in) : Weighting factor to consider thickness integration
    */
   template <Core::FE::CellType distype>
-  void AssembleStressTypeToMatrixRow(const Strains& strains,
+  void assemble_stress_type_to_matrix_row(const Strains& strains,
       const Stress<Mat::NUM_STRESS_3D> stress, Inpar::STR::StressType stress_type,
       Core::LinAlg::SerialDenseMatrix& data, int row, const double thickness_weight)
   {
@@ -1210,14 +1210,14 @@ namespace Discret::ELEMENTS::Shell
     {
       case Inpar::STR::stress_2pk:
       {
-        AssembleVectorToMatrixRow(stress.pk2_, data, row, thickness_weight);
+        assemble_vector_to_matrix_row(stress.pk2_, data, row, thickness_weight);
         return;
       }
       case Inpar::STR::stress_cauchy:
       {
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> cauchy;
         Pk2ToCauchy<distype>(stress.pk2_, strains.defgrd_, cauchy);
-        AssembleVectorToMatrixRow(cauchy, data, row, thickness_weight);
+        assemble_vector_to_matrix_row(cauchy, data, row, thickness_weight);
         return;
       }
       case Inpar::STR::stress_none:
@@ -1369,7 +1369,7 @@ namespace Discret::ELEMENTS::Shell
   {
     Strains strains;
     EvaluateDeformationGradient(strains, g_metric_reference, g_metric_current);
-    EvaluateGreenLagrangeStrain(strains, g_metric_reference, g_metric_current);
+    evaluate_green_lagrange_strain(strains, g_metric_reference, g_metric_current);
     return strains;
   }
 
@@ -1386,7 +1386,7 @@ namespace Discret::ELEMENTS::Shell
    * to
    */
   template <Core::FE::CellType distype>
-  void AddElasticStiffnessMatrix(const Core::LinAlg::SerialDenseMatrix& Bop,
+  void add_elastic_stiffness_matrix(const Core::LinAlg::SerialDenseMatrix& Bop,
       const Core::LinAlg::SerialDenseMatrix& Dmat, const double& integration_fac,
       Core::LinAlg::SerialDenseMatrix& stiffness_matrix)
   {
@@ -1414,7 +1414,7 @@ namespace Discret::ELEMENTS::Shell
    * to
    */
   template <Core::FE::CellType distype>
-  void AddGeometricStiffnessMatrix(
+  void add_geometric_stiffness_matrix(
       const std::vector<Discret::ELEMENTS::Shell::ShapefunctionsAndDerivatives<distype>>&
           shapefunctions_q,
       const std::vector<double>& shapefunctions_ans,

@@ -29,7 +29,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::Shell7pEleCalc<distype>::Shell7pEleCalc()
     : Discret::ELEMENTS::Shell7pEleCalcInterface::Shell7pEleCalcInterface(),
       intpoints_midsurface_(
-          Shell::CreateGaussIntegrationPoints<distype>(Shell::get_gauss_rule<distype>()))
+          Shell::create_gauss_integration_points<distype>(Shell::get_gauss_rule<distype>()))
 {
   cur_thickness_.resize(intpoints_midsurface_.NumPoints(), shell_data_.thickness);
 }
@@ -288,7 +288,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_stresses_strains(
               solid_material, strains, params, gp, ele.Id());
           Shell::AssembleStrainTypeToMatrixRow<distype>(
               strains, strainIO.type, strain_data, gp, 0.5);
-          Shell::AssembleStressTypeToMatrixRow<distype>(
+          Shell::assemble_stress_type_to_matrix_row<distype>(
               strains, stress, stressIO.type, stress_data, gp, 0.5);
         }
       });
@@ -439,10 +439,10 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
         if (stiffness_matrix != nullptr)
         {
           // elastic stiffness matrix Ke
-          Shell::AddElasticStiffnessMatrix<distype>(
+          Shell::add_elastic_stiffness_matrix<distype>(
               Bop, stress_enh.dmat_, integration_factor, *stiffness_matrix);
           // geometric stiffness matrix Kg
-          Shell::AddGeometricStiffnessMatrix<distype>(shapefunctions_collocation,
+          Shell::add_geometric_stiffness_matrix<distype>(shapefunctions_collocation,
               shape_functions_ans, shape_functions, stress_enh.stress_, shell_data_.num_ans,
               integration_factor, *stiffness_matrix);
           // make stiffness matrix absolute symmetric
