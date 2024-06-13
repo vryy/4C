@@ -34,7 +34,7 @@ namespace Discret::ELEMENTS
     eas_full
   };
 
-  static inline std::string ElementTechnologyString(const ElementTechnology ele_tech)
+  static inline std::string element_technology_string(const ElementTechnology ele_tech)
   {
     switch (ele_tech)
     {
@@ -52,7 +52,7 @@ namespace Discret::ELEMENTS
   }
 
   template <typename Function>
-  auto ElementTechnologySwitch(ElementTechnology eletech, Function fct)
+  auto element_technology_switch(ElementTechnology eletech, Function fct)
   {
     switch (eletech)
     {
@@ -75,7 +75,7 @@ namespace Discret::ELEMENTS
     mulf
   };
 
-  static inline std::string PrestressTechnologyString(const PrestressTechnology prestress_tech)
+  static inline std::string prestress_technology_string(const PrestressTechnology prestress_tech)
   {
     switch (prestress_tech)
     {
@@ -89,7 +89,7 @@ namespace Discret::ELEMENTS
   }
 
   template <typename Function>
-  auto PrestressTechnologySwitch(PrestressTechnology prestress_technology, Function fct)
+  auto prestress_technology_switch(PrestressTechnology prestress_technology, Function fct)
   {
     switch (prestress_technology)
     {
@@ -118,7 +118,7 @@ namespace Discret::ELEMENTS
     PrestressTechnology prestress_technology{PrestressTechnology::none};
   };
 
-  void AddToPack(Core::Communication::PackBuffer& data,
+  void add_to_pack(Core::Communication::PackBuffer& data,
       const Discret::ELEMENTS::SolidElementProperties& properties);
 
   void ExtractFromPack(std::size_t& position, const std::vector<char>& data,

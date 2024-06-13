@@ -46,7 +46,7 @@ namespace Discret::ELEMENTS
    * @param defgrd_gp (in) : Deformation gradient evaluated at the Gauss point
    * @return double : Fbar factor
    */
-  inline double EvaluateFbarFactor(const double& defgrd_centroid, const double& defgrd_gp)
+  inline double evaluate_fbar_factor(const double& defgrd_centroid, const double& defgrd_gp)
   {
     const double fbar_factor = std::pow(defgrd_centroid / defgrd_gp, 1.0 / 3.0);
     return fbar_factor;
@@ -70,7 +70,7 @@ namespace Discret::ELEMENTS
    */
   template <Core::FE::CellType celltype, std::enable_if_t<Core::FE::dim<celltype> == 3, int> = 0>
   inline Core::LinAlg::Matrix<Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>, 1>
-  EvaluateFbarHOperator(
+  evaluate_fbar_h_operator(
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::num_nodes<celltype>>&
           shape_function_derivs,
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::num_nodes<celltype>>&
@@ -116,7 +116,7 @@ namespace Discret::ELEMENTS
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
   template <Core::FE::CellType celltype>
-  inline void AddFbarStiffnessMatrix(
+  inline void add_fbar_stiffness_matrix(
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>*(Core::FE::dim<celltype> + 1) / 2,
           Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>>& Bop,
       const Core::LinAlg::Matrix<Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>, 1>& Hop,

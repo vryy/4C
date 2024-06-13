@@ -58,25 +58,25 @@ namespace
   };
 }  // namespace
 
-void Discret::ELEMENTS::AddToPack(Core::Communication::PackBuffer& data,
+void Discret::ELEMENTS::add_to_pack(Core::Communication::PackBuffer& data,
     const Discret::ELEMENTS::SolidScatraElementProperties& properties)
 {
   Core::Communication::ParObject::add_to_pack(data, static_cast<int>(properties.impltype));
 
-  AddToPack(data, properties.solid);
+  Discret::ELEMENTS::add_to_pack(data, properties.solid);
 }
 
-void Discret::ELEMENTS::ExtractFromPack(std::size_t& position, const std::vector<char>& data,
+void Discret::ELEMENTS::extract_from_pack(std::size_t& position, const std::vector<char>& data,
     Discret::ELEMENTS::SolidScatraElementProperties& properties)
 {
   properties.impltype = static_cast<Inpar::ScaTra::ImplType>(
       Core::Communication::ParObject::ExtractInt(position, data));
 
-  ExtractFromPack(position, data, properties.solid);
+  Discret::ELEMENTS::ExtractFromPack(position, data, properties.solid);
 }
 
-Discret::ELEMENTS::SolidScatraCalcVariant Discret::ELEMENTS::CreateSolidScatraCalculationInterface(
-    Core::FE::CellType celltype,
+Discret::ELEMENTS::SolidScatraCalcVariant
+Discret::ELEMENTS::create_solid_scatra_calculation_interface(Core::FE::CellType celltype,
     const Discret::ELEMENTS::SolidElementProperties& element_properties)
 {
   // We have 4 different element properties and each combination results in a different element
@@ -87,10 +87,10 @@ Discret::ELEMENTS::SolidScatraCalcVariant Discret::ELEMENTS::CreateSolidScatraCa
         return switch_kinematic_type(element_properties.kintype,
             [&](auto kinemtype_t)
             {
-              return ElementTechnologySwitch(element_properties.element_technology,
+              return element_technology_switch(element_properties.element_technology,
                   [&](auto eletech_t)
                   {
-                    return PrestressTechnologySwitch(element_properties.prestress_technology,
+                    return prestress_technology_switch(element_properties.prestress_technology,
                         [&](auto prestress_tech_t) -> SolidScatraCalcVariant
                         {
                           constexpr Core::FE::CellType celltype_c = celltype_t();
@@ -110,9 +110,9 @@ Discret::ELEMENTS::SolidScatraCalcVariant Discret::ELEMENTS::CreateSolidScatraCa
                               "solid-scatra context.",
                               Core::FE::celltype_string<celltype_t()>,
                               Inpar::STR::KinemTypeString(element_properties.kintype).c_str(),
-                              ElementTechnologyString(element_properties.element_technology)
+                              element_technology_string(element_properties.element_technology)
                                   .c_str(),
-                              PrestressTechnologyString(element_properties.prestress_technology)
+                              prestress_technology_string(element_properties.prestress_technology)
                                   .c_str());
                         });
                   });

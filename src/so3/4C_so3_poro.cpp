@@ -201,7 +201,7 @@ bool Discret::ELEMENTS::So3Poro<so3_ele, distype>::ReadElement(
   // setup poro material
   Teuchos::RCP<Mat::StructPoro> poromat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
   if (poromat == Teuchos::null) FOUR_C_THROW("no poro material assigned to poro element!");
-  poromat->PoroSetup(numgpt_, linedef);
+  poromat->poro_setup(numgpt_, linedef);
 
   read_anisotropic_permeability_directions_from_element_line_definition(linedef);
   read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(linedef);

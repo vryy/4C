@@ -26,7 +26,7 @@ namespace Discret::ELEMENTS
         std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
     Core::LinAlg::Matrix<DETAIL::num_str<celltype>,
         DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>
-    EvaluateLinearStrainGradient(const JacobianMapping<celltype>& jacobian_mapping)
+    evaluate_linear_strain_gradient(const JacobianMapping<celltype>& jacobian_mapping)
     {
       // B-operator
       Core::LinAlg::Matrix<DETAIL::num_str<celltype>,
@@ -84,14 +84,14 @@ namespace Discret::ELEMENTS
         DisplacementBasedLinearKinematicsLinearizationContainer<celltype>;
 
     template <typename Evaluator>
-    static inline auto Evaluate(const Core::Elements::Element& ele,
+    static inline auto evaluate(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& nodal_coordinates,
         const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping, Evaluator evaluator)
     {
       const DisplacementBasedLinearKinematicsLinearizationContainer<celltype> linearization{
-          Details::EvaluateLinearStrainGradient(jacobian_mapping)};
+          Details::evaluate_linear_strain_gradient(jacobian_mapping)};
 
       Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>, 1> nodal_displs(
           true);
@@ -158,14 +158,14 @@ namespace Discret::ELEMENTS
           linearization.linear_b_operator_, stress, integration_factor, force_vector);
     }
 
-    static void AddStiffnessMatrix(
+    static void add_stiffness_matrix(
         const DisplacementBasedLinearKinematicsLinearizationContainer<celltype>& linearization,
         const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
         const double integration_factor,
         Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>,
             Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>& stiffness_matrix)
     {
-      Discret::ELEMENTS::AddElasticStiffnessMatrix(
+      Discret::ELEMENTS::add_elastic_stiffness_matrix(
           linearization.linear_b_operator_, stress, integration_factor, stiffness_matrix);
     }
   };

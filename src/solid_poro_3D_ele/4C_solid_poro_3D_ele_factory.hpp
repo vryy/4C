@@ -53,11 +53,11 @@ namespace Discret::ELEMENTS
   class SolidPoro;
 
 
-  SolidPoroCalcVariant CreateSolidPoroCalculationInterface(
+  SolidPoroCalcVariant create_solid_poro_calculation_interface(
       Core::Elements::Element& ele, Inpar::Poro::PoroType porotype);
 
   template <Core::FE::CellType celltype>
-  SolidPoroCalcVariant CreateSolidPoroCalculationInterface(Inpar::Poro::PoroType porotype);
+  SolidPoroCalcVariant create_solid_poro_calculation_interface(Inpar::Poro::PoroType porotype);
 }  // namespace Discret::ELEMENTS
 
 

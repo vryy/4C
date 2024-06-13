@@ -36,10 +36,10 @@ namespace Discret::ELEMENTS
   };
 
 
-  void AddToPack(Core::Communication::PackBuffer& data,
+  void add_to_pack(Core::Communication::PackBuffer& data,
       const Discret::ELEMENTS::SolidScatraElementProperties& properties);
 
-  void ExtractFromPack(std::size_t& position, const std::vector<char>& data,
+  void extract_from_pack(std::size_t& position, const std::vector<char>& data,
       Discret::ELEMENTS::SolidScatraElementProperties& properties);
 
   namespace Details
@@ -69,7 +69,7 @@ namespace Discret::ELEMENTS
   /// Variant holding the different implementations for the solid-scatra element
   using SolidScatraCalcVariant = CreateVariantType<Details::SolidScatraEvaluators>;
 
-  SolidScatraCalcVariant CreateSolidScatraCalculationInterface(Core::FE::CellType celltype,
+  SolidScatraCalcVariant create_solid_scatra_calculation_interface(Core::FE::CellType celltype,
       const Discret::ELEMENTS::SolidElementProperties& element_properties);
 }  // namespace Discret::ELEMENTS
 

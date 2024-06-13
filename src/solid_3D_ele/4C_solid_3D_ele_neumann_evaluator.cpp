@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Discret::ELEMENTS::EvaluateNeumannByElement(Core::Elements::Element& element,
+void Discret::ELEMENTS::evaluate_neumann_by_element(Core::Elements::Element& element,
     const Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     const std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& element_force_vector,
     double total_time)
@@ -76,8 +76,8 @@ void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
 {
   constexpr auto numdim = Core::FE::dim<celltype>;
   constexpr auto numnod = Core::FE::num_nodes<celltype>;
-  Core::FE::GaussIntegration gauss_integration =
-      CreateGaussIntegration<celltype>(Discret::ELEMENTS::GetGaussRuleStiffnessMatrix<celltype>());
+  Core::FE::GaussIntegration gauss_integration = create_gauss_integration<celltype>(
+      Discret::ELEMENTS::get_gauss_rule_stiffness_matrix<celltype>());
 
   // get values and switches from the condition
   const auto& onoff = condition.parameters().Get<std::vector<int>>("onoff");
@@ -102,7 +102,7 @@ void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
   const auto& function_ids = condition.parameters().Get<std::vector<int>>("funct");
 
   const ElementNodes<celltype> nodal_coordinates =
-      EvaluateElementNodes<celltype>(element, discretization, dof_index_array);
+      evaluate_element_nodes<celltype>(element, discretization, dof_index_array);
 
   ForEachGaussPoint<celltype>(nodal_coordinates, gauss_integration,
       [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,

@@ -32,7 +32,7 @@ namespace Discret::ELEMENTS
 {
 
   template <Core::FE::CellType celltype>
-  constexpr auto GetGaussRuleStiffnessMatrixPoro()
+  constexpr auto get_gauss_rule_stiffness_matrix_poro()
   {
     return Discret::ELEMENTS::DisTypeToOptGaussRule<celltype>::rule;
   }
@@ -758,13 +758,13 @@ namespace Discret::ELEMENTS
    * tensor and its inverse
    */
   template <Core::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
-  CauchyGreenAndInverse<celltype> EvaluateCauchyGreenAndInverse(
+  CauchyGreenAndInverse<celltype> evaluate_cauchy_green_and_inverse(
       const SpatialMaterialMapping<celltype>& spatial_material_mapping)
   {
     CauchyGreenAndInverse<celltype> cauchygreen;
 
     cauchygreen.right_cauchy_green_ =
-        Discret::ELEMENTS::EvaluateCauchyGreen(spatial_material_mapping);
+        Discret::ELEMENTS::evaluate_cauchy_green(spatial_material_mapping);
     cauchygreen.inverse_right_cauchy_green_.Invert(cauchygreen.right_cauchy_green_);
 
     return cauchygreen;

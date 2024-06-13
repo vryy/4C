@@ -50,7 +50,7 @@ void Discret::ELEMENTS::Shell::PreEvaluateScatra(Core::Elements::Element& ele,
     Core::Elements::Element::LocationArray& dof_index_array)
 {
   Core::FE::IntegrationPoints2D intpoints_midsurface_ =
-      CreateGaussIntegrationPoints<distype>(get_gauss_rule<distype>());
+      create_gauss_integration_points<distype>(get_gauss_rule<distype>());
 
   if (dof_index_array.Size() > 1)
   {

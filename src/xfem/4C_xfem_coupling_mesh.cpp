@@ -2354,8 +2354,8 @@ void XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress(Core::Elements::El
             linearizations.d_cauchyndir_dd = &d_cauchy_d_d;
             linearizations.d2_cauchyndir_dd2 = &d2_cauchy_d_d2;
 
-            cauchy_n_dir =
-                solid_ele->GetCauchyNDirAtXi<3>(eledisp, rst_slave, normal, dir, linearizations);
+            cauchy_n_dir = solid_ele->get_normal_cauchy_stress_at_xi<3>(
+                eledisp, rst_slave, normal, dir, linearizations);
           };
         }
         else

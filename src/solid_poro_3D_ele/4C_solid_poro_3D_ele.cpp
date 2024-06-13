@@ -94,7 +94,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SolidPoroType::Create(
 void Discret::ELEMENTS::SolidPoroType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  STR::UTILS::NodalBlockInformationSolid(dwele, numdf, dimns, nv, np);
+  STR::UTILS::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
 }
 
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidPoroType::ComputeNullSpace(
@@ -154,15 +154,15 @@ bool Discret::ELEMENTS::SolidPoro::ReadElement(
   celltype_ = Core::FE::StringToCellType(elecelltype);
 
   // read number of material model
-  SetMaterial(0, Mat::Factory(STR::UTILS::ReadElement::ReadElementMaterial(linedef)));
+  SetMaterial(0, Mat::Factory(STR::UTILS::ReadElement::read_element_material(linedef)));
 
   // kinematic type
-  solid_ele_property_.kintype = STR::UTILS::ReadElement::ReadElementKinematicType(linedef);
+  solid_ele_property_.kintype = STR::UTILS::ReadElement::read_element_kinematic_type(linedef);
 
   // check element technology
   if (linedef->HaveNamed("TECH"))
   {
-    if (STR::UTILS::ReadElement::ReadElementTechnology(linedef) != ElementTechnology::none)
+    if (STR::UTILS::ReadElement::read_element_technology(linedef) != ElementTechnology::none)
       FOUR_C_THROW("SOLIDPORO elements do not support any element technology!");
   }
 
@@ -179,22 +179,22 @@ bool Discret::ELEMENTS::SolidPoro::ReadElement(
   // read scalar transport implementation type
   if (linedef->HaveNamed("TYPE"))
   {
-    poro_ele_property_.impltype = STR::UTILS::ReadElement::ReadType(linedef);
+    poro_ele_property_.impltype = STR::UTILS::ReadElement::read_type(linedef);
   }
   else
   {
     poro_ele_property_.impltype = Inpar::ScaTra::impltype_undefined;
   }
 
-  solid_calc_variant_ = CreateSolidCalculationInterface(celltype_, solid_ele_property_);
-  solidporo_calc_variant_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
+  solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
+  solidporo_calc_variant_ = create_solid_poro_calculation_interface(*this, GetElePoroType());
 
   // setup solid material
   std::visit(
       [&](auto& solid) { solid->Setup(StructPoroMaterial(), linedef); }, solid_calc_variant_);
 
   // setup poro material
-  std::visit([&](auto& solidporo) { solidporo->PoroSetup(StructPoroMaterial(), linedef); },
+  std::visit([&](auto& solidporo) { solidporo->poro_setup(StructPoroMaterial(), linedef); },
       solidporo_calc_variant_);
 
   return true;
@@ -217,7 +217,7 @@ void Discret::ELEMENTS::SolidPoro::Pack(Core::Communication::PackBuffer& data) c
 
   add_to_pack(data, (int)celltype_);
 
-  AddToPack(data, solid_ele_property_);
+  Discret::ELEMENTS::add_to_pack(data, solid_ele_property_);
 
   add_to_pack(data, poro_ele_property_.porotype);
 
@@ -243,7 +243,7 @@ void Discret::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
 
   celltype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
 
-  ExtractFromPack(position, data, solid_ele_property_);
+  Discret::ELEMENTS::ExtractFromPack(position, data, solid_ele_property_);
 
   poro_ele_property_.porotype = static_cast<Inpar::Poro::PoroType>(ExtractInt(position, data));
 
@@ -252,8 +252,8 @@ void Discret::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
   Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
 
   // reset solid and poro interfaces
-  solid_calc_variant_ = CreateSolidCalculationInterface(celltype_, solid_ele_property_);
-  solidporo_calc_variant_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
+  solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
+  solidporo_calc_variant_ = create_solid_poro_calculation_interface(*this, GetElePoroType());
 
   Discret::ELEMENTS::Unpack(solid_calc_variant_, position, data);
   Discret::ELEMENTS::Unpack(solidporo_calc_variant_, position, data);

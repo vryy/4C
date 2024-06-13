@@ -237,8 +237,8 @@ void CONTACT::IntegratorNitscheSsi::so_ele_cauchy_struct(Mortar::Element& mortar
             // SSI is not yet setup, so don't set the scalar.
             // Note: Once it is fixed in the structure time integration framework, the
             // scalars-parameter can be made non-optional
-            return solid_ele->GetCauchyNDirAtXi(mortar_ele.MoData().ParentDisp(), std::nullopt,
-                parent_xi, gp_normal, test_dir, linearizations);
+            return solid_ele->get_normal_cauchy_stress_at_xi(mortar_ele.MoData().ParentDisp(),
+                std::nullopt, parent_xi, gp_normal, test_dir, linearizations);
           }
           else
           {
@@ -256,7 +256,7 @@ void CONTACT::IntegratorNitscheSsi::so_ele_cauchy_struct(Mortar::Element& mortar
                   dynamic_cast<Discret::ELEMENTS::SolidScatra*>(mortar_ele.parent_element());
               solid_ele != nullptr)
           {
-            return solid_ele->GetCauchyNDirAtXi(mortar_ele.MoData().ParentDisp(),
+            return solid_ele->get_normal_cauchy_stress_at_xi(mortar_ele.MoData().ParentDisp(),
                 mortar_ele.MoData().ParentScalar(), parent_xi, gp_normal, test_dir, linearizations);
           }
 

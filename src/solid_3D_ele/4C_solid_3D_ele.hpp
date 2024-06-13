@@ -173,7 +173,7 @@ namespace Discret::ELEMENTS
      * @return double (out) : The scalar Cauchy stress value
      */
     template <int dim>
-    double GetCauchyNDirAtXi(const std::vector<double>& disp,
+    double get_normal_cauchy_stress_at_xi(const std::vector<double>& disp,
         const Core::LinAlg::Matrix<dim, 1>& xi, const Core::LinAlg::Matrix<dim, 1>& n,
         const Core::LinAlg::Matrix<dim, 1>& dir, CauchyNDirLinearizations<dim>& linearizations);
 

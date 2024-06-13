@@ -3,7 +3,7 @@
 \brief Evaluation routines for the solid-scatra element
 
 This file contains the element-specific evaluation routines such as
-Evaluate(...), evaluate_neumann(...), etc.
+evaluate(...), evaluate_neumann(...), etc.
 
 \level 1
 */
@@ -107,9 +107,9 @@ int Discret::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->CalculateStress(*this, SolidMaterial(),
-                StressIO{GetIOStressType(*this, params), GetStressData(*this, params)},
-                StrainIO{GetIOStrainType(*this, params), GetStrainData(*this, params)},
+            interface->calculate_stress(*this, SolidMaterial(),
+                StressIO{get_io_stress_type(*this, params), get_stress_data(*this, params)},
+                StrainIO{get_io_strain_type(*this, params), get_strain_data(*this, params)},
                 discretization, la, params);
           },
           solid_scatra_calc_variant_);
@@ -143,17 +143,19 @@ int Discret::ELEMENTS::SolidScatra::evaluate_neumann(Teuchos::ParameterList& par
           return params.get("total time", -1.0);
       });
 
-  Discret::ELEMENTS::EvaluateNeumannByElement(*this, discretization, condition, lm, elevec1, time);
+  Discret::ELEMENTS::evaluate_neumann_by_element(
+      *this, discretization, condition, lm, elevec1, time);
   return 0;
 }
 
-double Discret::ELEMENTS::SolidScatra::GetCauchyNDirAtXi(const std::vector<double>& disp,
-    const std::optional<std::vector<double>>& scalars, const Core::LinAlg::Matrix<3, 1>& xi,
-    const Core::LinAlg::Matrix<3, 1>& n, const Core::LinAlg::Matrix<3, 1>& dir,
+double Discret::ELEMENTS::SolidScatra::get_normal_cauchy_stress_at_xi(
+    const std::vector<double>& disp, const std::optional<std::vector<double>>& scalars,
+    const Core::LinAlg::Matrix<3, 1>& xi, const Core::LinAlg::Matrix<3, 1>& n,
+    const Core::LinAlg::Matrix<3, 1>& dir,
     Discret::ELEMENTS::SolidScatraCauchyNDirLinearizations<3>& linearizations)
 {
-  return Discret::ELEMENTS::GetCauchyNDirAtXi(solid_scatra_calc_variant_, *this, SolidMaterial(),
-      disp, scalars, xi, n, dir, linearizations);
+  return Discret::ELEMENTS::get_normal_cauchy_stress_at_xi(solid_scatra_calc_variant_, *this,
+      SolidMaterial(), disp, scalars, xi, n, dir, linearizations);
 }
 
 FOUR_C_NAMESPACE_CLOSE

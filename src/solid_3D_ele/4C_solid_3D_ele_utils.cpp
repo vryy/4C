@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void STR::UTILS::Pk2ToCauchy(const Core::LinAlg::Matrix<6, 1>& pk2,
+void STR::UTILS::pk2_to_cauchy(const Core::LinAlg::Matrix<6, 1>& pk2,
     const Core::LinAlg::Matrix<3, 3>& defgrd, Core::LinAlg::Matrix<6, 1>& cauchy)
 {
   Core::LinAlg::Matrix<3, 3> S_matrix;
@@ -31,7 +31,7 @@ void STR::UTILS::Pk2ToCauchy(const Core::LinAlg::Matrix<6, 1>& pk2,
   Core::LinAlg::Voigt::Stresses::MatrixToVector(cauchy_matrix, cauchy);
 }
 
-Core::LinAlg::Matrix<6, 1> STR::UTILS::GreenLagrangeToEulerAlmansi(
+Core::LinAlg::Matrix<6, 1> STR::UTILS::green_lagrange_to_euler_almansi(
     const Core::LinAlg::Matrix<6, 1>& gl, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   Core::LinAlg::Matrix<3, 3> invdefgrd(defgrd);
@@ -51,7 +51,7 @@ Core::LinAlg::Matrix<6, 1> STR::UTILS::GreenLagrangeToEulerAlmansi(
   return ea;
 }
 
-Core::LinAlg::Matrix<6, 1> STR::UTILS::GreenLagrangeToLogStrain(
+Core::LinAlg::Matrix<6, 1> STR::UTILS::green_lagrange_to_log_strain(
     const Core::LinAlg::Matrix<6, 1>& gl)
 {
   Core::LinAlg::Matrix<3, 3> E_matrix;
@@ -77,14 +77,14 @@ Core::LinAlg::Matrix<6, 1> STR::UTILS::GreenLagrangeToLogStrain(
   return log_strain_voigt;
 }
 
-int STR::UTILS::ReadElement::ReadElementMaterial(Input::LineDefinition* linedef)
+int STR::UTILS::ReadElement::read_element_material(Input::LineDefinition* linedef)
 {
   int material = 0;
   linedef->ExtractInt("MAT", material);
   return material;
 }
 
-Inpar::STR::KinemType STR::UTILS::ReadElement::ReadElementKinematicType(
+Inpar::STR::KinemType STR::UTILS::ReadElement::read_element_kinematic_type(
     Input::LineDefinition* linedef)
 {
   std::string kinem;
@@ -100,7 +100,7 @@ Inpar::STR::KinemType STR::UTILS::ReadElement::ReadElementKinematicType(
   }
 }
 
-Discret::ELEMENTS::ElementTechnology STR::UTILS::ReadElement::ReadElementTechnology(
+Discret::ELEMENTS::ElementTechnology STR::UTILS::ReadElement::read_element_technology(
     Input::LineDefinition* linedef)
 {
   std::string type;
@@ -125,7 +125,7 @@ Discret::ELEMENTS::ElementTechnology STR::UTILS::ReadElement::ReadElementTechnol
     FOUR_C_THROW("unrecognized element technology type %s", type.c_str());
 }
 
-Discret::ELEMENTS::PrestressTechnology STR::UTILS::ReadElement::ReadPrestressTechnology(
+Discret::ELEMENTS::PrestressTechnology STR::UTILS::ReadElement::read_prestress_technology(
     Input::LineDefinition* linedef)
 {
   std::string type;
@@ -142,29 +142,29 @@ Discret::ELEMENTS::PrestressTechnology STR::UTILS::ReadElement::ReadPrestressTec
   FOUR_C_THROW("unrecognized prestress technology type %s", type.c_str());
 }
 
-Discret::ELEMENTS::SolidElementProperties STR::UTILS::ReadElement::ReadSolidElementProperties(
+Discret::ELEMENTS::SolidElementProperties STR::UTILS::ReadElement::read_solid_element_properties(
     Input::LineDefinition* linedef)
 {
   Discret::ELEMENTS::SolidElementProperties solid_properties{};
   // element technology
   if (linedef->HaveNamed("TECH"))
   {
-    solid_properties.element_technology = STR::UTILS::ReadElement::ReadElementTechnology(linedef);
+    solid_properties.element_technology = STR::UTILS::ReadElement::read_element_technology(linedef);
   }
 
   // prestress technology
   if (linedef->HaveNamed("PRESTRESS_TECH"))
   {
     solid_properties.prestress_technology =
-        STR::UTILS::ReadElement::ReadPrestressTechnology(linedef);
+        STR::UTILS::ReadElement::read_prestress_technology(linedef);
   }
   // kinematic type
-  solid_properties.kintype = STR::UTILS::ReadElement::ReadElementKinematicType(linedef);
+  solid_properties.kintype = STR::UTILS::ReadElement::read_element_kinematic_type(linedef);
 
   return solid_properties;
 }
 
-void STR::UTILS::NodalBlockInformationSolid(
+void STR::UTILS::nodal_block_information_solid(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;

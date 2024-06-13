@@ -22,7 +22,7 @@ namespace Discret::ELEMENTS
   /*!
    * @brief Compare two Gauss integration rules for equality
    */
-  inline bool CompareGaussIntegration(const Core::FE::GaussIntegration& integration_a,
+  inline bool compare_gauss_integration(const Core::FE::GaussIntegration& integration_a,
       const Core::FE::GaussIntegration& integration_b)
   {
     // currently this simple check is sufficient as we only use the same type of gauss integrations.
@@ -39,25 +39,25 @@ namespace Discret::ELEMENTS
   /// @{
 
   template <Core::FE::CellType celltype>
-  constexpr auto GetGaussRuleMassMatrix()
+  constexpr auto get_gauss_rule_mass_matrix()
   {
     return Discret::ELEMENTS::DisTypeToOptGaussRule<celltype>::rule;
   }
 
   template <Core::FE::CellType celltype>
-  constexpr auto GetGaussRuleStiffnessMatrix()
+  constexpr auto get_gauss_rule_stiffness_matrix()
   {
     return Discret::ELEMENTS::DisTypeToOptGaussRule<celltype>::rule;
   }
 
   template <>
-  constexpr auto GetGaussRuleStiffnessMatrix<Core::FE::CellType::tet10>()
+  constexpr auto get_gauss_rule_stiffness_matrix<Core::FE::CellType::tet10>()
   {
     return Core::FE::GaussRule3D::tet_4point;
   }
 
   template <>
-  constexpr auto GetGaussRuleStiffnessMatrix<Core::FE::CellType::tet4>()
+  constexpr auto get_gauss_rule_stiffness_matrix<Core::FE::CellType::tet4>()
   {
     return Core::FE::GaussRule3D::tet_1point;
   }
@@ -66,7 +66,7 @@ namespace Discret::ELEMENTS
    * @brief Create a Gauss integration interface from a given Gauss rule type
    */
   template <Core::FE::CellType celltype, typename GaussRuleType>
-  Core::FE::GaussIntegration CreateGaussIntegration(GaussRuleType rule)
+  Core::FE::GaussIntegration create_gauss_integration(GaussRuleType rule)
   {
     // setup default integration
     Core::FE::IntPointsAndWeights<Core::FE::dim<celltype>> intpoints(rule);

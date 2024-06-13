@@ -53,7 +53,7 @@ namespace Discret::ELEMENTS
         const Core::FE::Discretization& discretization,
         const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
 
-    void CalculateStress(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
+    void calculate_stress(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
         const StressIO& stressIO, const StrainIO& strainIO,
         const Core::FE::Discretization& discretization,
         const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
@@ -85,10 +85,10 @@ namespace Discret::ELEMENTS
         const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
         Core::LinAlg::SerialDenseMatrix& stiffness_matrix_dScalar);
 
-    double GetCauchyNDirAtXi(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
-        const std::vector<double>& disp, const std::optional<std::vector<double>>& scalars,
-        const Core::LinAlg::Matrix<3, 1>& xi, const Core::LinAlg::Matrix<3, 1>& n,
-        const Core::LinAlg::Matrix<3, 1>& dir,
+    double get_normal_cauchy_stress_at_xi(const Core::Elements::Element& ele,
+        Mat::So3Material& solid_material, const std::vector<double>& disp,
+        const std::optional<std::vector<double>>& scalars, const Core::LinAlg::Matrix<3, 1>& xi,
+        const Core::LinAlg::Matrix<3, 1>& n, const Core::LinAlg::Matrix<3, 1>& dir,
         SolidScatraCauchyNDirLinearizations<3>& linearizations);
 
    private:

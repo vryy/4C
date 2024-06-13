@@ -199,7 +199,7 @@ void CONTACT::IntegratorNitschePoro::so_ele_cauchy(Mortar::Element& moEle, doubl
       cauchy_linearizations.d_cauchyndir_ddir = &dsntdt;
       cauchy_linearizations.d_cauchyndir_dxi = &dsntdpxi;
 
-      sigma_nt = solid_ele->GetCauchyNDirAtXi<3>(
+      sigma_nt = solid_ele->get_normal_cauchy_stress_at_xi<3>(
           moEle.MoData().ParentDisp(), pxsi, normal, direction, cauchy_linearizations);
     }
     else

@@ -46,11 +46,11 @@ namespace Discret::ELEMENTS
    * evaluated. The two additional template parameter @p PreparationData and @p HistoryData store
    * preparation data and history data.
    *
-   * The type @p ElementFormulation defines static member function @p Evaluate(...) for the
+   * The type @p ElementFormulation defines static member function @p evaluate(...) for the
    * evaluation of the deformation gradient at a specific position @p xi. Additionally, it has to
    * provide @p Prepare(...) for eventual preparation of data that is constant. It should return the
    * type @p PreparationData that is passed to every subsequent call. The static functions
-   * @p add_internal_force_vector(...) and @p AddStiffnessMatrix(...) are adding the gauss point
+   * @p add_internal_force_vector(...) and @p add_stiffness_matrix(...) are adding the gauss point
    * contribution to the force vector or stiffness matrix, respectively. Some element formulations
    * require to store data @p HistoryData. This type needs to be default constructable. The static
    * member functions @p Pack(...) and @p Unpack(...) need to be defined to allow parallel
@@ -88,7 +88,7 @@ namespace Discret::ELEMENTS
         const Core::FE::Discretization& discretization, const std::vector<int>& lm,
         Teuchos::ParameterList& params);
 
-    void CalculateStress(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
+    void calculate_stress(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
         const StressIO& stressIO, const StrainIO& strainIO,
         const Core::FE::Discretization& discretization, const std::vector<int>& lm,
         Teuchos::ParameterList& params);
@@ -105,17 +105,17 @@ namespace Discret::ELEMENTS
         const Mat::So3Material& solid_material,
         STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
-    void UpdatePrestress(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
+    void update_prestress(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
         const Core::FE::Discretization& discretization, const std::vector<int>& lm,
         Teuchos::ParameterList& params);
 
     void reset_to_last_converged(
         const Core::Elements::Element& ele, Mat::So3Material& solid_material);
 
-    double GetCauchyNDirAtXi(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
-        const std::vector<double>& disp, const Core::LinAlg::Matrix<3, 1>& xi,
-        const Core::LinAlg::Matrix<3, 1>& n, const Core::LinAlg::Matrix<3, 1>& dir,
-        CauchyNDirLinearizations<3>& linearizations);
+    double get_normal_cauchy_stress_at_xi(const Core::Elements::Element& ele,
+        Mat::So3Material& solid_material, const std::vector<double>& disp,
+        const Core::LinAlg::Matrix<3, 1>& xi, const Core::LinAlg::Matrix<3, 1>& n,
+        const Core::LinAlg::Matrix<3, 1>& dir, CauchyNDirLinearizations<3>& linearizations);
 
    private:
     /// static values for matrix sizes

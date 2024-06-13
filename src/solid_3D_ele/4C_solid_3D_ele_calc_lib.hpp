@@ -130,7 +130,7 @@ namespace Discret::ELEMENTS
    * @return ElementNodes<celltype>
    */
   template <Core::FE::CellType celltype>
-  ElementNodes<celltype> EvaluateElementNodes(
+  ElementNodes<celltype> evaluate_element_nodes(
       const Core::Elements::Element& ele, const std::vector<double>& disp)
   {
     Discret::ELEMENTS::ElementNodes<celltype> element_nodes;
@@ -154,7 +154,7 @@ namespace Discret::ELEMENTS
    * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    */
   template <Core::FE::CellType celltype>
-  ElementNodes<celltype> EvaluateElementNodes(const Core::Elements::Element& ele,
+  ElementNodes<celltype> evaluate_element_nodes(const Core::Elements::Element& ele,
       const Core::FE::Discretization& discretization, const std::vector<int>& lm)
   {
     const Epetra_Vector& displacements = *discretization.GetState("displacement");
@@ -163,7 +163,7 @@ namespace Discret::ELEMENTS
     Core::FE::ExtractMyValues(displacements, mydisp, lm);
 
     Discret::ELEMENTS::ElementNodes<celltype> element_nodes =
-        EvaluateElementNodes<celltype>(ele, mydisp);
+        evaluate_element_nodes<celltype>(ele, mydisp);
 
     if constexpr (Core::FE::is_nurbs<celltype>)
     {
@@ -446,7 +446,7 @@ namespace Discret::ELEMENTS
    * @return JacobianMapping<celltype> : jacobian mapping at the element centroid
    */
   template <Core::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
-  JacobianMapping<celltype> EvaluateJacobianMappingCentroid(
+  JacobianMapping<celltype> evaluate_jacobian_mapping_centroid(
       const ElementNodes<celltype>& nodal_coordinates)
   {
     // set coordinates in parameter space at centroid as zero -> xi = [0; 0; 0]
@@ -488,7 +488,7 @@ namespace Discret::ELEMENTS
    * determinant_deformation_gradient)
    */
   template <Core::FE::CellType celltype>
-  SpatialMaterialMapping<celltype> EvaluateSpatialMaterialMapping(
+  SpatialMaterialMapping<celltype> evaluate_spatial_material_mapping(
       const JacobianMapping<celltype>& jacobian_mapping,
       const ElementNodes<celltype>& nodal_coordinates, const double scale_defgrd = 1.0,
       const Inpar::STR::KinemType& kinematictype = Inpar::STR::KinemType::nonlinearTotLag)
@@ -524,11 +524,11 @@ namespace Discret::ELEMENTS
   {
     // jacobian mapping at centroid of element
     const JacobianMapping<celltype> jacobian_mapping_centroid =
-        EvaluateJacobianMappingCentroid(nodal_coordinates);
+        evaluate_jacobian_mapping_centroid(nodal_coordinates);
 
     // deformation gradient and strains at centroid of element
     const Discret::ELEMENTS::SpatialMaterialMapping<celltype> spatial_material_mapping_centroid =
-        EvaluateSpatialMaterialMapping(jacobian_mapping_centroid, nodal_coordinates);
+        evaluate_spatial_material_mapping(jacobian_mapping_centroid, nodal_coordinates);
 
     return spatial_material_mapping_centroid.determinant_deformation_gradient_;
   }
@@ -542,7 +542,7 @@ namespace Discret::ELEMENTS
    * @return Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1> : Green-Lagrange strain tensor in
    * strain-like Voigt notation
    */
-  inline Core::LinAlg::Matrix<6, 1> EvaluateGreenLagrangeStrain(
+  inline Core::LinAlg::Matrix<6, 1> evaluate_green_lagrange_strain(
       const Core::LinAlg::Matrix<3, 3>& cauchygreen)
   {
     Core::LinAlg::Matrix<6, 1> gl_strain;
@@ -568,7 +568,7 @@ namespace Discret::ELEMENTS
    * Cauchy-Green deformation tensor
    */
   template <Core::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
-  Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> EvaluateCauchyGreen(
+  Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> evaluate_cauchy_green(
       const SpatialMaterialMapping<celltype>& spatial_material_mapping)
   {
     Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> cauchygreen(false);
@@ -593,7 +593,7 @@ namespace Discret::ELEMENTS
   template <Core::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
   Core::LinAlg::Matrix<DETAIL::num_str<celltype>,
       DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>
-  EvaluateStrainGradient(const JacobianMapping<celltype>& jacobian_mapping,
+  evaluate_strain_gradient(const JacobianMapping<celltype>& jacobian_mapping,
       const SpatialMaterialMapping<celltype>& spatial_material_mapping)
   {
     // B-operator
@@ -672,7 +672,7 @@ namespace Discret::ELEMENTS
    * linearization w.r.t. Green-Lagrange strain tensor
    */
   template <Core::FE::CellType celltype>
-  Stress<celltype> EvaluateMaterialStress(Mat::So3Material& material,
+  Stress<celltype> evaluate_material_stress(Mat::So3Material& material,
       const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>& defgrd,
       const Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1>& gl_strain,
       Teuchos::ParameterList& params, const int gp, const int eleGID)
@@ -714,8 +714,9 @@ namespace Discret::ELEMENTS
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
   template <Core::FE::CellType celltype>
-  void AddElasticStiffnessMatrix(const Core::LinAlg::Matrix<DETAIL::num_str<celltype>,
-                                     DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& Bop,
+  void add_elastic_stiffness_matrix(
+      const Core::LinAlg::Matrix<DETAIL::num_str<celltype>,
+          DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& Bop,
       const Stress<celltype>& stress, const double integration_fac,
       Core::LinAlg::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>,
           DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& stiffness_matrix)
@@ -739,7 +740,7 @@ namespace Discret::ELEMENTS
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
   template <Core::FE::CellType celltype>
-  void AddGeometricStiffnessMatrix(
+  void add_geometric_stiffness_matrix(
       const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>>& B_L,
       const Stress<celltype>& stress, const double integration_fac,
       Core::LinAlg::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>,
@@ -781,7 +782,7 @@ namespace Discret::ELEMENTS
    * @param mass (in/out) : mass matrix where the local contribution is added to
    */
   template <Core::FE::CellType celltype>
-  void AddMassMatrix(const ShapeFunctionsAndDerivatives<celltype>& shapefunctions,
+  void add_mass_matrix(const ShapeFunctionsAndDerivatives<celltype>& shapefunctions,
       const double integration_factor, const double density,
       Core::LinAlg::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>,
           DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& mass)
@@ -845,7 +846,8 @@ namespace Discret::ELEMENTS
    * @param params (in/out) : ParameterList the quantities are added to
    */
   template <Core::FE::CellType celltype>
-  void EvaluateGPCoordinatesAndAddToParameterList(const ElementNodes<celltype>& nodal_coordinates,
+  void evaluate_gp_coordinates_and_add_to_parameter_list(
+      const ElementNodes<celltype>& nodal_coordinates,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions_gp,
       Teuchos::ParameterList& params)
   {
@@ -863,7 +865,7 @@ namespace Discret::ELEMENTS
    * @param params (in/out) : ParameterList the quantities are added to
    */
   template <Core::FE::CellType celltype>
-  void EvaluateCentroidCoordinatesAndAddToParameterList(
+  void evaluate_centroid_coordinates_and_add_to_parameter_list(
       const ElementNodes<celltype>& nodal_coordinates, Teuchos::ParameterList& params)
   {
     auto element_center = EvaluateReferenceCoordinateCentroid<celltype>(nodal_coordinates);

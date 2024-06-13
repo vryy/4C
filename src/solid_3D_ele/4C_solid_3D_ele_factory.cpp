@@ -123,7 +123,7 @@ namespace
   };
 }  // namespace
 
-Discret::ELEMENTS::SolidCalcVariant Discret::ELEMENTS::CreateSolidCalculationInterface(
+Discret::ELEMENTS::SolidCalcVariant Discret::ELEMENTS::create_solid_calculation_interface(
     Core::FE::CellType celltype,
     const Discret::ELEMENTS::SolidElementProperties& element_properties)
 {
@@ -135,10 +135,10 @@ Discret::ELEMENTS::SolidCalcVariant Discret::ELEMENTS::CreateSolidCalculationInt
         return switch_kinematic_type(element_properties.kintype,
             [&](auto kinemtype_t)
             {
-              return ElementTechnologySwitch(element_properties.element_technology,
+              return element_technology_switch(element_properties.element_technology,
                   [&](auto eletech_t)
                   {
-                    return PrestressTechnologySwitch(element_properties.prestress_technology,
+                    return prestress_technology_switch(element_properties.prestress_technology,
                         [&](auto prestress_tech_t) -> SolidCalcVariant
                         {
                           constexpr Core::FE::CellType celltype_c = celltype_t();
@@ -157,9 +157,9 @@ Discret::ELEMENTS::SolidCalcVariant Discret::ELEMENTS::CreateSolidCalculationInt
                               " elememt technology %s and prestress type %s oes not exist ",
                               Core::FE::celltype_string<celltype_t()>,
                               Inpar::STR::KinemTypeString(element_properties.kintype).c_str(),
-                              ElementTechnologyString(element_properties.element_technology)
+                              element_technology_string(element_properties.element_technology)
                                   .c_str(),
-                              PrestressTechnologyString(element_properties.prestress_technology)
+                              prestress_technology_string(element_properties.prestress_technology)
                                   .c_str());
                         });
                   });

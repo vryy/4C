@@ -69,7 +69,7 @@ namespace
    * @param integration_factor (in) : Integration factor
    */
   template <Core::FE::CellType distype>
-  void IntegrateEAS(const Discret::ELEMENTS::Shell::StressEnhanced& stress_enh,
+  void integrate_eas(const Discret::ELEMENTS::Shell::StressEnhanced& stress_enh,
       const Core::LinAlg::SerialDenseMatrix& M, const Core::LinAlg::SerialDenseMatrix& Bop,
       Discret::ELEMENTS::ShellEASIterationData& eas_data, const double& integration_factor,
       const int& neas)
@@ -99,7 +99,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Shell7pEleCalcEas()
     : Discret::ELEMENTS::Shell7pEleCalcInterface::Shell7pEleCalcInterface(),
       intpoints_midsurface_(
-          Shell::CreateGaussIntegrationPoints<distype>(Shell::get_gauss_rule<distype>()))
+          Shell::create_gauss_integration_points<distype>(Shell::get_gauss_rule<distype>()))
 {
   old_step_length_ = 0.0;
   cur_thickness_.resize(intpoints_midsurface_.NumPoints(), shell_data_.thickness);
@@ -452,7 +452,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_stresses_strains(
               solid_material, strains, params, gp, ele.Id());
           Shell::AssembleStrainTypeToMatrixRow<distype>(
               strains, strainIO.type, strain_data, gp, 0.5);
-          Shell::AssembleStressTypeToMatrixRow<distype>(
+          Shell::assemble_stress_type_to_matrix_row<distype>(
               strains, stress, stressIO.type, stress_data, gp, 0.5);
         }
       });
@@ -636,17 +636,17 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
         }
 
         // integration of EAS matrices
-        IntegrateEAS<distype>(
+        integrate_eas<distype>(
             stress_enh, M, Bop, eas_iteration_data_, integration_factor, locking_types_.total);
 
         // add stiffness matrix
         if (stiffness_matrix != nullptr)
         {
           // elastic stiffness matrix Ke
-          Shell::AddElasticStiffnessMatrix<distype>(
+          Shell::add_elastic_stiffness_matrix<distype>(
               Bop, stress_enh.dmat_, integration_factor, *stiffness_matrix);
           // geometric stiffness matrix Kg
-          Shell::AddGeometricStiffnessMatrix(shapefunctions_collocation, shape_functions_ans,
+          Shell::add_geometric_stiffness_matrix(shapefunctions_collocation, shape_functions_ans,
               shape_functions, stress_enh.stress_, shell_data_.num_ans, integration_factor,
               *stiffness_matrix);
         }
@@ -678,12 +678,13 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
       eas_iteration_data_.invDTilde_, 0.);
   if (stiffness_matrix != nullptr)
   {
-    Shell::EAS::AddEASStiffnessMatrix(LinvDTilde, eas_iteration_data_.transL_, *stiffness_matrix);
+    Shell::EAS::add_eas_stiffness_matrix(
+        LinvDTilde, eas_iteration_data_.transL_, *stiffness_matrix);
   }
 
   if (force_vector != nullptr)
   {
-    Shell::EAS::AddEASInternalForce(LinvDTilde, eas_iteration_data_.RTilde_, *force_vector);
+    Shell::EAS::add_eas_internal_force(LinvDTilde, eas_iteration_data_.RTilde_, *force_vector);
   }
 
   if (stiffness_matrix != nullptr)
