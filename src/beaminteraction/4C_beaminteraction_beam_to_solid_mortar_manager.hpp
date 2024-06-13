@@ -98,6 +98,11 @@ namespace BEAMINTERACTION
         int start_value_lambda_gid);
 
     /**
+     * \brief Virtual Destructor
+     */
+    virtual ~BeamToSolidMortarManager() = default;
+
+    /**
      * \brief This method builds the global maps for the global node / element IDs to the Lagrange
      * multiplier DOFs.
      *
@@ -111,7 +116,7 @@ namespace BEAMINTERACTION
     void Setup();
 
     /**
-     * \brief Calculate the maps for the beam and solid dofs. The calcualted maps are used in
+     * \brief Calculate the maps for the beam and solid dofs. The calculated maps are used in
      * Complete of the mortar matrices.
      */
     void SetGlobalMaps();
@@ -215,7 +220,7 @@ namespace BEAMINTERACTION
      * matrices.
      * @param displacement_vector (in) global displacement vector.
      */
-    void evaluate_global_coupling_contributions(
+    void evaluate_and_assemble_global_coupling_contributions(
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector);
 
     /**

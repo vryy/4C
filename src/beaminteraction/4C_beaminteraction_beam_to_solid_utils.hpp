@@ -273,8 +273,8 @@ namespace BEAMINTERACTION
    * global matrices.
    *
    * This function assumes that the mortar contributions are symmetric, i.e.
-   * global_constraint_lin_beam = global_force_beam_lin_lambda^T and global_constraint_lin_solid =
-   * global_force_solid_lin_lambda^T.
+   * \p global_constraint_lin_beam = \p global_force_beam_lin_lambda^T and \p
+   * global_constraint_lin_solid = \p global_force_solid_lin_lambda^T.
    *
    * @param pair (in) The beam-to-solid pair.
    * @param discret (in) discretization

@@ -44,25 +44,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
       n_lambda_node_rotational_(0),
       n_lambda_element_rotational_(0),
       discret_(discret),
-      beam_to_solid_params_(params),
-      lambda_dof_rowmap_translations_(Teuchos::null),
-      lambda_dof_rowmap_rotations_(Teuchos::null),
-      lambda_dof_rowmap_(Teuchos::null),
-      lambda_dof_colmap_(Teuchos::null),
-      beam_dof_rowmap_(Teuchos::null),
-      solid_dof_rowmap_(Teuchos::null),
-      node_gid_to_lambda_gid_(Teuchos::null),
-      element_gid_to_lambda_gid_(Teuchos::null),
-      constraint_(Teuchos::null),
-      constraint_lin_beam_(Teuchos::null),
-      constraint_lin_solid_(Teuchos::null),
-      force_beam_lin_lambda_(Teuchos::null),
-      force_solid_lin_lambda_(Teuchos::null),
-      kappa_(Teuchos::null),
-      kappa_lin_beam_(Teuchos::null),
-      kappa_lin_solid_(Teuchos::null),
-      lambda_active_(Teuchos::null),
-      contact_pairs_(Teuchos::null)
+      beam_to_solid_params_(params)
 {
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
   const auto& [n_lambda_node_pos, n_lambda_element_pos] =
@@ -477,7 +459,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_force_stiff_penalty_reg
     Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force)
 {
   // Evaluate the global coupling terms
-  evaluate_global_coupling_contributions(data_state->GetDisColNp());
+  evaluate_and_assemble_global_coupling_contributions(data_state->GetDisColNp());
 
   // Add the penalty terms to the global force and stiffness matrix
   add_global_force_stiffness_penalty_contributions(data_state, stiff, force);
@@ -523,7 +505,7 @@ double BEAMINTERACTION::BeamToSolidMortarManager::get_energy() const
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_global_coupling_contributions(
+void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_and_assemble_global_coupling_contributions(
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   check_setup();
@@ -558,9 +540,12 @@ void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_global_coupling_contrib
   kappa_lin_solid_->Complete(*solid_dof_rowmap_, *lambda_dof_rowmap_);
 
   // Complete the global scaling vector.
-  if (0 != kappa_->GlobalAssemble(Add, false)) FOUR_C_THROW("Error in GlobalAssemble!");
-  if (0 != lambda_active_->GlobalAssemble(Add, false)) FOUR_C_THROW("Error in GlobalAssemble!");
-  if (0 != constraint_->GlobalAssemble(Add, false)) FOUR_C_THROW("Error in GlobalAssemble!");
+  if (0 != kappa_->GlobalAssemble(Add, false))
+    FOUR_C_THROW("Failed to perform FE assembly of kappa_.");
+  if (0 != lambda_active_->GlobalAssemble(Add, false))
+    FOUR_C_THROW("Failed to perform FE assembly of lambda_active_.");
+  if (0 != constraint_->GlobalAssemble(Add, false))
+    FOUR_C_THROW("Failed to perform FE assembly of constraint_.");
 }
 
 /**
