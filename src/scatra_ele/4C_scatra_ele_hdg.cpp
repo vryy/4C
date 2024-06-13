@@ -134,7 +134,7 @@ void Discret::ELEMENTS::ScaTraHDGType ::setup_element_definition(
     defs[key] = Input::LineDefinition::Builder(scatra_line_def)
                     .add_named_int("DEG")
                     .add_optional_named_int("SPC")
-                    .Build();
+                    .build();
   }
 }
 

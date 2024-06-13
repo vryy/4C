@@ -79,10 +79,10 @@ void Core::UTILS::AddValidLibraryFunctions(Core::UTILS::FunctionManager& functio
           .add_tag("FASTPOLYNOMIAL")
           .add_named_int("NUMCOEFF")
           .add_named_double_vector("COEFF", LengthFromIntNamed("NUMCOEFF"))
-          .Build();
+          .build();
 
   LineDefinition cubic_spline_from_csv_funct =
-      LineDefinition::Builder().add_tag("CUBIC_SPLINE_FROM_CSV").add_named_string("CSV").Build();
+      LineDefinition::Builder().add_tag("CUBIC_SPLINE_FROM_CSV").add_named_string("CSV").build();
 
   function_manager.add_function_definition(
       {std::move(fast_polynomial_funct), std::move(cubic_spline_from_csv_funct)},

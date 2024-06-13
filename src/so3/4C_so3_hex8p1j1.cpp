@@ -81,7 +81,7 @@ void Discret::ELEMENTS::SoHex8P1J1Type::setup_element_definition(
                      .add_int_vector("HEX8", 8)
                      .add_named_int("MAT")
                      .add_named_string("KINEM")
-                     .Build();
+                     .build();
 }
 
 

@@ -62,7 +62,7 @@ void Discret::ELEMENTS::Wall1ScatraType::setup_element_definition(
 
   for (const auto& [key, wall_line_def] : defs_wall)
   {
-    defs[key] = Input::LineDefinition::Builder(wall_line_def).add_named_string("TYPE").Build();
+    defs[key] = Input::LineDefinition::Builder(wall_line_def).add_named_string("TYPE").build();
   }
 }
 

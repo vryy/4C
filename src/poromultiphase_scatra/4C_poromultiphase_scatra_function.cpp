@@ -122,7 +122,7 @@ void PoroMultiPhaseScaTra::AddValidPoroFunctions(Core::UTILS::FunctionManager& f
               .add_optional_named_int("NUMPARAMS")
               .add_optional_named_pair_of_string_and_double_vector(
                   "PARAMS", Input::LengthFromIntNamed("NUMPARAMS"))
-              .Build()},
+              .build()},
       TryCreatePoroFunctionDispatch);
 }
 

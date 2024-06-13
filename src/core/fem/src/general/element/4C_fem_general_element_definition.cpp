@@ -165,7 +165,7 @@ void Core::Elements::ElementDefinition::PrintElementLines(std::ostream& stream, 
          ++i)
     {
       stream << "// 0 " << name << " " << i->first << " ";
-      i->second.Print(stream);
+      i->second.print(stream);
       stream << '\n';
     }
   }

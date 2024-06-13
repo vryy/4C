@@ -78,7 +78,7 @@ void Discret::ELEMENTS::Truss3ScatraType::setup_element_definition(
 
   // copy definitions of standard truss element to truss element for scalar transport coupling
   defs["LINE2"] =
-      Input::LineDefinition::Builder(defs_truss["LINE2"]).add_named_string("TYPE").Build();
+      Input::LineDefinition::Builder(defs_truss["LINE2"]).add_named_string("TYPE").build();
 }
 
 /*----------------------------------------------------------------------*

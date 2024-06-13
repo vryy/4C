@@ -56,30 +56,30 @@ void Discret::ELEMENTS::SolidType::setup_element_definition(
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex8)] =
       get_default_line_definition_builder<Core::FE::CellType::hex8>()
           .add_optional_named_string("TECH")
-          .Build();
+          .build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex18)] =
-      get_default_line_definition_builder<Core::FE::CellType::hex18>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::hex18>().build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex20)] =
-      get_default_line_definition_builder<Core::FE::CellType::hex20>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::hex20>().build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex27)] =
-      get_default_line_definition_builder<Core::FE::CellType::hex27>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::hex27>().build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet4)] =
-      get_default_line_definition_builder<Core::FE::CellType::tet4>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::tet4>().build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet10)] =
-      get_default_line_definition_builder<Core::FE::CellType::tet10>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::tet10>().build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::wedge6)] =
-      get_default_line_definition_builder<Core::FE::CellType::wedge6>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::wedge6>().build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::pyramid5)] =
       get_default_line_definition_builder<Core::FE::CellType::pyramid5>()
           .add_optional_named_string("TECH")
-          .Build();
+          .build();
 
 
 
@@ -87,7 +87,7 @@ void Discret::ELEMENTS::SolidType::setup_element_definition(
                                .add_int_vector("NURBS27", 27)
                                .add_named_int("MAT")
                                .add_named_string("KINEM")
-                               .Build();
+                               .build();
 }
 
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidType::Create(

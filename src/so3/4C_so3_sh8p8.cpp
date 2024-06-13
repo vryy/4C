@@ -92,7 +92,7 @@ void Discret::ELEMENTS::SoSh8p8Type::setup_element_definition(
                      .add_optional_named_double_vector("AXI", 3)
                      .add_optional_named_double_vector("CIR", 3)
                      .add_optional_named_double("STRENGTH")
-                     .Build();
+                     .build();
 }
 
 

@@ -79,104 +79,104 @@ void Discret::ELEMENTS::FluidType::setup_element_definition(
                             .add_int_vector("HEX8", 8)
                             .add_named_int("MAT")
                             .add_named_string("NA")
-                            .Build();
+                            .build();
 
   defsgeneral["HEX20"] = Input::LineDefinition::Builder()
                              .add_int_vector("HEX20", 20)
                              .add_named_int("MAT")
                              .add_named_string("NA")
-                             .Build();
+                             .build();
 
   defsgeneral["HEX27"] = Input::LineDefinition::Builder()
                              .add_int_vector("HEX27", 27)
                              .add_named_int("MAT")
                              .add_named_string("NA")
-                             .Build();
+                             .build();
 
   defsgeneral["TET4"] = Input::LineDefinition::Builder()
                             .add_int_vector("TET4", 4)
                             .add_named_int("MAT")
                             .add_named_string("NA")
-                            .Build();
+                            .build();
 
   defsgeneral["TET10"] = Input::LineDefinition::Builder()
                              .add_int_vector("TET10", 10)
                              .add_named_int("MAT")
                              .add_named_string("NA")
-                             .Build();
+                             .build();
 
   defsgeneral["WEDGE6"] = Input::LineDefinition::Builder()
                               .add_int_vector("WEDGE6", 6)
                               .add_named_int("MAT")
                               .add_named_string("NA")
-                              .Build();
+                              .build();
 
   defsgeneral["WEDGE15"] = Input::LineDefinition::Builder()
                                .add_int_vector("WEDGE15", 15)
                                .add_named_int("MAT")
                                .add_named_string("NA")
-                               .Build();
+                               .build();
 
   defsgeneral["PYRAMID5"] = Input::LineDefinition::Builder()
                                 .add_int_vector("PYRAMID5", 5)
                                 .add_named_int("MAT")
                                 .add_named_string("NA")
-                                .Build();
+                                .build();
 
   defsgeneral["NURBS8"] = Input::LineDefinition::Builder()
                               .add_int_vector("NURBS8", 8)
                               .add_named_int("MAT")
                               .add_named_string("NA")
-                              .Build();
+                              .build();
 
   defsgeneral["NURBS27"] = Input::LineDefinition::Builder()
                                .add_int_vector("NURBS27", 27)
                                .add_named_int("MAT")
                                .add_named_string("NA")
-                               .Build();
+                               .build();
 
   // 2D elements
   defsgeneral["QUAD4"] = Input::LineDefinition::Builder()
                              .add_int_vector("QUAD4", 4)
                              .add_named_int("MAT")
                              .add_named_string("NA")
-                             .Build();
+                             .build();
 
   defsgeneral["QUAD8"] = Input::LineDefinition::Builder()
                              .add_int_vector("QUAD8", 8)
                              .add_named_int("MAT")
                              .add_named_string("NA")
-                             .Build();
+                             .build();
 
   defsgeneral["QUAD9"] = Input::LineDefinition::Builder()
                              .add_int_vector("QUAD9", 9)
                              .add_named_int("MAT")
                              .add_named_string("NA")
-                             .Build();
+                             .build();
 
   defsgeneral["TRI3"] = Input::LineDefinition::Builder()
                             .add_int_vector("TRI3", 3)
                             .add_named_int("MAT")
                             .add_named_string("NA")
-                            .Build();
+                            .build();
 
   defsgeneral["TRI6"] = Input::LineDefinition::Builder()
                             .add_int_vector("TRI6", 6)
                             .add_named_int("MAT")
                             .add_named_string("NA")
-                            .Build();
+                            .build();
 
   defsgeneral["NURBS4"] = Input::LineDefinition::Builder()
                               .add_int_vector("NURBS4", 4)
                               .add_named_int("MAT")
                               .add_named_string("NA")
-                              .Build();
+                              .build();
 
   defsgeneral["NURBS9"] = Input::LineDefinition::Builder()
                               .add_int_vector("NURBS9", 9)
                               .add_named_int("MAT")
                               .add_named_string("NA")
-                              .Build();
+                              .build();
 }
 
 

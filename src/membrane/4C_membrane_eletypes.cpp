@@ -86,7 +86,7 @@ void Discret::ELEMENTS::MembraneTri3Type::setup_element_definition(
                      .add_optional_named_double_vector("FIBER1", 3)
                      .add_optional_named_double_vector("FIBER2", 3)
                      .add_optional_named_double_vector("FIBER3", 3)
-                     .Build();
+                     .build();
 }
 
 /*----------------------------------------------------------------------*
@@ -159,7 +159,7 @@ void Discret::ELEMENTS::MembraneTri6Type::setup_element_definition(
                      .add_optional_named_double_vector("FIBER1", 3)
                      .add_optional_named_double_vector("FIBER2", 3)
                      .add_optional_named_double_vector("FIBER3", 3)
-                     .Build();
+                     .build();
 }
 
 /*----------------------------------------------------------------------*
@@ -232,7 +232,7 @@ void Discret::ELEMENTS::MembraneQuad4Type::setup_element_definition(
                       .add_optional_named_double_vector("FIBER1", 3)
                       .add_optional_named_double_vector("FIBER2", 3)
                       .add_optional_named_double_vector("FIBER3", 3)
-                      .Build();
+                      .build();
 }
 
 /*----------------------------------------------------------------------*
@@ -305,7 +305,7 @@ void Discret::ELEMENTS::MembraneQuad9Type::setup_element_definition(
                       .add_optional_named_double_vector("FIBER1", 3)
                       .add_optional_named_double_vector("FIBER2", 3)
                       .add_optional_named_double_vector("FIBER3", 3)
-                      .Build();
+                      .build();
 }
 
 FOUR_C_NAMESPACE_CLOSE

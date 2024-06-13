@@ -92,7 +92,7 @@ void Discret::ELEMENTS::Shell7pType::setup_element_definition(
                              .add_optional_named_double_vector("FIBER1", 3)
                              .add_optional_named_double_vector("FIBER2", 3)
                              .add_optional_named_double_vector("FIBER3", 3)
-                             .Build();
+                             .build();
 
   defsgeneral["QUAD8"] = Input::LineDefinition::Builder()
                              .add_int_vector("QUAD8", 8)
@@ -111,7 +111,7 @@ void Discret::ELEMENTS::Shell7pType::setup_element_definition(
                              .add_optional_named_double_vector("FIBER1", 3)
                              .add_optional_named_double_vector("FIBER2", 3)
                              .add_optional_named_double_vector("FIBER3", 3)
-                             .Build();
+                             .build();
 
   defsgeneral["QUAD9"] = Input::LineDefinition::Builder()
                              .add_int_vector("QUAD9", 9)
@@ -130,7 +130,7 @@ void Discret::ELEMENTS::Shell7pType::setup_element_definition(
                              .add_optional_named_double_vector("FIBER1", 3)
                              .add_optional_named_double_vector("FIBER2", 3)
                              .add_optional_named_double_vector("FIBER3", 3)
-                             .Build();
+                             .build();
 
   defsgeneral["TRI3"] = Input::LineDefinition::Builder()
                             .add_int_vector("TRI3", 3)
@@ -143,7 +143,7 @@ void Discret::ELEMENTS::Shell7pType::setup_element_definition(
                             .add_optional_named_double_vector("FIBER1", 3)
                             .add_optional_named_double_vector("FIBER2", 3)
                             .add_optional_named_double_vector("FIBER3", 3)
-                            .Build();
+                            .build();
 
   defsgeneral["TRI6"] = Input::LineDefinition::Builder()
                             .add_int_vector("TRI6", 6)
@@ -156,7 +156,7 @@ void Discret::ELEMENTS::Shell7pType::setup_element_definition(
                             .add_optional_named_double_vector("FIBER1", 3)
                             .add_optional_named_double_vector("FIBER2", 3)
                             .add_optional_named_double_vector("FIBER3", 3)
-                            .Build();
+                            .build();
 }
 
 int Discret::ELEMENTS::Shell7pType::Initialize(Core::FE::Discretization& dis)

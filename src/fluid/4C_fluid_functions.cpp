@@ -382,13 +382,13 @@ namespace
 void FLD::AddValidFluidFunctions(Core::UTILS::FunctionManager& function_manager)
 {
   auto beltrami =
-      Input::LineDefinition::Builder().add_tag("BELTRAMI").add_named_double("c1").Build();
+      Input::LineDefinition::Builder().add_tag("BELTRAMI").add_named_double("c1").build();
 
   auto channelweaklycompressible =
-      Input::LineDefinition::Builder().add_tag("CHANNELWEAKLYCOMPRESSIBLE").Build();
+      Input::LineDefinition::Builder().add_tag("CHANNELWEAKLYCOMPRESSIBLE").build();
 
   auto correctiontermchannelweaklycompressible =
-      Input::LineDefinition::Builder().add_tag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE").Build();
+      Input::LineDefinition::Builder().add_tag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE").build();
 
   auto weaklycompressiblepoiseuille = Input::LineDefinition::Builder()
                                           .add_tag("WEAKLYCOMPRESSIBLE_POISEUILLE")
@@ -396,7 +396,7 @@ void FLD::AddValidFluidFunctions(Core::UTILS::FunctionManager& function_manager)
                                           .add_named_double("L")
                                           .add_named_double("R")
                                           .add_named_double("U")
-                                          .Build();
+                                          .build();
 
   auto weaklycompressiblepoiseuilleforce = Input::LineDefinition::Builder()
                                                .add_tag("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE")
@@ -404,99 +404,99 @@ void FLD::AddValidFluidFunctions(Core::UTILS::FunctionManager& function_manager)
                                                .add_named_double("L")
                                                .add_named_double("R")
                                                .add_named_double("U")
-                                               .Build();
+                                               .build();
 
   auto weaklycompressiblemanufacturedflow = Input::LineDefinition::Builder()
                                                 .add_tag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW")
                                                 .add_named_int("MAT")
-                                                .Build();
+                                                .build();
 
   auto weaklycompressiblemanufacturedflowforce =
       Input::LineDefinition::Builder()
           .add_tag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE")
           .add_named_int("MAT")
-          .Build();
+          .build();
 
   auto weaklycompressibleetiennecfd = Input::LineDefinition::Builder()
                                           .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD")
                                           .add_named_int("MAT")
-                                          .Build();
+                                          .build();
 
   auto weaklycompressibleetiennecfdforce = Input::LineDefinition::Builder()
                                                .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE")
                                                .add_named_int("MAT")
-                                               .Build();
+                                               .build();
 
   auto weaklycompressibleetiennecfdviscosity =
       Input::LineDefinition::Builder()
           .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY")
           .add_named_int("MAT")
-          .Build();
+          .build();
 
   auto weaklycompressibleetiennefsifluid = Input::LineDefinition::Builder()
                                                .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID")
                                                .add_named_int("MAT_FLUID")
                                                .add_named_int("MAT_STRUC")
-                                               .Build();
+                                               .build();
 
   auto weaklycompressibleetiennefsifluidforce =
       Input::LineDefinition::Builder()
           .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE")
           .add_named_int("MAT_FLUID")
           .add_named_int("MAT_STRUC")
-          .Build();
+          .build();
 
   auto weaklycompressibleetiennefsifluidviscosity =
       Input::LineDefinition::Builder()
           .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY")
           .add_named_int("MAT_FLUID")
           .add_named_int("MAT_STRUC")
-          .Build();
+          .build();
 
   auto beltramiup = Input::LineDefinition::Builder()
                         .add_tag("BELTRAMI-UP")
                         .add_named_int("MAT")
                         .add_named_int("ISSTAT")
-                        .Build();
+                        .build();
 
   auto beltramigradu = Input::LineDefinition::Builder()
                            .add_tag("BELTRAMI-GRADU")
                            .add_named_int("MAT")
                            .add_named_int("ISSTAT")
-                           .Build();
+                           .build();
 
   auto beltramirhs = Input::LineDefinition::Builder()
                          .add_tag("BELTRAMI-RHS")
                          .add_named_int("MAT")
                          .add_named_int("ISSTAT")
                          .add_named_int("ISSTOKES")
-                         .Build();
+                         .build();
 
   auto kimmoinup = Input::LineDefinition::Builder()
                        .add_tag("KIMMOIN-UP")
                        .add_named_int("MAT")
                        .add_named_int("ISSTAT")
-                       .Build();
+                       .build();
 
   auto kimmoingradu = Input::LineDefinition::Builder()
                           .add_tag("KIMMOIN-GRADU")
                           .add_named_int("MAT")
                           .add_named_int("ISSTAT")
-                          .Build();
+                          .build();
 
   auto kimmoinrhs = Input::LineDefinition::Builder()
                         .add_tag("KIMMOIN-RHS")
                         .add_named_int("MAT")
                         .add_named_int("ISSTAT")
                         .add_named_int("ISSTOKES")
-                        .Build();
+                        .build();
 
   auto kimmoinstress = Input::LineDefinition::Builder()
                            .add_tag("KIMMOIN-STRESS")
                            .add_named_int("MAT")
                            .add_named_int("ISSTAT")
                            .add_named_double("AMPLITUDE")
-                           .Build();
+                           .build();
 
   std::vector<Input::LineDefinition> lines;
   lines.emplace_back(std::move(beltrami));

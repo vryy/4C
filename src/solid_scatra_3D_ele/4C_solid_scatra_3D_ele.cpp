@@ -53,16 +53,16 @@ void Discret::ELEMENTS::SolidScatraType::setup_element_definition(
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex8)] =
       GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex8>()
           .add_optional_named_string("TECH")
-          .Build();
+          .build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex27)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex27>().Build();
+      GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex27>().build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet4)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet4>().Build();
+      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet4>().build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet10)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet10>().Build();
+      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet10>().build();
 }
 
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidScatraType::Create(

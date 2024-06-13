@@ -105,14 +105,14 @@ void Discret::ELEMENTS::ElemagDiffType::setup_element_definition(
                      .add_named_int("MAT")
                      .add_named_int("DEG")
                      .add_named_int("SPC")
-                     .Build();
+                     .build();
 
   defs["TET4"] = Input::LineDefinition::Builder()
                      .add_int_vector("TET4", 4)
                      .add_named_int("MAT")
                      .add_named_int("DEG")
                      .add_named_int("SPC")
-                     .Build();
+                     .build();
 
   // 2D elements
   defs["QUAD4"] = Input::LineDefinition::Builder()
@@ -120,21 +120,21 @@ void Discret::ELEMENTS::ElemagDiffType::setup_element_definition(
                       .add_named_int("MAT")
                       .add_named_int("DEG")
                       .add_named_int("SPC")
-                      .Build();
+                      .build();
 
   defs["QUAD9"] = Input::LineDefinition::Builder()
                       .add_int_vector("QUAD9", 9)
                       .add_named_int("MAT")
                       .add_named_int("DEG")
                       .add_named_int("SPC")
-                      .Build();
+                      .build();
 
   defs["TRI3"] = Input::LineDefinition::Builder()
                      .add_int_vector("TRI3", 3)
                      .add_named_int("MAT")
                      .add_named_int("DEG")
                      .add_named_int("SPC")
-                     .Build();
+                     .build();
 }
 
 /*----------------------------------------------------------------------*

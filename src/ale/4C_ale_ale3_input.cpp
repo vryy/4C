@@ -25,7 +25,7 @@ bool Discret::ELEMENTS::Ale3::ReadElement(
   linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
-  linedef->Print(std::cout);
+  linedef->print(std::cout);
 
   Core::FE::CellType shape = Core::FE::StringToCellType(distype);
 

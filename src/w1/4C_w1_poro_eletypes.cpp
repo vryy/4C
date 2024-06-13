@@ -70,7 +70,7 @@ void Discret::ELEMENTS::WallQuad4PoroType::setup_element_definition(
                       .add_optional_named_double_vector("POROANISODIR2", 2)
                       .add_optional_named_double_vector("POROANISONODALCOEFFS1", 4)
                       .add_optional_named_double_vector("POROANISONODALCOEFFS2", 4)
-                      .Build();
+                      .build();
 }
 
 int Discret::ELEMENTS::WallQuad4PoroType::Initialize(Core::FE::Discretization& dis)
@@ -138,7 +138,7 @@ void Discret::ELEMENTS::WallQuad9PoroType::setup_element_definition(
   defs["QUAD9"] = Input::LineDefinition::Builder(defs_wall["QUAD9"])
                       .add_optional_named_double_vector("POROANISODIR1", 2)
                       .add_optional_named_double_vector("POROANISODIR2", 2)
-                      .Build();
+                      .build();
 }
 
 int Discret::ELEMENTS::WallQuad9PoroType::Initialize(Core::FE::Discretization& dis)
@@ -207,7 +207,7 @@ void Discret::ELEMENTS::WallNurbs4PoroType::setup_element_definition(
   defs["NURBS4"] = Input::LineDefinition::Builder(defs_wall["NURBS4"])
                        .add_optional_named_double_vector("POROANISODIR1", 2)
                        .add_optional_named_double_vector("POROANISODIR2", 2)
-                       .Build();
+                       .build();
 }
 
 int Discret::ELEMENTS::WallNurbs4PoroType::Initialize(Core::FE::Discretization& dis)
@@ -276,7 +276,7 @@ void Discret::ELEMENTS::WallNurbs9PoroType::setup_element_definition(
   defs["NURBS9"] = Input::LineDefinition::Builder(defs_wall["NURBS9"])
                        .add_optional_named_double_vector("POROANISODIR1", 2)
                        .add_optional_named_double_vector("POROANISODIR2", 2)
-                       .Build();
+                       .build();
 }
 
 int Discret::ELEMENTS::WallNurbs9PoroType::Initialize(Core::FE::Discretization& dis)
@@ -347,7 +347,7 @@ void Discret::ELEMENTS::WallTri3PoroType::setup_element_definition(
                      .add_optional_named_double_vector("POROANISODIR2", 2)
                      .add_optional_named_double_vector("POROANISONODALCOEFFS1", 3)
                      .add_optional_named_double_vector("POROANISONODALCOEFFS2", 3)
-                     .Build();
+                     .build();
 }
 
 int Discret::ELEMENTS::WallTri3PoroType::Initialize(Core::FE::Discretization& dis)

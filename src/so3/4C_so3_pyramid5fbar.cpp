@@ -90,7 +90,7 @@ void Discret::ELEMENTS::SoPyramid5fbarType::setup_element_definition(
                          .add_optional_named_double_vector("FIBER2", 3)
                          .add_optional_named_double_vector("FIBER3", 3)
                          .add_optional_named_double("GROWTHTRIG")
-                         .Build();
+                         .build();
 }
 
 

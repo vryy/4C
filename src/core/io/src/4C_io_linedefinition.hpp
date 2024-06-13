@@ -82,7 +82,7 @@ namespace Input
      *
      * @code
      *   const LineDefinition line =
-     *     LineDefinition::Builder().add_tag("a").add_int("i).Build();
+     *     LineDefinition::Builder().add_tag("a").add_int("i).build();
      * @endcode
      */
     class Builder
@@ -135,14 +135,14 @@ namespace Input
        * @note This overload is chosen for rvalues and can steal the data gathered in the Builder.
        * After calling this function, the builder is in a moved-from state.
        */
-      [[nodiscard]] LineDefinition Build() &&;
+      [[nodiscard]] LineDefinition build() &&;
 
       /**
        * Convert the gathered components into a LineDefinition.
        *
        * @note This overload copies the gathered data to the newly created LineDefinition.
        */
-      [[nodiscard]] LineDefinition Build() const&;
+      [[nodiscard]] LineDefinition build() const&;
 
       /// Add a single string definition without a value.
       Builder& add_optional_tag(const std::string& name);
@@ -240,17 +240,17 @@ namespace Input
     };
 
     /// print to dat file comment
-    void Print(std::ostream& stream) const;
+    void print(std::ostream& stream) const;
 
     /**
      * If reading succeeds, returns the data. Otherwise, returns an empty std::optional.
      */
-    std::optional<Core::IO::InputParameterContainer> Read(std::istream& stream);
+    std::optional<Core::IO::InputParameterContainer> read(std::istream& stream);
 
     /**
      * If reading succeeds, returns the data. Otherwise, returns an empty std::optional.
      */
-    std::optional<Core::IO::InputParameterContainer> Read(
+    std::optional<Core::IO::InputParameterContainer> read(
         std::istream& stream, const std::string* name);
 
     /// tell if there is a named component with the given name

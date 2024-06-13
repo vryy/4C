@@ -76,7 +76,7 @@ void Discret::ELEMENTS::Truss3Type::setup_element_definition(
                       .add_named_int("MAT")
                       .add_named_double("CROSS")
                       .add_named_string("KINEM")
-                      .Build();
+                      .build();
 }
 
 

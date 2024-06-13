@@ -266,7 +266,7 @@ std::vector<Input::LineDefinition> Core::FE::valid_cloning_material_map_lines()
               .add_named_int("SRC_MAT")
               .add_named_string("TAR_FIELD")
               .add_named_int("TAR_MAT")
-              .Build()};
+              .build()};
 }
 
 FOUR_C_NAMESPACE_CLOSE

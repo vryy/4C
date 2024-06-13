@@ -73,7 +73,7 @@ void Discret::ELEMENTS::SoHex8PoroType::setup_element_definition(
                      .add_optional_named_double_vector("POROANISONODALCOEFFS1", 8)
                      .add_optional_named_double_vector("POROANISONODALCOEFFS2", 8)
                      .add_optional_named_double_vector("POROANISONODALCOEFFS3", 8)
-                     .Build();
+                     .build();
 }
 
 int Discret::ELEMENTS::SoHex8PoroType::Initialize(Core::FE::Discretization& dis)
@@ -150,7 +150,7 @@ void Discret::ELEMENTS::SoTet4PoroType::setup_element_definition(
                      .add_optional_named_double_vector("POROANISONODALCOEFFS1", 4)
                      .add_optional_named_double_vector("POROANISONODALCOEFFS2", 4)
                      .add_optional_named_double_vector("POROANISONODALCOEFFS3", 4)
-                     .Build();
+                     .build();
 }
 
 int Discret::ELEMENTS::SoTet4PoroType::Initialize(Core::FE::Discretization& dis)
@@ -223,7 +223,7 @@ void Discret::ELEMENTS::SoHex27PoroType::setup_element_definition(
                       .add_optional_named_double_vector("POROANISODIR1", 3)
                       .add_optional_named_double_vector("POROANISODIR2", 3)
                       .add_optional_named_double_vector("POROANISODIR3", 3)
-                      .Build();
+                      .build();
 }
 
 int Discret::ELEMENTS::SoHex27PoroType::Initialize(Core::FE::Discretization& dis)
@@ -296,7 +296,7 @@ void Discret::ELEMENTS::SoTet10PoroType::setup_element_definition(
                       .add_optional_named_double_vector("POROANISODIR1", 3)
                       .add_optional_named_double_vector("POROANISODIR2", 3)
                       .add_optional_named_double_vector("POROANISODIR3", 3)
-                      .Build();
+                      .build();
 }
 
 int Discret::ELEMENTS::SoTet10PoroType::Initialize(Core::FE::Discretization& dis)
@@ -369,7 +369,7 @@ void Discret::ELEMENTS::SoNurbs27PoroType::setup_element_definition(
                         .add_optional_named_double_vector("POROANISODIR1", 3)
                         .add_optional_named_double_vector("POROANISODIR2", 3)
                         .add_optional_named_double_vector("POROANISODIR3", 3)
-                        .Build();
+                        .build();
 }
 
 int Discret::ELEMENTS::SoNurbs27PoroType::Initialize(Core::FE::Discretization& dis)

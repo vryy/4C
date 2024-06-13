@@ -79,7 +79,7 @@ void Discret::ELEMENTS::Nurbs::Wall1NurbsType::setup_element_definition(
                        .add_named_double("THICK")
                        .add_named_string("STRESS_STRAIN")
                        .add_named_int_vector("GP", 2)
-                       .Build();
+                       .build();
 
   defs["NURBS9"] = Input::LineDefinition::Builder()
                        .add_int_vector("NURBS9", 9)
@@ -89,7 +89,7 @@ void Discret::ELEMENTS::Nurbs::Wall1NurbsType::setup_element_definition(
                        .add_named_double("THICK")
                        .add_named_string("STRESS_STRAIN")
                        .add_named_int_vector("GP", 2)
-                       .Build();
+                       .build();
 }
 
 

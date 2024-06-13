@@ -102,7 +102,7 @@ void Discret::ELEMENTS::Beam3kType::setup_element_definition(
                       .add_named_int("MAT")
                       .add_named_double_vector("TRIADS", 6)
                       .add_optional_tag("FAD")
-                      .Build();
+                      .build();
 
   defs["LINE3"] = Input::LineDefinition::Builder()
                       .add_int_vector("LINE3", 3)
@@ -111,7 +111,7 @@ void Discret::ELEMENTS::Beam3kType::setup_element_definition(
                       .add_named_int("MAT")
                       .add_named_double_vector("TRIADS", 9)
                       .add_optional_tag("FAD")
-                      .Build();
+                      .build();
 
   defs["LINE4"] = Input::LineDefinition::Builder()
                       .add_int_vector("LINE4", 4)
@@ -120,7 +120,7 @@ void Discret::ELEMENTS::Beam3kType::setup_element_definition(
                       .add_named_int("MAT")
                       .add_named_double_vector("TRIADS", 12)
                       .add_optional_tag("FAD")
-                      .Build();
+                      .build();
 }
 
 /*----------------------------------------------------------------------*

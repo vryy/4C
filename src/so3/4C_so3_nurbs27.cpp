@@ -83,7 +83,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27Type::setup_element_definition(
                         .add_int_vector("NURBS27", 27)
                         .add_named_int("MAT")
                         .add_named_int_vector("GP", 3)
-                        .Build();
+                        .build();
 }
 
 

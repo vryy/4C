@@ -91,11 +91,11 @@ void STR::AddValidStructureFunctions(Core::UTILS::FunctionManager& function_mana
   lines.emplace_back(Input::LineDefinition::Builder()
                          .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")
                          .add_named_int("MAT_STRUC")
-                         .Build());
+                         .build());
   lines.emplace_back(Input::LineDefinition::Builder()
                          .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
                          .add_named_int("MAT_STRUC")
-                         .Build());
+                         .build());
 
   function_manager.add_function_definition(std::move(lines), CreateStructureFunction);
 }

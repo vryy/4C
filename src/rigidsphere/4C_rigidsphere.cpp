@@ -100,7 +100,7 @@ void Discret::ELEMENTS::RigidsphereType::setup_element_definition(
                        .add_int_vector("POINT1", 1)
                        .add_named_double("RADIUS")
                        .add_named_double("DENSITY")
-                       .Build();
+                       .build();
 }
 
 /*----------------------------------------------------------------------*

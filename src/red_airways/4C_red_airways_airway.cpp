@@ -87,7 +87,7 @@ void Discret::ELEMENTS::RedAirwayType::setup_element_definition(
                       .add_optional_named_double("Pcrit_Close")
                       .add_optional_named_double("Open_Init")
                       .add_optional_named_double("BranchLength")
-                      .Build();
+                      .build();
 }
 
 

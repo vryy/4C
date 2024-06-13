@@ -57,17 +57,17 @@ void Discret::ELEMENTS::SolidPoroType::setup_element_definition(
       GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex8>()
           .add_optional_named_string("EAS")
           .add_optional_tag("FBAR")
-          .Build();
+          .build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex27)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex27>().Build();
+      GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex27>().build();
 
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet4)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet4>().Build();
+      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet4>().build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet10)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet10>().Build();
+      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet10>().build();
 }
 
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidPoroType::Create(

@@ -40,7 +40,7 @@ namespace
   }
 
   // Throw an error for the wrong data type in case 'nnumber' is of type int
-  void ThrowErrorWrongDataType(const std::string& snumbersubstring, int nnumber,
+  void throw_error_wrong_data_type(const std::string& snumbersubstring, int nnumber,
       const std::string& variablename, const std::string& sectionname)
   {
     FOUR_C_THROW(
@@ -52,7 +52,7 @@ namespace
   }
 
   // Throw an error for the wrong data type in case 'nnumber' is of type double
-  void ThrowErrorWrongDataType(const std::string& snumbersubstring, double nnumber,
+  void throw_error_wrong_data_type(const std::string& snumbersubstring, double nnumber,
       const std::string& variablename, const std::string& sectionname)
   {
     FOUR_C_THROW(
@@ -101,7 +101,7 @@ namespace
     // check if there are any other characters that were not converted
     if (pos != snumber.size())
     {
-      ThrowErrorWrongDataType(snumber.substr(pos), nnumber, variablename, sectionname);
+      throw_error_wrong_data_type(snumber.substr(pos), nnumber, variablename, sectionname);
     }
 
     return nnumber;

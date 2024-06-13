@@ -305,7 +305,7 @@ void Discret::ELEMENTS::SoSh8PlastType::setup_element_definition(
                      .add_optional_named_double_vector("FIBER1", 3)
                      .add_optional_named_double_vector("FIBER2", 3)
                      .add_optional_named_double_vector("FIBER3", 3)
-                     .Build();
+                     .build();
 
 }  // setup_element_definition()
 

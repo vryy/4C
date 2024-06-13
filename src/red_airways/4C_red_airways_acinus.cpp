@@ -85,7 +85,7 @@ void Discret::ELEMENTS::RedAcinusType::setup_element_definition(
                       .add_optional_named_double("KAPPA")
                       .add_optional_named_double("BETA")
                       .add_optional_named_double("Area")
-                      .Build();
+                      .build();
 }
 
 

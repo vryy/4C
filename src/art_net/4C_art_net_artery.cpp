@@ -61,7 +61,7 @@ void Discret::ELEMENTS::ArteryType::setup_element_definition(
                       .add_named_int("GP")
                       .add_named_string("TYPE")
                       .add_named_double("DIAM")
-                      .Build();
+                      .build();
 }
 
 /*----------------------------------------------------------------------*

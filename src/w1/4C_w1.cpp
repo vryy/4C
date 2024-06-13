@@ -79,7 +79,7 @@ void Discret::ELEMENTS::Wall1Type::setup_element_definition(
                       .add_named_double("THICK")
                       .add_named_string("STRESS_STRAIN")
                       .add_named_int_vector("GP", 2)
-                      .Build();
+                      .build();
 
   defs["QUAD8"] = Input::LineDefinition::Builder()
                       .add_int_vector("QUAD8", 8)
@@ -89,7 +89,7 @@ void Discret::ELEMENTS::Wall1Type::setup_element_definition(
                       .add_named_double("THICK")
                       .add_named_string("STRESS_STRAIN")
                       .add_named_int_vector("GP", 2)
-                      .Build();
+                      .build();
 
   defs["QUAD9"] = Input::LineDefinition::Builder()
                       .add_int_vector("QUAD9", 9)
@@ -99,7 +99,7 @@ void Discret::ELEMENTS::Wall1Type::setup_element_definition(
                       .add_named_double("THICK")
                       .add_named_string("STRESS_STRAIN")
                       .add_named_int_vector("GP", 2)
-                      .Build();
+                      .build();
 
   defs["TRI3"] = Input::LineDefinition::Builder()
                      .add_int_vector("TRI3", 3)
@@ -109,7 +109,7 @@ void Discret::ELEMENTS::Wall1Type::setup_element_definition(
                      .add_named_double("THICK")
                      .add_named_string("STRESS_STRAIN")
                      .add_named_int_vector("GP", 2)
-                     .Build();
+                     .build();
 
   defs["TRI6"] = Input::LineDefinition::Builder()
                      .add_int_vector("TRI6", 6)
@@ -119,7 +119,7 @@ void Discret::ELEMENTS::Wall1Type::setup_element_definition(
                      .add_named_double("THICK")
                      .add_named_string("STRESS_STRAIN")
                      .add_named_int_vector("GP", 2)
-                     .Build();
+                     .build();
 
   defs["NURBS4"] = Input::LineDefinition::Builder()
                        .add_int_vector("NURBS4", 4)
@@ -129,7 +129,7 @@ void Discret::ELEMENTS::Wall1Type::setup_element_definition(
                        .add_named_double("THICK")
                        .add_named_string("STRESS_STRAIN")
                        .add_named_int_vector("GP", 2)
-                       .Build();
+                       .build();
 
   defs["NURBS9"] = Input::LineDefinition::Builder()
                        .add_int_vector("NURBS9", 9)
@@ -139,7 +139,7 @@ void Discret::ELEMENTS::Wall1Type::setup_element_definition(
                        .add_named_double("THICK")
                        .add_named_string("STRESS_STRAIN")
                        .add_named_int_vector("GP", 2)
-                       .Build();
+                       .build();
 }
 
 

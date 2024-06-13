@@ -88,7 +88,7 @@ void Discret::ELEMENTS::SoSh8Type::setup_element_definition(
                      .add_optional_named_double_vector("FIBER3", 3)
                      .add_optional_named_double("STRENGTH")
                      .add_optional_named_double("GROWTHTRIG")
-                     .Build();
+                     .build();
 }
 
 

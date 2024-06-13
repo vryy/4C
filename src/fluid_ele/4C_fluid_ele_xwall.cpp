@@ -81,12 +81,12 @@ void Discret::ELEMENTS::FluidXWallType::setup_element_definition(
                           .add_int_vector("HEX8", 8)
                           .add_named_int("MAT")
                           .add_named_string("NA")
-                          .Build();
+                          .build();
   defsxwall["TET4"] = Input::LineDefinition::Builder()
                           .add_int_vector("TET4", 4)
                           .add_named_int("MAT")
                           .add_named_string("NA")
-                          .Build();
+                          .build();
 }
 
 

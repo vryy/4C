@@ -136,7 +136,7 @@ void Discret::ELEMENTS::FluidHDGType ::setup_element_definition(
     defs_hdg[key] = Input::LineDefinition::Builder(fluid_line_def)
                         .add_named_int("DEG")
                         .add_optional_named_int("SPC")
-                        .Build();
+                        .build();
   }
 }
 

@@ -80,7 +80,7 @@ void Discret::ELEMENTS::SoShw6Type::setup_element_definition(
                        .add_optional_named_double_vector("RAD", 3)
                        .add_optional_named_double_vector("AXI", 3)
                        .add_optional_named_double_vector("CIR", 3)
-                       .Build();
+                       .build();
 }
 
 

@@ -230,7 +230,7 @@ namespace
 void Discret::UTILS::AddValidXfluidFunctions(Core::UTILS::FunctionManager& function_manager)
 {
   Input::LineDefinition gerstenbergerforwardfacingstep =
-      Input::LineDefinition::Builder().add_tag("FORWARDFACINGSTEP").Build();
+      Input::LineDefinition::Builder().add_tag("FORWARDFACINGSTEP").build();
 
   Input::LineDefinition movinglevelsetcylinder = Input::LineDefinition::Builder()
                                                      .add_tag("MOVINGLEVELSETCYLINDER")
@@ -239,7 +239,7 @@ void Discret::UTILS::AddValidXfluidFunctions(Core::UTILS::FunctionManager& funct
                                                      .add_named_double_vector("DIRECTION", 3)
                                                      .add_named_double("DISTANCE")
                                                      .add_named_double("MAXSPEED")
-                                                     .Build();
+                                                     .build();
 
   Input::LineDefinition movinglevelsettorus = Input::LineDefinition::Builder()
                                                   .add_tag("MOVINGLEVELSETTORUS")
@@ -253,7 +253,7 @@ void Discret::UTILS::AddValidXfluidFunctions(Core::UTILS::FunctionManager& funct
                                                   .add_named_double_vector("ROTATION_VEC", 3)
                                                   .add_named_double("ROTATION_SPEED")
                                                   .add_named_double("ROTATION_RAMPTIME")
-                                                  .Build();
+                                                  .build();
 
   Input::LineDefinition movinglevelsettorusvelocity =
       Input::LineDefinition::Builder()
@@ -268,7 +268,7 @@ void Discret::UTILS::AddValidXfluidFunctions(Core::UTILS::FunctionManager& funct
           .add_named_double_vector("ROTATION_VEC", 3)
           .add_named_double("ROTATION_SPEED")
           .add_named_double("ROTATION_RAMPTIME")
-          .Build();
+          .build();
 
   Input::LineDefinition movinglevelsettorussliplength =
       Input::LineDefinition::Builder()
@@ -284,7 +284,7 @@ void Discret::UTILS::AddValidXfluidFunctions(Core::UTILS::FunctionManager& funct
           .add_named_double("ROTATION_SPEED")
           .add_named_double("ROTATION_RAMPTIME")
           .add_named_int("SLIP_FUNCT")
-          .Build();
+          .build();
 
   Input::LineDefinition taylorcouetteflow = Input::LineDefinition::Builder()
                                                 .add_tag("TAYLORCOUETTEFLOW")
@@ -297,7 +297,7 @@ void Discret::UTILS::AddValidXfluidFunctions(Core::UTILS::FunctionManager& funct
                                                 .add_named_double("TRACTION_THETA_I")
                                                 .add_named_double("TRACTION_THETA_O")
                                                 .add_named_double("VISCOSITY")
-                                                .Build();
+                                                .build();
 
   Input::LineDefinition urquizaboxflow = Input::LineDefinition::Builder()
                                              .add_tag("URQUIZABOXFLOW")
@@ -308,7 +308,7 @@ void Discret::UTILS::AddValidXfluidFunctions(Core::UTILS::FunctionManager& funct
                                              .add_named_double("DENSITY")
                                              .add_named_int("CASE")
                                              .add_optional_named_double_vector("COMBINATION", 2)
-                                             .Build();
+                                             .build();
 
   Input::LineDefinition urquizaboxflowtraction =
       Input::LineDefinition::Builder()
@@ -320,7 +320,7 @@ void Discret::UTILS::AddValidXfluidFunctions(Core::UTILS::FunctionManager& funct
           .add_named_double("DENSITY")
           .add_named_int("CASE")
           .add_optional_named_double_vector("COMBINATION", 2)
-          .Build();
+          .build();
 
   Input::LineDefinition urquizaboxflowforce =
       Input::LineDefinition::Builder()
@@ -332,7 +332,7 @@ void Discret::UTILS::AddValidXfluidFunctions(Core::UTILS::FunctionManager& funct
           .add_named_double("DENSITY")
           .add_named_int("CASE")
           .add_optional_named_double_vector("COMBINATION", 2)
-          .Build();
+          .build();
 
   std::vector<Input::LineDefinition> lines;
 

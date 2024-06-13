@@ -87,7 +87,7 @@ void Discret::ELEMENTS::SoHex8PlastType::setup_element_definition(
   defs["HEX8"] = Input::LineDefinition::Builder(defs_hex8["HEX8"])
                      .add_named_string("FBAR")
                      .add_optional_named_int("NUMGP")
-                     .Build();
+                     .build();
 
 }  // setup_element_definition()
 
@@ -192,7 +192,7 @@ void Discret::ELEMENTS::SoHex18PlastType::setup_element_definition(
                       .add_optional_named_double_vector("FIBER2", 3)
                       .add_optional_named_double_vector("FIBER3", 3)
                       .add_optional_named_double("STRENGTH")
-                      .Build();
+                      .build();
 }  // setup_element_definition()
 
 
@@ -483,7 +483,7 @@ void Discret::ELEMENTS::SoNurbs27PlastType::setup_element_definition(
                         .add_int_vector("NURBS27", 27)
                         .add_named_int("MAT")
                         .add_named_string("KINEM")
-                        .Build();
+                        .build();
 }  // setup_element_definition()
 
 

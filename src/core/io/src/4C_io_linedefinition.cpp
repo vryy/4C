@@ -487,13 +487,13 @@ namespace Input
   {
   }
 
-  LineDefinition LineDefinition::Builder::Build() &&
+  LineDefinition LineDefinition::Builder::build() &&
   {
     // Steal the internal data since this operation is performed on an rvalue.
     return LineDefinition(std::move(pimpl_));
   }
 
-  LineDefinition LineDefinition::Builder::Build() const&
+  LineDefinition LineDefinition::Builder::build() const&
   {
     // Make a copy of the implementation details
     return LineDefinition(std::make_unique<INTERNAL::LineDefinitionImplementation>(*pimpl_));
@@ -749,7 +749,7 @@ namespace Input
 
 
 
-  void LineDefinition::Print(std::ostream& stream) const
+  void LineDefinition::print(std::ostream& stream) const
   {
     for (const auto& component : pimpl_->components_)
     {
@@ -770,14 +770,14 @@ namespace Input
 
 
 
-  std::optional<Core::IO::InputParameterContainer> LineDefinition::Read(std::istream& stream)
+  std::optional<Core::IO::InputParameterContainer> LineDefinition::read(std::istream& stream)
   {
-    return Read(stream, nullptr);
+    return read(stream, nullptr);
   }
 
 
 
-  std::optional<Core::IO::InputParameterContainer> LineDefinition::Read(
+  std::optional<Core::IO::InputParameterContainer> LineDefinition::read(
       std::istream& stream, const std::string* skipname)
   {
     pimpl_->readtailcomponents_.clear();

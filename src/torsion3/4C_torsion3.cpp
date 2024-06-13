@@ -74,7 +74,7 @@ void Discret::ELEMENTS::Torsion3Type::setup_element_definition(
                       .add_int_vector("LINE3", 3)
                       .add_named_int("MAT")
                       .add_named_string("BENDINGPOTENTIAL")
-                      .Build();
+                      .build();
 }
 
 

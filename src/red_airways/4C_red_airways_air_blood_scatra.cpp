@@ -57,7 +57,7 @@ void Discret::ELEMENTS::RedAirBloodScatraType::setup_element_definition(
                       .add_named_double("DiffusionCoefficient")
                       .add_named_double("WallThickness")
                       .add_named_double("PercentageOfDiffusionArea")
-                      .Build();
+                      .build();
 }
 
 

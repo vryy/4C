@@ -164,12 +164,12 @@ namespace Core::IO::GridGenerator
             inputData.elementtype_.c_str(), inputData.distype_.c_str());
 
       std::istringstream eleargstream(inputData.elearguments_);
-      if (not linedef->Read(eleargstream, &inputData.distype_))
+      if (not linedef->read(eleargstream, &inputData.distype_))
       {
         Core::IO::cout << "\n"
                        << eleid << " " << inputData.elementtype_ << " " << inputData.distype_
                        << " ";
-        linedef->Print(Core::IO::cout.cout_replacement());
+        linedef->print(Core::IO::cout.cout_replacement());
         Core::IO::cout << "\n";
         FOUR_C_THROW("failed to read element %d %s %s", eleid, inputData.elementtype_.c_str(),
             inputData.distype_.c_str());

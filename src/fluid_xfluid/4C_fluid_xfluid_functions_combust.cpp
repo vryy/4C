@@ -39,10 +39,10 @@ namespace
 void Discret::UTILS::AddValidCombustFunctions(Core::UTILS::FunctionManager& function_manager)
 {
   Input::LineDefinition zalesaksdisk =
-      Input::LineDefinition::Builder().add_tag("ZALESAKSDISK").Build();
+      Input::LineDefinition::Builder().add_tag("ZALESAKSDISK").build();
 
   Input::LineDefinition collapsingwatercolumn =
-      Input::LineDefinition::Builder().add_tag("COLLAPSINGWATERCOLUMN").Build();
+      Input::LineDefinition::Builder().add_tag("COLLAPSINGWATERCOLUMN").build();
 
   function_manager.add_function_definition(
       {std::move(zalesaksdisk), std::move(collapsingwatercolumn)}, CreateCombustFunction);

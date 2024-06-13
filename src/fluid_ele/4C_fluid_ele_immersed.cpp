@@ -46,7 +46,7 @@ void Discret::ELEMENTS::FluidTypeImmersed::setup_element_definition(
                              .add_int_vector("HEX8", 8)
                              .add_named_int("MAT")
                              .add_named_string("NA")
-                             .Build();
+                             .build();
 }
 
 /*----------------------------------------------------------------------*
