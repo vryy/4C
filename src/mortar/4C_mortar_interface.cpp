@@ -1048,9 +1048,12 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> Mortar::Interface::setup_binning_stra
 
   binning_params.set<double>("BIN_SIZE_LOWER_BOUND", cutoff);
   binning_params.set<std::string>("DOMAINBOUNDINGBOX", domain_bounding_box_stream.str());
+  Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+      "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+      binning_params);
   Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-      Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params));
-
+      Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params,
+          Global::Problem::Instance()->OutputControlFile(), Comm(), Comm().MyPID()));
 
   return binningstrategy;
 }

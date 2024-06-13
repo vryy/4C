@@ -165,9 +165,13 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   if (actdis_->GetCondition("PointCoupling") != nullptr)
   {
     std::vector<Teuchos::RCP<Core::FE::Discretization>> actdis_vec(1, actdis_);
+    Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+    Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+        "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+        binning_params);
     actdis_vec[0]->fill_complete(false, false, false);
     Core::Rebalance::RebalanceDiscretizationsByBinning(
-        Global::Problem::Instance()->binning_strategy_params(), actdis_vec, true);
+        binning_params, Global::Problem::Instance()->OutputControlFile(), actdis_vec, true);
   }
   else if (not actdis_->Filled() || not actdis_->HaveDofs())
   {

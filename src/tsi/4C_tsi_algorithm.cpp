@@ -77,7 +77,11 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     volcoupl_->Init(Global::Problem::Instance()->NDim(), structdis, thermodis, nullptr, nullptr,
         nullptr, nullptr, materialstrategy);
     // redistribute discretizations to meet needs of volmortar coupling
-    volcoupl_->Redistribute(Global::Problem::Instance()->binning_strategy_params());
+    Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+    Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+        "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+        binning_params);
+    volcoupl_->Redistribute(binning_params, Global::Problem::Instance()->OutputControlFile());
     // setup projection matrices
     volcoupl_->Setup(Global::Problem::Instance()->VolmortarParams());
   }

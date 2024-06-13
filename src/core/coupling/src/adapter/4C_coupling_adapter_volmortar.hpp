@@ -51,6 +51,11 @@ namespace Core::VolMortar
   }
 }  // namespace Core::VolMortar
 
+namespace Core::IO
+{
+  class OutputControl;
+}
+
 namespace Core::Adapter
 {  /// Class for calling volmortar coupling and proper parallel redistr.
   class MortarVolCoupl : public Core::Adapter::CouplingBase
@@ -90,7 +95,8 @@ namespace Core::Adapter
     \author rauch
 
     */
-    void Redistribute(const Teuchos::ParameterList& binning_params);
+    void Redistribute(const Teuchos::ParameterList& binning_params,
+        Teuchos::RCP<Core::IO::OutputControl> output_control);
 
 
     /*!

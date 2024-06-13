@@ -98,8 +98,14 @@ namespace PoroElastScaTra
         dis.push_back(fluiddis);
         dis.push_back(scatradis);
 
+        Teuchos::ParameterList binning_params =
+            Global::Problem::Instance()->binning_strategy_params();
+        Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+            "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+            binning_params);
+
         Core::Rebalance::RebalanceDiscretizationsByBinning(
-            Global::Problem::Instance()->binning_strategy_params(), dis, false);
+            binning_params, Global::Problem::Instance()->OutputControlFile(), dis, false);
 
         // set material pointers
         PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);

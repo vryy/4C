@@ -69,7 +69,11 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     // setup projection matrices
     volcoupl_->Init(Global::Problem::Instance()->NDim(), structdis, fluiddis, nullptr, nullptr,
         nullptr, nullptr, materialstrategy);
-    volcoupl_->Redistribute(Global::Problem::Instance()->binning_strategy_params());
+    Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+    Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+        "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+        binning_params);
+    volcoupl_->Redistribute(binning_params, Global::Problem::Instance()->OutputControlFile());
     volcoupl_->Setup(Global::Problem::Instance()->VolmortarParams());
   }
 

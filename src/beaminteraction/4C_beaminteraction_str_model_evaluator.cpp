@@ -146,8 +146,13 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   Core::LinAlg::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetDisColNp());
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> disp_vec(1, ia_state_ptr_->GetDisColNp());
-  binstrategy_ = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(
-      Global::Problem::Instance()->binning_strategy_params(), discret_vec, disp_vec));
+  Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+  Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+      "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+      binning_params);
+  binstrategy_ = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params,
+      Global::Problem::Instance()->OutputControlFile(), ia_discret_->Comm(),
+      ia_discret_->Comm().MyPID(), discret_vec, disp_vec));
   binstrategy_->set_deforming_binning_domain_handler(
       tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box());
 

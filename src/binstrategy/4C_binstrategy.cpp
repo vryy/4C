@@ -36,30 +36,31 @@ FOUR_C_NAMESPACE_OPEN
 
 
 BINSTRATEGY::BinningStrategy::BinningStrategy(const Teuchos::ParameterList& binning_params,
-    const std::vector<Teuchos::RCP<Core::FE::Discretization>> discret,
+    Teuchos::RCP<Core::IO::OutputControl> output_control, const Epetra_Comm& comm,
+    const int my_rank, const std::vector<Teuchos::RCP<Core::FE::Discretization>> discret,
     std::vector<Teuchos::RCP<const Epetra_Vector>> disnp)
     : bin_size_lower_bound_(binning_params.get<double>("BIN_SIZE_LOWER_BOUND")),
       deforming_simulation_domain_handler_(Teuchos::null),
       writebinstype_(
           Core::UTILS::IntegralValue<Inpar::BINSTRATEGY::Writebins>(binning_params, ("WRITEBINS"))),
       havepbc_(false),
-      myrank_(Global::Problem::Instance()->GetCommunicators()->GlobalComm()->MyPID()),
-      comm_(Global::Problem::Instance()->GetCommunicators()->LocalComm()->Clone())
+      myrank_(my_rank),
+      comm_(comm.Clone())
 {
   // create binning discretization
   bindis_ = Teuchos::rcp(new Core::FE::Discretization("binning", comm_, 3));
 
   // create discretization writer
+  auto spatial_approximation_type = Teuchos::getIntegralValue<Core::FE::ShapeFunctionType>(
+      binning_params, "spatial_approximation_type");
   bindis_->SetWriter(Teuchos::rcp(
-      new Core::IO::DiscretizationWriter(bindis_, Global::Problem::Instance()->OutputControlFile(),
-          Global::Problem::Instance()->spatial_approximation_type())));
+      new Core::IO::DiscretizationWriter(bindis_, output_control, spatial_approximation_type)));
   bindis_->fill_complete(false, false, false);
 
   visbindis_ = Teuchos::rcp(new Core::FE::Discretization("bins", comm_, 3));
   // create discretization writer
-  visbindis_->SetWriter(Teuchos::rcp(new Core::IO::DiscretizationWriter(visbindis_,
-      Global::Problem::Instance()->OutputControlFile(),
-      Global::Problem::Instance()->spatial_approximation_type())));
+  visbindis_->SetWriter(Teuchos::rcp(
+      new Core::IO::DiscretizationWriter(visbindis_, output_control, spatial_approximation_type)));
 
   // try to read valid input
   domain_bounding_box_corner_positions_.PutScalar(1.0e12);

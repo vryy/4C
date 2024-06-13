@@ -53,6 +53,10 @@ namespace Core::Geo::MeshFree
   class BoundingBox;
 }
 
+namespace Core::IO
+{
+  class OutputControl;
+}
 
 /*----------------------------------------------------------------------*
  | binning strategy                                         ghamm 11/13 |
@@ -105,19 +109,22 @@ namespace BINSTRATEGY
   class BinningStrategy
   {
    public:
-    BinningStrategy(const Teuchos::ParameterList& binning_params,
-        const std::vector<Teuchos::RCP<Core::FE::Discretization>> discret = {},
-        std::vector<Teuchos::RCP<const Epetra_Vector>> disnp = {});
-
     /*!
-     * \brief initialize binning strategy
+     * \brief construct binning strategy
      *
+     * \param[in] binning_params binning parameters from input
+     * \param[in] output_control output control file
+     * \param[in] comm Epetra Communicator
+     * \param[in] id of this process
      * \param[in] discret vector of discretizations as basis for build up of binning domain
      * (optional, only needed if binning domain is not described via input file)
      * \param[in] disnp vector of column displacement states (belonging to input discrets) so that
      * current positions of elements and nodes can be considered for build up of binning domain
      */
-
+    BinningStrategy(const Teuchos::ParameterList& binning_params,
+        Teuchos::RCP<Core::IO::OutputControl> output_control, const Epetra_Comm& comm,
+        const int my_rank, const std::vector<Teuchos::RCP<Core::FE::Discretization>>& discret = {},
+        std::vector<Teuchos::RCP<const Epetra_Vector>> disnp = {});
 
     //! \name Read access functions
     //! \{

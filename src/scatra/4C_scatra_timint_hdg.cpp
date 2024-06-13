@@ -417,8 +417,14 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
       std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
 
       // binning strategy is created and parallel redistribution is performed
-      binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(
-          Global::Problem::Instance()->binning_strategy_params(), dis));
+      Teuchos::ParameterList binning_params =
+          Global::Problem::Instance()->binning_strategy_params();
+      Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+          "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+          binning_params);
+      binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params,
+          Global::Problem::Instance()->OutputControlFile(), discret_->Comm(),
+          discret_->Comm().MyPID(), dis));
       binningstrategy
           ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
               dis, stdelecolmap, stdnodecolmap);

@@ -85,8 +85,14 @@ void wear_dyn_drt(int restart)
       dis.push_back(structdis);
       dis.push_back(aledis);
 
+      Teuchos::ParameterList binning_params =
+          Global::Problem::Instance()->binning_strategy_params();
+      Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+          "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+          binning_params);
+
       Core::Rebalance::RebalanceDiscretizationsByBinning(
-          Global::Problem::Instance()->binning_strategy_params(), dis, false);
+          binning_params, Global::Problem::Instance()->OutputControlFile(), dis, false);
     }
   }
   // ***********************************************************

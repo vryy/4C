@@ -920,8 +920,12 @@ void PARTICLEENGINE::ParticleEngine::WriteBinDisOutput(const int step, const dou
 void PARTICLEENGINE::ParticleEngine::init_binning_strategy()
 {
   // create and init binning strategy and create bins
+  Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+  Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+      "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+      binning_params);
   binstrategy_ = std::make_shared<BINSTRATEGY::BinningStrategy>(
-      Global::Problem::Instance()->binning_strategy_params());
+      binning_params, Global::Problem::Instance()->OutputControlFile(), comm_, comm_.MyPID());
 }
 
 void PARTICLEENGINE::ParticleEngine::setup_binning_strategy()

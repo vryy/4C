@@ -25,12 +25,18 @@ namespace Core::FE
   class Discretization;
 }  // namespace Core::FE
 
+namespace Core::IO
+{
+  class OutputControl;
+}
+
 namespace Core::Rebalance
 {
   /*! \brief Rebalance discretizations in input vector using BinningStrategy
      *
     \param vector_of_discretizations (in) : vector containing RCPs to discretizations */
   void RebalanceDiscretizationsByBinning(const Teuchos::ParameterList& binning_params,
+      Teuchos::RCP<Core::IO::OutputControl> output_control,
       const std::vector<Teuchos::RCP<Core::FE::Discretization>>& vector_of_discretizations,
       bool revertextendedghosting = false);
 

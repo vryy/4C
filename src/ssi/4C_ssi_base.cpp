@@ -234,8 +234,15 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
   auto scatradis = problem->GetDis(scatra_disname);
 
   if (redistribute_struct_dis)
+  {
+    Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+    Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+        "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+        binning_params);
+
     Core::Rebalance::RebalanceDiscretizationsByBinning(
-        Global::Problem::Instance()->binning_strategy_params(), {structdis}, false);
+        binning_params, Global::Problem::Instance()->OutputControlFile(), {structdis}, false);
+  }
 
   if (scatradis->NumGlobalNodes() == 0)
   {
@@ -664,8 +671,13 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
     // first we bin the scatra discretization
     std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
     dis.push_back(scatradis);
+    Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+    Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+        "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+        binning_params);
+
     Core::Rebalance::RebalanceDiscretizationsByBinning(
-        Global::Problem::Instance()->binning_strategy_params(), dis, false);
+        binning_params, Global::Problem::Instance()->OutputControlFile(), dis, false);
 
     Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
         *scatradis, *scatradis, "ScatraHeteroReactionMaster", "ScatraHeteroReactionSlave");
@@ -680,8 +692,13 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
     dis.push_back(structdis);
     dis.push_back(scatradis);
 
+    Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+    Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+        "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+        binning_params);
+
     Core::Rebalance::RebalanceDiscretizationsByBinning(
-        Global::Problem::Instance()->binning_strategy_params(), dis, false);
+        binning_params, Global::Problem::Instance()->OutputControlFile(), dis, false);
   }
 }
 
