@@ -732,7 +732,7 @@ namespace RTD
       WriteCode(stream, functionList);
     }
   }
-  void WriteYamlCellTypeInformation(std::ostream &yamlfile)
+  void write_yaml_cell_type_information(std::ostream &yamlfile)
   {
     for (auto celltype : Core::FE::celltype_array<Core::FE::all_physical_celltypes>)
     {

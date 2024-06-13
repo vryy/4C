@@ -33,7 +33,7 @@ namespace RTD
 {
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteCellTypeInformation(const std::string& elementinformationfilename)
+  void write_cell_type_information(const std::string& elementinformationfilename)
   {
     // open ascii file for writing the cell type information
     std::ofstream elementinformationfile(elementinformationfilename.c_str());
@@ -42,13 +42,13 @@ namespace RTD
     elementinformationfile << "# yaml file created using 4C version (git SHA1):\n";
     elementinformationfile << "# " << VersionControl::git_hash << "\n#\n";
 
-    WriteYamlCellTypeInformation(elementinformationfile);
+    write_yaml_cell_type_information(elementinformationfile);
   }
 
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_read_the_docsHeader(const std::string& headerdocumentationfilename)
+  void write_read_the_docs_header(const std::string& headerdocumentationfilename)
   {
     // open ascii file for writing all header parameters
     std::ofstream headerdocumentationfile(headerdocumentationfilename.c_str());
@@ -64,7 +64,7 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_read_the_docsCelltypes(const std::string& celltypedocumentationfilename)
+  void write_read_the_docs_celltypes(const std::string& celltypedocumentationfilename)
   {
     // open ascii file for writing all header parameters
     std::ofstream celltypeocumentationfile(celltypedocumentationfilename.c_str());
@@ -78,7 +78,7 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_read_the_docsMaterial(const std::string& materialdocumentationfilename)
+  void write_read_the_docs_material(const std::string& materialdocumentationfilename)
   {
     //
     // open ascii file for writing all material parameters
@@ -92,7 +92,7 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_read_the_docsCondition(const std::string& conditiondocumentationfilename)
+  void write_read_the_docs_condition(const std::string& conditiondocumentationfilename)
   {
     //
     // open ascii file for writing all constrains / conditions parameters
@@ -108,7 +108,7 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_read_the_docsVarious(const std::string& variousdocumentationfilename)
+  void write_read_the_docs_various(const std::string& variousdocumentationfilename)
   {
     //
     // open ascii file for writing other (non header) parameters
