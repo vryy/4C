@@ -45,15 +45,10 @@ namespace BEAMINTERACTION
      public:
       /**
        * \brief Constructor.
-       * @param assembly_contact_elepairs (in) Vector with element pairs to be evaluated by this
-       * class.
        */
       BeamContactAssemblyManagerInDirect(
-          const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>&
-              assembly_contact_elepairs,
-          const Teuchos::RCP<const Core::FE::Discretization>& discret,
-          const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& beam_to_solid_params);
-
+          const Teuchos::RCP<BEAMINTERACTION::BeamToSolidMortarManager>& mortar_manager)
+          : BeamContactAssemblyManager(), mortar_manager_(mortar_manager){};
 
       /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.

@@ -127,10 +127,13 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
     mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
-    const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_G_B,
-    Core::LinAlg::SparseMatrix& global_G_S, Core::LinAlg::SparseMatrix& global_FB_L,
-    Core::LinAlg::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
-    Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
+    const BeamToSolidMortarManager* mortar_manager,
+    Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
+    Core::LinAlg::SparseMatrix& global_constraint_lin_solid,
+    Core::LinAlg::SparseMatrix& global_force_beam_lin_lambda,
+    Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
+    Epetra_FEVector& global_kappa, Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
+    Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
@@ -218,8 +221,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
     for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
     {
       const double val = Core::FADUtils::CastToDouble(constraint_vector(i_lambda).dx(i_beam));
-      global_G_B.FEAssemble(val, lambda_gid_pos[i_lambda], beam_centerline_gid(i_beam));
-      global_FB_L.FEAssemble(val, beam_centerline_gid(i_beam), lambda_gid_pos[i_lambda]);
+      global_constraint_lin_beam.FEAssemble(
+          val, lambda_gid_pos[i_lambda], beam_centerline_gid(i_beam));
+      global_force_beam_lin_lambda.FEAssemble(
+          val, beam_centerline_gid(i_beam), lambda_gid_pos[i_lambda]);
     }
 
   // Assemble into the matrices related to solid DOFs.
@@ -228,8 +233,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
     {
       const double val =
           Core::FADUtils::CastToDouble(constraint_vector(i_lambda).dx(beam::n_dof_ + i_patch));
-      global_G_S.FEAssemble(val, lambda_gid_pos[i_lambda], patch_gid[i_patch]);
-      global_FS_L.FEAssemble(val, patch_gid[i_patch], lambda_gid_pos[i_lambda]);
+      global_constraint_lin_solid.FEAssemble(val, lambda_gid_pos[i_lambda], patch_gid[i_patch]);
+      global_force_solid_lin_lambda.FEAssemble(val, patch_gid[i_patch], lambda_gid_pos[i_lambda]);
     }
 
   // Assemble into global coupling vector.
@@ -693,7 +698,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
   // Get the rotational GIDs of the surface and beam.
   std::vector<int> gid_surface;
   Core::LinAlg::Matrix<n_dof_rot_, 1, int> gid_rot;
-  get_pair_rotational_gi_ds(discret, gid_surface, gid_rot);
+  get_pair_rotational_gid(discret, gid_surface, gid_rot);
 
   // Assemble into global matrix.
   for (unsigned int i_dof_beam = 0; i_dof_beam < n_dof_rot_; i_dof_beam++)
@@ -722,15 +727,19 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
     mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
-    const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_GB,
-    Core::LinAlg::SparseMatrix& global_GS, Core::LinAlg::SparseMatrix& global_FB,
-    Core::LinAlg::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
-    Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
+    const BeamToSolidMortarManager* mortar_manager,
+    Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
+    Core::LinAlg::SparseMatrix& global_constraint_lin_solid,
+    Core::LinAlg::SparseMatrix& global_force_beam_lin_lambda,
+    Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
+    Epetra_FEVector& global_kappa, Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
+    Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
-  base_class::evaluate_and_assemble_mortar_contributions(discret, mortar_manager, global_GB,
-      global_GS, global_FB, global_FS, global_constraint, global_kappa, global_lambda_active,
-      displacement_vector);
+  base_class::evaluate_and_assemble_mortar_contributions(discret, mortar_manager,
+      global_constraint_lin_beam, global_constraint_lin_solid, global_force_beam_lin_lambda,
+      global_force_solid_lin_lambda, global_constraint, global_kappa, global_kappa_lin_beam,
+      global_kappa_lin_solid, global_lambda_active, displacement_vector);
 
   // If there are no intersection segments, return as no contact can occur.
   if (this->line_to_3D_segments_.size() == 0) return;
@@ -934,7 +943,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
   // Get the rotational GIDs of the surface and beam.
   std::vector<int> gid_surface;
   Core::LinAlg::Matrix<n_dof_rot_, 1, int> gid_rot;
-  get_pair_rotational_gi_ds(discret, gid_surface, gid_rot);
+  get_pair_rotational_gid(discret, gid_surface, gid_rot);
 
   // Get the Lagrange multiplier GIDs.
   const auto& [_, lambda_gid_rot] = mortar_manager->LocationVector(*this);
@@ -951,17 +960,17 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
   {
     for (unsigned int i_dof_rot = 0; i_dof_rot < n_dof_rot_; i_dof_rot++)
     {
-      global_GB.FEAssemble(
+      global_constraint_lin_beam.FEAssemble(
           local_GB(i_dof_lambda, i_dof_rot), lambda_gid_rot[i_dof_lambda], gid_rot(i_dof_rot));
-      global_FB.FEAssemble(
+      global_force_beam_lin_lambda.FEAssemble(
           local_FB(i_dof_rot, i_dof_lambda), gid_rot(i_dof_rot), lambda_gid_rot[i_dof_lambda]);
     }
     for (unsigned int i_dof_surface = 0; i_dof_surface < surface::n_dof_; i_dof_surface++)
     {
-      global_GS.FEAssemble(local_GS(i_dof_lambda, i_dof_surface), lambda_gid_rot[i_dof_lambda],
-          gid_surface[i_dof_surface]);
-      global_FS.FEAssemble(local_FS(i_dof_surface, i_dof_lambda), gid_surface[i_dof_surface],
-          lambda_gid_rot[i_dof_lambda]);
+      global_constraint_lin_solid.FEAssemble(local_GS(i_dof_lambda, i_dof_surface),
+          lambda_gid_rot[i_dof_lambda], gid_surface[i_dof_surface]);
+      global_force_solid_lin_lambda.FEAssemble(local_FS(i_dof_surface, i_dof_lambda),
+          gid_surface[i_dof_surface], lambda_gid_rot[i_dof_lambda]);
     }
   }
 }
@@ -971,7 +980,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::get_pair_rotational_gi_ds(const Core::FE::Discretization& discret,
+    mortar>::get_pair_rotational_gid(const Core::FE::Discretization& discret,
     std::vector<int>& gid_surface, Core::LinAlg::Matrix<n_dof_rot_, 1, int>& gid_rot) const
 {
   // Get the GIDs of the surface and beam.

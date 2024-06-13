@@ -45,16 +45,20 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, morta
 template <typename beam, typename solid, typename mortar, typename mortar_rot>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
     mortar_rot>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
-    const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_G_B,
-    Core::LinAlg::SparseMatrix& global_G_S, Core::LinAlg::SparseMatrix& global_FB_L,
-    Core::LinAlg::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
-    Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
+    const BeamToSolidMortarManager* mortar_manager,
+    Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
+    Core::LinAlg::SparseMatrix& global_constraint_lin_solid,
+    Core::LinAlg::SparseMatrix& global_force_beam_lin_lambda,
+    Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
+    Epetra_FEVector& global_kappa, Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
+    Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call the base method.
-  base_class::evaluate_and_assemble_mortar_contributions(discret, mortar_manager, global_G_B,
-      global_G_S, global_FB_L, global_FS_L, global_constraint, global_kappa, global_lambda_active,
-      displacement_vector);
+  base_class::evaluate_and_assemble_mortar_contributions(discret, mortar_manager,
+      global_constraint_lin_beam, global_constraint_lin_solid, global_force_beam_lin_lambda,
+      global_force_solid_lin_lambda, global_constraint, global_kappa, global_kappa_lin_beam,
+      global_kappa_lin_solid, global_lambda_active, displacement_vector);
 
   // If there are no intersection segments, return as no contact can occur.
   if (this->line_to_3D_segments_.size() == 0) return;
@@ -126,17 +130,17 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   {
     for (unsigned int i_dof_rot = 0; i_dof_rot < n_dof_rot_; i_dof_rot++)
     {
-      global_G_B.FEAssemble(
+      global_constraint_lin_beam.FEAssemble(
           local_G_B(i_dof_lambda, i_dof_rot), lambda_gid_rot[i_dof_lambda], gid_rot(i_dof_rot));
-      global_FB_L.FEAssemble(
+      global_force_beam_lin_lambda.FEAssemble(
           local_FB_L(i_dof_rot, i_dof_lambda), gid_rot(i_dof_rot), lambda_gid_rot[i_dof_lambda]);
     }
     for (unsigned int i_dof_solid = 0; i_dof_solid < solid::n_dof_; i_dof_solid++)
     {
-      global_G_S.FEAssemble(local_G_S(i_dof_lambda, i_dof_solid), lambda_gid_rot[i_dof_lambda],
-          gid_solid[i_dof_solid]);
-      global_FS_L.FEAssemble(local_FS_L(i_dof_solid, i_dof_lambda), gid_solid[i_dof_solid],
-          lambda_gid_rot[i_dof_lambda]);
+      global_constraint_lin_solid.FEAssemble(local_G_S(i_dof_lambda, i_dof_solid),
+          lambda_gid_rot[i_dof_lambda], gid_solid[i_dof_solid]);
+      global_force_solid_lin_lambda.FEAssemble(local_FS_L(i_dof_solid, i_dof_lambda),
+          gid_solid[i_dof_solid], lambda_gid_rot[i_dof_lambda]);
     }
   }
 }
