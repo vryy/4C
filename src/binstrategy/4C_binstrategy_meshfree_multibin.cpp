@@ -69,12 +69,7 @@ Discret::MeshFree::MeshfreeMultiBin::MeshfreeMultiBin(
     const Discret::MeshFree::MeshfreeMultiBin& old)
     : Discret::MeshFree::MeshfreeBin<Core::Elements::Element>(old)
 {
-  for (int i = 0; i < BINSTRATEGY::UTILS::enumsize; ++i)
-  {
-    associatedeleid_[i] = old.associatedeleid_[i];
-    associatedele_[i] = old.associatedele_[i];
-  }
-  return;
+  for (const auto& [bin_content, eles] : old.associated_ele_) associated_ele_[bin_content] = eles;
 }
 
 
@@ -91,16 +86,7 @@ Core::Elements::Element* Discret::MeshFree::MeshfreeMultiBin::Clone() const
 /*--------------------------------------------------------------------------*
  | Delete all wall elements from current bin           (public) ghamm 09/13 |
  *--------------------------------------------------------------------------*/
-void Discret::MeshFree::MeshfreeMultiBin::remove_all_associated_eles()
-{
-  for (int i = 0; i < static_cast<int>(BINSTRATEGY::UTILS::enumsize); ++i)
-  {
-    associatedeleid_[i].clear();
-    associatedele_[i].clear();
-  }
-
-  return;
-}
+void Discret::MeshFree::MeshfreeMultiBin::remove_all_associated_eles() { associated_ele_.clear(); }
 
 /*--------------------------------------------------------------------------*
  | Pack data                                           (public) ghamm 04/13 |
@@ -115,9 +101,19 @@ void Discret::MeshFree::MeshfreeMultiBin::Pack(Core::Communication::PackBuffer& 
   // add base class Core::Elements::Element
   Core::Elements::Element::Pack(data);
   // add vector associatedeleid_
-  for (int i = 0; i < BINSTRATEGY::UTILS::enumsize; ++i) add_to_pack(data, associatedeleid_[i]);
 
-  return;
+  const unsigned int num_associated_ele = associated_ele_.size();
+  add_to_pack(data, num_associated_ele);
+
+  for (const auto& [binning_type, eles] : associated_ele_)
+  {
+    add_to_pack(data, binning_type);
+    std::vector<int> ele_ids;
+
+    for (const auto& [ele_id, ele] : eles) ele_ids.emplace_back(ele_id);
+
+    add_to_pack(data, ele_ids);
+  }
 }
 
 /*--------------------------------------------------------------------------*
@@ -133,14 +129,22 @@ void Discret::MeshFree::MeshfreeMultiBin::Unpack(const std::vector<char>& data)
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
   Core::Elements::Element::Unpack(basedata);
-  // extract associatedeleid_
-  for (int i = 0; i < BINSTRATEGY::UTILS::enumsize; ++i)
+
+  unsigned int num_associated_ele = 0;
+  extract_from_pack(position, data, num_associated_ele);
+  for (unsigned i = 0; i < num_associated_ele; ++i)
   {
-    extract_from_pack(position, data, associatedeleid_[i]);
-    // associatedele_ is NOT communicated
-    associatedele_[i].clear();
+    BINSTRATEGY::UTILS::BinContentType binning_type;
+    extract_from_pack(position, data, binning_type);
+
+    std::vector<int> ele_ids;
+    extract_from_pack(position, data, ele_ids);
+
+    std::map<int, Core::Elements::Element*> eles_new;
+    for (const auto& ele_id : ele_ids) eles_new[ele_id] = nullptr;
+
+    associated_ele_[binning_type] = eles_new;
   }
-  return;
 }
 
 FOUR_C_NAMESPACE_CLOSE

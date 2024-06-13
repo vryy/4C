@@ -1082,15 +1082,14 @@ void BINSTRATEGY::BinningStrategy::GetBinContent(std::set<Core::Elements::Elemen
         static_cast<Discret::MeshFree::MeshfreeMultiBin*>(bindis_->lColElement(lid));
 
     // loop over bincontent you want to get
-    for (int bc_i = 0; bc_i < static_cast<int>(bincontent.size()); ++bc_i)
+    for (const auto& bc_i : bincontent)
     {
       // gather elements of with specific bincontent type
-      Core::Elements::Element** elements = bin->AssociatedEles(bincontent[bc_i]);
-      const int numeles = bin->NumAssociatedEle(bincontent[bc_i]);
-      for (int iele = 0; iele < numeles; ++iele)
+      auto elements = bin->AssociatedEles(bc_i);
+      for (const auto& [ele_id, ele] : elements)
       {
-        if (roweles && elements[iele]->Owner() != myrank_) continue;
-        eles.insert(elements[iele]);
+        if (roweles && ele->Owner() != myrank_) continue;
+        eles.insert(ele);
       }
     }
   }

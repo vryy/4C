@@ -181,7 +181,7 @@ namespace Discret
       /*------------------------------------------------------------------------*/
       inline int NumAssociatedEle(BINSTRATEGY::UTILS::BinContentType bin_content) const
       {
-        return associatedeleid_[bin_content].size();
+        return associated_ele_.at(bin_content).size();
       }
 
       /*------------------------------------------------------------------------*/
@@ -192,12 +192,13 @@ namespace Discret
        *      Returns nullptr if pointers to not exist.
        *///                                                  (public) ghamm 04/13
       /*------------------------------------------------------------------------*/
-      inline virtual Element** AssociatedEles(BINSTRATEGY::UTILS::BinContentType bin_content)
+      inline virtual std::map<int, Core::Elements::Element*> AssociatedEles(
+          BINSTRATEGY::UTILS::BinContentType bin_content)
       {
-        if (associatedeleid_[bin_content].size())
-          return associatedele_[bin_content].data();
+        if (!associated_ele_[bin_content].empty())
+          return associated_ele_[bin_content];
         else
-          return nullptr;
+          return {};
       }
 
       /*------------------------------------------------------------------------*/
@@ -211,8 +212,7 @@ namespace Discret
           Core::Elements::Element* eleptr  //!< (in): pointer to element to be added
       )
       {
-        associatedeleid_[bin_content].push_back(gid);
-        associatedele_[bin_content].push_back(eleptr);
+        associated_ele_[bin_content][gid] = eleptr;
       }
 
       /*------------------------------------------------------------------------*/
@@ -256,12 +256,8 @@ namespace Discret
       Core::FE::CellType Shape() const override { return Core::FE::CellType::dis_none; };
 
      private:
-      //! \brief element ids contained in this bin
-      std::vector<int> associatedeleid_[BINSTRATEGY::UTILS::enumsize];
-
-      //! \brief pointers to elements contained in this bin
-      std::vector<Core::Elements::Element*> associatedele_[BINSTRATEGY::UTILS::enumsize];
-
+      std::map<BINSTRATEGY::UTILS::BinContentType, std::map<int, Core::Elements::Element*>>
+          associated_ele_;
 
     };  // class MeshfreeMultiBin
 
