@@ -78,9 +78,9 @@ void Discret::ELEMENTS::SoHex8P1J1Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX8"] = Input::LineDefinition::Builder()
-                     .AddIntVector("HEX8", 8)
-                     .AddNamedInt("MAT")
-                     .AddNamedString("KINEM")
+                     .add_int_vector("HEX8", 8)
+                     .add_named_int("MAT")
+                     .add_named_string("KINEM")
                      .Build();
 }
 

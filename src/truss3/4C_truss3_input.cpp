@@ -22,13 +22,13 @@ bool Discret::ELEMENTS::Truss3::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
-  linedef->ExtractDouble("CROSS", crosssec_);
+  linedef->extract_double("CROSS", crosssec_);
 
   std::string buffer;
-  linedef->ExtractString("KINEM", buffer);
+  linedef->extract_string("KINEM", buffer);
 
   if (buffer == "totlag")  // geometrically non-linear with Total Lagrangean approach
     kintype_ = KinematicType::tr3_totlag;

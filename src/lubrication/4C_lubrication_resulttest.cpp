@@ -38,11 +38,11 @@ void LUBRICATION::ResultTest::test_node(Input::LineDefinition& res, int& nerr, i
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
   if (dis != dis_->Name()) return;
 
   int node;
-  res.ExtractInt("NODE", node);
+  res.extract_int("NODE", node);
   node -= 1;
 
   int havenode(dis_->HaveGlobalNode(node));
@@ -64,7 +64,7 @@ void LUBRICATION::ResultTest::test_node(Input::LineDefinition& res, int& nerr, i
 
       // extract name of quantity to be tested
       std::string quantity;
-      res.ExtractString("QUANTITY", quantity);
+      res.extract_string("QUANTITY", quantity);
 
       // get result to be tested
       const double result = result_node(quantity, actnode);
@@ -113,7 +113,7 @@ void LUBRICATION::ResultTest::TestSpecial(Input::LineDefinition& res, int& nerr,
   {
     // extract name of quantity to be tested
     std::string quantity;
-    res.ExtractString("QUANTITY", quantity);
+    res.extract_string("QUANTITY", quantity);
 
     // get result to be tested
     const double result = result_special(quantity);

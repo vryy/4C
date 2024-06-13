@@ -123,7 +123,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::Unpack(const std::vector<char>& data
   for (int i = 0; i < size; ++i) extract_from_pack(position, data, xsi_[i]);
 
   // scatra_coupling_
-  scatra_coupling_ = static_cast<bool>(ExtractInt(position, data));
+  scatra_coupling_ = static_cast<bool>(extract_int(position, data));
 
   // anisotropic_permeability_directions_
   size = 0;
@@ -199,8 +199,8 @@ void Discret::ELEMENTS::Wall1Poro<distype>::
   for (int dim = 0; dim < 2; ++dim)
   {
     std::string definition_name = "POROANISODIR" + std::to_string(dim + 1);
-    if (linedef->HaveNamed(definition_name))
-      linedef->ExtractDoubleVector(definition_name, anisotropic_permeability_directions_[dim]);
+    if (linedef->has_named(definition_name))
+      linedef->extract_double_vector(definition_name, anisotropic_permeability_directions_[dim]);
   }
 }
 
@@ -212,8 +212,8 @@ void Discret::ELEMENTS::Wall1Poro<distype>::
   for (int dim = 0; dim < 2; ++dim)
   {
     std::string definition_name = "POROANISONODALCOEFFS" + std::to_string(dim + 1);
-    if (linedef->HaveNamed(definition_name))
-      linedef->ExtractDoubleVector(definition_name, anisotropic_permeability_nodal_coeffs_[dim]);
+    if (linedef->has_named(definition_name))
+      linedef->extract_double_vector(definition_name, anisotropic_permeability_nodal_coeffs_[dim]);
   }
 }
 

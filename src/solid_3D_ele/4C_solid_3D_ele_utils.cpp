@@ -80,7 +80,7 @@ Core::LinAlg::Matrix<6, 1> STR::UTILS::green_lagrange_to_log_strain(
 int STR::UTILS::ReadElement::read_element_material(Input::LineDefinition* linedef)
 {
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   return material;
 }
 
@@ -88,7 +88,7 @@ Inpar::STR::KinemType STR::UTILS::ReadElement::read_element_kinematic_type(
     Input::LineDefinition* linedef)
 {
   std::string kinem;
-  linedef->ExtractString("KINEM", kinem);
+  linedef->extract_string("KINEM", kinem);
   if (kinem == "nonlinear")
     return Inpar::STR::KinemType::nonlinearTotLag;
   else if (kinem == "linear")
@@ -104,7 +104,7 @@ Discret::ELEMENTS::ElementTechnology STR::UTILS::ReadElement::read_element_techn
     Input::LineDefinition* linedef)
 {
   std::string type;
-  linedef->ExtractString("TECH", type);
+  linedef->extract_string("TECH", type);
   if (type == "fbar")
   {
     return Discret::ELEMENTS::ElementTechnology::fbar;
@@ -129,7 +129,7 @@ Discret::ELEMENTS::PrestressTechnology STR::UTILS::ReadElement::read_prestress_t
     Input::LineDefinition* linedef)
 {
   std::string type;
-  linedef->ExtractString("PRESTRESS_TECH", type);
+  linedef->extract_string("PRESTRESS_TECH", type);
   if (type == "none")
   {
     return Discret::ELEMENTS::PrestressTechnology::none;
@@ -147,13 +147,13 @@ Discret::ELEMENTS::SolidElementProperties STR::UTILS::ReadElement::read_solid_el
 {
   Discret::ELEMENTS::SolidElementProperties solid_properties{};
   // element technology
-  if (linedef->HaveNamed("TECH"))
+  if (linedef->has_named("TECH"))
   {
     solid_properties.element_technology = STR::UTILS::ReadElement::read_element_technology(linedef);
   }
 
   // prestress technology
-  if (linedef->HaveNamed("PRESTRESS_TECH"))
+  if (linedef->has_named("PRESTRESS_TECH"))
   {
     solid_properties.prestress_technology =
         STR::UTILS::ReadElement::read_prestress_technology(linedef);

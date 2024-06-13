@@ -62,7 +62,7 @@ void Discret::ELEMENTS::Wall1ScatraType::setup_element_definition(
 
   for (const auto& [key, wall_line_def] : defs_wall)
   {
-    defs[key] = Input::LineDefinition::Builder(wall_line_def).AddNamedString("TYPE").Build();
+    defs[key] = Input::LineDefinition::Builder(wall_line_def).add_named_string("TYPE").Build();
   }
 }
 
@@ -126,7 +126,7 @@ void Discret::ELEMENTS::Wall1Scatra::Unpack(const std::vector<char>& data)
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract scalar transport impltype
-  impltype_ = static_cast<Inpar::ScaTra::ImplType>(ExtractInt(position, data));
+  impltype_ = static_cast<Inpar::ScaTra::ImplType>(extract_int(position, data));
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -155,7 +155,7 @@ bool Discret::ELEMENTS::Wall1Scatra::ReadElement(
 
   // read scalar transport implementation type
   std::string impltype;
-  linedef->ExtractString("TYPE", impltype);
+  linedef->extract_string("TYPE", impltype);
 
   if (impltype == "Undefined")
     impltype_ = Inpar::ScaTra::impltype_undefined;

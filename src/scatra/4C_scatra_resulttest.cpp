@@ -33,11 +33,11 @@ void ScaTra::ScaTraResultTest::test_node(Input::LineDefinition& res, int& nerr, 
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
   if (dis != scatratimint_->discretization()->Name()) return;
 
   int node;
-  res.ExtractInt("NODE", node);
+  res.extract_int("NODE", node);
   node -= 1;
 
   int havenode(scatratimint_->discretization()->HaveGlobalNode(node));
@@ -60,7 +60,7 @@ void ScaTra::ScaTraResultTest::test_node(Input::LineDefinition& res, int& nerr, 
 
       // extract name of quantity to be tested
       std::string quantity;
-      res.ExtractString("QUANTITY", quantity);
+      res.extract_string("QUANTITY", quantity);
 
       // get result to be tested
       const double result = result_node(quantity, actnode);
@@ -230,12 +230,12 @@ void ScaTra::ScaTraResultTest::TestSpecial(Input::LineDefinition& res, int& nerr
 {
   // make sure that quantity is tested only on specified discretization
   std::string disname;
-  res.ExtractString("DIS", disname);
+  res.extract_string("DIS", disname);
   if (disname == scatratimint_->discretization()->Name())
   {
     // extract name of quantity to be tested
     std::string quantity;
-    res.ExtractString("QUANTITY", quantity);
+    res.extract_string("QUANTITY", quantity);
 
     // get result to be tested on all processors
     const double result = result_special(quantity);

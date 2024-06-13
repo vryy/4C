@@ -64,7 +64,7 @@ void Discret::ELEMENTS::SoHex8ScatraType::setup_element_definition(
 
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
-  defs["HEX8"] = Input::LineDefinition::Builder(defs_hex8["HEX8"]).AddNamedString("TYPE").Build();
+  defs["HEX8"] = Input::LineDefinition::Builder(defs_hex8["HEX8"]).add_named_string("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -140,7 +140,7 @@ void Discret::ELEMENTS::SoHex8fbarScatraType::setup_element_definition(
 
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
-  defs["HEX8"] = Input::LineDefinition::Builder(defs_hex8["HEX8"]).AddNamedString("TYPE").Build();
+  defs["HEX8"] = Input::LineDefinition::Builder(defs_hex8["HEX8"]).add_named_string("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -216,7 +216,7 @@ void Discret::ELEMENTS::SoHex27ScatraType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX27"] =
-      Input::LineDefinition::Builder(defs_hex27["HEX27"]).AddNamedString("TYPE").Build();
+      Input::LineDefinition::Builder(defs_hex27["HEX27"]).add_named_string("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -292,7 +292,7 @@ void Discret::ELEMENTS::SoTet4ScatraType::setup_element_definition(
 
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
-  defs["TET4"] = Input::LineDefinition::Builder(defs_tet4["TET4"]).AddNamedString("TYPE").Build();
+  defs["TET4"] = Input::LineDefinition::Builder(defs_tet4["TET4"]).add_named_string("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -370,7 +370,7 @@ void Discret::ELEMENTS::SoTet10ScatraType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["TET10"] =
-      Input::LineDefinition::Builder(defs_tet10["TET10"]).AddNamedString("TYPE").Build();
+      Input::LineDefinition::Builder(defs_tet10["TET10"]).add_named_string("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -448,7 +448,7 @@ void Discret::ELEMENTS::SoWeg6ScatraType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["WEDGE6"] =
-      Input::LineDefinition::Builder(defs_weg6["WEDGE6"]).AddNamedString("TYPE").Build();
+      Input::LineDefinition::Builder(defs_weg6["WEDGE6"]).add_named_string("TYPE").Build();
 }
 
 

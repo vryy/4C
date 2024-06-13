@@ -82,7 +82,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::Unpack(const std::vector<char>&
 
   // extract scalar transport impltype
   impltype_ = static_cast<Inpar::ScaTra::ImplType>(
-      Core::Communication::ParObject::ExtractInt(position, data));
+      Core::Communication::ParObject::extract_int(position, data));
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -119,7 +119,7 @@ bool Discret::ELEMENTS::MembraneScatra<distype>::ReadElement(
 
   // read scalar transport implementation type
   std::string impltype;
-  linedef->ExtractString("TYPE", impltype);
+  linedef->extract_string("TYPE", impltype);
 
   if (impltype == "Undefined")
     impltype_ = Inpar::ScaTra::impltype_undefined;

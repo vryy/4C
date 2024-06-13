@@ -2287,13 +2287,13 @@ void Global::ReadCloningMaterialMap(Global::Problem& problem, Core::IO::DatFileR
   {
     // extract what was read from the input file
     std::string src_field;
-    input_line.ExtractString("SRC_FIELD", src_field);
+    input_line.extract_string("SRC_FIELD", src_field);
     int src_matid(-1);
-    input_line.ExtractInt("SRC_MAT", src_matid);
+    input_line.extract_int("SRC_MAT", src_matid);
     std::string tar_field;
-    input_line.ExtractString("TAR_FIELD", tar_field);
+    input_line.extract_string("TAR_FIELD", tar_field);
     int tar_matid(-1);
-    input_line.ExtractInt("TAR_MAT", tar_matid);
+    input_line.extract_int("TAR_MAT", tar_matid);
 
     // create the key pair
     std::pair<std::string, std::string> fields(src_field, tar_field);

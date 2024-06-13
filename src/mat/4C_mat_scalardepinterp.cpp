@@ -103,7 +103,7 @@ void Mat::ScalarDepInterp::Setup(int numgp, Input::LineDefinition* linedef)
 
   double lambda = 1.0;
   // Read lambda from input file, if available
-  if (linedef->HaveNamed("lambda")) ReadLambda(linedef, "lambda", lambda);
+  if (linedef->has_named("lambda")) ReadLambda(linedef, "lambda", lambda);
 
   lambda_ = std::vector<double>(numgp, lambda);
 
@@ -356,7 +356,7 @@ bool Mat::ScalarDepInterp::VisData(
 void Mat::ScalarDepInterp::ReadLambda(
     Input::LineDefinition* linedef, std::string specifier, double& lambda)
 {
-  linedef->ExtractDouble(specifier, lambda);
+  linedef->extract_double(specifier, lambda);
 }
 
 /*----------------------------------------------------------------------*/

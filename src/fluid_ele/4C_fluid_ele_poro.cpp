@@ -134,7 +134,7 @@ void Discret::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // kintype_
-  kintype_ = static_cast<Inpar::STR::KinemType>(ExtractInt(position, data));
+  kintype_ = static_cast<Inpar::STR::KinemType>(extract_int(position, data));
 
   // anisotropic_permeability_directions_
   int size = 0;

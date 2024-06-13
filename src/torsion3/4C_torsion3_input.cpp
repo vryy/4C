@@ -22,12 +22,12 @@ bool Discret::ELEMENTS::Torsion3::ReadElement(
 {
   // read type of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   // read type of bending potential
   std::string buffer;
-  linedef->ExtractString("BENDINGPOTENTIAL", buffer);
+  linedef->extract_string("BENDINGPOTENTIAL", buffer);
 
   // bending potential E_bend = 0.5*SPRING*\theta^2
   if (buffer == "quadratic") bendingpotential_ = quadratic;

@@ -36,11 +36,11 @@ void POROFLUIDMULTIPHASE::ResultTest::test_node(
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
   if (dis != porotimint_.discretization()->Name()) return;
 
   int node;
-  res.ExtractInt("NODE", node);
+  res.extract_int("NODE", node);
   node -= 1;
 
   int havenode(porotimint_.discretization()->HaveGlobalNode(node));
@@ -63,7 +63,7 @@ void POROFLUIDMULTIPHASE::ResultTest::test_node(
 
       // extract name of quantity to be tested
       std::string quantity;
-      res.ExtractString("QUANTITY", quantity);
+      res.extract_string("QUANTITY", quantity);
 
       // get result to be tested
       const double result = result_node(quantity, actnode);
@@ -84,12 +84,12 @@ void POROFLUIDMULTIPHASE::ResultTest::TestElement(
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
 
   if (dis != porotimint_.discretization()->Name()) return;
 
   int element;
-  res.ExtractInt("ELEMENT", element);
+  res.extract_int("ELEMENT", element);
   element -= 1;
 
   int haveelement(porotimint_.discretization()->HaveGlobalElement(element));
@@ -112,7 +112,7 @@ void POROFLUIDMULTIPHASE::ResultTest::TestElement(
 
       // extract name of quantity to be tested
       std::string quantity;
-      res.ExtractString("QUANTITY", quantity);
+      res.extract_string("QUANTITY", quantity);
 
       // get result to be tested
       const double result = result_element(quantity, actelement);
@@ -261,7 +261,7 @@ void POROFLUIDMULTIPHASE::ResultTest::TestSpecial(
   {
     // extract name of quantity to be tested
     std::string quantity;
-    res.ExtractString("QUANTITY", quantity);
+    res.extract_string("QUANTITY", quantity);
 
     // get result to be tested
     const double result = result_special(quantity);

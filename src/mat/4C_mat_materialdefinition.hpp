@@ -76,7 +76,7 @@ namespace Mat
     /// add a concrete component to the material line definition
     ///
     /// Add new components to the input line. One at a time.
-    void AddComponent(const Teuchos::RCP<Input::LineComponent>& c);
+    void add_component(const Teuchos::RCP<Input::LineComponent>& c);
 
     /// Try to read all lines that fit the current material definition.
     std::vector<std::pair<int, Core::IO::InputParameterContainer>> Read(Core::IO::DatFileReader&

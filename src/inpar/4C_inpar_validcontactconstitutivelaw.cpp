@@ -58,10 +58,10 @@ Input::ValidContactConstitutiveLaws()
         Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_brokenrational",
             "Broken rational law", Inpar::CONTACT::ConstitutiveLawType::colaw_brokenrational));
 
-    AddNamedReal(m, "A", "scaling factor");
-    AddNamedReal(m, "B", "asymptote");
-    AddNamedReal(m, "C", "y intercept");
-    AddNamedReal(m, "Offset", "offset for contact to start", 0.0, true);
+    add_named_real(m, "A", "scaling factor");
+    add_named_real(m, "B", "asymptote");
+    add_named_real(m, "C", "y intercept");
+    add_named_real(m, "Offset", "offset for contact to start", 0.0, true);
 
     AppendCoConstLawComponentDefinition(coconstlawlist, m);
   }
@@ -71,9 +71,9 @@ Input::ValidContactConstitutiveLaws()
         Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition(
             "CoConstLaw_power", "Power law", Inpar::CONTACT::ConstitutiveLawType::colaw_power));
 
-    AddNamedReal(m, "A", "scaling factor");
-    AddNamedReal(m, "B", "power coefficient");
-    AddNamedReal(m, "Offset", "offset for contact to start", 0.0, true);
+    add_named_real(m, "A", "scaling factor");
+    add_named_real(m, "B", "power coefficient");
+    add_named_real(m, "Offset", "offset for contact to start", 0.0, true);
 
     AppendCoConstLawComponentDefinition(coconstlawlist, m);
   }
@@ -84,11 +84,11 @@ Input::ValidContactConstitutiveLaws()
         Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_cubic",
             "Cubic function", Inpar::CONTACT::ConstitutiveLawType::colaw_cubic));
 
-    AddNamedReal(m, "A", "A");
-    AddNamedReal(m, "B", "B");
-    AddNamedReal(m, "C", "C");
-    AddNamedReal(m, "D", "D");
-    AddNamedReal(m, "Offset", "offset for contact to start", 0.0, true);
+    add_named_real(m, "A", "A");
+    add_named_real(m, "B", "B");
+    add_named_real(m, "C", "C");
+    add_named_real(m, "D", "D");
+    add_named_real(m, "Offset", "offset for contact to start", 0.0, true);
 
     AppendCoConstLawComponentDefinition(coconstlawlist, m);
   }
@@ -99,9 +99,9 @@ Input::ValidContactConstitutiveLaws()
         Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_linear",
             "Linear function", Inpar::CONTACT::ConstitutiveLawType::colaw_linear));
 
-    AddNamedReal(m, "A", "slope");
-    AddNamedReal(m, "B", "y intercept");
-    AddNamedReal(m, "Offset", "offset for contact to start", 0.0, true);
+    add_named_real(m, "A", "slope");
+    add_named_real(m, "B", "y intercept");
+    add_named_real(m, "Offset", "offset for contact to start", 0.0, true);
 
     AppendCoConstLawComponentDefinition(coconstlawlist, m);
   }
@@ -112,26 +112,26 @@ Input::ValidContactConstitutiveLaws()
         Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_mirco",
             "Mirco function", Inpar::CONTACT::ConstitutiveLawType::colaw_mirco));
 
-    AddNamedInt(m, "FirstMatID", "First material ID");
-    AddNamedInt(m, "SecondMatID", "Second material ID");
-    AddNamedReal(m, "LateralLength", "length of lateral side of the BEM patch");
-    AddNamedInt(m, "Resolution", "resolution of the surface");
-    AddNamedBool(m, "PressureGreenFunFlag",
+    add_named_int(m, "FirstMatID", "First material ID");
+    add_named_int(m, "SecondMatID", "Second material ID");
+    add_named_real(m, "LateralLength", "length of lateral side of the BEM patch");
+    add_named_int(m, "Resolution", "resolution of the surface");
+    add_named_bool(m, "PressureGreenFunFlag",
         "Use pressure-based Green function instead of a point-force-based", true, true);
-    AddNamedInt(m, "InitialTopologyStdDeviationFunct",
+    add_named_int(m, "InitialTopologyStdDeviationFunct",
         "Function id for Initial Standard deviation for the random-midpoint generator", 100, true);
-    AddNamedInt(m, "HurstExponentFunct", "Function for Hurst exponent of the surface", 100, true);
-    AddNamedBool(m, "RandomTopologyFlag", "Use random midpoint generator flag", true, true);
-    AddNamedBool(m, "RandomSeedFlag", "Random seed flag", false, true);
-    AddNamedInt(m, "RandomGeneratorSeed", "Use random seed to reproduce results", 95, true);
-    AddNamedReal(m, "Tolerance", "Tolerance for the convergence of force", 0.01, true);
-    AddNamedInt(m, "MaxIteration", "Maximum iteration of NNLS", 1000, true);
-    AddNamedBool(m, "WarmStartingFlag", "Warm-starting flag, solution accelerator", true, true);
-    AddNamedReal(m, "Offset", "offset for contact to start", 0.0, true);
-    AddNamedReal(m, "FiniteDifferenceFraction",
+    add_named_int(m, "HurstExponentFunct", "Function for Hurst exponent of the surface", 100, true);
+    add_named_bool(m, "RandomTopologyFlag", "Use random midpoint generator flag", true, true);
+    add_named_bool(m, "RandomSeedFlag", "Random seed flag", false, true);
+    add_named_int(m, "RandomGeneratorSeed", "Use random seed to reproduce results", 95, true);
+    add_named_real(m, "Tolerance", "Tolerance for the convergence of force", 0.01, true);
+    add_named_int(m, "MaxIteration", "Maximum iteration of NNLS", 1000, true);
+    add_named_bool(m, "WarmStartingFlag", "Warm-starting flag, solution accelerator", true, true);
+    add_named_real(m, "Offset", "offset for contact to start", 0.0, true);
+    add_named_real(m, "FiniteDifferenceFraction",
         "Fraction of pertubation difference compared to the actual gap", 0.001, true);
-    AddNamedReal(m, "ActiveGapTolerance", "Minimum gap to consider a node as active", 1e-6, true);
-    AddNamedString(
+    add_named_real(m, "ActiveGapTolerance", "Minimum gap to consider a node as active", 1e-6, true);
+    add_named_string(
         m, "TopologyFilePath", "Absolute path to file with micro-topology data", "", true);
 
     AppendCoConstLawComponentDefinition(coconstlawlist, m);

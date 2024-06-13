@@ -48,7 +48,7 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteReadTheDocsHeader(const std::string& headerdocumentationfilename)
+  void write_read_the_docsHeader(const std::string& headerdocumentationfilename)
   {
     // open ascii file for writing all header parameters
     std::ofstream headerdocumentationfile(headerdocumentationfilename.c_str());
@@ -64,7 +64,7 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteReadTheDocsCelltypes(const std::string& celltypedocumentationfilename)
+  void write_read_the_docsCelltypes(const std::string& celltypedocumentationfilename)
   {
     // open ascii file for writing all header parameters
     std::ofstream celltypeocumentationfile(celltypedocumentationfilename.c_str());
@@ -78,7 +78,7 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteReadTheDocsMaterial(const std::string& materialdocumentationfilename)
+  void write_read_the_docsMaterial(const std::string& materialdocumentationfilename)
   {
     //
     // open ascii file for writing all material parameters
@@ -92,7 +92,7 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteReadTheDocsCondition(const std::string& conditiondocumentationfilename)
+  void write_read_the_docsCondition(const std::string& conditiondocumentationfilename)
   {
     //
     // open ascii file for writing all constrains / conditions parameters
@@ -108,7 +108,7 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteReadTheDocsVarious(const std::string& variousdocumentationfilename)
+  void write_read_the_docsVarious(const std::string& variousdocumentationfilename)
   {
     //
     // open ascii file for writing other (non header) parameters

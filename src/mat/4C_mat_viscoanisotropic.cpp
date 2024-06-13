@@ -226,9 +226,9 @@ void Mat::ViscoAnisotropic::Setup(int numgp, Input::LineDefinition* linedef)
   std::vector<double> rad;
   std::vector<double> axi;
   std::vector<double> cir;
-  linedef->ExtractDoubleVector("RAD", rad);
-  linedef->ExtractDoubleVector("AXI", axi);
-  linedef->ExtractDoubleVector("CIR", cir);
+  linedef->extract_double_vector("RAD", rad);
+  linedef->extract_double_vector("AXI", axi);
+  linedef->extract_double_vector("CIR", cir);
 
   Core::LinAlg::Matrix<3, 3> locsys;
   // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir

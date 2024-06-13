@@ -35,13 +35,13 @@ void Mat::CylinderCoordinateSystemManager::Unpack(
   Core::Communication::ParObject::extract_from_pack(position, data, radial_);
   Core::Communication::ParObject::extract_from_pack(position, data, axial_);
   Core::Communication::ParObject::extract_from_pack(position, data, circumferential_);
-  is_defined_ = static_cast<bool>(Core::Communication::ParObject::ExtractInt(position, data));
+  is_defined_ = static_cast<bool>(Core::Communication::ParObject::extract_int(position, data));
 }
 
 void Mat::CylinderCoordinateSystemManager::read_from_element_line_definition(
     Input::LineDefinition* linedef)
 {
-  if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
+  if (linedef->has_named("RAD") and linedef->has_named("AXI") and linedef->has_named("CIR"))
   {
     read_anisotropy_fiber(linedef, "RAD", radial_);
     read_anisotropy_fiber(linedef, "AXI", axial_);

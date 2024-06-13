@@ -157,8 +157,8 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::unpack_affiliation_pairs(
   while (position < buffer.size())
   {
     // get affiliation pair
-    const int globalid = Core::Communication::ParObject::ExtractInt(position, buffer);
-    const int rigidbody = Core::Communication::ParObject::ExtractInt(position, buffer);
+    const int globalid = Core::Communication::ParObject::extract_int(position, buffer);
+    const int rigidbody = Core::Communication::ParObject::extract_int(position, buffer);
 
     // add affiliation pair
     affiliationdata_[globalid] = rigidbody;

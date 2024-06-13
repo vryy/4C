@@ -29,11 +29,11 @@ void Discret::ELEMENTS::ExtractFromPack(std::size_t& position, const std::vector
     Discret::ELEMENTS::SolidElementProperties& properties)
 {
   properties.kintype = static_cast<Inpar::STR::KinemType>(
-      Core::Communication::ParObject::ExtractInt(position, data));
+      Core::Communication::ParObject::extract_int(position, data));
   properties.element_technology =
-      static_cast<ElementTechnology>(Core::Communication::ParObject::ExtractInt(position, data));
+      static_cast<ElementTechnology>(Core::Communication::ParObject::extract_int(position, data));
   properties.prestress_technology =
-      static_cast<PrestressTechnology>(Core::Communication::ParObject::ExtractInt(position, data));
+      static_cast<PrestressTechnology>(Core::Communication::ParObject::extract_int(position, data));
 }
 
 FOUR_C_NAMESPACE_CLOSE

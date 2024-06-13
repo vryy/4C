@@ -56,11 +56,11 @@ void Discret::ELEMENTS::ArteryType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["ART"];
 
   defs["LINE2"] = Input::LineDefinition::Builder()
-                      .AddIntVector("LINE2", 2)
-                      .AddNamedInt("MAT")
-                      .AddNamedInt("GP")
-                      .AddNamedString("TYPE")
-                      .AddNamedDouble("DIAM")
+                      .add_int_vector("LINE2", 2)
+                      .add_named_int("MAT")
+                      .add_named_int("GP")
+                      .add_named_string("TYPE")
+                      .add_named_double("DIAM")
                       .Build();
 }
 
@@ -149,7 +149,7 @@ void Discret::ELEMENTS::Artery::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
   // Gaussrule
   extract_from_pack(position, data, gaussrule_);
-  impltype_ = static_cast<Inpar::ArtDyn::ImplType>(ExtractInt(position, data));
+  impltype_ = static_cast<Inpar::ArtDyn::ImplType>(extract_int(position, data));
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

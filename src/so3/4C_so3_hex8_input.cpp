@@ -21,7 +21,7 @@ bool Discret::ELEMENTS::SoHex8::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
 
   SetMaterial(0, Mat::Factory(material));
 
@@ -32,7 +32,7 @@ bool Discret::ELEMENTS::SoHex8::ReadElement(
   std::string buffer;
 
   // read kinematic flag
-  linedef->ExtractString("KINEM", buffer);
+  linedef->extract_string("KINEM", buffer);
   if (buffer == "linear")
   {
     kintype_ = Inpar::STR::KinemType::linear;
@@ -48,7 +48,7 @@ bool Discret::ELEMENTS::SoHex8::ReadElement(
   SolidMaterial()->ValidKinematics(kintype_);
 
   // read EAS technology flag
-  linedef->ExtractString("EAS", buffer);
+  linedef->extract_string("EAS", buffer);
 
   // full EAS technology
   if (buffer == "full")

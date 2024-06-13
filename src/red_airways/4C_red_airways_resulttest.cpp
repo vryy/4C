@@ -41,11 +41,11 @@ void Airway::RedAirwayResultTest::test_node(Input::LineDefinition& res, int& ner
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
   if (dis != dis_->Name()) return;
 
   int node;
-  res.ExtractInt("NODE", node);
+  res.extract_int("NODE", node);
   node -= 1;
 
   int havenode(dis_->HaveGlobalNode(node));
@@ -68,7 +68,7 @@ void Airway::RedAirwayResultTest::test_node(Input::LineDefinition& res, int& ner
       double result = 0.;
       const Epetra_BlockMap& nodemap = mynodesol_pressure_->Map();
       std::string position;
-      res.ExtractString("QUANTITY", position);
+      res.extract_string("QUANTITY", position);
 
       // test result value of single scalar field
       if (position == "pressure")
@@ -107,11 +107,11 @@ void Airway::RedAirwayResultTest::TestElement(
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
   if (dis != dis_->Name()) return;
 
   int element;
-  res.ExtractInt("ELEMENT", element);
+  res.extract_int("ELEMENT", element);
   element -= 1;
 
   int haveelement(dis_->HaveGlobalElement(element));
@@ -134,7 +134,7 @@ void Airway::RedAirwayResultTest::TestElement(
       double result = 0.;
       const Epetra_BlockMap& elementmap = myelemsol_acinivol_->Map();
       std::string position;
-      res.ExtractString("QUANTITY", position);
+      res.extract_string("QUANTITY", position);
       if (position == "pressure_external")
       {
         result = (*myelemsol_pressure_external_)[elementmap.LID(actelement->Id())];

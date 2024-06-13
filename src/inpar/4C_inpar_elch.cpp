@@ -209,9 +209,9 @@ void Inpar::ElCh::SetValidConditions(
     // insert input file line components into condition definitions
     for (auto& electrodesoccomponent : electrodesoccomponents)
     {
-      electrodesocline->AddComponent(electrodesoccomponent);
-      electrodesocsurf->AddComponent(electrodesoccomponent);
-      electrodesocvol->AddComponent(electrodesoccomponent);
+      electrodesocline->add_component(electrodesoccomponent);
+      electrodesocsurf->add_component(electrodesoccomponent);
+      electrodesocvol->add_component(electrodesoccomponent);
     }
 
     // insert condition definitions into global list of valid condition definitions
@@ -247,9 +247,9 @@ void Inpar::ElCh::SetValidConditions(
     // insert input file line components into condition definitions
     for (auto& cellvoltagecomponent : cellvoltagecomponents)
     {
-      cellvoltagepoint->AddComponent(cellvoltagecomponent);
-      cellvoltageline->AddComponent(cellvoltagecomponent);
-      cellvoltagesurf->AddComponent(cellvoltagecomponent);
+      cellvoltagepoint->add_component(cellvoltagecomponent);
+      cellvoltageline->add_component(cellvoltagecomponent);
+      cellvoltagesurf->add_component(cellvoltagecomponent);
     }
 
     // insert condition definitions into global list of valid condition definitions
@@ -409,9 +409,9 @@ void Inpar::ElCh::SetValidConditions(
 
     for (auto& elechemcomponent : elechemcomponents)
     {
-      electrodeboundarykineticspoint->AddComponent(elechemcomponent);
-      electrodeboundarykineticsline->AddComponent(elechemcomponent);
-      electrodeboundarykineticssurf->AddComponent(elechemcomponent);
+      electrodeboundarykineticspoint->add_component(elechemcomponent);
+      electrodeboundarykineticsline->add_component(elechemcomponent);
+      electrodeboundarykineticssurf->add_component(elechemcomponent);
     }
 
     condlist.emplace_back(electrodeboundarykineticspoint);
@@ -501,9 +501,9 @@ void Inpar::ElCh::SetValidConditions(
     // insert input file line components into condition definitions
     for (auto& electrodedomainkineticscomponent : electrodedomainkineticscomponents)
     {
-      electrodedomainkineticsline->AddComponent(electrodedomainkineticscomponent);
-      electrodedomainkineticssurf->AddComponent(electrodedomainkineticscomponent);
-      electrodedomainkineticsvol->AddComponent(electrodedomainkineticscomponent);
+      electrodedomainkineticsline->add_component(electrodedomainkineticscomponent);
+      electrodedomainkineticssurf->add_component(electrodedomainkineticscomponent);
+      electrodedomainkineticsvol->add_component(electrodedomainkineticscomponent);
     }
 
     // insert condition definitions into global list of valid condition definitions
@@ -571,9 +571,9 @@ void Inpar::ElCh::SetValidConditions(
     // insert input file line components into condition definitions
     for (auto& cccvcyclingcomponent : cccvcyclingcomponents)
     {
-      cccvcyclingpoint->AddComponent(cccvcyclingcomponent);
-      cccvcyclingline->AddComponent(cccvcyclingcomponent);
-      cccvcyclingsurf->AddComponent(cccvcyclingcomponent);
+      cccvcyclingpoint->add_component(cccvcyclingcomponent);
+      cccvcyclingline->add_component(cccvcyclingcomponent);
+      cccvcyclingsurf->add_component(cccvcyclingcomponent);
     }
 
     // insert condition definitions into global list of valid condition definitions
@@ -629,9 +629,9 @@ void Inpar::ElCh::SetValidConditions(
     // insert input file line components into condition definitions
     for (auto& cccvhalfcyclecomponent : cccvhalfcyclecomponents)
     {
-      cccvhalfcyclepoint->AddComponent(cccvhalfcyclecomponent);
-      cccvhalfcycleline->AddComponent(cccvhalfcyclecomponent);
-      cccvhalfcyclesurf->AddComponent(cccvhalfcyclecomponent);
+      cccvhalfcyclepoint->add_component(cccvhalfcyclecomponent);
+      cccvhalfcycleline->add_component(cccvhalfcyclecomponent);
+      cccvhalfcyclesurf->add_component(cccvhalfcyclecomponent);
     }
 
     // insert condition definitions into global list of valid condition definitions

@@ -72,7 +72,7 @@ void Mat::Elastic::CoupTransverselyIsotropic::Setup(int numgp, Input::LineDefini
       ss << params_->fiber_gid_;
       std::string fibername = "FIBER" + ss.str();  // FIBER Name
       // CIR-AXI-RAD nomenclature
-      if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
+      if (linedef->has_named("RAD") and linedef->has_named("AXI") and linedef->has_named("CIR"))
       {
         // Read in of data
         Core::LinAlg::Matrix<3, 3> locsys(true);
@@ -83,7 +83,7 @@ void Mat::Elastic::CoupTransverselyIsotropic::Setup(int numgp, Input::LineDefini
         SetFiberVecs(0.0, locsys, Id);
       }
       // FIBERi nomenclature
-      else if (linedef->HaveNamed(fibername))
+      else if (linedef->has_named(fibername))
       {
         // Read in of data
         ReadFiber(linedef, fibername, a_);

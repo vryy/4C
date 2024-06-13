@@ -96,30 +96,30 @@ void Discret::ELEMENTS::Beam3kType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["BEAM3K"];
 
   defs["LINE2"] = Input::LineDefinition::Builder()
-                      .AddIntVector("LINE2", 2)
-                      .AddNamedInt("WK")
-                      .AddNamedInt("ROTVEC")
-                      .AddNamedInt("MAT")
+                      .add_int_vector("LINE2", 2)
+                      .add_named_int("WK")
+                      .add_named_int("ROTVEC")
+                      .add_named_int("MAT")
                       .add_named_double_vector("TRIADS", 6)
-                      .AddOptionalTag("FAD")
+                      .add_optional_tag("FAD")
                       .Build();
 
   defs["LINE3"] = Input::LineDefinition::Builder()
-                      .AddIntVector("LINE3", 3)
-                      .AddNamedInt("WK")
-                      .AddNamedInt("ROTVEC")
-                      .AddNamedInt("MAT")
+                      .add_int_vector("LINE3", 3)
+                      .add_named_int("WK")
+                      .add_named_int("ROTVEC")
+                      .add_named_int("MAT")
                       .add_named_double_vector("TRIADS", 9)
-                      .AddOptionalTag("FAD")
+                      .add_optional_tag("FAD")
                       .Build();
 
   defs["LINE4"] = Input::LineDefinition::Builder()
-                      .AddIntVector("LINE4", 4)
-                      .AddNamedInt("WK")
-                      .AddNamedInt("ROTVEC")
-                      .AddNamedInt("MAT")
+                      .add_int_vector("LINE4", 4)
+                      .add_named_int("WK")
+                      .add_named_int("ROTVEC")
+                      .add_named_int("MAT")
                       .add_named_double_vector("TRIADS", 12)
-                      .AddOptionalTag("FAD")
+                      .add_optional_tag("FAD")
                       .Build();
 }
 
@@ -395,8 +395,8 @@ void Discret::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   Beam3Base::Unpack(basedata);
 
   // extract all class variables of beam3k element
-  use_fad_ = ExtractInt(position, data);
-  isinit_ = ExtractInt(position, data);
+  use_fad_ = extract_int(position, data);
+  isinit_ = extract_int(position, data);
   extract_from_pack<3, 1>(position, data, Tref_);
   extract_from_pack<3, 1>(position, data, t_);
   extract_from_pack<3, 1>(position, data, theta0_);
@@ -408,8 +408,8 @@ void Discret::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, jacobi2_);
   extract_from_pack(position, data, jacobi_cp_);
   extract_from_pack(position, data, jacobi2_cp_);
-  rotvec_ = ExtractInt(position, data);
-  weakkirchhoff_ = ExtractInt(position, data);
+  rotvec_ = extract_int(position, data);
+  weakkirchhoff_ = extract_int(position, data);
   extract_from_pack(position, data, eint_);
   extract_from_pack(position, data, ekin_);
   extract_from_pack<4, 1>(position, data, qconvmass_);

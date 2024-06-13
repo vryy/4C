@@ -106,9 +106,9 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
   bool found_function_of_time(false);
   for (const auto& ith_function_lin_def : function_line_defs)
   {
-    ignore_errors_in([&]() { ith_function_lin_def.ExtractInt("COMPONENT", maxcomp); });
-    ignore_errors_in([&]() { ith_function_lin_def.ExtractInt("VARIABLE", maxvar); });
-    if (ith_function_lin_def.HaveNamed("SYMBOLIC_FUNCTION_OF_TIME")) found_function_of_time = true;
+    ignore_errors_in([&]() { ith_function_lin_def.extract_int("COMPONENT", maxcomp); });
+    ignore_errors_in([&]() { ith_function_lin_def.extract_int("VARIABLE", maxvar); });
+    if (ith_function_lin_def.has_named("SYMBOLIC_FUNCTION_OF_TIME")) found_function_of_time = true;
   }
 
   if (!found_function_of_time) return Teuchos::null;
@@ -127,11 +127,11 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
 
     // check the validity of the n-th component
     int compid = 0;
-    ignore_errors_in([&]() { functcomp.ExtractInt("COMPONENT", compid); });
+    ignore_errors_in([&]() { functcomp.extract_int("COMPONENT", compid); });
     if (compid != n) FOUR_C_THROW("expected COMPONENT %d but got COMPONENT %d", n, compid);
 
     // read the expression of the n-th component of the i-th function
-    functcomp.ExtractString("SYMBOLIC_FUNCTION_OF_TIME", functstring[n]);
+    functcomp.extract_string("SYMBOLIC_FUNCTION_OF_TIME", functstring[n]);
   }
 
   std::map<int, std::vector<Teuchos::RCP<FunctionVariable>>> variable_pieces;
@@ -144,27 +144,27 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
 
     // read the number of the variable
     int varid;
-    ignore_errors_in([&]() { line.ExtractInt("VARIABLE", varid); });
+    ignore_errors_in([&]() { line.extract_int("VARIABLE", varid); });
 
     const auto variable = std::invoke(
         [&line]() -> Teuchos::RCP<Core::UTILS::FunctionVariable>
         {
           // read the name of the variable
           std::string varname;
-          line.ExtractString("NAME", varname);
+          line.extract_string("NAME", varname);
 
           // read the type of the variable
           std::string vartype;
-          line.ExtractString("TYPE", vartype);
+          line.extract_string("TYPE", vartype);
 
           // read periodicity data
           Periodicstruct periodicdata{};
 
-          periodicdata.periodic = line.HasString("PERIODIC");
+          periodicdata.periodic = line.has_string("PERIODIC");
           if (periodicdata.periodic)
           {
-            line.ExtractDouble("T1", periodicdata.t1);
-            line.ExtractDouble("T2", periodicdata.t2);
+            line.extract_double("T1", periodicdata.t1);
+            line.extract_double("T2", periodicdata.t2);
           }
           else
           {
@@ -176,7 +176,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
           if (vartype == "expression")
           {
             std::vector<std::string> description_vec;
-            line.ExtractStringVector("DESCRIPTION", description_vec);
+            line.extract_string_vector("DESCRIPTION", description_vec);
 
             if (description_vec.size() != 1)
             {
@@ -195,7 +195,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
 
             // read values
             std::vector<double> values;
-            line.ExtractDoubleVector("VALUES", values);
+            line.extract_double_vector("VALUES", values);
 
             return Teuchos::rcp(
                 new LinearInterpolationVariable(varname, times, values, periodicdata));
@@ -207,7 +207,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
 
             // read descriptions (strings separated with spaces)
             std::vector<std::string> description_vec;
-            line.ExtractStringVector("DESCRIPTION", description_vec);
+            line.extract_string_vector("DESCRIPTION", description_vec);
 
             // check if the number of times = number of descriptions + 1
             std::size_t numtimes = times.size();
@@ -225,7 +225,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
 
             // read values
             std::vector<double> values;
-            line.ExtractDoubleVector("VALUES", values);
+            line.extract_double_vector("VALUES", values);
 
             return Teuchos::rcp(
                 new FourierInterpolationVariable(varname, times, values, periodicdata));

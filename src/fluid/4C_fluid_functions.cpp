@@ -66,22 +66,22 @@ namespace
 
     const auto& function_lin_def = function_line_defs.front();
 
-    if (function_lin_def.HaveNamed("BELTRAMI"))
+    if (function_lin_def.has_named("BELTRAMI"))
     {
       double c1;
-      function_lin_def.ExtractDouble("c1", c1);
+      function_lin_def.extract_double("c1", c1);
 
       return Teuchos::rcp(new FLD::BeltramiFunction(c1));
     }
-    else if (function_lin_def.HaveNamed("CHANNELWEAKLYCOMPRESSIBLE"))
+    else if (function_lin_def.has_named("CHANNELWEAKLYCOMPRESSIBLE"))
     {
       return Teuchos::rcp(new FLD::ChannelWeaklyCompressibleFunction());
     }
-    else if (function_lin_def.HaveNamed("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE"))
+    else if (function_lin_def.has_named("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE"))
     {
       return Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFunction());
     }
-    else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE"))
+    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_POISEUILLE"))
     {
       // read data
       int mat_id = -1;
@@ -89,10 +89,10 @@ namespace
       double R = 0.0;
       double U = 0.0;
 
-      function_lin_def.ExtractInt("MAT", mat_id);
-      function_lin_def.ExtractDouble("L", L);
-      function_lin_def.ExtractDouble("R", R);
-      function_lin_def.ExtractDouble("U", U);
+      function_lin_def.extract_int("MAT", mat_id);
+      function_lin_def.extract_double("L", L);
+      function_lin_def.extract_double("R", R);
+      function_lin_def.extract_double("U", U);
 
       if (mat_id <= 0)
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE");
@@ -105,7 +105,7 @@ namespace
 
       return Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleFunction(fparams, L, R, U));
     }
-    else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE"))
+    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE"))
     {
       // read data
       int mat_id = -1;
@@ -113,10 +113,10 @@ namespace
       double R = 0.0;
       double U = 0.0;
 
-      function_lin_def.ExtractInt("MAT", mat_id);
-      function_lin_def.ExtractDouble("L", L);
-      function_lin_def.ExtractDouble("R", R);
-      function_lin_def.ExtractDouble("U", U);
+      function_lin_def.extract_int("MAT", mat_id);
+      function_lin_def.extract_double("L", L);
+      function_lin_def.extract_double("R", R);
+      function_lin_def.extract_double("U", U);
 
       if (mat_id <= 0)
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
@@ -132,12 +132,12 @@ namespace
 
       return Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleForceFunction(fparams, L, R, U));
     }
-    else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW"))
+    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW"))
     {
       // read data
       int mat_id = -1;
 
-      function_lin_def.ExtractInt("MAT", mat_id);
+      function_lin_def.extract_int("MAT", mat_id);
 
       if (mat_id <= 0)
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW");
@@ -147,12 +147,12 @@ namespace
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowFunction(fparams));
     }
-    else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE"))
+    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE"))
     {
       // read data
       int mat_id = -1;
 
-      function_lin_def.ExtractInt("MAT", mat_id);
+      function_lin_def.extract_int("MAT", mat_id);
 
       if (mat_id <= 0)
         FOUR_C_THROW(
@@ -163,12 +163,12 @@ namespace
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowForceFunction(fparams));
     }
-    else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD"))
+    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_CFD"))
     {
       // read data
       int mat_id = -1;
 
-      function_lin_def.ExtractInt("MAT", mat_id);
+      function_lin_def.extract_int("MAT", mat_id);
 
       if (mat_id <= 0)
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD");
@@ -178,12 +178,12 @@ namespace
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDFunction(fparams));
     }
-    else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE"))
+    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE"))
     {
       // read data
       int mat_id = -1;
 
-      function_lin_def.ExtractInt("MAT", mat_id);
+      function_lin_def.extract_int("MAT", mat_id);
 
       if (mat_id <= 0)
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE");
@@ -193,12 +193,12 @@ namespace
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDForceFunction(fparams));
     }
-    else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY"))
+    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY"))
     {
       // read data
       int mat_id = -1;
 
-      function_lin_def.ExtractInt("MAT", mat_id);
+      function_lin_def.extract_int("MAT", mat_id);
 
       if (mat_id <= 0)
         FOUR_C_THROW(
@@ -209,14 +209,14 @@ namespace
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDViscosityFunction(fparams));
     }
-    else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID"))
+    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID"))
     {
       // read data
       int mat_id_fluid = -1;
       int mat_id_struc = -1;
 
-      function_lin_def.ExtractInt("MAT_FLUID", mat_id_fluid);
-      function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
+      function_lin_def.extract_int("MAT_FLUID", mat_id_fluid);
+      function_lin_def.extract_int("MAT_STRUC", mat_id_struc);
 
       if (mat_id_fluid <= 0)
         FOUR_C_THROW(
@@ -232,14 +232,14 @@ namespace
       return Teuchos::rcp(
           new FLD::WeaklyCompressibleEtienneFSIFluidFunction(fparams_fluid, fparams_struc));
     }
-    else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE"))
+    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE"))
     {
       // read data
       int mat_id_fluid = -1;
       int mat_id_struc = -1;
 
-      function_lin_def.ExtractInt("MAT_FLUID", mat_id_fluid);
-      function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
+      function_lin_def.extract_int("MAT_FLUID", mat_id_fluid);
+      function_lin_def.extract_int("MAT_STRUC", mat_id_struc);
 
       if (mat_id_fluid <= 0)
       {
@@ -261,14 +261,14 @@ namespace
       return Teuchos::rcp(
           new FLD::WeaklyCompressibleEtienneFSIFluidForceFunction(fparams_fluid, fparams_struc));
     }
-    else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY"))
+    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY"))
     {
       // read data
       int mat_id_fluid = -1;
       int mat_id_struc = -1;
 
-      function_lin_def.ExtractInt("MAT_FLUID", mat_id_fluid);
-      function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
+      function_lin_def.extract_int("MAT_FLUID", mat_id_fluid);
+      function_lin_def.extract_int("MAT_STRUC", mat_id_struc);
 
       if (mat_id_fluid <= 0)
       {
@@ -290,12 +290,12 @@ namespace
       return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction(
           fparams_fluid, fparams_struc));
     }
-    else if (function_lin_def.HaveNamed("BELTRAMI-UP"))
+    else if (function_lin_def.has_named("BELTRAMI-UP"))
     {
       // read material
       int mat_id = -1;
 
-      function_lin_def.ExtractInt("MAT", mat_id);
+      function_lin_def.extract_int("MAT", mat_id);
 
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in BELTRAMI-UP");
 
@@ -304,14 +304,14 @@ namespace
 
       return Teuchos::rcp(new FLD::BeltramiUP(fparams));
     }
-    else if (function_lin_def.HaveNamed("BELTRAMI-RHS"))
+    else if (function_lin_def.has_named("BELTRAMI-RHS"))
     {
       // read material
       int mat_id = -1;
       int is_stokes = 0;
 
-      function_lin_def.ExtractInt("MAT", mat_id);
-      function_lin_def.ExtractInt("ISSTOKES", is_stokes);
+      function_lin_def.extract_int("MAT", mat_id);
+      function_lin_def.extract_int("ISSTOKES", is_stokes);
 
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in BELTRAMI-RHS");
 
@@ -320,14 +320,14 @@ namespace
 
       return Teuchos::rcp(new FLD::BeltramiRHS(fparams, (bool)is_stokes));
     }
-    else if (function_lin_def.HaveNamed("KIMMOIN-UP"))
+    else if (function_lin_def.has_named("KIMMOIN-UP"))
     {
       // read material
       int mat_id = -1;
       int is_stationary = 0;
 
-      function_lin_def.ExtractInt("MAT", mat_id);
-      function_lin_def.ExtractInt("ISSTAT", is_stationary);
+      function_lin_def.extract_int("MAT", mat_id);
+      function_lin_def.extract_int("ISSTAT", is_stationary);
 
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in KIMMOIN-UP");
 
@@ -336,16 +336,16 @@ namespace
 
       return Teuchos::rcp(new FLD::KimMoinUP(fparams, (bool)is_stationary));
     }
-    else if (function_lin_def.HaveNamed("KIMMOIN-RHS"))
+    else if (function_lin_def.has_named("KIMMOIN-RHS"))
     {
       // read material
       int mat_id = -1;
       int is_stationary = 0;
       int is_stokes = 0;
 
-      function_lin_def.ExtractInt("MAT", mat_id);
-      function_lin_def.ExtractInt("ISSTAT", is_stationary);
-      function_lin_def.ExtractInt("ISSTOKES", is_stokes);
+      function_lin_def.extract_int("MAT", mat_id);
+      function_lin_def.extract_int("ISSTAT", is_stationary);
+      function_lin_def.extract_int("ISSTOKES", is_stokes);
 
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in KIMMOIN-RHS");
 
@@ -354,16 +354,16 @@ namespace
 
       return Teuchos::rcp(new FLD::KimMoinRHS(fparams, (bool)is_stationary, (bool)is_stokes));
     }
-    else if (function_lin_def.HaveNamed("KIMMOIN-STRESS"))
+    else if (function_lin_def.has_named("KIMMOIN-STRESS"))
     {
       // read material
       int mat_id = -1;
       int is_stationary = 0;
       double amplitude = 1.0;
 
-      function_lin_def.ExtractInt("MAT", mat_id);
-      function_lin_def.ExtractInt("ISSTAT", is_stationary);
-      function_lin_def.ExtractDouble("AMPLITUDE", amplitude);
+      function_lin_def.extract_int("MAT", mat_id);
+      function_lin_def.extract_int("ISSTAT", is_stationary);
+      function_lin_def.extract_double("AMPLITUDE", amplitude);
 
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in KIMMOIN-STRESS");
 
@@ -381,120 +381,121 @@ namespace
 
 void FLD::AddValidFluidFunctions(Core::UTILS::FunctionManager& function_manager)
 {
-  auto beltrami = Input::LineDefinition::Builder().AddTag("BELTRAMI").AddNamedDouble("c1").Build();
+  auto beltrami =
+      Input::LineDefinition::Builder().add_tag("BELTRAMI").add_named_double("c1").Build();
 
   auto channelweaklycompressible =
-      Input::LineDefinition::Builder().AddTag("CHANNELWEAKLYCOMPRESSIBLE").Build();
+      Input::LineDefinition::Builder().add_tag("CHANNELWEAKLYCOMPRESSIBLE").Build();
 
   auto correctiontermchannelweaklycompressible =
-      Input::LineDefinition::Builder().AddTag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE").Build();
+      Input::LineDefinition::Builder().add_tag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE").Build();
 
   auto weaklycompressiblepoiseuille = Input::LineDefinition::Builder()
-                                          .AddTag("WEAKLYCOMPRESSIBLE_POISEUILLE")
-                                          .AddNamedInt("MAT")
-                                          .AddNamedDouble("L")
-                                          .AddNamedDouble("R")
-                                          .AddNamedDouble("U")
+                                          .add_tag("WEAKLYCOMPRESSIBLE_POISEUILLE")
+                                          .add_named_int("MAT")
+                                          .add_named_double("L")
+                                          .add_named_double("R")
+                                          .add_named_double("U")
                                           .Build();
 
   auto weaklycompressiblepoiseuilleforce = Input::LineDefinition::Builder()
-                                               .AddTag("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE")
-                                               .AddNamedInt("MAT")
-                                               .AddNamedDouble("L")
-                                               .AddNamedDouble("R")
-                                               .AddNamedDouble("U")
+                                               .add_tag("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE")
+                                               .add_named_int("MAT")
+                                               .add_named_double("L")
+                                               .add_named_double("R")
+                                               .add_named_double("U")
                                                .Build();
 
   auto weaklycompressiblemanufacturedflow = Input::LineDefinition::Builder()
-                                                .AddTag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW")
-                                                .AddNamedInt("MAT")
+                                                .add_tag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW")
+                                                .add_named_int("MAT")
                                                 .Build();
 
   auto weaklycompressiblemanufacturedflowforce =
       Input::LineDefinition::Builder()
-          .AddTag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE")
-          .AddNamedInt("MAT")
+          .add_tag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE")
+          .add_named_int("MAT")
           .Build();
 
   auto weaklycompressibleetiennecfd = Input::LineDefinition::Builder()
-                                          .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD")
-                                          .AddNamedInt("MAT")
+                                          .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD")
+                                          .add_named_int("MAT")
                                           .Build();
 
   auto weaklycompressibleetiennecfdforce = Input::LineDefinition::Builder()
-                                               .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE")
-                                               .AddNamedInt("MAT")
+                                               .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE")
+                                               .add_named_int("MAT")
                                                .Build();
 
   auto weaklycompressibleetiennecfdviscosity =
       Input::LineDefinition::Builder()
-          .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY")
-          .AddNamedInt("MAT")
+          .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY")
+          .add_named_int("MAT")
           .Build();
 
   auto weaklycompressibleetiennefsifluid = Input::LineDefinition::Builder()
-                                               .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID")
-                                               .AddNamedInt("MAT_FLUID")
-                                               .AddNamedInt("MAT_STRUC")
+                                               .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID")
+                                               .add_named_int("MAT_FLUID")
+                                               .add_named_int("MAT_STRUC")
                                                .Build();
 
   auto weaklycompressibleetiennefsifluidforce =
       Input::LineDefinition::Builder()
-          .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE")
-          .AddNamedInt("MAT_FLUID")
-          .AddNamedInt("MAT_STRUC")
+          .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE")
+          .add_named_int("MAT_FLUID")
+          .add_named_int("MAT_STRUC")
           .Build();
 
   auto weaklycompressibleetiennefsifluidviscosity =
       Input::LineDefinition::Builder()
-          .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY")
-          .AddNamedInt("MAT_FLUID")
-          .AddNamedInt("MAT_STRUC")
+          .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY")
+          .add_named_int("MAT_FLUID")
+          .add_named_int("MAT_STRUC")
           .Build();
 
   auto beltramiup = Input::LineDefinition::Builder()
-                        .AddTag("BELTRAMI-UP")
-                        .AddNamedInt("MAT")
-                        .AddNamedInt("ISSTAT")
+                        .add_tag("BELTRAMI-UP")
+                        .add_named_int("MAT")
+                        .add_named_int("ISSTAT")
                         .Build();
 
   auto beltramigradu = Input::LineDefinition::Builder()
-                           .AddTag("BELTRAMI-GRADU")
-                           .AddNamedInt("MAT")
-                           .AddNamedInt("ISSTAT")
+                           .add_tag("BELTRAMI-GRADU")
+                           .add_named_int("MAT")
+                           .add_named_int("ISSTAT")
                            .Build();
 
   auto beltramirhs = Input::LineDefinition::Builder()
-                         .AddTag("BELTRAMI-RHS")
-                         .AddNamedInt("MAT")
-                         .AddNamedInt("ISSTAT")
-                         .AddNamedInt("ISSTOKES")
+                         .add_tag("BELTRAMI-RHS")
+                         .add_named_int("MAT")
+                         .add_named_int("ISSTAT")
+                         .add_named_int("ISSTOKES")
                          .Build();
 
   auto kimmoinup = Input::LineDefinition::Builder()
-                       .AddTag("KIMMOIN-UP")
-                       .AddNamedInt("MAT")
-                       .AddNamedInt("ISSTAT")
+                       .add_tag("KIMMOIN-UP")
+                       .add_named_int("MAT")
+                       .add_named_int("ISSTAT")
                        .Build();
 
   auto kimmoingradu = Input::LineDefinition::Builder()
-                          .AddTag("KIMMOIN-GRADU")
-                          .AddNamedInt("MAT")
-                          .AddNamedInt("ISSTAT")
+                          .add_tag("KIMMOIN-GRADU")
+                          .add_named_int("MAT")
+                          .add_named_int("ISSTAT")
                           .Build();
 
   auto kimmoinrhs = Input::LineDefinition::Builder()
-                        .AddTag("KIMMOIN-RHS")
-                        .AddNamedInt("MAT")
-                        .AddNamedInt("ISSTAT")
-                        .AddNamedInt("ISSTOKES")
+                        .add_tag("KIMMOIN-RHS")
+                        .add_named_int("MAT")
+                        .add_named_int("ISSTAT")
+                        .add_named_int("ISSTOKES")
                         .Build();
 
   auto kimmoinstress = Input::LineDefinition::Builder()
-                           .AddTag("KIMMOIN-STRESS")
-                           .AddNamedInt("MAT")
-                           .AddNamedInt("ISSTAT")
-                           .AddNamedDouble("AMPLITUDE")
+                           .add_tag("KIMMOIN-STRESS")
+                           .add_named_int("MAT")
+                           .add_named_int("ISSTAT")
+                           .add_named_double("AMPLITUDE")
                            .Build();
 
   std::vector<Input::LineDefinition> lines;

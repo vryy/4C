@@ -192,11 +192,11 @@ void STR::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test
 
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
   if (dis != strudisc_->Name()) return;
 
   int node;
-  res.ExtractInt("NODE", node);
+  res.extract_int("NODE", node);
   node -= 1;
 
   int havenode(strudisc_->HaveGlobalNode(node));
@@ -210,7 +210,7 @@ void STR::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test
   }
 
   std::string position;
-  res.ExtractString("QUANTITY", position);
+  res.extract_string("QUANTITY", position);
 
   if (strudisc_->HaveGlobalNode(node))
   {
@@ -415,33 +415,33 @@ void STR::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& ner
 
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
   if (dis != strudisc_->Name()) return;
 
   auto get_geometry_info = [res]() -> std::tuple<int, int>
   {
     int geometry_type = 0, geometry_id = 0;
-    if (res.HaveNamed("NODE"))
+    if (res.has_named("NODE"))
     {
-      res.ExtractInt("NODE", geometry_id);
+      res.extract_int("NODE", geometry_id);
       geometry_id -= 1;
       geometry_type = 0;
     }
-    else if (res.HaveNamed("LINE"))
+    else if (res.has_named("LINE"))
     {
-      res.ExtractInt("LINE", geometry_id);
+      res.extract_int("LINE", geometry_id);
       geometry_id -= 1;
       geometry_type = 1;
     }
-    else if (res.HaveNamed("SURFACE"))
+    else if (res.has_named("SURFACE"))
     {
-      res.ExtractInt("SURFACE", geometry_id);
+      res.extract_int("SURFACE", geometry_id);
       geometry_id -= 1;
       geometry_type = 2;
     }
-    else if (res.HaveNamed("VOLUME"))
+    else if (res.has_named("VOLUME"))
     {
-      res.ExtractInt("VOLUME", geometry_id);
+      res.extract_int("VOLUME", geometry_id);
       geometry_id -= 1;
       geometry_type = 3;
     }
@@ -460,7 +460,7 @@ void STR::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& ner
 
   std::string op_str;
   TestOp op = TestOp::unknown;
-  res.ExtractString("OP", op_str);
+  res.extract_string("OP", op_str);
   if (op_str == "sum")
     op = TestOp::sum;
   else if (op_str == "max")
@@ -471,7 +471,7 @@ void STR::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& ner
     FOUR_C_THROW("Invalid operation %s", op_str.c_str());
 
   std::string position;
-  res.ExtractString("QUANTITY", position);
+  res.extract_string("QUANTITY", position);
 
   // collect the local result
   double tmp_result;
@@ -565,7 +565,7 @@ void STR::ResultTest::TestSpecial(
   check_init_setup();
 
   std::string quantity;
-  res.ExtractString("QUANTITY", quantity);
+  res.extract_string("QUANTITY", quantity);
 
   Status special_status = Status::unevaluated;
   const std::optional<double> result = get_special_result(quantity, special_status);

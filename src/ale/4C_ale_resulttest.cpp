@@ -30,11 +30,11 @@ void ALE::AleResultTest::test_node(Input::LineDefinition& res, int& nerr, int& t
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
   if (dis != aledis_->Name()) return;
 
   int node;
-  res.ExtractInt("NODE", node);
+  res.extract_int("NODE", node);
   node -= 1;
 
   int havenode(aledis_->HaveGlobalNode(node));
@@ -59,7 +59,7 @@ void ALE::AleResultTest::test_node(Input::LineDefinition& res, int& nerr, int& t
       const Epetra_BlockMap& dispnpmap = dispnp_->Map();
 
       std::string position;
-      res.ExtractString("QUANTITY", position);
+      res.extract_string("QUANTITY", position);
       if (position == "dispx")
       {
         result = (*dispnp_)[dispnpmap.LID(aledis_->Dof(actnode, 0))];

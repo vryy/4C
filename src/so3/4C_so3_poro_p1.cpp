@@ -64,7 +64,7 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::Unpack(const std::vector<ch
 
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  is_init_porosity_ = Core::Communication::ParObject::ExtractInt(position, data);
+  is_init_porosity_ = Core::Communication::ParObject::extract_int(position, data);
 
   if (is_init_porosity_)
   {

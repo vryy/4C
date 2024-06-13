@@ -170,7 +170,7 @@ void CrossLinking::CrosslinkerNode::Unpack(const std::vector<char>& data)
   Core::Nodes::Node::Unpack(basedata);
 
   // mat
-  bool hasmat = ExtractInt(position, data);
+  bool hasmat = extract_int(position, data);
   if (hasmat)
   {
     std::vector<char> tmp;

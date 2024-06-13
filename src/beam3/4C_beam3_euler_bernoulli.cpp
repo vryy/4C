@@ -210,7 +210,7 @@ void Discret::ELEMENTS::Beam3ebType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["BEAM3EB"];
 
   defs["LINE2"] =
-      Input::LineDefinition::Builder().AddIntVector("LINE2", 2).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("LINE2", 2).add_named_int("MAT").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -385,7 +385,7 @@ void Discret::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
 
   // extract all class variables of beam3 element
   extract_from_pack(position, data, jacobi_);
-  isinit_ = ExtractInt(position, data);
+  isinit_ = extract_int(position, data);
   extract_from_pack(position, data, ekin_);
   extract_from_pack(position, data, eint_);
   extract_from_pack(position, data, Tref_);

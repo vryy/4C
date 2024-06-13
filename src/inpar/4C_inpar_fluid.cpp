@@ -1393,7 +1393,7 @@ void Inpar::FLUID::SetValidConditions(
   // we attach all the components of this condition to this weak line DBC
   for (unsigned i = 0; i < tbc_turb_inflow_components.size(); ++i)
   {
-    tbc_turb_inflow->AddComponent(tbc_turb_inflow_components[i]);
+    tbc_turb_inflow->add_component(tbc_turb_inflow_components[i]);
   }
 
   // and append it to the list of all conditions
@@ -1456,8 +1456,8 @@ void Inpar::FLUID::SetValidConditions(
   // we attach all the components of this condition to this weak line DBC
   for (unsigned i = 0; i < flowdeppressurecomponents.size(); ++i)
   {
-    lineflowdeppressure->AddComponent(flowdeppressurecomponents[i]);
-    surfflowdeppressure->AddComponent(flowdeppressurecomponents[i]);
+    lineflowdeppressure->add_component(flowdeppressurecomponents[i]);
+    surfflowdeppressure->add_component(flowdeppressurecomponents[i]);
   }
 
   // and append it to the list of all conditions
@@ -1486,8 +1486,8 @@ void Inpar::FLUID::SetValidConditions(
 
   for (unsigned i = 0; i < slipsuppcomponents.size(); ++i)
   {
-    lineslipsupp->AddComponent(slipsuppcomponents[i]);
-    surfslipsupp->AddComponent(slipsuppcomponents[i]);
+    lineslipsupp->add_component(slipsuppcomponents[i]);
+    surfslipsupp->add_component(slipsuppcomponents[i]);
   }
 
   condlist.push_back(lineslipsupp);
@@ -1513,8 +1513,8 @@ void Inpar::FLUID::SetValidConditions(
 
   for (unsigned i = 0; i < navierslipcomponents.size(); ++i)
   {
-    linenavierslip->AddComponent(navierslipcomponents[i]);
-    surfnavierslip->AddComponent(navierslipcomponents[i]);
+    linenavierslip->add_component(navierslipcomponents[i]);
+    surfnavierslip->add_component(navierslipcomponents[i]);
   }
 
   condlist.push_back(linenavierslip);
@@ -1592,8 +1592,8 @@ void Inpar::FLUID::SetValidConditions(
   // we attach all the components of this condition to this condition
   for (unsigned i = 0; i < mixhybDirichletcomponents.size(); ++i)
   {
-    linemixhybDirichlet->AddComponent(mixhybDirichletcomponents[i]);
-    surfmixhybDirichlet->AddComponent(mixhybDirichletcomponents[i]);
+    linemixhybDirichlet->add_component(mixhybDirichletcomponents[i]);
+    surfmixhybDirichlet->add_component(mixhybDirichletcomponents[i]);
   }
 
   // and append it to the list of all conditions
@@ -1608,8 +1608,8 @@ void Inpar::FLUID::SetValidConditions(
           "SurfaceStress", "Surface Stress (ideal water)", Core::Conditions::SurfaceTension, true,
           Core::Conditions::geometry_type_surface));
 
-  surftension->AddComponent(Teuchos::rcp(new Input::IntComponent("curve", {0, true, true})));
-  Input::AddNamedReal(surftension, "gamma");
+  surftension->add_component(Teuchos::rcp(new Input::IntComponent("curve", {0, true, true})));
+  Input::add_named_real(surftension, "gamma");
 
   condlist.push_back(surftension);
 
@@ -1647,8 +1647,8 @@ void Inpar::FLUID::SetValidConditions(
 
   for (unsigned i = 0; i < freesurfcomponents.size(); ++i)
   {
-    linefreesurf->AddComponent(freesurfcomponents[i]);
-    surffreesurf->AddComponent(freesurfcomponents[i]);
+    linefreesurf->add_component(freesurfcomponents[i]);
+    surffreesurf->add_component(freesurfcomponents[i]);
   }
 
   condlist.push_back(linefreesurf);
@@ -1670,8 +1670,8 @@ void Inpar::FLUID::SetValidConditions(
 
   for (unsigned i = 0; i < fluidstresscomponents.size(); ++i)
   {
-    linefluidstress->AddComponent(fluidstresscomponents[i]);
-    surffluidstress->AddComponent(fluidstresscomponents[i]);
+    linefluidstress->add_component(fluidstresscomponents[i]);
+    surffluidstress->add_component(fluidstresscomponents[i]);
   }
 
   condlist.push_back(linefluidstress);
@@ -1700,8 +1700,8 @@ void Inpar::FLUID::SetValidConditions(
 
   for (unsigned i = 0; i < liftdragcomponents.size(); ++i)
   {
-    lineliftdrag->AddComponent(liftdragcomponents[i]);
-    surfliftdrag->AddComponent(liftdragcomponents[i]);
+    lineliftdrag->add_component(liftdragcomponents[i]);
+    surfliftdrag->add_component(liftdragcomponents[i]);
   }
 
   condlist.push_back(lineliftdrag);
@@ -1721,7 +1721,7 @@ void Inpar::FLUID::SetValidConditions(
 
   for (unsigned i = 0; i < lineflowratecomponents.size(); ++i)
   {
-    lineflowrate->AddComponent(lineflowratecomponents[i]);
+    lineflowrate->add_component(lineflowratecomponents[i]);
   }
   condlist.push_back(lineflowrate);
 
@@ -1738,7 +1738,7 @@ void Inpar::FLUID::SetValidConditions(
 
   for (unsigned i = 0; i < flowratecomponents.size(); ++i)
   {
-    surfflowrate->AddComponent(flowratecomponents[i]);
+    surfflowrate->add_component(flowratecomponents[i]);
   }
   condlist.push_back(surfflowrate);
 
@@ -1755,7 +1755,7 @@ void Inpar::FLUID::SetValidConditions(
 
   for (unsigned i = 0; i < impulsratecomponents.size(); ++i)
   {
-    surfimpulsrate->AddComponent(impulsratecomponents[i]);
+    surfimpulsrate->add_component(impulsratecomponents[i]);
   }
   condlist.push_back(surfimpulsrate);
 
@@ -1770,50 +1770,51 @@ void Inpar::FLUID::SetValidConditions(
 
   std::vector<Teuchos::RCP<Input::LineComponent>> inflownormalcomponents;
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::SelectionComponent(
+  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::SelectionComponent(
       "ConditionType", "WOMERSLEY", Teuchos::tuple<std::string>("WOMERSLEY", "POLYNOMIAL"),
       Teuchos::tuple<std::string>("WOMERSLEY", "POLYNOMIAL"), true)));
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::SelectionComponent("prebiased",
-      "NOTPREBIASED", Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"),
-      Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"), true)));
+  volumetric_surface_flow_cond->add_component(
+      Teuchos::rcp(new Input::SelectionComponent("prebiased", "NOTPREBIASED",
+          Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"),
+          Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"), true)));
 
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::SelectionComponent("FlowType",
+  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::SelectionComponent("FlowType",
       "InFlow", Teuchos::tuple<std::string>("InFlow", "OutFlow"),
       Teuchos::tuple<std::string>("InFlow", "OutFlow"), true)));
 
-  volumetric_surface_flow_cond->AddComponent(
+  volumetric_surface_flow_cond->add_component(
       Teuchos::rcp(new Input::SelectionComponent("CorrectionFlag", "WithOutCorrection",
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"),
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"), true)));
-  Input::AddNamedReal(volumetric_surface_flow_cond, "Period");
-  Input::AddNamedInt(volumetric_surface_flow_cond, "Order");
-  Input::AddNamedInt(volumetric_surface_flow_cond, "Harmonics");
-  Input::AddNamedReal(volumetric_surface_flow_cond, "Val");
-  Input::AddNamedInt(volumetric_surface_flow_cond, "Funct");
+  Input::add_named_real(volumetric_surface_flow_cond, "Period");
+  Input::add_named_int(volumetric_surface_flow_cond, "Order");
+  Input::add_named_int(volumetric_surface_flow_cond, "Harmonics");
+  Input::add_named_real(volumetric_surface_flow_cond, "Val");
+  Input::add_named_int(volumetric_surface_flow_cond, "Funct");
 
-  volumetric_surface_flow_cond->AddComponent(
+  volumetric_surface_flow_cond->add_component(
       Teuchos::rcp(new Input::SelectionComponent("NORMAL", "SelfEvaluateNormal",
           Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"),
           Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"), true)));
 
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("n1")));
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("n2")));
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("n3")));
+  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::RealComponent("n1")));
+  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::RealComponent("n2")));
+  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::RealComponent("n3")));
 
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::SelectionComponent(
+  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::SelectionComponent(
       "CenterOfMass", "SelfEvaluateCenterOfMass",
       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"),
       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"), true)));
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("c1")));
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("c2")));
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("c3")));
+  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::RealComponent("c1")));
+  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::RealComponent("c2")));
+  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::RealComponent("c3")));
 
   condlist.push_back(volumetric_surface_flow_cond);
 
@@ -1827,7 +1828,7 @@ void Inpar::FLUID::SetValidConditions(
           "VolumetricFlowBorderNodesCond", "volumetric flow border nodes condition",
           Core::Conditions::VolumetricFlowBorderNodes, true, Core::Conditions::geometry_type_line));
 
-  volumetric_border_nodes_cond->AddComponent(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+  volumetric_border_nodes_cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
 
   condlist.push_back(volumetric_border_nodes_cond);
@@ -1841,49 +1842,49 @@ void Inpar::FLUID::SetValidConditions(
           true, Core::Conditions::geometry_type_surface));
 
 
-  total_traction_correction_cond->AddComponent(
+  total_traction_correction_cond->add_component(
       Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::SelectionComponent(
+  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::SelectionComponent(
       "ConditionType", "POLYNOMIAL", Teuchos::tuple<std::string>("POLYNOMIAL", "WOMERSLEY"),
       Teuchos::tuple<std::string>("POLYNOMIAL", "WOMERSLEY"), true)));
 
-  total_traction_correction_cond->AddComponent(
+  total_traction_correction_cond->add_component(
       Teuchos::rcp(new Input::SelectionComponent("prebiased", "NOTPREBIASED",
           Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"),
           Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"), true)));
 
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::SelectionComponent(
+  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::SelectionComponent(
       "FlowType", "InFlow", Teuchos::tuple<std::string>("InFlow", "OutFlow"),
       Teuchos::tuple<std::string>("InFlow", "OutFlow"), true)));
 
-  total_traction_correction_cond->AddComponent(
+  total_traction_correction_cond->add_component(
       Teuchos::rcp(new Input::SelectionComponent("CorrectionFlag", "WithOutCorrection",
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"),
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"), true)));
-  Input::AddNamedReal(total_traction_correction_cond, "Period");
-  Input::AddNamedInt(total_traction_correction_cond, "Order");
-  Input::AddNamedInt(total_traction_correction_cond, "Harmonics");
-  Input::AddNamedReal(total_traction_correction_cond, "Val");
-  Input::AddNamedInt(total_traction_correction_cond, "Funct");
+  Input::add_named_real(total_traction_correction_cond, "Period");
+  Input::add_named_int(total_traction_correction_cond, "Order");
+  Input::add_named_int(total_traction_correction_cond, "Harmonics");
+  Input::add_named_real(total_traction_correction_cond, "Val");
+  Input::add_named_int(total_traction_correction_cond, "Funct");
 
-  total_traction_correction_cond->AddComponent(
+  total_traction_correction_cond->add_component(
       Teuchos::rcp(new Input::SelectionComponent("NORMAL", "SelfEvaluateNormal",
           Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"),
           Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"), true)));
 
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("n1")));
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("n2")));
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("n3")));
+  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::RealComponent("n1")));
+  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::RealComponent("n2")));
+  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::RealComponent("n3")));
 
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::SelectionComponent(
+  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::SelectionComponent(
       "CenterOfMass", "SelfEvaluateCenterOfMass",
       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"),
       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"), true)));
 
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("c1")));
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("c2")));
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("c3")));
+  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::RealComponent("c1")));
+  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::RealComponent("c2")));
+  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::RealComponent("c3")));
 
   condlist.push_back(total_traction_correction_cond);
 
@@ -1898,7 +1899,7 @@ void Inpar::FLUID::SetValidConditions(
           Core::Conditions::TotalTractionCorrectionBorderNodes, true,
           Core::Conditions::geometry_type_line));
 
-  traction_corrector_border_nodes_cond->AddComponent(
+  traction_corrector_border_nodes_cond->add_component(
       Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
 
@@ -2004,7 +2005,7 @@ void Inpar::FLUID::SetValidConditions(
           Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < flucthydrostatsurfcomponents.size(); ++i)
-    fluctHydro_statisticsSurf->AddComponent(flucthydrostatsurfcomponents[i]);
+    fluctHydro_statisticsSurf->add_component(flucthydrostatsurfcomponents[i]);
 
   condlist.push_back(fluctHydro_statisticsSurf);
 
@@ -2024,7 +2025,7 @@ void Inpar::FLUID::SetValidConditions(
           Core::Conditions::FluctHydro_StatisticsLine, true, Core::Conditions::geometry_type_line));
 
   for (unsigned i = 0; i < flucthydrostatlinecomponents.size(); ++i)
-    fluctHydro_statisticsLine->AddComponent(flucthydrostatlinecomponents[i]);
+    fluctHydro_statisticsLine->add_component(flucthydrostatlinecomponents[i]);
 
   condlist.push_back(fluctHydro_statisticsLine);
 }

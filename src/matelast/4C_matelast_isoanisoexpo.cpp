@@ -61,7 +61,7 @@ void Mat::Elastic::IsoAnisoExpo::Setup(int numgp, Input::LineDefinition* linedef
   else if (params_->init_ == 1)
   {
     // CIR-AXI-RAD nomenclature
-    if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
+    if (linedef->has_named("RAD") and linedef->has_named("AXI") and linedef->has_named("CIR"))
     {
       // Read in of data
       Core::LinAlg::Matrix<3, 3> locsys(true);
@@ -74,7 +74,7 @@ void Mat::Elastic::IsoAnisoExpo::Setup(int numgp, Input::LineDefinition* linedef
     }
 
     // FIBER1 nomenclature
-    else if (linedef->HaveNamed("FIBER1"))
+    else if (linedef->has_named("FIBER1"))
     {
       // Read in of data
       ReadFiber(linedef, "FIBER1", a_);

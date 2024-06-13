@@ -34,7 +34,7 @@ CONTACT::CONSTITUTIVELAW::LawDefinition::LawDefinition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::LawDefinition::AddComponent(Teuchos::RCP<Input::LineComponent> c)
+void CONTACT::CONSTITUTIVELAW::LawDefinition::add_component(Teuchos::RCP<Input::LineComponent> c)
 {
   inputline_.push_back(c);
 }
@@ -82,7 +82,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const Global::Problem& proble
             new CONTACT::CONSTITUTIVELAW::Container(id, coconstlawtype_, coconstlawname_));
         // fill the latter
 
-        for (const auto& j : inputline_) condline = j->Read(Name(), condline, *container);
+        for (const auto& j : inputline_) condline = j->read(Name(), condline, *container);
 
         // current material input line contains bad elements
         if (condline->str().find_first_not_of(' ') != std::string::npos)
@@ -111,7 +111,7 @@ std::ostream& CONTACT::CONSTITUTIVELAW::LawDefinition::Print(
   for (const auto& i : inputline_)
   {
     std::ostringstream desc;
-    i->Describe(desc);
+    i->describe(desc);
     if (desc.str().size() > 0) stream << comment << desc.str() << std::endl;
   }
 
@@ -119,7 +119,7 @@ std::ostream& CONTACT::CONSTITUTIVELAW::LawDefinition::Print(
   stream << comment << "LAW 0   " << coconstlawname_ << "   ";
   for (const auto& i : inputline_)
   {
-    i->DefaultLine(stream);
+    i->default_line(stream);
     stream << " ";
   }
 

@@ -222,8 +222,8 @@ void Inpar::Mortar::SetValidConditions(
 
   for (unsigned i = 0; i < contactcomponents.size(); ++i)
   {
-    linecontact->AddComponent(contactcomponents[i]);
-    surfcontact->AddComponent(contactcomponents[i]);
+    linecontact->add_component(contactcomponents[i]);
+    surfcontact->add_component(contactcomponents[i]);
   }
 
   condlist.push_back(linecontact);
@@ -253,8 +253,8 @@ void Inpar::Mortar::SetValidConditions(
 
   for (unsigned i = 0; i < mortarcomponents.size(); ++i)
   {
-    linemortar->AddComponent(mortarcomponents[i]);
-    surfmortar->AddComponent(mortarcomponents[i]);
+    linemortar->add_component(mortarcomponents[i]);
+    surfmortar->add_component(mortarcomponents[i]);
   }
 
   condlist.push_back(linemortar);
@@ -279,8 +279,8 @@ void Inpar::Mortar::SetValidConditions(
 
   for (unsigned i = 0; i < mrtrsymcomponents.size(); ++i)
   {
-    linemrtrsym->AddComponent(mrtrsymcomponents[i]);
-    pointmrtrsym->AddComponent(mrtrsymcomponents[i]);
+    linemrtrsym->add_component(mrtrsymcomponents[i]);
+    pointmrtrsym->add_component(mrtrsymcomponents[i]);
   }
 
   condlist.push_back(linemrtrsym);
@@ -327,8 +327,8 @@ void Inpar::Mortar::SetValidConditions(
 
     for (unsigned i = 0; i < mortarcomponents.size(); ++i)
     {
-      linemortar->AddComponent(mortarcomponents[i]);
-      surfmortar->AddComponent(mortarcomponents[i]);
+      linemortar->add_component(mortarcomponents[i]);
+      surfmortar->add_component(mortarcomponents[i]);
     }
 
     condlist.push_back(linemortar);

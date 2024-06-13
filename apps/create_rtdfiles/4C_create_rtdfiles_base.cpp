@@ -46,15 +46,15 @@ int main(int argc, char *argv[])
 
     RTD::WriteCellTypeInformation(reference_path + "/elementinformation.yaml");
     std::cout << "Writing cell type information to yaml finished\n";
-    RTD::WriteReadTheDocsHeader(reference_path + "/headerreference.rst");
+    RTD::write_read_the_docsHeader(reference_path + "/headerreference.rst");
     std::cout << "Writing headerreference.rst finished\n";
-    RTD::WriteReadTheDocsCelltypes(reference_path + "/celltypereference.rst");
+    RTD::write_read_the_docsCelltypes(reference_path + "/celltypereference.rst");
     std::cout << "Writing celltypes.rst finished\n";
-    RTD::WriteReadTheDocsMaterial(reference_path + "/materialreference.rst");
+    RTD::write_read_the_docsMaterial(reference_path + "/materialreference.rst");
     std::cout << "Writing materialreference.rst finished\n";
-    RTD::WriteReadTheDocsCondition(reference_path + "/conditionreference.rst");
+    RTD::write_read_the_docsCondition(reference_path + "/conditionreference.rst");
     std::cout << "Writing conditionreference.rst finished\n";
-    RTD::WriteReadTheDocsVarious(reference_path + "/furtherreference.rst");
+    RTD::write_read_the_docsVarious(reference_path + "/furtherreference.rst");
     std::cout << "Writing furtherreference.rst finished\n";
     const std::string contactconstitivedocumentationfilename =
         reference_path + "/contactconstitutivereference.rst";

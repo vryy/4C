@@ -89,7 +89,7 @@ void Discret::ELEMENTS::PreStress::Unpack(const std::vector<char>& data)
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract isinit_
-  isinit_ = ExtractInt(position, data);
+  isinit_ = extract_int(position, data);
 
   // extract numnode_
   extract_from_pack(position, data, numnode_);

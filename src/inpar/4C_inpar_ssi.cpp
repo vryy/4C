@@ -263,9 +263,9 @@ void Inpar::SSI::SetValidConditions(
   // insert input file line components into condition definitions
   for (auto& ssicoupcomponentplain : ssicoupcomponentsplain)
   {
-    linessiplain->AddComponent(ssicoupcomponentplain);
-    surfssiplain->AddComponent(ssicoupcomponentplain);
-    volssiplain->AddComponent(ssicoupcomponentplain);
+    linessiplain->add_component(ssicoupcomponentplain);
+    surfssiplain->add_component(ssicoupcomponentplain);
+    volssiplain->add_component(ssicoupcomponentplain);
   }
 
   condlist.push_back(linessiplain);
@@ -294,9 +294,9 @@ void Inpar::SSI::SetValidConditions(
   // insert input file line components into condition definitions
   for (auto& ssicoupcomponent : ssicoupcomponents)
   {
-    linessi->AddComponent(ssicoupcomponent);
-    surfssi->AddComponent(ssicoupcomponent);
-    volssi->AddComponent(ssicoupcomponent);
+    linessi->add_component(ssicoupcomponent);
+    surfssi->add_component(ssicoupcomponent);
+    volssi->add_component(ssicoupcomponent);
   }
 
   condlist.push_back(linessi);
@@ -325,9 +325,9 @@ void Inpar::SSI::SetValidConditions(
   // insert input file line components into condition definitions
   for (auto& ssicoupcomponent2 : ssicoupcomponents2)
   {
-    linessi2->AddComponent(ssicoupcomponent2);
-    surfssi2->AddComponent(ssicoupcomponent2);
-    volssi2->AddComponent(ssicoupcomponent2);
+    linessi2->add_component(ssicoupcomponent2);
+    surfssi2->add_component(ssicoupcomponent2);
+    volssi2->add_component(ssicoupcomponent2);
   }
 
   condlist.push_back(linessi2);
@@ -369,9 +369,9 @@ void Inpar::SSI::SetValidConditions(
   // insert input file line components into condition definitions
   for (auto& conditioncomponent : ssiinterfacemeshtying)
   {
-    pointssiinterfacemeshtying->AddComponent(conditioncomponent);
-    linessiinterfacemeshtying->AddComponent(conditioncomponent);
-    surfssiinterfacemeshtying->AddComponent(conditioncomponent);
+    pointssiinterfacemeshtying->add_component(conditioncomponent);
+    linessiinterfacemeshtying->add_component(conditioncomponent);
+    surfssiinterfacemeshtying->add_component(conditioncomponent);
   }
 
   condlist.push_back(pointssiinterfacemeshtying);
@@ -384,16 +384,16 @@ void Inpar::SSI::SetValidConditions(
       "DESIGN SSI MANIFOLD SURF CONDITIONS", "SSISurfaceManifold", "scalar transport on manifold",
       Core::Conditions::SSISurfaceManifold, true, Core::Conditions::geometry_type_surface));
 
-  ssisurfacemanifold->AddComponent(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+  ssisurfacemanifold->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
-  ssisurfacemanifold->AddComponent(Teuchos::rcp(new Input::SeparatorComponent("ImplType")));
-  ssisurfacemanifold->AddComponent(
+  ssisurfacemanifold->add_component(Teuchos::rcp(new Input::SeparatorComponent("ImplType")));
+  ssisurfacemanifold->add_component(
       Teuchos::rcp(new Input::SelectionComponent("ImplType", "Undefined",
           Teuchos::tuple<std::string>("Undefined", "Standard", "ElchElectrode", "ElchDiffCond"),
           Teuchos::tuple<int>(Inpar::ScaTra::impltype_undefined, Inpar::ScaTra::impltype_std,
               Inpar::ScaTra::impltype_elch_electrode, Inpar::ScaTra::impltype_elch_diffcond))));
-  ssisurfacemanifold->AddComponent(Teuchos::rcp(new Input::SeparatorComponent("thickness")));
-  ssisurfacemanifold->AddComponent(Teuchos::rcp(new Input::RealComponent("thickness")));
+  ssisurfacemanifold->add_component(Teuchos::rcp(new Input::SeparatorComponent("thickness")));
+  ssisurfacemanifold->add_component(Teuchos::rcp(new Input::RealComponent("thickness")));
 
   condlist.emplace_back(ssisurfacemanifold);
 
@@ -404,10 +404,10 @@ void Inpar::SSI::SetValidConditions(
       "Surface ScaTra Manifold Initfield", Core::Conditions::SurfaceInitfield, false,
       Core::Conditions::geometry_type_surface));
 
-  surfmanifoldinitfields->AddComponent(Teuchos::rcp(new Input::SelectionComponent("Field", "ScaTra",
-      Teuchos::tuple<std::string>("ScaTra"), Teuchos::tuple<std::string>("ScaTra"))));
+  surfmanifoldinitfields->add_component(Teuchos::rcp(new Input::SelectionComponent("Field",
+      "ScaTra", Teuchos::tuple<std::string>("ScaTra"), Teuchos::tuple<std::string>("ScaTra"))));
 
-  surfmanifoldinitfields->AddComponent(Teuchos::rcp(new Input::IntComponent("funct")));
+  surfmanifoldinitfields->add_component(Teuchos::rcp(new Input::IntComponent("funct")));
 
   condlist.emplace_back(surfmanifoldinitfields);
 
@@ -419,11 +419,11 @@ void Inpar::SSI::SetValidConditions(
       Core::Conditions::SSISurfaceManifoldKinetics, true, Core::Conditions::geometry_type_surface));
 
   {
-    surfmanifoldkinetics->AddComponent(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+    surfmanifoldkinetics->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
-    surfmanifoldkinetics->AddComponent(
+    surfmanifoldkinetics->add_component(
         Teuchos::rcp(new Input::SeparatorComponent("ManifoldConditionID")));
-    surfmanifoldkinetics->AddComponent(
+    surfmanifoldkinetics->add_component(
         Teuchos::rcp(new Input::IntComponent("ManifoldConditionID")));
 
     std::map<int, std::pair<std::string, std::vector<Teuchos::RCP<Input::LineComponent>>>>
@@ -479,9 +479,9 @@ void Inpar::SSI::SetValidConditions(
       }
     }
 
-    surfmanifoldkinetics->AddComponent(
+    surfmanifoldkinetics->add_component(
         Teuchos::rcp(new Input::SeparatorComponent("KINETIC_MODEL")));
-    surfmanifoldkinetics->AddComponent(Teuchos::rcp(new Input::SwitchComponent(
+    surfmanifoldkinetics->add_component(Teuchos::rcp(new Input::SwitchComponent(
         "kinetic model", Inpar::S2I::kinetics_constantinterfaceresistance, kinetic_model_choices)));
   }
 
@@ -502,19 +502,19 @@ void Inpar::SSI::SetValidConditions(
   const auto add_dirichlet_manifold_components =
       [](Core::Conditions::ConditionDefinition& definition)
   {
-    definition.AddComponent(Teuchos::rcp(new Input::SeparatorComponent("NUMDOF")));
-    definition.AddComponent(Teuchos::rcp(new Input::IntComponent("numdof")));
+    definition.add_component(Teuchos::rcp(new Input::SeparatorComponent("NUMDOF")));
+    definition.add_component(Teuchos::rcp(new Input::IntComponent("numdof")));
 
-    definition.AddComponent(Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
-    definition.AddComponent(
+    definition.add_component(Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
+    definition.add_component(
         Teuchos::rcp(new Input::IntVectorComponent("onoff", Input::LengthFromInt("numdof"))));
 
-    definition.AddComponent(Teuchos::rcp(new Input::SeparatorComponent("VAL")));
-    definition.AddComponent(
+    definition.add_component(Teuchos::rcp(new Input::SeparatorComponent("VAL")));
+    definition.add_component(
         Teuchos::rcp(new Input::RealVectorComponent("val", Input::LengthFromInt("numdof"))));
 
-    definition.AddComponent(Teuchos::rcp(new Input::SeparatorComponent("FUNCT")));
-    definition.AddComponent(
+    definition.add_component(Teuchos::rcp(new Input::SeparatorComponent("FUNCT")));
+    definition.add_component(
         Teuchos::rcp(new Input::IntVectorComponent("funct", Input::LengthFromInt("numdof"),
             {/*default=*/0, /*fortranstyle=*/false, /*noneallowed=*/true, /*optional=*/false})));
   };
@@ -556,8 +556,8 @@ void Inpar::SSI::SetValidConditions(
   // insert input file line components into condition definitions
   for (const auto& ssiinterfacecontactcomponent : ssiinterfacecontact)
   {
-    linessiinterfacecontact->AddComponent(ssiinterfacecontactcomponent);
-    surfssiinterfacecontact->AddComponent(ssiinterfacecontactcomponent);
+    linessiinterfacecontact->add_component(ssiinterfacecontactcomponent);
+    surfssiinterfacecontact->add_component(ssiinterfacecontactcomponent);
   }
 
   condlist.push_back(linessiinterfacecontact);

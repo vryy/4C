@@ -103,34 +103,34 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["POROFLUIDMULTIPHASE"];
 
   defs["QUAD4"] =
-      Input::LineDefinition::Builder().AddIntVector("QUAD4", 4).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("QUAD4", 4).add_named_int("MAT").Build();
 
   defs["QUAD8"] =
-      Input::LineDefinition::Builder().AddIntVector("QUAD8", 8).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("QUAD8", 8).add_named_int("MAT").Build();
 
   defs["QUAD9"] =
-      Input::LineDefinition::Builder().AddIntVector("QUAD9", 9).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("QUAD9", 9).add_named_int("MAT").Build();
 
   defs["TRI3"] =
-      Input::LineDefinition::Builder().AddIntVector("TRI3", 3).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("TRI3", 3).add_named_int("MAT").Build();
 
   defs["TRI6"] =
-      Input::LineDefinition::Builder().AddIntVector("TRI6", 6).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("TRI6", 6).add_named_int("MAT").Build();
 
   defs["LINE2"] =
-      Input::LineDefinition::Builder().AddIntVector("LINE2", 2).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("LINE2", 2).add_named_int("MAT").Build();
 
   defs["LINE3"] =
-      Input::LineDefinition::Builder().AddIntVector("LINE3", 3).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("LINE3", 3).add_named_int("MAT").Build();
 
   defs["HEX8"] =
-      Input::LineDefinition::Builder().AddIntVector("HEX8", 8).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("HEX8", 8).add_named_int("MAT").Build();
 
   defs["TET4"] =
-      Input::LineDefinition::Builder().AddIntVector("TET4", 4).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("TET4", 4).add_named_int("MAT").Build();
 
   defs["TET10"] =
-      Input::LineDefinition::Builder().AddIntVector("TET10", 10).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("TET10", 10).add_named_int("MAT").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -282,7 +282,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhase::Unpack(const std::vector<char>& dat
   Element::Unpack(basedata);
 
   // extract internal data
-  distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
+  distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
   extract_from_pack(position, data, numdofpernode_);
 
   if (position != data.size())
@@ -363,7 +363,7 @@ bool Discret::ELEMENTS::PoroFluidMultiPhase::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   // set discretization type

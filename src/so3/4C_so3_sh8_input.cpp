@@ -20,7 +20,7 @@ bool Discret::ELEMENTS::SoSh8::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   SolidMaterial()->Setup(NUMGPT_SOH8, linedef);
@@ -30,7 +30,7 @@ bool Discret::ELEMENTS::SoSh8::ReadElement(
 
 
   // read kinematic flag
-  linedef->ExtractString("KINEM", buffer);
+  linedef->extract_string("KINEM", buffer);
   if (buffer == "linear")
   {
     // kintype_ = soh8_linear;
@@ -47,7 +47,7 @@ bool Discret::ELEMENTS::SoSh8::ReadElement(
   SolidMaterial()->ValidKinematics(kintype_);
 
   // read EAS technology flag
-  linedef->ExtractString("EAS", buffer);
+  linedef->extract_string("EAS", buffer);
 
   // full EAS technology
   if (buffer == "sosh8")
@@ -66,7 +66,7 @@ bool Discret::ELEMENTS::SoSh8::ReadElement(
     FOUR_C_THROW("Reading of SO_SH8 EAS technology failed");
 
   // read ANS technology flag
-  linedef->ExtractString("ANS", buffer);
+  linedef->extract_string("ANS", buffer);
   if (buffer == "sosh8")
   {
     anstype_ = anssosh8;
@@ -79,7 +79,7 @@ bool Discret::ELEMENTS::SoSh8::ReadElement(
   else
     FOUR_C_THROW("Reading of SO_SH8 ANS technology failed");
 
-  linedef->ExtractString("THICKDIR", buffer);
+  linedef->extract_string("THICKDIR", buffer);
   nodes_rearranged_ = false;
 
   // global X

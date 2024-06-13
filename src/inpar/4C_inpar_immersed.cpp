@@ -139,8 +139,8 @@ void Inpar::Immersed::SetValidConditions(
 
   for (unsigned i = 0; i < immersedcomponents.size(); ++i)
   {
-    lineimmersed->AddComponent(immersedcomponents[i]);
-    surfimmersed->AddComponent(immersedcomponents[i]);
+    lineimmersed->add_component(immersedcomponents[i]);
+    surfimmersed->add_component(immersedcomponents[i]);
   }
 
   condlist.push_back(lineimmersed);

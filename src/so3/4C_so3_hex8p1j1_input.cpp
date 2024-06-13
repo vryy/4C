@@ -21,7 +21,7 @@ bool Discret::ELEMENTS::SoHex8P1J1::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   // set up of materials with GP data (e.g., history variables)
@@ -30,7 +30,7 @@ bool Discret::ELEMENTS::SoHex8P1J1::ReadElement(
   // temporary variable for read-in
   std::string buffer;
   // read kinematic flag
-  linedef->ExtractString("KINEM", buffer);
+  linedef->extract_string("KINEM", buffer);
   // no linear case implemented so far, hence just a dummy check
   if (buffer == "linear")
   {

@@ -78,7 +78,7 @@ void Discret::ELEMENTS::Truss3ScatraType::setup_element_definition(
 
   // copy definitions of standard truss element to truss element for scalar transport coupling
   defs["LINE2"] =
-      Input::LineDefinition::Builder(defs_truss["LINE2"]).AddNamedString("TYPE").Build();
+      Input::LineDefinition::Builder(defs_truss["LINE2"]).add_named_string("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -145,7 +145,7 @@ bool Discret::ELEMENTS::Truss3Scatra::ReadElement(
 
   // read scalar transport implementation type
   std::string impltype;
-  linedef->ExtractString("TYPE", impltype);
+  linedef->extract_string("TYPE", impltype);
 
   if (impltype == "ElchDiffCond")
     impltype_ = Inpar::ScaTra::impltype_elch_diffcond;

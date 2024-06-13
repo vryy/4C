@@ -147,11 +147,11 @@ void Discret::ELEMENTS::StructuralSurface::Unpack(const std::vector<char>& data)
   Core::Elements::FaceElement::Unpack(basedata);
 
   // distype_
-  distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
+  distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
   // numdofpernode_
-  numdofpernode_ = ExtractInt(position, data);
+  numdofpernode_ = extract_int(position, data);
   // gaussrule_
-  gaussrule_ = static_cast<Core::FE::GaussRule2D>(ExtractInt(position, data));
+  gaussrule_ = static_cast<Core::FE::GaussRule2D>(extract_int(position, data));
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

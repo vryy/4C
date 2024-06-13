@@ -65,7 +65,7 @@ void Discret::ELEMENTS::MembraneScatraTri3Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["MEMBRANESCATRA3"];
 
   defs["TRI3"] =
-      Input::LineDefinition::Builder(defs_membrane["TRI3"]).AddNamedString("TYPE").Build();
+      Input::LineDefinition::Builder(defs_membrane["TRI3"]).add_named_string("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -118,7 +118,7 @@ void Discret::ELEMENTS::MembraneScatraTri6Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["MEMBRANESCATRA6"];
 
   defs["TRI6"] =
-      Input::LineDefinition::Builder(defs_membrane["TRI6"]).AddNamedString("TYPE").Build();
+      Input::LineDefinition::Builder(defs_membrane["TRI6"]).add_named_string("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -171,7 +171,7 @@ void Discret::ELEMENTS::MembraneScatraQuad4Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["MEMBRANESCATRA4"];
 
   defs["QUAD4"] =
-      Input::LineDefinition::Builder(defs_membrane["QUAD4"]).AddNamedString("TYPE").Build();
+      Input::LineDefinition::Builder(defs_membrane["QUAD4"]).add_named_string("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -224,7 +224,7 @@ void Discret::ELEMENTS::MembraneScatraQuad9Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["MEMBRANESCATRA9"];
 
   defs["QUAD9"] =
-      Input::LineDefinition::Builder(defs_membrane["QUAD9"]).AddNamedString("TYPE").Build();
+      Input::LineDefinition::Builder(defs_membrane["QUAD9"]).add_named_string("TYPE").Build();
 }
 
 FOUR_C_NAMESPACE_CLOSE

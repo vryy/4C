@@ -79,7 +79,7 @@ void Discret::ELEMENTS::WallQuad4PoroP1ScatraType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["WALLQ4POROP1SCATRA"];
 
   defs["QUAD4"] =
-      Input::LineDefinition::Builder(defs_wallporo["QUAD4"]).AddNamedString("TYPE").Build();
+      Input::LineDefinition::Builder(defs_wallporo["QUAD4"]).add_named_string("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -145,7 +145,7 @@ void Discret::ELEMENTS::WallQuad9PoroP1ScatraType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["WALLQ9POROP1SCATRA"];
 
   defs["QUAD9"] =
-      Input::LineDefinition::Builder(defs_wallporo["QUAD9"]).AddNamedString("TYPE").Build();
+      Input::LineDefinition::Builder(defs_wallporo["QUAD9"]).add_named_string("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -209,7 +209,7 @@ void Discret::ELEMENTS::WallTri3PoroP1ScatraType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["WALLT3POROP1SCATRA"];
 
   defs["TRI3"] =
-      Input::LineDefinition::Builder(defs_wallporo["TRI3"]).AddNamedString("TYPE").Build();
+      Input::LineDefinition::Builder(defs_wallporo["TRI3"]).add_named_string("TYPE").Build();
 }
 
 FOUR_C_NAMESPACE_CLOSE

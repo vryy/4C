@@ -219,10 +219,10 @@ void Mat::ViscoElastHyper::Unpack(const std::vector<char>& data)
   }
 
   summandProperties_.Unpack(position, data);
-  isovisco_ = (bool)ExtractInt(position, data);
-  viscogenmax_ = (bool)ExtractInt(position, data);
-  viscogeneralizedgenmax_ = (bool)ExtractInt(position, data);
-  viscofract_ = (bool)ExtractInt(position, data);
+  isovisco_ = (bool)extract_int(position, data);
+  viscogenmax_ = (bool)extract_int(position, data);
+  viscogeneralizedgenmax_ = (bool)extract_int(position, data);
+  viscofract_ = (bool)extract_int(position, data);
 
   anisotropy_.unpack_anisotropy(data, position);
 
@@ -301,13 +301,13 @@ void Mat::ViscoElastHyper::Unpack(const std::vector<char>& data)
     if (viscofract_)
     {
       // check if history data is saved
-      bool have_historyalldata = (bool)ExtractInt(position, data);
+      bool have_historyalldata = (bool)extract_int(position, data);
       if (!have_historyalldata) FOUR_C_THROW("Something got wrong with your history data.");
 
       histfractartstresscurr_ =
           Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
 
-      int histfractartstressall_stepsize = ExtractInt(position, data);
+      int histfractartstressall_stepsize = extract_int(position, data);
       histfractartstresslastall_ =
           Teuchos::rcp(new std::vector<std::vector<Core::LinAlg::Matrix<6, 1>>>(
               histsize, std::vector<Core::LinAlg::Matrix<6, 1>>(histfractartstressall_stepsize)));

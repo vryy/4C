@@ -341,7 +341,7 @@ void Mat::Elastic::Summand::ReadFiber(Input::LineDefinition* linedef, const std:
     Core::LinAlg::Matrix<3, 1>& fiber_vector)
 {
   std::vector<double> fiber1;
-  linedef->ExtractDoubleVector(specifier, fiber1);
+  linedef->extract_double_vector(specifier, fiber1);
   double f1norm = 0.;
   // normalization
   for (int i = 0; i < 3; ++i)

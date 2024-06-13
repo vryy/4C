@@ -39,11 +39,11 @@ void THR::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
   if (dis != thrdisc_->Name()) return;
 
   int node;
-  res.ExtractInt("NODE", node);
+  res.extract_int("NODE", node);
   node -= 1;
 
   int havenode(thrdisc_->HaveGlobalNode(node));
@@ -66,7 +66,7 @@ void THR::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test
       if (actnode->Owner() != thrdisc_->Comm().MyPID()) return;
 
       std::string position;
-      res.ExtractString("QUANTITY", position);
+      res.extract_string("QUANTITY", position);
       bool unknownpos = true;  // make sure the result value std::string can be handled
       double result = 0.0;     // will hold the actual result of run
 

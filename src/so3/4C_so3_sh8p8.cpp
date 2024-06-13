@@ -79,15 +79,15 @@ void Discret::ELEMENTS::SoSh8p8Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX8"] = Input::LineDefinition::Builder()
-                     .AddIntVector("HEX8", 8)
-                     .AddNamedInt("MAT")
-                     .AddNamedString("KINEM")
-                     .AddNamedString("STAB")
-                     .AddNamedString("ANS")
-                     .AddNamedString("LIN")
-                     .AddNamedString("THICKDIR")
-                     .AddNamedString("EAS")
-                     .AddNamedString("ISO")
+                     .add_int_vector("HEX8", 8)
+                     .add_named_int("MAT")
+                     .add_named_string("KINEM")
+                     .add_named_string("STAB")
+                     .add_named_string("ANS")
+                     .add_named_string("LIN")
+                     .add_named_string("THICKDIR")
+                     .add_named_string("EAS")
+                     .add_named_string("ISO")
                      .add_optional_named_double_vector("RAD", 3)
                      .add_optional_named_double_vector("AXI", 3)
                      .add_optional_named_double_vector("CIR", 3)
@@ -193,10 +193,10 @@ void Discret::ELEMENTS::SoSh8p8::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   Discret::ELEMENTS::SoSh8::Unpack(basedata);
   // techniques
-  stab_ = static_cast<StabilisationType>(ExtractInt(position, data));
-  ans_ = static_cast<AnsType>(ExtractInt(position, data));
-  lin_ = static_cast<LinearizationType>(ExtractInt(position, data));
-  iso_ = static_cast<IsochoricType>(ExtractInt(position, data));
+  stab_ = static_cast<StabilisationType>(extract_int(position, data));
+  ans_ = static_cast<AnsType>(extract_int(position, data));
+  lin_ = static_cast<LinearizationType>(extract_int(position, data));
+  iso_ = static_cast<IsochoricType>(extract_int(position, data));
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

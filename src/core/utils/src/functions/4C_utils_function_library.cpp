@@ -39,17 +39,17 @@ namespace
 
     const auto& function_lin_def = function_line_defs.front();
 
-    if (function_lin_def.HaveNamed("FASTPOLYNOMIAL"))
+    if (function_lin_def.has_named("FASTPOLYNOMIAL"))
     {
       std::vector<double> coefficients;
-      function_lin_def.ExtractDoubleVector("COEFF", coefficients);
+      function_lin_def.extract_double_vector("COEFF", coefficients);
 
       return Teuchos::rcp(new Core::UTILS::FastPolynomialFunction(std::move(coefficients)));
     }
-    else if (function_lin_def.HaveNamed("CUBIC_SPLINE_FROM_CSV"))
+    else if (function_lin_def.has_named("CUBIC_SPLINE_FROM_CSV"))
     {
       std::string csv_file;
-      function_lin_def.ExtractString("CSV", csv_file);
+      function_lin_def.extract_string("CSV", csv_file);
 
       // safety check
       if (csv_file.empty())
@@ -76,13 +76,13 @@ void Core::UTILS::AddValidLibraryFunctions(Core::UTILS::FunctionManager& functio
 
   LineDefinition fast_polynomial_funct =
       LineDefinition::Builder()
-          .AddTag("FASTPOLYNOMIAL")
-          .AddNamedInt("NUMCOEFF")
+          .add_tag("FASTPOLYNOMIAL")
+          .add_named_int("NUMCOEFF")
           .add_named_double_vector("COEFF", LengthFromIntNamed("NUMCOEFF"))
           .Build();
 
   LineDefinition cubic_spline_from_csv_funct =
-      LineDefinition::Builder().AddTag("CUBIC_SPLINE_FROM_CSV").AddNamedString("CSV").Build();
+      LineDefinition::Builder().add_tag("CUBIC_SPLINE_FROM_CSV").add_named_string("CSV").Build();
 
   function_manager.add_function_definition(
       {std::move(fast_polynomial_funct), std::move(cubic_spline_from_csv_funct)},

@@ -82,9 +82,9 @@ void Discret::ELEMENTS::SoWeg6Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["WEDGE6"] = Input::LineDefinition::Builder()
-                       .AddIntVector("WEDGE6", 6)
-                       .AddNamedInt("MAT")
-                       .AddNamedString("KINEM")
+                       .add_int_vector("WEDGE6", 6)
+                       .add_named_int("MAT")
+                       .add_named_string("KINEM")
                        .add_optional_named_double_vector("RAD", 3)
                        .add_optional_named_double_vector("AXI", 3)
                        .add_optional_named_double_vector("CIR", 3)
@@ -208,7 +208,7 @@ void Discret::ELEMENTS::SoWeg6::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   SoBase::Unpack(basedata);
   // prestress_
-  pstype_ = static_cast<Inpar::STR::PreStress>(ExtractInt(position, data));
+  pstype_ = static_cast<Inpar::STR::PreStress>(extract_int(position, data));
   extract_from_pack(position, data, pstime_);
   extract_from_pack(position, data, time_);
   if (Prestress::IsMulf(pstype_))

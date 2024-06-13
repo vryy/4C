@@ -45,7 +45,7 @@ void ParticleRigidBody::RigidBodyResultTest::TestSpecial(
 
   // extract global id of rigid body
   int globalid;
-  res.ExtractInt("ID", globalid);
+  res.extract_int("ID", globalid);
 
   // rigid body owned by this processor
   if (std::find(ownedrigidbodies.begin(), ownedrigidbodies.end(), globalid) !=
@@ -57,7 +57,7 @@ void ParticleRigidBody::RigidBodyResultTest::TestSpecial(
 
     // get result
     std::string quantity;
-    res.ExtractString("QUANTITY", quantity);
+    res.extract_string("QUANTITY", quantity);
 
     // init actual result
     double actresult = 0.0;

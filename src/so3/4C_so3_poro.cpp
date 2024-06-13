@@ -137,10 +137,10 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::Unpack(const std::vector<char
   for (int i = 0; i < size; ++i) so3_ele::extract_from_pack(position, data, xsi_[i]);
 
   // scatra_coupling_
-  scatra_coupling_ = static_cast<bool>(so3_ele::ExtractInt(position, data));
+  scatra_coupling_ = static_cast<bool>(so3_ele::extract_int(position, data));
 
   // isNurbs_
-  isNurbs_ = static_cast<bool>(so3_ele::ExtractInt(position, data));
+  isNurbs_ = static_cast<bool>(so3_ele::extract_int(position, data));
 
   // anisotropic_permeability_directions_
   size = 0;
@@ -217,8 +217,8 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::
   for (int dim = 0; dim < 3; ++dim)
   {
     std::string definition_name = "POROANISODIR" + std::to_string(dim + 1);
-    if (linedef->HaveNamed(definition_name))
-      linedef->ExtractDoubleVector(definition_name, anisotropic_permeability_directions_[dim]);
+    if (linedef->has_named(definition_name))
+      linedef->extract_double_vector(definition_name, anisotropic_permeability_directions_[dim]);
   }
 }
 
@@ -230,8 +230,8 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::
   for (int dim = 0; dim < 3; ++dim)
   {
     std::string definition_name = "POROANISONODALCOEFFS" + std::to_string(dim + 1);
-    if (linedef->HaveNamed(definition_name))
-      linedef->ExtractDoubleVector(definition_name, anisotropic_permeability_nodal_coeffs_[dim]);
+    if (linedef->has_named(definition_name))
+      linedef->extract_double_vector(definition_name, anisotropic_permeability_nodal_coeffs_[dim]);
   }
 }
 

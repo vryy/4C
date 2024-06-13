@@ -369,27 +369,27 @@ void Discret::ELEMENTS::So3Plast<distype>::Unpack(const std::vector<char>& data)
   SoBase::Unpack(basedata);
 
   // Gauss points and weights
-  int size2 = ExtractInt(position, data);
+  int size2 = extract_int(position, data);
   xsi_.resize(size2, Core::LinAlg::Matrix<nsd_, 1>(true));
   for (int i = 0; i < size2; ++i) extract_from_pack(position, data, xsi_[i]);
   extract_from_pack(position, data, wgt_);
   numgpt_ = wgt_.size();
 
   // paramters
-  fbar_ = (bool)ExtractInt(position, data);
+  fbar_ = (bool)extract_int(position, data);
 
   // plastic spin type
-  plspintype_ = static_cast<PlSpinType>(ExtractInt(position, data));
+  plspintype_ = static_cast<PlSpinType>(extract_int(position, data));
 
   // tsi
-  tsi_ = (bool)ExtractInt(position, data);
+  tsi_ = (bool)extract_int(position, data);
   if (tsi_)
   {
     dFintdT_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<numdofperelement_, 1>>(numgpt_));
     KbT_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseVector>(
         numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true)));
     temp_last_ = Teuchos::rcp(new std::vector<double>(numgpt_));
-    int size = ExtractInt(position, data);
+    int size = extract_int(position, data);
     for (int i = 0; i < size; i++)
     {
       extract_from_pack(position, data, (*dFintdT_)[i]);
@@ -399,7 +399,7 @@ void Discret::ELEMENTS::So3Plast<distype>::Unpack(const std::vector<char>& data)
   }
 
   // EAS element technology
-  eastype_ = static_cast<Discret::ELEMENTS::So3PlastEasType>(ExtractInt(position, data));
+  eastype_ = static_cast<Discret::ELEMENTS::So3PlastEasType>(extract_int(position, data));
   extract_from_pack(position, data, neas_);
 
   // no EAS
@@ -448,11 +448,11 @@ void Discret::ELEMENTS::So3Plast<distype>::Unpack(const std::vector<char>& data)
     extract_from_pack(position, data, (*alpha_eas_delta_over_last_timestep_));
   }
 
-  int size = ExtractInt(position, data);
+  int size = extract_int(position, data);
   for (int i = 0; i < size; i++) extract_from_pack(position, data, dDp_last_iter_[i]);
 
   // Nitsche contact stuff
-  is_nitsche_contact_ = (bool)ExtractInt(position, data);
+  is_nitsche_contact_ = (bool)extract_int(position, data);
   if (is_nitsche_contact_)
   {
     extract_from_pack(position, data, cauchy_);
@@ -495,7 +495,7 @@ bool Discret::ELEMENTS::So3Plast<distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
 {
   std::string buffer;
-  linedef->ExtractString("KINEM", buffer);
+  linedef->extract_string("KINEM", buffer);
 
   // geometrically linear
   if (buffer == "linear")
@@ -512,10 +512,10 @@ bool Discret::ELEMENTS::So3Plast<distype>::ReadElement(
     FOUR_C_THROW("Reading of SO3_PLAST element failed! KINEM unknown");
 
   // fbar
-  if (linedef->HaveNamed("FBAR"))
+  if (linedef->has_named("FBAR"))
   {
     std::string fb;
-    linedef->ExtractString("FBAR", fb);
+    linedef->extract_string("FBAR", fb);
     if (fb == "yes")
       fbar_ = true;
     else if (fb == "no")
@@ -525,7 +525,7 @@ bool Discret::ELEMENTS::So3Plast<distype>::ReadElement(
   }
 
   // quadrature
-  if (linedef->HaveNamed("NUMGP"))
+  if (linedef->has_named("NUMGP"))
   {
     if (distype != Core::FE::CellType::hex8)
       FOUR_C_THROW("You may only choose the Gauss point number for SOLIDH8PLAST");
@@ -533,7 +533,7 @@ bool Discret::ELEMENTS::So3Plast<distype>::ReadElement(
       FOUR_C_THROW("You may not choose the Gauss point number in TSI problems");
 
     int ngp = 0;
-    linedef->ExtractInt("NUMGP", ngp);
+    linedef->extract_int("NUMGP", ngp);
 
     switch (ngp)
     {
@@ -605,7 +605,7 @@ bool Discret::ELEMENTS::So3Plast<distype>::ReadElement(
 
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
 
   SetMaterial(0, Mat::Factory(material));
 
@@ -627,12 +627,12 @@ bool Discret::ELEMENTS::So3Plast<distype>::ReadElement(
     plspintype_ = zerospin;
 
   // EAS
-  if (linedef->HaveNamed("EAS"))
+  if (linedef->has_named("EAS"))
   {
     if (distype != Core::FE::CellType::hex8)
       FOUR_C_THROW("EAS in so3 plast currently only for HEX8 elements");
 
-    linedef->ExtractString("EAS", buffer);
+    linedef->extract_string("EAS", buffer);
 
     if (buffer == "none")
       eastype_ = soh8p_easnone;

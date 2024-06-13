@@ -559,7 +559,7 @@ void Inpar::PARTICLE::SetValidConditions(
           Core::Conditions::ParticleWall, true, Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < particlewallcomponents.size(); ++i)
-    surfpartwall->AddComponent(particlewallcomponents[i]);
+    surfpartwall->add_component(particlewallcomponents[i]);
 
   condlist.push_back(surfpartwall);
 }

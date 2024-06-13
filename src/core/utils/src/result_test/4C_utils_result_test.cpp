@@ -72,19 +72,19 @@ int Core::UTILS::ResultTest::compare_values(
 
   if (type != "SPECIAL")
   {
-    res.ExtractInt(type, gid);
+    res.extract_int(type, gid);
   }
   std::string quantity;
-  res.ExtractString("QUANTITY", quantity);
+  res.extract_string("QUANTITY", quantity);
   double givenresult;
-  res.ExtractDouble("VALUE", givenresult);
+  res.extract_double("VALUE", givenresult);
   double tolerance;
-  res.ExtractDouble("TOLERANCE", tolerance);
+  res.extract_double("TOLERANCE", tolerance);
   // safety check
   if (tolerance <= 0.) FOUR_C_THROW("Tolerance for result test must be strictly positive!");
   // name is an optional input argument!
   std::string name = "";
-  if (res.HaveNamed("NAME")) res.ExtractString("NAME", name);
+  if (res.has_named("NAME")) res.extract_string("NAME", name);
 
   // return value (0 if results are correct, 1 if results are not correct)
   int ret = 0;
@@ -136,7 +136,7 @@ int Core::UTILS::ResultTest::compare_values(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::UTILS::ResultTest::Match(Input::LineDefinition& res) { return res.HaveNamed(myname_); }
+bool Core::UTILS::ResultTest::Match(Input::LineDefinition& res) { return res.has_named(myname_); }
 
 
 /*----------------------------------------------------------------------*/
@@ -164,12 +164,12 @@ void Core::UTILS::ResultTestManager::TestAll(const Epetra_Comm& comm)
     {
       if (fieldtest->Match(result))
       {
-        if (result.HaveNamed("ELEMENT"))
+        if (result.has_named("ELEMENT"))
           fieldtest->TestElement(result, nerr, test_count);
-        else if (result.HaveNamed("NODE"))
+        else if (result.has_named("NODE"))
           fieldtest->test_node(result, nerr, test_count);
-        else if (result.HaveNamed("LINE") || result.HaveNamed("SURFACE") ||
-                 result.HaveNamed("VOLUME"))
+        else if (result.has_named("LINE") || result.has_named("SURFACE") ||
+                 result.has_named("VOLUME"))
           fieldtest->test_node_on_geometry(result, nerr, test_count, get_node_set());
         else
           fieldtest->TestSpecial(result, nerr, test_count, uneval_test_count);

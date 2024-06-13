@@ -85,8 +85,8 @@ void Discret::ELEMENTS::SoHex8PlastType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX8"] = Input::LineDefinition::Builder(defs_hex8["HEX8"])
-                     .AddNamedString("FBAR")
-                     .AddOptionalNamedInt("NUMGP")
+                     .add_named_string("FBAR")
+                     .add_optional_named_int("NUMGP")
                      .Build();
 
 }  // setup_element_definition()
@@ -182,9 +182,9 @@ void Discret::ELEMENTS::SoHex18PlastType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX18"] = Input::LineDefinition::Builder()
-                      .AddIntVector("HEX18", 18)
-                      .AddNamedInt("MAT")
-                      .AddNamedString("KINEM")
+                      .add_int_vector("HEX18", 18)
+                      .add_named_int("MAT")
+                      .add_named_string("KINEM")
                       .add_optional_named_double_vector("RAD", 3)
                       .add_optional_named_double_vector("AXI", 3)
                       .add_optional_named_double_vector("CIR", 3)
@@ -480,9 +480,9 @@ void Discret::ELEMENTS::SoNurbs27PlastType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["NURBS27"] = Input::LineDefinition::Builder()
-                        .AddIntVector("NURBS27", 27)
-                        .AddNamedInt("MAT")
-                        .AddNamedString("KINEM")
+                        .add_int_vector("NURBS27", 27)
+                        .add_named_int("MAT")
+                        .add_named_string("KINEM")
                         .Build();
 }  // setup_element_definition()
 

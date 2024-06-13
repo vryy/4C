@@ -30,9 +30,9 @@ namespace
   Input::LineDefinition::Builder GetDefaultLineDefinitionBuilder()
   {
     return Input::LineDefinition::Builder()
-        .AddIntVector(Core::FE::CellTypeToString(celltype), Core::FE::num_nodes<celltype>)
-        .AddNamedInt("MAT")
-        .AddNamedString("KINEM")
+        .add_int_vector(Core::FE::CellTypeToString(celltype), Core::FE::num_nodes<celltype>)
+        .add_named_int("MAT")
+        .add_named_string("KINEM")
         .add_optional_named_double_vector("RAD", 3)
         .add_optional_named_double_vector("AXI", 3)
         .add_optional_named_double_vector("CIR", 3)
@@ -56,7 +56,7 @@ void Discret::ELEMENTS::SolidPoroType::setup_element_definition(
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex8)] =
       GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex8>()
           .add_optional_named_string("EAS")
-          .AddOptionalTag("FBAR")
+          .add_optional_tag("FBAR")
           .Build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex27)] =
@@ -160,14 +160,14 @@ bool Discret::ELEMENTS::SolidPoro::ReadElement(
   solid_ele_property_.kintype = STR::UTILS::ReadElement::read_element_kinematic_type(linedef);
 
   // check element technology
-  if (linedef->HaveNamed("TECH"))
+  if (linedef->has_named("TECH"))
   {
     if (STR::UTILS::ReadElement::read_element_technology(linedef) != ElementTechnology::none)
       FOUR_C_THROW("SOLIDPORO elements do not support any element technology!");
   }
 
   // read scalar transport implementation type
-  if (linedef->HaveNamed("POROTYPE"))
+  if (linedef->has_named("POROTYPE"))
   {
     poro_ele_property_.porotype = STR::UTILS::ReadElement::ReadPoroType(linedef);
   }
@@ -177,7 +177,7 @@ bool Discret::ELEMENTS::SolidPoro::ReadElement(
   }
 
   // read scalar transport implementation type
-  if (linedef->HaveNamed("TYPE"))
+  if (linedef->has_named("TYPE"))
   {
     poro_ele_property_.impltype = STR::UTILS::ReadElement::read_type(linedef);
   }
@@ -234,20 +234,20 @@ void Discret::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  if (ExtractInt(position, data) != UniqueParObjectId()) FOUR_C_THROW("wrong instance type data");
+  if (extract_int(position, data) != UniqueParObjectId()) FOUR_C_THROW("wrong instance type data");
 
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
   Core::Elements::Element::Unpack(basedata);
 
-  celltype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
+  celltype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
 
   Discret::ELEMENTS::ExtractFromPack(position, data, solid_ele_property_);
 
-  poro_ele_property_.porotype = static_cast<Inpar::Poro::PoroType>(ExtractInt(position, data));
+  poro_ele_property_.porotype = static_cast<Inpar::Poro::PoroType>(extract_int(position, data));
 
-  poro_ele_property_.impltype = static_cast<Inpar::ScaTra::ImplType>(ExtractInt(position, data));
+  poro_ele_property_.impltype = static_cast<Inpar::ScaTra::ImplType>(extract_int(position, data));
 
   Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
 

@@ -21,13 +21,13 @@ bool Discret::ELEMENTS::SoShw6::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   SolidMaterial()->Setup(NUMGPT_WEG6, linedef);
 
   std::string buffer;
-  linedef->ExtractString("KINEM", buffer);
+  linedef->extract_string("KINEM", buffer);
 
 
   // geometrically non-linear with Total Lagrangean approach
@@ -53,7 +53,7 @@ bool Discret::ELEMENTS::SoShw6::ReadElement(
   if (SolidMaterial()->UsesExtendedUpdate())
     FOUR_C_THROW("This element currently does not support the extended update call.");
 
-  linedef->ExtractString("EAS", buffer);
+  linedef->extract_string("EAS", buffer);
 
   // full sohw6 EAS technology
   if (buffer == "soshw6")
@@ -75,7 +75,7 @@ bool Discret::ELEMENTS::SoShw6::ReadElement(
   // check for automatically align material space optimally with parameter space
   optimal_parameterspace_map_ = false;
   nodes_rearranged_ = false;
-  if (linedef->HaveNamed("OPTORDER")) optimal_parameterspace_map_ = true;
+  if (linedef->has_named("OPTORDER")) optimal_parameterspace_map_ = true;
 
   return true;
 }

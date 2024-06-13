@@ -46,7 +46,7 @@ Cardiovascular0DResultTest::Cardiovascular0DResultTest(
 void Cardiovascular0DResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   std::string quantity;
-  res.ExtractString("QUANTITY", quantity);
+  res.extract_string("QUANTITY", quantity);
   bool unknownquantity = true;  // make sure the result value std::string can be handled
   double result = 0.0;          // will hold the actual result of run
 

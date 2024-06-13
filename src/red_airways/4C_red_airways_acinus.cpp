@@ -65,11 +65,11 @@ void Discret::ELEMENTS::RedAcinusType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["RED_ACINUS"];
 
   defs["LINE2"] = Input::LineDefinition::Builder()
-                      .AddIntVector("LINE2", 2)
-                      .AddNamedInt("MAT")
-                      .AddNamedString("TYPE")
-                      .AddNamedDouble("AcinusVolume")
-                      .AddNamedDouble("AlveolarDuctVolume")
+                      .add_int_vector("LINE2", 2)
+                      .add_named_int("MAT")
+                      .add_named_string("TYPE")
+                      .add_named_double("AcinusVolume")
+                      .add_named_double("AlveolarDuctVolume")
                       .add_optional_named_double("E1_0")
                       .add_optional_named_double("E1_LIN")
                       .add_optional_named_double("E1_EXP")

@@ -47,9 +47,9 @@ void Inpar::RveMpc::SetValidConditions(
           "LinePeriodicRve", "definition of edges forming 2D periodic boundary conditions",
           Core::Conditions::LineRvePeriodic, false, Core::Conditions::geometry_type_line));
 
-  rve_lineperiodic_condition->AddComponent(Teuchos::rcp(new Input::SeparatorComponent("EDGE")));
+  rve_lineperiodic_condition->add_component(Teuchos::rcp(new Input::SeparatorComponent("EDGE")));
 
-  rve_lineperiodic_condition->AddComponent(Teuchos::rcp(new Input::SelectionComponent("EdgeLineId",
+  rve_lineperiodic_condition->add_component(Teuchos::rcp(new Input::SelectionComponent("EdgeLineId",
       "undefined", Teuchos::tuple<std::string>("x+", "x-", "y+", "y-", "undefined"),
       Teuchos::tuple<std::string>("x+", "x-", "y+", "y-", "undefined"), true)));
 
@@ -61,9 +61,9 @@ void Inpar::RveMpc::SetValidConditions(
           "SurfacePeriodicRve", "definition of surfaces forming 3D periodic boundary conditions",
           Core::Conditions::SurfaceRvePeriodic, false, Core::Conditions::geometry_type_surface));
 
-  rve_surfperiodic_condition->AddComponent(Teuchos::rcp(new Input::SeparatorComponent("SURF")));
+  rve_surfperiodic_condition->add_component(Teuchos::rcp(new Input::SeparatorComponent("SURF")));
 
-  rve_surfperiodic_condition->AddComponent(Teuchos::rcp(new Input::SelectionComponent("SurfId",
+  rve_surfperiodic_condition->add_component(Teuchos::rcp(new Input::SelectionComponent("SurfId",
       "undefined", Teuchos::tuple<std::string>("x+", "x-", "y+", "y-", "z+", "z-", "undefined"),
       Teuchos::tuple<std::string>("x+", "x-", "y+", "y-", "z+", "z-", "undefined"), true)));
 
@@ -79,9 +79,9 @@ void Inpar::RveMpc::SetValidConditions(
           Core::Conditions::PointRvePeriodicReference, false,
           Core::Conditions::geometry_type_point));
 
-  rve_cornerpoint_condition->AddComponent(Teuchos::rcp(new Input::SeparatorComponent("POSITION")));
+  rve_cornerpoint_condition->add_component(Teuchos::rcp(new Input::SeparatorComponent("POSITION")));
 
-  rve_cornerpoint_condition->AddComponent(
+  rve_cornerpoint_condition->add_component(
       Teuchos::rcp(new Input::SelectionComponent("referenceNode", "undefined",
           Teuchos::tuple<std::string>("N1L", "N1B", "N2", "N4", "N1", "N3", "undefined"),
           Teuchos::tuple<std::string>("N1L", "N1B", "N2", "N4", "N1", "N3", "undefined"), true)));
@@ -98,19 +98,19 @@ void Inpar::RveMpc::SetValidConditions(
           Core::Conditions::PointLinearCoupledEquation, false,
           Core::Conditions::geometry_type_point));
 
-  linear_ce->AddComponent(Teuchos::rcp(new Input::SeparatorComponent("EQUATION")));
+  linear_ce->add_component(Teuchos::rcp(new Input::SeparatorComponent("EQUATION")));
 
-  linear_ce->AddComponent(Teuchos::rcp(new Input::IntComponent("EQUATION_ID")));
+  linear_ce->add_component(Teuchos::rcp(new Input::IntComponent("EQUATION_ID")));
 
-  linear_ce->AddComponent(Teuchos::rcp(new Input::SeparatorComponent("ADD")));
+  linear_ce->add_component(Teuchos::rcp(new Input::SeparatorComponent("ADD")));
 
-  linear_ce->AddComponent(Teuchos::rcp(new Input::SelectionComponent("DOF", "undefined",
+  linear_ce->add_component(Teuchos::rcp(new Input::SelectionComponent("DOF", "undefined",
       Teuchos::tuple<std::string>("dispx", "dispy", "undefined"),
       Teuchos::tuple<std::string>("dispx", "dispy", "undefined"), true)));
 
-  linear_ce->AddComponent(Teuchos::rcp(new Input::SeparatorComponent("COEFFICIENT")));
+  linear_ce->add_component(Teuchos::rcp(new Input::SeparatorComponent("COEFFICIENT")));
 
-  linear_ce->AddComponent(Teuchos::rcp(new Input::RealComponent("COEFFICIENT")));
+  linear_ce->add_component(Teuchos::rcp(new Input::RealComponent("COEFFICIENT")));
 
   condlist.push_back(linear_ce);
   /*--------------------------------------------------------------------*/

@@ -43,11 +43,11 @@ void Arteries::ArteryResultTest::test_node(Input::LineDefinition& res, int& nerr
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
   if (dis != dis_->Name()) return;
 
   int node;
-  res.ExtractInt("NODE", node);
+  res.extract_int("NODE", node);
   node -= 1;
 
   int havenode(dis_->HaveGlobalNode(node));
@@ -72,7 +72,7 @@ void Arteries::ArteryResultTest::test_node(Input::LineDefinition& res, int& nerr
       double result = 0.;
       const Epetra_BlockMap& pnpmap = mysol_->Map();
       std::string position;
-      res.ExtractString("QUANTITY", position);
+      res.extract_string("QUANTITY", position);
 
       // test result value of single scalar field
       if (position == "area")
@@ -99,12 +99,12 @@ void Arteries::ArteryResultTest::TestElement(Input::LineDefinition& res, int& ne
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
 
   if (dis != dis_->Name()) return;
 
   int element;
-  res.ExtractInt("ELEMENT", element);
+  res.extract_int("ELEMENT", element);
   element -= 1;
 
   int haveelement(dis_->HaveGlobalElement(element));
@@ -127,7 +127,7 @@ void Arteries::ArteryResultTest::TestElement(Input::LineDefinition& res, int& ne
 
       // extract name of quantity to be tested
       std::string quantity;
-      res.ExtractString("QUANTITY", quantity);
+      res.extract_string("QUANTITY", quantity);
 
       double result = 0.;
       // test result value of single scalar field

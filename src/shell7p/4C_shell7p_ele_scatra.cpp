@@ -74,16 +74,16 @@ void Discret::ELEMENTS::Shell7pScatraType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defsgeneral = definitions["SHELL7PSCATRA"];
 
   defsgeneral["QUAD4"] = Input::LineDefinition::Builder()
-                             .AddIntVector("QUAD4", 4)
-                             .AddNamedInt("MAT")
-                             .AddNamedDouble("THICK")
-                             .AddNamedString("EAS")
-                             .AddString("EAS2")
-                             .AddString("EAS3")
-                             .AddString("EAS4")
-                             .AddString("EAS5")
-                             .AddNamedDouble("SDC")
-                             .AddOptionalTag("ANS")
+                             .add_int_vector("QUAD4", 4)
+                             .add_named_int("MAT")
+                             .add_named_double("THICK")
+                             .add_named_string("EAS")
+                             .add_string("EAS2")
+                             .add_string("EAS3")
+                             .add_string("EAS4")
+                             .add_string("EAS5")
+                             .add_named_double("SDC")
+                             .add_optional_tag("ANS")
                              .add_optional_named_double_vector("RAD", 3)
                              .add_optional_named_double_vector("AXI", 3)
                              .add_optional_named_double_vector("CIR", 3)
@@ -94,16 +94,16 @@ void Discret::ELEMENTS::Shell7pScatraType::setup_element_definition(
                              .Build();
 
   defsgeneral["QUAD8"] = Input::LineDefinition::Builder()
-                             .AddIntVector("QUAD8", 8)
-                             .AddNamedInt("MAT")
-                             .AddNamedDouble("THICK")
-                             .AddNamedString("EAS")
-                             .AddString("EAS2")
-                             .AddString("EAS3")
-                             .AddString("EAS4")
-                             .AddString("EAS5")
-                             .AddNamedDouble("SDC")
-                             .AddOptionalTag("ANS")
+                             .add_int_vector("QUAD8", 8)
+                             .add_named_int("MAT")
+                             .add_named_double("THICK")
+                             .add_named_string("EAS")
+                             .add_string("EAS2")
+                             .add_string("EAS3")
+                             .add_string("EAS4")
+                             .add_string("EAS5")
+                             .add_named_double("SDC")
+                             .add_optional_tag("ANS")
                              .add_optional_named_double_vector("RAD", 3)
                              .add_optional_named_double_vector("AXI", 3)
                              .add_optional_named_double_vector("CIR", 3)
@@ -114,16 +114,16 @@ void Discret::ELEMENTS::Shell7pScatraType::setup_element_definition(
                              .Build();
 
   defsgeneral["QUAD9"] = Input::LineDefinition::Builder()
-                             .AddIntVector("QUAD9", 9)
-                             .AddNamedInt("MAT")
-                             .AddNamedDouble("THICK")
-                             .AddNamedString("EAS")
-                             .AddString("EAS2")
-                             .AddString("EAS3")
-                             .AddString("EAS4")
-                             .AddString("EAS5")
-                             .AddNamedDouble("SDC")
-                             .AddOptionalTag("ANS")
+                             .add_int_vector("QUAD9", 9)
+                             .add_named_int("MAT")
+                             .add_named_double("THICK")
+                             .add_named_string("EAS")
+                             .add_string("EAS2")
+                             .add_string("EAS3")
+                             .add_string("EAS4")
+                             .add_string("EAS5")
+                             .add_named_double("SDC")
+                             .add_optional_tag("ANS")
                              .add_optional_named_double_vector("RAD", 3)
                              .add_optional_named_double_vector("AXI", 3)
                              .add_optional_named_double_vector("CIR", 3)
@@ -134,10 +134,10 @@ void Discret::ELEMENTS::Shell7pScatraType::setup_element_definition(
                              .Build();
 
   defsgeneral["TRI3"] = Input::LineDefinition::Builder()
-                            .AddIntVector("TRI3", 3)
-                            .AddNamedInt("MAT")
-                            .AddNamedDouble("THICK")
-                            .AddNamedDouble("SDC")
+                            .add_int_vector("TRI3", 3)
+                            .add_named_int("MAT")
+                            .add_named_double("THICK")
+                            .add_named_double("SDC")
                             .add_optional_named_double_vector("RAD", 3)
                             .add_optional_named_double_vector("AXI", 3)
                             .add_optional_named_double_vector("CIR", 3)
@@ -148,10 +148,10 @@ void Discret::ELEMENTS::Shell7pScatraType::setup_element_definition(
                             .Build();
 
   defsgeneral["TRI6"] = Input::LineDefinition::Builder()
-                            .AddIntVector("TRI6", 6)
-                            .AddNamedInt("MAT")
-                            .AddNamedDouble("THICK")
-                            .AddNamedDouble("SDC")
+                            .add_int_vector("TRI6", 6)
+                            .add_named_int("MAT")
+                            .add_named_double("THICK")
+                            .add_named_double("SDC")
                             .add_optional_named_double_vector("RAD", 3)
                             .add_optional_named_double_vector("AXI", 3)
                             .add_optional_named_double_vector("CIR", 3)
@@ -273,7 +273,7 @@ void Discret::ELEMENTS::Shell7pScatra::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
   // discretization type
-  distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
+  distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
   // element technology
   extract_from_pack(position, data, eletech_);
   // thickness in reference frame
@@ -284,7 +284,7 @@ void Discret::ELEMENTS::Shell7pScatra::Unpack(const std::vector<char>& data)
   Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
   // extract impltype
   impltype_ = static_cast<Inpar::ScaTra::ImplType>(
-      Core::Communication::ParObject::ExtractInt(position, data));
+      Core::Communication::ParObject::extract_int(position, data));
   // reset shell calculation interface
   shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(*this, eletech_);
 
@@ -369,13 +369,13 @@ bool Discret::ELEMENTS::Shell7pScatra::ReadElement(
   distype_ = Core::FE::StringToCellType(distype);
 
   // set thickness in reference frame
-  linedef->ExtractDouble("THICK", thickness_);
+  linedef->extract_double("THICK", thickness_);
   if (thickness_ <= 0) FOUR_C_THROW("Shell element thickness needs to be > 0");
   shell_data.thickness = thickness_;
 
   // extract number of EAS parameters for different locking types
   STR::ELEMENTS::ShellLockingTypes locking_types = {};
-  if (linedef->HaveNamed("EAS"))
+  if (linedef->has_named("EAS"))
   {
     eletech_.insert(Inpar::STR::EleTech::eas);
     STR::UTILS::Shell::ReadElement::ReadAndSetLockingTypes(distype_, linedef, locking_types);
@@ -385,12 +385,12 @@ bool Discret::ELEMENTS::Shell7pScatra::ReadElement(
   shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(*this, eletech_);
 
   // read and set ANS technology for element
-  if (linedef->HaveNamed("ANS"))
+  if (linedef->has_named("ANS"))
   {
     shell_data.num_ans = STR::UTILS::Shell::ReadElement::ReadAndSetNumANS(distype_);
   }
   // read SDC
-  linedef->ExtractDouble("SDC", shell_data.sdc);
+  linedef->extract_double("SDC", shell_data.sdc);
 
   // read and set number of material model
   SetMaterial(0, Mat::Factory(STR::UTILS::Shell::ReadElement::ReadAndSetElementMaterial(linedef)));
@@ -404,7 +404,7 @@ bool Discret::ELEMENTS::Shell7pScatra::ReadElement(
   }
   // read implementation type for scatra
   std::string impltype;
-  linedef->ExtractString("TYPE", impltype);
+  linedef->extract_string("TYPE", impltype);
 
   if (impltype == "Undefined")
     impltype_ = Inpar::ScaTra::impltype_undefined;

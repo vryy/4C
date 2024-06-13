@@ -265,10 +265,10 @@ void Mat::Myocard::Setup(const Core::LinAlg::Matrix<2, 1>& fiber1)
 void Mat::Myocard::Setup(Input::LineDefinition* linedef)
 {
   std::vector<double> fiber1(3);
-  if (linedef->HaveNamed("FIBER1"))
+  if (linedef->has_named("FIBER1"))
   {
     diff_at_ele_center_ = true;
-    linedef->ExtractDoubleVector("FIBER1", fiber1);
+    linedef->extract_double_vector("FIBER1", fiber1);
     setup_diffusion_tensor(fiber1);
   }
 }

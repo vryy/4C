@@ -189,9 +189,9 @@ void Inpar::PoroMultiPhaseScaTra::SetValidConditions(
     // insert input file line components into condition definitions
     for (unsigned i = 0; i < oxypartpresscomponents.size(); ++i)
     {
-      oxypartpressline->AddComponent(oxypartpresscomponents[i]);
-      oxypartpresssurf->AddComponent(oxypartpresscomponents[i]);
-      oxypartpressvol->AddComponent(oxypartpresscomponents[i]);
+      oxypartpressline->add_component(oxypartpresscomponents[i]);
+      oxypartpresssurf->add_component(oxypartpresscomponents[i]);
+      oxypartpressvol->add_component(oxypartpresscomponents[i]);
     }
 
     // insert condition definitions into global list of valid condition definitions

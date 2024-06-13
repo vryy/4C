@@ -135,8 +135,8 @@ void Mat::Maxwell0dAcinusOgden::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 void Mat::Maxwell0dAcinusOgden::Setup(Input::LineDefinition* linedef)
 {
-  linedef->ExtractDouble("KAPPA", kappa_);
-  linedef->ExtractDouble("BETA", beta_);
+  linedef->extract_double("KAPPA", kappa_);
+  linedef->extract_double("BETA", beta_);
   // TODO bool -variable init, in Evaluate abfragen ob init=true
 }
 

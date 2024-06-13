@@ -187,9 +187,9 @@ void Inpar::BEAMCONTACT::SetValidConditions(
             "BEAM INTERACTION/BEAM TO BEAM CONTACT CONDITIONS", condition_name,
             "Beam-to-beam contact conditions", Core::Conditions::BeamToBeamContact, true,
             Core::Conditions::geometry_type_line));
-    beam_to_beam_contact_condition->AddComponent(
+    beam_to_beam_contact_condition->add_component(
         Teuchos::rcp(new Input::SeparatorComponent("COUPLING_ID")));
-    beam_to_beam_contact_condition->AddComponent(
+    beam_to_beam_contact_condition->add_component(
         Teuchos::rcp(new Input::IntComponent("COUPLING_ID")));
     condlist.push_back(beam_to_beam_contact_condition);
   }

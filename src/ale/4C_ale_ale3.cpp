@@ -84,28 +84,28 @@ void Discret::ELEMENTS::Ale3Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["ALE3"];
 
   defs["HEX8"] =
-      Input::LineDefinition::Builder().AddIntVector("HEX8", 8).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("HEX8", 8).add_named_int("MAT").Build();
 
   defs["HEX20"] =
-      Input::LineDefinition::Builder().AddIntVector("HEX20", 20).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("HEX20", 20).add_named_int("MAT").Build();
 
   defs["HEX27"] =
-      Input::LineDefinition::Builder().AddIntVector("HEX27", 27).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("HEX27", 27).add_named_int("MAT").Build();
 
   defs["TET4"] =
-      Input::LineDefinition::Builder().AddIntVector("TET4", 4).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("TET4", 4).add_named_int("MAT").Build();
 
   defs["TET10"] =
-      Input::LineDefinition::Builder().AddIntVector("TET10", 10).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("TET10", 10).add_named_int("MAT").Build();
 
   defs["WEDGE6"] =
-      Input::LineDefinition::Builder().AddIntVector("WEDGE6", 6).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("WEDGE6", 6).add_named_int("MAT").Build();
 
   defs["WEDGE15"] =
-      Input::LineDefinition::Builder().AddIntVector("WEDGE15", 15).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("WEDGE15", 15).add_named_int("MAT").Build();
 
   defs["PYRAMID5"] =
-      Input::LineDefinition::Builder().AddIntVector("PYRAMID5", 5).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("PYRAMID5", 5).add_named_int("MAT").Build();
 }
 
 /*----------------------------------------------------------------------------*/

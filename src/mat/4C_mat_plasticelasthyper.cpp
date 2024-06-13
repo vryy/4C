@@ -286,16 +286,16 @@ void Mat::PlasticElastHyper::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, last_alpha_isotropic_);
   extract_from_pack<3, 3>(position, data, last_alpha_kinematic_);
 
-  activity_state_.resize(ExtractInt(position, data));
+  activity_state_.resize(extract_int(position, data));
   for (int i = 0; i < (int)activity_state_.size(); ++i)
-    activity_state_.at(i) = (bool)ExtractInt(position, data);
+    activity_state_.at(i) = (bool)extract_int(position, data);
 
-  delta_alpha_i_.resize(ExtractInt(position, data));
+  delta_alpha_i_.resize(extract_int(position, data));
   for (int i = 0; i < (int)delta_alpha_i_.size(); ++i)
-    delta_alpha_i_.at(i) = ExtractDouble(position, data);
+    delta_alpha_i_.at(i) = extract_double(position, data);
 
-  bool tsi = (bool)ExtractInt(position, data);
-  bool tsi_eas = (bool)ExtractInt(position, data);
+  bool tsi = (bool)extract_int(position, data);
+  bool tsi_eas = (bool)extract_int(position, data);
   if (!tsi)
   {
     HepDiss_ = Teuchos::null;
@@ -307,7 +307,7 @@ void Mat::PlasticElastHyper::Unpack(const std::vector<char>& data)
   {
     int ngp = last_alpha_isotropic_.size();
     HepDiss_ = Teuchos::rcp(new std::vector<double>(ngp, 0.0));
-    int numdofperelement = ExtractInt(position, data);
+    int numdofperelement = extract_int(position, data);
     dHepDissdd_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseVector>(
         ngp, Core::LinAlg::SerialDenseVector(numdofperelement)));
     dHepDissdT_ = Teuchos::rcp(new std::vector<double>(ngp, 0.0));
@@ -317,11 +317,11 @@ void Mat::PlasticElastHyper::Unpack(const std::vector<char>& data)
   }
 
   // dissipation mode
-  Inpar::TSI::DissipationMode mode = (Inpar::TSI::DissipationMode)ExtractInt(position, data);
+  Inpar::TSI::DissipationMode mode = (Inpar::TSI::DissipationMode)extract_int(position, data);
   SetDissipationMode(mode);
 
-  double cpl = ExtractDouble(position, data);
-  double s = ExtractDouble(position, data);
+  double cpl = extract_double(position, data);
+  double s = extract_double(position, data);
   GetParams(s, cpl);
 
   anisotropy_.unpack_anisotropy(data, position);
@@ -364,9 +364,9 @@ void Mat::PlasticElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
     FOUR_C_THROW("no visco-elasticity in PlasticElastHyper...yet(?)");
 
   // check if either zero or three fiber directions are given
-  if (linedef->HaveNamed("FIBER1") || linedef->HaveNamed("FIBER2") || linedef->HaveNamed("FIBER3"))
-    if (!linedef->HaveNamed("FIBER1") || !linedef->HaveNamed("FIBER2") ||
-        !linedef->HaveNamed("FIBER3"))
+  if (linedef->has_named("FIBER1") || linedef->has_named("FIBER2") || linedef->has_named("FIBER3"))
+    if (!linedef->has_named("FIBER1") || !linedef->has_named("FIBER2") ||
+        !linedef->has_named("FIBER3"))
       FOUR_C_THROW("so3 expects no fibers or 3 fiber directions");
 
   // plastic anisotropy
@@ -461,10 +461,10 @@ void Mat::PlasticElastHyper::SetupHillPlasticity(Input::LineDefinition* linedef)
     std::vector<Core::LinAlg::Matrix<3, 1>> directions(3);
 
     // first anisotropy direction
-    if (linedef->HaveNamed("FIBER1"))
+    if (linedef->has_named("FIBER1"))
     {
       std::vector<double> fiber;
-      linedef->ExtractDoubleVector("FIBER1", fiber);
+      linedef->extract_double_vector("FIBER1", fiber);
       double fnorm = 0.;
       // normalization
       for (int i = 0; i < 3; ++i) fnorm += fiber[i] * fiber[i];
@@ -475,10 +475,10 @@ void Mat::PlasticElastHyper::SetupHillPlasticity(Input::LineDefinition* linedef)
       for (int i = 0; i < 3; ++i) directions.at(0)(i) = fiber[i] / fnorm;
     }
     // second anisotropy direction
-    if (linedef->HaveNamed("FIBER2"))
+    if (linedef->has_named("FIBER2"))
     {
       std::vector<double> fiber;
-      linedef->ExtractDoubleVector("FIBER2", fiber);
+      linedef->extract_double_vector("FIBER2", fiber);
       double fnorm = 0.;
       // normalization
       for (int i = 0; i < 3; ++i) fnorm += fiber[i] * fiber[i];
@@ -489,10 +489,10 @@ void Mat::PlasticElastHyper::SetupHillPlasticity(Input::LineDefinition* linedef)
       for (int i = 0; i < 3; ++i) directions.at(1)(i) = fiber[i] / fnorm;
     }
     // third anisotropy direction
-    if (linedef->HaveNamed("FIBER3"))
+    if (linedef->has_named("FIBER3"))
     {
       std::vector<double> fiber;
-      linedef->ExtractDoubleVector("FIBER3", fiber);
+      linedef->extract_double_vector("FIBER3", fiber);
       double fnorm = 0.;
       // normalization
       for (int i = 0; i < 3; ++i) fnorm += fiber[i] * fiber[i];

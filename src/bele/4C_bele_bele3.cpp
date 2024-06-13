@@ -93,37 +93,57 @@ void Discret::ELEMENTS::Bele3Type::setup_element_definition(
 {
   std::map<std::string, Input::LineDefinition>& defs3 = definitions["BELE3_3"];
 
-  defs3["TRI3"] =
-      Input::LineDefinition::Builder().AddIntVector("TRI3", 3).AddOptionalNamedInt("MAT").Build();
+  defs3["TRI3"] = Input::LineDefinition::Builder()
+                      .add_int_vector("TRI3", 3)
+                      .add_optional_named_int("MAT")
+                      .Build();
 
-  defs3["TRI6"] =
-      Input::LineDefinition::Builder().AddIntVector("TRI6", 6).AddOptionalNamedInt("MAT").Build();
+  defs3["TRI6"] = Input::LineDefinition::Builder()
+                      .add_int_vector("TRI6", 6)
+                      .add_optional_named_int("MAT")
+                      .Build();
 
-  defs3["QUAD4"] =
-      Input::LineDefinition::Builder().AddIntVector("QUAD4", 4).AddOptionalNamedInt("MAT").Build();
+  defs3["QUAD4"] = Input::LineDefinition::Builder()
+                       .add_int_vector("QUAD4", 4)
+                       .add_optional_named_int("MAT")
+                       .Build();
 
-  defs3["QUAD8"] =
-      Input::LineDefinition::Builder().AddIntVector("QUAD8", 8).AddOptionalNamedInt("MAT").Build();
+  defs3["QUAD8"] = Input::LineDefinition::Builder()
+                       .add_int_vector("QUAD8", 8)
+                       .add_optional_named_int("MAT")
+                       .Build();
 
-  defs3["QUAD9"] =
-      Input::LineDefinition::Builder().AddIntVector("QUAD9", 9).AddOptionalNamedInt("MAT").Build();
+  defs3["QUAD9"] = Input::LineDefinition::Builder()
+                       .add_int_vector("QUAD9", 9)
+                       .add_optional_named_int("MAT")
+                       .Build();
 
   std::map<std::string, Input::LineDefinition>& defs4 = definitions["BELE3_4"];
 
-  defs4["TRI3"] =
-      Input::LineDefinition::Builder().AddIntVector("TRI3", 3).AddOptionalNamedInt("MAT").Build();
+  defs4["TRI3"] = Input::LineDefinition::Builder()
+                      .add_int_vector("TRI3", 3)
+                      .add_optional_named_int("MAT")
+                      .Build();
 
-  defs4["TRI6"] =
-      Input::LineDefinition::Builder().AddIntVector("TRI6", 6).AddOptionalNamedInt("MAT").Build();
+  defs4["TRI6"] = Input::LineDefinition::Builder()
+                      .add_int_vector("TRI6", 6)
+                      .add_optional_named_int("MAT")
+                      .Build();
 
-  defs4["QUAD4"] =
-      Input::LineDefinition::Builder().AddIntVector("QUAD4", 4).AddOptionalNamedInt("MAT").Build();
+  defs4["QUAD4"] = Input::LineDefinition::Builder()
+                       .add_int_vector("QUAD4", 4)
+                       .add_optional_named_int("MAT")
+                       .Build();
 
-  defs4["QUAD8"] =
-      Input::LineDefinition::Builder().AddIntVector("QUAD8", 8).AddOptionalNamedInt("MAT").Build();
+  defs4["QUAD8"] = Input::LineDefinition::Builder()
+                       .add_int_vector("QUAD8", 8)
+                       .add_optional_named_int("MAT")
+                       .Build();
 
-  defs4["QUAD9"] =
-      Input::LineDefinition::Builder().AddIntVector("QUAD9", 9).AddOptionalNamedInt("MAT").Build();
+  defs4["QUAD9"] = Input::LineDefinition::Builder()
+                       .add_int_vector("QUAD9", 9)
+                       .add_optional_named_int("MAT")
+                       .Build();
 }
 
 
@@ -212,7 +232,7 @@ void Discret::ELEMENTS::Bele3::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
   // numdofpernode_
-  numdofpernode_ = ExtractInt(position, data);
+  numdofpernode_ = extract_int(position, data);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
@@ -279,11 +299,11 @@ bool Discret::ELEMENTS::Bele3::ReadElement(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // check if material is defined
-  if (linedef->HaveNamed("MAT"))
+  if (linedef->has_named("MAT"))
   {
     int material = 0;
     // read number of material model
-    linedef->ExtractInt("MAT", material);
+    linedef->extract_int("MAT", material);
     SetMaterial(0, Mat::Factory(material));
   }
   return true;

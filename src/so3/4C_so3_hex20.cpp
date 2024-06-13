@@ -81,9 +81,9 @@ void Discret::ELEMENTS::SoHex20Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX20"] = Input::LineDefinition::Builder()
-                      .AddIntVector("HEX20", 20)
-                      .AddNamedInt("MAT")
-                      .AddNamedString("KINEM")
+                      .add_int_vector("HEX20", 20)
+                      .add_named_int("MAT")
+                      .add_named_string("KINEM")
                       .add_optional_named_double_vector("RAD", 3)
                       .add_optional_named_double_vector("AXI", 3)
                       .add_optional_named_double_vector("CIR", 3)
@@ -213,7 +213,7 @@ void Discret::ELEMENTS::SoHex20::Unpack(const std::vector<char>& data)
   for (int i = 0; i < size; ++i) extract_from_pack(position, data, invJ_[i]);
 
   // Extract prestress
-  pstype_ = static_cast<Inpar::STR::PreStress>(ExtractInt(position, data));
+  pstype_ = static_cast<Inpar::STR::PreStress>(extract_int(position, data));
   extract_from_pack(position, data, pstime_);
   extract_from_pack(position, data, time_);
   if (Prestress::IsMulf(pstype_))

@@ -80,9 +80,9 @@ void Discret::ELEMENTS::SoPyramid5fbarType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["PYRAMID5"] = Input::LineDefinition::Builder()
-                         .AddIntVector("PYRAMID5", 5)
-                         .AddNamedInt("MAT")
-                         .AddNamedString("KINEM")
+                         .add_int_vector("PYRAMID5", 5)
+                         .add_named_int("MAT")
+                         .add_named_string("KINEM")
                          .add_optional_named_double_vector("RAD", 3)
                          .add_optional_named_double_vector("AXI", 3)
                          .add_optional_named_double_vector("CIR", 3)

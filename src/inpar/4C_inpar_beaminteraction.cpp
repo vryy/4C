@@ -183,11 +183,11 @@ void Inpar::BEAMINTERACTION::SetValidConditions(
           Core::Conditions::FilamentBeamLineCondition, false,
           Core::Conditions::geometry_type_line));
 
-  beam_filament_condition->AddComponent(Teuchos::rcp(new Input::SeparatorComponent("ID")));
-  beam_filament_condition->AddComponent(Teuchos::rcp(new Input::IntComponent("FilamentId")));
-  beam_filament_condition->AddComponent(
+  beam_filament_condition->add_component(Teuchos::rcp(new Input::SeparatorComponent("ID")));
+  beam_filament_condition->add_component(Teuchos::rcp(new Input::IntComponent("FilamentId")));
+  beam_filament_condition->add_component(
       Teuchos::rcp(new Input::SeparatorComponent("TYPE", "", true)));
-  beam_filament_condition->AddComponent(
+  beam_filament_condition->add_component(
       Teuchos::rcp(new Input::SelectionComponent("Type", "Arbitrary",
           Teuchos::tuple<std::string>(
               "Arbitrary", "arbitrary", "Actin", "actin", "Collagen", "collagen"),
@@ -204,8 +204,8 @@ void Inpar::BEAMINTERACTION::SetValidConditions(
           Core::Conditions::PenaltyPointCouplingCondition, false,
           Core::Conditions::geometry_type_point));
 
-  Input::AddNamedReal(penalty_coupling_condition, "POSITIONAL_PENALTY_PARAMETER");
-  Input::AddNamedReal(penalty_coupling_condition, "ROTATIONAL_PENALTY_PARAMETER");
+  Input::add_named_real(penalty_coupling_condition, "POSITIONAL_PENALTY_PARAMETER");
+  Input::add_named_real(penalty_coupling_condition, "ROTATIONAL_PENALTY_PARAMETER");
 
   condlist.push_back(penalty_coupling_condition);
 

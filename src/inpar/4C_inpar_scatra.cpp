@@ -516,9 +516,9 @@ void Inpar::ScaTra::SetValidConditions(
   // insert input file line components into condition definitions
   for (auto& totalandmeanscalarcomponent : totalandmeanscalarcomponents)
   {
-    totalandmeanscalarline->AddComponent(totalandmeanscalarcomponent);
-    totalandmeanscalarsurf->AddComponent(totalandmeanscalarcomponent);
-    totalandmeanscalarvol->AddComponent(totalandmeanscalarcomponent);
+    totalandmeanscalarline->add_component(totalandmeanscalarcomponent);
+    totalandmeanscalarsurf->add_component(totalandmeanscalarcomponent);
+    totalandmeanscalarvol->add_component(totalandmeanscalarcomponent);
   }
 
   // insert condition definitions into global list of valid condition definitions
@@ -554,9 +554,9 @@ void Inpar::ScaTra::SetValidConditions(
   // insert input file line components into condition definitions
   for (auto& relerrorcomponent : relerrorcomponents)
   {
-    relerrorline->AddComponent(relerrorcomponent);
-    relerrorsurf->AddComponent(relerrorcomponent);
-    relerrorvol->AddComponent(relerrorcomponent);
+    relerrorline->add_component(relerrorcomponent);
+    relerrorsurf->add_component(relerrorcomponent);
+    relerrorvol->add_component(relerrorcomponent);
   }
 
   // insert condition definitions into global list of valid condition definitions
@@ -598,7 +598,7 @@ void Inpar::ScaTra::SetValidConditions(
           Core::Conditions::ScaTraCoupling, true, Core::Conditions::geometry_type_surface));
 
   for (auto& scatracoupcomponent : scatracoupcomponents)
-    surfscatracoup->AddComponent(scatracoupcomponent);
+    surfscatracoup->add_component(scatracoupcomponent);
 
   condlist.emplace_back(surfscatracoup);
 
@@ -631,8 +631,8 @@ void Inpar::ScaTra::SetValidConditions(
 
   for (auto& scatrarobincomponent : scatrarobincomponents)
   {
-    scatrarobinline->AddComponent(scatrarobincomponent);
-    scatrarobinsurf->AddComponent(scatrarobincomponent);
+    scatrarobinline->add_component(scatrarobincomponent);
+    scatrarobinsurf->add_component(scatrarobincomponent);
   }
 
   condlist.emplace_back(scatrarobinline);
@@ -697,8 +697,8 @@ void Inpar::ScaTra::SetValidConditions(
 
   for (auto& transportthermoconvectcomponent : transportthermoconvectcomponents)
   {
-    linetransportthermoconvect->AddComponent(transportthermoconvectcomponent);
-    surftransportthermoconvect->AddComponent(transportthermoconvectcomponent);
+    linetransportthermoconvect->add_component(transportthermoconvectcomponent);
+    surftransportthermoconvect->add_component(transportthermoconvectcomponent);
   }
 
   condlist.emplace_back(linetransportthermoconvect);

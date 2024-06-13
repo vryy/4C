@@ -67,7 +67,7 @@ void Discret::ELEMENTS::SoHex8PoroP1ScatraType::setup_element_definition(
 
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
-  defs["HEX8"] = Input::LineDefinition::Builder(defs_hex8["HEX8"]).AddNamedString("TYPE").Build();
+  defs["HEX8"] = Input::LineDefinition::Builder(defs_hex8["HEX8"]).add_named_string("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -122,7 +122,7 @@ void Discret::ELEMENTS::SoTet4PoroP1ScatraType::setup_element_definition(
 
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
-  defs["TET4"] = Input::LineDefinition::Builder(defs_tet4["TET4"]).AddNamedString("TYPE").Build();
+  defs["TET4"] = Input::LineDefinition::Builder(defs_tet4["TET4"]).add_named_string("TYPE").Build();
 }
 
 FOUR_C_NAMESPACE_CLOSE

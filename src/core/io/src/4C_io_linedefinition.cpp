@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Input::INTERNAL
 {
   template <class T>
-  std::string StringFromDataType()
+  std::string string_from_data_type()
   {
     if constexpr (std::is_same_v<T, int>)
       return "integer";
@@ -79,7 +79,7 @@ namespace Input::INTERNAL
     {
       in >> value;
 
-      check_stream_for_unparsed_characters(StringFromDataType<T>());
+      check_stream_for_unparsed_characters(string_from_data_type<T>());
       return !in.fail();
     }
 
@@ -91,7 +91,7 @@ namespace Input::INTERNAL
         in >> v;
       }
 
-      check_stream_for_unparsed_characters(StringFromDataType<T>());
+      check_stream_for_unparsed_characters(string_from_data_type<T>());
       return !in.fail();
     }
 
@@ -101,10 +101,10 @@ namespace Input::INTERNAL
       for (auto& [a, b] : values)
       {
         in >> a;
-        check_stream_for_unparsed_characters(StringFromDataType<T1>());
+        check_stream_for_unparsed_characters(string_from_data_type<T1>());
 
         in >> b;
-        check_stream_for_unparsed_characters(StringFromDataType<T2>());
+        check_stream_for_unparsed_characters(string_from_data_type<T2>());
       }
 
       return !in.fail();
@@ -500,7 +500,7 @@ namespace Input
   }
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddTag(std::string name)
+  LineDefinition::Builder& LineDefinition::Builder::add_tag(std::string name)
   {
     pimpl_->components_.emplace_back(
         INTERNAL::GenericComponent<INTERNAL::Empty>{std::move(name), INTERNAL::Empty()});
@@ -509,7 +509,7 @@ namespace Input
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddString(std::string name)
+  LineDefinition::Builder& LineDefinition::Builder::add_string(std::string name)
   {
     pimpl_->components_.emplace_back(INTERNAL::GenericComponent<std::string>{
         std::move(name), "''", INTERNAL::Behavior::ignore_name});
@@ -518,7 +518,7 @@ namespace Input
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddInt(std::string name)
+  LineDefinition::Builder& LineDefinition::Builder::add_int(std::string name)
   {
     pimpl_->components_.emplace_back(
         INTERNAL::GenericComponent<int>{std::move(name), 0, INTERNAL::Behavior::ignore_name});
@@ -527,7 +527,7 @@ namespace Input
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddIntVector(std::string name, int length)
+  LineDefinition::Builder& LineDefinition::Builder::add_int_vector(std::string name, int length)
   {
     pimpl_->components_.emplace_back(INTERNAL::GenericComponent(
         std::move(name), std::vector<int>(length), INTERNAL::Behavior::ignore_name));
@@ -536,7 +536,7 @@ namespace Input
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddDoubleVector(std::string name, int length)
+  LineDefinition::Builder& LineDefinition::Builder::add_double_vector(std::string name, int length)
   {
     pimpl_->components_.emplace_back(INTERNAL::GenericComponent(
         std::move(name), std::vector<double>(length), INTERNAL::Behavior::ignore_name));
@@ -545,7 +545,7 @@ namespace Input
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddNamedString(std::string name)
+  LineDefinition::Builder& LineDefinition::Builder::add_named_string(std::string name)
   {
     pimpl_->components_.emplace_back(
         INTERNAL::GenericComponent<std::string>{std::move(name), "''"});
@@ -554,7 +554,7 @@ namespace Input
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddNamedInt(std::string name)
+  LineDefinition::Builder& LineDefinition::Builder::add_named_int(std::string name)
   {
     pimpl_->components_.emplace_back(INTERNAL::GenericComponent<int>{std::move(name), 0});
     return *this;
@@ -562,7 +562,8 @@ namespace Input
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddNamedIntVector(std::string name, int length)
+  LineDefinition::Builder& LineDefinition::Builder::add_named_int_vector(
+      std::string name, int length)
   {
     pimpl_->components_.emplace_back(
         INTERNAL::GenericComponent(std::move(name), std::vector<int>(length)));
@@ -571,7 +572,7 @@ namespace Input
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddNamedDouble(std::string name)
+  LineDefinition::Builder& LineDefinition::Builder::add_named_double(std::string name)
   {
     pimpl_->components_.emplace_back(INTERNAL::GenericComponent<double>{std::move(name), 0.0});
     return *this;
@@ -606,7 +607,7 @@ namespace Input
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddOptionalTag(const std::string& name)
+  LineDefinition::Builder& LineDefinition::Builder::add_optional_tag(const std::string& name)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       FOUR_C_THROW("optional component '%s' already defined", name.c_str());
@@ -628,7 +629,7 @@ namespace Input
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddOptionalNamedInt(const std::string& name)
+  LineDefinition::Builder& LineDefinition::Builder::add_optional_named_int(const std::string& name)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       FOUR_C_THROW("optional component '%s' already defined", name.c_str());
@@ -822,56 +823,56 @@ namespace Input
 
 
 
-  bool LineDefinition::HaveNamed(const std::string& name) const
+  bool LineDefinition::has_named(const std::string& name) const
   {
     return pimpl_->FindNamed(name) != nullptr;
   }
 
 
 
-  void LineDefinition::ExtractString(const std::string& name, std::string& value) const
+  void LineDefinition::extract_string(const std::string& name, std::string& value) const
   {
     pimpl_->TryExtract(name, value);
   }
 
 
 
-  bool LineDefinition::HasString(const std::string& name) const
+  bool LineDefinition::has_string(const std::string& name) const
   {
     return pimpl_->HasNamed<std::string>(name);
   }
 
 
 
-  void LineDefinition::ExtractInt(const std::string& name, int& value) const
+  void LineDefinition::extract_int(const std::string& name, int& value) const
   {
     pimpl_->TryExtract(name, value);
   }
 
 
 
-  void LineDefinition::ExtractIntVector(const std::string& name, std::vector<int>& v) const
+  void LineDefinition::extract_int_vector(const std::string& name, std::vector<int>& v) const
   {
     pimpl_->TryExtract(name, v);
   }
 
 
 
-  void LineDefinition::ExtractDouble(const std::string& name, double& value) const
+  void LineDefinition::extract_double(const std::string& name, double& value) const
   {
     pimpl_->TryExtract(name, value);
   }
 
 
 
-  void LineDefinition::ExtractDoubleVector(const std::string& name, std::vector<double>& v) const
+  void LineDefinition::extract_double_vector(const std::string& name, std::vector<double>& v) const
   {
     pimpl_->TryExtract(name, v);
   }
 
 
 
-  void LineDefinition::ExtractStringVector(
+  void LineDefinition::extract_string_vector(
       const std::string& name, std::vector<std::string>& v) const
   {
     // special case: search for a string vector first but fall back to a string value

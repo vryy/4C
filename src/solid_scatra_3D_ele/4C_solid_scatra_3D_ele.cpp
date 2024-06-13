@@ -24,10 +24,10 @@ namespace
   Input::LineDefinition::Builder GetDefaultLineDefinitionBuilder()
   {
     return Input::LineDefinition::Builder()
-        .AddIntVector(Core::FE::CellTypeToString(celltype), Core::FE::num_nodes<celltype>)
-        .AddNamedInt("MAT")
-        .AddNamedString("KINEM")
-        .AddNamedString("TYPE")
+        .add_int_vector(Core::FE::CellTypeToString(celltype), Core::FE::num_nodes<celltype>)
+        .add_named_int("MAT")
+        .add_named_string("KINEM")
+        .add_named_string("TYPE")
         .add_optional_named_string("PRESTRESS_TECH")
         .add_optional_named_double_vector("RAD", 3)
         .add_optional_named_double_vector("AXI", 3)
@@ -191,14 +191,14 @@ void Discret::ELEMENTS::SolidScatra::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  if (ExtractInt(position, data) != UniqueParObjectId()) FOUR_C_THROW("wrong instance type data");
+  if (extract_int(position, data) != UniqueParObjectId()) FOUR_C_THROW("wrong instance type data");
 
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
   Core::Elements::Element::Unpack(basedata);
 
-  celltype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
+  celltype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
 
   Discret::ELEMENTS::extract_from_pack(position, data, properties_);
 

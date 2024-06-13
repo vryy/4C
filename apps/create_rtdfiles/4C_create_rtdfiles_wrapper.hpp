@@ -32,7 +32,7 @@ namespace RTD
 
     \param[in] string: filename for the the header parameters, should be headerreference.rst
   */
-  void WriteReadTheDocsHeader(const std::string& headerdocumentationfilename);
+  void write_read_the_docsHeader(const std::string& headerdocumentationfilename);
 
   /*!
     \brief Create a restructuredText file containing the cell type section
@@ -42,7 +42,7 @@ namespace RTD
     \param[in] string: filename for the the header parameters, should be celltypereference.rst
 
   */
-  void WriteReadTheDocsCelltypes(const std::string& celltypedocumentationfilename);
+  void write_read_the_docsCelltypes(const std::string& celltypedocumentationfilename);
 
   /*!
     \brief WCreate a restructuredText file containing all material models and parameters
@@ -50,7 +50,7 @@ namespace RTD
     \param[in] string: filename for the the material parameters, should be materialreference.rst
 
   */
-  void WriteReadTheDocsMaterial(const std::string& materialdocumentationfilename);
+  void write_read_the_docsMaterial(const std::string& materialdocumentationfilename);
 
   /*!
     \brief Create a restructuredText file containing all prescribed conditions
@@ -58,7 +58,7 @@ namespace RTD
     \param[in] string: filename for the the header parameters, should be conditionreference.rst
 
   */
-  void WriteReadTheDocsCondition(const std::string& conditiondocumentationfilename);
+  void write_read_the_docsCondition(const std::string& conditiondocumentationfilename);
 
   /*!
     \brief Create a restructuredText file containing all other reference sections
@@ -67,7 +67,7 @@ namespace RTD
     \param[in] string: filename for the the header parameters, should be furtherreference.rst
 
   */
-  void WriteReadTheDocsVarious(const std::string& variousdocumentationfilename);
+  void write_read_the_docsVarious(const std::string& variousdocumentationfilename);
 
 
   void PrintHelpMessage();

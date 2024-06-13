@@ -30,39 +30,39 @@ bool Discret::ELEMENTS::RedAirway::ReadElement(
 
   // Read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   // Read the element type, the element specific variables and store them to airwayParams_
-  linedef->ExtractString("TYPE", elem_type_);
+  linedef->extract_string("TYPE", elem_type_);
   if (elem_type_ == "Resistive" || elem_type_ == "InductoResistive" ||
       elem_type_ == "ComplientResistive" || elem_type_ == "RLC" ||
       elem_type_ == "ViscoElasticRLC" || elem_type_ == "ConvectiveViscoElasticRLC")
   {
-    linedef->ExtractString("Resistance", resistance_);
-    linedef->ExtractString("ElemSolvingType", elemsolving_type_);
+    linedef->extract_string("Resistance", resistance_);
+    linedef->extract_string("ElemSolvingType", elemsolving_type_);
 
     double Ew, tw, A, Ts, Phis, nu, velPow;
     int generation;
-    linedef->ExtractDouble("PowerOfVelocityProfile", velPow);
-    linedef->ExtractDouble("WallElasticity", Ew);
-    linedef->ExtractDouble("PoissonsRatio", nu);
-    linedef->ExtractDouble("ViscousTs", Ts);
-    linedef->ExtractDouble("ViscousPhaseShift", Phis);
-    linedef->ExtractDouble("WallThickness", tw);
-    linedef->ExtractDouble("Area", A);
-    linedef->ExtractInt("Generation", generation);
+    linedef->extract_double("PowerOfVelocityProfile", velPow);
+    linedef->extract_double("WallElasticity", Ew);
+    linedef->extract_double("PoissonsRatio", nu);
+    linedef->extract_double("ViscousTs", Ts);
+    linedef->extract_double("ViscousPhaseShift", Phis);
+    linedef->extract_double("WallThickness", tw);
+    linedef->extract_double("Area", A);
+    linedef->extract_int("Generation", generation);
 
-    if (linedef->HaveNamed("AirwayColl"))
+    if (linedef->has_named("AirwayColl"))
     {
       double airwayColl;
-      linedef->ExtractDouble("AirwayColl", airwayColl);
+      linedef->extract_double("AirwayColl", airwayColl);
       double sc, so, Pcrit_c, Pcrit_o, open_init;
-      linedef->ExtractDouble("S_Close", sc);
-      linedef->ExtractDouble("S_Open", so);
-      linedef->ExtractDouble("Pcrit_Open", Pcrit_o);
-      linedef->ExtractDouble("Pcrit_Close", Pcrit_c);
-      linedef->ExtractDouble("Open_Init", open_init);
+      linedef->extract_double("S_Close", sc);
+      linedef->extract_double("S_Open", so);
+      linedef->extract_double("Pcrit_Open", Pcrit_o);
+      linedef->extract_double("Pcrit_Close", Pcrit_c);
+      linedef->extract_double("Open_Init", open_init);
       airway_params_.airway_coll = airwayColl;
       airway_params_.s_close = sc;
       airway_params_.s_open = so;
@@ -82,10 +82,10 @@ bool Discret::ELEMENTS::RedAirway::ReadElement(
     airway_params_.viscous_Ts = Ts;
     airway_params_.viscous_phase_shift = Phis;
     airway_params_.generation = generation;
-    if (linedef->HaveNamed("BranchLength"))
+    if (linedef->has_named("BranchLength"))
     {
       double l_branch = 0.0;
-      linedef->ExtractDouble("BranchLength", l_branch);
+      linedef->extract_double("BranchLength", l_branch);
       airway_params_.branch_length = l_branch;
     }
   }
@@ -114,19 +114,19 @@ bool Discret::ELEMENTS::RedAcinus::ReadElement(
 
   // Read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   // Read the element type, the element specific variables and store them to acinusParams_
-  linedef->ExtractString("TYPE", elem_type_);
+  linedef->extract_string("TYPE", elem_type_);
   if (elem_type_ == "NeoHookean" || elem_type_ == "Exponential" ||
       elem_type_ == "DoubleExponential" || elem_type_ == "VolumetricOgden")
   {
     double acinusVol, alveolarDuctVol, A;
     const int generation = -1;
-    linedef->ExtractDouble("AcinusVolume", acinusVol);
-    linedef->ExtractDouble("AlveolarDuctVolume", alveolarDuctVol);
-    linedef->ExtractDouble("Area", A);
+    linedef->extract_double("AcinusVolume", acinusVol);
+    linedef->extract_double("AlveolarDuctVolume", alveolarDuctVol);
+    linedef->extract_double("Area", A);
 
     acinus_params_.volume_relaxed = acinusVol;
     acinus_params_.alveolar_duct_volume = alveolarDuctVol;
@@ -170,7 +170,7 @@ bool Discret::ELEMENTS::RedInterAcinarDep::ReadElement(
 
   // Read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
 
@@ -193,15 +193,15 @@ bool Discret::ELEMENTS::RedAirBloodScatra::ReadElement(
   generation_ = generation;
 
   double diff = 0.0;
-  linedef->ExtractDouble("DiffusionCoefficient", diff);
+  linedef->extract_double("DiffusionCoefficient", diff);
   elem_params_["DiffusionCoefficient"] = diff;
 
   double th = 0.0;
-  linedef->ExtractDouble("WallThickness", th);
+  linedef->extract_double("WallThickness", th);
   elem_params_["WallThickness"] = th;
 
   double percDiffArea = 0.0;
-  linedef->ExtractDouble("PercentageOfDiffusionArea", percDiffArea);
+  linedef->extract_double("PercentageOfDiffusionArea", percDiffArea);
   elem_params_["PercentageOfDiffusionArea"] = percDiffArea;
 
   return true;
@@ -219,15 +219,15 @@ bool Discret::ELEMENTS::RedAirBloodScatraLine3::ReadElement(
     FOUR_C_THROW("Problem defined as %dd, but found Reduced dimensional Scatra element.", ndim);
 
   double diff = 0.0;
-  linedef->ExtractDouble("DiffusionCoefficient", diff);
+  linedef->extract_double("DiffusionCoefficient", diff);
   elem_params_["DiffusionCoefficient"] = diff;
 
   double th = 0.0;
-  linedef->ExtractDouble("WallThickness", th);
+  linedef->extract_double("WallThickness", th);
   elem_params_["WallThickness"] = th;
 
   double percDiffArea = 0.0;
-  linedef->ExtractDouble("PercentageOfDiffusionArea", percDiffArea);
+  linedef->extract_double("PercentageOfDiffusionArea", percDiffArea);
   elem_params_["PercentageOfDiffusionArea"] = percDiffArea;
 
   return true;

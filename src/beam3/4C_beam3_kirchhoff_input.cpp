@@ -26,7 +26,7 @@ bool Discret::ELEMENTS::Beam3k::ReadElement(
 {
   // read number of material model and cross-sections specs
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   const auto mat_type = Material()->Parameter()->Type();
@@ -38,10 +38,10 @@ bool Discret::ELEMENTS::Beam3k::ReadElement(
 
 
   int rotvec = 0;
-  linedef->ExtractInt("ROTVEC", rotvec);
+  linedef->extract_int("ROTVEC", rotvec);
 
   int wk = 0;
-  linedef->ExtractInt("WK", wk);
+  linedef->extract_int("WK", wk);
 
   if (rotvec == 0)
     rotvec_ = false;
@@ -73,11 +73,11 @@ bool Discret::ELEMENTS::Beam3k::ReadElement(
   // extract triads at element nodes in reference configuration as rotation vectors and save them as
   // quaternions at each node, respectively
   std::vector<double> nodal_thetas;
-  linedef->ExtractDoubleVector("TRIADS", nodal_thetas);
+  linedef->extract_double_vector("TRIADS", nodal_thetas);
   this->set_up_initial_rotations(nodal_thetas);
 
   // read whether automatic differentiation via Sacado::Fad package shall be used
-  use_fad_ = linedef->HaveNamed("FAD") ? true : false;
+  use_fad_ = linedef->has_named("FAD") ? true : false;
 
   return true;
 }

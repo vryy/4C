@@ -93,39 +93,39 @@ void Discret::ELEMENTS::ElemagType::setup_element_definition(
 
   // 3D elements
   defs["HEX8"] = Input::LineDefinition::Builder()
-                     .AddIntVector("HEX8", 8)
-                     .AddNamedInt("MAT")
-                     .AddNamedInt("DEG")
-                     .AddNamedInt("SPC")
+                     .add_int_vector("HEX8", 8)
+                     .add_named_int("MAT")
+                     .add_named_int("DEG")
+                     .add_named_int("SPC")
                      .Build();
 
   defs["TET4"] = Input::LineDefinition::Builder()
-                     .AddIntVector("TET4", 4)
-                     .AddNamedInt("MAT")
-                     .AddNamedInt("DEG")
-                     .AddNamedInt("SPC")
+                     .add_int_vector("TET4", 4)
+                     .add_named_int("MAT")
+                     .add_named_int("DEG")
+                     .add_named_int("SPC")
                      .Build();
 
   // 2D elements
   defs["QUAD4"] = Input::LineDefinition::Builder()
-                      .AddIntVector("QUAD4", 4)
-                      .AddNamedInt("MAT")
-                      .AddNamedInt("DEG")
-                      .AddNamedInt("SPC")
+                      .add_int_vector("QUAD4", 4)
+                      .add_named_int("MAT")
+                      .add_named_int("DEG")
+                      .add_named_int("SPC")
                       .Build();
 
   defs["QUAD9"] = Input::LineDefinition::Builder()
-                      .AddIntVector("QUAD9", 9)
-                      .AddNamedInt("MAT")
-                      .AddNamedInt("DEG")
-                      .AddNamedInt("SPC")
+                      .add_int_vector("QUAD9", 9)
+                      .add_named_int("MAT")
+                      .add_named_int("DEG")
+                      .add_named_int("SPC")
                       .Build();
 
   defs["TRI3"] = Input::LineDefinition::Builder()
-                     .AddIntVector("TRI3", 3)
-                     .AddNamedInt("MAT")
-                     .AddNamedInt("DEG")
-                     .AddNamedInt("SPC")
+                     .add_int_vector("TRI3", 3)
+                     .add_named_int("MAT")
+                     .add_named_int("DEG")
+                     .add_named_int("SPC")
                      .Build();
 }
 
@@ -205,7 +205,7 @@ void Discret::ELEMENTS::Elemag::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // distype
-  distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
+  distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
   int val = 0;
   extract_from_pack(position, data, val);
   FOUR_C_ASSERT(val >= 0 && val < 255, "Degree out of range");
@@ -236,13 +236,13 @@ bool Discret::ELEMENTS::Elemag::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
   int degree;
-  linedef->ExtractInt("DEG", degree);
+  linedef->extract_int("DEG", degree);
   degree_ = degree;
 
-  linedef->ExtractInt("SPC", degree);
+  linedef->extract_int("SPC", degree);
   completepol_ = degree;
 
   // set discretization type (setOptimalgaussrule is pushed into element
@@ -387,7 +387,7 @@ void Discret::ELEMENTS::ElemagBoundary::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // distype
-  // distype_ = static_cast<Core::FE::CellType>( ExtractInt(position,data) );
+  // distype_ = static_cast<Core::FE::CellType>( extract_int(position,data) );
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

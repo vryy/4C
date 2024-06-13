@@ -342,7 +342,7 @@ namespace RTD
         }
       }
       std::ostringstream parameterstream;
-      parameterterm->DefaultLine(parameterstream);
+      parameterterm->default_line(parameterstream);
       parameter += " " + parameterstream.str();
     }
     materialcode.push_back(parameter);
@@ -541,32 +541,32 @@ namespace RTD
         conditioncode.push_back(conditioncodeline + " \\ ");
         conditioncodeline = "   ";  // start a new line
       }
-      conditioncodeline += " " + condparameter->WriteReadTheDocs();
+      conditioncodeline += " " + condparameter->write_read_the_docs();
       isNewlinePossible = (conditioncodeline.length() > 60);
       if (auto *previousparameter = dynamic_cast<Input::SeparatorComponent *>(condparameter.get()))
       {
-        previousparameter->GetOptions();  // just needed to prevent an unusedVariable warning
+        previousparameter->get_options();  // just needed to prevent an unusedVariable warning
         isNewlinePossible = false;
       }
       // If the component is a string component, store the admissible parameters in the table:
       if (auto *stringComponent = dynamic_cast<Input::SelectionComponent *>(condparameter.get()))
       {
-        tablerow[0] = stringComponent->Name();
+        tablerow[0] = stringComponent->name();
         std::ostringstream parametercell;
-        stringComponent->DefaultLine(parametercell);
+        stringComponent->default_line(parametercell);
         tablerow[1] = parametercell.str();
-        Teuchos::Array<std::string> datfilevalues = stringComponent->GetOptions();
+        Teuchos::Array<std::string> datfilevalues = stringComponent->get_options();
         tablerow[2] = boost::algorithm::join(datfilevalues, ", ");
         parametertable.AddRow(tablerow);
       }
       // if the component is a bundleselector (bundle of variables following a string keyword):
       if (auto *compBundleSelector = dynamic_cast<Input::SwitchComponent *>(condparameter.get()))
       {
-        condCompName = compBundleSelector->Name();
+        condCompName = compBundleSelector->name();
         std::vector<std::string> bundle = compBundleSelector->write_read_the_docs_lines();
         condCompStrings.insert(condCompStrings.end(), bundle.begin(), bundle.end());
         tablerow[0] = condCompName;
-        Teuchos::Array<std::string> datfilevalues = compBundleSelector->GetOptions();
+        Teuchos::Array<std::string> datfilevalues = compBundleSelector->get_options();
         tablerow[1] = datfilevalues[0];
         tablerow[2] = boost::algorithm::join(datfilevalues, ", ");
         parametertable.AddRow(tablerow);
@@ -673,7 +673,7 @@ namespace RTD
         }
       }
       std::ostringstream parameterstream;
-      parameterterm->DefaultLine(parameterstream);
+      parameterterm->default_line(parameterstream);
       parameter += " " + parameterstream.str();
     }
     contactlawCode.push_back(parameter);

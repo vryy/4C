@@ -78,7 +78,7 @@ void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::Unpack(const std::vecto
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract scalar transport impltype_
-  impltype_ = static_cast<Inpar::ScaTra::ImplType>(so3_ele::ExtractInt(position, data));
+  impltype_ = static_cast<Inpar::ScaTra::ImplType>(so3_ele::extract_int(position, data));
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -115,7 +115,7 @@ bool Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::ReadElement(
 
   // read scalar transport implementation type
   std::string impltype;
-  linedef->ExtractString("TYPE", impltype);
+  linedef->extract_string("TYPE", impltype);
 
   if (impltype == "Undefined")
     impltype_ = Inpar::ScaTra::impltype_undefined;

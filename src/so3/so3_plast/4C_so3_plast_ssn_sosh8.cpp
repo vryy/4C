@@ -296,12 +296,12 @@ void Discret::ELEMENTS::SoSh8PlastType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX8"] = Input::LineDefinition::Builder()
-                     .AddIntVector("HEX8", 8)
-                     .AddNamedInt("MAT")
-                     .AddNamedString("KINEM")
-                     .AddNamedString("EAS")
-                     .AddNamedString("ANS")
-                     .AddNamedString("THICKDIR")
+                     .add_int_vector("HEX8", 8)
+                     .add_named_int("MAT")
+                     .add_named_string("KINEM")
+                     .add_named_string("EAS")
+                     .add_named_string("ANS")
+                     .add_named_string("THICKDIR")
                      .add_optional_named_double_vector("FIBER1", 3)
                      .add_optional_named_double_vector("FIBER2", 3)
                      .add_optional_named_double_vector("FIBER3", 3)
@@ -384,10 +384,10 @@ void Discret::ELEMENTS::SoSh8Plast::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::Unpack(basedata);
   // thickdir
-  thickdir_ = static_cast<ThicknessDirection>(ExtractInt(position, data));
+  thickdir_ = static_cast<ThicknessDirection>(extract_int(position, data));
   extract_from_pack(position, data, thickvec_);
-  anstype_ = static_cast<ANSType>(ExtractInt(position, data));
-  nodes_rearranged_ = ExtractInt(position, data);
+  anstype_ = static_cast<ANSType>(extract_int(position, data));
+  nodes_rearranged_ = extract_int(position, data);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -409,7 +409,7 @@ bool Discret::ELEMENTS::SoSh8Plast::ReadElement(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   std::string buffer;
-  linedef->ExtractString("KINEM", buffer);
+  linedef->extract_string("KINEM", buffer);
 
   // geometrically linear
   if (buffer == "linear")
@@ -441,7 +441,7 @@ bool Discret::ELEMENTS::SoSh8Plast::ReadElement(
 
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
 
   SetMaterial(0, Mat::Factory(material));
 
@@ -454,7 +454,7 @@ bool Discret::ELEMENTS::SoSh8Plast::ReadElement(
     plspintype_ = zerospin;
 
   // EAS
-  linedef->ExtractString("EAS", buffer);
+  linedef->extract_string("EAS", buffer);
 
   if (buffer == "none")
     eastype_ = soh8p_easnone;
@@ -467,7 +467,7 @@ bool Discret::ELEMENTS::SoSh8Plast::ReadElement(
   eas_init();
 
   // read ANS technology flag
-  linedef->ExtractString("ANS", buffer);
+  linedef->extract_string("ANS", buffer);
   if (buffer == "sosh8")
   {
     anstype_ = anssosh8_p;
@@ -480,7 +480,7 @@ bool Discret::ELEMENTS::SoSh8Plast::ReadElement(
   else
     FOUR_C_THROW("Reading of SO_SH8 ANS technology failed");
 
-  linedef->ExtractString("THICKDIR", buffer);
+  linedef->extract_string("THICKDIR", buffer);
   nodes_rearranged_ = false;
 
   // global X

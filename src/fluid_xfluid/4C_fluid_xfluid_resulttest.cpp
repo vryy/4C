@@ -45,10 +45,10 @@ void FLD::XFluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
 
   int node;
-  res.ExtractInt("NODE", node);
+  res.extract_int("NODE", node);
 
   // Todo: remove!
   if (node_from_zero_) node -= 1;
@@ -90,7 +90,7 @@ void FLD::XFluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int
       const Epetra_BlockMap& velnpmap = velnp->Map();
 
       std::string position;
-      res.ExtractString("QUANTITY", position);
+      res.extract_string("QUANTITY", position);
       if (position == "velx")
       {
         result = (*velnp)[velnpmap.LID(discret->Dof(0, actnode, 0))];

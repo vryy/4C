@@ -125,17 +125,17 @@ void CONTACT::RoughNode::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   CONTACT::Node::Unpack(basedata);
 
-  hurstexponentfunction_ = ExtractInt(position, data);
-  initialtopologystddeviationfunction_ = ExtractInt(position, data);
-  resolution_ = ExtractInt(position, data);
-  randomtopologyflag_ = ExtractInt(position, data);
-  randomseedflag_ = ExtractInt(position, data);
-  randomgeneratorseed_ = ExtractInt(position, data);
+  hurstexponentfunction_ = extract_int(position, data);
+  initialtopologystddeviationfunction_ = extract_int(position, data);
+  resolution_ = extract_int(position, data);
+  randomtopologyflag_ = extract_int(position, data);
+  randomseedflag_ = extract_int(position, data);
+  randomgeneratorseed_ = extract_int(position, data);
 
-  hurstExponent_ = ExtractDouble(position, data);
-  initialTopologyStdDeviation_ = ExtractDouble(position, data);
+  hurstExponent_ = extract_double(position, data);
+  initialTopologyStdDeviation_ = extract_double(position, data);
   extract_from_pack(position, data, topology_);
-  maxTopologyHeight_ = ExtractDouble(position, data);
+  maxTopologyHeight_ = extract_double(position, data);
 
   // Check
   if (position != data.size())

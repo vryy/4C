@@ -58,13 +58,13 @@ void Mat::Anisotropy::unpack_anisotropy(
 {
   Core::Communication::ParObject::extract_from_pack(position, data, numgp_);
   element_fibers_initialized_ =
-      static_cast<bool>(Core::Communication::ParObject::ExtractInt(position, data));
+      static_cast<bool>(Core::Communication::ParObject::extract_int(position, data));
   gp_fibers_initialized_ =
-      static_cast<bool>(Core::Communication::ParObject::ExtractInt(position, data));
+      static_cast<bool>(Core::Communication::ParObject::extract_int(position, data));
   Core::Communication::ParObject::extract_from_pack(position, data, element_fibers_);
   unpack_fiber_vector<Core::LinAlg::Matrix<3, 1>>(position, data, gp_fibers_);
 
-  if (static_cast<bool>(Core::Communication::ParObject::ExtractInt(position, data)))
+  if (static_cast<bool>(Core::Communication::ParObject::extract_int(position, data)))
   {
     element_cylinder_coordinate_system_manager_ = CylinderCoordinateSystemManager();
     element_cylinder_coordinate_system_manager_->Unpack(data, position);
@@ -91,8 +91,8 @@ void Mat::Anisotropy::read_anisotropy_from_element(Input::LineDefinition* lineDe
   }
   // Read coordinate system
 
-  if (lineDefinition->HaveNamed("RAD") and lineDefinition->HaveNamed("AXI") and
-      lineDefinition->HaveNamed("CIR"))
+  if (lineDefinition->has_named("RAD") and lineDefinition->has_named("AXI") and
+      lineDefinition->has_named("CIR"))
   {
     if (!element_cylinder_coordinate_system_manager_)
     {
@@ -107,7 +107,7 @@ void Mat::Anisotropy::read_anisotropy_from_element(Input::LineDefinition* lineDe
   unsigned i = 0;
   while (true)
   {
-    if (!lineDefinition->HaveNamed("FIBER" + std::to_string(i + 1)))
+    if (!lineDefinition->has_named("FIBER" + std::to_string(i + 1)))
     {
       break;
     }

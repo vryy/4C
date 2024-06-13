@@ -138,10 +138,10 @@ void Mat::Maxwell0dAcinusExponential::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 void Mat::Maxwell0dAcinusExponential::Setup(Input::LineDefinition* linedef)
 {
-  linedef->ExtractDouble("E1_0", e1_0_);
-  linedef->ExtractDouble("E1_LIN", e1_lin_);
-  linedef->ExtractDouble("E1_EXP", e1_exp_);
-  linedef->ExtractDouble("TAU", tau_);
+  linedef->extract_double("E1_0", e1_0_);
+  linedef->extract_double("E1_LIN", e1_lin_);
+  linedef->extract_double("E1_EXP", e1_exp_);
+  linedef->extract_double("TAU", tau_);
   // TODO bool -variable init, in Evaluate abfragen ob init=true
 }
 

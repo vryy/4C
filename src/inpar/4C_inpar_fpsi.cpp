@@ -147,8 +147,8 @@ void Inpar::FPSI::SetValidConditions(
 
   for (unsigned i = 0; i < fpsicomponents.size(); ++i)
   {
-    linefpsi->AddComponent(fpsicomponents[i]);
-    surffpsi->AddComponent(fpsicomponents[i]);
+    linefpsi->add_component(fpsicomponents[i]);
+    surffpsi->add_component(fpsicomponents[i]);
   }
 
   condlist.push_back(linefpsi);

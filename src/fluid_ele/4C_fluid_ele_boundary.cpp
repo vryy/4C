@@ -127,9 +127,9 @@ void Discret::ELEMENTS::FluidBoundary::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   FaceElement::Unpack(basedata);
   // distype
-  distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
+  distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
   // numdofpernode_
-  numdofpernode_ = ExtractInt(position, data);
+  numdofpernode_ = extract_int(position, data);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
