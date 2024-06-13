@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace STR::UTILS::ReadElement
 {
-  Inpar::ScaTra::ImplType ReadType(Input::LineDefinition* linedef)
+  Inpar::ScaTra::ImplType read_type(Input::LineDefinition* linedef)
   {
     std::string impltype;
     linedef->ExtractString("TYPE", impltype);

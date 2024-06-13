@@ -64,7 +64,7 @@ namespace Discret::ELEMENTS
   class SolidEleCalcInterface;
   class Solid;
 
-  SolidCalcVariant CreateSolidCalculationInterface(Core::FE::CellType celltype,
+  SolidCalcVariant create_solid_calculation_interface(Core::FE::CellType celltype,
       const Discret::ELEMENTS::SolidElementProperties& element_properties);
 
 }  // namespace Discret::ELEMENTS

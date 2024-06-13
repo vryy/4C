@@ -15,22 +15,22 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-Discret::ELEMENTS::SolidPoroCalcVariant Discret::ELEMENTS::CreateSolidPoroCalculationInterface(
+Discret::ELEMENTS::SolidPoroCalcVariant Discret::ELEMENTS::create_solid_poro_calculation_interface(
     Core::Elements::Element& ele, Inpar::Poro::PoroType porotype)
 {
   switch (ele.Shape())
   {
     case Core::FE::CellType::hex8:
-      return CreateSolidPoroCalculationInterface<Core::FE::CellType::hex8>(porotype);
+      return create_solid_poro_calculation_interface<Core::FE::CellType::hex8>(porotype);
       break;
     case Core::FE::CellType::hex27:
-      return CreateSolidPoroCalculationInterface<Core::FE::CellType::hex27>(porotype);
+      return create_solid_poro_calculation_interface<Core::FE::CellType::hex27>(porotype);
       break;
     case Core::FE::CellType::tet4:
-      return CreateSolidPoroCalculationInterface<Core::FE::CellType::tet4>(porotype);
+      return create_solid_poro_calculation_interface<Core::FE::CellType::tet4>(porotype);
       break;
     case Core::FE::CellType::tet10:
-      return CreateSolidPoroCalculationInterface<Core::FE::CellType::tet10>(porotype);
+      return create_solid_poro_calculation_interface<Core::FE::CellType::tet10>(porotype);
       break;
     default:
       FOUR_C_THROW("unknown celltype provided");
@@ -40,7 +40,7 @@ Discret::ELEMENTS::SolidPoroCalcVariant Discret::ELEMENTS::CreateSolidPoroCalcul
 }
 
 template <Core::FE::CellType celltype>
-Discret::ELEMENTS::SolidPoroCalcVariant Discret::ELEMENTS::CreateSolidPoroCalculationInterface(
+Discret::ELEMENTS::SolidPoroCalcVariant Discret::ELEMENTS::create_solid_poro_calculation_interface(
     Inpar::Poro::PoroType porotype)
 {
   // here we go into the different cases for poro type

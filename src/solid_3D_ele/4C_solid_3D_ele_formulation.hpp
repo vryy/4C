@@ -321,10 +321,10 @@ namespace Discret::ELEMENTS
    *
    * @note: This method does not support solid formulation with Gauss point history since the method
    * does not necessarily be called on a Gauss point. If called on a Gauss point, prefer the other
-   * @p Evaluate() call with the Gauss point id as parameter.
+   * @p evaluate() call with the Gauss point id as parameter.
    */
   template <typename SolidFormulation, Core::FE::CellType celltype, typename Evaluator>
-  inline auto Evaluate(const Core::Elements::Element& ele,
+  inline auto evaluate(const Core::Elements::Element& ele,
       const ElementNodes<celltype>& element_nodes,
       const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -333,7 +333,7 @@ namespace Discret::ELEMENTS
       SolidFormulationHistory<SolidFormulation>& history_data, Evaluator&& evaluator)
   {
     return std::apply([](auto&&... args)
-        { return SolidFormulation::Evaluate(std::forward<decltype(args)>(args)...); },
+        { return SolidFormulation::evaluate(std::forward<decltype(args)>(args)...); },
         std::tuple_cat(
             std::forward_as_tuple(ele, element_nodes, xi, shape_functions, jacobian_mapping),
             Details::GetAdditionalTuple<SolidFormulation>(preparation_data, history_data),
@@ -349,7 +349,7 @@ namespace Discret::ELEMENTS
    * element formulations with gauss point history.
    */
   template <typename SolidFormulation, Core::FE::CellType celltype, typename Evaluator>
-  inline auto Evaluate(const Core::Elements::Element& ele,
+  inline auto evaluate(const Core::Elements::Element& ele,
       const ElementNodes<celltype>& element_nodes,
       const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -358,7 +358,7 @@ namespace Discret::ELEMENTS
       SolidFormulationHistory<SolidFormulation>& history_data, const int gp, Evaluator&& evaluator)
   {
     return std::apply([](auto&&... args)
-        { return SolidFormulation::Evaluate(std::forward<decltype(args)>(args)...); },
+        { return SolidFormulation::evaluate(std::forward<decltype(args)>(args)...); },
         std::tuple_cat(
             std::forward_as_tuple(ele, element_nodes, xi, shape_functions, jacobian_mapping),
             Details::GetAdditionalTuple(preparation_data, history_data, gp),
@@ -471,9 +471,9 @@ namespace Discret::ELEMENTS
   template <typename SolidFormulation, Core::FE::CellType celltype>
   static Core::LinAlg::Matrix<Core::FE::dim<celltype>*(Core::FE::dim<celltype> + 1) / 2,
       Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
-  GetLinearBOperator(const typename SolidFormulation::LinearizationContainer& linearization)
+  get_linear_b_operator(const typename SolidFormulation::LinearizationContainer& linearization)
   {
-    return SolidFormulation::GetLinearBOperator(linearization);
+    return SolidFormulation::get_linear_b_operator(linearization);
   }
 
   /*!
@@ -499,7 +499,7 @@ namespace Discret::ELEMENTS
    * @brief Add stiffness matrix contribution of the Gauss point to @p stiffness_matrix
    */
   template <typename SolidFormulation, Core::FE::CellType celltype>
-  static inline void AddStiffnessMatrix(
+  static inline void add_stiffness_matrix(
       const typename SolidFormulation::LinearizationContainer& linearization,
       const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
       const double integration_factor, const PreparationData<SolidFormulation>& preparation_data,
@@ -508,7 +508,7 @@ namespace Discret::ELEMENTS
           Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>& stiffness_matrix)
   {
     std::apply([](auto&&... args)
-        { SolidFormulation::AddStiffnessMatrix(std::forward<decltype(args)>(args)...); },
+        { SolidFormulation::add_stiffness_matrix(std::forward<decltype(args)>(args)...); },
         std::tuple_cat(
             std::forward_as_tuple(linearization, jacobian_mapping, stress, integration_factor),
             Details::GetAdditionalTuple(preparation_data, history_data, gp),
@@ -516,7 +516,7 @@ namespace Discret::ELEMENTS
   }
 
   template <typename SolidFormulation, Core::FE::CellType celltype>
-  static inline void UpdatePrestress(const Core::Elements::Element& ele,
+  static inline void update_prestress(const Core::Elements::Element& ele,
       const ElementNodes<celltype>& element_nodes,
       const PreparationData<SolidFormulation>& preparation_data,
       SolidFormulationHistory<SolidFormulation>& history_data)
@@ -526,7 +526,7 @@ namespace Discret::ELEMENTS
       if constexpr (has_global_history<SolidFormulation>)
       {
         std::apply([](auto&&... args)
-            { SolidFormulation::UpdatePrestress(std::forward<decltype(args)>(args)...); },
+            { SolidFormulation::update_prestress(std::forward<decltype(args)>(args)...); },
             std::tuple_cat(std::forward_as_tuple(ele, element_nodes),
                 Details::GetAdditionalPreparationTuple<SolidFormulation>(preparation_data),
                 Details::GetAdditionalGlobalHistoryTuple<SolidFormulation>(history_data)));
@@ -539,7 +539,7 @@ namespace Discret::ELEMENTS
   }
 
   template <typename SolidFormulation, Core::FE::CellType celltype>
-  static inline void UpdatePrestress(const Core::Elements::Element& ele,
+  static inline void update_prestress(const Core::Elements::Element& ele,
       const ElementNodes<celltype>& element_nodes,
       const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -552,7 +552,7 @@ namespace Discret::ELEMENTS
     if constexpr (is_prestress_updatable<SolidFormulation>)
     {
       std::apply([](auto&&... args)
-          { SolidFormulation::UpdatePrestress(std::forward<decltype(args)>(args)...); },
+          { SolidFormulation::update_prestress(std::forward<decltype(args)>(args)...); },
           std::tuple_cat(std::forward_as_tuple(ele, element_nodes, xi, shape_functions,
                              jacobian_mapping, deformation_gradient),
               Details::GetAdditionalTuple(preparation_data, history_data, gp)));

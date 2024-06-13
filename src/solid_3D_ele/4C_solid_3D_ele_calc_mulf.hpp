@@ -46,7 +46,7 @@ namespace Discret::ELEMENTS
     using GaussPointHistory = MulfHistoryData<celltype>;
 
     template <typename Evaluator>
-    static auto Evaluate(const Core::Elements::Element& ele,
+    static auto evaluate(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
         const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -60,24 +60,24 @@ namespace Discret::ELEMENTS
       }
 
       const SpatialMaterialMapping<celltype> spatial_material_mapping =
-          EvaluateMulfSpatialMaterialMapping(
+          evaluate_mulf_spatial_material_mapping(
               jacobian_mapping, shape_functions, element_nodes.displacements_, history_data);
 
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> cauchygreen =
-          EvaluateCauchyGreen<celltype>(spatial_material_mapping);
+          evaluate_cauchy_green<celltype>(spatial_material_mapping);
 
       const Core::LinAlg::Matrix<Details::num_str<celltype>, 1> gl_strain =
-          EvaluateGreenLagrangeStrain(cauchygreen);
+          evaluate_green_lagrange_strain(cauchygreen);
 
       Core::LinAlg::Matrix<Details::num_str<celltype>,
           Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
-          Bop = EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
+          Bop = evaluate_strain_gradient(jacobian_mapping, spatial_material_mapping);
 
       const MulfLinearizationContainer<celltype> linearization = std::invoke(
           [&]()
           {
             return MulfLinearizationContainer<celltype>{
-                EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping)};
+                evaluate_strain_gradient(jacobian_mapping, spatial_material_mapping)};
           });
 
       return evaluator(spatial_material_mapping.deformation_gradient_, gl_strain, linearization);
@@ -85,7 +85,7 @@ namespace Discret::ELEMENTS
 
     static Core::LinAlg::Matrix<Details::num_str<celltype>,
         Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
-    GetLinearBOperator(const MulfLinearizationContainer<celltype>& linearization)
+    get_linear_b_operator(const MulfLinearizationContainer<celltype>& linearization)
     {
       return linearization.Bop;
     }
@@ -100,15 +100,15 @@ namespace Discret::ELEMENTS
           linearization.Bop, stress, integration_factor, force_vector);
     }
 
-    static void AddStiffnessMatrix(const MulfLinearizationContainer<celltype>& linearization,
+    static void add_stiffness_matrix(const MulfLinearizationContainer<celltype>& linearization,
         const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
         const double integration_factor, MulfHistoryData<celltype>& history_data,
         Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>,
             Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>& stiffness_matrix)
     {
-      Discret::ELEMENTS::AddElasticStiffnessMatrix(
+      Discret::ELEMENTS::add_elastic_stiffness_matrix(
           linearization.Bop, stress, integration_factor, stiffness_matrix);
-      Discret::ELEMENTS::AddGeometricStiffnessMatrix(
+      Discret::ELEMENTS::add_geometric_stiffness_matrix(
           jacobian_mapping.N_XYZ_, stress, integration_factor, stiffness_matrix);
     }
 
@@ -132,7 +132,7 @@ namespace Discret::ELEMENTS
       history_data.is_setup = static_cast<bool>(is_setup_int);
     }
 
-    static inline void UpdatePrestress(const Core::Elements::Element& ele,
+    static inline void update_prestress(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
         const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -142,7 +142,7 @@ namespace Discret::ELEMENTS
         MulfHistoryData<celltype>& history_data)
     {
       Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> delta_defgrd =
-          EvaluateMulfDeformationGradientUpdate(
+          evaluate_mulf_deformation_gradient_update(
               shape_functions, element_nodes.displacements_, history_data);
 
       // update mulf history data only if prestress is active
@@ -168,7 +168,7 @@ namespace Discret::ELEMENTS
 
   template <typename T>
   constexpr bool IsPrestressUpdateable<T,
-      std::void_t<decltype(std::declval<T>()->UpdatePrestress(
+      std::void_t<decltype(std::declval<T>()->update_prestress(
           std::declval<const Core::Elements::Element&>(), std::declval<Mat::So3Material&>(),
           std::declval<const Core::FE::Discretization&>(), std::declval<const std::vector<int>&>(),
           std::declval<Teuchos::ParameterList&>()))>> = true;
@@ -187,7 +187,7 @@ namespace Discret::ELEMENTS
       template <typename T, std::enable_if_t<IsPrestressUpdateable<T&>, bool> = true>
       void operator()(T& updateable)
       {
-        updateable->UpdatePrestress(element, mat, discretization, lm, params);
+        updateable->update_prestress(element, mat, discretization, lm, params);
       }
 
       template <typename T, std::enable_if_t<!IsPrestressUpdateable<T&>, bool> = true>
@@ -208,7 +208,7 @@ namespace Discret::ELEMENTS
   }  // namespace Details
 
   template <typename VariantType>
-  void UpdatePrestress(VariantType& variant, const Core::Elements::Element& element,
+  void update_prestress(VariantType& variant, const Core::Elements::Element& element,
       Mat::So3Material& mat, const Core::FE::Discretization& discretization,
       const std::vector<int>& lm, Teuchos::ParameterList& params)
   {

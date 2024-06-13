@@ -41,7 +41,7 @@ namespace Discret::ELEMENTS
      * @param row (in) : Matrix row
      */
     template <unsigned num_str>
-    void AssembleVectorToMatrixRow(Core::LinAlg::Matrix<num_str, 1> vector,
+    void assemble_vector_to_matrix_row(Core::LinAlg::Matrix<num_str, 1> vector,
         Core::LinAlg::SerialDenseMatrix& data, const int row)
     {
       for (unsigned i = 0; i < num_str; ++i) data(row, static_cast<int>(i)) = vector(i);
@@ -49,7 +49,7 @@ namespace Discret::ELEMENTS
   }  // namespace Details
 
   template <typename T>
-  inline std::vector<char>& GetStressData(const T& ele, const Teuchos::ParameterList& params)
+  inline std::vector<char>& get_stress_data(const T& ele, const Teuchos::ParameterList& params)
   {
     if (ele.IsParamsInterface())
     {
@@ -62,7 +62,7 @@ namespace Discret::ELEMENTS
   }
 
   template <typename T>
-  inline std::vector<char>& GetStrainData(const T& ele, const Teuchos::ParameterList& params)
+  inline std::vector<char>& get_strain_data(const T& ele, const Teuchos::ParameterList& params)
   {
     if (ele.IsParamsInterface())
     {
@@ -75,7 +75,8 @@ namespace Discret::ELEMENTS
   }
 
   template <typename T>
-  inline Inpar::STR::StressType GetIOStressType(const T& ele, const Teuchos::ParameterList& params)
+  inline Inpar::STR::StressType get_io_stress_type(
+      const T& ele, const Teuchos::ParameterList& params)
   {
     if (ele.IsParamsInterface())
     {
@@ -88,7 +89,8 @@ namespace Discret::ELEMENTS
   }
 
   template <typename T>
-  inline Inpar::STR::StrainType GetIOStrainType(const T& ele, const Teuchos::ParameterList& params)
+  inline Inpar::STR::StrainType get_io_strain_type(
+      const T& ele, const Teuchos::ParameterList& params)
   {
     if (ele.IsParamsInterface())
     {
@@ -112,7 +114,7 @@ namespace Discret::ELEMENTS
    * @param row (in) : Matrix row
    */
   template <Core::FE::CellType celltype>
-  void AssembleStrainTypeToMatrixRow(
+  void assemble_strain_type_to_matrix_row(
       const Core::LinAlg::Matrix<Details::num_str<celltype>, 1>& gl_strain,
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>& defgrd,
       const Inpar::STR::StrainType strain_type, Core::LinAlg::SerialDenseMatrix& data,
@@ -124,25 +126,25 @@ namespace Discret::ELEMENTS
       {
         Core::LinAlg::Matrix<Details::num_str<celltype>, 1> gl_strain_stress_like;
         Core::LinAlg::Voigt::Strains::ToStressLike(gl_strain, gl_strain_stress_like);
-        Details::AssembleVectorToMatrixRow(gl_strain_stress_like, data, row);
+        Details::assemble_vector_to_matrix_row(gl_strain_stress_like, data, row);
         return;
       }
       case Inpar::STR::strain_ea:
       {
         const Core::LinAlg::Matrix<Details::num_str<celltype>, 1> ea =
-            STR::UTILS::GreenLagrangeToEulerAlmansi(gl_strain, defgrd);
+            STR::UTILS::green_lagrange_to_euler_almansi(gl_strain, defgrd);
         Core::LinAlg::Matrix<Details::num_str<celltype>, 1> ea_stress_like;
         Core::LinAlg::Voigt::Strains::ToStressLike(ea, ea_stress_like);
-        Details::AssembleVectorToMatrixRow(ea_stress_like, data, row);
+        Details::assemble_vector_to_matrix_row(ea_stress_like, data, row);
         return;
       }
       case Inpar::STR::strain_log:
       {
         const Core::LinAlg::Matrix<Details::num_str<celltype>, 1> log_strain =
-            STR::UTILS::GreenLagrangeToLogStrain(gl_strain);
+            STR::UTILS::green_lagrange_to_log_strain(gl_strain);
         Core::LinAlg::Matrix<Details::num_str<celltype>, 1> log_strain_stress_like;
         Core::LinAlg::Voigt::Strains::ToStressLike(log_strain, log_strain_stress_like);
-        Details::AssembleVectorToMatrixRow(log_strain_stress_like, data, row);
+        Details::assemble_vector_to_matrix_row(log_strain_stress_like, data, row);
         return;
       }
       case Inpar::STR::strain_none:
@@ -165,7 +167,7 @@ namespace Discret::ELEMENTS
    * @param row (in) : Matrix row
    */
   template <Core::FE::CellType celltype>
-  void AssembleStressTypeToMatrixRow(
+  void assemble_stress_type_to_matrix_row(
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>& defgrd,
       const Stress<celltype>& stress, const Inpar::STR::StressType stress_type,
       Core::LinAlg::SerialDenseMatrix& data, const int row)
@@ -174,14 +176,14 @@ namespace Discret::ELEMENTS
     {
       case Inpar::STR::stress_2pk:
       {
-        Details::AssembleVectorToMatrixRow(stress.pk2_, data, row);
+        Details::assemble_vector_to_matrix_row(stress.pk2_, data, row);
         return;
       }
       case Inpar::STR::stress_cauchy:
       {
         Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1> cauchy;
-        STR::UTILS::Pk2ToCauchy(stress.pk2_, defgrd, cauchy);
-        Details::AssembleVectorToMatrixRow(cauchy, data, row);
+        STR::UTILS::pk2_to_cauchy(stress.pk2_, defgrd, cauchy);
+        Details::assemble_vector_to_matrix_row(cauchy, data, row);
         return;
       }
       case Inpar::STR::stress_none:
@@ -199,7 +201,7 @@ namespace Discret::ELEMENTS
    * @param matrix (in) : Matrix
    * @param serialized_matrix (in/out) : Serialized matrix
    */
-  inline void Serialize(
+  inline void serialize(
       const Core::LinAlg::SerialDenseMatrix& matrix, std::vector<char>& serialized_matrix)
   {
     Core::Communication::PackBuffer packBuffer;
@@ -216,7 +218,7 @@ namespace Discret::ELEMENTS
    * @param gp_data_output_manager (in/out) : Gauss point data output manager
    *                                          (only for new structure time integration)
    */
-  inline void AskAndAddQuantitiesToGaussPointDataOutput(const int num_gp,
+  inline void ask_and_add_quantities_to_gauss_point_data_output(const int num_gp,
       const Mat::So3Material& solid_material,
       STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager)
   {
@@ -245,7 +247,7 @@ namespace Discret::ELEMENTS
    *                                          (only for new structure time integration)
    */
   template <Core::FE::CellType celltype>
-  inline void CollectAndAssembleGaussPointDataOutput(
+  inline void collect_and_assemble_gauss_point_data_output(
       const Core::FE::GaussIntegration& stiffness_matrix_integration,
       const Mat::So3Material& solid_material, const Core::Elements::Element& ele,
       STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager)

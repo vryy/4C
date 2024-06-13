@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace STR::UTILS
 {
-  void NodalBlockInformationSolid(
+  void nodal_block_information_solid(
       Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
   /*!
@@ -29,8 +29,8 @@ namespace STR::UTILS
    * @param defgrd (in) : Deformation gradient
    * @param cauchy (out) : Cauchy stress tensor in stress like Voigt notation
    */
-  void Pk2ToCauchy(const Core::LinAlg::Matrix<6, 1>& pk2, const Core::LinAlg::Matrix<3, 3>& defgrd,
-      Core::LinAlg::Matrix<6, 1>& cauchy);
+  void pk2_to_cauchy(const Core::LinAlg::Matrix<6, 1>& pk2,
+      const Core::LinAlg::Matrix<3, 3>& defgrd, Core::LinAlg::Matrix<6, 1>& cauchy);
 
   /*!
    * @brief Convert Green Lagrange strain tensor in strain like Voigt notation to Euler-Almansi
@@ -39,7 +39,7 @@ namespace STR::UTILS
    * @param gl (in) : Green Lagrange strain tensor in strain like Voigt notation
    * @return Core::LinAlg::Matrix<6, 1> : Euler-Almansi strain tensor in strain like Voigt notation
    */
-  Core::LinAlg::Matrix<6, 1> GreenLagrangeToEulerAlmansi(
+  Core::LinAlg::Matrix<6, 1> green_lagrange_to_euler_almansi(
       const Core::LinAlg::Matrix<6, 1>& gl, const Core::LinAlg::Matrix<3, 3>& defgrd);
 
   /*!
@@ -49,19 +49,20 @@ namespace STR::UTILS
    * @param gl (in) : Green Lagrange strain tensor in strain like Voigt notation
    * @return Core::LinAlg::Matrix<6, 1> : Logarithmic strain tensor in strain like Voigt notation
    */
-  Core::LinAlg::Matrix<6, 1> GreenLagrangeToLogStrain(const Core::LinAlg::Matrix<6, 1>& gl);
+  Core::LinAlg::Matrix<6, 1> green_lagrange_to_log_strain(const Core::LinAlg::Matrix<6, 1>& gl);
 
   namespace ReadElement
   {
-    int ReadElementMaterial(Input::LineDefinition* linedef);
+    int read_element_material(Input::LineDefinition* linedef);
 
-    Inpar::STR::KinemType ReadElementKinematicType(Input::LineDefinition* linedef);
+    Inpar::STR::KinemType read_element_kinematic_type(Input::LineDefinition* linedef);
 
-    Discret::ELEMENTS::ElementTechnology ReadElementTechnology(Input::LineDefinition* linedef);
+    Discret::ELEMENTS::ElementTechnology read_element_technology(Input::LineDefinition* linedef);
 
-    Discret::ELEMENTS::PrestressTechnology ReadPrestressTechnology(Input::LineDefinition* linedef);
+    Discret::ELEMENTS::PrestressTechnology read_prestress_technology(
+        Input::LineDefinition* linedef);
 
-    Discret::ELEMENTS::SolidElementProperties ReadSolidElementProperties(
+    Discret::ELEMENTS::SolidElementProperties read_solid_element_properties(
         Input::LineDefinition* linedef);
 
   }  // namespace ReadElement

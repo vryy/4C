@@ -183,7 +183,7 @@ bool Discret::ELEMENTS::Wall1Poro<distype>::ReadElement(
   Teuchos::RCP<Mat::StructPoro> poromat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(Material());
   if (poromat == Teuchos::null)
     FOUR_C_THROW("material assigned to poro element is not a poro material!");
-  poromat->PoroSetup(numgpt_, linedef);
+  poromat->poro_setup(numgpt_, linedef);
 
   read_anisotropic_permeability_directions_from_element_line_definition(linedef);
   read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(linedef);

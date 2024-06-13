@@ -3,7 +3,7 @@
 \brief Implementation of the solid element
 
 This file contains the element-specific evaluation routines such as
-Evaluate(...), evaluate_neumann(...), etc.
+evaluate(...), evaluate_neumann(...), etc.
 
 \level 1
 */
@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  std::vector<double> GetAccelerationVector(
+  std::vector<double> get_acceleration_vector(
       const Core::FE::Discretization& discretization, const std::vector<int>& lm)
   {
     const Epetra_Vector& acceleration = *discretization.GetState("acceleration");
@@ -37,7 +37,7 @@ namespace
     return my_acceleration;
   }
 
-  void EvaluateInertiaForce(const Core::LinAlg::SerialDenseMatrix& mass_matrix,
+  void evaluate_inertia_force(const Core::LinAlg::SerialDenseMatrix& mass_matrix,
       const Core::LinAlg::SerialDenseVector& acceleration,
       Core::LinAlg::SerialDenseVector& inertia_force)
   {
@@ -46,16 +46,16 @@ namespace
         acceleration, 0.0);
   }
 
-  void EvaluateInertiaForce(const Core::FE::Discretization& discretization,
+  void evaluate_inertia_force(const Core::FE::Discretization& discretization,
       const std::vector<int>& lm, const Core::LinAlg::SerialDenseMatrix& mass_matrix,
       Core::LinAlg::SerialDenseVector& inertia_force)
   {
-    std::vector<double> my_acceleration = GetAccelerationVector(discretization, lm);
+    std::vector<double> my_acceleration = get_acceleration_vector(discretization, lm);
 
     Core::LinAlg::SerialDenseVector acceleration_vector(
         Teuchos::DataAccess::View, my_acceleration.data(), static_cast<int>(lm.size()));
 
-    EvaluateInertiaForce(mass_matrix, acceleration_vector, inertia_force);
+    evaluate_inertia_force(mass_matrix, acceleration_vector, inertia_force);
   }
 }  // namespace
 
@@ -119,7 +119,7 @@ int Discret::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
           },
           solid_calc_variant_);
 
-      EvaluateInertiaForce(discretization, lm, elemat2, elevec2);
+      evaluate_inertia_force(discretization, lm, elemat2, elevec2);
       return 0;
     }
     case Core::Elements::struct_calc_nlnstifflmass:
@@ -134,7 +134,7 @@ int Discret::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
 
       LumpMatrix(elemat2);
 
-      EvaluateInertiaForce(discretization, lm, elemat2, elevec2);
+      evaluate_inertia_force(discretization, lm, elemat2, elevec2);
       return 0;
     }
     case Core::Elements::struct_calc_internalinertiaforce:
@@ -150,7 +150,7 @@ int Discret::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
           },
           solid_calc_variant_);
 
-      EvaluateInertiaForce(discretization, lm, mass_matrix, elevec2);
+      evaluate_inertia_force(discretization, lm, mass_matrix, elevec2);
       return 0;
     }
     case Core::Elements::struct_calc_update_istep:
@@ -163,7 +163,7 @@ int Discret::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
     }
     case Core::Elements::struct_update_prestress:
     {
-      UpdatePrestress(solid_calc_variant_, *this, *SolidMaterial(), discretization, lm, params);
+      update_prestress(solid_calc_variant_, *this, *SolidMaterial(), discretization, lm, params);
       return 0;
     }
     case Core::Elements::struct_calc_recover:
@@ -178,9 +178,9 @@ int Discret::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->CalculateStress(*this, *SolidMaterial(),
-                StressIO{GetIOStressType(*this, params), GetStressData(*this, params)},
-                StrainIO{GetIOStrainType(*this, params), GetStrainData(*this, params)},
+            interface->calculate_stress(*this, *SolidMaterial(),
+                StressIO{get_io_stress_type(*this, params), get_stress_data(*this, params)},
+                StrainIO{get_io_strain_type(*this, params), get_strain_data(*this, params)},
                 discretization, lm, params);
           },
           solid_calc_variant_);
@@ -273,24 +273,27 @@ int Discret::ELEMENTS::Solid::evaluate_neumann(Teuchos::ParameterList& params,
           return params.get("total time", -1.0);
       });
 
-  Discret::ELEMENTS::EvaluateNeumannByElement(*this, discretization, condition, lm, elevec1, time);
+  Discret::ELEMENTS::evaluate_neumann_by_element(
+      *this, discretization, condition, lm, elevec1, time);
   return 0;
 }
 
 template <int dim>
-double Discret::ELEMENTS::Solid::GetCauchyNDirAtXi(const std::vector<double>& disp,
+double Discret::ELEMENTS::Solid::get_normal_cauchy_stress_at_xi(const std::vector<double>& disp,
     const Core::LinAlg::Matrix<dim, 1>& xi, const Core::LinAlg::Matrix<dim, 1>& n,
     const Core::LinAlg::Matrix<dim, 1>& dir, CauchyNDirLinearizations<dim>& linearizations)
 {
-  return Discret::ELEMENTS::GetCauchyNDirAtXi<dim>(
+  return Discret::ELEMENTS::get_normal_cauchy_stress_at_xi<dim>(
       solid_calc_variant_, *this, *SolidMaterial(), disp, xi, n, dir, linearizations);
 }
 
-template double Discret::ELEMENTS::Solid::GetCauchyNDirAtXi<3>(const std::vector<double>&,
+template double Discret::ELEMENTS::Solid::get_normal_cauchy_stress_at_xi<3>(
+    const std::vector<double>&, const Core::LinAlg::Matrix<3, 1>&,
     const Core::LinAlg::Matrix<3, 1>&, const Core::LinAlg::Matrix<3, 1>&,
-    const Core::LinAlg::Matrix<3, 1>&, CauchyNDirLinearizations<3>&);
-template double Discret::ELEMENTS::Solid::GetCauchyNDirAtXi<2>(const std::vector<double>&,
+    CauchyNDirLinearizations<3>&);
+template double Discret::ELEMENTS::Solid::get_normal_cauchy_stress_at_xi<2>(
+    const std::vector<double>&, const Core::LinAlg::Matrix<2, 1>&,
     const Core::LinAlg::Matrix<2, 1>&, const Core::LinAlg::Matrix<2, 1>&,
-    const Core::LinAlg::Matrix<2, 1>&, CauchyNDirLinearizations<2>&);
+    CauchyNDirLinearizations<2>&);
 
 FOUR_C_NAMESPACE_CLOSE

@@ -127,7 +127,7 @@ namespace Discret
       void Recover(Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params);
 
-      void CalculateStress(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
+      void calculate_stress(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
           const StressIO& stressIO, const StrainIO& strainIO,
           const Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params);

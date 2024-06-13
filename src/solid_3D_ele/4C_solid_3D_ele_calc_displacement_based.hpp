@@ -42,26 +42,27 @@ namespace Discret::ELEMENTS
     using LinearizationContainer = DisplacementBasedLinearizationContainer<celltype>;
 
     template <typename Evaluator>
-    static inline auto Evaluate(const Core::Elements::Element& ele,
+    static inline auto evaluate(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& nodal_coordinates,
         const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping, Evaluator evaluator)
     {
       const SpatialMaterialMapping<celltype> spatial_material_mapping =
-          EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
+          evaluate_spatial_material_mapping(jacobian_mapping, nodal_coordinates);
 
       const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> cauchygreen =
-          EvaluateCauchyGreen(spatial_material_mapping);
+          evaluate_cauchy_green(spatial_material_mapping);
 
       const Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1> gl_strain =
-          EvaluateGreenLagrangeStrain(cauchygreen);
+          evaluate_green_lagrange_strain(cauchygreen);
 
       const DisplacementBasedLinearizationContainer<celltype> linearization = std::invoke(
           [&]()
           {
             DisplacementBasedLinearizationContainer<celltype> linearization{};
-            linearization.Bop_ = EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
+            linearization.Bop_ =
+                evaluate_strain_gradient(jacobian_mapping, spatial_material_mapping);
 
             return linearization;
           });
@@ -217,7 +218,7 @@ namespace Discret::ELEMENTS
 
     static Core::LinAlg::Matrix<Details::num_str<celltype>,
         Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
-    GetLinearBOperator(const DisplacementBasedLinearizationContainer<celltype>& linearization)
+    get_linear_b_operator(const DisplacementBasedLinearizationContainer<celltype>& linearization)
     {
       return linearization.Bop_;
     }
@@ -232,16 +233,16 @@ namespace Discret::ELEMENTS
           linearization.Bop_, stress, integration_factor, force_vector);
     }
 
-    static void AddStiffnessMatrix(
+    static void add_stiffness_matrix(
         const DisplacementBasedLinearizationContainer<celltype>& linearization,
         const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
         const double integration_factor,
         Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>,
             Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>& stiffness_matrix)
     {
-      Discret::ELEMENTS::AddElasticStiffnessMatrix(
+      Discret::ELEMENTS::add_elastic_stiffness_matrix(
           linearization.Bop_, stress, integration_factor, stiffness_matrix);
-      Discret::ELEMENTS::AddGeometricStiffnessMatrix(
+      Discret::ELEMENTS::add_geometric_stiffness_matrix(
           jacobian_mapping.N_XYZ_, stress, integration_factor, stiffness_matrix);
     }
   };

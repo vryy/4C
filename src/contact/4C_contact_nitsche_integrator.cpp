@@ -498,7 +498,7 @@ void CONTACT::IntegratorNitsche::so_ele_cauchy(Mortar::Element& moEle, double* b
                  solid_ele != nullptr)
         {
           // new solid element
-          return solid_ele->GetCauchyNDirAtXi<dim>(
+          return solid_ele->get_normal_cauchy_stress_at_xi<dim>(
               moEle.MoData().ParentDisp(), pxsi, normal, direction, linearizations);
         }
         else

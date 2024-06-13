@@ -3,7 +3,7 @@
 \brief Evaluation routines for the solid-poro element
 
 This file contains the element-specific evaluation routines such as
-Evaluate(...), evaluate_neumann(...), etc.
+evaluate(...), evaluate_neumann(...), etc.
 
 \level 1
 */
@@ -181,9 +181,9 @@ int Discret::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->CalculateStress(*this, this->StructPoroMaterial(),
-                StressIO{GetIOStressType(*this, params), GetStressData(*this, params)},
-                StrainIO{GetIOStrainType(*this, params), GetStrainData(*this, params)},
+            interface->calculate_stress(*this, this->StructPoroMaterial(),
+                StressIO{get_io_stress_type(*this, params), get_stress_data(*this, params)},
+                StrainIO{get_io_strain_type(*this, params), get_strain_data(*this, params)},
                 discretization, la[0].lm_, params);
           },
           solid_calc_variant_);
@@ -193,7 +193,7 @@ int Discret::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
         if (discretization.HasState(1, "porofluid"))
         {
           std::visit([&](auto& interface)
-              { interface->CouplingStress(*this, discretization, la[0].lm_, params); },
+              { interface->coupling_stress(*this, discretization, la[0].lm_, params); },
               solidporo_calc_variant_);
         }
       }

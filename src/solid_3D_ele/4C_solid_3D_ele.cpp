@@ -19,6 +19,7 @@
 #include "4C_so3_surface.hpp"
 #include "4C_solid_3D_ele_factory.hpp"
 #include "4C_solid_3D_ele_interface_serializable.hpp"
+#include "4C_solid_3D_ele_properties.hpp"
 #include "4C_solid_3D_ele_utils.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 
@@ -27,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   template <Core::FE::CellType celltype>
-  Input::LineDefinition::Builder GetDefaultLineDefinitionBuilder()
+  Input::LineDefinition::Builder get_default_line_definition_builder()
   {
     return Input::LineDefinition::Builder()
         .AddIntVector(Core::FE::CellTypeToString(celltype), Core::FE::num_nodes<celltype>)
@@ -53,30 +54,30 @@ void Discret::ELEMENTS::SolidType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defsgeneral = definitions["SOLID"];
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex8)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex8>()
+      get_default_line_definition_builder<Core::FE::CellType::hex8>()
           .add_optional_named_string("TECH")
           .Build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex18)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex18>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::hex18>().Build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex20)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex20>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::hex20>().Build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex27)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex27>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::hex27>().Build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet4)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet4>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::tet4>().Build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet10)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet10>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::tet10>().Build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::wedge6)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::wedge6>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::wedge6>().Build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::pyramid5)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::pyramid5>()
+      get_default_line_definition_builder<Core::FE::CellType::pyramid5>()
           .add_optional_named_string("TECH")
           .Build();
 
@@ -112,7 +113,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SolidType::Create(const std::
 void Discret::ELEMENTS::SolidType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  STR::UTILS::NodalBlockInformationSolid(dwele, numdf, dimns, nv, np);
+  STR::UTILS::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
 }
 
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidType::ComputeNullSpace(
@@ -173,7 +174,7 @@ void Discret::ELEMENTS::Solid::Pack(Core::Communication::PackBuffer& data) const
 
   add_to_pack(data, (int)celltype_);
 
-  AddToPack(data, solid_ele_property_);
+  Discret::ELEMENTS::add_to_pack(data, solid_ele_property_);
 
   data.add_to_pack(material_post_setup_);
 
@@ -193,7 +194,7 @@ void Discret::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
 
   celltype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
 
-  ExtractFromPack(position, data, solid_ele_property_);
+  Discret::ELEMENTS::ExtractFromPack(position, data, solid_ele_property_);
 
   if (Shape() == Core::FE::CellType::nurbs27)
   {
@@ -203,7 +204,7 @@ void Discret::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
   Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
 
   // reset solid interface
-  solid_calc_variant_ = CreateSolidCalculationInterface(celltype_, solid_ele_property_);
+  solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
 
   Discret::ELEMENTS::Unpack(solid_calc_variant_, position, data);
 
@@ -229,19 +230,19 @@ bool Discret::ELEMENTS::Solid::ReadElement(
   celltype_ = Core::FE::StringToCellType(celltype);
 
   // read number of material model
-  SetMaterial(0, Mat::Factory(STR::UTILS::ReadElement::ReadElementMaterial(linedef)));
+  SetMaterial(0, Mat::Factory(STR::UTILS::ReadElement::read_element_material(linedef)));
 
   // kinematic type
-  SetKinematicType(STR::UTILS::ReadElement::ReadElementKinematicType(linedef));
+  SetKinematicType(STR::UTILS::ReadElement::read_element_kinematic_type(linedef));
 
-  solid_ele_property_ = STR::UTILS::ReadElement::ReadSolidElementProperties(linedef);
+  solid_ele_property_ = STR::UTILS::ReadElement::read_solid_element_properties(linedef);
 
   if (Shape() == Core::FE::CellType::nurbs27)
   {
     SetNurbsElement() = true;
   }
 
-  solid_calc_variant_ = CreateSolidCalculationInterface(celltype_, solid_ele_property_);
+  solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
   std::visit(
       [&](auto& interface) { interface->Setup(*SolidMaterial(), linedef); }, solid_calc_variant_);
   return true;

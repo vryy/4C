@@ -38,7 +38,7 @@ namespace Discret::ELEMENTS
    */
   template <Core::FE::CellType celltype>
   Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>
-  EvaluateMulfDeformationGradientUpdate(
+  evaluate_mulf_deformation_gradient_update(
       const Discret::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
       const Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, Core::FE::dim<celltype>>&
           nodal_displacements,
@@ -60,7 +60,7 @@ namespace Discret::ELEMENTS
    * @brief Evaluate the spatial material mapping (deformation gradient) for MULF prestressing
    */
   template <Core::FE::CellType celltype>
-  Discret::ELEMENTS::SpatialMaterialMapping<celltype> EvaluateMulfSpatialMaterialMapping(
+  Discret::ELEMENTS::SpatialMaterialMapping<celltype> evaluate_mulf_spatial_material_mapping(
       const Discret::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping,
       const Discret::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
       const Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, Core::FE::dim<celltype>>&
@@ -70,7 +70,7 @@ namespace Discret::ELEMENTS
     Discret::ELEMENTS::SpatialMaterialMapping<celltype> spatial_material_mapping;
 
     Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> defgrd =
-        EvaluateMulfDeformationGradientUpdate(
+        evaluate_mulf_deformation_gradient_update(
             shape_functions, nodal_displacements, mulf_history_data);
 
     spatial_material_mapping.deformation_gradient_.Multiply(

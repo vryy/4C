@@ -11,10 +11,11 @@
 #include "4C_solid_3D_ele_properties.hpp"
 
 #include "4C_comm_parobject.hpp"
+#include "4C_solid_scatra_3D_ele_factory.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-void Discret::ELEMENTS::AddToPack(Core::Communication::PackBuffer& data,
+void Discret::ELEMENTS::add_to_pack(Core::Communication::PackBuffer& data,
     const Discret::ELEMENTS::SolidElementProperties& properties)
 {
   Core::Communication::ParObject::add_to_pack(data, static_cast<int>(properties.kintype));

@@ -56,7 +56,7 @@ namespace Discret::ELEMENTS
 
   template <typename T, int dim>
   constexpr bool can_evaluate_solid_scatra_cauchy_n_dir_at_xi<T, dim,
-      std::void_t<decltype(std::declval<T>()->GetCauchyNDirAtXi(
+      std::void_t<decltype(std::declval<T>()->get_normal_cauchy_stress_at_xi(
           std::declval<const Core::Elements::Element&>(), std::declval<Mat::So3Material&>(),
           std::declval<const std::vector<double>&>(),
           std::declval<const std::optional<std::vector<double>>&>(),
@@ -91,7 +91,7 @@ namespace Discret::ELEMENTS
           std::enable_if_t<can_evaluate_solid_scatra_cauchy_n_dir_at_xi<T&, dim>, bool> = true>
       double operator()(T& cauchy_n_dir_evaluatable)
       {
-        return cauchy_n_dir_evaluatable->GetCauchyNDirAtXi(
+        return cauchy_n_dir_evaluatable->get_normal_cauchy_stress_at_xi(
             element, mat, disp, scalars, xi, n, dir, linearizations);
       }
 
@@ -118,11 +118,11 @@ namespace Discret::ELEMENTS
   }  // namespace Details
 
   template <typename VariantType>
-  double GetCauchyNDirAtXi(VariantType& variant, const Core::Elements::Element& element,
-      Mat::So3Material& mat, const std::vector<double>& disp,
-      const std::optional<std::vector<double>>& scalars, const Core::LinAlg::Matrix<3, 1>& xi,
-      const Core::LinAlg::Matrix<3, 1>& n, const Core::LinAlg::Matrix<3, 1>& dir,
-      SolidScatraCauchyNDirLinearizations<3>& linearizations)
+  double get_normal_cauchy_stress_at_xi(VariantType& variant,
+      const Core::Elements::Element& element, Mat::So3Material& mat,
+      const std::vector<double>& disp, const std::optional<std::vector<double>>& scalars,
+      const Core::LinAlg::Matrix<3, 1>& xi, const Core::LinAlg::Matrix<3, 1>& n,
+      const Core::LinAlg::Matrix<3, 1>& dir, SolidScatraCauchyNDirLinearizations<3>& linearizations)
   {
     return std::visit(Details::EvaluateSolidScatraCauchyNDirAction<3>(
                           element, mat, disp, scalars, xi, n, dir, linearizations),

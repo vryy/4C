@@ -21,15 +21,15 @@ FOUR_C_NAMESPACE_OPEN
 template <Core::FE::CellType celltype>
 Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::SolidPoroPressureBasedEleCalc()
     : gauss_integration_(
-          CreateGaussIntegration<celltype>(GetGaussRuleStiffnessMatrixPoro<celltype>()))
+          create_gauss_integration<celltype>(get_gauss_rule_stiffness_matrix_poro<celltype>()))
 {
 }
 
 template <Core::FE::CellType celltype>
-void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::PoroSetup(
+void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::poro_setup(
     Mat::StructPoro& porostructmat, Input::LineDefinition* linedef)
 {
-  porostructmat.PoroSetup(gauss_integration_.NumPoints(), linedef);
+  porostructmat.poro_setup(gauss_integration_.NumPoints(), linedef);
 }
 
 template <Core::FE::CellType celltype>
@@ -59,7 +59,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
 
   // get nodal coordinates current and reference
   const ElementNodes<celltype> nodal_coordinates =
-      EvaluateElementNodes<celltype>(ele, discretization, la[0].lm_);
+      evaluate_element_nodes<celltype>(ele, discretization, la[0].lm_);
 
   // Loop over all Gauss points
   ForEachGaussPoint(nodal_coordinates, gauss_integration_,
@@ -68,14 +68,14 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
         const SpatialMaterialMapping<celltype> spatial_material_mapping =
-            EvaluateSpatialMaterialMapping<celltype>(
+            evaluate_spatial_material_mapping<celltype>(
                 jacobian_mapping, nodal_coordinates, 1.0, kinematictype);
 
         const CauchyGreenAndInverse<celltype> cauchygreen =
-            EvaluateCauchyGreenAndInverse(spatial_material_mapping);
+            evaluate_cauchy_green_and_inverse(spatial_material_mapping);
 
         Core::LinAlg::Matrix<num_str_, num_dof_per_ele_> Bop =
-            EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
+            evaluate_strain_gradient(jacobian_mapping, spatial_material_mapping);
 
         Core::LinAlg::Matrix<num_str_, num_dof_per_ele_> dInverseRightCauchyGreen_dDisp =
             EvaluateInverseCauchyGreenLinearization(
@@ -172,7 +172,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroel
 
   // get nodal coordinates current and reference
   const ElementNodes<celltype> nodal_coordinates =
-      EvaluateElementNodes<celltype>(ele, discretization, la[0].lm_);
+      evaluate_element_nodes<celltype>(ele, discretization, la[0].lm_);
 
   // Loop over all Gauss points
   ForEachGaussPoint(nodal_coordinates, gauss_integration_,
@@ -183,14 +183,14 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroel
       )
       {
         const SpatialMaterialMapping<celltype> spatial_material_mapping =
-            EvaluateSpatialMaterialMapping<celltype>(
+            evaluate_spatial_material_mapping<celltype>(
                 jacobian_mapping, nodal_coordinates, 1.0, kinematictype);
 
         const CauchyGreenAndInverse<celltype> cauchygreen =
-            EvaluateCauchyGreenAndInverse(spatial_material_mapping);
+            evaluate_cauchy_green_and_inverse(spatial_material_mapping);
 
         Core::LinAlg::Matrix<num_str_, num_dof_per_ele_> Bop =
-            EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
+            evaluate_strain_gradient(jacobian_mapping, spatial_material_mapping);
 
         // volume change (used for porosity law). Same as J in nonlinear theory.
         const double volchange = ComputeVolumeChange<celltype>(spatial_material_mapping,
@@ -233,7 +233,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroel
 }
 
 template <Core::FE::CellType celltype>
-void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::CouplingStress(
+void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_stress(
     const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {

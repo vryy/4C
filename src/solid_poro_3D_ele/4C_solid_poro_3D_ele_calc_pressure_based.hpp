@@ -53,11 +53,11 @@ namespace Discret
           Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
           Core::LinAlg::SerialDenseMatrix& stiffness_matrix);
 
-      void CouplingStress(const Core::Elements::Element& ele,
+      void coupling_stress(const Core::Elements::Element& ele,
           const Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params);
 
-      void PoroSetup(Mat::StructPoro& porostructmat, Input::LineDefinition* linedef);
+      void poro_setup(Mat::StructPoro& porostructmat, Input::LineDefinition* linedef);
 
      private:
       /// static values for matrix sizes

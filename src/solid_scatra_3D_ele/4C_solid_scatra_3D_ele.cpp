@@ -13,6 +13,7 @@
 #include "4C_so3_line.hpp"
 #include "4C_so3_nullspace.hpp"
 #include "4C_so3_surface.hpp"
+#include "4C_solid_scatra_3D_ele_factory.hpp"
 #include "4C_solid_scatra_3D_ele_lib.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -88,7 +89,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SolidScatraType::Create(
 void Discret::ELEMENTS::SolidScatraType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  STR::UTILS::NodalBlockInformationSolid(dwele, numdf, dimns, nv, np);
+  STR::UTILS::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
 }
 
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidScatraType::ComputeNullSpace(
@@ -150,15 +151,16 @@ bool Discret::ELEMENTS::SolidScatra::ReadElement(
   celltype_ = Core::FE::StringToCellType(celltype);
 
   // read number of material model
-  SetMaterial(0, Mat::Factory(STR::UTILS::ReadElement::ReadElementMaterial(linedef)));
+  SetMaterial(0, Mat::Factory(STR::UTILS::ReadElement::read_element_material(linedef)));
 
   // read scalar transport implementation type
   properties_.impltype = ReadScatraImplType(*linedef);
 
 
-  properties_.solid = STR::UTILS::ReadElement::ReadSolidElementProperties(linedef);
+  properties_.solid = STR::UTILS::ReadElement::read_solid_element_properties(linedef);
 
-  solid_scatra_calc_variant_ = CreateSolidScatraCalculationInterface(celltype_, properties_.solid);
+  solid_scatra_calc_variant_ =
+      create_solid_scatra_calculation_interface(celltype_, properties_.solid);
 
   // setup solid material
   std::visit([&](auto& solid_scatra) { solid_scatra->Setup(SolidMaterial(), linedef); },
@@ -177,7 +179,7 @@ void Discret::ELEMENTS::SolidScatra::Pack(Core::Communication::PackBuffer& data)
   Core::Elements::Element::Pack(data);
 
   add_to_pack(data, (int)celltype_);
-  AddToPack(data, properties_);
+  Discret::ELEMENTS::add_to_pack(data, properties_);
 
   data.add_to_pack(material_post_setup_);
 
@@ -198,12 +200,13 @@ void Discret::ELEMENTS::SolidScatra::Unpack(const std::vector<char>& data)
 
   celltype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
 
-  ExtractFromPack(position, data, properties_);
+  Discret::ELEMENTS::extract_from_pack(position, data, properties_);
 
   Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
 
   // reset solid and scatra interfaces
-  solid_scatra_calc_variant_ = CreateSolidScatraCalculationInterface(celltype_, properties_.solid);
+  solid_scatra_calc_variant_ =
+      create_solid_scatra_calculation_interface(celltype_, properties_.solid);
 
   Discret::ELEMENTS::Unpack(solid_scatra_calc_variant_, position, data);
 

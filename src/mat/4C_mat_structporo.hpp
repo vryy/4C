@@ -229,7 +229,7 @@ namespace Mat
     }
 
     //! Initialize internal variables
-    virtual void PoroSetup(int numgp,  //!< number of Gauss points
+    virtual void poro_setup(int numgp,  //!< number of Gauss points
         Input::LineDefinition* linedef);
 
     /*!
@@ -324,7 +324,7 @@ namespace Mat
     void Setup(int numgp, Input::LineDefinition* linedef) override
     {
       // setup the underlying material
-      // Note: poro material itself is setup when calling PoroSetup()
+      // Note: poro material itself is setup when calling poro_setup()
       mat_->Setup(numgp, linedef);
     }
 

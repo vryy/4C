@@ -397,7 +397,7 @@ namespace Discret::ELEMENTS
 
   template <typename T, int dim>
   constexpr bool can_evaluate_cauchy_n_dir<T, dim,
-      std::void_t<decltype(std::declval<T>()->GetCauchyNDirAtXi(
+      std::void_t<decltype(std::declval<T>()->get_normal_cauchy_stress_at_xi(
           std::declval<const Core::Elements::Element&>(), std::declval<Mat::So3Material&>(),
           std::declval<const std::vector<double>&>(),
           std::declval<const Core::LinAlg::Matrix<dim, 1>&>(),
@@ -421,7 +421,7 @@ namespace Discret::ELEMENTS
       template <typename T, std::enable_if_t<can_evaluate_cauchy_n_dir<T&, dim>, bool> = true>
       double operator()(T& cauchy_n_dir_evaluatable)
       {
-        return cauchy_n_dir_evaluatable->GetCauchyNDirAtXi(
+        return cauchy_n_dir_evaluatable->get_normal_cauchy_stress_at_xi(
             element, mat, disp, xi, n, dir, linearizations);
       }
 
@@ -445,16 +445,17 @@ namespace Discret::ELEMENTS
   }  // namespace Details
 
   /*!
-   * @brief Evaluate optional function @p GetCauchyNDirAtXi(....) on SolidVariant @p
+   * @brief Evaluate optional function @p get_normal_cauchy_stress_at_xi(....) on SolidVariant @p
    * variant. If the function does not exist, an error will be thrown.
    *
    * @return double
    */
   template <int dim, typename VariantType>
-  double GetCauchyNDirAtXi(VariantType& variant, const Core::Elements::Element& element,
-      Mat::So3Material& mat, const std::vector<double>& disp,
-      const Core::LinAlg::Matrix<dim, 1>& xi, const Core::LinAlg::Matrix<dim, 1>& n,
-      const Core::LinAlg::Matrix<dim, 1>& dir, CauchyNDirLinearizations<dim>& linearizations)
+  double get_normal_cauchy_stress_at_xi(VariantType& variant,
+      const Core::Elements::Element& element, Mat::So3Material& mat,
+      const std::vector<double>& disp, const Core::LinAlg::Matrix<dim, 1>& xi,
+      const Core::LinAlg::Matrix<dim, 1>& n, const Core::LinAlg::Matrix<dim, 1>& dir,
+      CauchyNDirLinearizations<dim>& linearizations)
   {
     return std::visit(
         Details::EvaluateCauchyNDirAction<dim>(element, mat, disp, xi, n, dir, linearizations),
