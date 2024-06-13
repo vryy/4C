@@ -63,7 +63,7 @@ namespace
         for (std::size_t i = 0; i < 2; ++i)
         {
           gpTensors_[gp][i].MultiplyNT(gpFibers_[gp][i], gpFibers_[gp][i]);
-          Core::LinAlg::Voigt::Stresses::MatrixToVector(
+          Core::LinAlg::Voigt::Stresses::matrix_to_vector(
               gpTensors_[gp][i], gpTensors_stress_[gp][i]);
         }
       }
@@ -85,7 +85,7 @@ namespace
       anisotropy_.set_number_of_gauss_points(2);
 
       // Setup Gauss point fibers
-      anisotropy_.SetGaussPointFibers(gpFibers_);
+      anisotropy_.set_gauss_point_fibers(gpFibers_);
     }
 
     [[nodiscard]] int get_gauss_point() const { return std::get<1>(GetParam()); }
@@ -105,19 +105,19 @@ namespace
     EXPECT_NEAR(anisotropyExtension_->GetScalarProduct(get_gauss_point()), 1.0, 1e-10);
   }
 
-  TEST_P(CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest, GetFiber)
+  TEST_P(CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest, get_fiber)
   {
-    FOUR_C_EXPECT_NEAR(anisotropyExtension_->GetFiber(get_gauss_point()),
+    FOUR_C_EXPECT_NEAR(anisotropyExtension_->get_fiber(get_gauss_point()),
         gpFibers_[get_gauss_point()][get_fiber_id() - 1], 1e-10);
   }
 
-  TEST_P(CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest, GetStructuralTensor)
+  TEST_P(CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest, get_structural_tensor)
   {
-    FOUR_C_EXPECT_NEAR(anisotropyExtension_->GetStructuralTensor(get_gauss_point()),
+    FOUR_C_EXPECT_NEAR(anisotropyExtension_->get_structural_tensor(get_gauss_point()),
         gpTensors_[get_gauss_point()][get_fiber_id() - 1], 1e-10);
   }
 
-  TEST_P(CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest, GetStructuralTensorStress)
+  TEST_P(CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest, get_structural_tensorStress)
   {
     FOUR_C_EXPECT_NEAR(anisotropyExtension_->get_structural_tensor_stress(get_gauss_point()),
         gpTensors_stress_[get_gauss_point()][get_fiber_id() - 1], 1e-10);

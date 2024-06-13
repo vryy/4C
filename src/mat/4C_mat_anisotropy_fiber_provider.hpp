@@ -40,7 +40,7 @@ namespace Mat
      * @param i (in) : Id of the fiber
      * @return Reference to the vector of the fiber
      */
-    virtual const Core::LinAlg::Matrix<3, 1>& GetFiber(int gp, int i) const = 0;
+    virtual const Core::LinAlg::Matrix<3, 1>& get_fiber(int gp, int i) const = 0;
 
     /**
      * \brief Returns the i-th structural tensor at the Integration point in stress-like Voigt
@@ -63,7 +63,7 @@ namespace Mat
      * @param i (in) : Id of the fiber
      * @return Reference to Matrix of the structural tensor in tensor notation
      */
-    virtual const Core::LinAlg::Matrix<3, 3>& GetStructuralTensor(int gp, int i) const = 0;
+    virtual const Core::LinAlg::Matrix<3, 3>& get_structural_tensor(int gp, int i) const = 0;
     //@}
   };
 

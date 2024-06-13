@@ -1200,10 +1200,10 @@ void Mat::SuperElasticSMA::pullback4th_tensor_voigt(const double jacobian,
     {
       int M;
       int N;
-      i = VoigtMapping::Voigt6ToRow(p);
-      j = VoigtMapping::Voigt6ToCol(p);
-      k = VoigtMapping::Voigt6ToRow(q);
-      l = VoigtMapping::Voigt6ToCol(q);
+      i = VoigtMapping::voigt6_to_matrix_row_index(p);
+      j = VoigtMapping::voigt6_to_matrix_column_index(p);
+      k = VoigtMapping::voigt6_to_matrix_row_index(q);
+      l = VoigtMapping::voigt6_to_matrix_column_index(q);
 
       for (int A = 0; A < 3; A++)
       {
@@ -1213,8 +1213,8 @@ void Mat::SuperElasticSMA::pullback4th_tensor_voigt(const double jacobian,
           {
             for (int D = 0; D < 3; D++)
             {
-              M = VoigtMapping::SymToVoigt6(A, B);
-              N = VoigtMapping::SymToVoigt6(C, D);
+              M = VoigtMapping::symmetric_tensor_to_voigt6_index(A, B);
+              N = VoigtMapping::symmetric_tensor_to_voigt6_index(C, D);
 
               (*cmatLag)(p, q) += 1.0 / jacobian * defgrdinv(i, A) * defgrdinv(j, B) *
                                   defgrdinv(k, C) * defgrdinv(l, D) * cmatEul(M, N);

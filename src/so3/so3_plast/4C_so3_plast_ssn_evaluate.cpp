@@ -2303,11 +2303,11 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
     {
       for (int b = 0; b < nsd_; ++b)
       {
-        d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 0) +=
+        d_F_dxi(VoigtMapping::non_symmetric_tensor_to_voigt9_index(a, b), 0) +=
             xXFsec(a, 0) * invJ(b, 0) + xXFsec(a, 3) * invJ(b, 1) + xXFsec(a, 4) * invJ(b, 2);
-        d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 1) +=
+        d_F_dxi(VoigtMapping::non_symmetric_tensor_to_voigt9_index(a, b), 1) +=
             xXFsec(a, 3) * invJ(b, 0) + xXFsec(a, 1) * invJ(b, 1) + xXFsec(a, 5) * invJ(b, 2);
-        d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 2) +=
+        d_F_dxi(VoigtMapping::non_symmetric_tensor_to_voigt9_index(a, b), 2) +=
             xXFsec(a, 4) * invJ(b, 0) + xXFsec(a, 5) * invJ(b, 1) + xXFsec(a, 2) * invJ(b, 2);
       }
     }
@@ -2349,20 +2349,20 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
       {
         for (int k = 0; k < nen_; ++k)
         {
-          d2_F_dxi_dd(
-              VoigtMapping::NonSymToVoigt9(i, j), numdofpernode_ * (numdofpernode_ * k + i) + 0) +=
+          d2_F_dxi_dd(VoigtMapping::non_symmetric_tensor_to_voigt9_index(i, j),
+              numdofpernode_ * (numdofpernode_ * k + i) + 0) +=
               deriv2(0, k) * invJ(j, 0) + deriv2(3, k) * invJ(j, 1) + deriv2(4, k) * invJ(j, 2) -
               N_XYZ_Xsec(k, 0) * invJ(j, 0) - N_XYZ_Xsec(k, 3) * invJ(j, 1) -
               N_XYZ_Xsec(k, 4) * invJ(j, 2);
 
-          d2_F_dxi_dd(
-              VoigtMapping::NonSymToVoigt9(i, j), numdofpernode_ * (numdofpernode_ * k + i) + 1) +=
+          d2_F_dxi_dd(VoigtMapping::non_symmetric_tensor_to_voigt9_index(i, j),
+              numdofpernode_ * (numdofpernode_ * k + i) + 1) +=
               deriv2(3, k) * invJ(j, 0) + deriv2(1, k) * invJ(j, 1) + deriv2(5, k) * invJ(j, 2) -
               N_XYZ_Xsec(k, 3) * invJ(j, 0) - N_XYZ_Xsec(k, 1) * invJ(j, 1) -
               N_XYZ_Xsec(k, 5) * invJ(j, 2);
 
-          d2_F_dxi_dd(
-              VoigtMapping::NonSymToVoigt9(i, j), numdofpernode_ * (numdofpernode_ * k + i) + 2) +=
+          d2_F_dxi_dd(VoigtMapping::non_symmetric_tensor_to_voigt9_index(i, j),
+              numdofpernode_ * (numdofpernode_ * k + i) + 2) +=
               deriv2(4, k) * invJ(j, 0) + deriv2(5, k) * invJ(j, 1) + deriv2(2, k) * invJ(j, 2) -
               N_XYZ_Xsec(k, 4) * invJ(j, 0) - N_XYZ_Xsec(k, 5) * invJ(j, 1) -
               N_XYZ_Xsec(k, 2) * invJ(j, 2);
@@ -2370,8 +2370,8 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
           for (int l = 0; l < nsd_; ++l)
           {
             d2_cauchyndir_dd_dxi_mat(k * 3 + i, l) +=
-                d_cauchyndir_dF(VoigtMapping::NonSymToVoigt9(i, j), 0) *
-                d2_F_dxi_dd(VoigtMapping::NonSymToVoigt9(i, j),
+                d_cauchyndir_dF(VoigtMapping::non_symmetric_tensor_to_voigt9_index(i, j), 0) *
+                d2_F_dxi_dd(VoigtMapping::non_symmetric_tensor_to_voigt9_index(i, j),
                     numdofpernode_ * (numdofpernode_ * k + i) + l);
           }
         }
@@ -2462,9 +2462,9 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
     {
       for (int a = 0; a < nsd_; ++a)
       {
-        d_ndirdirn_v_dn(VoigtMapping::SymToVoigt6(i, j), a) +=
+        d_ndirdirn_v_dn(VoigtMapping::symmetric_tensor_to_voigt6_index(i, j), a) +=
             .5 * ((i == a) * dir(j) + (j == a) * dir(i));
-        d_ndirdirn_v_dt(VoigtMapping::SymToVoigt6(i, j), a) +=
+        d_ndirdirn_v_dt(VoigtMapping::symmetric_tensor_to_voigt6_index(i, j), a) +=
             .5 * ((i == a) * n(j) + (j == a) * n(i));
       }
     }
@@ -3211,7 +3211,7 @@ void Discret::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& t
     for (int a = 0; a < nsd_; ++a)
       for (int b = 0; b < nsd_; ++b)
         for (int c = 0; c < nen_; ++c)
-          dq_dF_v(VoigtMapping::NonSymToVoigt9(a, b), c) =
+          dq_dF_v(VoigtMapping::non_symmetric_tensor_to_voigt9_index(a, b), c) =
               k0 / det_f() * (tmp2(c) * inv_defgrd()(b, a) + tmp(a, c) * iFn(b));
 
     d2q_dT_dd_m.MultiplyTN(dq_dF_v, dFdd);

@@ -71,7 +71,7 @@ namespace Core::Nodes
      *
      * @param fiber Vector of the fiber at the Gauss-points
      */
-    void AddFiber(const std::vector<Core::LinAlg::Matrix<3, 1>>& fiber);
+    void add_fiber(const std::vector<Core::LinAlg::Matrix<3, 1>>& fiber);
 
     /*!
      * @brief Return the list of all fibers at all Gauss points
@@ -89,7 +89,7 @@ namespace Core::Nodes
      * @param fiberid Id of the fiber (starting from 0)
      * @return Reference to the coordinate system direction
      */
-    const std::vector<Core::LinAlg::Matrix<3, 1>>& GetFiber(std::size_t fiberid) const;
+    const std::vector<Core::LinAlg::Matrix<3, 1>>& get_fiber(std::size_t fiberid) const;
 
     /*!
      * \brief Returns a reference to the specific fiber at every Gauss point
@@ -97,7 +97,7 @@ namespace Core::Nodes
      * @param fiberid Id of the fiber (starting from 0)
      * @return Reference to the fiber
      */
-    std::vector<Core::LinAlg::Matrix<3, 1>>& GetFiberMutual(std::size_t fiberid);
+    std::vector<Core::LinAlg::Matrix<3, 1>>& get_fiber_mutual(std::size_t fiberid);
 
     /*!
      * \brief Sets a type of angle
@@ -105,7 +105,7 @@ namespace Core::Nodes
      * @param type Type of the angle
      * @param fiber angle value
      */
-    void SetAngle(AngleType type, const std::vector<double>& angle);
+    void set_angle(AngleType type, const std::vector<double>& angle);
 
     /*!
      * \brief Returns the value of the angle of the type for each Gauss point
@@ -113,7 +113,7 @@ namespace Core::Nodes
      * @param type Type of the angle
      * @return value of the angle
      */
-    const std::vector<double>& GetAngle(AngleType type) const;
+    const std::vector<double>& get_angle(AngleType type) const;
 
     /*!
      * \brief Checks, whether the holder contains fibers of the type @type
@@ -134,13 +134,13 @@ namespace Core::Nodes
      * Returns the number of fibers stored in the fiber holder
      * @return number of fibers
      */
-    std::size_t FibersSize() const;
+    std::size_t fibers_size() const;
 
     /**
      * Returns the number of angles stored in the fiber holder
      * @return number of fibers
      */
-    std::size_t AnglesSize() const;
+    std::size_t angles_size() const;
 
     /*!
      * \brief Print a short summary of the Map into an output stream.
@@ -154,7 +154,7 @@ namespace Core::Nodes
     friend std::ostream& operator<<(std::ostream& os, const NodalFiberHolder& holder)
     {
       os << "NodalFiberHolder {Cosy count=" << holder.coordinate_system_size()
-         << ", Fibers count=" << holder.FibersSize() << " Angles count = " << holder.AnglesSize()
+         << ", Fibers count=" << holder.fibers_size() << " Angles count = " << holder.angles_size()
          << "}";
       return os;
     }

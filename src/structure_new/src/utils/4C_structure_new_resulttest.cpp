@@ -91,27 +91,27 @@ namespace
     int voigt_index = -1;
     if (label == prefix + "_xx")
     {
-      voigt_index = Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(0, 0);
+      voigt_index = Core::LinAlg::Voigt::IndexMappings::symmetric_tensor_to_voigt6_index(0, 0);
     }
     else if (label == prefix + "_yy")
     {
-      voigt_index = Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(1, 1);
+      voigt_index = Core::LinAlg::Voigt::IndexMappings::symmetric_tensor_to_voigt6_index(1, 1);
     }
     else if (label == prefix + "_zz")
     {
-      voigt_index = Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(2, 2);
+      voigt_index = Core::LinAlg::Voigt::IndexMappings::symmetric_tensor_to_voigt6_index(2, 2);
     }
     else if (label == prefix + "_xy")
     {
-      voigt_index = Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(0, 1);
+      voigt_index = Core::LinAlg::Voigt::IndexMappings::symmetric_tensor_to_voigt6_index(0, 1);
     }
     else if (label == prefix + "_xz")
     {
-      voigt_index = Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(0, 2);
+      voigt_index = Core::LinAlg::Voigt::IndexMappings::symmetric_tensor_to_voigt6_index(0, 2);
     }
     else if (label == prefix + "_yz")
     {
-      voigt_index = Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(1, 2);
+      voigt_index = Core::LinAlg::Voigt::IndexMappings::symmetric_tensor_to_voigt6_index(1, 2);
     }
 
     if (voigt_index < 0)

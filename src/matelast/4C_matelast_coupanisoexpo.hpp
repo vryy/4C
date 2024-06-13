@@ -56,14 +56,14 @@ namespace Mat
        * \param gp Gauss point
        * \return const Core::LinAlg::Matrix<3, 1>& Constant reference to the fiber
        */
-      const Core::LinAlg::Matrix<3, 1>& GetFiber(int gp) const;
-      const Core::LinAlg::Matrix<3, 3>& GetStructuralTensor(int gp) const override;
+      const Core::LinAlg::Matrix<3, 1>& get_fiber(int gp) const;
+      const Core::LinAlg::Matrix<3, 3>& get_structural_tensor(int gp) const override;
       const Core::LinAlg::Matrix<6, 1>& get_structural_tensor_stress(int gp) const override;
 
       // Tell the compiler that we still want the methods from FiberAnisotropyExtension with a
       // different signature
-      using FiberAnisotropyExtension<1>::GetFiber;
-      using FiberAnisotropyExtension<1>::GetStructuralTensor;
+      using FiberAnisotropyExtension<1>::get_fiber;
+      using FiberAnisotropyExtension<1>::get_structural_tensor;
       using FiberAnisotropyExtension<1>::get_structural_tensor_stress;
     };
 

@@ -179,12 +179,12 @@ namespace CONTACT
     /*!
     \brief Set contact angle
     */
-    void SetAngle(double angle) { angle_ = angle; };
+    void set_angle(double angle) { angle_ = angle; };
 
     /*!
     \brief Get contact angle
     */
-    double GetAngle() { return angle_; };
+    double get_angle() { return angle_; };
 
     //@}
 

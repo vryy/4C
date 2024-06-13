@@ -72,7 +72,7 @@ namespace Mat
      *
      * @param data (in/out) : data object
      */
-    void PackAnisotropy(Core::Communication::PackBuffer& data) const;
+    void pack_anisotropy(Core::Communication::PackBuffer& data) const;
 
     /*!
      * Unpack all data from another processor
@@ -80,7 +80,7 @@ namespace Mat
      * @param data (in) : data object
      * @param position (in/out) : current position in the data
      */
-    void UnpackAnisotropy(const std::vector<char>& data, std::vector<char>::size_type& position);
+    void unpack_anisotropy(const std::vector<char>& data, std::vector<char>::size_type& position);
 
     /*!
      * This method should be called as soon as the number of Gauss points is known.
@@ -107,7 +107,7 @@ namespace Mat
      *
      * \return int number of fibers per Gauss point
      */
-    int GetNumberOfGPFibers() const;
+    int get_number_of_gauss_point_fibers() const;
 
     /*!
      * \brief Flag whether the element has given a cylinder coordinate system
@@ -145,7 +145,7 @@ namespace Mat
      *
      * \param fibers Vector of element fibers
      */
-    void SetElementFibers(const std::vector<Core::LinAlg::Matrix<3, 1>>& fibers);
+    void set_element_fibers(const std::vector<Core::LinAlg::Matrix<3, 1>>& fibers);
 
     /*!
      * \brief Set Gauss point fibers. First index represents the Gauss point, second index the
@@ -153,7 +153,7 @@ namespace Mat
      *
      * @param fibers Vector of Gauss point fibers
      */
-    void SetGaussPointFibers(const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>& fibers);
+    void set_gauss_point_fibers(const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>& fibers);
 
     /*!
      * Reads the line definition of an element to get the fibers defined on the element
@@ -192,14 +192,14 @@ namespace Mat
      * \param i zerobased Id of the fiber
      * \return const Core::LinAlg::Matrix<3, 1>& Reference to the fiber vector
      */
-    const Core::LinAlg::Matrix<3, 1>& GetElementFiber(unsigned int i) const;
+    const Core::LinAlg::Matrix<3, 1>& get_element_fiber(unsigned int i) const;
 
     /*!
      * \brief Returns an vector of all element fibers
      *
      * \return const std::vector<Core::LinAlg::Matrix<3, 1>>&
      */
-    const std::vector<Core::LinAlg::Matrix<3, 1>>& GetElementFibers() const;
+    const std::vector<Core::LinAlg::Matrix<3, 1>>& get_element_fibers() const;
 
     /*!
      * \brief Returns the a vector of all Gauss point fibers. The first index is the GP, the second
@@ -207,7 +207,7 @@ namespace Mat
      *
      * \return const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>&
      */
-    const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>& GetGPFibers() const;
+    const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>& get_gauss_point_fibers() const;
 
     /*!
      * \brief Returns the i-th Gauss-point fiber at the Gauss point
@@ -216,7 +216,7 @@ namespace Mat
      * \param i zerobased fiber id
      * \return const Core::LinAlg::Matrix<3, 1>&
      */
-    const Core::LinAlg::Matrix<3, 1>& GetGPFiber(unsigned int gp, unsigned int i) const;
+    const Core::LinAlg::Matrix<3, 1>& get_gauss_point_fiber(unsigned int gp, unsigned int i) const;
     ///@}
 
     /*!

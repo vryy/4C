@@ -479,7 +479,7 @@ namespace Discret
 
           const double newton_tolerance = 1e-12;
           const int max_iterations = 200;
-          reflength = Core::UTILS::SolveLocalNewton(
+          reflength = Core::UTILS::solve_local_newton(
               lengthEquationAndDerivative, reflength, newton_tolerance, max_iterations);
         }
 

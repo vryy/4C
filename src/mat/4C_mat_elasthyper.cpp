@@ -108,7 +108,7 @@ void Mat::ElastHyper::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, matid);
   summandProperties_.Pack(data);
 
-  anisotropy_.PackAnisotropy(data);
+  anisotropy_.pack_anisotropy(data);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -154,7 +154,7 @@ void Mat::ElastHyper::Unpack(const std::vector<char>& data)
   summandProperties_.Unpack(position, data);
 
   // Pack anisotropy
-  anisotropy_.UnpackAnisotropy(data, position);
+  anisotropy_.unpack_anisotropy(data, position);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -329,7 +329,7 @@ void Mat::ElastHyper::StrainEnergy(
   modinv.Clear();
 
   EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
-  Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv, C_strain);
+  Core::LinAlg::Voigt::Strains::invariants_principal(prinv, C_strain);
   invariants_modified(modinv, prinv);
 
   // loop map of associated potential summands
@@ -404,9 +404,9 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
   const double nddir = n.Dot(dir);
 
   static Core::LinAlg::Matrix<6, 1> bV_strain(true);
-  Core::LinAlg::Voigt::Strains::MatrixToVector(b, bV_strain);
+  Core::LinAlg::Voigt::Strains::matrix_to_vector(b, bV_strain);
   static Core::LinAlg::Matrix<3, 1> prinv(true);
-  Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv, bV_strain);
+  Core::LinAlg::Voigt::Strains::invariants_principal(prinv, bV_strain);
 
   static Core::LinAlg::Matrix<3, 1> dPI(true);
   static Core::LinAlg::Matrix<6, 1> ddPII(true);
@@ -439,23 +439,23 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
 
   // calculate stuff that is needed for evaluations of derivatives w.r.t. F
   static Core::LinAlg::Matrix<9, 1> FV(true);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(defgrd, FV);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(defgrd, FV);
   static Core::LinAlg::Matrix<3, 3> iF(true);
   iF.Invert(defgrd);
   static Core::LinAlg::Matrix<3, 3> iFT(true);
   iFT.UpdateT(iF);
   static Core::LinAlg::Matrix<9, 1> iFTV(true);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(iFT, iFTV);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(iFT, iFTV);
 
   // calculation of dI_i/dF (derivatives of invariants of b w.r.t. deformation gradient)
   static Core::LinAlg::Matrix<3, 3> bdF(true);
   bdF.Multiply(1.0, b, defgrd, 0.0);
   static Core::LinAlg::Matrix<9, 1> bdFV(true);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(bdF, bdFV);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(bdF, bdFV);
   static Core::LinAlg::Matrix<3, 3> ibdF(true);
   ibdF.Multiply(1.0, ib, defgrd, 0.0);
   static Core::LinAlg::Matrix<9, 1> ibdFV(true);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(ibdF, ibdFV);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(ibdF, ibdFV);
   static Core::LinAlg::Matrix<9, 1> d_I1_dF(true);
   d_I1_dF.Update(2.0, FV, 0.0);
   static Core::LinAlg::Matrix<9, 1> d_I2_dF(true);
@@ -474,7 +474,7 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
   tempvec1x3.MultiplyTN(1.0, n, defgrd, 0.0);
   d_bdnddir_dF.MultiplyNN(1.0, dir, tempvec1x3, 1.0);
   static Core::LinAlg::Matrix<9, 1> d_bdnddir_dFV(true);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(d_bdnddir_dF, d_bdnddir_dFV);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(d_bdnddir_dF, d_bdnddir_dFV);
 
   // calculate d(b^{-1} \cdot n \cdot t)/dF
   static Core::LinAlg::Matrix<1, 3> dirdibdF(true);
@@ -486,7 +486,7 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
   d_ibdnddir_dF.MultiplyNN(1.0, ibddir, ndibdF, 1.0);
   d_ibdnddir_dF.Scale(-1.0);
   static Core::LinAlg::Matrix<9, 1> d_ibdnddir_dFV(true);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(d_ibdnddir_dF, d_ibdnddir_dFV);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(d_ibdnddir_dF, d_ibdnddir_dFV);
 
   if (temp != nullptr)
     evaluate_cauchy_temp_deriv(prinv, nddir, bdnddir, ibdnddir, temp, d_cauchyndir_dT, iFTV,
@@ -536,7 +536,8 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
       for (int l = 0; l < 3; ++l)
       {
         for (int z = 0; z < 3; ++z)
-          (*d2_cauchyndir_dF_dn)(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(k, l), z) +=
+          (*d2_cauchyndir_dF_dn)(
+              Core::LinAlg::Voigt::IndexMappings::non_symmetric_tensor_to_voigt9_index(k, l), z) +=
               fac * (dir(k, 0) * defgrd(z, l) + static_cast<double>(k == z) * tempvec1x3(0, l));
       }
     }
@@ -548,7 +549,8 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
       for (int l = 0; l < 3; ++l)
       {
         for (int z = 0; z < 3; ++z)
-          (*d2_cauchyndir_dF_dn)(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(k, l), z) +=
+          (*d2_cauchyndir_dF_dn)(
+              Core::LinAlg::Voigt::IndexMappings::non_symmetric_tensor_to_voigt9_index(k, l), z) +=
               fac2 * (ibddir(k, 0) * ibdF(z, l) + ib(z, k) * dirdibdF(0, l));
       }
     }
@@ -589,7 +591,8 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
       for (int l = 0; l < 3; ++l)
       {
         for (int z = 0; z < 3; ++z)
-          (*d2_cauchyndir_dF_ddir)(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(k, l), z) +=
+          (*d2_cauchyndir_dF_ddir)(
+              Core::LinAlg::Voigt::IndexMappings::non_symmetric_tensor_to_voigt9_index(k, l), z) +=
               fac * (n(k, 0) * defgrd(z, l) + static_cast<double>(k == z) * tempvec1x3(0, l));
       }
     }
@@ -601,7 +604,8 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
       for (int l = 0; l < 3; ++l)
       {
         for (int z = 0; z < 3; ++z)
-          (*d2_cauchyndir_dF_ddir)(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(k, l), z) +=
+          (*d2_cauchyndir_dF_ddir)(
+              Core::LinAlg::Voigt::IndexMappings::non_symmetric_tensor_to_voigt9_index(k, l), z) +=
               fac2 * (ibdn(k, 0) * ibdF(z, l) + ib(z, k) * ndibdF(0, l));
       }
     }
@@ -654,21 +658,27 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
         {
           for (int a = 0; a < 3; ++a)
           {
-            d_iFT_dF(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) = -iF(l, m) * iF(a, k);
-            d2_bdnddir_dF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
+            d_iFT_dF(map::non_symmetric_tensor_to_voigt9_index(k, l),
+                map::non_symmetric_tensor_to_voigt9_index(m, a)) = -iF(l, m) * iF(a, k);
+            d2_bdnddir_dF2(map::non_symmetric_tensor_to_voigt9_index(k, l),
+                map::non_symmetric_tensor_to_voigt9_index(m, a)) =
                 (dir(k, 0) * n(m, 0) + dir(m, 0) * n(k, 0)) * static_cast<double>(l == a);
-            d2_ibdnddir_dF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
+            d2_ibdnddir_dF2(map::non_symmetric_tensor_to_voigt9_index(k, l),
+                map::non_symmetric_tensor_to_voigt9_index(m, a)) =
                 ibdF(k, a) * (ibddir(m, 0) * ndibdF(0, l) + ibdn(m, 0) * dirdibdF(0, l)) +
                 ib(m, k) * (dirdibdF(0, a) * ndibdF(0, l) + dirdibdF(0, l) * ndibdF(0, a)) +
                 ibdF(m, l) * (ibddir(k, 0) * ndibdF(0, a) + dirdibdF(0, a) * ibdn(k, 0));
-            d2_I1_dF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
+            d2_I1_dF2(map::non_symmetric_tensor_to_voigt9_index(k, l),
+                map::non_symmetric_tensor_to_voigt9_index(m, a)) =
                 2.0 * static_cast<double>(k == m) * static_cast<double>(l == a);
-            d2_I2_dF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
+            d2_I2_dF2(map::non_symmetric_tensor_to_voigt9_index(k, l),
+                map::non_symmetric_tensor_to_voigt9_index(m, a)) =
                 2.0 *
                 (prinv(0) * static_cast<double>(k == m) * static_cast<double>(l == a) +
                     2.0 * defgrd(m, a) * defgrd(k, l) - static_cast<double>(k == m) * C(a, l) -
                     defgrd(k, a) * defgrd(m, l) - b(k, m) * static_cast<double>(l == a));
-            d2_I3_dF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
+            d2_I3_dF2(map::non_symmetric_tensor_to_voigt9_index(k, l),
+                map::non_symmetric_tensor_to_voigt9_index(m, a)) =
                 2.0 * prinv(2) * (2.0 * ibdF(m, a) * ibdF(k, l) - ibdF(m, l) * ibdF(k, a));
           }
         }

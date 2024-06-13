@@ -43,13 +43,13 @@ Mat::Elastic::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
 
 void Mat::Elastic::CoupAnisoExpoTwoCoup::PackSummand(Core::Communication::PackBuffer& data) const
 {
-  anisotropy_extension_.PackAnisotropy(data);
+  anisotropy_extension_.pack_anisotropy(data);
 }
 
 void Mat::Elastic::CoupAnisoExpoTwoCoup::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  anisotropy_extension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(data, position);
 }
 
 void Mat::Elastic::CoupAnisoExpoTwoCoup::add_stress_aniso_principal(
@@ -117,14 +117,14 @@ void Mat::Elastic::CoupAnisoExpoTwoCoup::GetFiberVecs(
     return;
   }
 
-  fibervecs.push_back(anisotropy_extension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT, 0));
-  fibervecs.push_back(anisotropy_extension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT, 1));
+  fibervecs.push_back(anisotropy_extension_.get_fiber(BaseAnisotropyExtension::GPDEFAULT, 0));
+  fibervecs.push_back(anisotropy_extension_.get_fiber(BaseAnisotropyExtension::GPDEFAULT, 1));
 }
 
 void Mat::Elastic::CoupAnisoExpoTwoCoup::SetFiberVecs(const double newgamma,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
-  anisotropy_extension_.SetFiberVecs(newgamma, locsys, defgrd);
+  anisotropy_extension_.set_fiber_vecs(newgamma, locsys, defgrd);
 }
 
 void Mat::Elastic::CoupAnisoExpoTwoCoup::register_anisotropy_extensions(Mat::Anisotropy& anisotropy)
@@ -139,19 +139,19 @@ Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::CoupAnisoExpoTwoCoupAnisoExten
 {
 }
 
-void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::PackAnisotropy(
+void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::pack_anisotropy(
     Core::Communication::PackBuffer& data) const
 {
-  DefaultAnisotropyExtension::PackAnisotropy(data);
+  DefaultAnisotropyExtension::pack_anisotropy(data);
 
   Core::Communication::ParObject::add_to_pack(data, a1a2_);
   Core::Communication::ParObject::add_to_pack(data, a1_a2_);
 }
 
-void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::UnpackAnisotropy(
+void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::unpack_anisotropy(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  DefaultAnisotropyExtension::UnpackAnisotropy(data, position);
+  DefaultAnisotropyExtension::unpack_anisotropy(data, position);
 
   Core::Communication::ParObject::extract_from_pack(position, data, a1a2_);
   Core::Communication::ParObject::extract_from_pack(position, data, a1_a2_);
@@ -160,15 +160,15 @@ void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::UnpackAnisotropy(
 void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::on_fibers_initialized()
 {
   // Setup structural tensor of the coupling part
-  const int fibersperele = GetFibersPerElement();
+  const int fibersperele = get_fibers_per_element();
 
   a1_a2_.resize(fibersperele);
   a1a2_.resize(fibersperele);
 
   for (int gp = 0; gp < fibersperele; ++gp)
   {
-    Core::LinAlg::Matrix<3, 1> a1 = GetFiber(gp, 0);
-    Core::LinAlg::Matrix<3, 1> a2 = GetFiber(gp, 1);
+    Core::LinAlg::Matrix<3, 1> a1 = get_fiber(gp, 0);
+    Core::LinAlg::Matrix<3, 1> a2 = get_fiber(gp, 1);
     a1_a2_[gp](0) = a1(0) * a2(0);
     a1_a2_[gp](1) = a1(1) * a2(1);
     a1_a2_[gp](2) = a1(2) * a2(2);

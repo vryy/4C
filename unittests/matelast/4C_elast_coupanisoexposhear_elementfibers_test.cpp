@@ -61,7 +61,7 @@ namespace
           eleFibers_[GetFiberIds()[0]], eleFibers_[GetFiberIds()[1]], eleTensors_);
 
       // Setup structural tensors in stress like Voigt notation
-      Core::LinAlg::Voigt::Stresses::MatrixToVector(eleTensors_, eleTensors_stress_);
+      Core::LinAlg::Voigt::Stresses::matrix_to_vector(eleTensors_, eleTensors_stress_);
 
       // setup scalar product
       eleScalarProducts_ = eleFibers_[GetFiberIds()[0]].Dot(eleFibers_[GetFiberIds()[1]]);
@@ -79,7 +79,7 @@ namespace
       anisotropy_.set_number_of_gauss_points(2);
 
       // Setup element fibers
-      anisotropy_.SetElementFibers(eleFibers_);
+      anisotropy_.set_element_fibers(eleFibers_);
     }
 
     [[nodiscard]] int get_gauss_point() const { return std::get<1>(GetParam()); }
@@ -101,13 +101,13 @@ namespace
         anisotropyExtension_->GetScalarProduct(get_gauss_point()), eleScalarProducts_, 1e-10);
   }
 
-  TEST_P(CoupAnisoExpoShearElementFibersTest, GetStructuralTensor)
+  TEST_P(CoupAnisoExpoShearElementFibersTest, get_structural_tensor)
   {
     FOUR_C_EXPECT_NEAR(
-        anisotropyExtension_->GetStructuralTensor(get_gauss_point()), eleTensors_, 1e-10);
+        anisotropyExtension_->get_structural_tensor(get_gauss_point()), eleTensors_, 1e-10);
   }
 
-  TEST_P(CoupAnisoExpoShearElementFibersTest, GetStructuralTensorStress)
+  TEST_P(CoupAnisoExpoShearElementFibersTest, get_structural_tensorStress)
   {
     FOUR_C_EXPECT_NEAR(anisotropyExtension_->get_structural_tensor_stress(get_gauss_point()),
         eleTensors_stress_, 1e-10);

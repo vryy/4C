@@ -73,7 +73,7 @@ void Core::Nodes::ProjectFibersToGaussPoints(const Core::Nodes::Node* const* nod
     }
 
     // add quantity to the fiber holder
-    gpFiberHolder.AddFiber(gpQuantity);
+    gpFiberHolder.add_fiber(gpQuantity);
   }
 
 
@@ -102,7 +102,7 @@ void Core::Nodes::ProjectFibersToGaussPoints(const Core::Nodes::Node* const* nod
     ProjectQuantityWithShapeFunctions<distype>(pair.second, shapefcts, gpAngle);
 
     // add quantity to the fiber holder
-    gpFiberHolder.SetAngle(type, gpAngle);
+    gpFiberHolder.set_angle(type, gpAngle);
   }
 
 

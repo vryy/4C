@@ -784,9 +784,9 @@ template <std::size_t dim>
 void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::setup_cardiac_fibers(
     const Core::Nodes::NodalFiberHolder& fibers, std::vector<Core::LinAlg::Matrix<dim, 1>>& f)
 {
-  if (fibers.FibersSize() > 0)
+  if (fibers.fibers_size() > 0)
   {
-    const std::vector<Core::LinAlg::Matrix<3, 1>>& fib = fibers.GetFiber(0);
+    const std::vector<Core::LinAlg::Matrix<3, 1>>& fib = fibers.get_fiber(0);
     f.resize(fib.size());
     for (std::size_t gp = 0; gp < fib.size(); ++gp)
     {
@@ -805,8 +805,8 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::set
         fibers.get_coordinate_system_direction(Core::Nodes::CoordinateSystemDirection::Circular);
     const std::vector<Core::LinAlg::Matrix<3, 1>>& tan =
         fibers.get_coordinate_system_direction(Core::Nodes::CoordinateSystemDirection::Tangential);
-    const std::vector<double>& helix = fibers.GetAngle(Core::Nodes::AngleType::Helix);
-    const std::vector<double>& transverse = fibers.GetAngle(Core::Nodes::AngleType::Transverse);
+    const std::vector<double>& helix = fibers.get_angle(Core::Nodes::AngleType::Helix);
+    const std::vector<double>& transverse = fibers.get_angle(Core::Nodes::AngleType::Transverse);
     f.resize(cir.size());
 
     double deg2rad = M_PI / 180.;

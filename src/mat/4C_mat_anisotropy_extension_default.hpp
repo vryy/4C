@@ -67,9 +67,9 @@ namespace Mat
 
     ///@name Packing and Unpacking
     /// @{
-    void PackAnisotropy(Core::Communication::PackBuffer& data) const override;
+    void pack_anisotropy(Core::Communication::PackBuffer& data) const override;
 
-    void UnpackAnisotropy(
+    void unpack_anisotropy(
         const std::vector<char>& data, std::vector<char>::size_type& position) override;
     /// @}
 
@@ -98,7 +98,7 @@ namespace Mat
      * \param locsys local coordinate system
      * \param defgrd deformation gradient
      */
-    void SetFiberVecs(double newgamma, const Core::LinAlg::Matrix<3, 3>& locsys,
+    void set_fiber_vecs(double newgamma, const Core::LinAlg::Matrix<3, 3>& locsys,
         const Core::LinAlg::Matrix<3, 3>& defgrd);
 
     /*!
@@ -106,7 +106,7 @@ namespace Mat
      *
      * \param fibervec unit vector pointing in fiber direction
      */
-    void SetFiberVecs(const Core::LinAlg::Matrix<3, 1>& fibervec);
+    void set_fiber_vecs(const Core::LinAlg::Matrix<3, 1>& fibervec);
 
     /*!
      * \brief Status of fiber initialization
@@ -114,7 +114,7 @@ namespace Mat
      * \return true In case the fibers are initialized
      * \return false In case the fibers are not yet initialized
      */
-    bool FibersInitialized() const { return initialized_; }
+    bool fibers_initialized() const { return initialized_; }
 
    protected:
     void on_fibers_initialized() override

@@ -98,9 +98,9 @@ namespace Mat
     Mat::CalculateGammaDelta(gamma, delta, principleInvariantsCe, dPIe, ddPIIe);
 
     // Convert necessary tensors to stress-like Voigt-Notation
-    Core::LinAlg::Voigt::Stresses::MatrixToVector(iCin, iCinv);
-    Core::LinAlg::Voigt::Stresses::MatrixToVector(iCinCiCin, iCinCiCinv);
-    Core::LinAlg::Voigt::Stresses::MatrixToVector(iC, iCv);
+    Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCin, iCinv);
+    Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCinCiCin, iCinCiCinv);
+    Core::LinAlg::Voigt::Stresses::matrix_to_vector(iC, iCv);
 
     // Contribution to 2nd Piola-Kirchhoff stress tensor
     S_stress.Update(gamma(0), iCinv, 1.0);

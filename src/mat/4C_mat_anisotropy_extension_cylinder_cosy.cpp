@@ -23,13 +23,13 @@ Mat::CylinderCoordinateSystemAnisotropyExtension::CylinderCoordinateSystemAnisot
 {
 }
 
-void Mat::CylinderCoordinateSystemAnisotropyExtension::PackAnisotropy(
+void Mat::CylinderCoordinateSystemAnisotropyExtension::pack_anisotropy(
     Core::Communication::PackBuffer& data) const
 {
   Core::Communication::ParObject::add_to_pack(data, static_cast<int>(cosy_location_));
 }
 
-void Mat::CylinderCoordinateSystemAnisotropyExtension::UnpackAnisotropy(
+void Mat::CylinderCoordinateSystemAnisotropyExtension::unpack_anisotropy(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   cosy_location_ =

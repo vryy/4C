@@ -499,7 +499,7 @@ namespace
     Core::LinAlg::Matrix<6, 1> iCV;
     CM.MultiplyTN(1.0, FM_, FM_, 0.0);
     iCM.Invert(CM);
-    Core::LinAlg::Voigt::Stresses::MatrixToVector(iCM, iCV);
+    Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCM, iCV);
 
     // matrix to be filled by the methods
     Core::LinAlg::Matrix<6, 6> CMatAdd(true);

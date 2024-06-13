@@ -110,7 +110,7 @@ namespace
     };
 
     const double Dgamma =
-        Core::UTILS::SolveLocalNewton(residuumAndJacobianFromFunction, 0.0, tol, maxiter);
+        Core::UTILS::solve_local_newton(residuumAndJacobianFromFunction, 0.0, tol, maxiter);
 
     //! vector for input of accumulated strain to function
     std::vector<std::pair<std::string, double>> dp;
@@ -142,7 +142,7 @@ namespace
     auto residuumAndJacobian = [&](double Dgamma)
     { return ResiduumAndJacobian(matparameter, Dgamma, dt, accplstrain_last, abs_dev_KH_trial); };
 
-    const double Dgamma = Core::UTILS::SolveLocalNewton(residuumAndJacobian, 0.0, tol, maxiter);
+    const double Dgamma = Core::UTILS::solve_local_newton(residuumAndJacobian, 0.0, tol, maxiter);
 
     const double accplstrain_curr = accplstrain_last + Dgamma;
 

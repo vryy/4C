@@ -125,7 +125,7 @@ namespace Discret::ELEMENTS
       case Inpar::STR::strain_gl:
       {
         Core::LinAlg::Matrix<Details::num_str<celltype>, 1> gl_strain_stress_like;
-        Core::LinAlg::Voigt::Strains::ToStressLike(gl_strain, gl_strain_stress_like);
+        Core::LinAlg::Voigt::Strains::to_stress_like(gl_strain, gl_strain_stress_like);
         Details::assemble_vector_to_matrix_row(gl_strain_stress_like, data, row);
         return;
       }
@@ -134,7 +134,7 @@ namespace Discret::ELEMENTS
         const Core::LinAlg::Matrix<Details::num_str<celltype>, 1> ea =
             STR::UTILS::green_lagrange_to_euler_almansi(gl_strain, defgrd);
         Core::LinAlg::Matrix<Details::num_str<celltype>, 1> ea_stress_like;
-        Core::LinAlg::Voigt::Strains::ToStressLike(ea, ea_stress_like);
+        Core::LinAlg::Voigt::Strains::to_stress_like(ea, ea_stress_like);
         Details::assemble_vector_to_matrix_row(ea_stress_like, data, row);
         return;
       }
@@ -143,7 +143,7 @@ namespace Discret::ELEMENTS
         const Core::LinAlg::Matrix<Details::num_str<celltype>, 1> log_strain =
             STR::UTILS::green_lagrange_to_log_strain(gl_strain);
         Core::LinAlg::Matrix<Details::num_str<celltype>, 1> log_strain_stress_like;
-        Core::LinAlg::Voigt::Strains::ToStressLike(log_strain, log_strain_stress_like);
+        Core::LinAlg::Voigt::Strains::to_stress_like(log_strain, log_strain_stress_like);
         Details::assemble_vector_to_matrix_row(log_strain_stress_like, data, row);
         return;
       }

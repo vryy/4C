@@ -38,42 +38,42 @@ Core::Nodes::NodalFiberHolder::get_coordinate_system_direction_mutual(
   return coordinate_system_directions_.at(type);
 }
 
-void Core::Nodes::NodalFiberHolder::AddFiber(const std::vector<Core::LinAlg::Matrix<3, 1>>& fiber)
+void Core::Nodes::NodalFiberHolder::add_fiber(const std::vector<Core::LinAlg::Matrix<3, 1>>& fiber)
 {
   fibers_.emplace_back(fiber);
 }
 
-const std::vector<Core::LinAlg::Matrix<3, 1>>& Core::Nodes::NodalFiberHolder::GetFiber(
+const std::vector<Core::LinAlg::Matrix<3, 1>>& Core::Nodes::NodalFiberHolder::get_fiber(
     std::size_t fiberid) const
 {
   return fibers_.at(fiberid);
 }
 
-std::vector<Core::LinAlg::Matrix<3, 1>>& Core::Nodes::NodalFiberHolder::GetFiberMutual(
+std::vector<Core::LinAlg::Matrix<3, 1>>& Core::Nodes::NodalFiberHolder::get_fiber_mutual(
     std::size_t fiberid)
 {
   return fibers_.at(fiberid);
 }
 
-void Core::Nodes::NodalFiberHolder::SetAngle(AngleType type, const std::vector<double>& angle)
+void Core::Nodes::NodalFiberHolder::set_angle(AngleType type, const std::vector<double>& angle)
 {
   angles_.insert(std::pair<Core::Nodes::AngleType, const std::vector<double>>(type, angle));
 }
 
-const std::vector<double>& Core::Nodes::NodalFiberHolder::GetAngle(
+const std::vector<double>& Core::Nodes::NodalFiberHolder::get_angle(
     Core::Nodes::AngleType type) const
 {
   return angles_.at(type);
 }
 
-std::size_t Core::Nodes::NodalFiberHolder::FibersSize() const { return fibers_.size(); }
+std::size_t Core::Nodes::NodalFiberHolder::fibers_size() const { return fibers_.size(); }
 
 std::size_t Core::Nodes::NodalFiberHolder::coordinate_system_size() const
 {
   return coordinate_system_directions_.size();
 }
 
-std::size_t Core::Nodes::NodalFiberHolder::AnglesSize() const { return angles_.size(); }
+std::size_t Core::Nodes::NodalFiberHolder::angles_size() const { return angles_.size(); }
 
 bool Core::Nodes::NodalFiberHolder::contains_coordinate_system_direction(
     Core::Nodes::CoordinateSystemDirection type) const

@@ -171,12 +171,12 @@ namespace BEAMINTERACTION
     /*!
     \brief Set contact angle
     */
-    void SetAngle(double angle) { angle_ = angle; };
+    void set_angle(double angle) { angle_ = angle; };
 
     /*!
     \brief Get contact angle
     */
-    double GetAngle() const { return angle_; };
+    double get_angle() const { return angle_; };
 
     //@}
 

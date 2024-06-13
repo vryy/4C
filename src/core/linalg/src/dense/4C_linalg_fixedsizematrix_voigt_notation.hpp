@@ -64,7 +64,7 @@ namespace Core::LinAlg::Voigt
      *  \param[in]  vtensor      tensor in Voigt <type> notation
      *  \param[out] vtensor_inv  inverse tensor in Voigt <type> notation
      */
-    static void InverseTensor(
+    static void inverse_tensor(
         const Core::LinAlg::Matrix<6, 1>& tens, Core::LinAlg::Matrix<6, 1>& tens_inv);
 
     /**
@@ -72,7 +72,7 @@ namespace Core::LinAlg::Voigt
      *
      * @param vtensor Tensor in Voigt <type> notation
      */
-    static inline double Determinant(const Core::LinAlg::Matrix<6, 1>& vtensor)
+    static inline double determinant(const Core::LinAlg::Matrix<6, 1>& vtensor)
     {
       return triple_entry_product(vtensor, 0, 1, 2) + 2 * triple_entry_product(vtensor, 3, 4, 5) -
              triple_entry_product(vtensor, 1, 5, 5) - triple_entry_product(vtensor, 2, 3, 3) -
@@ -84,7 +84,7 @@ namespace Core::LinAlg::Voigt
      * @param[out] prinv the three principal invariants
      * @param vtensor tensor in Voigt <type> notation
      */
-    static inline void InvariantsPrincipal(
+    static inline void invariants_principal(
         Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<6, 1>& vtensor)
     {
       // 1st invariant, trace tens
@@ -92,11 +92,11 @@ namespace Core::LinAlg::Voigt
       // 2nd invariant, 0.5( (trace(tens))^2 - trace(tens^2))
       prinv(1) = 0.5 * (prinv(0) * prinv(0) - vtensor(0) * vtensor(0) - vtensor(1) * vtensor(1) -
                            vtensor(2) * vtensor(2)) -
-                 vtensor(3) * vtensor(3) * UnscaleFactor(3) * UnscaleFactor(3) -
-                 vtensor(4) * vtensor(4) * UnscaleFactor(4) * UnscaleFactor(4) -
-                 vtensor(5) * vtensor(5) * UnscaleFactor(5) * UnscaleFactor(5);
+                 vtensor(3) * vtensor(3) * unscale_factor(3) * unscale_factor(3) -
+                 vtensor(4) * vtensor(4) * unscale_factor(4) * unscale_factor(4) -
+                 vtensor(5) * vtensor(5) * unscale_factor(5) * unscale_factor(5);
       // 3rd invariant, determinant tens
-      prinv(2) = Determinant(vtensor);
+      prinv(2) = determinant(vtensor);
     }
 
     /** \brief Compute the product of a tensor in perturbed Voigt notation
@@ -127,7 +127,7 @@ namespace Core::LinAlg::Voigt
      * @param vtensor_in tensor in <type>-like Voigt notation
      * @param vtensor_out tensor in stress-like Voigt notation
      */
-    static void ToStressLike(
+    static void to_stress_like(
         const Core::LinAlg::Matrix<6, 1>& vtensor_in, Core::LinAlg::Matrix<6, 1>& vtensor_out);
 
     /*!
@@ -135,7 +135,7 @@ namespace Core::LinAlg::Voigt
      * @param vtensor_in tensor in <type>-like Voigt notation
      * @param vtensor_out tensor in strain-like Voigt notation
      */
-    static void ToStrainLike(
+    static void to_strain_like(
         const Core::LinAlg::Matrix<6, 1>& vtensor_in, Core::LinAlg::Matrix<6, 1>& vtensor_out);
 
     /*!
@@ -143,7 +143,7 @@ namespace Core::LinAlg::Voigt
      * @param vtensor_in tensor in <type>-like Voigt notation
      * @param tensor_out tensor as a matrix
      */
-    static void VectorToMatrix(
+    static void vector_to_matrix(
         const Core::LinAlg::Matrix<6, 1>& vtensor_in, Core::LinAlg::Matrix<3, 3>& tensor_out);
 
 
@@ -158,14 +158,14 @@ namespace Core::LinAlg::Voigt
      * @param[out] vtensor_out target tensor in <type>-like Voigt notation
      */
     template <typename T>
-    static void MatrixToVector(
+    static void matrix_to_vector(
         const Core::LinAlg::Matrix<3, 3, T>& tensor_in, Core::LinAlg::Matrix<6, 1, T>& vtensor_out);
 
     /// access scaling factors
-    static inline double ScaleFactor(unsigned i) { return scale_fac_[i]; };
+    static inline double scale_factor(unsigned i) { return scale_fac_[i]; };
 
     /// access unscaling factors
-    static inline double UnscaleFactor(unsigned i) { return unscale_fac_[i]; };
+    static inline double unscale_factor(unsigned i) { return unscale_fac_[i]; };
 
    private:
     /** \brief scale off diagonal values
@@ -212,8 +212,8 @@ namespace Core::LinAlg::Voigt
     static inline double triple_entry_product(
         const Core::LinAlg::Matrix<6, 1>& vtensor, unsigned i, unsigned j, unsigned k)
     {
-      return vtensor(i) * UnscaleFactor(i) * vtensor(j) * UnscaleFactor(j) * vtensor(k) *
-             UnscaleFactor(k);
+      return vtensor(i) * unscale_factor(i) * vtensor(j) * unscale_factor(j) * vtensor(k) *
+             unscale_factor(k);
     }
   };
 
@@ -225,7 +225,7 @@ namespace Core::LinAlg::Voigt
   ///
   /// Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = A_01; V_4 = A_12; V_5 = A_02; V_6 = A_10;
   /// V_7 = A_21; V_8 = A_20
-  void Matrix3x3to9x1(Core::LinAlg::Matrix<3, 3> const& in, Core::LinAlg::Matrix<9, 1>& out);
+  void matrix_3x3_to_9x1(Core::LinAlg::Matrix<3, 3> const& in, Core::LinAlg::Matrix<9, 1>& out);
 
   /// convert 9x1 vector to non-symmetric 2-tensor
   ///
@@ -237,13 +237,13 @@ namespace Core::LinAlg::Voigt
   ///          A_00 A_01 A_02
   /// Matrix   A_10 A_11 A_12
   ///          A_20 A_21 A_22
-  void Matrix9x1to3x3(Core::LinAlg::Matrix<9, 1> const& in, Core::LinAlg::Matrix<3, 3>& out);
+  void matrix_9x1_to_3x3(Core::LinAlg::Matrix<9, 1> const& in, Core::LinAlg::Matrix<3, 3>& out);
 
   /**
    * \brief Identity matrix in stress/strain-like Voigt notation
    * @param id (out) : 2nd order identity tensor in stress/strain-like Voigt notation
    */
-  inline void IdentityMatrix(Core::LinAlg::Matrix<6, 1>& id)
+  inline void identity_matrix(Core::LinAlg::Matrix<6, 1>& id)
   {
     id.Clear();
     for (unsigned i = 0; i < 3; ++i) id(i) = 1.0;
@@ -257,7 +257,7 @@ namespace Core::LinAlg::Voigt
    * @param id (out) : Voigt-Matrix
    */
   template <NotationType rows_notation, NotationType cols_notation>
-  void FourthOrderIdentityMatrix(Core::LinAlg::Matrix<6, 6>& id);
+  void fourth_order_identity_matrix(Core::LinAlg::Matrix<6, 6>& id);
 
   /// collection of index mappings from matrix to Voigt-notation or vice versa
   struct IndexMappings
@@ -268,15 +268,19 @@ namespace Core::LinAlg::Voigt
      * @param i the index of a 6x1 vector in Voigt notation
      * @return row index of the corresponding 3x3 matrix
      */
-    static inline int Voigt6ToRow(unsigned int i)
+    static inline int voigt6_to_matrix_row_index(unsigned int i)
     {
       assert_range_voigt_index(i);
       static constexpr int VOIGT6ROW[6] = {0, 1, 2, 0, 1, 2};
       return VOIGT6ROW[i];
     };
 
-    /// from 6-Voigt index to corresponding 2-tensor col index
-    static inline int Voigt6ToCol(unsigned int i)
+    /**
+     * from 6-Voigt index to corresponding 2-tensor column
+     * @param i the index of a 6x1 vector in Voigt notation
+     * @return column index of the corresponding 3x3 matrix
+     */
+    static inline int voigt6_to_matrix_column_index(unsigned int i)
     {
       assert_range_voigt_index(i);
       static constexpr int VOIGT6COL[6] = {0, 1, 2, 1, 2, 0};
@@ -284,7 +288,7 @@ namespace Core::LinAlg::Voigt
     };
 
     /// from symmetric 2-tensor index pair to 6-Voigt index
-    static inline int SymToVoigt6(unsigned int row, unsigned int col)
+    static inline int symmetric_tensor_to_voigt6_index(unsigned int row, unsigned int col)
     {
       assert_range_matrix_index(row, col);
       static constexpr int VOIGT3X3SYM[3][3] = {{0, 3, 5}, {3, 1, 4}, {5, 4, 2}};
@@ -292,7 +296,7 @@ namespace Core::LinAlg::Voigt
     };
 
     /// from non-symmetric 2-tensor index pair to 9-Voigt index
-    static inline int NonSymToVoigt9(unsigned int row, unsigned int col)
+    static inline int non_symmetric_tensor_to_voigt9_index(unsigned int row, unsigned int col)
     {
       assert_range_matrix_index(row, col);
       static constexpr int VOIGT3X3NONSYM[3][3] = {{0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
@@ -301,7 +305,7 @@ namespace Core::LinAlg::Voigt
 
     /// from symmetric 6x6 Voigt notation matrix indices (e.g. constitutive tensor) to one of the
     /// four indices of a four tensor
-    static inline int Voigt6x6To4Tensor(
+    static inline int voigt_6x6_to_four_tensor_index(
         unsigned int voigt_row, unsigned int voigt_col, unsigned int target_index)
     {
       assert_range_voigt_index(voigt_row);

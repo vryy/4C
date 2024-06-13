@@ -550,7 +550,7 @@ void Mat::InelasticDefgradLinScalarAniso::evaluate_additional_cmat(
   // calculate F_{in,j}^{-1} . G . F_{in,j}^{-1} with F_{in,j}, the j-th factor of F_{in}
   temp.MultiplyNN(1.0, iFinjM, Parameter()->GrowthDirMat(), 0.0);
   iFinjGiFinj.MultiplyNN(1.0, temp, iFinjM, 0.0);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(iFinjGiFinj, iFinjGiFinj9x1);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(iFinjGiFinj, iFinjGiFinj9x1);
 
   // calculate diFinjdC
   diFinjdC.MultiplyNT(scalefac, iFinjGiFinj9x1, iCV, 0.0);
@@ -580,7 +580,7 @@ void Mat::InelasticDefgradLinScalarAniso::EvaluateODStiffMat(
   // calculate diFinjdc
   tmp.MultiplyNN(1.0, iFinjM, Parameter()->GrowthDirMat(), 0.0);
   diFinjdcM.MultiplyNN(scalefac, tmp, iFinjM, 0.0);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(diFinjdcM, diFinjdc9x1);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(diFinjdcM, diFinjdc9x1);
 
   // dstressdc = dSdiFinj : diFinjdc
   dstressdc.MultiplyNN(1.0, dSdiFinj, diFinjdc9x1, 1.0);
@@ -595,7 +595,7 @@ void Mat::InelasticDefgradLinScalarAniso::evaluate_inelastic_def_grad_derivative
 
   // get the growth direction matrix as a 9x1 vector
   static Core::LinAlg::Matrix<9, 1> growthdirmat9x1(true);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(Parameter()->GrowthDirMat(), growthdirmat9x1);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(Parameter()->GrowthDirMat(), growthdirmat9x1);
 
   // here dFindc is zeroed out and filled with the current value
   dFindx.Update(scalefac, growthdirmat9x1, 0.0);
@@ -797,7 +797,7 @@ void Mat::InelasticDefgradPolyIntercalFracAniso::evaluate_additional_cmat(
   // calculate F_{in,j}^{-1} . G . F_{in,j}^{-1} with F_{in,j}, the j-th factor of F_{in}
   temp.MultiplyNN(1.0, iFinjM, Parameter()->GrowthDirMat(), 0.0);
   iFinjGiFinj.MultiplyNN(1.0, temp, iFinjM, 0.0);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(iFinjGiFinj, iFinjGiFinj9x1);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(iFinjGiFinj, iFinjGiFinj9x1);
 
   // calculate diFinjdC
   diFinjdC.MultiplyNT(scalefac, iFinjGiFinj9x1, iCV, 0.0);
@@ -834,7 +834,7 @@ void Mat::InelasticDefgradPolyIntercalFracAniso::EvaluateODStiffMat(
   // calculate diFinjdc
   tmp.MultiplyNN(1.0, iFinjM, Parameter()->GrowthDirMat(), 0.0);
   diFinjdcM.MultiplyNN(scalefac, tmp, iFinjM, 0.0);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(diFinjdcM, diFinjdc9x1);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(diFinjdcM, diFinjdc9x1);
 
   // dstressdc = dSdiFinj : diFinjdc
   dstressdc.MultiplyNN(1.0, dSdiFinj, diFinjdc9x1, 1.0);
@@ -859,7 +859,7 @@ void Mat::InelasticDefgradPolyIntercalFracAniso::evaluate_inelastic_def_grad_der
 
   // get the growth direction matrix as a 9x1 vector
   static Core::LinAlg::Matrix<9, 1> growthdirmat9x1(true);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(Parameter()->GrowthDirMat(), growthdirmat9x1);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(Parameter()->GrowthDirMat(), growthdirmat9x1);
 
   // here dFindc is zeroed out and filled with the current value
   dFindx.Update(scalefac, growthdirmat9x1, 0.0);

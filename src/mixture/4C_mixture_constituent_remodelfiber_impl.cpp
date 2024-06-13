@@ -79,7 +79,7 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::PackConstituent(
     Core::Communication::PackBuffer& data) const
 {
   MIXTURE::MixtureConstituent::PackConstituent(data);
-  anisotropy_extension_.PackAnisotropy(data);
+  anisotropy_extension_.pack_anisotropy(data);
 
   for (const RemodelFiber<2>& fiber : remodel_fiber_) fiber.Pack(data);
 }
@@ -90,7 +90,7 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::UnpackConstituent(
   MIXTURE::MixtureConstituent::UnpackConstituent(position, data);
   initialize();
 
-  anisotropy_extension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(data, position);
   for (RemodelFiber<2>& fiber : remodel_fiber_) fiber.Unpack(position, data);
 }
 
@@ -361,6 +361,6 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::update_homeostatic_values(
 double MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate_lambdaf(
     const Core::LinAlg::Matrix<3, 3>& C, const int gp, const int eleGID) const
 {
-  return std::sqrt(C.Dot(anisotropy_extension_.GetStructuralTensor(gp, 0)));
+  return std::sqrt(C.Dot(anisotropy_extension_.get_structural_tensor(gp, 0)));
 }
 FOUR_C_NAMESPACE_CLOSE

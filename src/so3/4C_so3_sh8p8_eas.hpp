@@ -133,7 +133,7 @@ void Discret::ELEMENTS::SoSh8p8::eas_constraint_and_tangent(
       double pseudoidentity_CBe = 0.0;
       for (int D = 0; D < NUMDIM_; ++D)
       {
-        const int DB = Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(D, B);
+        const int DB = Core::LinAlg::Voigt::IndexMappings::symmetric_tensor_to_voigt6_index(D, B);
         const double DBfact = (D == B) ? 1.0 : 0.5;
         pseudoidentity_CBe += invrgtstrD(C, D) * DBfact * rgtstrbyalpha(DB, e);
       }

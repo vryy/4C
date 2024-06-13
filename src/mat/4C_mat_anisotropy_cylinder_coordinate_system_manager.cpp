@@ -43,9 +43,9 @@ void Mat::CylinderCoordinateSystemManager::read_from_element_line_definition(
 {
   if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
   {
-    ReadAnisotropyFiber(linedef, "RAD", radial_);
-    ReadAnisotropyFiber(linedef, "AXI", axial_);
-    ReadAnisotropyFiber(linedef, "CIR", circumferential_);
+    read_anisotropy_fiber(linedef, "RAD", radial_);
+    read_anisotropy_fiber(linedef, "AXI", axial_);
+    read_anisotropy_fiber(linedef, "CIR", circumferential_);
     is_defined_ = true;
   }
 }

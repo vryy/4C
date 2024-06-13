@@ -67,7 +67,7 @@ void MIXTURE::ElastinMembraneAnisotropyExtension::on_global_data_initialized()
   {
     orthogonal_structural_tensor_[gp] = Core::LinAlg::IdentityMatrix<3>();
 
-    orthogonal_structural_tensor_[gp].Update(-1.0, GetStructuralTensor(gp, 0), 1.0);
+    orthogonal_structural_tensor_[gp].Update(-1.0, get_structural_tensor(gp, 0), 1.0);
   }
 }
 
@@ -164,7 +164,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::PackConstituent(
 
   Core::Communication::ParObject::add_to_pack(data, mue_frac_);
 
-  anisotropy_extension_.PackAnisotropy(data);
+  anisotropy_extension_.pack_anisotropy(data);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -183,7 +183,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::UnpackConstituent(
 
   Core::Communication::ParObject::extract_from_pack(position, data, mue_frac_);
 
-  anisotropy_extension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(data, position);
 
   // loop map of associated potential summands
   for (auto& summand : potsum_membrane_) summand->UnpackSummand(data, position);
@@ -331,7 +331,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_stress_c_mat
   evaluatei_fin_t_aorthgr_ti_xt_aorthgri_fin(
       iFinTAorthgrTiXTAorthgriFin_sym, AorthgrCeAorthgrArad, iFin, Aorthgr);
 
-  Core::LinAlg::Voigt::Stresses::MatrixToVector(
+  Core::LinAlg::Voigt::Stresses::matrix_to_vector(
       iFinTAorthgrTiXTAorthgriFin_sym, iFinTAorthgrTiXTAorthgriFin_sym_stress);
 
   // Get material parameter
@@ -346,7 +346,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_stress_c_mat
   Smembrane.Update(mue * mue_frac_[gp], iFinAorthgriFinT, 0.0);
   Smembrane.Update(-mue * mue_frac_[gp] / detX, iFinTAorthgrTiXTAorthgriFin_sym, 1.0);
 
-  Core::LinAlg::Voigt::Stresses::MatrixToVector(Smembrane, S_stress);
+  Core::LinAlg::Voigt::Stresses::matrix_to_vector(Smembrane, S_stress);
 
   // Compute constitutive tensor
   static Core::LinAlg::Matrix<6, 6> dAradgriXAradgr_symdC(false);
@@ -374,8 +374,9 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::
 
   // Compute radial structural tensor in grown configuration
   static Core::LinAlg::Matrix<3, 3> FinArad(false);
-  FinArad.MultiplyNN(Fin, anisotropy_extension_.GetStructuralTensor(gp, 0));
-  Aradgr.MultiplyNT(iCin.Dot(anisotropy_extension_.GetStructuralTensor(gp, 0)), FinArad, Fin, 0.0);
+  FinArad.MultiplyNN(Fin, anisotropy_extension_.get_structural_tensor(gp, 0));
+  Aradgr.MultiplyNT(
+      iCin.Dot(anisotropy_extension_.get_structural_tensor(gp, 0)), FinArad, Fin, 0.0);
 
   // Compute orthogonal (to radial) structural tensor in grown configuration
   Aorthgr = Core::LinAlg::IdentityMatrix<3>();

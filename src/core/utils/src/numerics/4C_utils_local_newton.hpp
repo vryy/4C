@@ -30,13 +30,13 @@ namespace Core::UTILS
   /// for your own types, you may do so in the same namespace that also contains your type.
   /// @{
   template <typename ScalarType>
-  void LocalNewtonIteration(ScalarType& x, const ScalarType residuum, const ScalarType jacobian)
+  void local_newton_iteration(ScalarType& x, const ScalarType residuum, const ScalarType jacobian)
   {
     x -= residuum / jacobian;
   }
 
   template <unsigned N, typename ScalarType>
-  void LocalNewtonIteration(Core::LinAlg::Matrix<N, 1, ScalarType>& x,
+  void local_newton_iteration(Core::LinAlg::Matrix<N, 1, ScalarType>& x,
       const Core::LinAlg::Matrix<N, 1, ScalarType>& residuum,
       Core::LinAlg::Matrix<N, N, ScalarType>&& jacobian)
   {
@@ -51,13 +51,13 @@ namespace Core::UTILS
   /// for your own types, you may do so in the same namespace that also contains your type.
   /// @{
   template <typename DefaultAndFADScalarType>
-  DefaultAndFADScalarType L2Norm(const DefaultAndFADScalarType& x)
+  DefaultAndFADScalarType l2_norm(const DefaultAndFADScalarType& x)
   {
     return Core::FADUtils::Norm(x);
   }
 
   template <unsigned N, typename ScalarType>
-  ScalarType L2Norm(const Core::LinAlg::Matrix<N, 1, ScalarType>& x)
+  ScalarType l2_norm(const Core::LinAlg::Matrix<N, 1, ScalarType>& x)
   {
     return Core::FADUtils::VectorNorm(x);
   }
@@ -69,20 +69,20 @@ namespace Core::UTILS
    *
    * @note In order that this function works well, you may need to overload the functions
    * `ScalarType L2Norm(const VectorType&)` that computes the L2-norm of the used vector type, and
-   * `void LocalNewtonIteration(VectorType& x, const VectorType& residuum, JacobianType&&
+   * `void local_newton_iteration(VectorType& x, const VectorType& residuum, JacobianType&&
    * jacobian_of_residuum)` that does a local Newton step. For often used parameters (double,
    * Core::LinAlg::Matrix and FAD-types), these overloads are already implemented.
    *
    * @note The jacobian at the root is often needed to compute the linearization of the
-   * Newton-Raphson method w.r.t the primary variables. @p SolveLocalNewtonAndReturnJacobian returns
-   * the derivative of the residuum w.r.t. the unknown parameter x, i.e. \f$\frac{\partial
+   * Newton-Raphson method w.r.t the primary variables. @p solve_local_newton_and_return_jacobian
+   * returns the derivative of the residuum w.r.t. the unknown parameter x, i.e. \f$\frac{\partial
    * \boldsymbol{R}}{\partial \boldsymbol{x}}\f$. For the linearization of your method, you usually
    * need the derivative of x w.r.t. the primary variable u. This can be computed via
    * \f$\frac{\partial \boldsymbol{x}}{\partial \boldsymbol{u}} = (\frac{\partial
    * \boldsymbol{R}}{\partial \boldsymbol{x}})^{-1} \frac{\partial \boldsymbol{R}}{\partial
    * \boldsymbol{u}}\f$, where \f$\frac{\partial \boldsymbol{R}}{\partial \boldsymbol{u}}\f$ is the
    * partial derivative of the residuum R w.r.t. the primary variable u. If you don't need to
-   * linearize your function, you can use @p SolveLocalNewton which does not return the
+   * linearize your function, you can use @p solve_local_newton which does not return the
    * linearization.
    *
    * You can use the function as follows:
@@ -90,7 +90,7 @@ namespace Core::UTILS
    * Example 1 (scalar-valued double function):
    * @code
    * double x_0 = 0.0;
-   * auto [x, jacobian] = Core::UTILS::SolveLocalNewtonAndReturnJacobian(x_0, [](double x) {
+   * auto [x, jacobian] = Core::UTILS::solve_local_newton_and_return_jacobian(x_0, [](double x) {
    *     return std::make_tuple<double, double>({std::pow(x, 2), 2*x});
    *   }, 1e-9);
    * @endcode
@@ -98,7 +98,7 @@ namespace Core::UTILS
    * Example 2 (vector-valued double function):
    * @code
    * Core::LinAlg::Matrix<2,1> x_0(true);
-   * auto [x, jacobian] = Core::UTILS::SolveLocalNewtonAndReturnJacobian(x_0,
+   * auto [x, jacobian] = Core::UTILS::solve_local_newton_and_return_jacobian(x_0,
    * [](Core::LinAlg::Matrix<2,1> x) { return std::make_tuple<Core::LinAlg::Matrix<2,1>,
    * Core::LinAlg::Matrix<2,2>>({ Core::LinAlg::Matrix<2,1>{true}, // define your function here
    *       Core::LinAlg::Matrix<2,2>{true} // define your jacobian here
@@ -109,7 +109,7 @@ namespace Core::UTILS
    * Example 3 (Custom type double function):
    * @code
    * namespace {
-   *   void LocalNewtonIteration(MyVectorType& x, MyVectorType residuum, MyJacobianType
+   *   void local_newton_iteration(MyVectorType& x, MyVectorType residuum, MyJacobianType
    * jacobian)
    *   {
    *     // define your Newton update here
@@ -122,10 +122,9 @@ namespace Core::UTILS
    * }
    *
    * double x_0 = MyVectorType{...}; // initial value
-   * auto [x, jacobian] = Core::UTILS::SolveLocalNewtonAndReturnJacobian(x_0, [](MyVectorType x) {
-   *     return std::make_tuple<MyVectorType, MyJacobianType>({
-   *       MyVectorType{...}, // define your function here
-   *       MyJacobianType{...} // define your jacobian here
+   * auto [x, jacobian] = Core::UTILS::solve_local_newton_and_return_jacobian(x_0, [](MyVectorType
+   * x) { return std::make_tuple<MyVectorType, MyJacobianType>({ MyVectorType{...}, // define your
+   * function here MyJacobianType{...} // define your jacobian here
    *     });
    *   }, 1e-9);
    * @endcode
@@ -146,7 +145,7 @@ namespace Core::UTILS
    * the local Newton method.
    */
   template <typename ScalarType, typename VectorType, typename ResiduumAndJacobianEvaluator>
-  auto SolveLocalNewtonAndReturnJacobian(
+  auto solve_local_newton_and_return_jacobian(
       ResiduumAndJacobianEvaluator residuum_and_jacobian_evaluator, VectorType x_0,
       const ScalarType tolerance = LOCAL_NEWTON_DEFAULT_TOLERANCE,
       const unsigned max_iterations = LOCAL_NEWTON_DEFAULT_MAXIMUM_ITERATIONS)
@@ -156,18 +155,18 @@ namespace Core::UTILS
     auto [residuum, jacobian] = residuum_and_jacobian_evaluator(x_0);
 
     unsigned iteration = 0;
-    while (L2Norm(residuum) > tolerance)
+    while (l2_norm(residuum) > tolerance)
     {
       if (iteration > max_iterations)
       {
         FOUR_C_THROW(
             "The local Newton method did not converge within %d iterations. Residuum is %.3e > "
             "%.3e.",
-            max_iterations, FADUtils::CastToDouble(L2Norm(residuum)),
+            max_iterations, FADUtils::CastToDouble(l2_norm(residuum)),
             FADUtils::CastToDouble(tolerance));
       }
 
-      LocalNewtonIteration(x_0, residuum, std::move(jacobian));
+      local_newton_iteration(x_0, residuum, std::move(jacobian));
 
       std::tie(residuum, jacobian) = residuum_and_jacobian_evaluator(x_0);
 
@@ -181,8 +180,8 @@ namespace Core::UTILS
    * @brief Finds the root of a function (scalar or vector valued) using the Newton-Raphson method
    * starting from the initial guess @p x_0.
    *
-   * @note in contrast to @p SolveLocalNewtonAndReturnJacobian, this function does not return the
-   * jacobian at the root of the function. The remaining syntax is identical.
+   * @note in contrast to @p solve_local_newton_and_return_jacobian, this function does not return
+   * the jacobian at the root of the function. The remaining syntax is identical.
    *
    * @tparam ScalarType The type of the scalar used within method (type of tolerance or norm of
    * residuum).
@@ -198,11 +197,11 @@ namespace Core::UTILS
    * @return Returns x such that the residuum is smaller than the given tolerance.
    */
   template <typename ScalarType, typename VectorType, typename ResiduumAndJacobianEvaluator>
-  auto SolveLocalNewton(ResiduumAndJacobianEvaluator residuum_and_jacobian_evaluator,
+  auto solve_local_newton(ResiduumAndJacobianEvaluator residuum_and_jacobian_evaluator,
       VectorType x_0, const ScalarType tolerance = LOCAL_NEWTON_DEFAULT_TOLERANCE,
       const unsigned max_iterations = LOCAL_NEWTON_DEFAULT_MAXIMUM_ITERATIONS) -> VectorType
   {
-    return std::get<0>(SolveLocalNewtonAndReturnJacobian(
+    return std::get<0>(solve_local_newton_and_return_jacobian(
         residuum_and_jacobian_evaluator, x_0, tolerance, max_iterations));
   }
 

@@ -255,7 +255,7 @@ void Mat::ViscoPlasticNoYieldSurface::Evaluate(const Core::LinAlg::Matrix<3, 3>*
   current_flowres_isotropic_[gp] = x(1);
 
   // transform stresses to stress-like Voigt notation
-  Core::LinAlg::Voigt::Stresses::MatrixToVector(PK2, *stress);
+  Core::LinAlg::Voigt::Stresses::matrix_to_vector(PK2, *stress);
 
   auto cmatel = calculate_elastic_stiffness(EigenvectorsFe_trial, EigenvaluesFe_trial);
   *cmat = Mat::PullBackFourTensor<3>(current_iFv, cmatel);
@@ -273,7 +273,7 @@ Core::LinAlg::Matrix<3, 3>& Mat::ViscoPlasticNoYieldSurface::calculate_deviatori
 
   static Core::LinAlg::Matrix<3, 3> Me_trial_dev;
   // transform deviatoric equivalent stress to matrix notation
-  Core::LinAlg::Voigt::Stresses::VectorToMatrix(Me_trial_dev_Vstress, Me_trial_dev);
+  Core::LinAlg::Voigt::Stresses::vector_to_matrix(Me_trial_dev_Vstress, Me_trial_dev);
 
   return Me_trial_dev;
 }
@@ -394,7 +394,7 @@ Mat::ViscoPlasticNoYieldSurface::calculate_elastic_stiffness(
   for (unsigned a = 0; a < 3; ++a)
   {
     temp.MultiplyNT(EigenVectorsVec.at(a), EigenVectorsVec.at(a));
-    Core::LinAlg::Voigt::Stresses::MatrixToVector(temp, NaNaV);
+    Core::LinAlg::Voigt::Stresses::matrix_to_vector(temp, NaNaV);
 
     const double Se_a = (2.0 * G * (LogEigenValues(a) - 1.0 / 3.0 * traceLogEigenvalues) +
                             K * traceLogEigenvalues) /
@@ -403,11 +403,11 @@ Mat::ViscoPlasticNoYieldSurface::calculate_elastic_stiffness(
     for (unsigned b = 0; b < 3; ++b)
     {
       temp.MultiplyNT(EigenVectorsVec.at(a), EigenVectorsVec.at(b));
-      Core::LinAlg::Voigt::Stresses::MatrixToVector(temp, NaNbV);
+      Core::LinAlg::Voigt::Stresses::matrix_to_vector(temp, NaNbV);
       temp.MultiplyNT(EigenVectorsVec.at(b), EigenVectorsVec.at(a));
-      Core::LinAlg::Voigt::Stresses::MatrixToVector(temp, NbNaV);
+      Core::LinAlg::Voigt::Stresses::matrix_to_vector(temp, NbNaV);
       temp.MultiplyNT(EigenVectorsVec.at(b), EigenVectorsVec.at(b));
-      Core::LinAlg::Voigt::Stresses::MatrixToVector(temp, NbNbV);
+      Core::LinAlg::Voigt::Stresses::matrix_to_vector(temp, NbNbV);
 
       const double Se_b = (2.0 * G * (LogEigenValues(b) - 1.0 / 3.0 * traceLogEigenvalues) +
                               K * traceLogEigenvalues) /
@@ -473,7 +473,7 @@ Mat::ViscoPlasticNoYieldSurface::calculate_log_elastic_strain_in_strain_like_voi
   Ee_trial.MultiplyNT(tmp3x3, eigen_vectors);
 
   // transform to strain-like Voigt notation of logarithmic elastic strain
-  Core::LinAlg::Voigt::Strains::MatrixToVector(Ee_trial, Ee_trial_Vstrain);
+  Core::LinAlg::Voigt::Strains::matrix_to_vector(Ee_trial, Ee_trial_Vstrain);
 
   return Ee_trial_Vstrain;
 }

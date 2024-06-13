@@ -80,7 +80,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::PackConstituent(
 
   Core::Communication::ParObject::add_to_pack(data, prestretch_);
 
-  cosy_anisotropy_extension_.PackAnisotropy(data);
+  cosy_anisotropy_extension_.pack_anisotropy(data);
 
   if (prestress_strategy_ != nullptr) prestress_strategy_->Pack(data);
 
@@ -128,7 +128,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
 
   Core::Communication::ParObject::extract_from_pack(position, data, prestretch_);
 
-  cosy_anisotropy_extension_.UnpackAnisotropy(data, position);
+  cosy_anisotropy_extension_.unpack_anisotropy(data, position);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -243,7 +243,7 @@ bool MIXTURE::MixtureConstituentElastHyperBase::EvaluateOutputData(
     {
       static Core::LinAlg::Matrix<9, 1> tmp(false);
       tmp.Clear();
-      Core::LinAlg::Voigt::Matrix3x3to9x1(prestretch_[gp], tmp);
+      Core::LinAlg::Voigt::matrix_3x3_to_9x1(prestretch_[gp], tmp);
 
       for (int i = 0; i < 9; ++i)
       {

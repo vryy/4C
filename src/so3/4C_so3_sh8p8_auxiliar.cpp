@@ -489,19 +489,19 @@ void Discret::ELEMENTS::SoSh8p8::inv_vector6_voigt_twice_diff_by_itself(
 {
   for (int kl = 0; kl < Mat::NUM_STRESS_3D; ++kl)
   {
-    const int k = VoigtMapping::Voigt6ToRow(kl);
-    const int l = VoigtMapping::Voigt6ToCol(kl);
+    const int k = VoigtMapping::voigt6_to_matrix_row_index(kl);
+    const int l = VoigtMapping::voigt6_to_matrix_column_index(kl);
     for (int mn = kl; mn < Mat::NUM_STRESS_3D; ++mn)
     {
-      const int m = VoigtMapping::Voigt6ToRow(mn);
-      const int n = VoigtMapping::Voigt6ToCol(mn);
+      const int m = VoigtMapping::voigt6_to_matrix_row_index(mn);
+      const int n = VoigtMapping::voigt6_to_matrix_column_index(mn);
       const int klmn = Mat::NUM_STRESS_3D * kl + mn;
       const int mnkl = Mat::NUM_STRESS_3D * mn + kl;
       for (int ij = 0; ij < Mat::NUM_STRESS_3D; ++ij)
       {
         //    std::cout << "[\n";
-        const int i = VoigtMapping::Voigt6ToRow(ij);
-        const int j = VoigtMapping::Voigt6ToCol(ij);
+        const int i = VoigtMapping::voigt6_to_matrix_row_index(ij);
+        const int j = VoigtMapping::voigt6_to_matrix_column_index(ij);
         double invbvdderb_ijklmn;
         invbvdderb_ijklmn = 0.25 * ((ibt(i, m) * ibt(n, k) + ibt(i, n) * ibt(m, k)) * ibt(l, j) +
                                        ibt(i, k) * (ibt(l, m) * ibt(n, j) + ibt(l, n) * ibt(m, j)) +
@@ -762,8 +762,8 @@ void Discret::ELEMENTS::SoSh8p8::matrix2_tensor_to_matrix6x9_voigt(
     const int l = VOIGT9COL_INCONSISTENT_[kl];
     for (int ij = 0; ij < Mat::NUM_STRESS_3D; ++ij)
     {
-      const int i = VoigtMapping::Voigt6ToRow(ij);
-      const int j = VoigtMapping::Voigt6ToCol(ij);
+      const int i = VoigtMapping::voigt6_to_matrix_row_index(ij);
+      const int j = VoigtMapping::voigt6_to_matrix_column_index(ij);
       if (j == l)
         if (transpose)
         {
@@ -800,12 +800,12 @@ void Discret::ELEMENTS::SoSh8p8::matrix2_tensor_to_left_right_product_matrix6x6_
 {
   for (int ab = 0; ab < Mat::NUM_STRESS_3D; ++ab)
   {
-    const int a = VoigtMapping::Voigt6ToRow(ab);
-    const int b = VoigtMapping::Voigt6ToCol(ab);
+    const int a = VoigtMapping::voigt6_to_matrix_row_index(ab);
+    const int b = VoigtMapping::voigt6_to_matrix_column_index(ab);
     for (int AB = 0; AB < Mat::NUM_STRESS_3D; ++AB)
     {
-      const int A = VoigtMapping::Voigt6ToRow(AB);
-      const int B = VoigtMapping::Voigt6ToCol(AB);
+      const int A = VoigtMapping::voigt6_to_matrix_row_index(AB);
+      const int B = VoigtMapping::voigt6_to_matrix_column_index(AB);
       if (transpose)
       {
         bm(AB, ab) = bt(A, a) * bt(B, b);

@@ -39,16 +39,16 @@ void Mat::ElastHyperEvaluate(const Core::LinAlg::Matrix<3, 3>& defgrd,
   ddPII.Clear();
 
   // Evaluate identity tensor
-  Core::LinAlg::Voigt::IdentityMatrix(id2);
+  Core::LinAlg::Voigt::identity_matrix(id2);
 
   // Evalutate Right Cauchy-Green strain tensor in strain-like Voigt notation
   EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
 
   // Invert Right Cauchy Green Strain tensor
-  Core::LinAlg::Voigt::Strains::InverseTensor(C_strain, iC_strain);
+  Core::LinAlg::Voigt::Strains::inverse_tensor(C_strain, iC_strain);
 
   // Evaluate principle invariants
-  Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv, C_strain);
+  Core::LinAlg::Voigt::Strains::invariants_principal(prinv, C_strain);
 
   // Evaluate derivatives of potsum w.r.t the principal invariants
   ElastHyperEvaluateInvariantDerivatives(prinv, dPI, ddPII, potsum, properties, gp, eleGID);
@@ -179,13 +179,13 @@ void Mat::ElastHyperAddIsotropicStressCmat(Core::LinAlg::Matrix<6, 1>& S_stress,
   static Core::LinAlg::Matrix<6, 1> iC_stress(false);
   // 4th order identity tensor (rows and colums are stress-like)
   static Core::LinAlg::Matrix<6, 6> id4sharp(false);
-  Core::LinAlg::Voigt::FourthOrderIdentityMatrix<Core::LinAlg::Voigt::NotationType::stress,
+  Core::LinAlg::Voigt::fourth_order_identity_matrix<Core::LinAlg::Voigt::NotationType::stress,
       Core::LinAlg::Voigt::NotationType::stress>(id4sharp);
 
   // initialize matrices
-  Core::LinAlg::Voigt::IdentityMatrix(id2);
-  Core::LinAlg::Voigt::Strains::ToStressLike(C_strain, C_stress);
-  Core::LinAlg::Voigt::Strains::ToStressLike(iC_strain, iC_stress);
+  Core::LinAlg::Voigt::identity_matrix(id2);
+  Core::LinAlg::Voigt::Strains::to_stress_like(C_strain, C_stress);
+  Core::LinAlg::Voigt::Strains::to_stress_like(iC_strain, iC_stress);
 
   // compose coefficients
   CalculateGammaDelta(gamma, delta, prinv, dPI, ddPII);
@@ -341,8 +341,8 @@ void Mat::ElastHyperAddResponseStretches(Core::LinAlg::Matrix<6, 6>& cmat,
   prfact2.Clear();
   for (int albe = 0; albe < 6; ++albe)
   {
-    const int al = map::Voigt6ToRow(albe);
-    const int be = map::Voigt6ToCol(albe);
+    const int al = map::voigt6_to_matrix_row_index(albe);
+    const int be = map::voigt6_to_matrix_column_index(albe);
     double prfact1_albe = delta_(albe) / (prstr(al) * prstr(be));
     if (albe < 3) prfact1_albe -= gamma_(al) / (prstr(be) * prstr(al) * prstr(al));
     prfact1(albe) = prfact1_albe;
@@ -358,17 +358,17 @@ void Mat::ElastHyperAddResponseStretches(Core::LinAlg::Matrix<6, 6>& cmat,
   // add elasticity 4-tensor, cf Holzapfel [1] Eq (6.180),(6.196)
   for (int kl = 0; kl < 6; ++kl)
   {
-    const int k = map::Voigt6ToRow(kl);
-    const int l = map::Voigt6ToCol(kl);
+    const int k = map::voigt6_to_matrix_row_index(kl);
+    const int l = map::voigt6_to_matrix_column_index(kl);
     for (int ij = 0; ij < 6; ++ij)
     {
-      const int i = map::Voigt6ToRow(ij);
-      const int j = map::Voigt6ToCol(ij);
+      const int i = map::voigt6_to_matrix_row_index(ij);
+      const int j = map::voigt6_to_matrix_column_index(ij);
       double c_ijkl = 0.0;
       for (int albe = 0; albe < 6; ++albe)
       {
-        const int al = map::Voigt6ToRow(albe);
-        const int be = map::Voigt6ToCol(albe);
+        const int al = map::voigt6_to_matrix_row_index(albe);
+        const int be = map::voigt6_to_matrix_column_index(albe);
         const double fact1 = prfact1(albe);
         c_ijkl += fact1 * prdir(i, al) * prdir(j, al) * prdir(k, be) * prdir(l, be);
         if (albe >= 3)
@@ -405,7 +405,7 @@ void Mat::ElastHyperAddAnisotropicMod(Core::LinAlg::Matrix<6, 1>& S_stress,
     const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum)
 {
   static Core::LinAlg::Matrix<6, 1> iC_stress(false);
-  Core::LinAlg::Voigt::Strains::ToStressLike(iC_strain, iC_stress);
+  Core::LinAlg::Voigt::Strains::to_stress_like(iC_strain, iC_stress);
   // Loop over all summands and add aniso stress
   // ToDo: This should be solved in analogy to the solution in elast_remodelfiber.cpp
   // ToDo: i.e. by evaluating the derivatives of the potsum w.r.t. the anisotropic invariants
@@ -469,7 +469,7 @@ void Mat::ElastHyperCheckPolyconvexity(const Core::LinAlg::Matrix<3, 3>& defgrd,
   // defgrd = F (i)
   // dfgrd = F in Voigt - Notation
   static Core::LinAlg::Matrix<9, 1> dfgrd(true);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(defgrd, dfgrd);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(defgrd, dfgrd);
 
   // Cof(F) = J*F^(-T)
   static Core::LinAlg::Matrix<3, 3> CoFacF(true);  // Cof(F) in Matrix-Notation
@@ -477,7 +477,7 @@ void Mat::ElastHyperCheckPolyconvexity(const Core::LinAlg::Matrix<3, 3>& defgrd,
   CoFacF.Invert(defgrd);
   CoFacF.Scale(J);
   // sort in Voigt-Notation and invert!
-  Core::LinAlg::Voigt::Matrix3x3to9x1(CoFacF, CofF);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(CoFacF, CofF);
 
   // id4 (9x9)
   static Core::LinAlg::Matrix<9, 9> ID4(true);

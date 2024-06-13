@@ -573,11 +573,12 @@ void Mat::PlasticElastHyperVCU::eval_dce_dlp(const Core::LinAlg::Matrix<3, 3> fp
       for (int b = 0; b < 3; b++)
         for (int i = 0; i < 6; i++)
           if (i <= 2)
-            dFpiDdeltaDp(vmap::NonSymToVoigt9(A, a), i) -=
-                fpi(A, b) * Dexp(vmap::SymToVoigt6(b, a), i);
+            dFpiDdeltaDp(vmap::non_symmetric_tensor_to_voigt9_index(A, a), i) -=
+                fpi(A, b) * Dexp(vmap::symmetric_tensor_to_voigt6_index(b, a), i);
           else
-            dFpiDdeltaDp(vmap::NonSymToVoigt9(A, a), i) -=
-                2. * fpi(A, b) * Dexp(vmap::SymToVoigt6(b, a), i);  // fixme factor 2
+            dFpiDdeltaDp(vmap::non_symmetric_tensor_to_voigt9_index(A, a), i) -=
+                2. * fpi(A, b) *
+                Dexp(vmap::symmetric_tensor_to_voigt6_index(b, a), i);  // fixme factor 2
 
   dceDdeltalp.Multiply(dcedfpi, dFpiDdeltaDp);
 
@@ -617,7 +618,8 @@ void Mat::PlasticElastHyperVCU::yield_function(const double last_ai,
 
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
-      for (int k = 0; k < 3; k++) MandelStr(i, k) += ce(i, j) * str(vmap::SymToVoigt6(j, k));
+      for (int k = 0; k < 3; k++)
+        MandelStr(i, k) += ce(i, j) * str(vmap::symmetric_tensor_to_voigt6_index(j, k));
 
   // Compute the trace of the mandel stresses
   Core::LinAlg::Matrix<3, 3> id2;
@@ -790,7 +792,7 @@ void Mat::PlasticElastHyperVCU::matrix_exponential_second_derivative_sym3x3x6(
   for (int i = 0; i < 6; i++)
     for (int j = 0; j < 3; j++)
       for (int k = j; k < 3; k++)
-        dexp_mat(i, vmap::NonSymToVoigt9(j, k)) += MatrixExp1stDeriv[i](j, k);
+        dexp_mat(i, vmap::non_symmetric_tensor_to_voigt9_index(j, k)) += MatrixExp1stDeriv[i](j, k);
 
 
   // 2. Map MatExp2ndDeriv from [6][6]3x3 to [6]6x6
@@ -799,8 +801,10 @@ void Mat::PlasticElastHyperVCU::matrix_exponential_second_derivative_sym3x3x6(
       for (int k = 0; k < 3; k++)
         for (int l = k; l < 3; l++)
         {
-          MatrixExp2ndDerivVoigt[I](J, vmap::NonSymToVoigt9(k, l)) = MatrixExp2ndDeriv[I][J](k, l);
-          MatrixExp2ndDerivVoigt[J](I, vmap::NonSymToVoigt9(k, l)) = MatrixExp2ndDeriv[I][J](k, l);
+          MatrixExp2ndDerivVoigt[I](J, vmap::non_symmetric_tensor_to_voigt9_index(k, l)) =
+              MatrixExp2ndDeriv[I][J](k, l);
+          MatrixExp2ndDerivVoigt[J](I, vmap::non_symmetric_tensor_to_voigt9_index(k, l)) =
+              MatrixExp2ndDeriv[I][J](k, l);
         }
 
   return;
@@ -1053,7 +1057,7 @@ void Mat::PlasticElastHyperVCU::evaluate_kin_quant_plast(const int gp, const int
       ce_stresslike(i) = 0.5 * ce(i);
 
   Core::LinAlg::Matrix<3, 1> prinv;
-  Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv, ce);
+  Core::LinAlg::Voigt::Strains::invariants_principal(prinv, ce);
 
   Core::LinAlg::Matrix<3, 1> dPI;
   Core::LinAlg::Matrix<6, 1> ddPII;
@@ -1099,16 +1103,16 @@ void Mat::PlasticElastHyperVCU::evaluate_kin_quant_plast(const int gp, const int
   //    CeFpiTC.Multiply(CeM,FpiTC);
   Core::LinAlg::Matrix<3, 3> tmp;
   tmp.Multiply(RCG, *fpi);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(tmp, CFpi);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(tmp, CFpi);
   tmp33.Multiply(tmp, ce3x3);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(tmp33, CFpiCe);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(tmp33, CFpiCe);
 
 
 
   tmp.Invert(ce3x3);
   tmp33.Multiply(*fpi, tmp);
   tmp.Multiply(RCG, tmp33);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(tmp, CFpiCei);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(tmp, CFpiCei);
 }
 void Mat::PlasticElastHyperVCU::dpk2d_fpi(const int gp, const int eleGID,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 3>* fpi,
@@ -1184,17 +1188,20 @@ void Mat::PlasticElastHyperVCU::ce2nd_deriv(const Core::LinAlg::Matrix<3, 3>* de
         for (int C = 0; C < 6; C++)
           for (int D = 0; D < 6; D++)
           {
-            DDceDdLpDdLpVoigt[vmap::NonSymToVoigt9(a, d)](C, D) +=
+            DDceDdLpDdLpVoigt[vmap::non_symmetric_tensor_to_voigt9_index(a, d)](C, D) +=
                 (1. + (D > 2)) * (1. + (C > 2)) *
-                (exp_dLp_cetrial(a, b) * D2exp_VOIGT[vmap::SymToVoigt6(b, d)](C, D) +
-                    D2exp_VOIGT[vmap::SymToVoigt6(a, b)](C, D) * exp_dLp_cetrial(d, b));
+                (exp_dLp_cetrial(a, b) *
+                        D2exp_VOIGT[vmap::symmetric_tensor_to_voigt6_index(b, d)](C, D) +
+                    D2exp_VOIGT[vmap::symmetric_tensor_to_voigt6_index(a, b)](C, D) *
+                        exp_dLp_cetrial(d, b));
             for (int c = 0; c < 3; c++)
-              DDceDdLpDdLpVoigt[vmap::NonSymToVoigt9(a, d)](C, D) +=
+              DDceDdLpDdLpVoigt[vmap::non_symmetric_tensor_to_voigt9_index(a, d)](C, D) +=
                   (1. + (C > 2)) * (1. + (D > 2)) *
-                  (Dexp_dLp_mat(vmap::SymToVoigt6(a, b), C) * cetrial(b, c) *
-                          Dexp_dLp_mat(vmap::SymToVoigt6(c, d), D) +
-                      Dexp_dLp_mat(vmap::SymToVoigt6(a, b), D) * cetrial(b, c) *
-                          Dexp_dLp_mat(vmap::SymToVoigt6(c, d), C));
+                  (Dexp_dLp_mat(vmap::symmetric_tensor_to_voigt6_index(a, b), C) * cetrial(b, c) *
+                          Dexp_dLp_mat(vmap::symmetric_tensor_to_voigt6_index(c, d), D) +
+                      Dexp_dLp_mat(vmap::symmetric_tensor_to_voigt6_index(a, b), D) *
+                          cetrial(b, c) *
+                          Dexp_dLp_mat(vmap::symmetric_tensor_to_voigt6_index(c, d), C));
           }
 }
 

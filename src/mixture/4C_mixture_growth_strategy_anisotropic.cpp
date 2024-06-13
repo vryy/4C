@@ -47,7 +47,7 @@ void MIXTURE::AnisotropicGrowthStrategy::pack_mixture_growth_strategy(
 {
   MixtureGrowthStrategy::pack_mixture_growth_strategy(data);
 
-  anisotropy_extension_.PackAnisotropy(data);
+  anisotropy_extension_.pack_anisotropy(data);
 }
 
 void MIXTURE::AnisotropicGrowthStrategy::unpack_mixture_growth_strategy(
@@ -55,7 +55,7 @@ void MIXTURE::AnisotropicGrowthStrategy::unpack_mixture_growth_strategy(
 {
   MixtureGrowthStrategy::unpack_mixture_growth_strategy(position, data);
 
-  anisotropy_extension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(data, position);
 }
 
 void MIXTURE::AnisotropicGrowthStrategy::register_anisotropy_extensions(Mat::Anisotropy& anisotropy)
@@ -70,7 +70,7 @@ void MIXTURE::AnisotropicGrowthStrategy::evaluate_inverse_growth_deformation_gra
   const Core::LinAlg::Matrix<3, 3> Id = Core::LinAlg::IdentityMatrix<3>();
 
   iFgM.Update(1.0 / currentReferenceGrowthScalar - 1.0,
-      anisotropy_extension_.GetStructuralTensor(gp, 0), 1.0, Id);
+      anisotropy_extension_.get_structural_tensor(gp, 0), 1.0, Id);
 }
 
 void MIXTURE::AnisotropicGrowthStrategy::evaluate_growth_stress_cmat(

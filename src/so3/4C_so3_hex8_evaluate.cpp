@@ -3343,11 +3343,11 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
     {
       for (int b = 0; b < NUMDIM_SOH8; ++b)
       {
-        d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 0) +=
+        d_F_dxi(VoigtMapping::non_symmetric_tensor_to_voigt9_index(a, b), 0) +=
             xXFsec(a, 0) * invJ(b, 0) + xXFsec(a, 3) * invJ(b, 1) + xXFsec(a, 4) * invJ(b, 2);
-        d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 1) +=
+        d_F_dxi(VoigtMapping::non_symmetric_tensor_to_voigt9_index(a, b), 1) +=
             xXFsec(a, 3) * invJ(b, 0) + xXFsec(a, 1) * invJ(b, 1) + xXFsec(a, 5) * invJ(b, 2);
-        d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 2) +=
+        d_F_dxi(VoigtMapping::non_symmetric_tensor_to_voigt9_index(a, b), 2) +=
             xXFsec(a, 4) * invJ(b, 0) + xXFsec(a, 5) * invJ(b, 1) + xXFsec(a, 2) * invJ(b, 2);
       }
     }
@@ -3391,20 +3391,20 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
       {
         for (int k = 0; k < NUMNOD_SOH8; ++k)
         {
-          d2_F_dxi_dd(
-              VoigtMapping::NonSymToVoigt9(i, j), NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + 0) +=
+          d2_F_dxi_dd(VoigtMapping::non_symmetric_tensor_to_voigt9_index(i, j),
+              NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + 0) +=
               deriv2(0, k) * invJ(j, 0) + deriv2(3, k) * invJ(j, 1) + deriv2(4, k) * invJ(j, 2) -
               N_XYZ_Xsec(k, 0) * invJ(j, 0) - N_XYZ_Xsec(k, 3) * invJ(j, 1) -
               N_XYZ_Xsec(k, 4) * invJ(j, 2);
 
-          d2_F_dxi_dd(
-              VoigtMapping::NonSymToVoigt9(i, j), NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + 1) +=
+          d2_F_dxi_dd(VoigtMapping::non_symmetric_tensor_to_voigt9_index(i, j),
+              NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + 1) +=
               deriv2(3, k) * invJ(j, 0) + deriv2(1, k) * invJ(j, 1) + deriv2(5, k) * invJ(j, 2) -
               N_XYZ_Xsec(k, 3) * invJ(j, 0) - N_XYZ_Xsec(k, 1) * invJ(j, 1) -
               N_XYZ_Xsec(k, 5) * invJ(j, 2);
 
-          d2_F_dxi_dd(
-              VoigtMapping::NonSymToVoigt9(i, j), NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + 2) +=
+          d2_F_dxi_dd(VoigtMapping::non_symmetric_tensor_to_voigt9_index(i, j),
+              NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + 2) +=
               deriv2(4, k) * invJ(j, 0) + deriv2(5, k) * invJ(j, 1) + deriv2(2, k) * invJ(j, 2) -
               N_XYZ_Xsec(k, 4) * invJ(j, 0) - N_XYZ_Xsec(k, 5) * invJ(j, 1) -
               N_XYZ_Xsec(k, 2) * invJ(j, 2);
@@ -3412,9 +3412,9 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
           for (int l = 0; l < NUMDIM_SOH8; ++l)
           {
             d2_cauchyndir_dd_dxi_mat(k * 3 + i, l) +=
-                d_cauchyndir_dF(VoigtMapping::NonSymToVoigt9(i, j), 0) *
-                d2_F_dxi_dd(
-                    VoigtMapping::NonSymToVoigt9(i, j), NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + l);
+                d_cauchyndir_dF(VoigtMapping::non_symmetric_tensor_to_voigt9_index(i, j), 0) *
+                d2_F_dxi_dd(VoigtMapping::non_symmetric_tensor_to_voigt9_index(i, j),
+                    NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + l);
           }
         }
       }

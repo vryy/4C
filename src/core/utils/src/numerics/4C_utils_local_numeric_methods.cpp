@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Core::UTILS::Bisection(const std::function<double(double)> &funct, const double a_init,
+double Core::UTILS::bisection(const std::function<double(double)> &funct, const double a_init,
     const double b_init, const double tol, const int maxiter)
 {
   double a = a_init;
@@ -59,7 +59,7 @@ double Core::UTILS::Bisection(const std::function<double(double)> &funct, const 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::UTILS::ValuesFunctAndFunctDerivs
-Core::UTILS::EvaluateFunctionAndDerivativesCentralDifferences(
+Core::UTILS::evaluate_function_and_derivatives_central_differences(
     const std::function<double(double)> &func, const double x, const double delta_x)
 {
   ValuesFunctAndFunctDerivs f_df_ddf;
@@ -68,16 +68,16 @@ Core::UTILS::EvaluateFunctionAndDerivativesCentralDifferences(
 
   double f_i_minus_1 = func(x - delta_x);
   double f_i_plus_1 = func(x + delta_x);
-  f_df_ddf.val_deriv_funct = FirstDerivativeCentralDifferences(f_i_minus_1, f_i_plus_1, delta_x);
+  f_df_ddf.val_deriv_funct = first_derivative_central_differences(f_i_minus_1, f_i_plus_1, delta_x);
   f_df_ddf.val_deriv_deriv_funct =
-      SecondDerivativeCentralDifferences(f_i_minus_1, f_df_ddf.val_funct, f_i_plus_1, delta_x);
+      second_derivative_central_differences(f_i_minus_1, f_df_ddf.val_funct, f_i_plus_1, delta_x);
 
   return f_df_ddf;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Core::UTILS::FirstDerivativeCentralDifferences(
+double Core::UTILS::first_derivative_central_differences(
     const double f_i_minus_1, const double f_i_plus_1, const double delta_x)
 {
   double dfdx = (f_i_plus_1 - f_i_minus_1) / (2 * delta_x);
@@ -86,7 +86,7 @@ double Core::UTILS::FirstDerivativeCentralDifferences(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Core::UTILS::SecondDerivativeCentralDifferences(
+double Core::UTILS::second_derivative_central_differences(
     const double f_i_minus_1, const double f_i, const double f_i_plus_1, const double delta_x)
 {
   double ddfddx = (f_i_plus_1 - 2 * f_i + f_i_minus_1) / (delta_x * delta_x);

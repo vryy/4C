@@ -123,7 +123,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
 
         // inverse Right Cauchy-Green tensor as vector in voigt notation
         Core::LinAlg::Matrix<num_str_, 1> C_inv_vec(false);
-        Core::LinAlg::Voigt::Stresses::MatrixToVector(
+        Core::LinAlg::Voigt::Stresses::matrix_to_vector(
             cauchygreen.inverse_right_cauchy_green_, C_inv_vec);
 
         // B^T . C^-1
@@ -219,7 +219,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroel
 
         // inverse Right Cauchy-Green tensor as vector in voigt notation
         Core::LinAlg::Matrix<num_str_, 1> C_inv_vec(false);
-        Core::LinAlg::Voigt::Stresses::MatrixToVector(
+        Core::LinAlg::Voigt::Stresses::matrix_to_vector(
             cauchygreen.inverse_right_cauchy_green_, C_inv_vec);
 
         // B^T . C^-1

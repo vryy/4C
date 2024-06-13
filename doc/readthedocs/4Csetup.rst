@@ -747,7 +747,7 @@ They have to be placed in .vscode/launch.json in the configurations-list.
         "request": "launch",
         "program": "<4C-debug-execdir>/Unittests/unittests",
         "args": [
-            "MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite"
+            "Mat::Elastic::CoupAnisoExpoAnisotropyExtension_TestSuite"
         ],
         "cwd": "<4C-problemdir>",
     }
