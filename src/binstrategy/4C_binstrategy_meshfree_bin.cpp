@@ -48,7 +48,6 @@ void Discret::MeshFree::MeshfreeBin<ELEMENT>::DeleteNode(int gid)
     }
   }
   FOUR_C_THROW("Connectivity issues: No node with specified gid to delete in element. ");
-  return;
 }
 
 /*--------------------------------------------------------------------------*

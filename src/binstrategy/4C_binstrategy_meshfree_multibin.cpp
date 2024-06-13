@@ -25,7 +25,7 @@ Discret::MeshFree::MeshfreeMultiBinType& Discret::MeshFree::MeshfreeMultiBinType
 Core::Communication::ParObject* Discret::MeshFree::MeshfreeMultiBinType::Create(
     const std::vector<char>& data)
 {
-  Discret::MeshFree::MeshfreeMultiBin* object = new Discret::MeshFree::MeshfreeMultiBin(-1, -1);
+  auto object = new Discret::MeshFree::MeshfreeMultiBin(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -52,14 +52,12 @@ Teuchos::RCP<Core::Elements::Element> Discret::MeshFree::MeshfreeMultiBinType::C
 }
 
 
-
 /*--------------------------------------------------------------------------*
  |  ctor                                               (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
 Discret::MeshFree::MeshfreeMultiBin::MeshfreeMultiBin(int id, int owner)
     : Discret::MeshFree::MeshfreeBin<Core::Elements::Element>(id, owner)
 {
-  return;
 }
 
 /*--------------------------------------------------------------------------*
@@ -73,13 +71,12 @@ Discret::MeshFree::MeshfreeMultiBin::MeshfreeMultiBin(
 }
 
 
-
 /*--------------------------------------------------------------------------*
  |  clone-ctor (public)                                          ghamm 04/13|
  *--------------------------------------------------------------------------*/
 Core::Elements::Element* Discret::MeshFree::MeshfreeMultiBin::Clone() const
 {
-  Discret::MeshFree::MeshfreeMultiBin* newele = new Discret::MeshFree::MeshfreeMultiBin(*this);
+  auto* newele = new Discret::MeshFree::MeshfreeMultiBin(*this);
   return newele;
 }
 

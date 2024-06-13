@@ -166,7 +166,7 @@ namespace BINSTRATEGY
      *
      * \return const pointer to array containing bin sizes in all tree directions
      */
-    inline double const* BinSize() const { return bin_size_; }
+    inline std::array<double, 3> BinSize() const { return bin_size_; }
 
     /*!
      * \brief get number of bins in all three directions
@@ -520,7 +520,7 @@ namespace BINSTRATEGY
      * \param[in] roweles flag indicating to just consider elements owned by myrank
      */
     void GetBinContent(std::set<Core::Elements::Element*>& eles,
-        std::vector<BINSTRATEGY::UTILS::BinContentType> bincontent, std::vector<int>& binIds,
+        const std::vector<BINSTRATEGY::UTILS::BinContentType>& bincontent, std::vector<int>& binIds,
         bool roweles = false) const;
 
     /*!
@@ -780,42 +780,42 @@ namespace BINSTRATEGY
     /*!
      * \brief size of each bin in Cartesian coordinates
      */
-    double bin_size_[3];
+    std::array<double, 3> bin_size_ = {0.0, 0.0, 0.0};
 
     /*!
      * \brief inverse of size of each bin in Cartesian coordinates
      */
-    double inv_bin_size_[3];
+    std::array<double, 3> inv_bin_size_ = {0.0, 0.0, 0.0};
 
     /*!
      * \brief number of bins per direction
      */
-    std::array<int, 3> bin_per_dir_;
+    std::array<int, 3> bin_per_dir_ = {0, 0, 0};
 
     /*!
      * \brief number of bins per direction for bin id calculation
      */
-    int id_calc_bin_per_dir_[3];
+    std::array<int, 3> id_calc_bin_per_dir_ = {0, 0, 0};
 
     /*!
      * \brief exponent 2^x = number of bins per direction for bin id calculation
      */
-    int id_calc_exp_bin_per_dir_[3];
+    std::array<int, 3> id_calc_exp_bin_per_dir_ = {0, 0, 0};
 
     /*!
      * \brief global flag whether periodic boundary conditions are specified
      */
-    bool havepbc_;
+    bool havepbc_ = false;
 
     /*!
      * \brief flags for existence of pbcs in x, y, z direction
      */
-    bool pbconoff_[3];
+    std::array<bool, 3> pbconoff_ = {false, false, false};
 
     /*!
      * \brief edge length of binning domain in x, y, z direction
      */
-    double edge_length_binning_domain_[3];
+    std::array<double, 3> edge_length_binning_domain_ = {0, 0, 0};
 
     /*!
      * \brief my rank

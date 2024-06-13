@@ -12,7 +12,6 @@
 
 #include "4C_beam3_base.hpp"
 #include "4C_bele_bele3.hpp"
-#include "4C_binstrategy.hpp"
 #include "4C_comm_exporter.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_io_pstream.hpp"

@@ -823,7 +823,10 @@ void PARTICLEENGINE::ParticleEngine::get_particles_within_radius(const double* p
   }
 }
 
-const double* PARTICLEENGINE::ParticleEngine::BinSize() const { return binstrategy_->BinSize(); }
+std::array<double, 3> PARTICLEENGINE::ParticleEngine::BinSize() const
+{
+  return binstrategy_->BinSize();
+}
 
 bool PARTICLEENGINE::ParticleEngine::have_periodic_boundary_conditions() const
 {
@@ -2094,7 +2097,7 @@ void PARTICLEENGINE::ParticleEngine::determine_min_relevant_bin_size()
   const auto binperdir = binstrategy_->BinPerDir();
 
   // get bin size
-  const double* binsize = binstrategy_->BinSize();
+  const std::array<double, 3> binsize = binstrategy_->BinSize();
 
   // initialize minimum bin size to maximum bin size
   minbinsize_ = binstrategy_->GetMaxBinSize();

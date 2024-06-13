@@ -96,7 +96,7 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::evaluate_dirichlet_bo
       particleengineinterface_->domain_bounding_box_corner_positions();
 
   // get bin size
-  const double* binsize = particleengineinterface_->BinSize();
+  const std::array<double, 3> binsize = particleengineinterface_->BinSize();
 
   // init vector containing evaluated function and derivatives
   std::vector<double> functtimederiv(deg + 1);

@@ -398,7 +398,7 @@ namespace PARTICLEENGINE
     void get_particles_within_radius(const double* position, const double radius,
         std::vector<LocalIndexTuple>& neighboringparticles) const override;
 
-    const double* BinSize() const override;
+    std::array<double, 3> BinSize() const override;
 
     double MinBinSize() const override { return minbinsize_; };
 
