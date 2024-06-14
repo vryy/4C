@@ -89,7 +89,10 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   }
   // Create the solver
   std::unique_ptr<Core::LinAlg::Solver> solver = std::make_unique<Core::LinAlg::Solver>(
-      Global::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm());
+      Global::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm(),
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY"));
   actdis->compute_null_space_if_necessary(solver->Params());
 
   // 5. Set parameters in list required for all schemes

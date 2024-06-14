@@ -713,7 +713,10 @@ void Wear::Partitioned::wear_spatial_master_map(
     Teuchos::ParameterList solvparams;
     Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
         "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-    Core::LinAlg::Solver solver(solvparams, Comm());
+    Core::LinAlg::Solver solver(solvparams, Comm(),
+        Global::Problem::Instance()->solver_params_callback(),
+        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
@@ -893,7 +896,10 @@ void Wear::Partitioned::wear_spatial_slave(Teuchos::RCP<Epetra_Vector>& disinter
       Teuchos::ParameterList solvparams;
       Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
           "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-      Core::LinAlg::Solver solver(solvparams, Comm());
+      Core::LinAlg::Solver solver(solvparams, Comm(),
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
       if (activedofs->NumMyElements())
       {
@@ -1115,7 +1121,10 @@ void Wear::Partitioned::wear_pull_back_slave(Teuchos::RCP<Epetra_Vector>& disint
       Teuchos::ParameterList solvparams;
       Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
           "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-      Core::LinAlg::Solver solver(solvparams, Comm());
+      Core::LinAlg::Solver solver(solvparams, Comm(),
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
       Core::LinAlg::SolverParams solver_params;
       solver_params.refactor = true;
@@ -1133,7 +1142,10 @@ void Wear::Partitioned::wear_pull_back_slave(Teuchos::RCP<Epetra_Vector>& disint
       Teuchos::ParameterList solvparams;
       Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
           "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-      Core::LinAlg::Solver solver(solvparams, Comm());
+      Core::LinAlg::Solver solver(solvparams, Comm(),
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
       Core::LinAlg::SolverParams solver_params;
       solver_params.refactor = true;
@@ -1360,7 +1372,10 @@ void Wear::Partitioned::wear_pull_back_master(Teuchos::RCP<Epetra_Vector>& disin
       Teuchos::ParameterList solvparams;
       Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
           "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-      Core::LinAlg::Solver solver(solvparams, Comm());
+      Core::LinAlg::Solver solver(solvparams, Comm(),
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
       Core::LinAlg::SolverParams solver_params;
       solver_params.refactor = true;
@@ -1379,7 +1394,10 @@ void Wear::Partitioned::wear_pull_back_master(Teuchos::RCP<Epetra_Vector>& disin
       Teuchos::ParameterList solvparams;
       Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
           "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-      Core::LinAlg::Solver solver(solvparams, Comm());
+      Core::LinAlg::Solver solver(solvparams, Comm(),
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
       Core::LinAlg::SolverParams solver_params;
       solver_params.refactor = true;

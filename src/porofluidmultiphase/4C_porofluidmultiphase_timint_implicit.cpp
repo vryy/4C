@@ -307,8 +307,11 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(
-      Global::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm()));
+  solver_ = Teuchos::rcp(
+      new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(linsolvernumber_),
+          discret_->Comm(), Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY")));
   strategy_->initialize_linear_solver(solver_);
 
   return;
@@ -1357,8 +1360,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructFlux()
     case Inpar::POROFLUIDMULTIPHASE::gradreco_l2:
     {
       const auto& solverparams = Global::Problem::Instance()->SolverParams(fluxreconsolvernum_);
-      flux_ = Core::FE::compute_nodal_l2_projection(
-          discret_, "phinp_fluid", numvec, eleparams, solverparams);
+      flux_ = Core::FE::compute_nodal_l2_projection(discret_, "phinp_fluid", numvec, eleparams,
+          solverparams, Global::Problem::Instance()->solver_params_callback());
       break;
     }
     default:

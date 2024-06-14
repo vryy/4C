@@ -130,7 +130,10 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
     *solverparams = tsisolverparams;
 
-    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(*solverparams, Comm()));
+    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(*solverparams, Comm(),
+        Global::Problem::Instance()->solver_params_callback(),
+        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Global::Problem::Instance()->IOParams(), "VERBOSITY")));
   }  // end BlockMatrixMerge
 
   // structure_field: check whether we have locsys BCs, i.e. inclined structural
@@ -277,7 +280,10 @@ void TSI::Monolithic::create_linear_solver()
   }
 
   // prepare linear solvers and preconditioners
-  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(tsisolverparams, Comm()));
+  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(tsisolverparams, Comm(),
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
   const auto azprectype =
       Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(tsisolverparams, "AZPREC");
@@ -316,8 +322,14 @@ void TSI::Monolithic::create_linear_solver()
       const Teuchos::ParameterList& tsolverparams =
           Global::Problem::Instance()->SolverParams(tlinsolvernumber);
 
-      solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams);
-      solver_->put_solver_params_to_sub_params("Inverse2", tsolverparams);
+      solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
+      solver_->put_solver_params_to_sub_params("Inverse2", tsolverparams,
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
       // prescribe rigid body modes
       structure_field()->discretization()->compute_null_space_if_necessary(
@@ -337,11 +349,17 @@ void TSI::Monolithic::create_linear_solver()
     }
     case Core::LinearSolver::PreconditionerType::multigrid_muelu_tsi:
     {
-      solver_->put_solver_params_to_sub_params("Inverse1", tsisolverparams);
+      solver_->put_solver_params_to_sub_params("Inverse1", tsisolverparams,
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
       structure_field()->discretization()->compute_null_space_if_necessary(
           solver_->Params().sublist("Inverse1"));
 
-      solver_->put_solver_params_to_sub_params("Inverse2", tsisolverparams);
+      solver_->put_solver_params_to_sub_params("Inverse2", tsisolverparams,
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
       ThermoField()->discretization()->compute_null_space_if_necessary(
           solver_->Params().sublist("Inverse2"));
 

@@ -106,7 +106,10 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
     *solverparams = ehlsolverparams;
 
-    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(*solverparams, Comm()));
+    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(*solverparams, Comm(),
+        Global::Problem::Instance()->solver_params_callback(),
+        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Global::Problem::Instance()->IOParams(), "VERBOSITY")));
   }  // end BlockMatrixMerge
 
 }  // Monolithic()
@@ -220,7 +223,9 @@ void EHL::Monolithic::create_linear_solver()
       // This should be the default case (well-tested and used)
       solver_ = Teuchos::rcp(new Core::LinAlg::Solver(ehlsolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
-          Comm()));
+          Comm(), Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
       // use solver blocks for structure and pressure (lubrication field)
       const Teuchos::ParameterList& ssolverparams =
@@ -228,8 +233,14 @@ void EHL::Monolithic::create_linear_solver()
       const Teuchos::ParameterList& tsolverparams =
           Global::Problem::Instance()->SolverParams(tlinsolvernumber);
 
-      solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams);
-      solver_->put_solver_params_to_sub_params("Inverse2", tsolverparams);
+      solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
+      solver_->put_solver_params_to_sub_params("Inverse2", tsolverparams,
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
       // prescribe rigid body modes
       structure_field()->discretization()->compute_null_space_if_necessary(
@@ -251,7 +262,9 @@ void EHL::Monolithic::create_linear_solver()
     {
       solver_ = Teuchos::rcp(new Core::LinAlg::Solver(ehlsolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
-          Comm()));
+          Comm(), Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
       // use solver blocks for structure and pressure (lubrication field)
       const Teuchos::ParameterList& ssolverparams =
@@ -261,8 +274,14 @@ void EHL::Monolithic::create_linear_solver()
 
       // This is not very elegant:
       // first read in solver parameters. These have to contain ML parameters such that...
-      solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams);
-      solver_->put_solver_params_to_sub_params("Inverse2", tsolverparams);
+      solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
+      solver_->put_solver_params_to_sub_params("Inverse2", tsolverparams,
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
       // ... 4C calculates the null space vectors. These are then stored in the sublists
       //     Inverse1 and Inverse2 from where they...

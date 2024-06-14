@@ -687,7 +687,10 @@ void PoroElast::Monolithic::create_linear_solver()
       break;
   }
 
-  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(porosolverparams, Comm()));
+  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(porosolverparams, Comm(),
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
   // use solver blocks for structure and fluid
   const Teuchos::ParameterList& ssolverparams =
@@ -695,8 +698,14 @@ void PoroElast::Monolithic::create_linear_solver()
   const Teuchos::ParameterList& fsolverparams =
       Global::Problem::Instance()->SolverParams(flinsolvernumber);
 
-  solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams);
-  solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams);
+  solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY"));
+  solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams,
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
   // prescribe rigid body modes
   structure_field()->discretization()->compute_null_space_if_necessary(
@@ -1590,7 +1599,10 @@ bool PoroElast::Monolithic::SetupSolver()
 
   if (directsolve_)
   {
-    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, Comm()));
+    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, Comm(),
+        Global::Problem::Instance()->solver_params_callback(),
+        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Global::Problem::Instance()->IOParams(), "VERBOSITY")));
   }
   else
     // create a linear solver

@@ -11,6 +11,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_io_pstream.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_LinearProblem.h>
@@ -90,12 +91,16 @@ namespace Core::LinAlg
     \param inparams (in): input parameter list as provided by Global::Problem,
                           e.g. Global::Problem::SolverParams(num)
     \param comm     (in): a reference to a Epetra communicator object
+    \param get_solver_params (in): function to get solver parameters based on ID used inside
+                                   inparams
+    \param verbosity (in): verbosity level for output
 
     \param translate_params_to_belos  (in): translate parameters to Belos
 
     */
     Solver(const Teuchos::ParameterList& inparams, const Epetra_Comm& comm,
-        bool translate_params_to_belos = true);
+        const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
+        Core::IO::Verbositylevel verbosity, bool translate_params_to_belos = true);
 
     /*!
     \brief Set-up of stuff common to all constructors
@@ -189,27 +194,16 @@ namespace Core::LinAlg
     \param inparams (in): input parameter list as provided by Global::Problem,
                           e.g. Global::Problem::SolverParams(num) in case of solver for
                           structures and num according to STRUCTURAL DYNAMIC
+    \param get_solver_params (in): function to get solver parameters based on ID used inside
+                                   inparams
+    \param verbosity (in): verbosity level for output
     \return             : internal parameter list ready to be associated
                           with #params_
-    \date 02/07,11/08
     */
     static Teuchos::ParameterList translate_solver_parameters(
-        const Teuchos::ParameterList& inparams);
-
-    /*!
-    \brief Translate 4C dat file parameters
-
-    */
-    static Teuchos::ParameterList TranslateFourCToML(
-        const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = nullptr);
-
-    static Teuchos::ParameterList translate_four_c_to_muelu(
-        const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = nullptr);
-
-    static Teuchos::ParameterList translate_four_c_to_ifpack(
-        const Teuchos::ParameterList& inparams);
-
-    static Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& inparams);
+        const Teuchos::ParameterList& inparams,
+        const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
+        Core::IO::Verbositylevel verbosity);
 
     /*!
     \brief Add a validated input parameter list as sublist to internal
@@ -219,13 +213,19 @@ namespace Core::LinAlg
     \param inparams (in): input parameter list as provided by Global::Problem,
                           e.g. Global::Problem::FluidPressureSolverParams in case
                           of additional solver for pressure preconditioner
+    \param get_solver_params (in): function to get solver parameters based on ID used inside
+                                   inparams
+    \param verbosity (in): verbosity level for output
     \author bborn
     \date 11/08
     */
-    void put_solver_params_to_sub_params(
-        const std::string name, const Teuchos::ParameterList& inparams)
+    void put_solver_params_to_sub_params(const std::string name,
+        const Teuchos::ParameterList& inparams,
+        const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
+        Core::IO::Verbositylevel verbosity)
     {
-      (*params_).sublist(name) = translate_solver_parameters(inparams);
+      (*params_).sublist(name) =
+          translate_solver_parameters(inparams, get_solver_params, verbosity);
     }
     //@}
 

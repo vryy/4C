@@ -409,8 +409,10 @@ void FSI::ConstrOverlappingBlockMatrix::sgs(
         "SOLVER", Core::LinearSolver::SolverType::umfpack, constrsolvparams);
     Teuchos::RCP<Epetra_Vector> interconsol =
         Teuchos::rcp(new Epetra_Vector(ConStructOp.RangeMap()));
-    Teuchos::RCP<Core::LinAlg::Solver> ConstraintSolver =
-        Teuchos::rcp(new Core::LinAlg::Solver(constrsolvparams, interconA->Comm()));
+    Teuchos::RCP<Core::LinAlg::Solver> ConstraintSolver = Teuchos::rcp(new Core::LinAlg::Solver(
+        constrsolvparams, interconA->Comm(), Global::Problem::Instance()->solver_params_callback(),
+        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Global::Problem::Instance()->IOParams(), "VERBOSITY")));
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = true;

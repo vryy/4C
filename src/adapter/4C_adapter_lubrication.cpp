@@ -55,8 +55,10 @@ void Adapter::LubricationBaseAlgorithm::Setup(
   // -------------------------------------------------------------------
   // TODO: TAW use of solverparams??? change input parameter to solver number instead of parameter
   // list? -> no default paramter possible any more
-  Teuchos::RCP<Core::LinAlg::Solver> solver =
-      Teuchos::rcp(new Core::LinAlg::Solver(solverparams, actdis->Comm()));
+  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(solverparams,
+      actdis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY")));
   actdis->compute_null_space_if_necessary(solver->Params());
 
   // -------------------------------------------------------------------

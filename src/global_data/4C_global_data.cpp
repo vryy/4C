@@ -134,6 +134,11 @@ const Teuchos::ParameterList& Global::Problem::SolverParams(int solverNr) const
   return parameters_->sublist(ss.str());
 }
 
+std::function<const Teuchos::ParameterList&(int)> Global::Problem::solver_params_callback() const
+{
+  return [this](int id) -> const Teuchos::ParameterList& { return this->SolverParams(id); };
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 const Teuchos::ParameterList& Global::Problem::UMFPACKSolverParams()

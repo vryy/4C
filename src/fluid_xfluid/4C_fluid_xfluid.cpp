@@ -4140,8 +4140,11 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
   solverlist.set<int>("reuse", 0);
   solverparams.sublist("IFPACK Parameters");
 
-  Teuchos::RCP<Core::LinAlg::Solver> solver_gp =
-      Teuchos::rcp(new Core::LinAlg::Solver(solverparams, discret_->Comm(), false));
+  Teuchos::RCP<Core::LinAlg::Solver> solver_gp = Teuchos::rcp(new Core::LinAlg::Solver(solverparams,
+      discret_->Comm(), Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY"),
+      false));
 
   // ---------------------------------------------- new matrix and vectors
 

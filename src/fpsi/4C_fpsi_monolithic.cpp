@@ -518,7 +518,10 @@ void FPSI::Monolithic::SetupSolver()
                   solvertype == Core::LinearSolver::SolverType::superlu);
 
   if (directsolve_)
-    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, Comm()));
+    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, Comm(),
+        Global::Problem::Instance()->solver_params_callback(),
+        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Global::Problem::Instance()->IOParams(), "VERBOSITY")));
   else
     // create a linear solver
     create_linear_solver();
@@ -650,7 +653,10 @@ void FPSI::Monolithic::create_linear_solver()
       break;
   }
 
-  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(fpsisolverparams, Comm()));
+  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(fpsisolverparams, Comm(),
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
   // use solver blocks for structure and fluid
   const Teuchos::ParameterList& ssolverparams =
@@ -663,13 +669,25 @@ void FPSI::Monolithic::create_linear_solver()
   // for now, use same solver parameters for poro fluid and free fluid
 
   // poro/structure
-  solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams);
+  solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY"));
   // poro fluid
-  solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams);
+  solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams,
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY"));
   // fluid
-  solver_->put_solver_params_to_sub_params("Inverse3", fsolverparams);
+  solver_->put_solver_params_to_sub_params("Inverse3", fsolverparams,
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY"));
   // ale
-  solver_->put_solver_params_to_sub_params("Inverse4", asolverparams);
+  solver_->put_solver_params_to_sub_params("Inverse4", asolverparams,
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
   // prescribe rigid body modes
   poro_field()->structure_field()->discretization()->compute_null_space_if_necessary(

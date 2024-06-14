@@ -346,7 +346,10 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<Core::LinAlg::Spar
   const Teuchos::ParameterList& mcparams = Global::Problem::Instance()->contact_dynamic_params();
   const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
   solver_->Params() = Core::LinAlg::Solver::translate_solver_parameters(
-      Global::Problem::Instance()->SolverParams(linsolvernumber));
+      Global::Problem::Instance()->SolverParams(linsolvernumber),
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
   // Teuchos::ParameterList sfparams = solver_->Params();  // save copy of original solver parameter
   // list solver_->Params() =

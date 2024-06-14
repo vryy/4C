@@ -581,7 +581,8 @@ namespace Core::LinAlg
                   Teuchos::ParameterList solvparams;
                   Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
                       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-                  return Teuchos::rcp(new Core::LinAlg::Solver(solvparams, op.Comm()));
+                  return Teuchos::rcp(new Core::LinAlg::Solver(
+                      solvparams, op.Comm(), nullptr, Core::IO::Verbositylevel::standard));
                 })),
             solver_(*defaultsolver_),
             op_(op)
@@ -596,7 +597,8 @@ namespace Core::LinAlg
                   Teuchos::ParameterList solvparams;
                   Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
                       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-                  return Teuchos::rcp(new Core::LinAlg::Solver(solvparams, op.Comm()));
+                  return Teuchos::rcp(new Core::LinAlg::Solver(
+                      solvparams, op.Comm(), nullptr, Core::IO::Verbositylevel::standard));
                 })),
             solver_(*defaultsolver_),
             op_(*(const_cast<Core::LinAlg::SparseOperator&>(op).EpetraOperator()))

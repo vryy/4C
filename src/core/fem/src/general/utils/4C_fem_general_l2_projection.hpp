@@ -50,17 +50,23 @@ namespace Core::FE
       const int& numvec,                           ///< number of entries per node to project
       Teuchos::ParameterList& params,  ///< parameter list that contains the element action
       const Teuchos::ParameterList&
-          solverparams);  ///< solver parameters for solving the resulting global system;
+          solverparams,  ///< solver parameters for solving the resulting global system;
+      const std::function<const Teuchos::ParameterList&(int)>
+          get_solver_params  ///< function that returns the solver parameters for the i-th solver
+  );
 
   Teuchos::RCP<Epetra_MultiVector> evaluate_and_solve_nodal_l2_projection(
       Core::FE::Discretization& dis, const Epetra_Map& noderowmap, const std::string& statename,
       const int& numvec, Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
+      const std::function<const Teuchos::ParameterList&(int)> get_solver_params,
       const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap);
 
   Teuchos::RCP<Epetra_MultiVector> solve_nodal_l2_projection(Core::LinAlg::SparseMatrix& massmatrix,
       Epetra_MultiVector& rhs, const Epetra_Comm& comm, const int& numvec,
-      const Teuchos::ParameterList& solverparams, const Epetra_Map& noderowmap,
-      const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap);
+      const Teuchos::ParameterList& solverparams,
+      const std::function<const Teuchos::ParameterList&(int)> get_solver_params,
+      const Epetra_Map& noderowmap, const Epetra_Map& fullnoderowmap,
+      const std::map<int, int>& slavetomastercolnodesmap);
 
 }  // namespace Core::FE
 

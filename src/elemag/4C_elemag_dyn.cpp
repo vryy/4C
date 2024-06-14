@@ -98,7 +98,10 @@ void electromagnetics_drt()
         "LINEAR_SOLVER in ELECTROMAGNETIC DYNAMIC to a valid number!");
 
   Teuchos::RCP<Core::LinAlg::Solver> solver =
-      Teuchos::rcp(new Core::LinAlg::Solver(problem->SolverParams(linsolvernumber_elemag), comm));
+      Teuchos::rcp(new Core::LinAlg::Solver(problem->SolverParams(linsolvernumber_elemag), comm,
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
   // declare output writer
   Teuchos::RCP<Core::IO::DiscretizationWriter> output = elemagdishdg->Writer();
@@ -282,7 +285,9 @@ void electromagnetics_drt()
             // create solver
             Teuchos::RCP<Core::LinAlg::Solver> scatrasolver = Teuchos::rcp(new Core::LinAlg::Solver(
                 Global::Problem::Instance()->SolverParams(scatraparams->get<int>("LINEAR_SOLVER")),
-                scatradis->Comm()));
+                scatradis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+                Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                    Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
             // create instance of scalar transport basis algorithm (empty fluid discretization)
             Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatraalgo;

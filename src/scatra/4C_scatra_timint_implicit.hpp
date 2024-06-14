@@ -1022,10 +1022,6 @@ namespace ScaTra
     //! solve micro scale in truly partitioned multi-scale simulations
     void nonlinear_micro_scale_solve();
 
-    //! Calculate the reconstructed nodal gradient of phi by means of L2-projection
-    Teuchos::RCP<Epetra_MultiVector> compute_nodal_l2_projection(
-        const Teuchos::RCP<const Epetra_Vector>& state, const std::string& statename,
-        const int numvec, Teuchos::ParameterList& params, const int solvernumber);
 
     //! Calculate the reconstructed nodal gradient of phi by means of SPR
     Teuchos::RCP<Epetra_MultiVector> compute_superconvergent_patch_recovery(

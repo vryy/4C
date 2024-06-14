@@ -1290,7 +1290,10 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
       const Teuchos::ParameterList& fsisolverparams =
           Global::Problem::Instance()->SolverParams(linsolvernumber);
 
-      auto solver = Teuchos::rcp(new Core::LinAlg::Solver(fsisolverparams, Comm()));
+      auto solver = Teuchos::rcp(new Core::LinAlg::Solver(fsisolverparams, Comm(),
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
       const auto azprectype = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
           fsisolverparams, "AZPREC");
@@ -1299,7 +1302,10 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
       {
         case Core::LinearSolver::PreconditionerType::multigrid_muelu_fsi:
         {
-          solver->put_solver_params_to_sub_params("Inverse1", fsisolverparams);
+          solver->put_solver_params_to_sub_params("Inverse1", fsisolverparams,
+              Global::Problem::Instance()->solver_params_callback(),
+              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                  Global::Problem::Instance()->IOParams(), "VERBOSITY"));
           // This might be an alternative to "Core::LinAlg::FixNullspace()", directly calculate
           // nullspace on correct map
           // solver->Params().sublist("Inverse1").set<Teuchos::RCP<Epetra_Map>>("null space: map",
@@ -1311,7 +1317,10 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
               SystemMatrix()->Matrix(0, 0).EpetraMatrix()->RowMap(),
               solver->Params().sublist("Inverse1"));
 
-          solver->put_solver_params_to_sub_params("Inverse2", fsisolverparams);
+          solver->put_solver_params_to_sub_params("Inverse2", fsisolverparams,
+              Global::Problem::Instance()->solver_params_callback(),
+              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                  Global::Problem::Instance()->IOParams(), "VERBOSITY"));
           // This might be an alternative to "Core::LinAlg::FixNullspace()", directly calculate
           // nullspace on correct map
           // solver->Params().sublist("Inverse2").set<Teuchos::RCP<Epetra_Map>>("null space: map",
@@ -1323,7 +1332,10 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
               SystemMatrix()->Matrix(1, 1).EpetraMatrix()->RowMap(),
               solver->Params().sublist("Inverse2"));
 
-          solver->put_solver_params_to_sub_params("Inverse3", fsisolverparams);
+          solver->put_solver_params_to_sub_params("Inverse3", fsisolverparams,
+              Global::Problem::Instance()->solver_params_callback(),
+              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                  Global::Problem::Instance()->IOParams(), "VERBOSITY"));
           // This might be an alternative to "Core::LinAlg::FixNullspace()", directly calculate
           // nullspace on correct map
           // solver->Params().sublist("Inverse3").set<Teuchos::RCP<Epetra_Map>>("null space: map",

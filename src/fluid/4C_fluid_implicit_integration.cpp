@@ -4181,8 +4181,11 @@ void FLD::FluidImplicitTimeInt::av_m3_get_scale_separation_matrix()
       params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<int>("ML_SOLVER");
   if (scale_sep_solvernumber != (-1))  // create a dummy solver
   {
-    Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(
-        Global::Problem::Instance()->SolverParams(scale_sep_solvernumber), discret_->Comm()));
+    Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(
+        new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(scale_sep_solvernumber),
+            discret_->Comm(), Global::Problem::Instance()->solver_params_callback(),
+            Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                Global::Problem::Instance()->IOParams(), "VERBOSITY")));
     // compute the null space,
     discret_->compute_null_space_if_necessary(solver->Params(), true);
 

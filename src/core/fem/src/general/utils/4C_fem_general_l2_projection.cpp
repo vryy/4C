@@ -27,6 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projection(
     Core::FE::Discretization& dis, const Epetra_Map& noderowmap, const std::string& statename,
     const int& numvec, Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
+    const std::function<const Teuchos::ParameterList&(int)> get_solver_params,
     const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap)
 {
   // create empty matrix
@@ -107,15 +108,16 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projectio
   // finalize the matrix
   massmatrix->Complete();
 
-  return solve_nodal_l2_projection(*massmatrix, *rhs, dis.Comm(), numvec, solverparams, noderowmap,
-      fullnoderowmap, slavetomastercolnodesmap);
+  return solve_nodal_l2_projection(*massmatrix, *rhs, dis.Comm(), numvec, solverparams,
+      get_solver_params, noderowmap, fullnoderowmap, slavetomastercolnodesmap);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_nodal_l2_projection(
     Teuchos::RCP<Core::FE::Discretization> dis, const std::string& statename, const int& numvec,
-    Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams)
+    Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
+    const std::function<const Teuchos::ParameterList&(int)> get_solver_params)
 {
   // check if the statename has been set
   if (!dis->HasState(statename))
@@ -166,7 +168,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_nodal_l2_projection(
       fullnoderowmap->Comm());
 
   auto nodevec = evaluate_and_solve_nodal_l2_projection(*dis, noderowmap, statename, numvec, params,
-      solverparams, *fullnoderowmap, slavetomastercolnodesmap);
+      solverparams, get_solver_params, *fullnoderowmap, slavetomastercolnodesmap);
 
   // if no pbc are involved leave here
   if (slavetomastercolnodesmap.empty() or noderowmap.PointSameAs(*fullnoderowmap)) return nodevec;
@@ -201,14 +203,17 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_nodal_l2_projection(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
     Core::LinAlg::SparseMatrix& massmatrix, Epetra_MultiVector& rhs, const Epetra_Comm& comm,
-    const int& numvec, const Teuchos::ParameterList& solverparams, const Epetra_Map& noderowmap,
-    const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap)
+    const int& numvec, const Teuchos::ParameterList& solverparams,
+    const std::function<const Teuchos::ParameterList&(int)> get_solver_params,
+    const Epetra_Map& noderowmap, const Epetra_Map& fullnoderowmap,
+    const std::map<int, int>& slavetomastercolnodesmap)
 {
   // get solver parameter list of linear solver
   const auto solvertype =
       Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
-  auto solver = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, comm));
+  auto solver = Teuchos::rcp(new Core::LinAlg::Solver(
+      solverparams, comm, get_solver_params, Core::IO::Verbositylevel::standard));
 
   // skip setup of preconditioner in case of a direct solver
   if (solvertype != Core::LinearSolver::SolverType::umfpack and

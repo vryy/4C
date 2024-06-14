@@ -573,8 +573,10 @@ void FS3I::PartFS3I::SetupSystem()
     FOUR_C_THROW("Block Gauss-Seidel preconditioner expected");
 
   // use coupled scatra solver object
-  scatrasolver_ =
-      Teuchos::rcp(new Core::LinAlg::Solver(coupledscatrasolvparams, firstscatradis->Comm()));
+  scatrasolver_ = Teuchos::rcp(new Core::LinAlg::Solver(coupledscatrasolvparams,
+      firstscatradis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
   // get the solver number used for fluid ScalarTransport solver
   const int linsolver1number = fs3idyn.get<int>("LINEAR_SOLVER1");
@@ -591,10 +593,16 @@ void FS3I::PartFS3I::SetupSystem()
         "no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 "
         "in FS3I DYNAMIC to a valid number!");
 
-  scatrasolver_->put_solver_params_to_sub_params(
-      "Inverse1", Global::Problem::Instance()->SolverParams(linsolver1number));
-  scatrasolver_->put_solver_params_to_sub_params(
-      "Inverse2", Global::Problem::Instance()->SolverParams(linsolver2number));
+  scatrasolver_->put_solver_params_to_sub_params("Inverse1",
+      Global::Problem::Instance()->SolverParams(linsolver1number),
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY"));
+  scatrasolver_->put_solver_params_to_sub_params("Inverse2",
+      Global::Problem::Instance()->SolverParams(linsolver2number),
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
   (scatravec_[0])
       ->ScaTraField()

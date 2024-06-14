@@ -452,8 +452,11 @@ void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<Core::LinAlg::SparseOp
       FOUR_C_THROW(
           "If you want to aggregate your stresses you need to specify a WSS_ML_AGR_SOLVER!");
 
-    Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(
-        Global::Problem::Instance()->SolverParams(ML_solver), discret_->Comm()));
+    Teuchos::RCP<Core::LinAlg::Solver> solver =
+        Teuchos::rcp(new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(ML_solver),
+            discret_->Comm(), Global::Problem::Instance()->solver_params_callback(),
+            Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
     if (solver == Teuchos::null)
       FOUR_C_THROW(
@@ -1154,8 +1157,8 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
       discret->set_state("vel", vel);
 
       // project velocity gradient of fluid to nodal level via L2 projection
-      projected_velgrad =
-          Core::FE::compute_nodal_l2_projection(discret, "vel", numvec, params, solverparams);
+      projected_velgrad = Core::FE::compute_nodal_l2_projection(discret, "vel", numvec, params,
+          solverparams, Global::Problem::Instance()->solver_params_callback());
     }
     break;
     default:

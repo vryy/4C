@@ -59,8 +59,8 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
   Teuchos::ParameterList solvparams;
   Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-  Teuchos::RCP<Core::LinAlg::Solver> dummysolver(
-      new Core::LinAlg::Solver(solvparams, disnp_ptr_->Comm()));
+  Teuchos::RCP<Core::LinAlg::Solver> dummysolver(new Core::LinAlg::Solver(
+      solvparams, disnp_ptr_->Comm(), nullptr, Core::IO::Verbositylevel::standard));
 
   // ToDo: we do not want to hand in the structural dynamics parameter list
   // to the manager in the future! -> get rid of it as soon as old

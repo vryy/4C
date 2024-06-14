@@ -577,7 +577,10 @@ bool PoroElastScaTra::PoroScatraMono::SetupSolver()
 
   if (directsolve_)
   {
-    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, Comm()));
+    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, Comm(),
+        Global::Problem::Instance()->solver_params_callback(),
+        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Global::Problem::Instance()->IOParams(), "VERBOSITY")));
   }
   else
     // create a linear solver

@@ -485,8 +485,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_linea
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
-  solver = Teuchos::rcp(new Core::LinAlg::Solver(
-      Global::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+  solver = Teuchos::rcp(
+      new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(linsolvernumber),
+          actdis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
   actdis->compute_null_space_if_necessary(solver->Params());
 
@@ -551,8 +554,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
       }
 
       // build meshtying/contact solver
-      solver = Teuchos::rcp(new Core::LinAlg::Solver(
-          Global::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+      solver = Teuchos::rcp(
+          new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(linsolvernumber),
+              actdis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                  Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
       actdis->compute_null_space_if_necessary(solver->Params());
 
@@ -596,8 +602,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
     default:
     {
       // build meshtying solver
-      solver = Teuchos::rcp(new Core::LinAlg::Solver(
-          Global::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+      solver = Teuchos::rcp(
+          new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(linsolvernumber),
+              actdis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                  Global::Problem::Instance()->IOParams(), "VERBOSITY")));
       actdis->compute_null_space_if_necessary(solver->Params());
     }
     break;

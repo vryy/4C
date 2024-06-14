@@ -73,8 +73,11 @@ Arteries::TimInt::TimInt(Teuchos::RCP<Core::FE::Discretization> actdis, const in
 void Arteries::TimInt::Init(const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname)
 {
-  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(
-      Global::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm()));
+  solver_ = Teuchos::rcp(
+      new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(linsolvernumber_),
+          discret_->Comm(), Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
   discret_->compute_null_space_if_necessary(solver_->Params());
 

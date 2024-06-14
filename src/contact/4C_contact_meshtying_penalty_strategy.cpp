@@ -168,7 +168,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization
   Teuchos::ParameterList solvparams;
   Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-  Core::LinAlg::Solver solver(solvparams, Comm());
+  Core::LinAlg::Solver solver(solvparams, Comm(), nullptr, Core::IO::Verbositylevel::standard);
 
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
