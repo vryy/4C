@@ -97,20 +97,6 @@ void Discret::MeshFree::MeshfreeMultiBin::Pack(Core::Communication::PackBuffer& 
   add_to_pack(data, type);
   // add base class Core::Elements::Element
   Core::Elements::Element::Pack(data);
-  // add vector associatedeleid_
-
-  const unsigned int num_associated_ele = associated_ele_.size();
-  add_to_pack(data, num_associated_ele);
-
-  for (const auto& [binning_type, eles] : associated_ele_)
-  {
-    add_to_pack(data, binning_type);
-    std::vector<int> ele_ids;
-
-    for (const auto& [ele_id, ele] : eles) ele_ids.emplace_back(ele_id);
-
-    add_to_pack(data, ele_ids);
-  }
 }
 
 /*--------------------------------------------------------------------------*
@@ -126,22 +112,6 @@ void Discret::MeshFree::MeshfreeMultiBin::Unpack(const std::vector<char>& data)
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
   Core::Elements::Element::Unpack(basedata);
-
-  unsigned int num_associated_ele = 0;
-  extract_from_pack(position, data, num_associated_ele);
-  for (unsigned i = 0; i < num_associated_ele; ++i)
-  {
-    BINSTRATEGY::UTILS::BinContentType binning_type;
-    extract_from_pack(position, data, binning_type);
-
-    std::vector<int> ele_ids;
-    extract_from_pack(position, data, ele_ids);
-
-    std::map<int, Core::Elements::Element*> eles_new;
-    for (const auto& ele_id : ele_ids) eles_new[ele_id] = nullptr;
-
-    associated_ele_[binning_type] = eles_new;
-  }
 }
 
 FOUR_C_NAMESPACE_CLOSE

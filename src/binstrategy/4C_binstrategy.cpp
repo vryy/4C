@@ -1022,7 +1022,7 @@ void BINSTRATEGY::BinningStrategy::AssignElesToBins(Teuchos::RCP<Core::FE::Discr
     {
       // add eleid and elepointer to current bin
       currbin->AddAssociatedEle(
-          BINSTRATEGY::UTILS::ConvertElementToBinContentType(discret->gElement(*eleiter)), *eleiter,
+          BINSTRATEGY::UTILS::ConvertElementToBinContentType(discret->gElement(*eleiter)),
           discret->gElement(*eleiter));
     }
   }
@@ -1048,7 +1048,7 @@ void BINSTRATEGY::BinningStrategy::GetBinContent(std::set<Core::Elements::Elemen
     {
       // gather elements of with specific bincontent type
       auto elements = bin->AssociatedEles(bc_i);
-      for (const auto& [ele_id, ele] : elements)
+      for (const auto& ele : elements)
       {
         if (roweles && ele->Owner() != myrank_) continue;
         eles.insert(ele);

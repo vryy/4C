@@ -180,13 +180,10 @@ namespace Discret::MeshFree
      *      Returns nullptr if pointers to not exist.
      *///                                                  (public) ghamm 04/13
     /*------------------------------------------------------------------------*/
-    inline virtual std::map<int, Core::Elements::Element*> AssociatedEles(
+    inline const std::vector<Core::Elements::Element*>& AssociatedEles(
         BINSTRATEGY::UTILS::BinContentType bin_content)
     {
-      if (!associated_ele_[bin_content].empty())
-        return associated_ele_[bin_content];
-      else
-        return {};
+      return associated_ele_[bin_content];
     }
 
     /*------------------------------------------------------------------------*/
@@ -196,11 +193,10 @@ namespace Discret::MeshFree
     /*------------------------------------------------------------------------*/
     inline virtual void AddAssociatedEle(
         BINSTRATEGY::UTILS::BinContentType bin_content,  //!< (in): type of element to be added
-        const int gid,                                   //!< (in): global id of element to be added
         Core::Elements::Element* eleptr                  //!< (in): pointer to element to be added
     )
     {
-      associated_ele_[bin_content][gid] = eleptr;
+      associated_ele_[bin_content].emplace_back(eleptr);
     }
 
     /*------------------------------------------------------------------------*/
@@ -244,7 +240,7 @@ namespace Discret::MeshFree
     Core::FE::CellType Shape() const override { return Core::FE::CellType::dis_none; };
 
    private:
-    std::map<BINSTRATEGY::UTILS::BinContentType, std::map<int, Core::Elements::Element*>>
+    std::map<BINSTRATEGY::UTILS::BinContentType, std::vector<Core::Elements::Element*>>
         associated_ele_;
 
   };  // class MeshfreeMultiBin
