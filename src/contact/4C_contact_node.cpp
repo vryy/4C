@@ -98,7 +98,7 @@ void CONTACT::NodeDataContainer::Unpack(
   // kappa_
   Core::Communication::ParObject::extract_from_pack(position, data, kappa_);
   // activeold_
-  activeold_ = Core::Communication::ParObject::ExtractInt(position, data);
+  activeold_ = Core::Communication::ParObject::extract_int(position, data);
   // n_old_
   Core::Communication::ParObject::extract_from_pack(position, data, n_old_, 3 * sizeof(double));
 
@@ -500,16 +500,16 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
   Mortar::Node::Unpack(basedata);
 
   // active_
-  active_ = ExtractInt(position, data);
+  active_ = extract_int(position, data);
   // isslave_
-  initactive_ = ExtractInt(position, data);
+  initactive_ = extract_int(position, data);
   // isslave_
-  involvedm_ = ExtractInt(position, data);
+  involvedm_ = extract_int(position, data);
   // isslave_
-  linsize_ = ExtractInt(position, data);
+  linsize_ = extract_int(position, data);
 
   // data_
-  bool hasdata = ExtractInt(position, data);
+  bool hasdata = extract_int(position, data);
   if (hasdata)
   {
     codata_ = Teuchos::rcp(new CONTACT::NodeDataContainer());
@@ -521,7 +521,7 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
   }
 
   // augdata_
-  bool hasdataaug = ExtractInt(position, data);
+  bool hasdataaug = extract_int(position, data);
   if (hasdataaug)
   {
     augdata_ = Teuchos::rcp(new CONTACT::Aug::NodeDataContainer(*this));
@@ -532,7 +532,7 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
     augdata_ = Teuchos::null;
 
   // porodata_
-  bool hasdataporo = ExtractInt(position, data);
+  bool hasdataporo = extract_int(position, data);
   if (hasdataporo)
   {
     coporodata_ = Teuchos::rcp(new CONTACT::NodePoroDataContainer());
@@ -544,7 +544,7 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
   }
 
   // TSI data
-  bool hasTSIdata = (bool)ExtractInt(position, data);
+  bool hasTSIdata = (bool)extract_int(position, data);
   if (hasTSIdata)
   {
     cTSIdata_ = Teuchos::rcp(new CONTACT::NodeTSIDataContainer());

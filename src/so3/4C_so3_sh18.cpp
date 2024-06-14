@@ -64,13 +64,13 @@ void Discret::ELEMENTS::SoSh18Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX18"] = Input::LineDefinition::Builder()
-                      .AddIntVector("HEX18", 18)
-                      .AddNamedInt("MAT")
-                      .AddNamedString("KINEM")
-                      .AddNamedString("TSL")
-                      .AddNamedString("MEL")
-                      .AddNamedString("CTL")
-                      .AddNamedString("VOL")
+                      .add_int_vector("HEX18", 18)
+                      .add_named_int("MAT")
+                      .add_named_string("KINEM")
+                      .add_named_string("TSL")
+                      .add_named_string("MEL")
+                      .add_named_string("CTL")
+                      .add_named_string("VOL")
                       .add_optional_named_double_vector("RAD", 3)
                       .add_optional_named_double_vector("AXI", 3)
                       .add_optional_named_double_vector("CIR", 3)
@@ -78,7 +78,7 @@ void Discret::ELEMENTS::SoSh18Type::setup_element_definition(
                       .add_optional_named_double_vector("FIBER2", 3)
                       .add_optional_named_double_vector("FIBER3", 3)
                       .add_optional_named_double("STRENGTH")
-                      .Build();
+                      .build();
 }
 
 
@@ -178,10 +178,10 @@ void Discret::ELEMENTS::SoSh18::Unpack(const std::vector<char>& data)
   for (int i = 0; i < size; ++i) extract_from_pack(position, data, invJ_[i]);
 
   // element technology bools
-  dsg_shear_ = ExtractInt(position, data);
-  dsg_membrane_ = ExtractInt(position, data);
-  dsg_ctl_ = ExtractInt(position, data);
-  eas_ = ExtractInt(position, data);
+  dsg_shear_ = extract_int(position, data);
+  dsg_membrane_ = extract_int(position, data);
+  dsg_ctl_ = extract_int(position, data);
+  eas_ = extract_int(position, data);
   setup_dsg();
 
   if (position != data.size())

@@ -152,15 +152,15 @@ void Mat::Maxwell0dAcinusDoubleExponential::Unpack(const std::vector<char>& data
  *----------------------------------------------------------------------*/
 void Mat::Maxwell0dAcinusDoubleExponential::Setup(Input::LineDefinition* linedef)
 {
-  linedef->ExtractDouble("E1_01", e1_01_);
-  linedef->ExtractDouble("E1_LIN1", e1_lin1_);
-  linedef->ExtractDouble("E1_EXP1", e1_exp1_);
-  linedef->ExtractDouble("TAU1", tau1_);
+  linedef->extract_double("E1_01", e1_01_);
+  linedef->extract_double("E1_LIN1", e1_lin1_);
+  linedef->extract_double("E1_EXP1", e1_exp1_);
+  linedef->extract_double("TAU1", tau1_);
 
-  linedef->ExtractDouble("E1_02", e1_02_);
-  linedef->ExtractDouble("E1_LIN2", e1_lin2_);
-  linedef->ExtractDouble("E1_EXP2", e1_exp2_);
-  linedef->ExtractDouble("TAU2", tau2_);
+  linedef->extract_double("E1_02", e1_02_);
+  linedef->extract_double("E1_LIN2", e1_lin2_);
+  linedef->extract_double("E1_EXP2", e1_exp2_);
+  linedef->extract_double("TAU2", tau2_);
   // TODO bool -variable init, in Evaluate abfragen ob init=true
 }
 

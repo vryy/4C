@@ -17,7 +17,7 @@ bool Discret::ELEMENTS::SoTet4::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   Teuchos::RCP<Core::Mat::Material> mat = Material();
@@ -25,7 +25,7 @@ bool Discret::ELEMENTS::SoTet4::ReadElement(
   SolidMaterial()->Setup(NUMGPT_SOTET4, linedef);
 
   std::string buffer;
-  linedef->ExtractString("KINEM", buffer);
+  linedef->extract_string("KINEM", buffer);
 
   // geometrically linear
   if (buffer == "linear")

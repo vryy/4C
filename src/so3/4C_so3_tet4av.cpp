@@ -85,16 +85,16 @@ void Discret::ELEMENTS::SoTet4avType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["TET4"] = Input::LineDefinition::Builder()
-                     .AddIntVector("TET4", 4)
-                     .AddNamedInt("MAT")
-                     .AddNamedString("KINEM")
+                     .add_int_vector("TET4", 4)
+                     .add_named_int("MAT")
+                     .add_named_string("KINEM")
                      .add_optional_named_double_vector("RAD", 3)
                      .add_optional_named_double_vector("AXI", 3)
                      .add_optional_named_double_vector("CIR", 3)
                      .add_optional_named_double_vector("FIBER1", 3)
                      .add_optional_named_double_vector("FIBER2", 3)
                      .add_optional_named_double_vector("FIBER3", 3)
-                     .Build();
+                     .build();
 }
 
 /*----------------------------------------------------------------------***

@@ -22,7 +22,7 @@ namespace STR::UTILS::ReadElement
   Inpar::ScaTra::ImplType read_type(Input::LineDefinition* linedef)
   {
     std::string impltype;
-    linedef->ExtractString("TYPE", impltype);
+    linedef->extract_string("TYPE", impltype);
 
     if (impltype == "Undefined")
       return Inpar::ScaTra::impltype_undefined;
@@ -58,7 +58,7 @@ namespace STR::UTILS::ReadElement
   Inpar::Poro::PoroType ReadPoroType(Input::LineDefinition* linedef)
   {
     std::string impltype;
-    linedef->ExtractString("POROTYPE", impltype);
+    linedef->extract_string("POROTYPE", impltype);
 
     if (impltype == "PressureVelocityBased")
       return Inpar::Poro::PoroType::pressure_velocity_based;

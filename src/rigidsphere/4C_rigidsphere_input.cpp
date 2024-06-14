@@ -20,8 +20,8 @@ bool Discret::ELEMENTS::Rigidsphere::ReadElement(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // currently only rotationally symmetric profiles for beam --> Iyy = Izz
-  linedef->ExtractDouble("RADIUS", radius_);
-  linedef->ExtractDouble("DENSITY", rho_);
+  linedef->extract_double("RADIUS", radius_);
+  linedef->extract_double("DENSITY", rho_);
 
   return (true);
 }

@@ -958,7 +958,7 @@ void Mat::GrowthVolumetric::Setup(int numgp, Input::LineDefinition* linedef)
     case Core::Materials::m_growth_ac_radial_refconc:
     {
       // CIR-AXI-RAD nomenclature
-      if (not(linedef->HaveNamed("RAD")))
+      if (not(linedef->has_named("RAD")))
       {
         FOUR_C_THROW(
             "If you want growth into the radial direction you need to specify RAD in your input "
@@ -978,7 +978,7 @@ void Mat::GrowthVolumetric::Setup(int numgp, Input::LineDefinition* linedef)
     case Core::Materials::m_growth_aniso_stress:
     {
       // FIBER1 nomenclature
-      if (not(linedef->HaveNamed("FIBER1")))
+      if (not(linedef->has_named("FIBER1")))
         FOUR_C_THROW(
             "If you want growth in fiber direction you need to specify FIBER1 in your input file!");
 
@@ -996,14 +996,14 @@ void Mat::GrowthVolumetric::Setup(int numgp, Input::LineDefinition* linedef)
     case Core::Materials::m_growth_aniso_stress_const_trig:
     {
       // FIBER1 nomenclature
-      if (not(linedef->HaveNamed("FIBER1")))
+      if (not(linedef->has_named("FIBER1")))
         FOUR_C_THROW(
             "If you want growth in fiber direction you need to specify FIBER1 in your input file!");
 
       ReadFiber(linedef, "FIBER1", refdir_);
 
-      linedef->ExtractDouble("GROWTHTRIG", growthtrig_const_);
-      if (not(linedef->HaveNamed("GROWTHTRIG")))
+      linedef->extract_double("GROWTHTRIG", growthtrig_const_);
+      if (not(linedef->has_named("GROWTHTRIG")))
         FOUR_C_THROW("You need to specify GROWTHTRIG in your input file!");
 
       // only refdir is used - rest remains unused...
@@ -1076,7 +1076,7 @@ void Mat::GrowthVolumetric::ReadFiber(
     Input::LineDefinition* linedef, std::string specifier, Core::LinAlg::Matrix<3, 1>& fiber_vector)
 {
   std::vector<double> fiber1;
-  linedef->ExtractDoubleVector(std::move(specifier), fiber1);
+  linedef->extract_double_vector(std::move(specifier), fiber1);
   double f1norm = 0.;
   // normalization
   for (int i = 0; i < 3; ++i)

@@ -74,8 +74,8 @@ void MIXTURE::TimestepAdaptivityInfo::Unpack(
   list_.reserve(size_of_adaptivity_info);
   for (std::size_t i = 0; i < size_of_adaptivity_info; ++i)
   {
-    const unsigned int level = Core::Communication::ParObject::ExtractInt(position, data);
-    const unsigned int num_intervals = Core::Communication::ParObject::ExtractInt(position, data);
+    const unsigned int level = Core::Communication::ParObject::extract_int(position, data);
+    const unsigned int num_intervals = Core::Communication::ParObject::extract_int(position, data);
     list_.emplace_back(level, num_intervals);
   }
 }

@@ -487,8 +487,8 @@ void Inpar::FSI::SetValidConditions(
 
   for (unsigned i = 0; i < fsicomponents.size(); ++i)
   {
-    linefsi->AddComponent(fsicomponents[i]);
-    surffsi->AddComponent(fsicomponents[i]);
+    linefsi->add_component(fsicomponents[i]);
+    surffsi->add_component(fsicomponents[i]);
   }
 
   condlist.push_back(linefsi);
@@ -539,7 +539,7 @@ void Inpar::FSI::SetValidConditions(
           "DESIGN STRUCTURE ALE COUPLING SURF CONDITIONS", "StructAleCoupling", "StructAleCoupling",
           Core::Conditions::StructAleCoupling, true, Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < saccomponents.size(); ++i) surfsac->AddComponent(saccomponents[i]);
+  for (unsigned i = 0; i < saccomponents.size(); ++i) surfsac->add_component(saccomponents[i]);
 
   condlist.push_back(surfsac);
 
@@ -566,8 +566,8 @@ void Inpar::FSI::SetValidConditions(
 
   for (unsigned i = 0; i < sfvcomponents.size(); ++i)
   {
-    surfsfv->AddComponent(sfvcomponents[i]);
-    volsfv->AddComponent(sfvcomponents[i]);
+    surfsfv->add_component(sfvcomponents[i]);
+    volsfv->add_component(sfvcomponents[i]);
   }
 
   condlist.push_back(surfsfv);

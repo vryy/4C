@@ -86,7 +86,7 @@ void Discret::ELEMENTS::Beam3Base::Unpack(const std::vector<char>& data)
   // bspotposxi_
   extract_from_pack(position, data, bspotposxi_);
   // filamenttype_
-  filamenttype_ = static_cast<Inpar::BEAMINTERACTION::FilamentType>(ExtractInt(position, data));
+  filamenttype_ = static_cast<Inpar::BEAMINTERACTION::FilamentType>(extract_int(position, data));
 
   return;
 }

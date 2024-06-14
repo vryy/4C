@@ -76,9 +76,9 @@ void Discret::ELEMENTS::SoHex18Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX18"] = Input::LineDefinition::Builder()
-                      .AddIntVector("HEX18", 18)
-                      .AddNamedInt("MAT")
-                      .AddNamedString("KINEM")
+                      .add_int_vector("HEX18", 18)
+                      .add_named_int("MAT")
+                      .add_named_string("KINEM")
                       .add_optional_named_double_vector("RAD", 3)
                       .add_optional_named_double_vector("AXI", 3)
                       .add_optional_named_double_vector("CIR", 3)
@@ -86,7 +86,7 @@ void Discret::ELEMENTS::SoHex18Type::setup_element_definition(
                       .add_optional_named_double_vector("FIBER2", 3)
                       .add_optional_named_double_vector("FIBER3", 3)
                       .add_optional_named_double("STRENGTH")
-                      .Build();
+                      .build();
 }
 
 /*----------------------------------------------------------------------*
@@ -244,7 +244,7 @@ bool Discret::ELEMENTS::SoHex18::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
 
   SetMaterial(0, Mat::Factory(material));
 
@@ -258,7 +258,7 @@ bool Discret::ELEMENTS::SoHex18::ReadElement(
   std::string buffer;
 
   // read kinematic flag
-  linedef->ExtractString("KINEM", buffer);
+  linedef->extract_string("KINEM", buffer);
   if (buffer == "linear")
   {
     // kintype_ = soh8_linear;

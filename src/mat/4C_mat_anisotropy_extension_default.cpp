@@ -57,7 +57,7 @@ void Mat::DefaultAnisotropyExtension<numfib>::unpack_anisotropy(
   // Call base unpacking
   Mat::FiberAnisotropyExtension<numfib>::unpack_anisotropy(data, position);
 
-  initialized_ = static_cast<bool>(Core::Communication::ParObject::ExtractInt(position, data));
+  initialized_ = static_cast<bool>(Core::Communication::ParObject::extract_int(position, data));
 }
 
 template <unsigned int numfib>

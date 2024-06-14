@@ -1113,12 +1113,12 @@ void Mat::CrystalPlasticity::setup_lattice_orientation(Input::LineDefinition* li
   std::vector<double> fiber2;
   std::vector<double> fiber3;
 
-  if (linedef->HaveNamed("FIBER1"))
+  if (linedef->has_named("FIBER1"))
   {
     // extract fiber vectors as columns of the rotation matrix
-    linedef->ExtractDoubleVector("FIBER1", fiber1);
-    linedef->ExtractDoubleVector("FIBER2", fiber2);
-    linedef->ExtractDoubleVector("FIBER3", fiber3);
+    linedef->extract_double_vector("FIBER1", fiber1);
+    linedef->extract_double_vector("FIBER2", fiber2);
+    linedef->extract_double_vector("FIBER3", fiber3);
 
     // assemble rotation matrix
     for (int i = 0; i < 3; i++)

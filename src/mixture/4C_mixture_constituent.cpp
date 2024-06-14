@@ -142,8 +142,8 @@ void MIXTURE::MixtureConstituent::UnpackConstituent(
 
   Core::Communication::ParObject::extract_from_pack(position, data, numgp_);
 
-  has_read_element_ = (bool)Core::Communication::ParObject::ExtractInt(position, data);
-  is_setup_ = (bool)Core::Communication::ParObject::ExtractInt(position, data);
+  has_read_element_ = (bool)Core::Communication::ParObject::extract_int(position, data);
+  is_setup_ = (bool)Core::Communication::ParObject::extract_int(position, data);
 }
 
 void MIXTURE::MixtureConstituent::EvaluateElasticPart(const Core::LinAlg::Matrix<3, 3>& F,

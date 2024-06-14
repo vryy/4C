@@ -31,9 +31,9 @@ namespace
   Input::LineDefinition::Builder get_default_line_definition_builder()
   {
     return Input::LineDefinition::Builder()
-        .AddIntVector(Core::FE::CellTypeToString(celltype), Core::FE::num_nodes<celltype>)
-        .AddNamedInt("MAT")
-        .AddNamedString("KINEM")
+        .add_int_vector(Core::FE::CellTypeToString(celltype), Core::FE::num_nodes<celltype>)
+        .add_named_int("MAT")
+        .add_named_string("KINEM")
         .add_optional_named_string("PRESTRESS_TECH")
         .add_optional_named_double_vector("RAD", 3)
         .add_optional_named_double_vector("AXI", 3)
@@ -56,38 +56,38 @@ void Discret::ELEMENTS::SolidType::setup_element_definition(
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex8)] =
       get_default_line_definition_builder<Core::FE::CellType::hex8>()
           .add_optional_named_string("TECH")
-          .Build();
+          .build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex18)] =
-      get_default_line_definition_builder<Core::FE::CellType::hex18>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::hex18>().build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex20)] =
-      get_default_line_definition_builder<Core::FE::CellType::hex20>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::hex20>().build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex27)] =
-      get_default_line_definition_builder<Core::FE::CellType::hex27>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::hex27>().build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet4)] =
-      get_default_line_definition_builder<Core::FE::CellType::tet4>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::tet4>().build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet10)] =
-      get_default_line_definition_builder<Core::FE::CellType::tet10>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::tet10>().build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::wedge6)] =
-      get_default_line_definition_builder<Core::FE::CellType::wedge6>().Build();
+      get_default_line_definition_builder<Core::FE::CellType::wedge6>().build();
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::pyramid5)] =
       get_default_line_definition_builder<Core::FE::CellType::pyramid5>()
           .add_optional_named_string("TECH")
-          .Build();
+          .build();
 
 
 
   defsgeneral["NURBS27"] = Input::LineDefinition::Builder()
-                               .AddIntVector("NURBS27", 27)
-                               .AddNamedInt("MAT")
-                               .AddNamedString("KINEM")
-                               .Build();
+                               .add_int_vector("NURBS27", 27)
+                               .add_named_int("MAT")
+                               .add_named_string("KINEM")
+                               .build();
 }
 
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidType::Create(
@@ -185,14 +185,14 @@ void Discret::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  if (ExtractInt(position, data) != UniqueParObjectId()) FOUR_C_THROW("wrong instance type data");
+  if (extract_int(position, data) != UniqueParObjectId()) FOUR_C_THROW("wrong instance type data");
 
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
   Core::Elements::Element::Unpack(basedata);
 
-  celltype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
+  celltype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
 
   Discret::ELEMENTS::ExtractFromPack(position, data, solid_ele_property_);
 

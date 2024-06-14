@@ -88,20 +88,20 @@ void Core::UTILS::AddValidBuiltinFunctions(Core::UTILS::FunctionManager& functio
   using namespace Input;
 
   std::vector<LineDefinition> possible_lines = {
-      LineDefinition::Builder().AddNamedString("SYMBOLIC_FUNCTION_OF_SPACE_TIME").Build(),
+      LineDefinition::Builder().add_named_string("SYMBOLIC_FUNCTION_OF_SPACE_TIME").build(),
 
-      LineDefinition::Builder().AddNamedString("SYMBOLIC_FUNCTION_OF_TIME").Build(),
-
-      LineDefinition::Builder()
-          .AddNamedInt("COMPONENT")
-          .AddNamedString("SYMBOLIC_FUNCTION_OF_SPACE_TIME")
-          .Build(),
+      LineDefinition::Builder().add_named_string("SYMBOLIC_FUNCTION_OF_TIME").build(),
 
       LineDefinition::Builder()
-          .AddNamedInt("VARIABLE")
-          .AddNamedString("NAME")
-          .AddNamedString("TYPE")
-          .AddOptionalNamedInt("NUMPOINTS")
+          .add_named_int("COMPONENT")
+          .add_named_string("SYMBOLIC_FUNCTION_OF_SPACE_TIME")
+          .build(),
+
+      LineDefinition::Builder()
+          .add_named_int("VARIABLE")
+          .add_named_string("NAME")
+          .add_named_string("TYPE")
+          .add_optional_named_int("NUMPOINTS")
           .add_optional_named_string("BYNUM")
           .add_optional_named_double_vector("TIMERANGE", 2)
           .add_optional_named_double_vector("TIMES", LengthFromIntNamed("NUMPOINTS"))
@@ -124,14 +124,14 @@ void Core::UTILS::AddValidBuiltinFunctions(Core::UTILS::FunctionManager& functio
           .add_optional_named_string("PERIODIC")
           .add_optional_named_double("T1")
           .add_optional_named_double("T2")
-          .Build(),
+          .build(),
 
       LineDefinition::Builder()
-          .AddNamedString("VARFUNCTION")
-          .AddOptionalNamedInt("NUMCONSTANTS")
+          .add_named_string("VARFUNCTION")
+          .add_optional_named_int("NUMCONSTANTS")
           .add_optional_named_pair_of_string_and_double_vector(
               "CONSTANTS", LengthFromIntNamed("NUMCONSTANTS"))
-          .Build()};
+          .build()};
 
   function_manager.add_function_definition(possible_lines, CreateBuiltinFunctionDispatch);
 }

@@ -24,7 +24,7 @@ bool Discret::ELEMENTS::Membrane<distype>::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   // set up of materials with GP data (e.g., history variables)
@@ -32,7 +32,7 @@ bool Discret::ELEMENTS::Membrane<distype>::ReadElement(
 
 
   // read element thickness
-  linedef->ExtractDouble("THICK", thickness_);
+  linedef->extract_double("THICK", thickness_);
   if (thickness_ <= 0) FOUR_C_THROW("Membrane element thickness needs to be > 0");
 
   // initialize current thickness at all gp
@@ -44,7 +44,7 @@ bool Discret::ELEMENTS::Membrane<distype>::ReadElement(
 
 
   // reduced dimension assumption
-  linedef->ExtractString("STRESS_STRAIN", buffer);
+  linedef->extract_string("STRESS_STRAIN", buffer);
   if (buffer == "plane_stress")
   {
     planetype_ = plane_stress;

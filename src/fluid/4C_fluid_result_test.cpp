@@ -45,11 +45,11 @@ void FLD::FluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int&
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
   if (dis != fluiddis_->Name()) return;
 
   int node;
-  res.ExtractInt("NODE", node);
+  res.extract_int("NODE", node);
   node -= 1;
 
   int havenode(fluiddis_->HaveGlobalNode(node));
@@ -77,7 +77,7 @@ void FLD::FluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int&
       const int numdim = Global::Problem::Instance()->NDim();
 
       std::string position;
-      res.ExtractString("QUANTITY", position);
+      res.extract_string("QUANTITY", position);
       if (position == "velx")
         result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0, actnode, 0))];
       else if (position == "vely")

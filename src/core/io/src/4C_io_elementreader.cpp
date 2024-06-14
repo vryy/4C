@@ -233,10 +233,10 @@ void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
             Input::LineDefinition* linedef = ed.ElementLines(eletype, distype);
             if (linedef != nullptr)
             {
-              if (not linedef->Read(t))
+              if (not linedef->read(t))
               {
                 std::cout << "\n" << elenumber << " " << eletype << " " << distype << " ";
-                linedef->Print(std::cout);
+                linedef->print(std::cout);
                 std::cout << "\n";
                 std::cout << line << "\n";
                 FOUR_C_THROW(

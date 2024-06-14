@@ -154,7 +154,7 @@ void BEAMINTERACTION::Data::BeamData::Unpack(std::vector<char> const& data)
   Core::Communication::ParObject::extract_from_pack(position, data, bspotstatus_);
   //  // filamenttype
   //  filamenttype_ = static_cast<Inpar::BEAMINTERACTION::FilamentType>(
-  //      Core::Communication::ParObject::ExtractInt(position,data) );
+  //      Core::Communication::ParObject::extract_int(position,data) );
 
 
   if (position != data.size())
@@ -262,7 +262,7 @@ void BEAMINTERACTION::Data::UnBindEventData::Unpack(std::vector<char> const& dat
   Core::Communication::ParObject::extract_from_pack(position, data, eletoupdate_);
 
   linkertype_ = static_cast<Inpar::BEAMINTERACTION::CrosslinkerType>(
-      Core::Communication::ParObject::ExtractInt(position, data));
+      Core::Communication::ParObject::extract_int(position, data));
 
   if (position != data.size())
     FOUR_C_THROW(

@@ -71,10 +71,10 @@ void Discret::ELEMENTS::Torsion3Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["TORSION3"];
 
   defs["LINE3"] = Input::LineDefinition::Builder()
-                      .AddIntVector("LINE3", 3)
-                      .AddNamedInt("MAT")
-                      .AddNamedString("BENDINGPOTENTIAL")
-                      .Build();
+                      .add_int_vector("LINE3", 3)
+                      .add_named_int("MAT")
+                      .add_named_string("BENDINGPOTENTIAL")
+                      .build();
 }
 
 
@@ -146,7 +146,7 @@ void Discret::ELEMENTS::Torsion3::Unpack(const std::vector<char>& data)
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
-  bendingpotential_ = static_cast<BendingPotential>(ExtractInt(position, data));
+  bendingpotential_ = static_cast<BendingPotential>(extract_int(position, data));
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

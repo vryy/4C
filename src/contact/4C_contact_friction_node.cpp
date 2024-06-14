@@ -112,9 +112,9 @@ void CONTACT::FriNodeDataContainer::Unpack(
   // jump_
   Core::Communication::ParObject::extract_from_pack(position, data, jump_, 3 * sizeof(double));
   // slip_
-  slip_ = Core::Communication::ParObject::ExtractInt(position, data);
+  slip_ = Core::Communication::ParObject::extract_int(position, data);
   // slipold_
-  slipold_ = Core::Communication::ParObject::ExtractInt(position, data);
+  slipold_ = Core::Communication::ParObject::extract_int(position, data);
   // traction_
   Core::Communication::ParObject::extract_from_pack(position, data, traction_, 3 * sizeof(double));
   // tractionold_
@@ -133,7 +133,7 @@ void CONTACT::FriNodeDataContainer::Unpack(
 
   if (hasdata != 0)
   {
-    int dentries = Core::Communication::ParObject::ExtractInt(position, data);
+    int dentries = Core::Communication::ParObject::extract_int(position, data);
 
     drowsold_.resize(dentries);
     Core::Communication::ParObject::extract_from_pack(position, data, drowsold_);
@@ -147,7 +147,7 @@ void CONTACT::FriNodeDataContainer::Unpack(
 
   if (hasdata2 != 0)
   {
-    int dentries = Core::Communication::ParObject::ExtractInt(position, data);
+    int dentries = Core::Communication::ParObject::extract_int(position, data);
 
     drowsoldLTL_.resize(dentries);
     Core::Communication::ParObject::extract_from_pack(position, data, drowsoldLTL_);
@@ -328,7 +328,7 @@ void CONTACT::FriNode::Unpack(const std::vector<char>& data)
 
   // **************************
   // FriData
-  bool hasdata = ExtractInt(position, data);
+  bool hasdata = extract_int(position, data);
   if (hasdata)
   {
     fridata_ = Teuchos::rcp(new CONTACT::FriNodeDataContainer());
@@ -339,7 +339,7 @@ void CONTACT::FriNode::Unpack(const std::vector<char>& data)
 
   // **************************
   // FriDataPlus
-  bool hasdataplus = ExtractInt(position, data);
+  bool hasdataplus = extract_int(position, data);
   if (hasdataplus)
   {
     weardata_ = Teuchos::rcp(new CONTACT::FriNodeWearDataContainer());

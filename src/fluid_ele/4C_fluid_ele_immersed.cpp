@@ -43,10 +43,10 @@ void Discret::ELEMENTS::FluidTypeImmersed::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defsimmersed = definitions["FLUIDIMMERSED"];
 
   defsimmersed["HEX8"] = Input::LineDefinition::Builder()
-                             .AddIntVector("HEX8", 8)
-                             .AddNamedInt("MAT")
-                             .AddNamedString("NA")
-                             .Build();
+                             .add_int_vector("HEX8", 8)
+                             .add_named_int("MAT")
+                             .add_named_string("NA")
+                             .build();
 }
 
 /*----------------------------------------------------------------------*
@@ -128,11 +128,11 @@ void Discret::ELEMENTS::FluidImmersed::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   Discret::ELEMENTS::Fluid::Unpack(basedata);
   // Part of immersion domain?
-  is_immersed_ = ExtractInt(position, data);
+  is_immersed_ = extract_int(position, data);
   // Part of immersion domain for immersed boundary?
-  is_immersed_bdry_ = ExtractInt(position, data);
+  is_immersed_bdry_ = extract_int(position, data);
   // has dirichletvals projected?
-  has_projected_dirichletvalues_ = ExtractInt(position, data);
+  has_projected_dirichletvalues_ = extract_int(position, data);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

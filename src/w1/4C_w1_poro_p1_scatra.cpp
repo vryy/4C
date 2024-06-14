@@ -81,7 +81,7 @@ void Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::Unpack(const std::vector<cha
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract scalar transport impltype
-  impltype_ = static_cast<Inpar::ScaTra::ImplType>(my::ExtractInt(position, data));
+  impltype_ = static_cast<Inpar::ScaTra::ImplType>(my::extract_int(position, data));
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -106,7 +106,7 @@ bool Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::ReadElement(
 
   // read scalar transport implementation type
   std::string impltype;
-  linedef->ExtractString("TYPE", impltype);
+  linedef->extract_string("TYPE", impltype);
 
   if (impltype == "Undefined")
     impltype_ = Inpar::ScaTra::impltype_undefined;

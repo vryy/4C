@@ -45,7 +45,7 @@ void STI::STIResultTest::TestSpecial(
   {
     // extract name of quantity to be tested
     std::string quantity;
-    res.ExtractString("QUANTITY", quantity);
+    res.extract_string("QUANTITY", quantity);
 
     // get result to be tested
     const double result = result_special(quantity);

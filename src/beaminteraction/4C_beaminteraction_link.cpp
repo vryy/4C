@@ -132,9 +132,9 @@ void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // isinit_
-  isinit_ = Core::Communication::ParObject::ExtractInt(position, data);
+  isinit_ = Core::Communication::ParObject::extract_int(position, data);
   // issetup
-  issetup_ = Core::Communication::ParObject::ExtractInt(position, data);
+  issetup_ = Core::Communication::ParObject::extract_int(position, data);
   // id_
   extract_from_pack(position, data, id_);
 
@@ -145,7 +145,7 @@ void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
   // bspotpos2
   extract_from_pack(position, data, bspotpos2_);
   // linkertype
-  linkertype_ = static_cast<Inpar::BEAMINTERACTION::CrosslinkerType>(ExtractInt(position, data));
+  linkertype_ = static_cast<Inpar::BEAMINTERACTION::CrosslinkerType>(extract_int(position, data));
   // timelinkwasset
   extract_from_pack(position, data, timelinkwasset_);
   // reflength

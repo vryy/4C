@@ -35,7 +35,7 @@ bool Discret::ELEMENTS::Beam3r::ReadElement(
 
   // read number of material model and cross-section specs
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   const auto mat_type = Material()->Parameter()->Type();
@@ -48,14 +48,14 @@ bool Discret::ELEMENTS::Beam3r::ReadElement(
       to_string(mat_type).data());
 
 
-  if (linedef->HaveNamed("HERM2LINE2") or linedef->HaveNamed("HERM2LINE3") or
-      linedef->HaveNamed("HERM2LINE4") or linedef->HaveNamed("HERM2LINE5"))
+  if (linedef->has_named("HERM2LINE2") or linedef->has_named("HERM2LINE3") or
+      linedef->has_named("HERM2LINE4") or linedef->has_named("HERM2LINE5"))
     centerline_hermite_ = true;
   else
     centerline_hermite_ = false;
 
   // read whether automatic differentiation via Sacado::Fad package shall be used
-  use_fad_ = linedef->HaveNamed("FAD") ? true : false;
+  use_fad_ = linedef->has_named("FAD") ? true : false;
 
 
   // store nodal triads according to input file
@@ -68,7 +68,7 @@ bool Discret::ELEMENTS::Beam3r::ReadElement(
   /* extract rotational pseudovectors at element nodes in reference configuration
    *  and save them as quaternions at each node, respectively*/
   std::vector<double> nodal_rotvecs;
-  linedef->ExtractDoubleVector("TRIADS", nodal_rotvecs);
+  linedef->extract_double_vector("TRIADS", nodal_rotvecs);
 
   for (int node = 0; node < nnodetriad; node++)
     for (int dim = 0; dim < 3; dim++) theta0node_[node](dim) = nodal_rotvecs[3 * node + dim];

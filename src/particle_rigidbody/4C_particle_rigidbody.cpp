@@ -529,7 +529,7 @@ void ParticleRigidBody::RigidBodyHandler::extract_packed_rigid_body_states(
 
   while (position < buffer.size())
   {
-    const int rigidbody_k = Core::Communication::ParObject::ExtractInt(position, buffer);
+    const int rigidbody_k = Core::Communication::ParObject::extract_int(position, buffer);
 
     // get global ids of rigid bodies owned by this processor
     ownedrigidbodies_.push_back(rigidbody_k);
@@ -664,7 +664,7 @@ void ParticleRigidBody::RigidBodyHandler::relate_owned_rigid_bodies_to_hosting_p
 
     while (position < rmsg.size())
     {
-      const int rigidbody_k = Core::Communication::ParObject::ExtractInt(position, rmsg);
+      const int rigidbody_k = Core::Communication::ParObject::extract_int(position, rmsg);
 
       // insert processor id the gathered global id of rigid body is received from
       ownedrigidbodiestohostingprocs_[rigidbody_k].push_back(msgsource);
@@ -732,7 +732,7 @@ void ParticleRigidBody::RigidBodyHandler::communicate_rigid_body_states(
 
     while (position < rmsg.size())
     {
-      const int rigidbody_k = Core::Communication::ParObject::ExtractInt(position, rmsg);
+      const int rigidbody_k = Core::Communication::ParObject::extract_int(position, rmsg);
 
       // get reference to rigid body states
       double& mass_k = rigidbodydatastate_->GetRefMass()[rigidbody_k];
@@ -965,8 +965,8 @@ void ParticleRigidBody::RigidBodyHandler::gather_partial_mass_quantities(
 
     while (position < rmsg.size())
     {
-      const int rigidbody_k = Core::Communication::ParObject::ExtractInt(position, rmsg);
-      double mass_k = Core::Communication::ParObject::ExtractDouble(position, rmsg);
+      const int rigidbody_k = Core::Communication::ParObject::extract_int(position, rmsg);
+      double mass_k = Core::Communication::ParObject::extract_double(position, rmsg);
 
       std::vector<double> inertia_k(6);
       for (int i = 0; i < 6; ++i)
@@ -1194,7 +1194,7 @@ void ParticleRigidBody::RigidBodyHandler::gather_partial_and_compute_full_force_
 
     while (position < rmsg.size())
     {
-      const int rigidbody_k = Core::Communication::ParObject::ExtractInt(position, rmsg);
+      const int rigidbody_k = Core::Communication::ParObject::extract_int(position, rmsg);
 
       std::vector<double> tmp_force_k(3);
       for (int i = 0; i < 3; ++i)
@@ -1391,7 +1391,7 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_positions()
 
     while (position < rmsg.size())
     {
-      const int rigidbody_k = Core::Communication::ParObject::ExtractInt(position, rmsg);
+      const int rigidbody_k = Core::Communication::ParObject::extract_int(position, rmsg);
 
       // get reference to rigid body states
       std::vector<double>& pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k];
@@ -1449,7 +1449,7 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_velocities()
 
     while (position < rmsg.size())
     {
-      const int rigidbody_k = Core::Communication::ParObject::ExtractInt(position, rmsg);
+      const int rigidbody_k = Core::Communication::ParObject::extract_int(position, rmsg);
 
       // get reference to rigid body states
       std::vector<double>& vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k];
@@ -1507,7 +1507,7 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_accelerations()
 
     while (position < rmsg.size())
     {
-      const int rigidbody_k = Core::Communication::ParObject::ExtractInt(position, rmsg);
+      const int rigidbody_k = Core::Communication::ParObject::extract_int(position, rmsg);
 
       // get reference to rigid body states
       std::vector<double>& acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k];

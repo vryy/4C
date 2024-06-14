@@ -127,7 +127,7 @@ namespace RTD
    *
    * \param[in] stream: filename for the the yaml file, should be elementinformation.yaml
    */
-  void WriteYamlCellTypeInformation(std::ostream& yamlfile);
+  void write_yaml_cell_type_information(std::ostream& yamlfile);
 
   /*----------------------------------------------------------------------*/
   /*!

@@ -44,12 +44,12 @@ void PARTICLEWALL::WallResultTest::test_node(Input::LineDefinition& res, int& ne
 {
   // extract and check discretization name
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
   if (dis != walldiscretization_->Name()) return;
 
   // extract node id
   int node;
-  res.ExtractInt("NODE", node);
+  res.extract_int("NODE", node);
   node -= 1;
 
   int havenode(walldiscretization_->HaveGlobalNode(node));
@@ -75,7 +75,7 @@ void PARTICLEWALL::WallResultTest::test_node(Input::LineDefinition& res, int& ne
 
     // extract test quantity
     std::string quantity;
-    res.ExtractString("QUANTITY", quantity);
+    res.extract_string("QUANTITY", quantity);
 
     // init actual result
     double actresult = 0.0;
@@ -153,12 +153,12 @@ void PARTICLEWALL::WallResultTest::TestSpecial(
 
   // extract and check discretization name
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
   if (dis != walldiscretization_->Name()) return;
 
   // extract test quantity
   std::string quantity;
-  res.ExtractString("QUANTITY", quantity);
+  res.extract_string("QUANTITY", quantity);
 
   // init actual result
   double actresult = 0.0;

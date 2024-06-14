@@ -14,7 +14,7 @@ Inpar::ScaTra::ImplType Discret::ELEMENTS::ReadScatraImplType(
     const Input::LineDefinition& line_definition)
 {
   std::string impltype;
-  line_definition.ExtractString("TYPE", impltype);
+  line_definition.extract_string("TYPE", impltype);
 
   if (impltype == "Undefined")
     return Inpar::ScaTra::impltype_undefined;

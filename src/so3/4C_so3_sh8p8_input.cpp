@@ -24,7 +24,7 @@ bool Discret::ELEMENTS::SoSh8p8::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   SolidMaterial()->Setup(NUMGPT_SOH8, linedef);
@@ -32,7 +32,7 @@ bool Discret::ELEMENTS::SoSh8p8::ReadElement(
   // a temprorary variable for read-in
   std::string buffer;
   // read kinematic flag
-  linedef->ExtractString("KINEM", buffer);
+  linedef->extract_string("KINEM", buffer);
   if (buffer == "linear")
   {
     FOUR_C_THROW("Only nonlinear kinematics for SO_SH8P8 implemented!");
@@ -56,7 +56,7 @@ bool Discret::ELEMENTS::SoSh8p8::ReadElement(
 
 
   // read EAS technology flag
-  linedef->ExtractString("EAS", buffer);
+  linedef->extract_string("EAS", buffer);
 
   if (buffer == "sosh8")
   {
@@ -86,7 +86,7 @@ bool Discret::ELEMENTS::SoSh8p8::ReadElement(
     eas_init();
   }
 
-  linedef->ExtractString("THICKDIR", buffer);
+  linedef->extract_string("THICKDIR", buffer);
   nodes_rearranged_ = false;
 
   // global X
@@ -118,7 +118,7 @@ bool Discret::ELEMENTS::SoSh8p8::ReadElement(
   else
     FOUR_C_THROW("Reading of SO_SH8P8 thickness direction failed");
 
-  linedef->ExtractString("STAB", buffer);
+  linedef->extract_string("STAB", buffer);
   if (buffer == "Aff")
     stab_ = stab_affine;
   else if (buffer == "NonAff")
@@ -132,7 +132,7 @@ bool Discret::ELEMENTS::SoSh8p8::ReadElement(
   else
     FOUR_C_THROW("Reading of SO_SH8P8 stabilisation failed");
 
-  linedef->ExtractString("ANS", buffer);
+  linedef->extract_string("ANS", buffer);
   if (buffer == "Later")
     ans_ = ans_lateral;
   else if (buffer == "OnSpot")
@@ -143,7 +143,7 @@ bool Discret::ELEMENTS::SoSh8p8::ReadElement(
     FOUR_C_THROW("Reading of SO_SH8P8 ANS type failed");
 
   // Linearization
-  linedef->ExtractString("LIN", buffer);
+  linedef->extract_string("LIN", buffer);
   if (buffer == "One")
     lin_ = lin_one;
   else if (buffer == "Half")
@@ -154,7 +154,7 @@ bool Discret::ELEMENTS::SoSh8p8::ReadElement(
     FOUR_C_THROW("Reading of SO_SH8P8 LIN type failed");
 
   // Isochoric way
-  linedef->ExtractString("ISO", buffer);
+  linedef->extract_string("ISO", buffer);
   if (buffer == "Mat")
     iso_ = iso_material;
   else if (buffer == "Enf")

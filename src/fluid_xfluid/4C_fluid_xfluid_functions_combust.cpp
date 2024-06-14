@@ -21,11 +21,11 @@ namespace
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
 
-    if (function_line_defs.front().HaveNamed("ZALESAKSDISK"))
+    if (function_line_defs.front().has_named("ZALESAKSDISK"))
     {
       return Teuchos::rcp(new Discret::UTILS::ZalesaksDiskFunction());
     }
-    else if (function_line_defs.front().HaveNamed("COLLAPSINGWATERCOLUMN"))
+    else if (function_line_defs.front().has_named("COLLAPSINGWATERCOLUMN"))
     {
       return Teuchos::rcp(new Discret::UTILS::CollapsingWaterColumnFunction());
     }
@@ -39,10 +39,10 @@ namespace
 void Discret::UTILS::AddValidCombustFunctions(Core::UTILS::FunctionManager& function_manager)
 {
   Input::LineDefinition zalesaksdisk =
-      Input::LineDefinition::Builder().AddTag("ZALESAKSDISK").Build();
+      Input::LineDefinition::Builder().add_tag("ZALESAKSDISK").build();
 
   Input::LineDefinition collapsingwatercolumn =
-      Input::LineDefinition::Builder().AddTag("COLLAPSINGWATERCOLUMN").Build();
+      Input::LineDefinition::Builder().add_tag("COLLAPSINGWATERCOLUMN").build();
 
   function_manager.add_function_definition(
       {std::move(zalesaksdisk), std::move(collapsingwatercolumn)}, CreateCombustFunction);

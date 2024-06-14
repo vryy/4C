@@ -97,10 +97,10 @@ void Discret::ELEMENTS::RigidsphereType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["RIGIDSPHERE"];
 
   defs["POINT1"] = Input::LineDefinition::Builder()
-                       .AddIntVector("POINT1", 1)
-                       .AddNamedDouble("RADIUS")
-                       .AddNamedDouble("DENSITY")
-                       .Build();
+                       .add_int_vector("POINT1", 1)
+                       .add_named_double("RADIUS")
+                       .add_named_double("DENSITY")
+                       .build();
 }
 
 /*----------------------------------------------------------------------*
@@ -203,7 +203,7 @@ void Discret::ELEMENTS::Rigidsphere::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, radius_);
   extract_from_pack(position, data, rho_);
 
-  int unsigned numbonds = ExtractInt(position, data);
+  int unsigned numbonds = extract_int(position, data);
   for (int unsigned i = 0; i < numbonds; ++i)
   {
     std::vector<char> tmp;

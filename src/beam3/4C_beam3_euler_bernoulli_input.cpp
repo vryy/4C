@@ -24,7 +24,7 @@ bool Discret::ELEMENTS::Beam3eb::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   const auto mat_type = Material()->Parameter()->Type();

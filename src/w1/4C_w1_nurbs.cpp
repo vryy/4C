@@ -72,24 +72,24 @@ void Discret::ELEMENTS::Nurbs::Wall1NurbsType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["WALLNURBS"];
 
   defs["NURBS4"] = Input::LineDefinition::Builder()
-                       .AddIntVector("NURBS4", 4)
-                       .AddNamedInt("MAT")
-                       .AddNamedString("KINEM")
-                       .AddNamedString("EAS")
-                       .AddNamedDouble("THICK")
-                       .AddNamedString("STRESS_STRAIN")
-                       .AddNamedIntVector("GP", 2)
-                       .Build();
+                       .add_int_vector("NURBS4", 4)
+                       .add_named_int("MAT")
+                       .add_named_string("KINEM")
+                       .add_named_string("EAS")
+                       .add_named_double("THICK")
+                       .add_named_string("STRESS_STRAIN")
+                       .add_named_int_vector("GP", 2)
+                       .build();
 
   defs["NURBS9"] = Input::LineDefinition::Builder()
-                       .AddIntVector("NURBS9", 9)
-                       .AddNamedInt("MAT")
-                       .AddNamedString("KINEM")
-                       .AddNamedString("EAS")
-                       .AddNamedDouble("THICK")
-                       .AddNamedString("STRESS_STRAIN")
-                       .AddNamedIntVector("GP", 2)
-                       .Build();
+                       .add_int_vector("NURBS9", 9)
+                       .add_named_int("MAT")
+                       .add_named_string("KINEM")
+                       .add_named_string("EAS")
+                       .add_named_double("THICK")
+                       .add_named_string("STRESS_STRAIN")
+                       .add_named_int_vector("GP", 2)
+                       .build();
 }
 
 

@@ -177,8 +177,8 @@ void Inpar::EHL::SetValidConditions(
 
   for (unsigned i = 0; i < ehlcomponents.size(); ++i)
   {
-    lineehl->AddComponent(ehlcomponents[i]);
-    surfehl->AddComponent(ehlcomponents[i]);
+    lineehl->add_component(ehlcomponents[i]);
+    surfehl->add_component(ehlcomponents[i]);
   }
 
   condlist.push_back(lineehl);

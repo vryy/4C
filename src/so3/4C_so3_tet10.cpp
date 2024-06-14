@@ -88,9 +88,9 @@ void Discret::ELEMENTS::SoTet10Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["TET10"] = Input::LineDefinition::Builder()
-                      .AddIntVector("TET10", 10)
-                      .AddNamedInt("MAT")
-                      .AddNamedString("KINEM")
+                      .add_int_vector("TET10", 10)
+                      .add_named_int("MAT")
+                      .add_named_string("KINEM")
                       .add_optional_named_double_vector("RAD", 3)
                       .add_optional_named_double_vector("AXI", 3)
                       .add_optional_named_double_vector("CIR", 3)
@@ -99,7 +99,7 @@ void Discret::ELEMENTS::SoTet10Type::setup_element_definition(
                       .add_optional_named_double_vector("FIBER3", 3)
                       .add_optional_named_double("STRENGTH")
                       .add_optional_named_double("GROWTHTRIG")
-                      .Build();
+                      .build();
 }
 
 
@@ -248,7 +248,7 @@ void Discret::ELEMENTS::SoTet10::Unpack(const std::vector<char>& data)
   for (int i = 0; i < size_mass; ++i) extract_from_pack(position, data, invJ_mass_[i]);
 
   // Unpack prestress
-  pstype_ = static_cast<Inpar::STR::PreStress>(ExtractInt(position, data));
+  pstype_ = static_cast<Inpar::STR::PreStress>(extract_int(position, data));
   extract_from_pack(position, data, pstime_);
   extract_from_pack(position, data, time_);
   if (Prestress::IsMulf(pstype_))

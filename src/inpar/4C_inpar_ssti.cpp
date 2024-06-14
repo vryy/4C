@@ -169,8 +169,8 @@ void Inpar::SSTI::SetValidConditions(
   // insert input file line components into condition definitions
   for (const auto& sstiinterfacemeshtyingcomponent : sstiinterfacemeshtyingcomponents)
   {
-    linesstiinterfacemeshtying->AddComponent(sstiinterfacemeshtyingcomponent);
-    surfsstiinterfacemeshtying->AddComponent(sstiinterfacemeshtyingcomponent);
+    linesstiinterfacemeshtying->add_component(sstiinterfacemeshtyingcomponent);
+    surfsstiinterfacemeshtying->add_component(sstiinterfacemeshtyingcomponent);
   }
 
   condlist.emplace_back(linesstiinterfacemeshtying);

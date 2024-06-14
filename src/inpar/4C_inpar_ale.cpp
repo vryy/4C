@@ -112,8 +112,8 @@ void Inpar::ALE::SetValidConditions(
 
   for (unsigned i = 0; i < aleupdatecomponents.size(); ++i)
   {
-    linealeupdate->AddComponent(aleupdatecomponents[i]);
-    surfaleupdate->AddComponent(aleupdatecomponents[i]);
+    linealeupdate->add_component(aleupdatecomponents[i]);
+    surfaleupdate->add_component(aleupdatecomponents[i]);
   }
 
   condlist.push_back(linealeupdate);

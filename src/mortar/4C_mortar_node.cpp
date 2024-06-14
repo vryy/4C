@@ -235,21 +235,21 @@ void Mortar::Node::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   Core::Nodes::Node::Unpack(basedata);
   // isslave_
-  isslave_ = ExtractInt(position, data);
+  isslave_ = extract_int(position, data);
   // istiedslave_
-  istiedslave_ = ExtractInt(position, data);
+  istiedslave_ = extract_int(position, data);
   // isonbound_
-  isonbound_ = ExtractInt(position, data);
+  isonbound_ = extract_int(position, data);
   // isonedge_
-  isonedge_ = ExtractInt(position, data);
+  isonedge_ = extract_int(position, data);
   // isoncorner_
-  isoncorner_ = ExtractInt(position, data);
+  isoncorner_ = extract_int(position, data);
   // isdbc_
-  isdbc_ = ExtractInt(position, data);
+  isdbc_ = extract_int(position, data);
   // dbcdofs_
-  dbcdofs_[0] = ExtractInt(position, data);
-  dbcdofs_[1] = ExtractInt(position, data);
-  dbcdofs_[2] = ExtractInt(position, data);
+  dbcdofs_[0] = extract_int(position, data);
+  dbcdofs_[1] = extract_int(position, data);
+  dbcdofs_[2] = extract_int(position, data);
   // dentries_
   extract_from_pack(position, data, dentries_);
   // dofs_
@@ -259,14 +259,14 @@ void Mortar::Node::Unpack(const std::vector<char>& data)
   // uold_
   extract_from_pack(position, data, uold_, 3 * sizeof(double));
   // hasproj_
-  hasproj_ = ExtractInt(position, data);
+  hasproj_ = extract_int(position, data);
   // hassegment_
-  hassegment_ = ExtractInt(position, data);
+  hassegment_ = extract_int(position, data);
   // nurbsw_
-  nurbsw_ = ExtractDouble(position, data);
+  nurbsw_ = extract_double(position, data);
 
   // data_
-  bool hasdata = ExtractInt(position, data);
+  bool hasdata = extract_int(position, data);
   if (hasdata)
   {
     modata_ = Teuchos::rcp(new Mortar::NodeDataContainer());

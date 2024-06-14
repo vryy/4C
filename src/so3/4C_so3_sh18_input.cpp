@@ -19,7 +19,7 @@ bool Discret::ELEMENTS::SoSh18::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
 
   SetMaterial(0, Mat::Factory(material));
 
@@ -33,7 +33,7 @@ bool Discret::ELEMENTS::SoSh18::ReadElement(
   std::string buffer;
 
   // read kinematic flag
-  linedef->ExtractString("KINEM", buffer);
+  linedef->extract_string("KINEM", buffer);
   if (buffer == "linear")
   {
     // kintype_ = soh8_linear;
@@ -50,7 +50,7 @@ bool Discret::ELEMENTS::SoSh18::ReadElement(
   SolidMaterial()->ValidKinematics(Inpar::STR::KinemType::nonlinearTotLag);
 
   // transverse shear locking
-  linedef->ExtractString("TSL", buffer);
+  linedef->extract_string("TSL", buffer);
   if (buffer == "dsg")
     dsg_shear_ = true;
   else if (buffer == "none")
@@ -59,7 +59,7 @@ bool Discret::ELEMENTS::SoSh18::ReadElement(
     FOUR_C_THROW("unknown transverse shear locking method");
 
   // membrane locking
-  linedef->ExtractString("MEL", buffer);
+  linedef->extract_string("MEL", buffer);
   if (buffer == "dsg")
     dsg_membrane_ = true;
   else if (buffer == "none")
@@ -68,7 +68,7 @@ bool Discret::ELEMENTS::SoSh18::ReadElement(
     FOUR_C_THROW("unknown membrane locking method");
 
   // curvature thickness locking
-  linedef->ExtractString("CTL", buffer);
+  linedef->extract_string("CTL", buffer);
   if (buffer == "dsg")
     dsg_ctl_ = true;
   else if (buffer == "none")
@@ -77,7 +77,7 @@ bool Discret::ELEMENTS::SoSh18::ReadElement(
     FOUR_C_THROW("unknown curvature thickness locking method");
 
   // volumetric locking
-  linedef->ExtractString("VOL", buffer);
+  linedef->extract_string("VOL", buffer);
   if (buffer == "eas9")
     eas_ = true;
   else if (buffer == "none")

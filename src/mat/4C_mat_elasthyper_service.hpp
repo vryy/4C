@@ -417,13 +417,13 @@ namespace Mat
      */
     void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
     {
-      isoprinc = (bool)Core::Communication::ParObject::ExtractInt(position, data);
-      isomod = (bool)Core::Communication::ParObject::ExtractInt(position, data);
-      anisoprinc = (bool)Core::Communication::ParObject::ExtractInt(position, data);
-      anisomod = (bool)Core::Communication::ParObject::ExtractInt(position, data);
-      coeffStretchesPrinc = (bool)Core::Communication::ParObject::ExtractInt(position, data);
-      coeffStretchesMod = (bool)Core::Communication::ParObject::ExtractInt(position, data);
-      viscoGeneral = (bool)Core::Communication::ParObject::ExtractInt(position, data);
+      isoprinc = (bool)Core::Communication::ParObject::extract_int(position, data);
+      isomod = (bool)Core::Communication::ParObject::extract_int(position, data);
+      anisoprinc = (bool)Core::Communication::ParObject::extract_int(position, data);
+      anisomod = (bool)Core::Communication::ParObject::extract_int(position, data);
+      coeffStretchesPrinc = (bool)Core::Communication::ParObject::extract_int(position, data);
+      coeffStretchesMod = (bool)Core::Communication::ParObject::extract_int(position, data);
+      viscoGeneral = (bool)Core::Communication::ParObject::extract_int(position, data);
     }
 
     /**

@@ -24,7 +24,7 @@ bool Discret::ELEMENTS::Fluid::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   // set discretization type (setOptimalgaussrule is pushed into element
@@ -32,7 +32,7 @@ bool Discret::ELEMENTS::Fluid::ReadElement(
   SetDisType(Core::FE::StringToCellType(distype));
 
   std::string na;
-  linedef->ExtractString("NA", na);
+  linedef->extract_string("NA", na);
   if (na == "ale" or na == "ALE" or na == "Ale")
   {
     is_ale_ = true;

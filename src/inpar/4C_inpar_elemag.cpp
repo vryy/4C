@@ -153,8 +153,8 @@ void Inpar::EleMag::SetValidConditions(
 
   for (unsigned i = 0; i < abcbundcomponents.size(); ++i)
   {
-    silvermueller_line->AddComponent(abcbundcomponents[i]);
-    silvermueller_surface->AddComponent(abcbundcomponents[i]);
+    silvermueller_line->add_component(abcbundcomponents[i]);
+    silvermueller_surface->add_component(abcbundcomponents[i]);
   }
 
   condlist.push_back(silvermueller_line);

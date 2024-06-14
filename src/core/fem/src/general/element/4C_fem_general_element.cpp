@@ -215,7 +215,7 @@ void Core::Elements::Element::SetNodeIds(const int nnode, const int* nodes)
 /*----------------------------------------------------------------------*/
 void Core::Elements::Element::SetNodeIds(const std::string& distype, Input::LineDefinition* linedef)
 {
-  linedef->ExtractIntVector(distype, nodeid_);
+  linedef->extract_int_vector(distype, nodeid_);
   for (int& i : nodeid_) i -= 1;
   node_.resize(0);
 }
@@ -1161,9 +1161,9 @@ void Core::Elements::FaceElement::Unpack(const std::vector<char>& data)
   Core::Elements::Element::Unpack(basedata);
 
   // lface_master_
-  lface_master_ = ExtractInt(position, data);
+  lface_master_ = extract_int(position, data);
   // Parent Id
-  parent_id_ = ExtractInt(position, data);
+  parent_id_ = extract_int(position, data);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

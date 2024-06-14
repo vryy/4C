@@ -846,7 +846,7 @@ void Core::FE::Nurbs::Knotvector::Unpack(const std::vector<char>& data)
     for (int rr = 0; rr < dim_; ++rr)
     {
       (interpolation_[np])[rr] =
-          static_cast<Core::FE::Nurbs::Knotvector::KnotvectorType>(ExtractInt(position, data));
+          static_cast<Core::FE::Nurbs::Knotvector::KnotvectorType>(extract_int(position, data));
     }
   }
 

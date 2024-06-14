@@ -72,11 +72,11 @@ void Discret::ELEMENTS::Truss3Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["TRUSS3"];
 
   defs["LINE2"] = Input::LineDefinition::Builder()
-                      .AddIntVector("LINE2", 2)
-                      .AddNamedInt("MAT")
-                      .AddNamedDouble("CROSS")
-                      .AddNamedString("KINEM")
-                      .Build();
+                      .add_int_vector("LINE2", 2)
+                      .add_named_int("MAT")
+                      .add_named_double("CROSS")
+                      .add_named_string("KINEM")
+                      .build();
 }
 
 
@@ -175,7 +175,7 @@ void Discret::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
-  isinit_ = ExtractInt(position, data);
+  isinit_ = extract_int(position, data);
   extract_from_pack<6, 1>(position, data, x_);
   extract_from_pack<1, 3>(position, data, diff_disp_ref_);
   extract_from_pack(position, data, material_);
@@ -185,7 +185,7 @@ void Discret::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, crosssec_);
   extract_from_pack(position, data, gaussrule_);
   // kinematic type
-  kintype_ = static_cast<KinematicType>(ExtractInt(position, data));
+  kintype_ = static_cast<KinematicType>(extract_int(position, data));
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

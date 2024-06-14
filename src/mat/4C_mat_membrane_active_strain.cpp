@@ -419,7 +419,7 @@ void Mat::MembraneActiveStrain::setup_fiber_vectors(int numgp, Input::LineDefini
   Core::LinAlg::Matrix<3, 1> dir;
 
   // CIR-AXI-RAD nomenclature
-  if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
+  if (linedef->has_named("RAD") and linedef->has_named("AXI") and linedef->has_named("CIR"))
   {
     // Axial direction
     read_dir(linedef, "AXI", dir);
@@ -434,7 +434,7 @@ void Mat::MembraneActiveStrain::setup_fiber_vectors(int numgp, Input::LineDefini
     fibervecs_.push_back(dir);
   }
   // FIBER nomenclature
-  else if (linedef->HaveNamed("FIBER1") and linedef->HaveNamed("FIBER2"))
+  else if (linedef->has_named("FIBER1") and linedef->has_named("FIBER2"))
   {
     for (int i = 1; i < 3; ++i)
     {
@@ -482,7 +482,7 @@ void Mat::MembraneActiveStrain::read_dir(
     Input::LineDefinition* linedef, std::string specifier, Core::LinAlg::Matrix<3, 1>& dir)
 {
   std::vector<double> fiber;
-  linedef->ExtractDoubleVector(specifier, fiber);
+  linedef->extract_double_vector(specifier, fiber);
   double fnorm = 0.;
   // normalization
   for (int i = 0; i < 3; ++i)

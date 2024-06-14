@@ -80,7 +80,7 @@ namespace CONTACT
        *
        * \param[in] c new component needed as parameter for the contact constitutive law
        */
-      void AddComponent(Teuchos::RCP<Input::LineComponent> c);
+      void add_component(Teuchos::RCP<Input::LineComponent> c);
 
       /** \brief read all materials from my input file section
        *

@@ -72,74 +72,74 @@ void Discret::ELEMENTS::Wall1Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["WALL"];
 
   defs["QUAD4"] = Input::LineDefinition::Builder()
-                      .AddIntVector("QUAD4", 4)
-                      .AddNamedInt("MAT")
-                      .AddNamedString("KINEM")
-                      .AddNamedString("EAS")
-                      .AddNamedDouble("THICK")
-                      .AddNamedString("STRESS_STRAIN")
-                      .AddNamedIntVector("GP", 2)
-                      .Build();
+                      .add_int_vector("QUAD4", 4)
+                      .add_named_int("MAT")
+                      .add_named_string("KINEM")
+                      .add_named_string("EAS")
+                      .add_named_double("THICK")
+                      .add_named_string("STRESS_STRAIN")
+                      .add_named_int_vector("GP", 2)
+                      .build();
 
   defs["QUAD8"] = Input::LineDefinition::Builder()
-                      .AddIntVector("QUAD8", 8)
-                      .AddNamedInt("MAT")
-                      .AddNamedString("KINEM")
-                      .AddNamedString("EAS")
-                      .AddNamedDouble("THICK")
-                      .AddNamedString("STRESS_STRAIN")
-                      .AddNamedIntVector("GP", 2)
-                      .Build();
+                      .add_int_vector("QUAD8", 8)
+                      .add_named_int("MAT")
+                      .add_named_string("KINEM")
+                      .add_named_string("EAS")
+                      .add_named_double("THICK")
+                      .add_named_string("STRESS_STRAIN")
+                      .add_named_int_vector("GP", 2)
+                      .build();
 
   defs["QUAD9"] = Input::LineDefinition::Builder()
-                      .AddIntVector("QUAD9", 9)
-                      .AddNamedInt("MAT")
-                      .AddNamedString("KINEM")
-                      .AddNamedString("EAS")
-                      .AddNamedDouble("THICK")
-                      .AddNamedString("STRESS_STRAIN")
-                      .AddNamedIntVector("GP", 2)
-                      .Build();
+                      .add_int_vector("QUAD9", 9)
+                      .add_named_int("MAT")
+                      .add_named_string("KINEM")
+                      .add_named_string("EAS")
+                      .add_named_double("THICK")
+                      .add_named_string("STRESS_STRAIN")
+                      .add_named_int_vector("GP", 2)
+                      .build();
 
   defs["TRI3"] = Input::LineDefinition::Builder()
-                     .AddIntVector("TRI3", 3)
-                     .AddNamedInt("MAT")
-                     .AddNamedString("KINEM")
-                     .AddNamedString("EAS")
-                     .AddNamedDouble("THICK")
-                     .AddNamedString("STRESS_STRAIN")
-                     .AddNamedIntVector("GP", 2)
-                     .Build();
+                     .add_int_vector("TRI3", 3)
+                     .add_named_int("MAT")
+                     .add_named_string("KINEM")
+                     .add_named_string("EAS")
+                     .add_named_double("THICK")
+                     .add_named_string("STRESS_STRAIN")
+                     .add_named_int_vector("GP", 2)
+                     .build();
 
   defs["TRI6"] = Input::LineDefinition::Builder()
-                     .AddIntVector("TRI6", 6)
-                     .AddNamedInt("MAT")
-                     .AddNamedString("KINEM")
-                     .AddNamedString("EAS")
-                     .AddNamedDouble("THICK")
-                     .AddNamedString("STRESS_STRAIN")
-                     .AddNamedIntVector("GP", 2)
-                     .Build();
+                     .add_int_vector("TRI6", 6)
+                     .add_named_int("MAT")
+                     .add_named_string("KINEM")
+                     .add_named_string("EAS")
+                     .add_named_double("THICK")
+                     .add_named_string("STRESS_STRAIN")
+                     .add_named_int_vector("GP", 2)
+                     .build();
 
   defs["NURBS4"] = Input::LineDefinition::Builder()
-                       .AddIntVector("NURBS4", 4)
-                       .AddNamedInt("MAT")
-                       .AddNamedString("KINEM")
-                       .AddNamedString("EAS")
-                       .AddNamedDouble("THICK")
-                       .AddNamedString("STRESS_STRAIN")
-                       .AddNamedIntVector("GP", 2)
-                       .Build();
+                       .add_int_vector("NURBS4", 4)
+                       .add_named_int("MAT")
+                       .add_named_string("KINEM")
+                       .add_named_string("EAS")
+                       .add_named_double("THICK")
+                       .add_named_string("STRESS_STRAIN")
+                       .add_named_int_vector("GP", 2)
+                       .build();
 
   defs["NURBS9"] = Input::LineDefinition::Builder()
-                       .AddIntVector("NURBS9", 9)
-                       .AddNamedInt("MAT")
-                       .AddNamedString("KINEM")
-                       .AddNamedString("EAS")
-                       .AddNamedDouble("THICK")
-                       .AddNamedString("STRESS_STRAIN")
-                       .AddNamedIntVector("GP", 2)
-                       .Build();
+                       .add_int_vector("NURBS9", 9)
+                       .add_named_int("MAT")
+                       .add_named_string("KINEM")
+                       .add_named_string("EAS")
+                       .add_named_double("THICK")
+                       .add_named_string("STRESS_STRAIN")
+                       .add_named_int_vector("GP", 2)
+                       .build();
 }
 
 
@@ -271,21 +271,21 @@ void Discret::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   // thickness_
   extract_from_pack(position, data, thickness_);
   // plane strain or plane stress information_
-  wtype_ = static_cast<DimensionalReduction>(ExtractInt(position, data));
+  wtype_ = static_cast<DimensionalReduction>(extract_int(position, data));
   // gaussrule_
   extract_from_pack(position, data, gaussrule_);
   // stresstype_
-  stresstype_ = static_cast<StressType>(ExtractInt(position, data));
+  stresstype_ = static_cast<StressType>(extract_int(position, data));
   // iseas_
-  iseas_ = ExtractInt(position, data);
+  iseas_ = extract_int(position, data);
   // eastype_
-  eastype_ = static_cast<EasType>(ExtractInt(position, data));
+  eastype_ = static_cast<EasType>(extract_int(position, data));
   // easdata_
   unpack_eas_data(position, data);
   // structale_
-  structale_ = ExtractInt(position, data);
+  structale_ = extract_int(position, data);
   // distype_
-  distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
+  distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
   // line search
   extract_from_pack(position, data, old_step_length_);
   if (position != data.size())

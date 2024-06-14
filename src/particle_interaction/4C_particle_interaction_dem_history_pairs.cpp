@@ -337,8 +337,8 @@ void ParticleInteraction::DEMHistoryPairs::unpack_history_pairs(const std::vecto
   while (position < buffer.size())
   {
     // get global ids
-    int globalid_i = Core::Communication::ParObject::ExtractInt(position, buffer);
-    int globalid_j = Core::Communication::ParObject::ExtractInt(position, buffer);
+    int globalid_i = Core::Communication::ParObject::extract_int(position, buffer);
+    int globalid_j = Core::Communication::ParObject::extract_int(position, buffer);
 
     // unpack history pair data
     historypairtype historypair = historypairtype();

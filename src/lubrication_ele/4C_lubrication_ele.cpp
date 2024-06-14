@@ -77,25 +77,25 @@ void Discret::ELEMENTS::LubricationType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["LUBRICATION"];
 
   defs["QUAD4"] =
-      Input::LineDefinition::Builder().AddIntVector("QUAD4", 4).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("QUAD4", 4).add_named_int("MAT").build();
 
   defs["QUAD8"] =
-      Input::LineDefinition::Builder().AddIntVector("QUAD8", 8).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("QUAD8", 8).add_named_int("MAT").build();
 
   defs["QUAD9"] =
-      Input::LineDefinition::Builder().AddIntVector("QUAD9", 9).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("QUAD9", 9).add_named_int("MAT").build();
 
   defs["TRI3"] =
-      Input::LineDefinition::Builder().AddIntVector("TRI3", 3).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("TRI3", 3).add_named_int("MAT").build();
 
   defs["TRI6"] =
-      Input::LineDefinition::Builder().AddIntVector("TRI6", 6).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("TRI6", 6).add_named_int("MAT").build();
 
   defs["LINE2"] =
-      Input::LineDefinition::Builder().AddIntVector("LINE2", 2).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("LINE2", 2).add_named_int("MAT").build();
 
   defs["LINE3"] =
-      Input::LineDefinition::Builder().AddIntVector("LINE3", 3).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("LINE3", 3).add_named_int("MAT").build();
 }
 
 /*----------------------------------------------------------------------*
@@ -189,7 +189,7 @@ void Discret::ELEMENTS::Lubrication::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // extract internal data
-  distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
+  distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -264,7 +264,7 @@ bool Discret::ELEMENTS::Lubrication::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   // set discretization type

@@ -20,7 +20,7 @@ void Mat::read_anisotropy_fiber(
     Input::LineDefinition* linedef, std::string specifier, Core::LinAlg::Matrix<3, 1>& fiber_vector)
 {
   std::vector<double> fiber;
-  linedef->ExtractDoubleVector(std::move(specifier), fiber);
+  linedef->extract_double_vector(std::move(specifier), fiber);
   double f1norm = 0.;
   // normalization
   for (std::vector<double>::size_type i = 0; i < 3; ++i)
@@ -99,7 +99,7 @@ void Mat::unpack_fiber_vector(std::vector<char>::size_type& position, const std:
     std::vector<std::vector<T>>& vct)
 {
   vct.clear();
-  int numgps = Core::Communication::ParObject::ExtractInt(position, data);
+  int numgps = Core::Communication::ParObject::extract_int(position, data);
   for (int i = 0; i < numgps; ++i)
   {
     std::vector<T> mat(0);
@@ -113,7 +113,7 @@ void Mat::unpack_fiber_array(std::vector<char>::size_type& position, const std::
     std::vector<std::array<T, numfib>>& vct)
 {
   vct.clear();
-  int numgps = Core::Communication::ParObject::ExtractInt(position, data);
+  int numgps = Core::Communication::ParObject::extract_int(position, data);
   for (int i = 0; i < numgps; ++i)
   {
     std::array<T, numfib> mat;

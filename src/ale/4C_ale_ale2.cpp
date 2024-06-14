@@ -85,19 +85,19 @@ void Discret::ELEMENTS::Ale2Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["ALE2"];
 
   defs["QUAD4"] =
-      Input::LineDefinition::Builder().AddIntVector("QUAD4", 4).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("QUAD4", 4).add_named_int("MAT").build();
 
   defs["QUAD8"] =
-      Input::LineDefinition::Builder().AddIntVector("QUAD8", 8).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("QUAD8", 8).add_named_int("MAT").build();
 
   defs["QUAD9"] =
-      Input::LineDefinition::Builder().AddIntVector("QUAD9", 9).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("QUAD9", 9).add_named_int("MAT").build();
 
   defs["TRI3"] =
-      Input::LineDefinition::Builder().AddIntVector("TRI3", 3).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("TRI3", 3).add_named_int("MAT").build();
 
   defs["TRI6"] =
-      Input::LineDefinition::Builder().AddIntVector("TRI6", 6).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("TRI6", 6).add_named_int("MAT").build();
 }
 
 /*----------------------------------------------------------------------------*/

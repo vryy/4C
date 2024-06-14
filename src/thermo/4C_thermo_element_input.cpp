@@ -23,7 +23,7 @@ bool Discret::ELEMENTS::Thermo::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   SetDisType(Core::FE::StringToCellType(distype));

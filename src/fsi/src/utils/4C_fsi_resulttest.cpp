@@ -205,7 +205,7 @@ FSI::FSIResultTest::FSIResultTest(
 void FSI::FSIResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   int node;
-  res.ExtractInt("NODE", node);
+  res.extract_int("NODE", node);
   node -= 1;
 
   int havenode(slavedisc_->HaveGlobalNode(node));
@@ -229,7 +229,7 @@ void FSI::FSIResultTest::test_node(Input::LineDefinition& res, int& nerr, int& t
       if (actnode->Owner() != slavedisc_->Comm().MyPID()) return;
 
       std::string quantity;
-      res.ExtractString("QUANTITY", quantity);
+      res.extract_string("QUANTITY", quantity);
       bool unknownquantity = true;  // make sure the result value std::string can be handled
       double result = 0.0;          // will hold the actual result of run
 
@@ -282,7 +282,7 @@ void FSI::FSIResultTest::TestElement(Input::LineDefinition& res, int& nerr, int&
 void FSI::FSIResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   std::string quantity;
-  res.ExtractString("QUANTITY", quantity);
+  res.extract_string("QUANTITY", quantity);
   bool unknownquantity = true;  // make sure the result value std::string can be handled
   double result = 0.0;          // will hold the actual result of run
 

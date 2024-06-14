@@ -539,10 +539,10 @@ std::vector<double> Core::UTILS::INTERNAL::ExtractTimeVector(const Input::LineDe
 {
   // read the number of points
   int numpoints;
-  timevar.ExtractInt("NUMPOINTS", numpoints);
+  timevar.extract_int("NUMPOINTS", numpoints);
 
   // read whether times are defined by number of points or by vector
-  bool bynum = timevar.HasString("BYNUM");
+  bool bynum = timevar.has_string("BYNUM");
 
   // read respectively create times vector
   std::vector<double> times = std::invoke(
@@ -552,7 +552,7 @@ std::vector<double> Core::UTILS::INTERNAL::ExtractTimeVector(const Input::LineDe
         {
           // read the time range
           std::vector<double> timerange;
-          timevar.ExtractDoubleVector("TIMERANGE", timerange);
+          timevar.extract_double_vector("TIMERANGE", timerange);
 
           std::vector<double> times;
 
@@ -581,7 +581,7 @@ std::vector<double> Core::UTILS::INTERNAL::ExtractTimeVector(const Input::LineDe
         else  // times defined by vector
         {
           std::vector<double> times;
-          timevar.ExtractDoubleVector("TIMES", times);
+          timevar.extract_double_vector("TIMES", times);
           return times;
         }
       });

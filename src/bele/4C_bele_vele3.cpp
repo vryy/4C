@@ -68,7 +68,7 @@ void Discret::ELEMENTS::Vele3Type::setup_element_definition(
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions["VELE3"];
 
-  defs["HEX8"] = Input::LineDefinition::Builder().AddIntVector("HEX8", 8).Build();
+  defs["HEX8"] = Input::LineDefinition::Builder().add_int_vector("HEX8", 8).build();
 }
 
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3SurfaceType::Create(

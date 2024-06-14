@@ -42,7 +42,7 @@ void PARTICLEALGORITHM::ParticleResultTest::TestSpecial(
 {
   // extract global particle id
   int globalid;
-  res.ExtractInt("ID", globalid);
+  res.extract_int("ID", globalid);
 
   // get local index in specific particle container
   PARTICLEENGINE::LocalIndexTupleShrdPtr localindextuple =
@@ -70,7 +70,7 @@ void PARTICLEALGORITHM::ParticleResultTest::TestSpecial(
 
       // get result
       std::string quantity;
-      res.ExtractString("QUANTITY", quantity);
+      res.extract_string("QUANTITY", quantity);
 
       // init actual result
       double actresult = 0.0;

@@ -33,7 +33,7 @@ void Mat::CylinderCoordinateSystemAnisotropyExtension::unpack_anisotropy(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   cosy_location_ =
-      static_cast<CosyLocation>(Core::Communication::ParObject::ExtractInt(position, data));
+      static_cast<CosyLocation>(Core::Communication::ParObject::extract_int(position, data));
 }
 
 void Mat::CylinderCoordinateSystemAnisotropyExtension::on_global_data_initialized()

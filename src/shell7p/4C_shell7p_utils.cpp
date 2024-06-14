@@ -674,29 +674,29 @@ void STR::UTILS::Shell::ReadElement::ReadAndSetLockingTypes(const Core::FE::Cell
   {
     case Core::FE::CellType::quad4:
     {
-      linedef->ExtractString("EAS", type);
+      linedef->extract_string("EAS", type);
       SetMembraneLockingSizeQuad4(locking_types.membrane, type);
-      linedef->ExtractString("EAS2", type);
+      linedef->extract_string("EAS2", type);
       SetBendingLockingSizeQuad4(locking_types.bending, type);
-      linedef->ExtractString("EAS3", type);
+      linedef->extract_string("EAS3", type);
       SetThicknessLockingSizeQuad4(locking_types.thickness, type);
-      linedef->ExtractString("EAS4", type);
+      linedef->extract_string("EAS4", type);
       SetShearStrainLockingSizeQuad4(locking_types.transverse_shear_strain_const, type);
-      linedef->ExtractString("EAS5", type);
+      linedef->extract_string("EAS5", type);
       SetShearStrainLockingSizeQuad4(locking_types.transverse_shear_strain_lin, type);
       break;
     }
     case Core::FE::CellType::quad9:
     {
-      linedef->ExtractString("EAS", type);
+      linedef->extract_string("EAS", type);
       SetMembraneLockingSizeQuad9(locking_types.membrane, type);
-      linedef->ExtractString("EAS2", type);
+      linedef->extract_string("EAS2", type);
       SetBendingLockingSizeQuad9(locking_types.bending, type);
-      linedef->ExtractString("EAS3", type);
+      linedef->extract_string("EAS3", type);
       SetThicknessLockingSizeQuad9(locking_types.thickness, type);
-      linedef->ExtractString("EAS4", type);
+      linedef->extract_string("EAS4", type);
       SetShearStrainLockingSizeQuad9(locking_types.transverse_shear_strain_const, type);
-      linedef->ExtractString("EAS5", type);
+      linedef->extract_string("EAS5", type);
       SetShearStrainLockingSizeQuad9(locking_types.transverse_shear_strain_lin, type);
       break;
     }
@@ -711,7 +711,7 @@ void STR::UTILS::Shell::ReadElement::ReadAndSetLockingTypes(const Core::FE::Cell
 int STR::UTILS::Shell::ReadElement::ReadAndSetElementMaterial(Input::LineDefinition* linedef)
 {
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   return material;
 }
 

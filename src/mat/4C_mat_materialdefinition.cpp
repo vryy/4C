@@ -38,7 +38,7 @@ Mat::MaterialDefinition::MaterialDefinition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::MaterialDefinition::AddComponent(const Teuchos::RCP<Input::LineComponent>& c)
+void Mat::MaterialDefinition::add_component(const Teuchos::RCP<Input::LineComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -80,7 +80,7 @@ std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefi
         if (matid <= -1) FOUR_C_THROW("Illegal negative ID provided");
 
         Core::IO::InputParameterContainer input_data;
-        for (auto& j : inputline_) condline = j->Read(Name(), condline, input_data);
+        for (auto& j : inputline_) condline = j->read(Name(), condline, input_data);
 
         // current material input line contains bad elements
         if (condline->str().find_first_not_of(' ') != std::string::npos)
@@ -112,7 +112,7 @@ std::ostream& Mat::MaterialDefinition::Print(
   for (auto& i : inputline_)
   {
     std::ostringstream desc;
-    i->Describe(desc);
+    i->describe(desc);
     if (!desc.str().empty()) stream << comment << desc.str() << std::endl;
   }
 
@@ -120,7 +120,7 @@ std::ostream& Mat::MaterialDefinition::Print(
   stream << comment << "MAT 0   " << materialname_ << "   ";
   for (auto& i : inputline_)
   {
-    i->DefaultLine(stream);
+    i->default_line(stream);
     stream << " ";
   }
 

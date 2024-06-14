@@ -445,8 +445,8 @@ namespace Inpar
 
       for (const auto& comp : robinspringdashpotcomp)
       {
-        robinspringdashpotsurf->AddComponent(comp);
-        robinspringdashpotpoint->AddComponent(comp);
+        robinspringdashpotsurf->add_component(comp);
+        robinspringdashpotpoint->add_component(comp);
       }
 
       condlist.emplace_back(robinspringdashpotsurf);
@@ -462,7 +462,7 @@ namespace Inpar
               "RobinSpring Dashpot Coupling", Core::Conditions::RobinSpringDashpotCoupling, true,
               Core::Conditions::geometry_type_surface));
 
-      springdashpotcoupcond->AddComponent(Teuchos::rcp(new Input::IntComponent("coupling id")));
+      springdashpotcoupcond->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
 
       condlist.push_back(springdashpotcoupcond);
 
@@ -475,13 +475,13 @@ namespace Inpar
               "SurfaceStress", "Surface Stress (surfactant)", Core::Conditions::Surfactant, true,
               Core::Conditions::geometry_type_surface));
 
-      surfactant->AddComponent(Teuchos::rcp(new Input::IntComponent("funct", {0, true, true})));
-      Input::AddNamedReal(surfactant, "k1xCbulk");
-      Input::AddNamedReal(surfactant, "k2");
-      Input::AddNamedReal(surfactant, "m1");
-      Input::AddNamedReal(surfactant, "m2");
-      Input::AddNamedReal(surfactant, "gamma_0");
-      Input::AddNamedReal(surfactant, "gamma_min");
+      surfactant->add_component(Teuchos::rcp(new Input::IntComponent("funct", {0, true, true})));
+      Input::add_named_real(surfactant, "k1xCbulk");
+      Input::add_named_real(surfactant, "k2");
+      Input::add_named_real(surfactant, "m1");
+      Input::add_named_real(surfactant, "m2");
+      Input::add_named_real(surfactant, "gamma_0");
+      Input::add_named_real(surfactant, "gamma_min");
 
       condlist.push_back(surfactant);
     }

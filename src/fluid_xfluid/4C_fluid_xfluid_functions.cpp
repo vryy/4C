@@ -28,74 +28,74 @@ namespace
 
     const auto& function_lin_def = function_line_defs.front();
 
-    if (function_lin_def.HaveNamed("FORWARDFACINGSTEP"))
+    if (function_lin_def.has_named("FORWARDFACINGSTEP"))
     {
       return Teuchos::rcp(new GerstenbergerForwardfacingStep());
     }
-    else if (function_lin_def.HaveNamed("MOVINGLEVELSETCYLINDER"))
+    else if (function_lin_def.has_named("MOVINGLEVELSETCYLINDER"))
     {
       std::vector<double> origin;
-      function_lin_def.ExtractDoubleVector("ORIGIN", origin);
+      function_lin_def.extract_double_vector("ORIGIN", origin);
 
       double radius;
-      function_lin_def.ExtractDouble("RADIUS", radius);
+      function_lin_def.extract_double("RADIUS", radius);
 
       std::vector<double> direction;
-      function_lin_def.ExtractDoubleVector("DIRECTION", direction);
+      function_lin_def.extract_double_vector("DIRECTION", direction);
 
       double distance;
-      function_lin_def.ExtractDouble("DISTANCE", distance);
+      function_lin_def.extract_double("DISTANCE", distance);
 
       double maxspeed;
-      function_lin_def.ExtractDouble("MAXSPEED", maxspeed);
+      function_lin_def.extract_double("MAXSPEED", maxspeed);
 
       return Teuchos::rcp(
           new MovingLevelSetCylinder(&origin, radius, &direction, distance, maxspeed));
     }
-    else if (function_lin_def.HaveNamed("MOVINGLEVELSETTORUS") or
-             function_lin_def.HaveNamed("MOVINGLEVELSETTORUSVELOCITY") or
-             function_lin_def.HaveNamed("MOVINGLEVELSETTORUSSLIPLENGTH"))
+    else if (function_lin_def.has_named("MOVINGLEVELSETTORUS") or
+             function_lin_def.has_named("MOVINGLEVELSETTORUSVELOCITY") or
+             function_lin_def.has_named("MOVINGLEVELSETTORUSSLIPLENGTH"))
     {
       std::vector<double> origin;
-      function_lin_def.ExtractDoubleVector("ORIGIN", origin);
+      function_lin_def.extract_double_vector("ORIGIN", origin);
 
       std::vector<double> orient_vec_torus;
-      function_lin_def.ExtractDoubleVector("ORIENTVEC_TORUS", orient_vec_torus);
+      function_lin_def.extract_double_vector("ORIENTVEC_TORUS", orient_vec_torus);
 
       double radius;
-      function_lin_def.ExtractDouble("RADIUS", radius);
+      function_lin_def.extract_double("RADIUS", radius);
 
       double radius_tube;
-      function_lin_def.ExtractDouble("RADIUS_TUBE", radius_tube);
+      function_lin_def.extract_double("RADIUS_TUBE", radius_tube);
 
       std::vector<double> direction;
-      function_lin_def.ExtractDoubleVector("DIRECTION", direction);
+      function_lin_def.extract_double_vector("DIRECTION", direction);
 
       double distance;
-      function_lin_def.ExtractDouble("DISTANCE", distance);
+      function_lin_def.extract_double("DISTANCE", distance);
 
       double maxspeed;
-      function_lin_def.ExtractDouble("MAXSPEED", maxspeed);
+      function_lin_def.extract_double("MAXSPEED", maxspeed);
 
       std::vector<double> rot_vec_torus;
-      function_lin_def.ExtractDoubleVector("ROTATION_VEC", rot_vec_torus);
+      function_lin_def.extract_double_vector("ROTATION_VEC", rot_vec_torus);
 
       double rotspeed;
-      function_lin_def.ExtractDouble("ROTATION_SPEED", rotspeed);  // revolutions per second
+      function_lin_def.extract_double("ROTATION_SPEED", rotspeed);  // revolutions per second
 
       double rotramptime;
-      function_lin_def.ExtractDouble("ROTATION_RAMPTIME", rotramptime);  // revolutions per second
+      function_lin_def.extract_double("ROTATION_RAMPTIME", rotramptime);  // revolutions per second
 
-      if (function_lin_def.HaveNamed("MOVINGLEVELSETTORUS"))
+      if (function_lin_def.has_named("MOVINGLEVELSETTORUS"))
         return Teuchos::rcp(new MovingLevelSetTorus(&origin, &orient_vec_torus, radius, radius_tube,
             &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime));
-      else if (function_lin_def.HaveNamed("MOVINGLEVELSETTORUSVELOCITY"))
+      else if (function_lin_def.has_named("MOVINGLEVELSETTORUSVELOCITY"))
         return Teuchos::rcp(new MovingLevelSetTorusVelocity(&origin, &orient_vec_torus, radius,
             radius_tube, &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime));
-      else if (function_lin_def.HaveNamed("MOVINGLEVELSETTORUSSLIPLENGTH"))
+      else if (function_lin_def.has_named("MOVINGLEVELSETTORUSSLIPLENGTH"))
       {
         int slipfunct;
-        function_lin_def.ExtractInt("SLIP_FUNCT", slipfunct);
+        function_lin_def.extract_int("SLIP_FUNCT", slipfunct);
         return Teuchos::rcp(
             new MovingLevelSetTorusSliplength(&origin, &orient_vec_torus, radius, radius_tube,
                 &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime, slipfunct));
@@ -106,55 +106,55 @@ namespace
         return Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>(nullptr);
       }
     }
-    else if (function_lin_def.HaveNamed("TAYLORCOUETTEFLOW"))
+    else if (function_lin_def.has_named("TAYLORCOUETTEFLOW"))
     {
       double radius_i;
-      function_lin_def.ExtractDouble("RADIUS_I", radius_i);
+      function_lin_def.extract_double("RADIUS_I", radius_i);
       double radius_o;
-      function_lin_def.ExtractDouble("RADIUS_O", radius_o);
+      function_lin_def.extract_double("RADIUS_O", radius_o);
 
       double vel_theta_i;
-      function_lin_def.ExtractDouble("VEL_THETA_I", vel_theta_i);
+      function_lin_def.extract_double("VEL_THETA_I", vel_theta_i);
       double vel_theta_o;
-      function_lin_def.ExtractDouble("VEL_THETA_O", vel_theta_o);
+      function_lin_def.extract_double("VEL_THETA_O", vel_theta_o);
 
       double sliplength_i;
-      function_lin_def.ExtractDouble("SLIPLENGTH_I", sliplength_i);
+      function_lin_def.extract_double("SLIPLENGTH_I", sliplength_i);
       double sliplength_o;
-      function_lin_def.ExtractDouble("SLIPLENGTH_O", sliplength_o);
+      function_lin_def.extract_double("SLIPLENGTH_O", sliplength_o);
 
       double traction_theta_i;
-      function_lin_def.ExtractDouble("TRACTION_THETA_I", traction_theta_i);
+      function_lin_def.extract_double("TRACTION_THETA_I", traction_theta_i);
       double traction_theta_o;
-      function_lin_def.ExtractDouble("TRACTION_THETA_O", traction_theta_o);
+      function_lin_def.extract_double("TRACTION_THETA_O", traction_theta_o);
 
       double viscosity;
-      function_lin_def.ExtractDouble("VISCOSITY", viscosity);
+      function_lin_def.extract_double("VISCOSITY", viscosity);
 
       return Teuchos::rcp(new TaylorCouetteFlow(radius_i, radius_o, vel_theta_i, vel_theta_o,
           sliplength_i, sliplength_o, traction_theta_i, traction_theta_o, viscosity));
     }
-    else if (function_lin_def.HaveNamed("URQUIZABOXFLOW"))
+    else if (function_lin_def.has_named("URQUIZABOXFLOW"))
     {
       double lengthx;
-      function_lin_def.ExtractDouble("LENGTHX", lengthx);
+      function_lin_def.extract_double("LENGTHX", lengthx);
       double lengthy;
-      function_lin_def.ExtractDouble("LENGTHY", lengthy);
+      function_lin_def.extract_double("LENGTHY", lengthy);
 
       double rotation;
-      function_lin_def.ExtractDouble("ROTATION", rotation);
+      function_lin_def.extract_double("ROTATION", rotation);
       double viscosity;
-      function_lin_def.ExtractDouble("VISCOSITY", viscosity);
+      function_lin_def.extract_double("VISCOSITY", viscosity);
       double density;
-      function_lin_def.ExtractDouble("DENSITY", density);
+      function_lin_def.extract_double("DENSITY", density);
 
       int functno;
-      function_lin_def.ExtractInt("CASE", functno);
+      function_lin_def.extract_int("CASE", functno);
 
       std::vector<double> lin_comb(2, 0.0);
-      if (function_lin_def.HaveNamed("COMBINATION"))
+      if (function_lin_def.has_named("COMBINATION"))
       {
-        function_lin_def.ExtractDoubleVector("COMBINATION", lin_comb);
+        function_lin_def.extract_double_vector("COMBINATION", lin_comb);
       }
       else if (functno == 3)
         FOUR_C_THROW(
@@ -164,26 +164,26 @@ namespace
       return Teuchos::rcp(
           new UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, lin_comb));
     }
-    else if (function_lin_def.HaveNamed("URQUIZABOXFLOW_FORCE"))
+    else if (function_lin_def.has_named("URQUIZABOXFLOW_FORCE"))
     {
       double lengthx;
-      function_lin_def.ExtractDouble("LENGTHX", lengthx);
+      function_lin_def.extract_double("LENGTHX", lengthx);
       double lengthy;
-      function_lin_def.ExtractDouble("LENGTHY", lengthy);
+      function_lin_def.extract_double("LENGTHY", lengthy);
 
       double rotation;
-      function_lin_def.ExtractDouble("ROTATION", rotation);
+      function_lin_def.extract_double("ROTATION", rotation);
       double viscosity;
-      function_lin_def.ExtractDouble("VISCOSITY", viscosity);
+      function_lin_def.extract_double("VISCOSITY", viscosity);
       double density;
-      function_lin_def.ExtractDouble("DENSITY", density);
+      function_lin_def.extract_double("DENSITY", density);
 
       int functno;
-      function_lin_def.ExtractInt("CASE", functno);
+      function_lin_def.extract_int("CASE", functno);
 
       std::vector<double> lin_comb(2, 0.0);
-      if (function_lin_def.HaveNamed("COMBINATION"))
-        function_lin_def.ExtractDoubleVector("COMBINATION", lin_comb);
+      if (function_lin_def.has_named("COMBINATION"))
+        function_lin_def.extract_double_vector("COMBINATION", lin_comb);
       else if (functno == 3)
         FOUR_C_THROW(
             "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
@@ -192,26 +192,26 @@ namespace
       return Teuchos::rcp(new UrquizaBoxFlowForce(
           lengthx, lengthy, rotation, viscosity, density, functno, lin_comb));
     }
-    else if (function_lin_def.HaveNamed("URQUIZABOXFLOW_TRACTION"))
+    else if (function_lin_def.has_named("URQUIZABOXFLOW_TRACTION"))
     {
       double lengthx;
-      function_lin_def.ExtractDouble("LENGTHX", lengthx);
+      function_lin_def.extract_double("LENGTHX", lengthx);
       double lengthy;
-      function_lin_def.ExtractDouble("LENGTHY", lengthy);
+      function_lin_def.extract_double("LENGTHY", lengthy);
 
       double rotation;
-      function_lin_def.ExtractDouble("ROTATION", rotation);
+      function_lin_def.extract_double("ROTATION", rotation);
       double viscosity;
-      function_lin_def.ExtractDouble("VISCOSITY", viscosity);
+      function_lin_def.extract_double("VISCOSITY", viscosity);
       double density;
-      function_lin_def.ExtractDouble("DENSITY", density);
+      function_lin_def.extract_double("DENSITY", density);
 
       int functno;
-      function_lin_def.ExtractInt("CASE", functno);
+      function_lin_def.extract_int("CASE", functno);
 
       std::vector<double> lin_comb(2, 0.0);
-      if (function_lin_def.HaveNamed("COMBINATION"))
-        function_lin_def.ExtractDoubleVector("COMBINATION", lin_comb);
+      if (function_lin_def.has_named("COMBINATION"))
+        function_lin_def.extract_double_vector("COMBINATION", lin_comb);
       else if (functno == 3)
         FOUR_C_THROW(
             "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
@@ -230,109 +230,109 @@ namespace
 void Discret::UTILS::AddValidXfluidFunctions(Core::UTILS::FunctionManager& function_manager)
 {
   Input::LineDefinition gerstenbergerforwardfacingstep =
-      Input::LineDefinition::Builder().AddTag("FORWARDFACINGSTEP").Build();
+      Input::LineDefinition::Builder().add_tag("FORWARDFACINGSTEP").build();
 
   Input::LineDefinition movinglevelsetcylinder = Input::LineDefinition::Builder()
-                                                     .AddTag("MOVINGLEVELSETCYLINDER")
+                                                     .add_tag("MOVINGLEVELSETCYLINDER")
                                                      .add_named_double_vector("ORIGIN", 3)
-                                                     .AddNamedDouble("RADIUS")
+                                                     .add_named_double("RADIUS")
                                                      .add_named_double_vector("DIRECTION", 3)
-                                                     .AddNamedDouble("DISTANCE")
-                                                     .AddNamedDouble("MAXSPEED")
-                                                     .Build();
+                                                     .add_named_double("DISTANCE")
+                                                     .add_named_double("MAXSPEED")
+                                                     .build();
 
   Input::LineDefinition movinglevelsettorus = Input::LineDefinition::Builder()
-                                                  .AddTag("MOVINGLEVELSETTORUS")
+                                                  .add_tag("MOVINGLEVELSETTORUS")
                                                   .add_named_double_vector("ORIGIN", 3)
                                                   .add_named_double_vector("ORIENTVEC_TORUS", 3)
-                                                  .AddNamedDouble("RADIUS")
-                                                  .AddNamedDouble("RADIUS_TUBE")
+                                                  .add_named_double("RADIUS")
+                                                  .add_named_double("RADIUS_TUBE")
                                                   .add_named_double_vector("DIRECTION", 3)
-                                                  .AddNamedDouble("DISTANCE")
-                                                  .AddNamedDouble("MAXSPEED")
+                                                  .add_named_double("DISTANCE")
+                                                  .add_named_double("MAXSPEED")
                                                   .add_named_double_vector("ROTATION_VEC", 3)
-                                                  .AddNamedDouble("ROTATION_SPEED")
-                                                  .AddNamedDouble("ROTATION_RAMPTIME")
-                                                  .Build();
+                                                  .add_named_double("ROTATION_SPEED")
+                                                  .add_named_double("ROTATION_RAMPTIME")
+                                                  .build();
 
   Input::LineDefinition movinglevelsettorusvelocity =
       Input::LineDefinition::Builder()
-          .AddTag("MOVINGLEVELSETTORUSVELOCITY")
+          .add_tag("MOVINGLEVELSETTORUSVELOCITY")
           .add_named_double_vector("ORIGIN", 3)
           .add_named_double_vector("ORIENTVEC_TORUS", 3)
-          .AddNamedDouble("RADIUS")
-          .AddNamedDouble("RADIUS_TUBE")
+          .add_named_double("RADIUS")
+          .add_named_double("RADIUS_TUBE")
           .add_named_double_vector("DIRECTION", 3)
-          .AddNamedDouble("DISTANCE")
-          .AddNamedDouble("MAXSPEED")
+          .add_named_double("DISTANCE")
+          .add_named_double("MAXSPEED")
           .add_named_double_vector("ROTATION_VEC", 3)
-          .AddNamedDouble("ROTATION_SPEED")
-          .AddNamedDouble("ROTATION_RAMPTIME")
-          .Build();
+          .add_named_double("ROTATION_SPEED")
+          .add_named_double("ROTATION_RAMPTIME")
+          .build();
 
   Input::LineDefinition movinglevelsettorussliplength =
       Input::LineDefinition::Builder()
-          .AddTag("MOVINGLEVELSETTORUSSLIPLENGTH")
+          .add_tag("MOVINGLEVELSETTORUSSLIPLENGTH")
           .add_named_double_vector("ORIGIN", 3)
           .add_named_double_vector("ORIENTVEC_TORUS", 3)
-          .AddNamedDouble("RADIUS")
-          .AddNamedDouble("RADIUS_TUBE")
+          .add_named_double("RADIUS")
+          .add_named_double("RADIUS_TUBE")
           .add_named_double_vector("DIRECTION", 3)
-          .AddNamedDouble("DISTANCE")
-          .AddNamedDouble("MAXSPEED")
+          .add_named_double("DISTANCE")
+          .add_named_double("MAXSPEED")
           .add_named_double_vector("ROTATION_VEC", 3)
-          .AddNamedDouble("ROTATION_SPEED")
-          .AddNamedDouble("ROTATION_RAMPTIME")
-          .AddNamedInt("SLIP_FUNCT")
-          .Build();
+          .add_named_double("ROTATION_SPEED")
+          .add_named_double("ROTATION_RAMPTIME")
+          .add_named_int("SLIP_FUNCT")
+          .build();
 
   Input::LineDefinition taylorcouetteflow = Input::LineDefinition::Builder()
-                                                .AddTag("TAYLORCOUETTEFLOW")
-                                                .AddNamedDouble("RADIUS_I")
-                                                .AddNamedDouble("RADIUS_O")
-                                                .AddNamedDouble("VEL_THETA_I")
-                                                .AddNamedDouble("VEL_THETA_O")
-                                                .AddNamedDouble("SLIPLENGTH_I")
-                                                .AddNamedDouble("SLIPLENGTH_O")
-                                                .AddNamedDouble("TRACTION_THETA_I")
-                                                .AddNamedDouble("TRACTION_THETA_O")
-                                                .AddNamedDouble("VISCOSITY")
-                                                .Build();
+                                                .add_tag("TAYLORCOUETTEFLOW")
+                                                .add_named_double("RADIUS_I")
+                                                .add_named_double("RADIUS_O")
+                                                .add_named_double("VEL_THETA_I")
+                                                .add_named_double("VEL_THETA_O")
+                                                .add_named_double("SLIPLENGTH_I")
+                                                .add_named_double("SLIPLENGTH_O")
+                                                .add_named_double("TRACTION_THETA_I")
+                                                .add_named_double("TRACTION_THETA_O")
+                                                .add_named_double("VISCOSITY")
+                                                .build();
 
   Input::LineDefinition urquizaboxflow = Input::LineDefinition::Builder()
-                                             .AddTag("URQUIZABOXFLOW")
-                                             .AddNamedDouble("LENGTHX")
-                                             .AddNamedDouble("LENGTHY")
-                                             .AddNamedDouble("ROTATION")
-                                             .AddNamedDouble("VISCOSITY")
-                                             .AddNamedDouble("DENSITY")
-                                             .AddNamedInt("CASE")
+                                             .add_tag("URQUIZABOXFLOW")
+                                             .add_named_double("LENGTHX")
+                                             .add_named_double("LENGTHY")
+                                             .add_named_double("ROTATION")
+                                             .add_named_double("VISCOSITY")
+                                             .add_named_double("DENSITY")
+                                             .add_named_int("CASE")
                                              .add_optional_named_double_vector("COMBINATION", 2)
-                                             .Build();
+                                             .build();
 
   Input::LineDefinition urquizaboxflowtraction =
       Input::LineDefinition::Builder()
-          .AddTag("URQUIZABOXFLOW_TRACTION")
-          .AddNamedDouble("LENGTHX")
-          .AddNamedDouble("LENGTHY")
-          .AddNamedDouble("ROTATION")
-          .AddNamedDouble("VISCOSITY")
-          .AddNamedDouble("DENSITY")
-          .AddNamedInt("CASE")
+          .add_tag("URQUIZABOXFLOW_TRACTION")
+          .add_named_double("LENGTHX")
+          .add_named_double("LENGTHY")
+          .add_named_double("ROTATION")
+          .add_named_double("VISCOSITY")
+          .add_named_double("DENSITY")
+          .add_named_int("CASE")
           .add_optional_named_double_vector("COMBINATION", 2)
-          .Build();
+          .build();
 
   Input::LineDefinition urquizaboxflowforce =
       Input::LineDefinition::Builder()
-          .AddTag("URQUIZABOXFLOW_FORCE")
-          .AddNamedDouble("LENGTHX")
-          .AddNamedDouble("LENGTHY")
-          .AddNamedDouble("ROTATION")
-          .AddNamedDouble("VISCOSITY")
-          .AddNamedDouble("DENSITY")
-          .AddNamedInt("CASE")
+          .add_tag("URQUIZABOXFLOW_FORCE")
+          .add_named_double("LENGTHX")
+          .add_named_double("LENGTHY")
+          .add_named_double("ROTATION")
+          .add_named_double("VISCOSITY")
+          .add_named_double("DENSITY")
+          .add_named_int("CASE")
           .add_optional_named_double_vector("COMBINATION", 2)
-          .Build();
+          .build();
 
   std::vector<Input::LineDefinition> lines;
 

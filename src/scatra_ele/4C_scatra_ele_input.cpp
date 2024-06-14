@@ -22,7 +22,7 @@ bool Discret::ELEMENTS::Transport::ReadElement(
 {
   // read implementation type
   std::string impltype;
-  linedef->ExtractString("TYPE", impltype);
+  linedef->extract_string("TYPE", impltype);
   if (impltype == "Std")
     impltype_ = Inpar::ScaTra::impltype_std;
   else if (impltype == "AdvReac")
@@ -74,7 +74,7 @@ bool Discret::ELEMENTS::Transport::ReadElement(
 
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   // set discretization type

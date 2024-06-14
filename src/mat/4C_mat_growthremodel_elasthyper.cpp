@@ -467,7 +467,7 @@ void Mat::GrowthRemodelElastHyper::setup_axi_cir_rad_structural_tensor(
     Input::LineDefinition* linedef)
 {
   // CIR-AXI-RAD nomenclature
-  if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
+  if (linedef->has_named("RAD") and linedef->has_named("AXI") and linedef->has_named("CIR"))
   {
     // Read in of data
     // read local (cylindrical) cosy-directions at current element
@@ -530,7 +530,7 @@ void Mat::GrowthRemodelElastHyper::read_dir(
     Input::LineDefinition* linedef, const std::string& specifier, Core::LinAlg::Matrix<3, 1>& dir)
 {
   std::vector<double> fiber;
-  linedef->ExtractDoubleVector(specifier, fiber);
+  linedef->extract_double_vector(specifier, fiber);
   double fnorm = 0.;
   // normalization
   for (int i = 0; i < 3; ++i)

@@ -44,11 +44,11 @@ void StruResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_
 
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
   if (dis != strudisc_->Name()) return;
 
   int node;
-  res.ExtractInt("NODE", node);
+  res.extract_int("NODE", node);
   node -= 1;
 
   int havenode(strudisc_->HaveGlobalNode(node));
@@ -70,7 +70,7 @@ void StruResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_
       if (actnode->Owner() != strudisc_->Comm().MyPID()) return;
 
       std::string position;
-      res.ExtractString("QUANTITY", position);
+      res.extract_string("QUANTITY", position);
       bool unknownpos = true;  // make sure the result value std::string can be handled
       double result = 0.0;     // will hold the actual result of run
 
@@ -186,7 +186,7 @@ void StruResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& tes
 {
   // extract name of quantity to be tested
   std::string quantity;
-  res.ExtractString("QUANTITY", quantity);
+  res.extract_string("QUANTITY", quantity);
 
   // get result to be tested on all processors
   const double result = get_special_result_for_testing(quantity);

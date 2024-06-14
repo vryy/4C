@@ -18,13 +18,13 @@ bool Discret::ELEMENTS::SoTet10::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   SolidMaterial()->Setup(NUMGPT_SOTET10, linedef);
 
   std::string buffer;
-  linedef->ExtractString("KINEM", buffer);
+  linedef->extract_string("KINEM", buffer);
 
   // geometrically linear
   if (buffer == "linear")

@@ -40,12 +40,12 @@ namespace
 
     const auto& function_lin_def = function_line_defs.front();
 
-    if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE"))
+    if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE"))
     {
       // read data
       int mat_id_struc = -1;
 
-      function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
+      function_lin_def.extract_int("MAT_STRUC", mat_id_struc);
 
       if (mat_id_struc <= 0)
         FOUR_C_THROW(
@@ -56,12 +56,12 @@ namespace
 
       return Teuchos::rcp(new STR::WeaklyCompressibleEtienneFSIStructureFunction(fparams));
     }
-    else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE"))
+    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE"))
     {
       // read data
       int mat_id_struc = -1;
 
-      function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
+      function_lin_def.extract_int("MAT_STRUC", mat_id_struc);
 
       if (mat_id_struc <= 0)
       {
@@ -89,13 +89,13 @@ void STR::AddValidStructureFunctions(Core::UTILS::FunctionManager& function_mana
 {
   std::vector<Input::LineDefinition> lines;
   lines.emplace_back(Input::LineDefinition::Builder()
-                         .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")
-                         .AddNamedInt("MAT_STRUC")
-                         .Build());
+                         .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")
+                         .add_named_int("MAT_STRUC")
+                         .build());
   lines.emplace_back(Input::LineDefinition::Builder()
-                         .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
-                         .AddNamedInt("MAT_STRUC")
-                         .Build());
+                         .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
+                         .add_named_int("MAT_STRUC")
+                         .build());
 
   function_manager.add_function_definition(std::move(lines), CreateStructureFunction);
 }

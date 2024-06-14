@@ -114,13 +114,13 @@ void MIXTURE::MixtureRule::UnpackMixtureRule(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // Read initialized flag
-  numgp_ = Core::Communication::ParObject::ExtractInt(position, data);
+  numgp_ = Core::Communication::ParObject::extract_int(position, data);
 
   // Read element read flag
-  has_read_element_ = (bool)Core::Communication::ParObject::ExtractInt(position, data);
+  has_read_element_ = (bool)Core::Communication::ParObject::extract_int(position, data);
 
   // Read is setup flag
-  is_setup_ = (bool)Core::Communication::ParObject::ExtractInt(position, data);
+  is_setup_ = (bool)Core::Communication::ParObject::extract_int(position, data);
 }
 
 // reads the element definition and set up all quantities

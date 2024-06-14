@@ -74,7 +74,8 @@ void Discret::ELEMENTS::WallQuad4PoroScatraType::setup_element_definition(
 
   std::map<std::string, Input::LineDefinition>& defs = definitions["WALLQ4POROSCATRA"];
 
-  defs["QUAD4"] = Input::LineDefinition::Builder(defs_wall["QUAD4"]).AddNamedString("TYPE").Build();
+  defs["QUAD4"] =
+      Input::LineDefinition::Builder(defs_wall["QUAD4"]).add_named_string("TYPE").build();
 }
 
 
@@ -136,7 +137,8 @@ void Discret::ELEMENTS::WallQuad9PoroScatraType::setup_element_definition(
 
   std::map<std::string, Input::LineDefinition>& defs = definitions["WALLQ9POROSCATRA"];
 
-  defs["QUAD9"] = Input::LineDefinition::Builder(defs_wall["QUAD9"]).AddNamedString("TYPE").Build();
+  defs["QUAD9"] =
+      Input::LineDefinition::Builder(defs_wall["QUAD9"]).add_named_string("TYPE").build();
 }
 
 /*----------------------------------------------------------------------*
@@ -199,7 +201,7 @@ void Discret::ELEMENTS::WallNurbs4PoroScatraType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["WALLN4POROSCATRA"];
 
   defs["NURBS4"] =
-      Input::LineDefinition::Builder(defs_wall["NURBS4"]).AddNamedString("TYPE").Build();
+      Input::LineDefinition::Builder(defs_wall["NURBS4"]).add_named_string("TYPE").build();
 }
 
 /*----------------------------------------------------------------------*
@@ -262,7 +264,7 @@ void Discret::ELEMENTS::WallNurbs9PoroScatraType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["WALLN9POROSCATRA"];
 
   defs["NURBS9"] =
-      Input::LineDefinition::Builder(defs_wall["NURBS9"]).AddNamedString("TYPE").Build();
+      Input::LineDefinition::Builder(defs_wall["NURBS9"]).add_named_string("TYPE").build();
 }
 
 /*----------------------------------------------------------------------*
@@ -324,7 +326,7 @@ void Discret::ELEMENTS::WallTri3PoroScatraType::setup_element_definition(
 
   std::map<std::string, Input::LineDefinition>& defs = definitions["WALLT3POROSCATRA"];
 
-  defs["TRI3"] = Input::LineDefinition::Builder(defs_wall["TRI3"]).AddNamedString("TYPE").Build();
+  defs["TRI3"] = Input::LineDefinition::Builder(defs_wall["TRI3"]).add_named_string("TYPE").build();
 }
 
 FOUR_C_NAMESPACE_CLOSE

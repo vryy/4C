@@ -74,7 +74,7 @@ void Discret::ELEMENTS::RedInterAcinarDepType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["RED_ACINAR_INTER_DEP"];
 
   defs["LINE2"] =
-      Input::LineDefinition::Builder().AddIntVector("LINE2", 2).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().add_int_vector("LINE2", 2).add_named_int("MAT").build();
 }
 
 

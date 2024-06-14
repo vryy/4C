@@ -80,10 +80,10 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["NURBS27"] = Input::LineDefinition::Builder()
-                        .AddIntVector("NURBS27", 27)
-                        .AddNamedInt("MAT")
-                        .AddNamedIntVector("GP", 3)
-                        .Build();
+                        .add_int_vector("NURBS27", 27)
+                        .add_named_int("MAT")
+                        .add_named_int_vector("GP", 3)
+                        .build();
 }
 
 

@@ -95,9 +95,9 @@ void Discret::ELEMENTS::FluidHDGWeakCompType ::setup_element_definition(
   for (const auto& [key, fluid_line_def] : defs_fluid)
   {
     defs_hdg[key] = Input::LineDefinition::Builder(fluid_line_def)
-                        .AddNamedInt("DEG")
-                        .AddOptionalNamedInt("SPC")
-                        .Build();
+                        .add_named_int("DEG")
+                        .add_optional_named_int("SPC")
+                        .build();
   }
 }
 
@@ -184,12 +184,12 @@ bool Discret::ELEMENTS::FluidHDGWeakComp::ReadElement(
 {
   bool success = Fluid::ReadElement(eletype, distype, linedef);
   int degree;
-  linedef->ExtractInt("DEG", degree);
+  linedef->extract_int("DEG", degree);
   degree_ = degree;
 
-  if (linedef->HaveNamed("SPC"))
+  if (linedef->has_named("SPC"))
   {
-    linedef->ExtractInt("SPC", degree);
+    linedef->extract_int("SPC", degree);
     completepol_ = degree;
   }
   else

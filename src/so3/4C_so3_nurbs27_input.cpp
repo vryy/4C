@@ -21,7 +21,7 @@ bool Discret::ELEMENTS::Nurbs::SoNurbs27::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   const int numgp = 27;
@@ -29,7 +29,7 @@ bool Discret::ELEMENTS::Nurbs::SoNurbs27::ReadElement(
 
   // read possible gaussian points, obsolete for computation
   std::vector<int> ngp;
-  linedef->ExtractIntVector("GP", ngp);
+  linedef->extract_int_vector("GP", ngp);
   for (int i = 0; i < 3; ++i)
     if (ngp[i] != 3) FOUR_C_THROW("Only version with 3 GP for So_N27 implemented");
 

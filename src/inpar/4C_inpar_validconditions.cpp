@@ -86,7 +86,7 @@ namespace Input
             "Layer for Multilayered STC", Core::Conditions::VolSTCLayer, true,
             Core::Conditions::geometry_type_volume));
 
-    stclayer->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
+    stclayer->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
 
     condlist.push_back(stclayer);
   }
@@ -210,26 +210,26 @@ Input::ValidConditions()
 
   for (const auto& neumanncomponent : neumanncomponents)
   {
-    pointneumann->AddComponent(neumanncomponent);
-    pointneumanneb->AddComponent(neumanncomponent);
-    lineneumann->AddComponent(neumanncomponent);
-    surfneumann->AddComponent(neumanncomponent);
-    volneumann->AddComponent(neumanncomponent);
+    pointneumann->add_component(neumanncomponent);
+    pointneumanneb->add_component(neumanncomponent);
+    lineneumann->add_component(neumanncomponent);
+    surfneumann->add_component(neumanncomponent);
+    volneumann->add_component(neumanncomponent);
 
-    pointtransportneumann->AddComponent(neumanncomponent);
-    linetransportneumann->AddComponent(neumanncomponent);
-    surftransportneumann->AddComponent(neumanncomponent);
-    voltransportneumann->AddComponent(neumanncomponent);
+    pointtransportneumann->add_component(neumanncomponent);
+    linetransportneumann->add_component(neumanncomponent);
+    surftransportneumann->add_component(neumanncomponent);
+    voltransportneumann->add_component(neumanncomponent);
 
-    pointthermoneumann->AddComponent(neumanncomponent);
-    linethermoneumann->AddComponent(neumanncomponent);
-    surfthermoneumann->AddComponent(neumanncomponent);
-    volthermoneumann->AddComponent(neumanncomponent);
+    pointthermoneumann->add_component(neumanncomponent);
+    linethermoneumann->add_component(neumanncomponent);
+    surfthermoneumann->add_component(neumanncomponent);
+    volthermoneumann->add_component(neumanncomponent);
 
-    pointporoneumann->AddComponent(neumanncomponent);
-    lineporoneumann->AddComponent(neumanncomponent);
-    surfporoneumann->AddComponent(neumanncomponent);
-    volporoneumann->AddComponent(neumanncomponent);
+    pointporoneumann->add_component(neumanncomponent);
+    lineporoneumann->add_component(neumanncomponent);
+    surfporoneumann->add_component(neumanncomponent);
+    volporoneumann->add_component(neumanncomponent);
   }
 
   condlist.push_back(pointneumann);
@@ -384,35 +384,35 @@ Input::ValidConditions()
 
   for (unsigned i = 0; i < dirichletbundcomponents.size(); ++i)
   {
-    pointdirichlet->AddComponent(dirichletbundcomponents[i]);
-    linedirichlet->AddComponent(dirichletbundcomponents[i]);
-    surfdirichlet->AddComponent(dirichletbundcomponents[i]);
-    voldirichlet->AddComponent(dirichletbundcomponents[i]);
+    pointdirichlet->add_component(dirichletbundcomponents[i]);
+    linedirichlet->add_component(dirichletbundcomponents[i]);
+    surfdirichlet->add_component(dirichletbundcomponents[i]);
+    voldirichlet->add_component(dirichletbundcomponents[i]);
 
-    pointaledirichlet->AddComponent(dirichletbundcomponents[i]);
-    linealedirichlet->AddComponent(dirichletbundcomponents[i]);
-    surfaledirichlet->AddComponent(dirichletbundcomponents[i]);
-    volaledirichlet->AddComponent(dirichletbundcomponents[i]);
+    pointaledirichlet->add_component(dirichletbundcomponents[i]);
+    linealedirichlet->add_component(dirichletbundcomponents[i]);
+    surfaledirichlet->add_component(dirichletbundcomponents[i]);
+    volaledirichlet->add_component(dirichletbundcomponents[i]);
 
-    pointtransportdirichlet->AddComponent(dirichletbundcomponents[i]);
-    linetransportdirichlet->AddComponent(dirichletbundcomponents[i]);
-    surftransportdirichlet->AddComponent(dirichletbundcomponents[i]);
-    voltransportdirichlet->AddComponent(dirichletbundcomponents[i]);
+    pointtransportdirichlet->add_component(dirichletbundcomponents[i]);
+    linetransportdirichlet->add_component(dirichletbundcomponents[i]);
+    surftransportdirichlet->add_component(dirichletbundcomponents[i]);
+    voltransportdirichlet->add_component(dirichletbundcomponents[i]);
 
-    pointthermodirichlet->AddComponent(dirichletbundcomponents[i]);
-    linethermodirichlet->AddComponent(dirichletbundcomponents[i]);
-    surfthermodirichlet->AddComponent(dirichletbundcomponents[i]);
-    volthermodirichlet->AddComponent(dirichletbundcomponents[i]);
+    pointthermodirichlet->add_component(dirichletbundcomponents[i]);
+    linethermodirichlet->add_component(dirichletbundcomponents[i]);
+    surfthermodirichlet->add_component(dirichletbundcomponents[i]);
+    volthermodirichlet->add_component(dirichletbundcomponents[i]);
 
-    pointporodirichlet->AddComponent(dirichletbundcomponents[i]);
-    lineporodirichlet->AddComponent(dirichletbundcomponents[i]);
-    surfporodirichlet->AddComponent(dirichletbundcomponents[i]);
-    volporodirichlet->AddComponent(dirichletbundcomponents[i]);
+    pointporodirichlet->add_component(dirichletbundcomponents[i]);
+    lineporodirichlet->add_component(dirichletbundcomponents[i]);
+    surfporodirichlet->add_component(dirichletbundcomponents[i]);
+    volporodirichlet->add_component(dirichletbundcomponents[i]);
 
-    pointnurbslsdirichlet->AddComponent(dirichletbundcomponents[i]);
-    linenurbslsdirichlet->AddComponent(dirichletbundcomponents[i]);
-    surfnurbslsdirichlet->AddComponent(dirichletbundcomponents[i]);
-    volnurbslsdirichlet->AddComponent(dirichletbundcomponents[i]);
+    pointnurbslsdirichlet->add_component(dirichletbundcomponents[i]);
+    linenurbslsdirichlet->add_component(dirichletbundcomponents[i]);
+    surfnurbslsdirichlet->add_component(dirichletbundcomponents[i]);
+    volnurbslsdirichlet->add_component(dirichletbundcomponents[i]);
   }
 
   condlist.push_back(pointdirichlet);
@@ -468,8 +468,8 @@ Input::ValidConditions()
 
   for (const auto& couplingcomponent : couplingcomponents)
   {
-    pointcoupling->AddComponent(couplingcomponent);
-    pointthermocoupling->AddComponent(couplingcomponent);
+    pointcoupling->add_component(couplingcomponent);
+    pointthermocoupling->add_component(couplingcomponent);
   }
 
   condlist.push_back(pointcoupling);
@@ -510,10 +510,10 @@ Input::ValidConditions()
 
   for (const auto& initial_field_component : initial_field_components)
   {
-    pointinitfields->AddComponent(initial_field_component);
-    lineinitfields->AddComponent(initial_field_component);
-    surfinitfields->AddComponent(initial_field_component);
-    volinitfields->AddComponent(initial_field_component);
+    pointinitfields->add_component(initial_field_component);
+    lineinitfields->add_component(initial_field_component);
+    surfinitfields->add_component(initial_field_component);
+    volinitfields->add_component(initial_field_component);
   }
 
   condlist.push_back(pointinitfields);
@@ -561,10 +561,10 @@ Input::ValidConditions()
 
   for (const auto& component : initial_field_components_thermo_on_scatra_dis)
   {
-    pointthermoinitfields->AddComponent(component);
-    linethermoinitfields->AddComponent(component);
-    surfthermoinitfields->AddComponent(component);
-    volthermoinitfields->AddComponent(component);
+    pointthermoinitfields->add_component(component);
+    linethermoinitfields->add_component(component);
+    surfthermoinitfields->add_component(component);
+    volthermoinitfields->add_component(component);
   }
 
   condlist.push_back(pointthermoinitfields);
@@ -598,8 +598,8 @@ Input::ValidConditions()
     // insert input file line components into condition definitions
     for (unsigned i = 0; i < domainintegralcomponents.size(); ++i)
     {
-      domainintegralsurf->AddComponent(domainintegralcomponents[i]);
-      domainintegralvol->AddComponent(domainintegralcomponents[i]);
+      domainintegralsurf->add_component(domainintegralcomponents[i]);
+      domainintegralvol->add_component(domainintegralcomponents[i]);
     }
 
     // insert condition definitions into global list of valid condition definitions
@@ -625,7 +625,7 @@ Input::ValidConditions()
 
     // insert input file line components into condition definition
     for (unsigned i = 0; i < boundaryintegralcomponents.size(); ++i)
-      boundaryintegralsurf->AddComponent(boundaryintegralcomponents[i]);
+      boundaryintegralsurf->add_component(boundaryintegralcomponents[i]);
 
     // insert condition definition into global list of valid condition definitions
     condlist.push_back(boundaryintegralsurf);
@@ -696,27 +696,27 @@ Input::ValidConditions()
 
   for (unsigned i = 0; i < locsyscomponents.size() - 2; ++i)
   {
-    pointlocsys->AddComponent(locsyscomponents[i]);
-    linelocsys->AddComponent(locsyscomponents[i]);
-    surflocsys->AddComponent(locsyscomponents[i]);
-    vollocsys->AddComponent(locsyscomponents[i]);
+    pointlocsys->add_component(locsyscomponents[i]);
+    linelocsys->add_component(locsyscomponents[i]);
+    surflocsys->add_component(locsyscomponents[i]);
+    vollocsys->add_component(locsyscomponents[i]);
 
     // Ale
-    pointalelocsys->AddComponent(locsyscomponents[i]);
-    linealelocsys->AddComponent(locsyscomponents[i]);
-    surfalelocsys->AddComponent(locsyscomponents[i]);
-    volalelocsys->AddComponent(locsyscomponents[i]);
+    pointalelocsys->add_component(locsyscomponents[i]);
+    linealelocsys->add_component(locsyscomponents[i]);
+    surfalelocsys->add_component(locsyscomponents[i]);
+    volalelocsys->add_component(locsyscomponents[i]);
   }
 
   // Add node normal system option only for lines and surfaces
-  linelocsys->AddComponent(locsyscomponents[locsyscomponents.size() - 2]);
-  linelocsys->AddComponent(locsyscomponents[locsyscomponents.size() - 1]);
-  surflocsys->AddComponent(locsyscomponents[locsyscomponents.size() - 2]);
-  surflocsys->AddComponent(locsyscomponents[locsyscomponents.size() - 1]);
-  linealelocsys->AddComponent(locsyscomponents[locsyscomponents.size() - 2]);
-  linealelocsys->AddComponent(locsyscomponents[locsyscomponents.size() - 1]);
-  surfalelocsys->AddComponent(locsyscomponents[locsyscomponents.size() - 2]);
-  surfalelocsys->AddComponent(locsyscomponents[locsyscomponents.size() - 1]);
+  linelocsys->add_component(locsyscomponents[locsyscomponents.size() - 2]);
+  linelocsys->add_component(locsyscomponents[locsyscomponents.size() - 1]);
+  surflocsys->add_component(locsyscomponents[locsyscomponents.size() - 2]);
+  surflocsys->add_component(locsyscomponents[locsyscomponents.size() - 1]);
+  linealelocsys->add_component(locsyscomponents[locsyscomponents.size() - 2]);
+  linealelocsys->add_component(locsyscomponents[locsyscomponents.size() - 1]);
+  surfalelocsys->add_component(locsyscomponents[locsyscomponents.size() - 2]);
+  surfalelocsys->add_component(locsyscomponents[locsyscomponents.size() - 1]);
 
   condlist.push_back(pointlocsys);
   condlist.push_back(linelocsys);
@@ -767,8 +767,8 @@ Input::ValidConditions()
 
   for (unsigned i = 0; i < pbccomponents.size(); ++i)
   {
-    lineperiodic->AddComponent(pbccomponents[i]);
-    surfperiodic->AddComponent(pbccomponents[i]);
+    lineperiodic->add_component(pbccomponents[i]);
+    surfperiodic->add_component(pbccomponents[i]);
   }
 
   condlist.push_back(lineperiodic);
@@ -833,8 +833,8 @@ Input::ValidConditions()
   // we attach all the components of this condition to this weak line DBC
   for (unsigned i = 0; i < weakDirichletcomponents.size(); ++i)
   {
-    lineweakdirichlet->AddComponent(weakDirichletcomponents[i]);
-    surfweakdirichlet->AddComponent(weakDirichletcomponents[i]);
+    lineweakdirichlet->add_component(weakDirichletcomponents[i]);
+    surfweakdirichlet->add_component(weakDirichletcomponents[i]);
   }
 
   // and append it to the list of all conditions
@@ -857,8 +857,8 @@ Input::ValidConditions()
 
   for (unsigned i = 0; i < sprcomponents.size(); ++i)
   {
-    linespr->AddComponent(sprcomponents[i]);
-    surfspr->AddComponent(sprcomponents[i]);
+    linespr->add_component(sprcomponents[i]);
+    surfspr->add_component(sprcomponents[i]);
   }
 
   condlist.push_back(linespr);
@@ -872,10 +872,10 @@ Input::ValidConditions()
           "VolumeConstraint_3D", "Surface Volume Constraint", Core::Conditions::VolumeConstraint_3D,
           true, Core::Conditions::geometry_type_surface));
 
-  volumeconstraint->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
-  volumeconstraint->AddComponent(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
-  volumeconstraint->AddComponent(Teuchos::rcp(new RealComponent("activTime")));
-  volumeconstraint->AddComponent(Teuchos::rcp(new SelectionComponent("projection", "none",
+  volumeconstraint->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
+  volumeconstraint->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  volumeconstraint->add_component(Teuchos::rcp(new RealComponent("activTime")));
+  volumeconstraint->add_component(Teuchos::rcp(new SelectionComponent("projection", "none",
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"),
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true)));
 
@@ -890,12 +890,12 @@ Input::ValidConditions()
           "Surface Volume Constraint Penalty", Core::Conditions::VolumeConstraint_3D_pen, true,
           Core::Conditions::geometry_type_surface));
 
-  volumeconstraintpen->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
-  volumeconstraintpen->AddComponent(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
-  volumeconstraintpen->AddComponent(Teuchos::rcp(new RealComponent("activTime")));
-  volumeconstraintpen->AddComponent(Teuchos::rcp(new RealComponent("penalty")));
-  volumeconstraintpen->AddComponent(Teuchos::rcp(new RealComponent("rho")));
-  volumeconstraintpen->AddComponent(Teuchos::rcp(new SelectionComponent("projection", "none",
+  volumeconstraintpen->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
+  volumeconstraintpen->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  volumeconstraintpen->add_component(Teuchos::rcp(new RealComponent("activTime")));
+  volumeconstraintpen->add_component(Teuchos::rcp(new RealComponent("penalty")));
+  volumeconstraintpen->add_component(Teuchos::rcp(new RealComponent("rho")));
+  volumeconstraintpen->add_component(Teuchos::rcp(new SelectionComponent("projection", "none",
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"),
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true)));
 
@@ -909,9 +909,9 @@ Input::ValidConditions()
           "AreaConstraint_3D", "Surface Area Constraint", Core::Conditions::AreaConstraint_3D, true,
           Core::Conditions::geometry_type_surface));
 
-  areaconstraint->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
-  areaconstraint->AddComponent(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
-  areaconstraint->AddComponent(Teuchos::rcp(new RealComponent("activTime")));
+  areaconstraint->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
+  areaconstraint->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  areaconstraint->add_component(Teuchos::rcp(new RealComponent("activTime")));
 
   condlist.push_back(areaconstraint);
 
@@ -923,12 +923,12 @@ Input::ValidConditions()
           "AreaConstraint_3D_Pen", "Surface Area Constraint Penalty",
           Core::Conditions::AreaConstraint_3D_pen, true, Core::Conditions::geometry_type_surface));
 
-  areaconstraintpen->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
-  areaconstraintpen->AddComponent(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
-  areaconstraintpen->AddComponent(Teuchos::rcp(new RealComponent("activTime")));
-  areaconstraintpen->AddComponent(Teuchos::rcp(new RealComponent("penalty")));
-  areaconstraintpen->AddComponent(Teuchos::rcp(new RealComponent("rho")));
-  areaconstraintpen->AddComponent(Teuchos::rcp(new SelectionComponent("projection", "none",
+  areaconstraintpen->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
+  areaconstraintpen->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  areaconstraintpen->add_component(Teuchos::rcp(new RealComponent("activTime")));
+  areaconstraintpen->add_component(Teuchos::rcp(new RealComponent("penalty")));
+  areaconstraintpen->add_component(Teuchos::rcp(new RealComponent("rho")));
+  areaconstraintpen->add_component(Teuchos::rcp(new SelectionComponent("projection", "none",
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"),
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true)));
 
@@ -943,7 +943,7 @@ Input::ValidConditions()
           "VolumeMonitor_3D", "Surface Volume Monitor", Core::Conditions::VolumeMonitor_3D, true,
           Core::Conditions::geometry_type_surface));
 
-  volumemonitor->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
+  volumemonitor->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
 
   condlist.push_back(volumemonitor);
 
@@ -955,8 +955,8 @@ Input::ValidConditions()
           "AreaMonitor_3D", "Surface Area Monitor", Core::Conditions::AreaMonitor_3D, true,
           Core::Conditions::geometry_type_surface));
 
-  areamonitor->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
-  areamonitor->AddComponent(Teuchos::rcp(new SelectionComponent("projection", "none",
+  areamonitor->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
+  areamonitor->add_component(Teuchos::rcp(new SelectionComponent("projection", "none",
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"),
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true)));
 
@@ -970,9 +970,9 @@ Input::ValidConditions()
           "AreaConstraint_2D", "Line Area Constraint", Core::Conditions::AreaConstraint_2D, true,
           Core::Conditions::geometry_type_line));
 
-  areaconstraint2D->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
-  areaconstraint2D->AddComponent(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
-  areaconstraint2D->AddComponent(Teuchos::rcp(new RealComponent("activTime")));
+  areaconstraint2D->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
+  areaconstraint2D->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  areaconstraint2D->add_component(Teuchos::rcp(new RealComponent("activTime")));
   condlist.push_back(areaconstraint2D);
 
   /*--------------------------------------------------------------------*/
@@ -983,7 +983,7 @@ Input::ValidConditions()
           "AreaMonitor_2D", "Line Area Monitor", Core::Conditions::AreaMonitor_2D, true,
           Core::Conditions::geometry_type_line));
 
-  areamonitor2D->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
+  areamonitor2D->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
   condlist.push_back(areamonitor2D);
 
   /*--------------------------------------------------------------------*/
@@ -994,12 +994,12 @@ Input::ValidConditions()
           "DESIGN SURFACE MULTIPNT CONSTRAINT 3D", "MPC_NodeOnPlane_3D", "Node on Plane Constraint",
           Core::Conditions::MPC_NodeOnPlane_3D, false, Core::Conditions::geometry_type_surface));
 
-  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
-  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new RealComponent("amplitude")));
-  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
-  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new RealComponent("activTime")));
-  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntVectorComponent("planeNodes", 3)));
-  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new SelectionComponent("control", "rel",
+  nodeonplaneconst3D->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
+  nodeonplaneconst3D->add_component(Teuchos::rcp(new RealComponent("amplitude")));
+  nodeonplaneconst3D->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  nodeonplaneconst3D->add_component(Teuchos::rcp(new RealComponent("activTime")));
+  nodeonplaneconst3D->add_component(Teuchos::rcp(new IntVectorComponent("planeNodes", 3)));
+  nodeonplaneconst3D->add_component(Teuchos::rcp(new SelectionComponent("control", "rel",
       Teuchos::tuple<std::string>("rel", "abs"), Teuchos::tuple<std::string>("rel", "abs"), true)));
   condlist.push_back(nodeonplaneconst3D);
 
@@ -1012,15 +1012,15 @@ Input::ValidConditions()
           "Node on Plane Constraint", Core::Conditions::MPC_NormalComponent_3D, false,
           Core::Conditions::geometry_type_surface));
 
-  nodemasterconst3D->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
-  nodemasterconst3D->AddComponent(Teuchos::rcp(new RealComponent("amplitude")));
-  nodemasterconst3D->AddComponent(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
-  nodemasterconst3D->AddComponent(Teuchos::rcp(new RealComponent("activTime")));
-  nodemasterconst3D->AddComponent(Teuchos::rcp(new IntComponent("masterNode")));
-  nodemasterconst3D->AddComponent(Teuchos::rcp(new RealVectorComponent("direction", 3)));
-  nodemasterconst3D->AddComponent(Teuchos::rcp(new SelectionComponent("value", "disp",
+  nodemasterconst3D->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
+  nodemasterconst3D->add_component(Teuchos::rcp(new RealComponent("amplitude")));
+  nodemasterconst3D->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  nodemasterconst3D->add_component(Teuchos::rcp(new RealComponent("activTime")));
+  nodemasterconst3D->add_component(Teuchos::rcp(new IntComponent("masterNode")));
+  nodemasterconst3D->add_component(Teuchos::rcp(new RealVectorComponent("direction", 3)));
+  nodemasterconst3D->add_component(Teuchos::rcp(new SelectionComponent("value", "disp",
       Teuchos::tuple<std::string>("disp", "x"), Teuchos::tuple<std::string>("disp", "x"), true)));
-  nodemasterconst3D->AddComponent(Teuchos::rcp(new SelectionComponent("control", "rel",
+  nodemasterconst3D->add_component(Teuchos::rcp(new SelectionComponent("control", "rel",
       Teuchos::tuple<std::string>("rel", "abs"), Teuchos::tuple<std::string>("rel", "abs"), true)));
   condlist.push_back(nodemasterconst3D);
 
@@ -1033,16 +1033,16 @@ Input::ValidConditions()
           "Node on Plane Constraint Penalty", Core::Conditions::MPC_NormalComponent_3D_pen, false,
           Core::Conditions::geometry_type_surface));
 
-  nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
-  nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new RealComponent("amplitude")));
-  nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
-  nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new RealComponent("activTime")));
-  nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new RealComponent("penalty")));
-  nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new IntComponent("masterNode")));
-  nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new RealVectorComponent("direction", 3)));
-  nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new SelectionComponent("value", "disp",
+  nodemasterconst3Dpen->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
+  nodemasterconst3Dpen->add_component(Teuchos::rcp(new RealComponent("amplitude")));
+  nodemasterconst3Dpen->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  nodemasterconst3Dpen->add_component(Teuchos::rcp(new RealComponent("activTime")));
+  nodemasterconst3Dpen->add_component(Teuchos::rcp(new RealComponent("penalty")));
+  nodemasterconst3Dpen->add_component(Teuchos::rcp(new IntComponent("masterNode")));
+  nodemasterconst3Dpen->add_component(Teuchos::rcp(new RealVectorComponent("direction", 3)));
+  nodemasterconst3Dpen->add_component(Teuchos::rcp(new SelectionComponent("value", "disp",
       Teuchos::tuple<std::string>("disp", "x"), Teuchos::tuple<std::string>("disp", "x"), true)));
-  nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new SelectionComponent("control", "rel",
+  nodemasterconst3Dpen->add_component(Teuchos::rcp(new SelectionComponent("control", "rel",
       Teuchos::tuple<std::string>("rel", "abs"), Teuchos::tuple<std::string>("rel", "abs"), true)));
   condlist.push_back(nodemasterconst3Dpen);
   /*--------------------------------------------------------------------*/
@@ -1052,16 +1052,16 @@ Input::ValidConditions()
           "MPC_NodeOnLine_2D", "Node on Line Constraint", Core::Conditions::MPC_NodeOnLine_2D,
           false, Core::Conditions::geometry_type_line));
 
-  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
-  nodeonlineconst2D->AddComponent(Teuchos::rcp(new RealComponent("amplitude")));
-  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
-  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntComponent("constrNode 1")));
-  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntComponent("constrNode 2")));
-  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntComponent("constrNode 3")));
-  nodeonlineconst2D->AddComponent(Teuchos::rcp(
+  nodeonlineconst2D->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
+  nodeonlineconst2D->add_component(Teuchos::rcp(new RealComponent("amplitude")));
+  nodeonlineconst2D->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  nodeonlineconst2D->add_component(Teuchos::rcp(new IntComponent("constrNode 1")));
+  nodeonlineconst2D->add_component(Teuchos::rcp(new IntComponent("constrNode 2")));
+  nodeonlineconst2D->add_component(Teuchos::rcp(new IntComponent("constrNode 3")));
+  nodeonlineconst2D->add_component(Teuchos::rcp(
       new SelectionComponent("control value", "dist", Teuchos::tuple<std::string>("dist", "angle"),
           Teuchos::tuple<std::string>("dist", "angle"), true)));
-  nodeonlineconst2D->AddComponent(Teuchos::rcp(new RealComponent("activTime")));
+  nodeonlineconst2D->add_component(Teuchos::rcp(new RealComponent("activTime")));
   condlist.push_back(nodeonlineconst2D);
 
 
@@ -1119,8 +1119,8 @@ Input::ValidConditions()
 
     for (unsigned i = 0; i < rigidbodymodecomponents.size(); ++i)
     {
-      surfrigidbodymode->AddComponent(rigidbodymodecomponents[i]);
-      volrigidbodymode->AddComponent(rigidbodymodecomponents[i]);
+      surfrigidbodymode->add_component(rigidbodymodecomponents[i]);
+      volrigidbodymode->add_component(rigidbodymodecomponents[i]);
     }
     condlist.push_back(surfrigidbodymode);
     condlist.push_back(volrigidbodymode);

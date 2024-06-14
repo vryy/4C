@@ -135,9 +135,9 @@ void Core::Nodes::ImmersedNode::Unpack(const std::vector<char>& data)
   Node::Unpack(basedata);
 
   // isimersedboundary_
-  IsBoundaryImmersed_ = ExtractInt(position, data);
+  IsBoundaryImmersed_ = extract_int(position, data);
   // ismatched_
-  ismatched_ = ExtractInt(position, data);
+  ismatched_ = extract_int(position, data);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

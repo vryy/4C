@@ -53,11 +53,11 @@ void Discret::ELEMENTS::RedAirBloodScatraType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["RED_AIR_BLOOD_SCATRA"];
 
   defs["LINE2"] = Input::LineDefinition::Builder()
-                      .AddIntVector("LINE2", 2)
-                      .AddNamedDouble("DiffusionCoefficient")
-                      .AddNamedDouble("WallThickness")
-                      .AddNamedDouble("PercentageOfDiffusionArea")
-                      .Build();
+                      .add_int_vector("LINE2", 2)
+                      .add_named_double("DiffusionCoefficient")
+                      .add_named_double("WallThickness")
+                      .add_named_double("PercentageOfDiffusionArea")
+                      .build();
 }
 
 

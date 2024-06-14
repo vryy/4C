@@ -543,14 +543,14 @@ namespace Core::Communication
       position += size;
     }
 
-    static int ExtractInt(std::vector<char>::size_type& position, const std::vector<char>& data)
+    static int extract_int(std::vector<char>::size_type& position, const std::vector<char>& data)
     {
       int i;
       extract_from_pack(position, data, i);
       return i;
     }
 
-    static double ExtractDouble(
+    static double extract_double(
         std::vector<char>::size_type& position, const std::vector<char>& data)
     {
       double f;

@@ -22,10 +22,10 @@ bool Discret::ELEMENTS::Ale3::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
-  linedef->Print(std::cout);
+  linedef->print(std::cout);
 
   Core::FE::CellType shape = Core::FE::StringToCellType(distype);
 

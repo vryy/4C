@@ -25,14 +25,14 @@ namespace RTD
 
     \param[in] string: filename for the the yaml file, should be elementinformation.yaml
   */
-  void WriteCellTypeInformation(const std::string& elementinformationfilename);
+  void write_cell_type_information(const std::string& elementinformationfilename);
 
   /*!
     \brief Create a restructuredText file containing all header sections and parameters
 
     \param[in] string: filename for the the header parameters, should be headerreference.rst
   */
-  void WriteReadTheDocsHeader(const std::string& headerdocumentationfilename);
+  void write_read_the_docs_header(const std::string& headerdocumentationfilename);
 
   /*!
     \brief Create a restructuredText file containing the cell type section
@@ -42,7 +42,7 @@ namespace RTD
     \param[in] string: filename for the the header parameters, should be celltypereference.rst
 
   */
-  void WriteReadTheDocsCelltypes(const std::string& celltypedocumentationfilename);
+  void write_read_the_docs_celltypes(const std::string& celltypedocumentationfilename);
 
   /*!
     \brief WCreate a restructuredText file containing all material models and parameters
@@ -50,7 +50,7 @@ namespace RTD
     \param[in] string: filename for the the material parameters, should be materialreference.rst
 
   */
-  void WriteReadTheDocsMaterial(const std::string& materialdocumentationfilename);
+  void write_read_the_docs_material(const std::string& materialdocumentationfilename);
 
   /*!
     \brief Create a restructuredText file containing all prescribed conditions
@@ -58,7 +58,7 @@ namespace RTD
     \param[in] string: filename for the the header parameters, should be conditionreference.rst
 
   */
-  void WriteReadTheDocsCondition(const std::string& conditiondocumentationfilename);
+  void write_read_the_docs_condition(const std::string& conditiondocumentationfilename);
 
   /*!
     \brief Create a restructuredText file containing all other reference sections
@@ -67,7 +67,7 @@ namespace RTD
     \param[in] string: filename for the the header parameters, should be furtherreference.rst
 
   */
-  void WriteReadTheDocsVarious(const std::string& variousdocumentationfilename);
+  void write_read_the_docs_various(const std::string& variousdocumentationfilename);
 
 
   void PrintHelpMessage();

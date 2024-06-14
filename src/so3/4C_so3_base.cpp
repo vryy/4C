@@ -79,10 +79,10 @@ void Discret::ELEMENTS::SoBase::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
   // kintype_
-  kintype_ = static_cast<Inpar::STR::KinemType>(ExtractInt(position, data));
+  kintype_ = static_cast<Inpar::STR::KinemType>(extract_int(position, data));
 
   // material post setup routine
-  material_post_setup_ = (ExtractInt(position, data) != 0);
+  material_post_setup_ = (extract_int(position, data) != 0);
 }
 
 /*----------------------------------------------------------------------*

@@ -243,19 +243,19 @@ void Mortar::Element::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   Core::Elements::FaceElement::Unpack(basedata);
   // shape_
-  shape_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
+  shape_ = static_cast<Core::FE::CellType>(extract_int(position, data));
   // isslave_
-  isslave_ = ExtractInt(position, data);
+  isslave_ = extract_int(position, data);
   // nurbs_
-  nurbs_ = ExtractInt(position, data);
+  nurbs_ = extract_int(position, data);
 
   // for nurbs:
   if (nurbs_)
   {
     // normalfac_
-    normalfac_ = ExtractDouble(position, data);
+    normalfac_ = extract_double(position, data);
     // zero_sized_
-    zero_sized_ = ExtractInt(position, data);
+    zero_sized_ = extract_int(position, data);
     // knots
     int nr;
     Core::Communication::ParObject::extract_from_pack(position, data, nr);
@@ -269,7 +269,7 @@ void Mortar::Element::Unpack(const std::vector<char>& data)
   }
 
   // modata_
-  bool hasdata = ExtractInt(position, data);
+  bool hasdata = extract_int(position, data);
   if (hasdata)
   {
     modata_ = Teuchos::rcp(new Mortar::MortarEleDataContainer());
@@ -281,11 +281,11 @@ void Mortar::Element::Unpack(const std::vector<char>& data)
   }
 
   // physical type
-  physicaltype_ = (PhysicalType)(ExtractInt(position, data));
+  physicaltype_ = (PhysicalType)(extract_int(position, data));
 
   // mesh size
-  traceHE_ = ExtractDouble(position, data);
-  traceHCond_ = ExtractDouble(position, data);
+  traceHE_ = extract_double(position, data);
+  traceHCond_ = extract_double(position, data);
 
   if (position != data.size())
     FOUR_C_THROW(

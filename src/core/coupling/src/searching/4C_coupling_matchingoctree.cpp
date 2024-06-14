@@ -891,7 +891,7 @@ void Core::COUPLING::ElementMatchingOctree::un_pack_entity(
     std::vector<char>::size_type& index, std::vector<char>& rblockofnodes, std::vector<char>& data)
 {
   nodes_.clear();
-  int numnode = Core::Communication::ParObject::ExtractInt(index, rblockofnodes);
+  int numnode = Core::Communication::ParObject::extract_int(index, rblockofnodes);
   Core::Communication::ParObject::extract_from_pack(index, rblockofnodes, data);
 
   for (int node = 0; node < numnode; node++)

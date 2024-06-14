@@ -70,7 +70,7 @@ void Discret::ELEMENTS::extract_from_pack(std::size_t& position, const std::vect
     Discret::ELEMENTS::SolidScatraElementProperties& properties)
 {
   properties.impltype = static_cast<Inpar::ScaTra::ImplType>(
-      Core::Communication::ParObject::ExtractInt(position, data));
+      Core::Communication::ParObject::extract_int(position, data));
 
   Discret::ELEMENTS::ExtractFromPack(position, data, properties.solid);
 }

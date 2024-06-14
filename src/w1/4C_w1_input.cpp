@@ -23,11 +23,11 @@ bool Discret::ELEMENTS::Wall1::ReadElement(
   // set discretization type
   SetDisType(Core::FE::StringToCellType(distype));
 
-  linedef->ExtractDouble("THICK", thickness_);
+  linedef->extract_double("THICK", thickness_);
   if (thickness_ <= 0) FOUR_C_THROW("WALL element thickness needs to be < 0");
 
   std::vector<int> ngp;
-  linedef->ExtractIntVector("GP", ngp);
+  linedef->extract_int_vector("GP", ngp);
 
   if ((num_node() == 4) and ((ngp[0] < 2) or (ngp[1] < 2)))
     FOUR_C_THROW("Insufficient number of Gauss points");
@@ -42,7 +42,7 @@ bool Discret::ELEMENTS::Wall1::ReadElement(
 
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   Teuchos::RCP<Core::Mat::Material> mat = Material();
@@ -55,7 +55,7 @@ bool Discret::ELEMENTS::Wall1::ReadElement(
 
   std::string buffer;
   // reduced dimension assumption
-  linedef->ExtractString("STRESS_STRAIN", buffer);
+  linedef->extract_string("STRESS_STRAIN", buffer);
   if (buffer == "plane_stress")
     wtype_ = plane_stress;
   else if (buffer == "plane_strain")
@@ -64,7 +64,7 @@ bool Discret::ELEMENTS::Wall1::ReadElement(
     FOUR_C_THROW("Illegal strain/stress type '%s'", buffer.c_str());
 
   // kinematics type
-  linedef->ExtractString("KINEM", buffer);
+  linedef->extract_string("KINEM", buffer);
   // geometrically linear
   if (buffer == "linear") kintype_ = Inpar::STR::KinemType::linear;
   // geometrically non-linear with Total Lagrangean approach
@@ -74,7 +74,7 @@ bool Discret::ELEMENTS::Wall1::ReadElement(
     FOUR_C_THROW("Illegal KINEM type '%s'", buffer.c_str());
 
   // EAS type
-  linedef->ExtractString("EAS", buffer);
+  linedef->extract_string("EAS", buffer);
   if (buffer == "none")
   {
     iseas_ = false;

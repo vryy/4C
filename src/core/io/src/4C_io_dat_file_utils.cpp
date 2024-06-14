@@ -29,7 +29,7 @@ void Core::IO::DatFileUtils::print_section(std::ostream& out, const std::string&
   for (const auto& line : possible_lines)
   {
     out << "// ";
-    line.Print(out);
+    line.print(out);
     out << '\n';
   }
 }
@@ -55,7 +55,7 @@ std::vector<Input::LineDefinition> Core::IO::DatFileUtils::read_all_lines_in_sec
     std::for_each(possible_lines.begin(), possible_lines.end(),
         [&](const Input::LineDefinition& def)
         {
-          def.Print(out);
+          def.print(out);
           out << '\n';
         });
     FOUR_C_THROW(out.str().c_str());
@@ -82,7 +82,7 @@ Core::IO::DatFileUtils::read_matching_lines_in_section(Core::IO::DatFileReader& 
 
       // Make a copy that potentially gets filled by the Read.
       auto parsed_definition = definition;
-      if (parsed_definition.Read(l))
+      if (parsed_definition.read(l))
       {
         parsed_lines.emplace_back(std::move(parsed_definition));
         return;

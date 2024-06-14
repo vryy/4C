@@ -135,8 +135,8 @@ void Inpar::S2I::SetValidConditions(
     // insert input file line components into condition definitions
     for (auto& conditioncomponent : s2imeshtyingcomponents)
     {
-      s2imeshtyingline->AddComponent(conditioncomponent);
-      s2imeshtyingsurf->AddComponent(conditioncomponent);
+      s2imeshtyingline->add_component(conditioncomponent);
+      s2imeshtyingsurf->add_component(conditioncomponent);
     }
 
     condlist.push_back(s2imeshtyingline);
@@ -180,8 +180,8 @@ void Inpar::S2I::SetValidConditions(
     // insert input file line components into condition definitions
     for (auto& conditioncomponent : s2inoevaluationcomponents)
     {
-      s2inoevaluationline->AddComponent(conditioncomponent);
-      s2inoevaluationsurf->AddComponent(conditioncomponent);
+      s2inoevaluationline->add_component(conditioncomponent);
+      s2inoevaluationsurf->add_component(conditioncomponent);
     }
 
     condlist.push_back(s2inoevaluationline);
@@ -551,7 +551,7 @@ void Inpar::S2I::SetValidConditions(
               "kinetic model", kinetics_butlervolmer, kinetic_model_choices)));
 
           // add all components from slave side to multi-scale condition
-          for (const auto& component : slaveside) multiscalecouplingpoint->AddComponent(component);
+          for (const auto& component : slaveside) multiscalecouplingpoint->add_component(component);
 
           // insert slave-side condition components into vector of interface sides
           interface_choices.emplace(side_slave, std::make_pair("Slave", slaveside));
@@ -572,9 +572,9 @@ void Inpar::S2I::SetValidConditions(
     // insert input file line components into condition definitions
     for (auto& s2icomponent : s2icomponents)
     {
-      s2ikineticspoint->AddComponent(s2icomponent);
-      s2ikineticsline->AddComponent(s2icomponent);
-      s2ikineticssurf->AddComponent(s2icomponent);
+      s2ikineticspoint->add_component(s2icomponent);
+      s2ikineticsline->add_component(s2icomponent);
+      s2ikineticssurf->add_component(s2icomponent);
     }
 
     // insert condition definitions into global list of valid condition definitions
@@ -654,8 +654,8 @@ void Inpar::S2I::SetValidConditions(
     // insert input file line components into condition definitions
     for (auto& s2igrowthcomponent : s2igrowthcomponents)
     {
-      s2igrowthline->AddComponent(s2igrowthcomponent);
-      s2igrowthsurf->AddComponent(s2igrowthcomponent);
+      s2igrowthline->add_component(s2igrowthcomponent);
+      s2igrowthsurf->add_component(s2igrowthcomponent);
     }
 
     // insert condition definitions into global list of valid condition definitions
@@ -671,7 +671,7 @@ void Inpar::S2I::SetValidConditions(
             "S2ISCLCoupling", "Scatra-scatra surface with SCL micro-macro coupling between",
             Core::Conditions::S2ISCLCoupling, true, Core::Conditions::geometry_type_surface));
 
-    s2isclcond->AddComponent(Teuchos::rcp(new Input::SelectionComponent("interface side",
+    s2isclcond->add_component(Teuchos::rcp(new Input::SelectionComponent("interface side",
         "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
         Teuchos::tuple<int>(
             Inpar::S2I::side_undefined, Inpar::S2I::side_slave, Inpar::S2I::side_master))));

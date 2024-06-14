@@ -167,7 +167,7 @@ void Mat::Mixture::Unpack(const std::vector<char>& data)
     }
 
     // Extract setup flag
-    setup_ = (bool)ExtractInt(position, data);
+    setup_ = (bool)extract_int(position, data);
 
 
     // Extract is isPreEvaluated

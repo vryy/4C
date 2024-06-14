@@ -82,7 +82,7 @@ namespace Input
      *
      * @code
      *   const LineDefinition line =
-     *     LineDefinition::Builder().AddTag("a").AddInt("i).Build();
+     *     LineDefinition::Builder().add_tag("a").add_int("i).build();
      * @endcode
      */
     class Builder
@@ -135,44 +135,44 @@ namespace Input
        * @note This overload is chosen for rvalues and can steal the data gathered in the Builder.
        * After calling this function, the builder is in a moved-from state.
        */
-      [[nodiscard]] LineDefinition Build() &&;
+      [[nodiscard]] LineDefinition build() &&;
 
       /**
        * Convert the gathered components into a LineDefinition.
        *
        * @note This overload copies the gathered data to the newly created LineDefinition.
        */
-      [[nodiscard]] LineDefinition Build() const&;
+      [[nodiscard]] LineDefinition build() const&;
 
       /// Add a single string definition without a value.
-      Builder& AddOptionalTag(const std::string& name);
+      Builder& add_optional_tag(const std::string& name);
 
       /// Add a single string definition without a value.
-      Builder& AddTag(std::string name);
+      Builder& add_tag(std::string name);
 
       /// Add a single string variable
-      Builder& AddString(std::string name);
+      Builder& add_string(std::string name);
 
       /// Add a single integer variable
-      Builder& AddInt(std::string name);
+      Builder& add_int(std::string name);
 
       /// Add a vector of integer variables
-      Builder& AddIntVector(std::string name, int length);
+      Builder& add_int_vector(std::string name, int length);
 
       /// Add a vector of double variables
-      Builder& AddDoubleVector(std::string name, int length);
+      Builder& add_double_vector(std::string name, int length);
 
       /// Add a name followed by a variable string
-      Builder& AddNamedString(std::string name);
+      Builder& add_named_string(std::string name);
 
       /// Add a name followed by an integer variable
-      Builder& AddNamedInt(std::string name);
+      Builder& add_named_int(std::string name);
 
       /// Add a name followed by a vector of integer variables
-      Builder& AddNamedIntVector(std::string name, int length);
+      Builder& add_named_int_vector(std::string name, int length);
 
       /// Add a name followed by a double variable
-      Builder& AddNamedDouble(std::string name);
+      Builder& add_named_double(std::string name);
 
       /// Add a name followed by a vector of double variables
       Builder& add_named_double_vector(std::string name, int length);
@@ -189,7 +189,7 @@ namespace Input
       Builder& add_optional_named_string(const std::string& name);
 
       /// Add a name followed by an integer variable
-      Builder& AddOptionalNamedInt(const std::string& name);
+      Builder& add_optional_named_int(const std::string& name);
 
       /// Add a name followed by a vector of integer variables
       Builder& add_optional_named_int_vector(const std::string& name, int length);
@@ -240,32 +240,32 @@ namespace Input
     };
 
     /// print to dat file comment
-    void Print(std::ostream& stream) const;
+    void print(std::ostream& stream) const;
 
     /**
      * If reading succeeds, returns the data. Otherwise, returns an empty std::optional.
      */
-    std::optional<Core::IO::InputParameterContainer> Read(std::istream& stream);
+    std::optional<Core::IO::InputParameterContainer> read(std::istream& stream);
 
     /**
      * If reading succeeds, returns the data. Otherwise, returns an empty std::optional.
      */
-    std::optional<Core::IO::InputParameterContainer> Read(
+    std::optional<Core::IO::InputParameterContainer> read(
         std::istream& stream, const std::string* name);
 
     /// tell if there is a named component with the given name
-    [[nodiscard]] bool HaveNamed(const std::string& name) const;
+    [[nodiscard]] bool has_named(const std::string& name) const;
 
     /// @name Extract values from read LineDefinition
     /// There has to be a named component of the given type
 
-    void ExtractString(const std::string& name, std::string& value) const;
-    [[nodiscard]] bool HasString(const std::string& name) const;
-    void ExtractInt(const std::string& name, int& value) const;
-    void ExtractIntVector(const std::string& name, std::vector<int>& v) const;
-    void ExtractDouble(const std::string& name, double& value) const;
-    void ExtractDoubleVector(const std::string& name, std::vector<double>& v) const;
-    void ExtractStringVector(const std::string& name, std::vector<std::string>& v) const;
+    void extract_string(const std::string& name, std::string& value) const;
+    [[nodiscard]] bool has_string(const std::string& name) const;
+    void extract_int(const std::string& name, int& value) const;
+    void extract_int_vector(const std::string& name, std::vector<int>& v) const;
+    void extract_double(const std::string& name, double& value) const;
+    void extract_double_vector(const std::string& name, std::vector<double>& v) const;
+    void extract_string_vector(const std::string& name, std::vector<std::string>& v) const;
     void extract_pair_of_string_and_double_vector(
         const std::string& name, std::vector<std::pair<std::string, double>>& v) const;
 
@@ -286,7 +286,7 @@ namespace Input
    * Example:
    *
    * @code
-   *    [...].AddDoubleVector("values", FromIntNamed("NUMVALUES")) [...]
+   *    [...].add_double_vector("values", FromIntNamed("NUMVALUES")) [...]
    * @endcode
    */
   struct LengthFromIntNamed

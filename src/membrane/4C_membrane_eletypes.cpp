@@ -75,18 +75,18 @@ void Discret::ELEMENTS::MembraneTri3Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["MEMBRANE3"];
 
   defs["TRI3"] = Input::LineDefinition::Builder()
-                     .AddIntVector("TRI3", 3)
-                     .AddNamedInt("MAT")
-                     .AddNamedString("KINEM")
-                     .AddNamedDouble("THICK")
-                     .AddNamedString("STRESS_STRAIN")
+                     .add_int_vector("TRI3", 3)
+                     .add_named_int("MAT")
+                     .add_named_string("KINEM")
+                     .add_named_double("THICK")
+                     .add_named_string("STRESS_STRAIN")
                      .add_optional_named_double_vector("RAD", 3)
                      .add_optional_named_double_vector("AXI", 3)
                      .add_optional_named_double_vector("CIR", 3)
                      .add_optional_named_double_vector("FIBER1", 3)
                      .add_optional_named_double_vector("FIBER2", 3)
                      .add_optional_named_double_vector("FIBER3", 3)
-                     .Build();
+                     .build();
 }
 
 /*----------------------------------------------------------------------*
@@ -148,18 +148,18 @@ void Discret::ELEMENTS::MembraneTri6Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["MEMBRANE6"];
 
   defs["TRI6"] = Input::LineDefinition::Builder()
-                     .AddIntVector("TRI6", 6)
-                     .AddNamedInt("MAT")
-                     .AddNamedString("KINEM")
-                     .AddNamedDouble("THICK")
-                     .AddNamedString("STRESS_STRAIN")
+                     .add_int_vector("TRI6", 6)
+                     .add_named_int("MAT")
+                     .add_named_string("KINEM")
+                     .add_named_double("THICK")
+                     .add_named_string("STRESS_STRAIN")
                      .add_optional_named_double_vector("RAD", 3)
                      .add_optional_named_double_vector("AXI", 3)
                      .add_optional_named_double_vector("CIR", 3)
                      .add_optional_named_double_vector("FIBER1", 3)
                      .add_optional_named_double_vector("FIBER2", 3)
                      .add_optional_named_double_vector("FIBER3", 3)
-                     .Build();
+                     .build();
 }
 
 /*----------------------------------------------------------------------*
@@ -221,18 +221,18 @@ void Discret::ELEMENTS::MembraneQuad4Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["MEMBRANE4"];
 
   defs["QUAD4"] = Input::LineDefinition::Builder()
-                      .AddIntVector("QUAD4", 4)
-                      .AddNamedInt("MAT")
-                      .AddNamedString("KINEM")
-                      .AddNamedDouble("THICK")
-                      .AddNamedString("STRESS_STRAIN")
+                      .add_int_vector("QUAD4", 4)
+                      .add_named_int("MAT")
+                      .add_named_string("KINEM")
+                      .add_named_double("THICK")
+                      .add_named_string("STRESS_STRAIN")
                       .add_optional_named_double_vector("RAD", 3)
                       .add_optional_named_double_vector("AXI", 3)
                       .add_optional_named_double_vector("CIR", 3)
                       .add_optional_named_double_vector("FIBER1", 3)
                       .add_optional_named_double_vector("FIBER2", 3)
                       .add_optional_named_double_vector("FIBER3", 3)
-                      .Build();
+                      .build();
 }
 
 /*----------------------------------------------------------------------*
@@ -294,18 +294,18 @@ void Discret::ELEMENTS::MembraneQuad9Type::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defs = definitions["MEMBRANE9"];
 
   defs["QUAD9"] = Input::LineDefinition::Builder()
-                      .AddIntVector("QUAD9", 9)
-                      .AddNamedInt("MAT")
-                      .AddNamedString("KINEM")
-                      .AddNamedDouble("THICK")
-                      .AddNamedString("STRESS_STRAIN")
+                      .add_int_vector("QUAD9", 9)
+                      .add_named_int("MAT")
+                      .add_named_string("KINEM")
+                      .add_named_double("THICK")
+                      .add_named_string("STRESS_STRAIN")
                       .add_optional_named_double_vector("RAD", 3)
                       .add_optional_named_double_vector("AXI", 3)
                       .add_optional_named_double_vector("CIR", 3)
                       .add_optional_named_double_vector("FIBER1", 3)
                       .add_optional_named_double_vector("FIBER2", 3)
                       .add_optional_named_double_vector("FIBER3", 3)
-                      .Build();
+                      .build();
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -71,13 +71,13 @@ namespace
 
     const auto& function_lin_def = function_line_defs.front();
 
-    if (function_lin_def.HaveNamed("POROMULTIPHASESCATRA_FUNCTION"))
+    if (function_lin_def.has_named("POROMULTIPHASESCATRA_FUNCTION"))
     {
       std::string type;
-      function_lin_def.ExtractString("POROMULTIPHASESCATRA_FUNCTION", type);
+      function_lin_def.extract_string("POROMULTIPHASESCATRA_FUNCTION", type);
 
       std::vector<std::pair<std::string, double>> params;
-      if (function_lin_def.HaveNamed("PARAMS"))
+      if (function_lin_def.has_named("PARAMS"))
         function_lin_def.extract_pair_of_string_and_double_vector("PARAMS", params);
 
       return CreatePoroFunction<dim>(type, params);
@@ -118,11 +118,11 @@ void PoroMultiPhaseScaTra::AddValidPoroFunctions(Core::UTILS::FunctionManager& f
 {
   function_manager.add_function_definition(
       {Input::LineDefinition::Builder()
-              .AddNamedString("POROMULTIPHASESCATRA_FUNCTION")
-              .AddOptionalNamedInt("NUMPARAMS")
+              .add_named_string("POROMULTIPHASESCATRA_FUNCTION")
+              .add_optional_named_int("NUMPARAMS")
               .add_optional_named_pair_of_string_and_double_vector(
                   "PARAMS", Input::LengthFromIntNamed("NUMPARAMS"))
-              .Build()},
+              .build()},
       TryCreatePoroFunctionDispatch);
 }
 

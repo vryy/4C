@@ -83,7 +83,7 @@ namespace Core::Conditions
       right. The order is important! On reading we try and read component
       after component.
      */
-    void AddComponent(const Teuchos::RCP<Input::LineComponent>& c);
+    void add_component(const Teuchos::RCP<Input::LineComponent>& c);
 
     /// read all conditions from my input file section
     /*!

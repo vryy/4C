@@ -44,7 +44,7 @@ Core::Conditions::ConditionDefinition::ConditionDefinition(std::string sectionna
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Conditions::ConditionDefinition::AddComponent(
+void Core::Conditions::ConditionDefinition::add_component(
     const Teuchos::RCP<Input::LineComponent>& c)
 {
   inputline_.push_back(c);
@@ -118,7 +118,7 @@ void Core::Conditions::ConditionDefinition::Read(Core::IO::DatFileReader& reader
 
     for (auto& j : inputline_)
     {
-      condline = j->Read(SectionName(), condline, condition->parameters());
+      condline = j->read(SectionName(), condline, condition->parameters());
     }
 
     //------------------------------- put condition in map of conditions
@@ -180,7 +180,7 @@ std::ostream& Core::Conditions::ConditionDefinition::Print(
          << "E num - ";
   for (auto& i : inputline_)
   {
-    i->DefaultLine(stream);
+    i->default_line(stream);
     stream << " ";
   }
 
@@ -198,7 +198,7 @@ std::ostream& Core::Conditions::ConditionDefinition::Print(
         stream << "E " << cond->Id() << " - ";
         for (auto& i : inputline_)
         {
-          i->Print(stream, cond->parameters());
+          i->print(stream, cond->parameters());
           stream << " ";
         }
         stream << "\n";

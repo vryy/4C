@@ -19,7 +19,7 @@ bool Discret::ELEMENTS::SoHex27::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   Teuchos::RCP<Core::Mat::Material> mat = Material();
@@ -27,7 +27,7 @@ bool Discret::ELEMENTS::SoHex27::ReadElement(
   SolidMaterial()->Setup(NUMGPT_SOH27, linedef);
 
   std::string buffer;
-  linedef->ExtractString("KINEM", buffer);
+  linedef->extract_string("KINEM", buffer);
 
   if (buffer == "linear")
   {

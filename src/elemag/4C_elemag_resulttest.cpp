@@ -37,11 +37,11 @@ void EleMag::ElemagResultTest::test_node(Input::LineDefinition& res, int& nerr, 
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS", dis);
+  res.extract_string("DIS", dis);
   if (dis != dis_->Name()) return;
 
   int node;
-  res.ExtractInt("NODE", node);
+  res.extract_int("NODE", node);
   node -= 1;
 
   int havenode(dis_->HaveGlobalNode(node));
@@ -64,7 +64,7 @@ void EleMag::ElemagResultTest::test_node(Input::LineDefinition& res, int& nerr, 
       double result = 0.;
       // const Epetra_BlockMap& map = mysol_->Map();
       std::string variable;
-      res.ExtractString("QUANTITY", variable);
+      res.extract_string("QUANTITY", variable);
 
       if (variable == "electric")
       {

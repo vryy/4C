@@ -21,11 +21,11 @@ bool Discret::ELEMENTS::Artery::ReadElement(
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT", material);
+  linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
   int ngp;
-  linedef->ExtractInt("GP", ngp);
+  linedef->extract_int("GP", ngp);
 
   switch (ngp)
   {
@@ -65,7 +65,7 @@ bool Discret::ELEMENTS::Artery::ReadElement(
 
   // read artery implementation type
   std::string impltype;
-  linedef->ExtractString("TYPE", impltype);
+  linedef->extract_string("TYPE", impltype);
 
   if (impltype == "Undefined")
     impltype_ = Inpar::ArtDyn::impltype_undefined;
@@ -78,7 +78,7 @@ bool Discret::ELEMENTS::Artery::ReadElement(
 
   // extract diameter
   double diam = 0.0;
-  linedef->ExtractDouble("DIAM", diam);
+  linedef->extract_double("DIAM", diam);
 
   // set diameter in material
   SetDiamInMaterial(diam);

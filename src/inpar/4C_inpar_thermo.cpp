@@ -193,8 +193,8 @@ void Inpar::THR::SetValidConditions(
 
   for (unsigned i = 0; i < thermoconvectcomponents.size(); ++i)
   {
-    linethermoconvect->AddComponent(thermoconvectcomponents[i]);
-    surfthermoconvect->AddComponent(thermoconvectcomponents[i]);
+    linethermoconvect->add_component(thermoconvectcomponents[i]);
+    surfthermoconvect->add_component(thermoconvectcomponents[i]);
   }
 
   condlist.push_back(linethermoconvect);
@@ -227,8 +227,8 @@ void Inpar::THR::SetValidConditions(
 
   for (const auto& thermorobincomponent : thermorobincomponents)
   {
-    thermorobinline->AddComponent(thermorobincomponent);
-    thermorobinsurf->AddComponent(thermorobincomponent);
+    thermorobinline->add_component(thermorobincomponent);
+    thermorobinsurf->add_component(thermorobincomponent);
   }
 
   condlist.push_back(thermorobinline);

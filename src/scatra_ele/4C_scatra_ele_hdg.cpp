@@ -132,9 +132,9 @@ void Discret::ELEMENTS::ScaTraHDGType ::setup_element_definition(
   for (const auto& [key, scatra_line_def] : defs_scatra)
   {
     defs[key] = Input::LineDefinition::Builder(scatra_line_def)
-                    .AddNamedInt("DEG")
-                    .AddOptionalNamedInt("SPC")
-                    .Build();
+                    .add_named_int("DEG")
+                    .add_optional_named_int("SPC")
+                    .build();
   }
 }
 
@@ -350,13 +350,13 @@ bool Discret::ELEMENTS::ScaTraHDG::ReadElement(
 {
   bool success = Transport::ReadElement(eletype, distype, linedef);
   int degree;
-  linedef->ExtractInt("DEG", degree);
+  linedef->extract_int("DEG", degree);
   degree_ = degree;
   degree_old_ = degree_;
 
-  if (linedef->HaveNamed("SPC"))
+  if (linedef->has_named("SPC"))
   {
-    linedef->ExtractInt("SPC", degree);
+    linedef->extract_int("SPC", degree);
     completepol_ = degree;
   }
   else
@@ -614,7 +614,7 @@ void Discret::ELEMENTS::ScaTraHDGBoundary::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // distype
-  // distype_ = static_cast<Core::FE::CellType>( ExtractInt(position,data) );
+  // distype_ = static_cast<Core::FE::CellType>( extract_int(position,data) );
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
