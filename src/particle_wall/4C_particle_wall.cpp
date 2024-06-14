@@ -30,6 +30,8 @@
 #include "4C_particle_engine_interface.hpp"
 #include "4C_particle_wall_datastate.hpp"
 #include "4C_particle_wall_discretization_runtime_vtu_writer.hpp"
+#include "4C_so3_base.hpp"
+#include "4C_solid_3D_ele.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

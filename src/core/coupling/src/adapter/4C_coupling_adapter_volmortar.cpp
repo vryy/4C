@@ -138,7 +138,11 @@ void Core::Adapter::MortarVolCoupl::setup(const Teuchos::ParameterList& params)
  |  redistribute                                             rauch 08/16|
  *----------------------------------------------------------------------*/
 void Core::Adapter::MortarVolCoupl::Redistribute(const Teuchos::ParameterList& binning_params,
-    Teuchos::RCP<Core::IO::OutputControl> output_control)
+    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    std::function<BINSTRATEGY::UTILS::SpecialElement(const Core::Elements::Element* element)>
+        element_filter,
+    std::function<double(const Core::Elements::Element* element)> rigid_sphere_radius,
+    std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)> correct_beam_center_node)
 {
   check_init();
 
@@ -147,7 +151,8 @@ void Core::Adapter::MortarVolCoupl::Redistribute(const Teuchos::ParameterList& b
   dis.push_back(masterdis_);
   dis.push_back(slavedis_);
 
-  Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params, output_control, dis, false);
+  Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params, output_control, dis,
+      element_filter, rigid_sphere_radius, correct_beam_center_node, false);
 
   return;
 }

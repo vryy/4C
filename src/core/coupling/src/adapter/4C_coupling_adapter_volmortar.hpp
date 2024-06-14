@@ -15,6 +15,7 @@
  *---------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
+#include "4C_binstrategy_utils.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
@@ -96,7 +97,12 @@ namespace Core::Adapter
 
     */
     void Redistribute(const Teuchos::ParameterList& binning_params,
-        Teuchos::RCP<Core::IO::OutputControl> output_control);
+        Teuchos::RCP<Core::IO::OutputControl> output_control,
+        std::function<BINSTRATEGY::UTILS::SpecialElement(const Core::Elements::Element* element)>
+            element_filter,
+        std::function<double(const Core::Elements::Element* element)> rigid_sphere_radius,
+        std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)>
+            correct_beam_center_node);
 
 
     /*!

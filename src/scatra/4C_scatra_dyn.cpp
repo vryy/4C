@@ -157,9 +157,13 @@ void scatra_dyn(int restart)
         Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
             "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
             binning_params);
-
-        Core::Rebalance::RebalanceDiscretizationsByBinning(
-            binning_params, Global::Problem::Instance()->OutputControlFile(), dis, false);
+        auto element_filter = [](const Core::Elements::Element* element)
+        { return BINSTRATEGY::UTILS::SpecialElement::none; };
+        auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
+        auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
+        Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
+            Global::Problem::Instance()->OutputControlFile(), dis, element_filter,
+            rigid_sphere_radius, correct_beam_center_node, false);
       }
 
       // assign degrees of freedom and rebuild geometries
@@ -294,9 +298,13 @@ void scatra_dyn(int restart)
         Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
             "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
             binning_params);
-
-        Core::Rebalance::RebalanceDiscretizationsByBinning(
-            binning_params, Global::Problem::Instance()->OutputControlFile(), dis, false);
+        auto element_filter = [](const Core::Elements::Element* element)
+        { return BINSTRATEGY::UTILS::SpecialElement::none; };
+        auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
+        auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
+        Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
+            Global::Problem::Instance()->OutputControlFile(), dis, element_filter,
+            rigid_sphere_radius, correct_beam_center_node, false);
       }
 
       // ensure that all dofs are assigned in the right order;

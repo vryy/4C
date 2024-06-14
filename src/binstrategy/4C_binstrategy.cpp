@@ -9,7 +9,6 @@
 
 #include "4C_binstrategy.hpp"
 
-#include "4C_beam3_base.hpp"
 #include "4C_binstrategy_meshfree_multibin.hpp"
 #include "4C_binstrategy_utils.hpp"
 #include "4C_fem_discretization.hpp"
@@ -26,23 +25,33 @@
 #include "4C_mortar_node.hpp"
 #include "4C_rebalance_graph_based.hpp"
 #include "4C_rebalance_print.hpp"
-#include "4C_rigidsphere.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <utility>
 
 FOUR_C_NAMESPACE_OPEN
 
 
 BINSTRATEGY::BinningStrategy::BinningStrategy(const Teuchos::ParameterList& binning_params,
     Teuchos::RCP<Core::IO::OutputControl> output_control, const Epetra_Comm& comm,
-    const int my_rank, const std::vector<Teuchos::RCP<Core::FE::Discretization>>& discret,
+    const int my_rank,
+    const std::function<UTILS::SpecialElement(const Core::Elements::Element* element)>
+        element_filter,
+    const std::function<double(const Core::Elements::Element* element)> rigid_sphere_radius,
+    const std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)>
+        correct_beam_center_node,
+    const std::vector<Teuchos::RCP<Core::FE::Discretization>>& discret,
     std::vector<Teuchos::RCP<const Epetra_Vector>> disnp)
     : bin_size_lower_bound_(binning_params.get<double>("BIN_SIZE_LOWER_BOUND")),
       deforming_simulation_domain_handler_(Teuchos::null),
       writebinstype_(
           Core::UTILS::IntegralValue<Inpar::BINSTRATEGY::Writebins>(binning_params, ("WRITEBINS"))),
       myrank_(my_rank),
-      comm_(comm.Clone())
+      comm_(comm.Clone()),
+      element_filter_(std::move(element_filter)),
+      rigid_sphere_radius_(std::move(rigid_sphere_radius)),
+      correct_beam_center_node_(std::move(correct_beam_center_node))
 {
   // create binning discretization
   bindis_ = Teuchos::rcp(new Core::FE::Discretization("binning", comm_, 3));
@@ -839,11 +848,9 @@ void BINSTRATEGY::BinningStrategy::addijk_to_axis_alignedijk_range_of_beam_eleme
 }
 
 void BINSTRATEGY::BinningStrategy::build_axis_alignedijk_range_for_rigid_sphere(
-    Core::Elements::Element const* const sphereele, double currpos[3], int ijk[3],
-    int ijk_range[6]) const
+    Core::Elements::Element const* const sphereele, double currpos[3], int ijk[3], int ijk_range[6],
+    const double radius) const
 {
-  double const& radius = dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(sphereele)->Radius();
-
   for (int j = 0; j < 3; ++j)
   {
     double* coords = currpos;
@@ -968,62 +975,67 @@ void BINSTRATEGY::BinningStrategy::distribute_single_element_to_bins_using_ele_a
 
   // bounding box idea for rigid sphere element with just one node needs
   // some special treatment
-  if (eleptr->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
+  switch (element_filter_(eleptr))
   {
-    double currpos[3] = {0.0, 0.0, 0.0};
-    BINSTRATEGY::UTILS::GetCurrentNodePos(discret, eleptr->Nodes()[0], disnp, currpos);
-    build_axis_alignedijk_range_for_rigid_sphere(eleptr, currpos, ijk, ijk_range);
-  }
-  else if (dynamic_cast<Discret::ELEMENTS::Beam3Base*>(eleptr) != nullptr)
-  {
-    // fill in remaining nodes
-    for (int j = 1; j < eleptr->num_node(); ++j)
+    case UTILS::SpecialElement::rigid_sphere:
     {
-      Core::Nodes::Node const* const node = nodes[j];
-      getijk_of_single_node_in_current_position(discret, node, disnp, ijk);
-      addijk_to_axis_alignedijk_range_of_beam_element(ijk, ijk_range);
+      double currpos[3] = {0.0, 0.0, 0.0};
+      BINSTRATEGY::UTILS::GetCurrentNodePos(
+          discret, eleptr->Nodes()[0], correct_beam_center_node_, disnp, currpos);
+      build_axis_alignedijk_range_for_rigid_sphere(
+          eleptr, currpos, ijk, ijk_range, rigid_sphere_radius_(eleptr));
+      break;
+    }
+    case UTILS::SpecialElement::beam:
+    {
+      // fill in remaining nodes
+      for (int j = 1; j < eleptr->num_node(); ++j)
+      {
+        Core::Nodes::Node const* const node = nodes[j];
+        getijk_of_single_node_in_current_position(discret, node, disnp, ijk);
+        addijk_to_axis_alignedijk_range_of_beam_element(ijk, ijk_range);
+      }
+      break;
+    }
+    default:
+    {
+      // fill in remaining nodes
+      for (int j = 1; j < eleptr->num_node(); ++j)
+      {
+        Core::Nodes::Node const* const node = nodes[j];
+        getijk_of_single_node_in_current_position(discret, node, disnp, ijk);
+        addijk_to_axis_alignedijk_range_of_element(ijk, ijk_range);
+      }
+      break;
     }
   }
-  else
-  {
-    // fill in remaining nodes
-    for (int j = 1; j < eleptr->num_node(); ++j)
-    {
-      Core::Nodes::Node const* const node = nodes[j];
-      getijk_of_single_node_in_current_position(discret, node, disnp, ijk);
-      addijk_to_axis_alignedijk_range_of_element(ijk, ijk_range);
-    }
-  }
-
   // get corresponding bin ids in ijk range
   binIds.reserve(get_number_of_bins_inijk_range(ijk_range));
   GidsInijkRange(ijk_range, binIds, false);
 }
 
-void BINSTRATEGY::BinningStrategy::AssignElesToBins(Teuchos::RCP<Core::FE::Discretization> discret,
-    std::map<int, std::set<int>> const& extended_bin_to_row_ele_map) const
+void Core::Binstrategy::BinningStrategy::AssignElesToBins(
+    Teuchos::RCP<Core::FE::Discretization> discret,
+    std::map<int, std::set<int>> const& extended_bin_to_row_ele_map,
+    const std::function<UTILS::BinContentType(const Core::Elements::Element* element)>&
+        ele_to_bin_type) const
 {
   // loop over bins
-  std::map<int, std::set<int>>::const_iterator biniter;
-  for (biniter = extended_bin_to_row_ele_map.begin(); biniter != extended_bin_to_row_ele_map.end();
-       ++biniter)
+  for (const auto& [bin_gid, ele_gids] : extended_bin_to_row_ele_map)
   {
     // extract bins from discretization after checking on existence
-    const int lid = bindis_->ElementColMap()->LID(biniter->first);
-    if (lid < 0) continue;
+    const int bin_lid = bindis_->ElementColMap()->LID(bin_gid);
+    if (bin_lid < 0) continue;
 
     // get current bin
-    auto* currbin =
-        dynamic_cast<Discret::MeshFree::MeshfreeMultiBin*>(bindis_->gElement(biniter->first));
+    auto* currbin = dynamic_cast<Discret::MeshFree::MeshfreeMultiBin*>(bindis_->gElement(bin_gid));
 
     // loop over ele content of this bin
-    std::set<int>::const_iterator eleiter;
-    for (eleiter = biniter->second.begin(); eleiter != biniter->second.end(); ++eleiter)
+    for (const auto& ele_gid : ele_gids)
     {
+      auto* ele = discret->gElement(ele_gid);
       // add eleid and elepointer to current bin
-      currbin->AddAssociatedEle(
-          BINSTRATEGY::UTILS::ConvertElementToBinContentType(discret->gElement(*eleiter)),
-          discret->gElement(*eleiter));
+      currbin->AddAssociatedEle(ele_to_bin_type(ele), ele);
     }
   }
 }
@@ -1073,7 +1085,7 @@ void BINSTRATEGY::BinningStrategy::getijk_of_single_node_in_current_position(
     Teuchos::RCP<const Epetra_Vector> const& disnp, int ijk[3]) const
 {
   double currpos[3] = {0.0, 0.0, 0.0};
-  BINSTRATEGY::UTILS::GetCurrentNodePos(discret, node, disnp, currpos);
+  BINSTRATEGY::UTILS::GetCurrentNodePos(discret, node, correct_beam_center_node_, disnp, currpos);
   double const* coords = currpos;
   ConvertPosToijk(coords, ijk);
 }
@@ -1090,7 +1102,7 @@ void BINSTRATEGY::BinningStrategy::distribute_row_nodes_to_bins(
   for (int lid = 0; lid < discret->NumMyRowNodes(); ++lid)
   {
     Core::Nodes::Node* node = discret->lRowNode(lid);
-    BINSTRATEGY::UTILS::GetCurrentNodePos(discret, node, disnp, currpos);
+    BINSTRATEGY::UTILS::GetCurrentNodePos(discret, node, correct_beam_center_node_, disnp, currpos);
 
     const double* coords = currpos;
     int ijk[3];
@@ -1665,7 +1677,8 @@ void BINSTRATEGY::BinningStrategy::
 
   // calculate current position of this node
   double currpos[3] = {0.0, 0.0, 0.0};
-  BINSTRATEGY::UTILS::GetCurrentNodePos(discret[0], node, disnp[0], currpos);
+  BINSTRATEGY::UTILS::GetCurrentNodePos(
+      discret[0], node, correct_beam_center_node_, disnp[0], currpos);
 
   for (int dim = 0; dim < 3; ++dim)
   {
@@ -1718,7 +1731,8 @@ double BINSTRATEGY::BinningStrategy::
       Core::LinAlg::Matrix<3, 2> eleXAABB(false);
 
       // initialize eleXAABB as rectangle around the first node of ele
-      BINSTRATEGY::UTILS::GetCurrentNodePos(discret[ndis], ele->Nodes()[0], disnp[ndis], currpos);
+      BINSTRATEGY::UTILS::GetCurrentNodePos(
+          discret[ndis], ele->Nodes()[0], correct_beam_center_node_, disnp[ndis], currpos);
       for (int dim = 0; dim < 3; ++dim)
       {
         eleXAABB(dim, 0) = currpos[dim] - Core::Geo::TOL7;
@@ -1726,15 +1740,14 @@ double BINSTRATEGY::BinningStrategy::
       }
 
       // rigid sphere elements needs to consider its radius
-      if (ele->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
+      if (element_filter_(ele) == UTILS::SpecialElement::rigid_sphere)
       {
-        double radius = dynamic_cast<Discret::ELEMENTS::Rigidsphere*>(ele)->Radius();
         for (int dim = 0; dim < 3; ++dim)
         {
-          eleXAABB(dim, 0) =
-              std::min(eleXAABB(dim, 0), eleXAABB(dim, 0) - radius - Core::Geo::TOL7);
-          eleXAABB(dim, 1) =
-              std::max(eleXAABB(dim, 1), eleXAABB(dim, 0) + radius + Core::Geo::TOL7);
+          eleXAABB(dim, 0) = std::min(
+              eleXAABB(dim, 0), eleXAABB(dim, 0) - rigid_sphere_radius_(ele) - Core::Geo::TOL7);
+          eleXAABB(dim, 1) = std::max(
+              eleXAABB(dim, 1), eleXAABB(dim, 0) + rigid_sphere_radius_(ele) + Core::Geo::TOL7);
         }
       }
       else
@@ -1743,7 +1756,8 @@ double BINSTRATEGY::BinningStrategy::
         for (int lid = 1; lid < ele->num_node(); ++lid)
         {
           const Core::Nodes::Node* node = ele->Nodes()[lid];
-          BINSTRATEGY::UTILS::GetCurrentNodePos(discret[ndis], node, disnp[ndis], currpos);
+          BINSTRATEGY::UTILS::GetCurrentNodePos(
+              discret[ndis], node, correct_beam_center_node_, disnp[ndis], currpos);
 
           //  merge eleXAABB of all nodes of this element
           for (int dim = 0; dim < 3; ++dim)
@@ -1828,7 +1842,8 @@ void BINSTRATEGY::BinningStrategy::
   double currpos[3] = {0.0, 0.0, 0.0};
   // initialize XAABB of discret as rectangle around the first node of
   // discret on each proc
-  BINSTRATEGY::UTILS::GetCurrentNodePos(discret, discret->lRowNode(0), disnp, currpos);
+  BINSTRATEGY::UTILS::GetCurrentNodePos(
+      discret, discret->lRowNode(0), correct_beam_center_node_, disnp, currpos);
   for (int dim = 0; dim < 3; ++dim)
   {
     XAABB(dim, 0) = currpos[dim] - Core::Geo::TOL7;
@@ -1844,7 +1859,8 @@ void BINSTRATEGY::BinningStrategy::
     Core::LinAlg::Matrix<3, 2> eleXAABB(false);
 
     // initialize eleXAABB as rectangle around the first node of ele
-    BINSTRATEGY::UTILS::GetCurrentNodePos(discret, ele->Nodes()[0], disnp, currpos);
+    BINSTRATEGY::UTILS::GetCurrentNodePos(
+        discret, ele->Nodes()[0], correct_beam_center_node_, disnp, currpos);
     for (int dim = 0; dim < 3; ++dim)
     {
       eleXAABB(dim, 0) = currpos[dim] - Core::Geo::TOL7;
@@ -1855,7 +1871,8 @@ void BINSTRATEGY::BinningStrategy::
     for (int lid = 1; lid < ele->num_node(); ++lid)
     {
       const Core::Nodes::Node* node = ele->Nodes()[lid];
-      BINSTRATEGY::UTILS::GetCurrentNodePos(discret, node, disnp, currpos);
+      BINSTRATEGY::UTILS::GetCurrentNodePos(
+          discret, node, correct_beam_center_node_, disnp, currpos);
 
       //  merge eleXAABB of all nodes of this element
       for (int dim = 0; dim < 3; dim++)
@@ -1926,7 +1943,8 @@ void BINSTRATEGY::BinningStrategy::transfer_nodes_and_elements(
   {
     // get current node and position
     Core::Nodes::Node* currnode = discret->lColNode(i);
-    BINSTRATEGY::UTILS::GetCurrentNodePos(discret, currnode, disnp, currpos);
+    BINSTRATEGY::UTILS::GetCurrentNodePos(
+        discret, currnode, correct_beam_center_node_, disnp, currpos);
 
     int const gidofbin = ConvertPosToGid(currpos);
 

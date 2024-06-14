@@ -12,6 +12,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_binstrategy_utils.hpp"
 #include "4C_inpar_beaminteraction.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_mapextractor.hpp"
@@ -352,6 +353,9 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     std::pair<int, int> CantorDePairing(long long z);
 
+    //! convert element @p ele to bin content type
+    BINSTRATEGY::UTILS::BinContentType ConvertElementToBinContentType(
+        const Core::Elements::Element* ele);
 
   }  // namespace UTILS
 }  // namespace BEAMINTERACTION

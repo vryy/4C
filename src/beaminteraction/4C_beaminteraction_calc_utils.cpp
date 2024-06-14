@@ -1261,6 +1261,32 @@ namespace BEAMINTERACTION
       return pair;
     }
 
+    /*-----------------------------------------------------------------------------*
+     *-----------------------------------------------------------------------------*/
+    BINSTRATEGY::UTILS::BinContentType ConvertElementToBinContentType(
+        const Core::Elements::Element* ele)
+    {
+      if (dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(ele) != nullptr)
+      {
+        return BINSTRATEGY::UTILS::BinContentType::Beam;
+      }
+      else if (dynamic_cast<Discret::ELEMENTS::Rigidsphere const*>(ele) != nullptr)
+      {
+        return BINSTRATEGY::UTILS::BinContentType::RigidSphere;
+      }
+      else if (dynamic_cast<Discret::ELEMENTS::SoBase const*>(ele) != nullptr ||
+               dynamic_cast<Discret::ELEMENTS::Solid const*>(ele) != nullptr)
+      {
+        return BINSTRATEGY::UTILS::BinContentType::Solid;
+      }
+      else
+      {
+        FOUR_C_THROW(
+            " Element you are about to assign to a bin could not be converted"
+            " to a valid bin content type. ");
+      }
+    }
+
 
     //-----------------------------------------------------------------------------
     // explicit template instantiation (to please every compiler)

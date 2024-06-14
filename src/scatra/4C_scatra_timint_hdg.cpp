@@ -422,9 +422,14 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
       Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
           "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
           binning_params);
+      auto element_filter = [](const Core::Elements::Element *element)
+      { return BINSTRATEGY::UTILS::SpecialElement::none; };
+      auto rigid_sphere_radius = [](const Core::Elements::Element *element) { return 0.0; };
+      auto correct_beam_center_node = [](const Core::Nodes::Node *node) { return node; };
       binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params,
           Global::Problem::Instance()->OutputControlFile(), discret_->Comm(),
-          discret_->Comm().MyPID(), dis));
+          discret_->Comm().MyPID(), element_filter, rigid_sphere_radius, correct_beam_center_node,
+          dis));
       binningstrategy
           ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
               dis, stdelecolmap, stdnodecolmap);

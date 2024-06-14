@@ -52,6 +52,13 @@ namespace BINSTRATEGY::UTILS
            ///< split this type)
   };
 
+  enum class SpecialElement
+  {
+    none,
+    beam,
+    rigid_sphere
+  };
+
   /*!
    * \brief Extend ghosting of discretization according to extended element col map
    *
@@ -64,15 +71,6 @@ namespace BINSTRATEGY::UTILS
   void ExtendDiscretizationGhosting(Teuchos::RCP<Core::FE::Discretization> discret,
       Teuchos::RCP<Epetra_Map> const& extendedelecolmap, bool assigndegreesoffreedom,
       bool initelements, bool doboundaryconditions);
-
-  /*!
-   * \brief convert element to bin content type
-   *
-   * @param[in] eleptr
-   *
-   * @return bin content type
-   */
-  BinContentType ConvertElementToBinContentType(Core::Elements::Element const* const eleptr);
 
   /*!
    * \brief communicate elements that get a new owner
@@ -104,8 +102,10 @@ namespace BINSTRATEGY::UTILS
    * @param[out] currpos current position of node
    */
   void GetCurrentNodePos(Teuchos::RCP<const Core::FE::Discretization> const discret,
-      Core::Nodes::Node const* node, Teuchos::RCP<const Epetra_Vector> const disnp,
-      double* currpos);
+      Core::Nodes::Node const* node,
+      std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)>
+          correct_beam_center_node,
+      Teuchos::RCP<const Epetra_Vector> const disnp, double* currpos);
 
 }  // namespace BINSTRATEGY::UTILS
 

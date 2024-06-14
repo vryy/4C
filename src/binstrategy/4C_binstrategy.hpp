@@ -115,7 +115,12 @@ namespace BINSTRATEGY
      * \param[in] binning_params binning parameters from input
      * \param[in] output_control output control file
      * \param[in] comm Epetra Communicator
-     * \param[in] id of this process
+     * \param[in] my_rank id of this process
+     * \param[in] element_filter function to get enum of elements that require special treatment
+     * \param[in] rigid_sphere_radius function to compute the radius of the rigid sphere
+     * \param[in] correct_beam_center_node if the center node of a beam element is used for binning,
+     * it must be corrected to a boundary node as the center node has no coordinates. This function
+     * is used for it
      * \param[in] discret vector of discretizations as basis for build up of binning domain
      * (optional, only needed if binning domain is not described via input file)
      * \param[in] disnp vector of column displacement states (belonging to input discrets) so that
@@ -123,7 +128,12 @@ namespace BINSTRATEGY
      */
     BinningStrategy(const Teuchos::ParameterList& binning_params,
         Teuchos::RCP<Core::IO::OutputControl> output_control, const Epetra_Comm& comm,
-        const int my_rank, const std::vector<Teuchos::RCP<Core::FE::Discretization>>& discret = {},
+        const int my_rank,
+        std::function<UTILS::SpecialElement(const Core::Elements::Element* element)> element_filter,
+        std::function<double(const Core::Elements::Element* element)> rigid_sphere_radius,
+        std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)>
+            correct_beam_center_node,
+        const std::vector<Teuchos::RCP<Core::FE::Discretization>>& discret = {},
         std::vector<Teuchos::RCP<const Epetra_Vector>> disnp = {});
 
     //! \name Read access functions
@@ -451,7 +461,7 @@ namespace BINSTRATEGY
      */
     void build_axis_alignedijk_range_for_rigid_sphere(
         Core::Elements::Element const* const sphereele, double currpos[3], int ijk[3],
-        int ijk_range[6]) const;
+        int ijk_range[6], double radius) const;
 
     /// fixme: the following function needs to be replaced by
     /// distribute_row_elements_to_bins_using_ele_aabb()
@@ -509,7 +519,8 @@ namespace BINSTRATEGY
      * that belong to it
      */
     void AssignElesToBins(Teuchos::RCP<Core::FE::Discretization> discret,
-        std::map<int, std::set<int>> const& extended_bin_to_row_ele_map) const;
+        std::map<int, std::set<int>> const& extended_bin_to_row_ele_map,
+        const std::function<UTILS::BinContentType(const Core::Elements::Element* element)>&) const;
 
     /*!
      * \brief get element of type bincontent in requested bins
@@ -826,6 +837,18 @@ namespace BINSTRATEGY
      * \brief local communicator
      */
     Teuchos::RCP<Epetra_Comm> comm_;
+
+    //! function to get enum of elements that require special treatment
+    const std::function<UTILS::SpecialElement(const Core::Elements::Element* element)>
+        element_filter_;
+
+    //! rigid_sphere_radius function to compute the radius of the rigid sphere
+    const std::function<double(const Core::Elements::Element* element)> rigid_sphere_radius_;
+
+    //! if the center node of a beam element is used for binning, it must be corrected to a boundary
+    //! node as the center node has no coordinates. This function is used for it
+    const std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)>
+        correct_beam_center_node_;
 
   };  // namespace BINSTRATEGY
 

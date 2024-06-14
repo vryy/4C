@@ -10,6 +10,8 @@ performed afterwards
 *----------------------------------------------------------------------*/
 #include "4C_fbi_immersed_geometry_coupler_binning.hpp"
 
+#include "4C_beam3_base.hpp"
+#include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_binstrategy.hpp"
 #include "4C_binstrategy_utils.hpp"
 #include "4C_fem_discretization_faces.hpp"
@@ -84,7 +86,8 @@ void FBI::FBIBinningGeometryCoupler::partition_geometry(
 
   // assign Elements to bins
   binstrategy_->remove_all_eles_from_bins();
-  binstrategy_->AssignElesToBins(discretizations[0], bintoelemap_);
+  binstrategy_->AssignElesToBins(
+      discretizations[0], bintoelemap_, BEAMINTERACTION::UTILS::ConvertElementToBinContentType);
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIBinningGeometryCoupler::UpdateBinning(
@@ -97,7 +100,8 @@ void FBI::FBIBinningGeometryCoupler::UpdateBinning(
 
   // assign Elements to bins
   binstrategy_->remove_all_eles_from_bins();
-  binstrategy_->AssignElesToBins(structure_discretization, bintoelemap_);
+  binstrategy_->AssignElesToBins(structure_discretization, bintoelemap_,
+      BEAMINTERACTION::UTILS::ConvertElementToBinContentType);
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIBinningGeometryCoupler::setup(

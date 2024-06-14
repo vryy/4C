@@ -22,6 +22,7 @@
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_dofset_gidbased_wrapper.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
+#include "4C_fluid_ele.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -30,6 +31,8 @@
 #include "4C_mortar_manager_base.hpp"
 #include "4C_poroelast_defines.hpp"
 #include "4C_poroelast_utils.hpp"
+#include "4C_so3_base.hpp"
+#include "4C_solid_3D_ele.hpp"
 #include "4C_structure_aux.hpp"
 
 #include <cstddef>
@@ -73,7 +76,14 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
         binning_params);
-    volcoupl_->Redistribute(binning_params, Global::Problem::Instance()->OutputControlFile());
+
+    auto element_filter = [](const Core::Elements::Element* element)
+    { return BINSTRATEGY::UTILS::SpecialElement::none; };
+    auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
+    auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
+
+    volcoupl_->Redistribute(binning_params, Global::Problem::Instance()->OutputControlFile(),
+        element_filter, rigid_sphere_radius, correct_beam_center_node);
     volcoupl_->setup(Global::Problem::Instance()->VolmortarParams());
   }
 

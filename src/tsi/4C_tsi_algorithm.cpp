@@ -33,8 +33,11 @@
 #include "4C_inpar_tsi.hpp"
 #include "4C_io.hpp"
 #include "4C_mortar_multifield_coupling.hpp"
+#include "4C_so3_base.hpp"
+#include "4C_solid_3D_ele.hpp"
 #include "4C_structure_new_model_evaluator_contact.hpp"
 #include "4C_structure_new_model_evaluator_structure.hpp"
+#include "4C_thermo_element.hpp"
 #include "4C_tsi_defines.hpp"
 #include "4C_tsi_utils.hpp"
 
@@ -81,7 +84,12 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
         binning_params);
-    volcoupl_->Redistribute(binning_params, Global::Problem::Instance()->OutputControlFile());
+    auto element_filter = [](const Core::Elements::Element* element)
+    { return BINSTRATEGY::UTILS::SpecialElement::none; };
+    auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
+    auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
+    volcoupl_->Redistribute(binning_params, Global::Problem::Instance()->OutputControlFile(),
+        element_filter, rigid_sphere_radius, correct_beam_center_node);
     // setup projection matrices
     volcoupl_->setup(Global::Problem::Instance()->VolmortarParams());
   }

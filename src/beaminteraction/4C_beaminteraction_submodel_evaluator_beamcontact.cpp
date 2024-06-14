@@ -869,7 +869,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
       // Check if the current element is relevant for beam-to-xxx contact.
       Core::Elements::Element* currele = Discret().lColElement(colele_i);
       const BINSTRATEGY::UTILS::BinContentType contact_type =
-          BINSTRATEGY::UTILS::ConvertElementToBinContentType(currele);
+          BEAMINTERACTION::UTILS::ConvertElementToBinContentType(currele);
       if (std::find(contactelementtypes_.begin(), contactelementtypes_.end(), contact_type) !=
           contactelementtypes_.end())
       {

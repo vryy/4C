@@ -10,17 +10,10 @@
 
 #include "4C_binstrategy_utils.hpp"
 
-#include "4C_beam3_base.hpp"
-#include "4C_bele_bele3.hpp"
 #include "4C_comm_exporter.hpp"
-#include "4C_fluid_ele.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_print.hpp"
-#include "4C_rigidsphere.hpp"
-#include "4C_scatra_ele.hpp"
-#include "4C_so3_base.hpp"
-#include "4C_solid_3D_ele.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -70,47 +63,6 @@ namespace BINSTRATEGY
 #endif
 
       return;
-    }
-
-    /*-----------------------------------------------------------------------------*
-     *-----------------------------------------------------------------------------*/
-    BINSTRATEGY::UTILS::BinContentType ConvertElementToBinContentType(
-        Core::Elements::Element const* const eleptr)
-    {
-      // (Todo make this nicer and cheaper)
-
-      if (dynamic_cast<Discret::ELEMENTS::Transport const*>(eleptr) != nullptr)
-      {
-        return BINSTRATEGY::UTILS::BinContentType::Scatra;
-      }
-      else if (dynamic_cast<Discret::ELEMENTS::Fluid const*>(eleptr) != nullptr)
-      {
-        return BINSTRATEGY::UTILS::BinContentType::Fluid;
-      }
-      else if (dynamic_cast<Discret::ELEMENTS::Bele3 const*>(eleptr) != nullptr)
-      {
-        return BINSTRATEGY::UTILS::BinContentType::BELE3;
-      }
-      else if (dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(eleptr) != nullptr)
-      {
-        return BINSTRATEGY::UTILS::BinContentType::Beam;
-      }
-      else if (dynamic_cast<Discret::ELEMENTS::Rigidsphere const*>(eleptr) != nullptr)
-      {
-        return BINSTRATEGY::UTILS::BinContentType::RigidSphere;
-      }
-      else if (dynamic_cast<Discret::ELEMENTS::SoBase const*>(eleptr) != nullptr ||
-               dynamic_cast<Discret::ELEMENTS::Solid const*>(eleptr) != nullptr)
-      {
-        return BINSTRATEGY::UTILS::BinContentType::Solid;
-      }
-      else
-      {
-        FOUR_C_THROW(
-            " Element you are about to assign to a bin could not be converted"
-            " to a valid bin content type. ");
-        exit(EXIT_FAILURE);
-      }
     }
 
     /*-----------------------------------------------------------------------------*
@@ -301,8 +253,10 @@ namespace BINSTRATEGY
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
     void GetCurrentNodePos(Teuchos::RCP<const Core::FE::Discretization> const discret,
-        Core::Nodes::Node const* node, Teuchos::RCP<const Epetra_Vector> const disnp,
-        double* currpos)
+        Core::Nodes::Node const* node,
+        std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)>
+            correct_beam_center_node,
+        Teuchos::RCP<const Epetra_Vector> const disnp, double* currpos)
     {
       // Todo make this nicer
 
@@ -313,19 +267,7 @@ namespace BINSTRATEGY
       // first node of the  element here (for the sake of binning)
 
       // standard case
-      Core::Nodes::Node const* node_with_position_Dofs = node;
-
-      const Core::Elements::Element* element = node->Elements()[0];
-      const Discret::ELEMENTS::Beam3Base* beamelement =
-          dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
-
-      // fixme: should be do get position at xi with xi = 0.0?
-      // if the node does not have position DoFs, we return the position of the first
-      // node of the corresponding element
-      if (beamelement != nullptr and not beamelement->IsCenterlineNode(*node))
-      {
-        node_with_position_Dofs = beamelement->Nodes()[0];
-      }
+      Core::Nodes::Node const* node_with_position_Dofs = correct_beam_center_node(node);
 
       if (disnp != Teuchos::null)
       {
