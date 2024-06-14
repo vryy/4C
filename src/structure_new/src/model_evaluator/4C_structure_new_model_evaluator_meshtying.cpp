@@ -499,12 +499,12 @@ void STR::MODELEVALUATOR::Meshtying::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   if (mesh_relocation_ != Teuchos::null)
-    iowriter.WriteVector("mesh_relocation", mesh_relocation_);
+    iowriter.write_vector("mesh_relocation", mesh_relocation_);
   else
   {
     Teuchos::RCP<Epetra_Vector> tmp =
         Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map(), true));
-    iowriter.WriteVector("mesh_relocation", tmp);
+    iowriter.write_vector("mesh_relocation", tmp);
   }
 }
 
@@ -513,7 +513,7 @@ void STR::MODELEVALUATOR::Meshtying::write_restart(
 void STR::MODELEVALUATOR::Meshtying::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map(), true));
-  ioreader.ReadVector(mesh_relocation_, "mesh_relocation");
+  ioreader.read_vector(mesh_relocation_, "mesh_relocation");
 
   strategy_ptr_->set_state(Mortar::state_new_displacement, *mesh_relocation_);
   strategy_ptr_->MortarCoupling(mesh_relocation_);

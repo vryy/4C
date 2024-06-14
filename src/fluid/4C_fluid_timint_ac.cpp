@@ -42,7 +42,7 @@ void FLD::TimIntAC::read_restart(int step)
     Core::IO::DiscretizationReader reader(
         discret_, Global::Problem::Instance()->InputControlFile(), step);
 
-    reader.ReadVector(trueresidual_, "trueresidual");
+    reader.read_vector(trueresidual_, "trueresidual");
   }
 }
 
@@ -56,7 +56,7 @@ void FLD::TimIntAC::Output()
   // output of solution
   if (uprestart_ > 0 and step_ % uprestart_ == 0)
   {
-    output_->WriteVector("trueresidual", trueresidual_);
+    output_->write_vector("trueresidual", trueresidual_);
   }
   return;
 }

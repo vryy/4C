@@ -166,7 +166,7 @@ void ScaTra::ScaTraTimIntElch::Setup()
       electrodecrates_.insert(conditioninitpair);
       runtime_csvwriter_soc_.insert(std::make_pair(cond_id, std::nullopt));
       runtime_csvwriter_soc_[cond_id].emplace(
-          myrank_, *DiscWriter()->Output(), "electrode_soc_" + std::to_string(cond_id));
+          myrank_, *DiscWriter()->output(), "electrode_soc_" + std::to_string(cond_id));
       runtime_csvwriter_soc_[cond_id]->register_data_vector("SOC", 1, 16);
       runtime_csvwriter_soc_[cond_id]->register_data_vector("CRate", 1, 16);
 
@@ -211,7 +211,7 @@ void ScaTra::ScaTraTimIntElch::Setup()
         electrodevoltage_.insert({condid, 0.0});
       }
       // setup csv writer for cell voltage
-      runtime_csvwriter_cell_voltage_.emplace(myrank_, *DiscWriter()->Output(), "cell_voltage");
+      runtime_csvwriter_cell_voltage_.emplace(myrank_, *DiscWriter()->output(), "cell_voltage");
       runtime_csvwriter_cell_voltage_->register_data_vector("CellVoltage", 1, 16);
     }
   }
@@ -844,7 +844,7 @@ void ScaTra::ScaTraTimIntElch::check_and_write_output_and_restart()
 void ScaTra::ScaTraTimIntElch::output_problem_specific()
 {
   // for elch problems with moving boundary
-  if (isale_) output_->WriteVector("trueresidual", trueresidual_);
+  if (isale_) output_->write_vector("trueresidual", trueresidual_);
 }
 
 /*----------------------------------------------------------------------*
@@ -852,7 +852,7 @@ void ScaTra::ScaTraTimIntElch::output_problem_specific()
 void ScaTra::ScaTraTimIntElch::read_restart_problem_specific(
     const int step, Core::IO::DiscretizationReader& reader)
 {
-  if (isale_) reader.ReadVector(trueresidual_, "trueresidual");
+  if (isale_) reader.read_vector(trueresidual_, "trueresidual");
 
   // read restart data associated with electrode state of charge conditions if applicable, needed
   // for correct evaluation of cell C rate at the beginning of the first time step after restart
@@ -884,11 +884,11 @@ void ScaTra::ScaTraTimIntElch::read_restart_problem_specific(
   // applicable
   if (cccvcyclingcondition)
   {
-    cellvoltage_ = reader.ReadDouble("cellvoltage");
-    cellcrate_ = reader.ReadDouble("cellcrate");
-    adapted_timestep_active_ = static_cast<bool>(reader.ReadInt("adapted_timestep_active"));
-    dt_adapted_ = reader.ReadDouble("dt_adapted");
-    last_dt_change_ = reader.ReadInt("last_dt_change");
+    cellvoltage_ = reader.read_double("cellvoltage");
+    cellcrate_ = reader.read_double("cellcrate");
+    adapted_timestep_active_ = static_cast<bool>(reader.read_int("adapted_timestep_active"));
+    dt_adapted_ = reader.read_double("dt_adapted");
+    last_dt_change_ = reader.read_int("last_dt_change");
 
     // read restart of cccv condition
     cccv_condition_->read_restart(reader);
@@ -904,7 +904,7 @@ void ScaTra::ScaTraTimIntElch::read_restart_problem_specific(
         s2ikinetics_cond->parameters().Get<int>("kinetic model") ==
             static_cast<int>(Inpar::S2I::kinetics_butlervolmerreducedcapacitance))
     {
-      reader.ReadVector(phidtnp_, "phidtnp");
+      reader.read_vector(phidtnp_, "phidtnp");
       break;
     }
   }
@@ -1203,7 +1203,7 @@ void ScaTra::ScaTraTimIntElch::post_process_single_electrode_info(
     std::ostringstream temp;
     temp << id;
     const std::string fname =
-        problem_->OutputControlFile()->FileName() + ".electrode_status_" + temp.str() + ".txt";
+        problem_->OutputControlFile()->file_name() + ".electrode_status_" + temp.str() + ".txt";
 
     std::ofstream f;
     if (Step() == 0)
@@ -1592,37 +1592,38 @@ void ScaTra::ScaTraTimIntElch::write_restart() const
   if (discret_->GetCondition("CCCVCycling"))
   {
     // output number of current charge or discharge half-cycle
-    output_->WriteInt("ihalfcycle", cccv_condition_->get_num_current_half_cycle());
+    output_->write_int("ihalfcycle", cccv_condition_->get_num_current_half_cycle());
 
     // output cell voltage
-    output_->WriteDouble("cellvoltage", cellvoltage_);
+    output_->write_double("cellvoltage", cellvoltage_);
 
     // output cell C rate
-    output_->WriteDouble("cellcrate", cellcrate_);
+    output_->write_double("cellcrate", cellcrate_);
 
     // was the phase changed since last time step adaptivity?
-    output_->WriteInt("phasechanged", static_cast<int>(cccv_condition_->IsPhaseChanged()));
+    output_->write_int("phasechanged", static_cast<int>(cccv_condition_->IsPhaseChanged()));
 
     // are we in initial phase relaxation?
-    output_->WriteInt(
+    output_->write_int(
         "phaseinitialrelaxation", static_cast<int>(cccv_condition_->is_phase_initial_relaxation()));
 
     // end time of current relaxation phase
-    output_->WriteDouble("relaxendtime", cccv_condition_->GetRelaxEndTime());
+    output_->write_double("relaxendtime", cccv_condition_->GetRelaxEndTime());
 
     // current phase of half cycle
-    output_->WriteInt("phase_cccv", static_cast<int>(cccv_condition_->get_cccv_half_cycle_phase()));
+    output_->write_int(
+        "phase_cccv", static_cast<int>(cccv_condition_->get_cccv_half_cycle_phase()));
 
     // when was the phase change last time?
-    output_->WriteInt("steplastphasechange", cccv_condition_->get_step_last_phase_change());
+    output_->write_int("steplastphasechange", cccv_condition_->get_step_last_phase_change());
 
     // adapted time step
-    output_->WriteDouble("dt_adapted", dt_adapted_);
+    output_->write_double("dt_adapted", dt_adapted_);
 
-    output_->WriteInt("last_dt_change", last_dt_change_);
+    output_->write_int("last_dt_change", last_dt_change_);
 
     // is time step adaptivity activated?
-    output_->WriteInt("adapted_timestep_active", adapted_timestep_active_);
+    output_->write_int("adapted_timestep_active", adapted_timestep_active_);
   }
 
   std::vector<Core::Conditions::Condition*> s2ikinetics_conditions(0, nullptr);
@@ -1635,7 +1636,7 @@ void ScaTra::ScaTraTimIntElch::write_restart() const
         s2ikinetics_cond->parameters().Get<int>("kinetic model") ==
             static_cast<int>(Inpar::S2I::kinetics_butlervolmerreducedcapacitance))
     {
-      output_->WriteVector("phidtnp", phidtnp_);
+      output_->write_vector("phidtnp", phidtnp_);
       break;
     }
   }

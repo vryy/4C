@@ -397,8 +397,8 @@ void Mat::ScatraMultiScaleGP::new_result_file()
   // get properties from macro scale
   Teuchos::RCP<Core::IO::OutputControl> macrocontrol =
       Global::Problem::Instance()->OutputControlFile();
-  std::string microprefix = macrocontrol->RestartName();
-  std::string micronewprefix = macrocontrol->NewOutputFileName();
+  std::string microprefix = macrocontrol->restart_name();
+  std::string micronewprefix = macrocontrol->new_output_file_name();
 
   // extract micro-scale problem and discretization
   Global::Problem* microproblem = Global::Problem::Instance(microdisnum_);
@@ -431,8 +431,8 @@ void Mat::ScatraMultiScaleGP::new_result_file()
 
     micro_output_ = Teuchos::rcp(new Core::IO::DiscretizationWriter(
         microdis, microcontrol, microproblem->spatial_approximation_type()));
-    micro_output_->SetOutput(microcontrol);
-    micro_output_->WriteMesh(
+    micro_output_->set_output(microcontrol);
+    micro_output_->write_mesh(
         step_, Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->Time());
   }
 }
@@ -498,8 +498,8 @@ void Mat::ScatraMultiScaleGP::Output()
       microtimint->write_restart();
       if (is_ale_)
       {
-        microtimint->DiscWriter()->WriteDouble("detFn", det_fn_);
-        microtimint->DiscWriter()->WriteDouble("ddetFdtn", ddet_fdtn_);
+        microtimint->DiscWriter()->write_double("detFn", det_fn_);
+        microtimint->DiscWriter()->write_double("ddetFdtn", ddet_fdtn_);
       }
     }
 
@@ -540,8 +540,8 @@ void Mat::ScatraMultiScaleGP::read_restart()
 
   if (is_ale_)
   {
-    det_fn_ = reader->ReadDouble("detFn");
-    ddet_fdtn_ = reader->ReadDouble("ddetFdtn");
+    det_fn_ = reader->read_double("detFn");
+    ddet_fdtn_ = reader->read_double("ddetFdtn");
   }
 
   // clear state in micro-scale time integrator

@@ -882,14 +882,14 @@ void FSI::UTILS::SlideAleUtils::rotation(
 
 void FSI::UTILS::SlideAleUtils::output_restart(Core::IO::DiscretizationWriter& output)
 {
-  output.WriteVector("projhist", iprojhist_);
+  output.write_vector("projhist", iprojhist_);
 
   return;
 }
 
 void FSI::UTILS::SlideAleUtils::read_restart(Core::IO::DiscretizationReader& reader)
 {
-  reader.ReadVector(iprojhist_, "projhist");
+  reader.read_vector(iprojhist_, "projhist");
 }
 
 FOUR_C_NAMESPACE_CLOSE

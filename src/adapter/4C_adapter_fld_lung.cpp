@@ -359,7 +359,7 @@ void Adapter::FluidLung::EvaluateVolCon(
 void Adapter::FluidLung::OutputForces(Teuchos::RCP<Epetra_Vector> Forces)
 {
   const Teuchos::RCP<Core::IO::DiscretizationWriter>& output = DiscWriter();
-  output->WriteVector("Add_Forces", Forces);
+  output->write_vector("Add_Forces", Forces);
 }
 
 FOUR_C_NAMESPACE_CLOSE

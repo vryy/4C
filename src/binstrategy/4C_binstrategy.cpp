@@ -783,10 +783,10 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
   }
 
   // write output
-  visbindis_->Writer()->WriteMesh(step, time);
-  visbindis_->Writer()->NewStep(step, time);
-  visbindis_->Writer()->WriteVector("owner0ghost1", ownedghostsvec, Core::IO::elementvector);
-  visbindis_->Writer()->WriteElementData(true);
+  visbindis_->Writer()->write_mesh(step, time);
+  visbindis_->Writer()->new_step(step, time);
+  visbindis_->Writer()->write_vector("owner0ghost1", ownedghostsvec, Core::IO::elementvector);
+  visbindis_->Writer()->write_element_data(true);
 
   visbindis_->ClearDiscret();
 }

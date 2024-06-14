@@ -544,14 +544,14 @@ void UTILS::Cardiovascular0DManager::read_restart(
     Teuchos::RCP<Epetra_Map> cardvasc0d = get_cardiovascular0_d_map();
     Teuchos::RCP<Epetra_Vector> tempvec = Core::LinAlg::CreateVector(*cardvasc0d, true);
     // old rhs contributions
-    reader.ReadVector(tempvec, "cv0d_df_np");
+    reader.read_vector(tempvec, "cv0d_df_np");
     Set0D_df_n(tempvec);
-    reader.ReadVector(tempvec, "cv0d_f_np");
+    reader.read_vector(tempvec, "cv0d_f_np");
     Set0D_f_n(tempvec);
     // old dof and vol vector
-    reader.ReadVector(tempvec, "cv0d_dof_np");
+    reader.read_vector(tempvec, "cv0d_dof_np");
     Set0D_dof_n(tempvec);
-    reader.ReadVector(tempvec, "vol_np");
+    reader.read_vector(tempvec, "vol_np");
     Set0D_v_n(tempvec);
   }
 

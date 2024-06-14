@@ -789,7 +789,7 @@ void XFEM::ConditionManager::Output(
   if (levelset_coupl_.size() > 0)
   {
     Teuchos::RCP<Core::IO::DiscretizationWriter> output = bg_dis_->Writer();
-    output->WriteVector("fluid_levelset_boundary", bg_phinp_);
+    output->write_vector("fluid_levelset_boundary", bg_phinp_);
   }
 
   // loop all level set coupling objects

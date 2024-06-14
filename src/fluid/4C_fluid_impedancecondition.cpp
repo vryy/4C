@@ -506,25 +506,25 @@ void FLD::UTILS::FluidImpedanceBc::write_restart(
 
   stream1 << "P_np" << condnum;
   // write the pressure at time step n+1
-  output.WriteDouble(stream1.str(), p_np_);
+  output.write_double(stream1.str(), p_np_);
 
   stream6 << "Q_np" << condnum;
   // write the flux at time step n+1
-  output.WriteDouble(stream6.str(), q_np_);
+  output.write_double(stream6.str(), q_np_);
 
   stream2 << "WKrelerror" << condnum;
-  output.WriteDouble(stream2.str(), w_krelerror_);
+  output.write_double(stream2.str(), w_krelerror_);
 
   stream3 << "P_0" << condnum;
-  output.WriteDouble(stream3.str(), p_0_);
+  output.write_double(stream3.str(), p_0_);
 
   stream4 << "P_n" << condnum;
   // write the input pressure at time step n
-  output.WriteDouble(stream4.str(), p_n_);
+  output.write_double(stream4.str(), p_n_);
 
   stream5 << "Q_n" << condnum;
   // write the flux pressure at time step n
-  output.WriteDouble(stream5.str(), q_n_);
+  output.write_double(stream5.str(), q_n_);
 
   return;
 }
@@ -539,23 +539,23 @@ void FLD::UTILS::FluidImpedanceBc::read_restart(
 
   stream1 << "P_np" << condnum;
   // read the pressure at time step n+1
-  p_np_ = reader.ReadDouble(stream1.str());
+  p_np_ = reader.read_double(stream1.str());
 
   stream6 << "Q_np" << condnum;
   // read the pressure at time step n+1
-  q_np_ = reader.ReadDouble(stream6.str());
+  q_np_ = reader.read_double(stream6.str());
 
   // read in pressure difference
   stream3 << "P_0" << condnum;
-  p_0_ = reader.ReadDouble(stream3.str());
+  p_0_ = reader.read_double(stream3.str());
 
   stream4 << "P_n" << condnum;
   // read the input pressure at time step n
-  p_n_ = reader.ReadDouble(stream4.str());
+  p_n_ = reader.read_double(stream4.str());
 
   stream5 << "Q_n" << condnum;
   // read the flux pressure at time step n
-  q_n_ = reader.ReadDouble(stream5.str());
+  q_n_ = reader.read_double(stream5.str());
 
   // get pressure difference and pressure of last period
   if (abs(w_krelerror_ - 1.0) <
@@ -563,7 +563,7 @@ void FLD::UTILS::FluidImpedanceBc::read_restart(
   {
     // read in pressure difference
     stream2 << "WKrelerror" << condnum;
-    w_krelerror_ = reader.ReadDouble(stream2.str());
+    w_krelerror_ = reader.read_double(stream2.str());
   }
   else
   {

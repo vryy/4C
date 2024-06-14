@@ -157,11 +157,11 @@ void PARTICLEALGORITHM::ParticleAlgorithm::read_restart(const int restartstep)
       particleengine_->BinDisReader(restartstep);
 
   // safety check
-  if (restartstep != reader->ReadInt("step"))
+  if (restartstep != reader->read_int("step"))
     FOUR_C_THROW("time step on file not equal to given step!");
 
   // get restart time
-  double restarttime = reader->ReadDouble("time");
+  double restarttime = reader->read_double("time");
 
   // read restart of particle engine
   particleengine_->read_restart(reader, particlestodistribute_);

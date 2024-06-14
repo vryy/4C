@@ -1292,7 +1292,7 @@ void FSI::MonolithicFluidSplit::OutputLambda()
   const int upres = timeparams_.get<int>("RESULTSEVRY");
   if ((uprestart != 0 && fluid_field()->Step() % uprestart == 0) or
       (upres != 0 and fluid_field()->Step() % upres == 0))
-    fluid_field()->DiscWriter()->WriteVector("fsilambda", lambdafull);
+    fluid_field()->DiscWriter()->write_vector("fsilambda", lambdafull);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1317,7 +1317,7 @@ void FSI::MonolithicFluidSplit::read_restart(int step)
         Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(), true));
     Core::IO::DiscretizationReader reader = Core::IO::DiscretizationReader(
         fluid_field()->discretization(), Global::Problem::Instance()->InputControlFile(), step);
-    reader.ReadVector(lambdafull, "fsilambda");
+    reader.read_vector(lambdafull, "fsilambda");
     lambdaold_ = fluid_field()->Interface()->ExtractFSICondVector(lambdafull);
     // Note: the above is normally enough. However, we can use the restart in order to periodically
     // repeat the fsi simulation (see AC-FS3I)

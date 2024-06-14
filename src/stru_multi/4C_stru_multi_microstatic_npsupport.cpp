@@ -49,7 +49,7 @@ void MultiScale::np_support_drt()
   std::map<int, Teuchos::RCP<Mat::MicroMaterial>> dummymaterials;
 
   // this call is needed in order to increment the unique ids that are distributed
-  // by HDF5; the macro procs call output->WriteMesh(0, 0.0) in Adapter::Structure
+  // by HDF5; the macro procs call output->write_mesh(0, 0.0) in Adapter::Structure
   const int someUniqueNumber =
       Global::Problem::Instance(0)->GetCommunicators()->GlobalComm()->MyPID();
   std::string uniqueDummyName = &"dummyHDF5file_p"[someUniqueNumber];

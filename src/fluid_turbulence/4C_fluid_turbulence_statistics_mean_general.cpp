@@ -1023,11 +1023,11 @@ void FLD::TurbulenceStatisticsGeneralMean::add_to_total_time_average()
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics(Core::IO::DiscretizationReader& input)
 {
-  prev_n_ = input.ReadInt("num_steps_in_sample");
-  prev_avg_time_ = input.ReadDouble("sampling_time");
+  prev_n_ = input.read_int("num_steps_in_sample");
+  prev_avg_time_ = input.read_double("sampling_time");
 
-  input.ReadVector(prev_avg_, "averaged_velnp");
-  if (withscatra_) input.ReadVector(prev_avg_sca_, "averaged_scanp");
+  input.read_vector(prev_avg_, "averaged_velnp");
+  if (withscatra_) input.read_vector(prev_avg_sca_, "averaged_scanp");
 }  // FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics
 
 
@@ -1042,7 +1042,7 @@ void FLD::TurbulenceStatisticsGeneralMean::read_old_statistics_sca_tra(
   if (withscatra_)
   {
     // read previous averaged vector. That's all
-    input.ReadVector(prev_avg_scatra_, "averaged_phinp");
+    input.read_vector(prev_avg_scatra_, "averaged_phinp");
   }
 }  // FLD::TurbulenceStatisticsGeneralMean::read_old_statistics_sca_tra
 
@@ -1071,15 +1071,15 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
     std::cout << "\n\n";
   }
 
-  output.WriteInt("num_steps_in_sample", prev_n_);
-  output.WriteDouble("sampling_time", prev_avg_time_);
+  output.write_int("num_steps_in_sample", prev_n_);
+  output.write_double("sampling_time", prev_avg_time_);
 
-  output.WriteVector("averaged_velnp", prev_avg_);
-  if (withscatra_) output.WriteVector("averaged_scanp", prev_avg_sca_);
+  output.write_vector("averaged_velnp", prev_avg_);
+  if (withscatra_) output.write_vector("averaged_scanp", prev_avg_sca_);
 
   // output real pressure
   Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(prev_avg_);
-  output.WriteVector("averaged_pressure", pressure);
+  output.write_vector("averaged_pressure", pressure);
 }  // FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec
 
 
@@ -1292,7 +1292,7 @@ void FLD::TurbulenceStatisticsGeneralMean::DoOutputForScaTra(
     // statistics was written already during DoOutput()
     // Here, for visualization/restart we have to care for the mean field only!
     if (prev_avg_scatra_ != Teuchos::null)
-      output.WriteVector("averaged_phinp", prev_avg_scatra_);
+      output.write_vector("averaged_phinp", prev_avg_scatra_);
     else
       FOUR_C_THROW("Could not write vector to result file");
 

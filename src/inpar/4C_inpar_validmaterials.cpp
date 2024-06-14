@@ -481,7 +481,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     {
       // map pattern file needs to be placed in same folder as input file
       std::filesystem::path input_file_path =
-          Global::Problem::Instance()->OutputControlFile()->InputFileName();
+          Global::Problem::Instance()->OutputControlFile()->input_file_name();
       const auto map_file_path = input_file_path.replace_filename(map_file);
 
       std::ifstream file_stream(map_file_path);
@@ -3874,7 +3874,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     {
       // map pattern file needs to be placed in same folder as input file
       std::filesystem::path input_file_path =
-          Global::Problem::Instance()->OutputControlFile()->InputFileName();
+          Global::Problem::Instance()->OutputControlFile()->input_file_name();
       const auto map_file_path = input_file_path.replace_filename(map_file);
 
       std::ifstream file_stream(map_file_path);

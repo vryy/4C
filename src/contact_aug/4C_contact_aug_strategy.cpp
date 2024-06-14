@@ -1478,10 +1478,10 @@ void CONTACT::Aug::Strategy::WriteOutput(Core::IO::DiscretizationWriter& writer)
   AugForces(*augfs_lm, *augfs_g, *augfm_lm, *augfm_g);
 
   // contact forces on slave and master side
-  writer.WriteVector("norslaveforcelm", augfs_lm);
-  writer.WriteVector("norslaveforceg", augfs_g);
-  writer.WriteVector("normasterforcelm", augfm_lm);
-  writer.WriteVector("normasterforceg", augfm_g);
+  writer.write_vector("norslaveforcelm", augfs_lm);
+  writer.write_vector("norslaveforceg", augfs_g);
+  writer.write_vector("normasterforcelm", augfm_lm);
+  writer.write_vector("normasterforceg", augfm_g);
 
   Epetra_Vector str_row_node_owners(*ProblemNodes(), false);
   str_row_node_owners.PutScalar(-1.0);
@@ -1492,12 +1492,12 @@ void CONTACT::Aug::Strategy::WriteOutput(Core::IO::DiscretizationWriter& writer)
         dynamic_cast<const CONTACT::Aug::Interface&>(*cinterface);
 
     Teuchos::RCP<Epetra_Vector> irow_node_owners =
-        interface.collect_row_node_owners(writer.GetDiscret());
+        interface.collect_row_node_owners(writer.get_discretization());
 
     Core::LinAlg::Export(*irow_node_owners, str_row_node_owners);
   }
 
-  writer.WriteVector(
+  writer.write_vector(
       "contactowner", Teuchos::rcpFromRef(str_row_node_owners), Core::IO::nodevector);
 }
 

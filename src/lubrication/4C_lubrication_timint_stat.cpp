@@ -121,15 +121,15 @@ void LUBRICATION::TimIntStationary::read_restart(int step)
 {
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
+  time_ = reader.read_double("time");
+  step_ = reader.read_int("step");
 
   if (myrank_ == 0)
     std::cout << "Reading Lubrication restart data (time=" << time_ << " ; step=" << step_ << ")"
               << '\n';
 
   // read state vectors that are needed for restart
-  reader.ReadVector(prenp_, "prenp");
+  reader.read_vector(prenp_, "prenp");
 }
 
 

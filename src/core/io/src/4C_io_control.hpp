@@ -66,63 +66,66 @@ namespace Core::IO
         const std::string& restartname, std::string outputname, int ndim, int restart_step,
         int filesteps, bool write_binary_output, bool adaptname = true);
 
-    /// \brief copy constructor
-    /** \param[in] ocontrol   Copy this object of same type
-     *  \param[in] new_prefix Add the prefix to restart and file names (optional)
+    /*!
+     * @brief copy constructor
      *
-     *  \author hiermeier \date 08/17 */
+     * @param[in] ocontrol   Copy this object of same type
+     * @param[in] new_prefix Add the prefix to restart and file names (optional)
+     */
     OutputControl(const OutputControl& ocontrol, const char* new_prefix = nullptr);
 
-    /// output prefix we write to
     /*!
-      In case of restart this will be different from the read prefix.
-
-      \note might contain path
+     * @brief output prefix we write to
+     *
+     * In case of restart this will be different from the read prefix.
+     * \note might contain path
      */
-    std::string FileName() const { return filename_; }
+    std::string file_name() const { return filename_; }
 
     /**
      * @brief Return the file name prefix, i.e., the file name that is given to the 4C call
      */
-    std::string FileNameOnlyPrefix() const;
+    std::string file_name_only_prefix() const;
 
     /**
      * @brief Base output directory
      */
-    std::string DirectoryName() const;
+    std::string directory_name() const;
 
-    /// original prefix as given
     /*!
-      In case of restart this prefix specifies the control file we read.
-
-      \note might contain path
+     * @brief original prefix as given
+     *
+     * In case of restart this prefix specifies the control file we read.
+     * \note might contain path
      */
-    std::string RestartName() const { return restartname_; }
+    std::string restart_name() const { return restartname_; }
 
-    std::string NewOutputFileName() const { return filename_; }
+    std::string new_output_file_name() const { return filename_; }
 
     /// open control file
-    std::fstream& ControlFile() { return controlfile_; }
+    std::fstream& control_file() { return controlfile_; }
 
     /// number of output steps per binary file
-    int FileSteps() const { return filesteps_; }
+    int file_steps() const { return filesteps_; }
 
     /// time step the simulation is restarted from
-    int RestartStep() const { return restart_step_; }
+    int restart_step() const { return restart_step_; }
 
     // modify the number of output steps per binary file
     // (necessary for the structural debugging option "OUTPUTEVERYITER")
-    void SetFileSteps(int filesteps) { filesteps_ = filesteps; }
+    void set_file_steps(int filesteps) { filesteps_ = filesteps; }
 
     /// input filename
-    std::string InputFileName() const { return inputfile_; }
+    std::string input_file_name() const { return inputfile_; }
 
-    bool WriteBinaryOutput() const { return write_binary_output_; }
+    bool write_binary_output() const { return write_binary_output_; }
 
     /// overwrites result files
-    void OverwriteResultFile(const Core::FE::ShapeFunctionType& spatial_approx);
+    void overwrite_result_file(const Core::FE::ShapeFunctionType& spatial_approx);
+
     /// creates new result files
     void new_result_file(int numb_run, const Core::FE::ShapeFunctionType& spatial_approx);
+
     /// creates new result files for the mlmc
     void new_result_file(const std::string& name_appendix, int numb_run,
         const Core::FE::ShapeFunctionType& spatial_approx);
@@ -131,7 +134,7 @@ namespace Core::IO
     void new_result_file(std::string name, const Core::FE::ShapeFunctionType& spatial_approx);
 
     /// return my processor ID
-    inline int MyRank() const { return myrank_; };
+    inline int my_rank() const { return myrank_; };
 
    private:
     void write_header(
@@ -161,9 +164,9 @@ namespace Core::IO
     InputControl(const std::string& filename, const Epetra_Comm& comm);
     ~InputControl();
 
-    MAP* ControlFile() { return &table_; }
+    MAP* control_file() { return &table_; }
 
-    std::string FileName() const { return filename_; }
+    std::string file_name() const { return filename_; }
 
 
    private:
@@ -178,10 +181,10 @@ namespace Core::IO
   /// find position of restart number in filename (if existing):
   /// for "outname-5" will return position of the "-"
   /// returns std::string::npos if not found
-  size_t RestartFinder(const std::string& filename);
+  size_t restart_finder(const std::string& filename);
 
   /// find the last possible restart step in the control file
-  int GetLastPossibleRestartStep(Core::IO::InputControl& inputcontrol);
+  int get_last_possible_restart_step(Core::IO::InputControl& inputcontrol);
 }  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE

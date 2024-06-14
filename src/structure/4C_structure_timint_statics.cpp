@@ -448,12 +448,12 @@ void STR::TimIntStatics::ReadRestartForce() { return; }
 /* write internal and external forces for restart */
 void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
-  output->WriteVector("fexternal", fext_);
-  output->WriteVector("fint", fint_);
+  output->write_vector("fexternal", fext_);
+  output->write_vector("fint", fint_);
 
   // This restart output is needed in case of a static pre-simulation has to be restartet with
   // dynamic time integration
-  output->WriteVector("finert", zeros_);
+  output->write_vector("finert", zeros_);
 }
 
 /*---------------------------------------------------------------*/

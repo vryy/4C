@@ -1244,12 +1244,12 @@ void STR::MODELEVALUATOR::Structure::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // write forces
-  iowriter.WriteVector("fstructure_old", global_state().get_fstructure_old());
-  iowriter.WriteVector("fint", global_state().get_fint_n());
+  iowriter.write_vector("fstructure_old", global_state().get_fstructure_old());
+  iowriter.write_vector("fint", global_state().get_fint_n());
 
   if (forced_writerestart) return;
 
-  iowriter.WriteVector("displacement", global_state().get_dis_n());
+  iowriter.write_vector("displacement", global_state().get_dis_n());
 }
 
 /*----------------------------------------------------------------------------*
@@ -1258,11 +1258,11 @@ void STR::MODELEVALUATOR::Structure::read_restart(Core::IO::DiscretizationReader
 {
   check_init_setup();
   // read structural force vector
-  ioreader.ReadVector(global_state().get_fstructure_old(), "fstructure_old");
-  ioreader.ReadVector(global_state().get_fint_n(), "fint");
+  ioreader.read_vector(global_state().get_fstructure_old(), "fstructure_old");
+  ioreader.read_vector(global_state().get_fint_n(), "fint");
   // read displacement field
   Teuchos::RCP<Epetra_Vector>& disnp = global_state().get_dis_np();
-  ioreader.ReadVector(disnp, "displacement");
+  ioreader.read_vector(disnp, "displacement");
   global_state().get_multi_dis()->UpdateSteps(*disnp);
 }
 
@@ -1688,26 +1688,26 @@ void STR::MODELEVALUATOR::Structure::output_step_state(
   // write output every iteration for debug purposes
   if (global_in_output().is_output_every_iter())
   {
-    iowriter.WriteVector("displacement", global_state().get_dis_np());
+    iowriter.write_vector("displacement", global_state().get_dis_np());
     /* for visualization of vel and acc do not forget to comment in
      * corresponding lines in StructureEnsightWriter */
     if (global_in_output().is_write_vel_acc())
     {
-      iowriter.WriteVector("velocity", global_state().get_vel_np());
-      iowriter.WriteVector("acceleration", global_state().get_acc_np());
+      iowriter.write_vector("velocity", global_state().get_vel_np());
+      iowriter.write_vector("acceleration", global_state().get_acc_np());
     }
   }
   else
   {
     // write default output...
-    iowriter.WriteVector("displacement", global_state().get_dis_n());
+    iowriter.write_vector("displacement", global_state().get_dis_n());
 
     /* for visualization of vel and acc do not forget to comment in
      * corresponding lines in StructureEnsightWriter */
     if (global_in_output().is_write_vel_acc())
     {
-      iowriter.WriteVector("velocity", global_state().get_vel_n());
-      iowriter.WriteVector("acceleration", global_state().get_acc_n());
+      iowriter.write_vector("velocity", global_state().get_vel_n());
+      iowriter.write_vector("acceleration", global_state().get_acc_n());
     }
   }
 }

@@ -355,9 +355,9 @@ void THR::TimIntOneStepTheta::ReadRestartForce()
 {
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step_);
-  reader.ReadVector(fext_, "fexternal");
-  reader.ReadVector(fint_, "fint");
-  reader.ReadVector(fcap_, "fcap");
+  reader.read_vector(fext_, "fexternal");
+  reader.read_vector(fint_, "fint");
+  reader.read_vector(fcap_, "fcap");
 
   return;
 
@@ -369,9 +369,9 @@ void THR::TimIntOneStepTheta::ReadRestartForce()
  *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
-  output->WriteVector("fexternal", fext_);
-  output->WriteVector("fint", fint_);
-  output->WriteVector("fcap", fcap_);
+  output->write_vector("fexternal", fext_);
+  output->write_vector("fint", fint_);
+  output->write_vector("fcap", fcap_);
 
   return;
 

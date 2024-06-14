@@ -137,7 +137,7 @@ void Adapter::StructureTimeAda::setup_time_ada()
     timestepinitial_ = stm_->StepOld();
     Core::IO::DiscretizationReader ioreader(
         stm_->discretization(), Global::Problem::Instance()->InputControlFile(), timestepinitial_);
-    stepsizepre_ = ioreader.ReadDouble("next_delta_time");
+    stepsizepre_ = ioreader.read_double("next_delta_time");
     time_ = timeinitial_;
 
     // update variables which depend on initial time and step
@@ -370,7 +370,7 @@ void Adapter::StructureTimeAda::Output(bool forced_writerestart)
   Teuchos::RCP<Core::IO::DiscretizationWriter> output_ptr = dataio.get_output_ptr();
 
   StructureWrapper::Output(forced_writerestart);
-  output_ptr->WriteDouble("next_delta_time", stepsize_);
+  output_ptr->write_double("next_delta_time", stepsize_);
 }
 
 /*----------------------------------------------------------------------*/

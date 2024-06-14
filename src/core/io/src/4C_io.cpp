@@ -42,13 +42,13 @@ Core::IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<Core::FE::Disc
     Teuchos::RCP<Core::IO::InputControl> input, int step)
     : dis_(dis), input_(input)
 {
-  find_result_group(step, input_->ControlFile());
+  find_result_group(step, input_->control_file());
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::IO::DiscretizationReader::HasInt(std::string name)
+int Core::IO::DiscretizationReader::has_int(std::string name)
 {
   int integer;
   return map_find_int(restart_step_, name.c_str(), &integer);
@@ -57,7 +57,7 @@ int Core::IO::DiscretizationReader::HasInt(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::IO::DiscretizationReader::ReadVector(std::string name)
+Teuchos::RCP<Epetra_MultiVector> Core::IO::DiscretizationReader::read_vector(std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
   int columns;
@@ -65,13 +65,13 @@ Teuchos::RCP<Epetra_MultiVector> Core::IO::DiscretizationReader::ReadVector(std:
   {
     if (columns != 1) FOUR_C_THROW("got multivector with name '%s', vector expected", name.c_str());
   }
-  return ReadMultiVector(name);
+  return read_multi_vector(name);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationReader::ReadVector(
+void Core::IO::DiscretizationReader::read_vector(
     Teuchos::RCP<Epetra_MultiVector> vec, std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
@@ -80,13 +80,13 @@ void Core::IO::DiscretizationReader::ReadVector(
   {
     if (columns != 1) FOUR_C_THROW("got multivector with name '%s', vector expected", name.c_str());
   }
-  ReadMultiVector(vec, name);
+  read_multi_vector(vec, name);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::IO::DiscretizationReader::ReadMultiVector(
+Teuchos::RCP<Epetra_MultiVector> Core::IO::DiscretizationReader::read_multi_vector(
     const std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
@@ -103,7 +103,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::IO::DiscretizationReader::ReadMultiVector
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationReader::ReadMultiVector(
+void Core::IO::DiscretizationReader::read_multi_vector(
     Teuchos::RCP<Epetra_MultiVector> vec, std::string name)
 {
   // check if vec is a null pointer
@@ -112,7 +112,7 @@ void Core::IO::DiscretizationReader::ReadMultiVector(
     FOUR_C_THROW("vec is a null pointer. You need to allocate memory before calling this function");
   }
 
-  Teuchos::RCP<Epetra_MultiVector> nv = ReadMultiVector(name);
+  Teuchos::RCP<Epetra_MultiVector> nv = read_multi_vector(name);
 
   if (nv->GlobalLength() > vec->GlobalLength())
     FOUR_C_THROW(
@@ -160,12 +160,12 @@ void Core::IO::DiscretizationReader::read_serial_dense_matrix(
 /*----------------------------------------------------------------------*
  * Read the mesh from restart files                                     *
  *----------------------------------------------------------------------*/
-void Core::IO::DiscretizationReader::ReadMesh(int step)
+void Core::IO::DiscretizationReader::read_mesh(int step)
 {
   dis_->DeleteNodes();
   dis_->DeleteElements();
 
-  find_mesh_group(step, input_->ControlFile());
+  find_mesh_group(step, input_->control_file());
 
   Teuchos::RCP<std::vector<char>> nodedata =
       meshreader_->ReadNodeData(step, comm().NumProc(), comm().MyPID());
@@ -193,9 +193,9 @@ void Core::IO::DiscretizationReader::ReadMesh(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationReader::ReadNodesOnly(int step)
+void Core::IO::DiscretizationReader::read_nodes_only(int step)
 {
-  find_mesh_group(step, input_->ControlFile());
+  find_mesh_group(step, input_->control_file());
 
   Teuchos::RCP<std::vector<char>> nodedata =
       meshreader_->ReadNodeData(step, comm().NumProc(), comm().MyPID());
@@ -209,9 +209,9 @@ void Core::IO::DiscretizationReader::ReadNodesOnly(int step)
 /*----------------------------------------------------------------------*
  * Read history data from restart files                                 *
  *----------------------------------------------------------------------*/
-void Core::IO::DiscretizationReader::ReadHistoryData(int step)
+void Core::IO::DiscretizationReader::read_history_data(int step)
 {
-  find_mesh_group(step, input_->ControlFile());
+  find_mesh_group(step, input_->control_file());
 
   Teuchos::RCP<std::vector<char>> nodedata =
       meshreader_->ReadNodeData(step, comm().NumProc(), comm().MyPID());
@@ -243,14 +243,14 @@ void Core::IO::DiscretizationReader::ReadHistoryData(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationReader::ReadCharVector(
+void Core::IO::DiscretizationReader::read_char_vector(
     Teuchos::RCP<std::vector<char>>& charvec, const std::string name)
 {
   // read vector properties
   MAP* result = map_read_map(restart_step_, name.c_str());
   std::string value_path = map_read_string(result, "values");
 
-  charvec = reader_->ReadCharVector(value_path, dis_->Comm());
+  charvec = reader_->read_char_vector(value_path, dis_->Comm());
 
   return;
 }
@@ -316,7 +316,7 @@ void Core::IO::DiscretizationReader::read_redundant_int_vector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::IO::DiscretizationReader::ReadInt(std::string name)
+int Core::IO::DiscretizationReader::read_int(std::string name)
 {
   return map_read_int(restart_step_, name.c_str());
 }
@@ -324,7 +324,7 @@ int Core::IO::DiscretizationReader::ReadInt(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double Core::IO::DiscretizationReader::ReadDouble(std::string name)
+double Core::IO::DiscretizationReader::read_double(std::string name)
 {
   return map_read_real(restart_step_, name.c_str());
 }
@@ -363,7 +363,7 @@ void Core::IO::DiscretizationReader::find_group(int step, MAP* file, const char*
     FOUR_C_THROW(
         "No restart entry for discretization '%s' step %d in symbol table. "
         "Control file corrupt?\n\nLooking for control file at: %s",
-        name.c_str(), step, input_->FileName().c_str());
+        name.c_str(), step, input_->file_name().c_str());
   }
 
   /*--------------------------------------------------------------------*/
@@ -445,7 +445,7 @@ Teuchos::RCP<Core::IO::HDFReader> Core::IO::DiscretizationReader::open_files(
     numoutputproc = 1;
   }
 
-  const std::string name = input_->FileName();
+  const std::string name = input_->file_name();
 
   std::string dirname;
   const std::string::size_type pos = name.find_last_of('/');
@@ -466,23 +466,6 @@ Teuchos::RCP<Core::IO::HDFReader> Core::IO::DiscretizationReader::open_files(
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-int Core::IO::DiscretizationReader::GetNumOutputProc(int step)
-{
-  MAP* result_info = nullptr;
-  MAP* file_info = nullptr;
-
-  find_group(step, input_->ControlFile(), "result", "result_file", result_info, file_info);
-
-  int numoutputproc;
-  if (!map_find_int(result_info, "num_output_proc", &numoutputproc))
-  {
-    numoutputproc = 1;
-  }
-
-  return numoutputproc;
-}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -524,7 +507,7 @@ Core::IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<Core::FE::Disc
       output_(output_control),
       spatial_approx_(shape_function_type)
 {
-  if (output_ != Teuchos::null) binio_ = output_->WriteBinaryOutput();
+  if (output_ != Teuchos::null) binio_ = output_->write_binary_output();
   // not nice, but needed in order to let pre_exodus read fields without output control file
   else
     binio_ = false;
@@ -550,7 +533,7 @@ Core::IO::DiscretizationWriter::DiscretizationWriter(const Core::IO::Discretizat
       spatial_approx_(writer.spatial_approx_)
 {
   output_ = (control.is_null() ? writer.output_ : control);
-  if (not output_.is_null()) binio_ = output_->WriteBinaryOutput();
+  if (not output_.is_null()) binio_ = output_->write_binary_output();
 
   if (type == CopyType::deep)
   {
@@ -620,7 +603,7 @@ void Core::IO::DiscretizationWriter::create_mesh_file(const int step)
   {
     std::ostringstream meshname;
 
-    meshname << output_->FileName() << ".mesh." << dis_->Name() << ".s" << step;
+    meshname << output_->file_name() << ".mesh." << dis_->Name() << ".s" << step;
     meshfilename_ = meshname.str();
     if (comm().NumProc() > 1)
     {
@@ -650,7 +633,7 @@ void Core::IO::DiscretizationWriter::create_result_file(const int step)
   if (binio_)
   {
     std::ostringstream resultname;
-    resultname << output_->FileName() << ".result." << dis_->Name() << ".s" << step;
+    resultname << output_->file_name() << ".result." << dis_->Name() << ".s" << step;
 
     resultfilename_ = resultname.str();
     if (comm().NumProc() > 1)
@@ -713,19 +696,19 @@ void Core::IO::DiscretizationWriter::new_result_file(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationWriter::OverwriteResultFile()
+void Core::IO::DiscretizationWriter::overwrite_result_file()
 {
   if (binio_)
   {
     create_new_result_and_mesh_file();
-    output_->OverwriteResultFile(spatial_approx_);
+    output_->overwrite_result_file(spatial_approx_);
   }
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationWriter::NewStep(const int step, const double time)
+void Core::IO::DiscretizationWriter::new_step(const int step, const double time)
 {
   if (binio_)
   {
@@ -754,7 +737,7 @@ void Core::IO::DiscretizationWriter::NewStep(const int step, const double time)
       }
     }
 
-    if (step_ - resultfile_changed_ >= output_->FileSteps() or resultfile_changed_ == -1)
+    if (step_ - resultfile_changed_ >= output_->file_steps() or resultfile_changed_ == -1)
     {
       create_result_file(step_);
       write_file = true;
@@ -765,16 +748,16 @@ void Core::IO::DiscretizationWriter::NewStep(const int step, const double time)
 
     if (comm().MyPID() == 0)
     {
-      output_->ControlFile() << "result:\n"
-                             << "    field = \"" << dis_->Name() << "\"\n"
-                             << std::setprecision(16) << "    time = " << time << "\n"
-                             << "    step = " << step << "\n\n";
+      output_->control_file() << "result:\n"
+                              << "    field = \"" << dis_->Name() << "\"\n"
+                              << std::setprecision(16) << "    time = " << time << "\n"
+                              << "    step = " << step << "\n\n";
 
       if (write_file)
       {
         if (comm().NumProc() > 1)
         {
-          output_->ControlFile() << "    num_output_proc = " << comm().NumProc() << "\n";
+          output_->control_file() << "    num_output_proc = " << comm().NumProc() << "\n";
         }
         std::string filename;
         const std::string::size_type pos = resultfilename_.find_last_of('/');
@@ -782,9 +765,9 @@ void Core::IO::DiscretizationWriter::NewStep(const int step, const double time)
           filename = resultfilename_;
         else
           filename = resultfilename_.substr(pos + 1);
-        output_->ControlFile() << "    result_file = \"" << filename << "\"\n\n";
+        output_->control_file() << "    result_file = \"" << filename << "\"\n\n";
       }
-      output_->ControlFile() << std::flush;
+      output_->control_file() << std::flush;
     }
     const herr_t status = H5Fflush(resultgroup_, H5F_SCOPE_LOCAL);
     if (status < 0)
@@ -797,7 +780,7 @@ void Core::IO::DiscretizationWriter::NewStep(const int step, const double time)
 /*----------------------------------------------------------------------*/
 /*write double to control file                                  tk 04/08*/
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationWriter::WriteDouble(const std::string name, const double value)
+void Core::IO::DiscretizationWriter::write_double(const std::string name, const double value)
 {
   if (binio_)
   {
@@ -808,7 +791,7 @@ void Core::IO::DiscretizationWriter::WriteDouble(const std::string name, const d
       std::stringstream s;
       s << "    " << name << " = " << std::scientific << std::setprecision(16) << value << "\n\n"
         << std::flush;
-      output_->ControlFile() << s.str() << std::flush;
+      output_->control_file() << s.str() << std::flush;
     }
   }
 }
@@ -816,20 +799,20 @@ void Core::IO::DiscretizationWriter::WriteDouble(const std::string name, const d
 /*----------------------------------------------------------------------*/
 /*write int to control file                                     tk 04/08*/
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationWriter::WriteInt(const std::string name, const int value)
+void Core::IO::DiscretizationWriter::write_int(const std::string name, const int value)
 {
   if (binio_)
   {
     if (comm().MyPID() == 0)
     {
-      output_->ControlFile() << "    " << name << " = " << value << "\n\n" << std::flush;
+      output_->control_file() << "    " << name << " = " << value << "\n\n" << std::flush;
     }
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationWriter::WriteVector(
+void Core::IO::DiscretizationWriter::write_vector(
     const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec, IO::VectorType vt)
 {
   if (binio_)
@@ -904,7 +887,7 @@ void Core::IO::DiscretizationWriter::WriteVector(
        * new maps are created in every time step. Storing all old maps in
        * mapstack_ leads to an unbounded increase in memory consumption which
        * has to be strictly avoided.
-       * Remedy: ClearMapCache() can be called to get rid of old maps when too
+       * Remedy: clear_map_cache() can be called to get rid of old maps when too
        * many are stored. The following limit of 20 is somehow arbitrary and
        * could be increased. The basic idea is: 3 maps (dofrow, noderow and
        * elerow) per field involved in the problem plus some more in case mapstack_
@@ -933,13 +916,13 @@ void Core::IO::DiscretizationWriter::WriteVector(
           FOUR_C_THROW("unknown vector type %d", vt);
           break;
       }
-      output_->ControlFile() << "    " << name << ":\n"
-                             << "        type = \"" << vectortype << "\"\n"
-                             << "        columns = " << vec->NumVectors() << "\n"
-                             << "        values = \"" << valuename.c_str() << "\"\n"
-                             << "        ids = \"" << idname.c_str()
-                             << "\"\n\n"  // different names + other informations?
-                             << std::flush;
+      output_->control_file() << "    " << name << ":\n"
+                              << "        type = \"" << vectortype << "\"\n"
+                              << "        columns = " << vec->NumVectors() << "\n"
+                              << "        values = \"" << valuename.c_str() << "\"\n"
+                              << "        ids = \"" << idname.c_str()
+                              << "\"\n\n"  // different names + other informations?
+                              << std::flush;
     }
     const herr_t flush_status = H5Fflush(resultgroup_, H5F_SCOPE_LOCAL);
     if (flush_status < 0)
@@ -952,7 +935,7 @@ void Core::IO::DiscretizationWriter::WriteVector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationWriter::WriteVector(const std::string name,
+void Core::IO::DiscretizationWriter::write_vector(const std::string name,
     const std::vector<char>& vec, const Epetra_Map& elemap, IO::VectorType vt)
 {
   if (binio_)
@@ -1018,7 +1001,7 @@ void Core::IO::DiscretizationWriter::WriteVector(const std::string name,
        * new maps are created in every time step. Storing all old maps in
        * mapstack_ leads to an unbounded increase in memory consumption which
        * has to be strictly avoided.
-       * Remedy: ClearMapCache() can be called to get rid of old maps when too
+       * Remedy: clear_map_cache() can be called to get rid of old maps when too
        * many are stored. The following limit of 20 is somehow arbitrary and
        * could be increased. The basic idea is: 3 maps (dofrow, noderow and
        * elerow) per field involved in the problem plus some more in case mapstack_
@@ -1047,13 +1030,13 @@ void Core::IO::DiscretizationWriter::WriteVector(const std::string name,
           FOUR_C_THROW("unknown vector type %d", vt);
           break;
       }
-      output_->ControlFile() << "    " << name << ":\n"
-                             << "        type = \"" << vectortype << "\"\n"
-                             << "        columns = 1\n"
-                             << "        values = \"" << valuename << "\"\n"
-                             << "        ids = \"" << idname
-                             << "\"\n\n"  // different names + other informations?
-                             << std::flush;
+      output_->control_file() << "    " << name << ":\n"
+                              << "        type = \"" << vectortype << "\"\n"
+                              << "        columns = 1\n"
+                              << "        values = \"" << valuename << "\"\n"
+                              << "        ids = \"" << idname
+                              << "\"\n\n"  // different names + other informations?
+                              << std::flush;
     }
     const herr_t flush_status = H5Fflush(resultgroup_, H5F_SCOPE_LOCAL);
     if (flush_status < 0)
@@ -1065,11 +1048,11 @@ void Core::IO::DiscretizationWriter::WriteVector(const std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationWriter::WriteMesh(const int step, const double time)
+void Core::IO::DiscretizationWriter::write_mesh(const int step, const double time)
 {
   if (binio_)
   {
-    if (step - meshfile_changed_ >= output_->FileSteps() or meshfile_changed_ == -1)
+    if (step - meshfile_changed_ >= output_->file_steps() or meshfile_changed_ == -1)
     {
       create_mesh_file(step);
     }
@@ -1123,23 +1106,23 @@ void Core::IO::DiscretizationWriter::WriteMesh(const int step, const double time
     // ... write other mesh informations
     if (comm().MyPID() == 0)
     {
-      output_->ControlFile() << "field:\n"
-                             << "    field = \"" << dis_->Name() << "\"\n"
-                             << std::setprecision(16) << "    time = " << time << "\n"
-                             << "    step = " << step << "\n\n"
-                             << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
-                             << "    max_nodeid = " << max_nodeid << "\n"
-                             << "    num_ele = " << dis_->NumGlobalElements() << "\n"
-                             << "    num_dof = " << dis_->dof_row_map(0)->NumGlobalElements()
-                             << "\n"
-                             << "    num_dim = " << dis_->n_dim() << "\n\n";
+      output_->control_file() << "field:\n"
+                              << "    field = \"" << dis_->Name() << "\"\n"
+                              << std::setprecision(16) << "    time = " << time << "\n"
+                              << "    step = " << step << "\n\n"
+                              << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
+                              << "    max_nodeid = " << max_nodeid << "\n"
+                              << "    num_ele = " << dis_->NumGlobalElements() << "\n"
+                              << "    num_dof = " << dis_->dof_row_map(0)->NumGlobalElements()
+                              << "\n"
+                              << "    num_dim = " << dis_->n_dim() << "\n\n";
 
       // knotvectors for nurbs-discretisation
       write_knotvector();
 
       if (comm().NumProc() > 1)
       {
-        output_->ControlFile() << "    num_output_proc = " << comm().NumProc() << "\n";
+        output_->control_file() << "    num_output_proc = " << comm().NumProc() << "\n";
       }
       std::string filename;
       std::string::size_type pos = meshfilename_.find_last_of('/');
@@ -1147,8 +1130,8 @@ void Core::IO::DiscretizationWriter::WriteMesh(const int step, const double time
         filename = meshfilename_;
       else
         filename = meshfilename_.substr(pos + 1);
-      output_->ControlFile() << "    mesh_file = \"" << filename << "\"\n\n";
-      output_->ControlFile() << std::flush;
+      output_->control_file() << "    mesh_file = \"" << filename << "\"\n\n";
+      output_->control_file() << std::flush;
     }
     const herr_t flush_status = H5Fflush(meshgroup_, H5F_SCOPE_LOCAL);
     if (flush_status < 0)
@@ -1165,7 +1148,7 @@ void Core::IO::DiscretizationWriter::WriteMesh(const int step, const double time
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationWriter::WriteMesh(
+void Core::IO::DiscretizationWriter::write_mesh(
     const int step, const double time, std::string name_base_file)
 {
   if (binio_)
@@ -1173,15 +1156,15 @@ void Core::IO::DiscretizationWriter::WriteMesh(
     // ... write other mesh informations
     if (comm().MyPID() == 0)
     {
-      output_->ControlFile() << "field:\n"
-                             << "    field = \"" << dis_->Name() << "\"\n"
-                             << std::setprecision(16) << "    time = " << time << "\n"
-                             << "    step = " << step << "\n\n"
-                             << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
-                             << "    num_ele = " << dis_->NumGlobalElements() << "\n"
-                             << "    num_dof = " << dis_->dof_row_map(0)->NumGlobalElements()
-                             << "\n"
-                             << "    num_dim = " << dis_->n_dim() << "\n\n";
+      output_->control_file() << "field:\n"
+                              << "    field = \"" << dis_->Name() << "\"\n"
+                              << std::setprecision(16) << "    time = " << time << "\n"
+                              << "    step = " << step << "\n\n"
+                              << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
+                              << "    num_ele = " << dis_->NumGlobalElements() << "\n"
+                              << "    num_dof = " << dis_->dof_row_map(0)->NumGlobalElements()
+                              << "\n"
+                              << "    num_dim = " << dis_->n_dim() << "\n\n";
 
       // knotvectors for nurbs-discretisation
       // write_knotvector();
@@ -1193,7 +1176,7 @@ void Core::IO::DiscretizationWriter::WriteMesh(
 
       if (comm().NumProc() > 1)
       {
-        output_->ControlFile() << "    num_output_proc = " << comm().NumProc() << "\n";
+        output_->control_file() << "    num_output_proc = " << comm().NumProc() << "\n";
       }
       std::string filename;
       std::string::size_type pos = meshfilename_.find_last_of('/');
@@ -1201,10 +1184,10 @@ void Core::IO::DiscretizationWriter::WriteMesh(
         filename = meshfilename_;
       else
         filename = meshfilename_.substr(pos + 1);
-      output_->ControlFile() << "    mesh_file = \"" << filename << "\"\n\n";
+      output_->control_file() << "    mesh_file = \"" << filename << "\"\n\n";
       // << "    mesh_file = \"" << name_base_file << "\"\n\n";
 
-      output_->ControlFile() << std::flush;
+      output_->control_file() << std::flush;
     }
   }
 }
@@ -1216,7 +1199,7 @@ void Core::IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_cont
 {
   if (binio_)
   {
-    if (step - meshfile_changed_ >= output_->FileSteps() or meshfile_changed_ == -1)
+    if (step - meshfile_changed_ >= output_->file_steps() or meshfile_changed_ == -1)
     {
       create_mesh_file(step);
     }
@@ -1259,22 +1242,22 @@ void Core::IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_cont
     {
       /* number of nodes and elements is set to zero to suppress reading of
        * nodes during post-processing only maxnodeid is important */
-      output_->ControlFile() << "field:\n"
-                             << "    field = \"" << dis_->Name() << "\"\n"
-                             << std::setprecision(16) << "    time = " << time << "\n"
-                             << "    step = " << step << "\n\n"
-                             << "    num_nd = " << 0 << "\n"
-                             << "    max_nodeid = " << max_nodeid << "\n"
-                             << "    num_ele = " << 0 << "\n"
-                             << "    num_dof = " << dis_->dof_row_map(0)->NumGlobalElements()
-                             << "\n"
-                             << "    num_dim = " << dis_->n_dim() << "\n\n";
+      output_->control_file() << "field:\n"
+                              << "    field = \"" << dis_->Name() << "\"\n"
+                              << std::setprecision(16) << "    time = " << time << "\n"
+                              << "    step = " << step << "\n\n"
+                              << "    num_nd = " << 0 << "\n"
+                              << "    max_nodeid = " << max_nodeid << "\n"
+                              << "    num_ele = " << 0 << "\n"
+                              << "    num_dof = " << dis_->dof_row_map(0)->NumGlobalElements()
+                              << "\n"
+                              << "    num_dim = " << dis_->n_dim() << "\n\n";
 
       /* name of the output file must be specified for changing geometries in
        * each time step */
       if (comm().NumProc() > 1)
       {
-        output_->ControlFile() << "    num_output_proc = " << comm().NumProc() << "\n";
+        output_->control_file() << "    num_output_proc = " << comm().NumProc() << "\n";
       }
       std::string filename;
       std::string::size_type pos = meshfilename_.find_last_of('/');
@@ -1282,9 +1265,9 @@ void Core::IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_cont
         filename = meshfilename_;
       else
         filename = meshfilename_.substr(pos + 1);
-      output_->ControlFile() << "    mesh_file = \"" << filename << "\"\n\n";
+      output_->control_file() << "    mesh_file = \"" << filename << "\"\n\n";
 
-      output_->ControlFile() << std::flush;
+      output_->control_file() << std::flush;
     }
     const herr_t flush_status = H5Fflush(meshgroup_, H5F_SCOPE_LOCAL);
     if (flush_status < 0)
@@ -1301,7 +1284,7 @@ void Core::IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_cont
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationWriter::WriteElementData(bool writeowner)
+void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
 {
   if (binio_)
   {
@@ -1354,14 +1337,14 @@ void Core::IO::DiscretizationWriter::WriteElementData(bool writeowner)
         ele_counter++;
       }
 
-      WriteVector(name, Teuchos::rcp(&sysdata, false), elementvector);
+      write_vector(name, Teuchos::rcp(&sysdata, false), elementvector);
     }
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationWriter::WriteNodeData(bool writeowner)
+void Core::IO::DiscretizationWriter::write_node_data(bool writeowner)
 {
   if (binio_)
   {
@@ -1416,7 +1399,7 @@ void Core::IO::DiscretizationWriter::WriteNodeData(bool writeowner)
         for (int j = 0; j < dimension; ++j) (*sysdata(j))[i] = nodedata[j];
       }
 
-      WriteVector(fool->first, Teuchos::rcp(&sysdata, false), Core::IO::nodevector);
+      write_vector(fool->first, Teuchos::rcp(&sysdata, false), Core::IO::nodevector);
 
     }  // for (fool = names.begin(); fool!= names.end(); ++fool)
   }
@@ -1463,7 +1446,7 @@ void Core::IO::DiscretizationWriter::write_knotvector() const
 /*----------------------------------------------------------------------*/
 /* write a stl vector of chars                                          */
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationWriter::WriteCharVector(
+void Core::IO::DiscretizationWriter::write_char_data(
     const std::string name, Teuchos::RCP<std::vector<char>> charvec)
 {
   if (binio_)
@@ -1498,9 +1481,9 @@ void Core::IO::DiscretizationWriter::WriteCharVector(
       valuename = groupname.str() + valuename;
 
       // a comment is also added to the control file
-      output_->ControlFile() << "    " << name << ":\n"
-                             << "        values = \"" << valuename.c_str() << "\"\n\n"
-                             << std::flush;
+      output_->control_file() << "    " << name << ":\n"
+                              << "        values = \"" << valuename.c_str() << "\"\n\n"
+                              << std::flush;
     }
 
     const herr_t flush_status = H5Fflush(resultgroup_, H5F_SCOPE_LOCAL);
@@ -1545,9 +1528,9 @@ void Core::IO::DiscretizationWriter::write_redundant_double_vector(
       valuename = groupname.str() + valuename;
 
       // a comment is also added to the control file
-      output_->ControlFile() << "    " << name << ":\n"
-                             << "        values = \"" << valuename.c_str() << "\"\n\n"
-                             << std::flush;
+      output_->control_file() << "    " << name << ":\n"
+                              << "        values = \"" << valuename.c_str() << "\"\n\n"
+                              << std::flush;
 
       const herr_t flush_status = H5Fflush(resultgroup_, H5F_SCOPE_LOCAL);
       if (flush_status < 0) FOUR_C_THROW("Failed to flush HDF file %s", resultfilename_.c_str());
@@ -1592,9 +1575,9 @@ void Core::IO::DiscretizationWriter::write_redundant_int_vector(
       valuename = groupname.str() + valuename;
 
       // a comment is also added to the control file
-      output_->ControlFile() << "    " << name << ":\n"
-                             << "        values = \"" << valuename.c_str() << "\"\n\n"
-                             << std::flush;
+      output_->control_file() << "    " << name << ":\n"
+                              << "        values = \"" << valuename.c_str() << "\"\n\n"
+                              << std::flush;
 
       const herr_t flush_status = H5Fflush(resultgroup_, H5F_SCOPE_LOCAL);
       if (flush_status < 0) FOUR_C_THROW("Failed to flush HDF file %s", resultfilename_.c_str());
@@ -1606,16 +1589,16 @@ void Core::IO::DiscretizationWriter::write_redundant_int_vector(
 /*----------------------------------------------------------------------*
  |  set output control                               (public) nis Jan14 |
  *----------------------------------------------------------------------*/
-void Core::IO::DiscretizationWriter::SetOutput(Teuchos::RCP<OutputControl> output)
+void Core::IO::DiscretizationWriter::set_output(Teuchos::RCP<OutputControl> output)
 {
   output_ = output;
-  binio_ = output_->WriteBinaryOutput();
+  binio_ = output_->write_binary_output();
 }
 
 /*----------------------------------------------------------------------*/
 /* clear all stored map data                                            */
 /*----------------------------------------------------------------------*/
-void Core::IO::DiscretizationWriter::ClearMapCache()
+void Core::IO::DiscretizationWriter::clear_map_cache()
 {
   mapcache_.clear();
   mapstack_.clear();
@@ -1623,7 +1606,7 @@ void Core::IO::DiscretizationWriter::ClearMapCache()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Core::FE::Discretization& Core::IO::DiscretizationWriter::GetDiscret() const
+const Core::FE::Discretization& Core::IO::DiscretizationWriter::get_discretization() const
 {
   if (dis_.is_null()) FOUR_C_THROW("The discretization pointer has not been initialized!");
   return *dis_;

@@ -157,7 +157,7 @@ void ScaTra::LevelSetAlgorithm::mass_conservation_check(
 
       if (writetofile)
       {
-        const std::string simulation = problem_->OutputControlFile()->FileName();
+        const std::string simulation = problem_->OutputControlFile()->file_name();
         const std::string fname = simulation + "_massconservation.relerror";
 
         if (step_ == 0)
@@ -218,7 +218,7 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
       {
         if (step_ == 0)
         {
-          const std::string simulation = problem_->OutputControlFile()->FileName();
+          const std::string simulation = problem_->OutputControlFile()->file_name();
           const std::string fname = simulation + "_shape.error";
 
           std::ofstream f;
@@ -286,7 +286,7 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
         double errLinf = 0.0;
         phidiff->NormInf(&errLinf);
 
-        const std::string simulation = problem_->OutputControlFile()->FileName();
+        const std::string simulation = problem_->OutputControlFile()->file_name();
         const std::string fname = simulation + "_shape.error";
 
         if (myrank_ == 0)
@@ -949,7 +949,7 @@ void ScaTra::LevelSetAlgorithm::mass_center_using_smoothing()
   if (discret_->Comm().MyPID() == 0)
   {
     // write to file
-    const std::string simulation = problem_->OutputControlFile()->FileName();
+    const std::string simulation = problem_->OutputControlFile()->file_name();
     const std::string fname = simulation + "_center_of_mass.txt";
 
     if (Step() == 0)

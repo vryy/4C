@@ -51,7 +51,7 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
     // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->discretization()));
   }
 
-  std::string s = Global::Problem::Instance()->OutputControlFile()->FileName();
+  std::string s = Global::Problem::Instance()->OutputControlFile()->file_name();
   s.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(s.c_str()));
   itermax_ = fsimono.get<int>("ITEMAX");
@@ -352,7 +352,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
     if (sdbg_ != Teuchos::null)
     {
       sdbg_->NewIteration();
-      sdbg_->WriteVector("x", *structure_field()->Interface()->ExtractFSICondVector(sx));
+      sdbg_->write_vector("x", *structure_field()->Interface()->ExtractFSICondVector(sx));
     }
   }
 

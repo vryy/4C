@@ -166,7 +166,7 @@ void FSI::MonolithicMainFS::Timeloop(
   Teuchos::RCP<std::ofstream> log;
   if (Comm().MyPID() == 0)
   {
-    std::string s = Global::Problem::Instance()->OutputControlFile()->FileName();
+    std::string s = Global::Problem::Instance()->OutputControlFile()->file_name();
     s.append(".iteration");
     log = Teuchos::rcp(new std::ofstream(s.c_str()));
     (*log) << "# num procs      = " << Comm().NumProc() << "\n"

@@ -110,7 +110,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::output_state()
     if (material_internal_state_np_ == Teuchos::null)
       FOUR_C_THROW("Cannot get state vector material internal state");
 
-    output_->WriteVector("ionic_currents_hdg", material_internal_state_np_);
+    output_->write_vector("ionic_currents_hdg", material_internal_state_np_);
 
     for (int k = 0; k < material_internal_state_np_->NumVectors(); ++k)
     {
@@ -118,7 +118,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::output_state()
       temp << k + 1;
       material_internal_state_np_component_ =
           Teuchos::rcp((*material_internal_state_np_)(k), false);
-      output_->WriteVector("mat_int_state_hdg" + temp.str(), material_internal_state_np_component_,
+      output_->write_vector("mat_int_state_hdg" + temp.str(), material_internal_state_np_component_,
           Core::IO::elementvector);
     }
   }
@@ -132,7 +132,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::output_state()
     int dofgid = discret_->NodeRowMap()->GID(i);
     dofphi->ReplaceMyValue(discret_->NodeRowMap()->LID(dofgid), 0, (*interpolatedPhinp_)[i]);
   }
-  output_->WriteVector("phinp", dofphi);
+  output_->write_vector("phinp", dofphi);
 }
 
 /*----------------------------------------------------------------------*
@@ -149,7 +149,8 @@ void ScaTra::TimIntCardiacMonodomainHDG::write_problem_specific_output(
           (*activation_time_interpol_)[k] <= dta_ * 0.9)
         (*activation_time_interpol_)[k] = time_;
     }
-    output_->WriteVector("activation_time_np_hdg", activation_time_interpol_, Core::IO::nodevector);
+    output_->write_vector(
+        "activation_time_np_hdg", activation_time_interpol_, Core::IO::nodevector);
   }
 }
 

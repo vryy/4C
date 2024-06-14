@@ -624,7 +624,7 @@ bool CONTACT::MtManager::read_and_check_input(
  *----------------------------------------------------------------------*/
 void CONTACT::MtManager::write_restart(Core::IO::DiscretizationWriter& output, bool forcedrestart)
 {
-  output.WriteVector("mt_lagrmultold", GetStrategy().LagrMultOld());
+  output.write_vector("mt_lagrmultold", GetStrategy().LagrMultOld());
 
   return;
 }
@@ -667,9 +667,9 @@ void CONTACT::MtManager::postprocess_quantities(Core::IO::DiscretizationWriter& 
   Core::LinAlg::Export(*fcmaster, *fcmasterexp);
 
   // write to output
-  output.WriteVector("interfacetraction", tractionexp);
-  output.WriteVector("slaveforces", fcslaveexp);
-  output.WriteVector("masterforces", fcmasterexp);
+  output.write_vector("interfacetraction", tractionexp);
+  output.write_vector("slaveforces", fcslaveexp);
+  output.write_vector("masterforces", fcmasterexp);
 
   return;
 }

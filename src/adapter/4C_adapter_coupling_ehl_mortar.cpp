@@ -1117,23 +1117,23 @@ void Adapter::CouplingEhlMortar::write_restart(Core::IO::DiscretizationWriter& o
 {
   if (!contact_regularization_) return;
 
-  output.WriteVector("last_contact_force", fscn_);
-  output.WriteVector("contact_lm", z_);
+  output.write_vector("last_contact_force", fscn_);
+  output.write_vector("contact_lm", z_);
 
   Teuchos::RCP<Epetra_Vector> active_toggle, active_old_toggle, slip_toggle;
   create_active_slip_toggle(&active_toggle, &slip_toggle, &active_old_toggle);
 
-  output.WriteVector("active_toggle", active_toggle);
-  output.WriteVector("active_old_toggle", active_old_toggle);
-  output.WriteVector("slip_toggle", slip_toggle);
+  output.write_vector("active_toggle", active_toggle);
+  output.write_vector("active_old_toggle", active_old_toggle);
+  output.write_vector("slip_toggle", slip_toggle);
 }
 
 void Adapter::CouplingEhlMortar::read_restart(Core::IO::DiscretizationReader& reader)
 {
   if (!contact_regularization_) return;
 
-  reader.ReadVector(fscn_, "last_contact_force");
-  reader.ReadVector(z_, "contact_lm");
+  reader.read_vector(fscn_, "last_contact_force");
+  reader.read_vector(z_, "contact_lm");
 
   Teuchos::RCP<Epetra_Vector> active_toggle =
       Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowNodes()));
@@ -1141,9 +1141,9 @@ void Adapter::CouplingEhlMortar::read_restart(Core::IO::DiscretizationReader& re
       Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowNodes()));
   Teuchos::RCP<Epetra_Vector> slip_toggle =
       Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowNodes()));
-  reader.ReadVector(active_toggle, "active_toggle");
-  reader.ReadVector(active_old_toggle, "active_old_toggle");
-  reader.ReadVector(slip_toggle, "slip_toggle");
+  reader.read_vector(active_toggle, "active_toggle");
+  reader.read_vector(active_old_toggle, "active_old_toggle");
+  reader.read_vector(slip_toggle, "slip_toggle");
 
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {

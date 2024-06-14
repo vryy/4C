@@ -92,11 +92,11 @@ void PaSI::PasiPartTwoWayCoup::read_restart(int restartstep)
 
   Core::IO::DiscretizationReader reader(structurefield_->discretization(),
       Global::Problem::Instance()->InputControlFile(), restartstep);
-  if (restartstep != reader.ReadInt("step"))
+  if (restartstep != reader.read_int("step"))
     FOUR_C_THROW("Time step on file not equal to given step");
 
   // get interface force from restart
-  reader.ReadVector(intfforcenp_, "intfforcenp");
+  reader.read_vector(intfforcenp_, "intfforcenp");
 }
 
 void PaSI::PasiPartTwoWayCoup::Timeloop()
@@ -188,7 +188,7 @@ void PaSI::PasiPartTwoWayCoup::output()
 
   // write interface force in restart
   if (writerestartevery_ and Step() % writerestartevery_ == 0)
-    structurefield_->discretization()->Writer()->WriteVector("intfforcenp", intfforcenp_);
+    structurefield_->discretization()->Writer()->write_vector("intfforcenp", intfforcenp_);
 
   // output of particle field
   particle_output();
@@ -610,11 +610,11 @@ void PaSI::PasiPartTwoWayCoupDispRelaxAitken::read_restart(int restartstep)
 
   Core::IO::DiscretizationReader reader(structurefield_->discretization(),
       Global::Problem::Instance()->InputControlFile(), restartstep);
-  if (restartstep != reader.ReadInt("step"))
+  if (restartstep != reader.read_int("step"))
     FOUR_C_THROW("Time step on file not equal to given step");
 
   // get relaxation parameter from restart
-  omega_ = reader.ReadDouble("omega");
+  omega_ = reader.read_double("omega");
 }
 
 void PaSI::PasiPartTwoWayCoupDispRelaxAitken::output()
@@ -625,8 +625,8 @@ void PaSI::PasiPartTwoWayCoupDispRelaxAitken::output()
   // write interface force and relaxation parameter in restart
   if (writerestartevery_ and Step() % writerestartevery_ == 0)
   {
-    structurefield_->discretization()->Writer()->WriteVector("intfforcenp", intfforcenp_);
-    structurefield_->discretization()->Writer()->WriteDouble("omega", omega_);
+    structurefield_->discretization()->Writer()->write_vector("intfforcenp", intfforcenp_);
+    structurefield_->discretization()->Writer()->write_double("omega", omega_);
   }
 
   // output of particle field

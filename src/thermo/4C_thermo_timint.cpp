@@ -316,11 +316,11 @@ void THR::TimInt::read_restart(const int step)
 {
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step);
-  if (step != reader.ReadInt("step")) FOUR_C_THROW("Time step on file not equal to given step");
+  if (step != reader.read_int("step")) FOUR_C_THROW("Time step on file not equal to given step");
 
   step_ = step;
   stepn_ = step_ + 1;
-  time_ = Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
+  time_ = Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, reader.read_double("time")));
   timen_ = (*time_)[0] + (*dt_)[0];
 
   ReadRestartState();
@@ -336,11 +336,11 @@ void THR::TimInt::ReadRestartState()
 {
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step_);
-  reader.ReadVector(tempn_, "temperature");
+  reader.read_vector(tempn_, "temperature");
   temp_->UpdateSteps(*tempn_);
-  reader.ReadVector(raten_, "rate");
+  reader.read_vector(raten_, "rate");
   rate_->UpdateSteps(*raten_);
-  reader.ReadHistoryData(step_);
+  reader.read_history_data(step_);
   return;
 
 }  // ReadRestartState()
@@ -413,14 +413,14 @@ void THR::TimInt::output_restart(bool& datawritten)
   datawritten = true;
 
   // write restart output, please
-  output_->WriteMesh(step_, (*time_)[0]);
-  output_->NewStep(step_, (*time_)[0]);
-  output_->WriteVector("temperature", (*temp_)(0));
-  output_->WriteVector("rate", (*rate_)(0));
+  output_->write_mesh(step_, (*time_)[0]);
+  output_->new_step(step_, (*time_)[0]);
+  output_->write_vector("temperature", (*temp_)(0));
+  output_->write_vector("rate", (*rate_)(0));
   // write all force vectors which are later read in restart
   WriteRestartForce(output_);
   // owner of elements is just written once because it does not change during simulation (so far)
-  output_->WriteElementData(firstoutputofrun_);
+  output_->write_element_data(firstoutputofrun_);
   firstoutputofrun_ = false;
 
   // info dedicated to user's eyes staring at standard out
@@ -447,11 +447,11 @@ void THR::TimInt::output_state(bool& datawritten)
   datawritten = true;
 
   // write now
-  output_->NewStep(step_, (*time_)[0]);
-  output_->WriteVector("temperature", (*temp_)(0));
-  output_->WriteVector("rate", (*rate_)(0));
+  output_->new_step(step_, (*time_)[0]);
+  output_->write_vector("temperature", (*temp_)(0));
+  output_->write_vector("rate", (*rate_)(0));
   // owner of elements is just written once because it does not change during simulation (so far)
-  output_->WriteElementData(firstoutputofrun_);
+  output_->write_element_data(firstoutputofrun_);
   firstoutputofrun_ = false;
 
   // leave for good
@@ -469,7 +469,7 @@ void THR::TimInt::add_restart_to_output_state()
   WriteRestartForce(output_);
 
   // finally add the missing mesh information, order is important here
-  output_->WriteMesh(step_, (*time_)[0]);
+  output_->write_mesh(step_, (*time_)[0]);
 
   // info dedicated to user's eyes staring at standard out
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
@@ -518,7 +518,7 @@ void THR::TimInt::output_heatflux_tempgrad(bool& datawritten)
   // Make new step
   if (not datawritten)
   {
-    output_->NewStep(step_, (*time_)[0]);
+    output_->new_step(step_, (*time_)[0]);
   }
   datawritten = true;
 
@@ -538,7 +538,7 @@ void THR::TimInt::output_heatflux_tempgrad(bool& datawritten)
     {
       FOUR_C_THROW("requested heatflux type not supported");
     }
-    output_->WriteVector(heatfluxtext, *heatfluxdata, *(discret_->ElementColMap()));
+    output_->write_vector(heatfluxtext, *heatfluxdata, *(discret_->ElementColMap()));
   }
 
   // write temperature gradient
@@ -557,7 +557,7 @@ void THR::TimInt::output_heatflux_tempgrad(bool& datawritten)
     {
       FOUR_C_THROW("requested tempgrad type not supported");
     }
-    output_->WriteVector(tempgradtext, *tempgraddata, *(discret_->ElementColMap()));
+    output_->write_vector(tempgradtext, *tempgraddata, *(discret_->ElementColMap()));
   }
 
   // leave me alone
@@ -1018,7 +1018,7 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::evaluate_error_compared_to_analyt
         {
           std::ostringstream temp;
           const std::string simulation =
-              Global::Problem::Instance()->OutputControlFile()->FileName();
+              Global::Problem::Instance()->OutputControlFile()->file_name();
           const std::string fname = simulation + "_thermo.relerror";
 
           std::ofstream f;
@@ -1031,7 +1031,8 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::evaluate_error_compared_to_analyt
           f.close();
         }
 
-        const std::string simulation = Global::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string simulation =
+            Global::Problem::Instance()->OutputControlFile()->file_name();
         const std::string fname = simulation + "_thermo_time.relerror";
 
         if (step_ == 1)

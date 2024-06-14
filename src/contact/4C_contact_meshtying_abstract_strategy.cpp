@@ -786,10 +786,10 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  if (!restartwithmeshtying) reader.ReadVector(LagrMult(), "mt_lagrmultold");
+  if (!restartwithmeshtying) reader.read_vector(LagrMult(), "mt_lagrmultold");
   store_nodal_quantities(Mortar::StrategyBase::lmcurrent);
   zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  if (!restartwithmeshtying) reader.ReadVector(LagrMultOld(), "mt_lagrmultold");
+  if (!restartwithmeshtying) reader.read_vector(LagrMultOld(), "mt_lagrmultold");
   store_nodal_quantities(Mortar::StrategyBase::lmold);
 
   // only for Uzawa strategy
@@ -798,7 +798,7 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(
   if (st == Inpar::CONTACT::solution_uzawa)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    if (!restartwithmeshtying) reader.ReadVector(LagrMultUzawa(), "mt_lagrmultold");
+    if (!restartwithmeshtying) reader.read_vector(LagrMultUzawa(), "mt_lagrmultold");
     store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
   }
 

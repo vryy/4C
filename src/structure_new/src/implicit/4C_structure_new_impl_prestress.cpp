@@ -63,8 +63,8 @@ void STR::IMPLICIT::PreStress::write_restart(
   const auto zeros = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view(), true));
 
   // write zero dynamic forces (for dynamic restart after  static prestressing)
-  iowriter.WriteVector("finert", zeros);
-  iowriter.WriteVector("fvisco", zeros);
+  iowriter.write_vector("finert", zeros);
+  iowriter.write_vector("fvisco", zeros);
 
   model_eval().write_restart(iowriter, forced_writerestart);
 }

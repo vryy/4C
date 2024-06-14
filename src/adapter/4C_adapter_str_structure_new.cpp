@@ -237,7 +237,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis_->Writer();
   if (Core::UTILS::IntegralValue<int>(*ioflags, "OUTPUT_BIN"))
   {
-    output->WriteMesh(0, 0.0);
+    output->write_mesh(0, 0.0);
   }
 
   // ---------------------------------------------------------------------------

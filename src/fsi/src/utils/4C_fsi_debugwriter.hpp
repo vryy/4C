@@ -59,7 +59,7 @@ namespace FSI
         This includes an internal transfer of the interface vector to the
         interface discretization.
        */
-      void WriteVector(const std::string& name, const Epetra_Vector& v);
+      void write_vector(const std::string& name, const Epetra_Vector& v);
 
      private:
       /// internal interface discretization
@@ -101,7 +101,7 @@ namespace FSI
         This includes an internal transfer of the interface vector to the
         interface discretization.
        */
-      virtual void WriteVector(const std::string& name, Epetra_Vector& v);
+      virtual void write_vector(const std::string& name, Epetra_Vector& v);
 
      private:
       /// discretization
@@ -142,7 +142,7 @@ namespace FSI
         This includes an internal transfer of the interface vector to the
         interface discretization.
        */
-      virtual void WriteVector(const std::string& name, const Teuchos::RCP<Epetra_Vector>& v);
+      virtual void write_vector(const std::string& name, const Teuchos::RCP<Epetra_Vector>& v);
 
      private:
       FSI::Monolithic& algorithm_;

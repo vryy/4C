@@ -509,7 +509,7 @@ void STR::TimAda::AttachFileStepSize()
   if (outsizefile_.is_null())
   {
     std::string filename =
-        Global::Problem::Instance()->OutputControlFile()->FileName() + ".stepsize";
+        Global::Problem::Instance()->OutputControlFile()->file_name() + ".stepsize";
     outsizefile_ = Teuchos::rcp(new std::ofstream(filename.c_str()));
     (*outsizefile_) << "# timestep time step-size adaptations" << std::endl;
   }

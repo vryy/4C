@@ -598,7 +598,7 @@ void Core::Geo::Cut::ParentIntersection::dump_gmsh_nodal_cell_set(
     const Core::FE::Discretization& dis)
 {
   std::string filename =
-      "cut_test";  // ::Global::Problem::Instance()->OutputControlFile()->FileName();
+      "cut_test";  // ::Global::Problem::Instance()->OutputControlFile()->file_name();
   std::stringstream str;
   str << filename << "CUT_NodalCellSet." << dis.Comm().MyPID() << ".pos";
 
@@ -675,7 +675,7 @@ void Core::Geo::Cut::ParentIntersection::DumpGmshCellSets(
     std::vector<plain_volumecell_set>& cell_sets, const Core::FE::Discretization& dis)
 {
   std::string filename =
-      "cut_test";  // ::Global::Problem::Instance()->OutputControlFile()->FileName();
+      "cut_test";  // ::Global::Problem::Instance()->OutputControlFile()->file_name();
   std::stringstream str;
   str << filename << "CUT_CellSets." << dis.Comm().MyPID() << ".pos";
 

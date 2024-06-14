@@ -77,7 +77,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
 
   // Output for these problems are not necessary because we write
   // restart data at each time step for visualization
-  output->WriteMesh(0, 0.0);
+  output->write_mesh(0, 0.0);
 
   // ---------------------------------------------------------------------------
   // set some pointers and variables

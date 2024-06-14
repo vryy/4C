@@ -296,8 +296,8 @@ void ScaTra::TimIntBDF2::write_restart() const
   ScaTraTimIntImpl::write_restart();
 
   // additional state vectors that are needed for BDF2 restart
-  output_->WriteVector("phin", phin_);
-  output_->WriteVector("phinm", phinm_);
+  output_->write_vector("phin", phin_);
+  output_->write_vector("phinm", phinm_);
 }
 
 /*----------------------------------------------------------------------*
@@ -315,17 +315,17 @@ void ScaTra::TimIntBDF2::read_restart(const int step, Teuchos::RCP<Core::IO::Inp
   }
   else
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
-  time_ = reader->ReadDouble("time");
-  step_ = reader->ReadInt("step");
+  time_ = reader->read_double("time");
+  step_ = reader->read_int("step");
 
   if (myrank_ == 0)
     std::cout << "Reading ScaTra restart data (time=" << time_ << " ; step=" << step_ << ")"
               << '\n';
 
   // read state vectors that are needed for BDF2 restart
-  reader->ReadVector(phinp_, "phinp");
-  reader->ReadVector(phin_, "phin");
-  reader->ReadVector(phinm_, "phinm");
+  reader->read_vector(phinp_, "phinp");
+  reader->read_vector(phin_, "phin");
+  reader->read_vector(phinm_, "phinm");
 
   read_restart_problem_specific(step, *reader);
 

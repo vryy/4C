@@ -163,8 +163,8 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::Update()
 void POROFLUIDMULTIPHASE::TimIntOneStepTheta::output_restart()
 {
   // additional state vectors that are needed for One-Step-Theta restart
-  output_->WriteVector("phidtn_fluid", phidtn_);
-  output_->WriteVector("phin_fluid", phin_);
+  output_->write_vector("phidtn_fluid", phidtn_);
+  output_->write_vector("phin_fluid", phin_);
 }
 
 
@@ -180,17 +180,17 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::read_restart(const int step)
   reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
       discret_, Global::Problem::Instance()->InputControlFile(), step));
 
-  time_ = reader->ReadDouble("time");
-  step_ = reader->ReadInt("step");
+  time_ = reader->read_double("time");
+  step_ = reader->read_int("step");
 
   if (myrank_ == 0)
     std::cout << "Reading POROFLUIDMULTIPHASE restart data (time=" << time_ << " ; step=" << step_
               << ")" << '\n';
 
   // read state vectors that are needed for One-Step-Theta restart
-  reader->ReadVector(phinp_, "phinp_fluid");
-  reader->ReadVector(phin_, "phin_fluid");
-  reader->ReadVector(phidtn_, "phidtn_fluid");
+  reader->read_vector(phinp_, "phinp_fluid");
+  reader->read_vector(phin_, "phin_fluid");
+  reader->read_vector(phidtn_, "phidtn_fluid");
 }
 
 /*--------------------------------------------------------------------*

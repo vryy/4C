@@ -43,7 +43,7 @@ void ParticleInteraction::InteractionWriter::read_restart(
     const std::shared_ptr<Core::IO::DiscretizationReader> reader)
 {
   // get restart time
-  setuptime_ = reader->ReadDouble("time");
+  setuptime_ = reader->read_double("time");
 }
 
 void ParticleInteraction::InteractionWriter::register_specific_runtime_output_writer(

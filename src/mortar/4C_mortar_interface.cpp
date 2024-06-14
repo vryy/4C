@@ -4278,9 +4278,9 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     const int step = outputParams.get<int>("step");
     const double time = outputParams.get<double>("time");
 
-    writer->ClearMapCache();
-    writer->WriteMesh(step, time);
-    writer->NewStep(step, time);
+    writer->clear_map_cache();
+    writer->write_mesh(step, time);
+    writer->new_step(step, time);
   }
 
   /* Write interface displacement
@@ -4297,7 +4297,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     Core::LinAlg::Export(*disp, *iDisp);
 
     // Write the interface displacement field
-    writer->WriteVector("displacement", iDisp, Core::IO::VectorType::dofvector);
+    writer->write_vector("displacement", iDisp, Core::IO::VectorType::dofvector);
   }
 
   // Write Lagrange multiplier field
@@ -4309,7 +4309,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     Core::LinAlg::Export(*lagMult, *iLagMult);
 
     // Write this interface's Lagrange multiplier field
-    writer->WriteVector("interfacetraction", iLagMult, Core::IO::VectorType::dofvector);
+    writer->write_vector("interfacetraction", iLagMult, Core::IO::VectorType::dofvector);
   }
 
   // Write nodal forces of slave side
@@ -4321,7 +4321,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     Core::LinAlg::Export(*slaveforces, *forces);
 
     // Write to output
-    writer->WriteVector("slaveforces", forces, Core::IO::VectorType::dofvector);
+    writer->write_vector("slaveforces", forces, Core::IO::VectorType::dofvector);
   }
 
   // Write nodal forces of master side
@@ -4333,7 +4333,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     Core::LinAlg::Export(*masterforces, *forces);
 
     // Write to output
-    writer->WriteVector("masterforces", forces, Core::IO::VectorType::dofvector);
+    writer->write_vector("masterforces", forces, Core::IO::VectorType::dofvector);
   }
 
 
@@ -4346,7 +4346,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     RCP<Epetra_Vector> masterSlaveVec = Core::LinAlg::CreateVector(*nodeRowMap, true);
     Core::LinAlg::Export(*masterVec, *masterSlaveVec);
 
-    writer->WriteVector("slavemasternodes", masterSlaveVec, Core::IO::VectorType::nodevector);
+    writer->write_vector("slavemasternodes", masterSlaveVec, Core::IO::VectorType::nodevector);
   }
 
   // Elements: element-based vector with '0' at slave elements and '1' at master elements
@@ -4358,7 +4358,8 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     RCP<Epetra_Vector> masterSlaveVec = Core::LinAlg::CreateVector(*eleRowMap, true);
     Core::LinAlg::Export(*masterVec, *masterSlaveVec);
 
-    writer->WriteVector("slavemasterelements", masterSlaveVec, Core::IO::VectorType::elementvector);
+    writer->write_vector(
+        "slavemasterelements", masterSlaveVec, Core::IO::VectorType::elementvector);
   }
 
   // Write element owners
@@ -4369,7 +4370,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     for (int i = 0; i < idiscret_->ElementRowMap()->NumMyElements(); ++i)
       (*owner)[i] = idiscret_->lRowElement(i)->Owner();
 
-    writer->WriteVector("Owner", owner, Core::IO::VectorType::elementvector);
+    writer->write_vector("Owner", owner, Core::IO::VectorType::elementvector);
   }
 }
 

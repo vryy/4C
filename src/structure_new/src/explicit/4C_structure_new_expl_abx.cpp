@@ -191,11 +191,11 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::write_restart(
 {
   check_init_setup();
   // write dynamic forces
-  iowriter.WriteVector("finert", finertian_ptr_);
-  iowriter.WriteVector("fvisco", fviscon_ptr_);
+  iowriter.write_vector("finert", finertian_ptr_);
+  iowriter.write_vector("fvisco", fviscon_ptr_);
 
   // write compute phase
-  iowriter.WriteInt("compute_phase", compute_phase_);
+  iowriter.write_int("compute_phase", compute_phase_);
 
   // write velocities and accelerations
   if (compute_phase_ >= TOrder)
@@ -206,13 +206,13 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::write_restart(
       velname << "histvel_" << i;
       Teuchos::RCP<const Epetra_Vector> vel_ptr_ =
           Teuchos::rcpFromRef<const Epetra_Vector>((*(global_state().get_multi_vel()))[-i]);
-      iowriter.WriteVector(velname.str(), vel_ptr_);
+      iowriter.write_vector(velname.str(), vel_ptr_);
 
       std::stringstream accname;
       accname << "histacc_" << i;
       Teuchos::RCP<const Epetra_Vector> acc_ptr_ =
           Teuchos::rcpFromRef<const Epetra_Vector>((*(global_state().get_multi_acc()))[-i]);
-      iowriter.WriteVector(accname.str(), acc_ptr_);
+      iowriter.write_vector(accname.str(), acc_ptr_);
     }
   }
 
@@ -226,13 +226,13 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::read_restart(Core::IO::Discretizati
 {
   check_init_setup();
   // read dynamic forces
-  ioreader.ReadVector(finertian_ptr_, "finert");
-  ioreader.ReadVector(fviscon_ptr_, "fvisco");
+  ioreader.read_vector(finertian_ptr_, "finert");
+  ioreader.read_vector(fviscon_ptr_, "fvisco");
 
   // read compute phase
-  if (ioreader.HasInt("compute_phase"))
+  if (ioreader.has_int("compute_phase"))
   {
-    compute_phase_ = ioreader.ReadInt("compute_phase");
+    compute_phase_ = ioreader.read_int("compute_phase");
   }
   else
   {
@@ -248,14 +248,14 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::read_restart(Core::IO::Discretizati
       velname << "histvel_" << i;
       Teuchos::RCP<Epetra_Vector> vel_ptr =
           Teuchos::rcp(new Epetra_Vector(*global_state().get_vel_n()));
-      ioreader.ReadVector(vel_ptr, velname.str());
+      ioreader.read_vector(vel_ptr, velname.str());
       global_state().get_multi_vel()->UpdateSteps(*vel_ptr);
 
       std::stringstream accname;
       accname << "histacc_" << i;
       Teuchos::RCP<Epetra_Vector> acc_ptr =
           Teuchos::rcp(new Epetra_Vector(*global_state().get_acc_n()));
-      ioreader.ReadVector(acc_ptr, accname.str());
+      ioreader.read_vector(acc_ptr, accname.str());
       global_state().get_multi_acc()->UpdateSteps(*acc_ptr);
     }
   }

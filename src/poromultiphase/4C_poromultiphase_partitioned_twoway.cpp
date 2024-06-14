@@ -458,14 +458,14 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::read_restart(int restart)
 
     Core::IO::DiscretizationReader reader(
         fluid_field()->discretization(), Global::Problem::Instance()->InputControlFile(), restart);
-    if (restart != reader.ReadInt("step"))
+    if (restart != reader.read_int("step"))
       FOUR_C_THROW("Time step on file not equal to given step");
 
     // get omega_ from restart
-    omega_ = reader.ReadDouble("omega_");
+    omega_ = reader.read_double("omega_");
 
     // get omega_ from restart
-    reader.ReadVector(fluidphioldnp_, "fluidphioldnp_");
+    reader.read_vector(fluidphioldnp_, "fluidphioldnp_");
   }
 
 
@@ -483,8 +483,8 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::update_and_output()
   // write interface force and relaxation parameter in restart
   if (writerestartevery_ and Step() % writerestartevery_ == 0)
   {
-    fluid_field()->discretization()->Writer()->WriteDouble("omega_", omega_);
-    fluid_field()->discretization()->Writer()->WriteVector("fluidphioldnp_", fluidphioldnp_);
+    fluid_field()->discretization()->Writer()->write_double("omega_", omega_);
+    fluid_field()->discretization()->Writer()->write_vector("fluidphioldnp_", fluidphioldnp_);
   }
 }
 

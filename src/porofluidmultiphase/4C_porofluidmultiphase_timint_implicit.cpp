@@ -583,15 +583,15 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Output()
     strategy_->Output();
 
     // step number and time (only after that data output is possible)
-    output_->NewStep(step_, time_);
+    output_->new_step(step_, time_);
 
     // write domain decomposition for visualization (only once at step 0!)
     if (step_ == 0)
     {
-      output_->WriteElementData(true);
+      output_->write_element_data(true);
       // write output of blood vessel volume fraction
       if (output_bloodvesselvolfrac_)
-        output_->WriteVector("bloodvesselvolfrac", strategy_->blood_vessel_volume_fraction(),
+        output_->write_vector("bloodvesselvolfrac", strategy_->blood_vessel_volume_fraction(),
             Core::IO::elementvector);
     }
 
@@ -1456,7 +1456,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::evaluate_domain_integrals()
   {
     // set filename and file
     const std::string filename(
-        Global::Problem::Instance()->OutputControlFile()->FileName() + ".domain_int" + ".csv");
+        Global::Problem::Instance()->OutputControlFile()->file_name() + ".domain_int" + ".csv");
     std::ofstream file;
 
     if (step_ == 0)
@@ -1622,15 +1622,15 @@ inline void POROFLUIDMULTIPHASE::TimIntImpl::print_convergence_finish_line()
 void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
 {
   // solution
-  output_->WriteVector("phinp_fluid", phinp_);
+  output_->write_vector("phinp_fluid", phinp_);
   // time derivative of solution
-  // output_->WriteVector("phidtnp", phidtnp_);
+  // output_->write_vector("phidtnp", phidtnp_);
   if (output_satpress_)
   {
     // pressures
-    output_->WriteVector("pressure", pressure_);
+    output_->write_vector("pressure", pressure_);
     // saturations
-    output_->WriteVector("saturation", saturation_);
+    output_->write_vector("saturation", saturation_);
   }
 
   // solid pressure
@@ -1641,7 +1641,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
         POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToNodeBasedMultiVector(
             *discret_, *solidpressure_, nds_solidpressure_, 1);
 
-    output_->WriteVector("solidpressure", solidpressure_multi, Core::IO::nodevector);
+    output_->write_vector("solidpressure", solidpressure_multi, Core::IO::nodevector);
   }
 
   // displacement field
@@ -1656,7 +1656,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
         POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToNodeBasedMultiVector(
             *discret_, *dispnp, nds_disp_, nsd_);
 
-    output_->WriteVector("dispnp", dispnp_multi, Core::IO::nodevector);
+    output_->write_vector("dispnp", dispnp_multi, Core::IO::nodevector);
   }
   // fluxes
   if (flux_ != Teuchos::null)
@@ -1686,7 +1686,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
           if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
         }
       }
-      output_->WriteVector(name, flux_k, Core::IO::nodevector);
+      output_->write_vector(name, flux_k, Core::IO::nodevector);
     }
   }
 
@@ -1713,7 +1713,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
       }
 
       std::string output_name = "velocity_" + std::to_string(k + 1);
-      output_->WriteVector(output_name, velocity_k, Core::IO::elementvector);
+      output_->write_vector(output_name, velocity_k, Core::IO::elementvector);
     }
   }
 
@@ -1725,7 +1725,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
         POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToNodeBasedMultiVector(
             *discret_, *porosity_, nds_solidpressure_, 1);
 
-    output_->WriteVector("porosity", porosity_multi, Core::IO::nodevector);
+    output_->write_vector("porosity", porosity_multi, Core::IO::nodevector);
   }
 
   return;
@@ -1800,7 +1800,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::evaluate_error_compared_to_analytical_sol(
   {
     // print last error in a separate file
 
-    const std::string simulation = Global::Problem::Instance()->OutputControlFile()->FileName();
+    const std::string simulation = Global::Problem::Instance()->OutputControlFile()->file_name();
     const std::string fname = simulation + "_pressure_time.relerror";
 
     if (step_ == 0)

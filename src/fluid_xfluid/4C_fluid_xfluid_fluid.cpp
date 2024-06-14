@@ -50,7 +50,7 @@ FLD::XFluidFluid::XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& emb
       ale_embfluid_(ale_fluid),
       cond_name_("XFEMSurfFluidFluid")
 {
-  xfluiddis->Writer()->WriteMesh(0, 0.0);
+  xfluiddis->Writer()->write_mesh(0, 0.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -65,7 +65,7 @@ FLD::XFluidFluid::XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& emb
       ale_embfluid_(ale_fluid),
       cond_name_("XFEMSurfFluidFluid")
 {
-  xfluiddis->Writer()->WriteMesh(0, 0.0);
+  xfluiddis->Writer()->write_mesh(0, 0.0);
   meshcoupl_dis_.push_back(embedded_fluid->discretization());
 }
 
@@ -1027,7 +1027,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
     if ((step_ == stepmax_) or (time_ == maxtime_))  // write results to file
     {
       std::ostringstream temp;
-      const std::string simulation = Global::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string simulation = Global::Problem::Instance()->OutputControlFile()->file_name();
       const std::string fname = simulation + ".xfem_abserror";
 
       std::ofstream f;
@@ -1074,7 +1074,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
       f.close();
     }
     std::ostringstream temp;
-    const std::string simulation = Global::Problem::Instance()->OutputControlFile()->FileName();
+    const std::string simulation = Global::Problem::Instance()->OutputControlFile()->file_name();
     const std::string fname = simulation + "_time.xfem_abserror";
 
     if (step_ == 1)

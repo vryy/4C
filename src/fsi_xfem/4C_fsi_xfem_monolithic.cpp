@@ -139,7 +139,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   //-------------------------------------------------------------------------
 
   // write iterations-file
-  std::string fileiter = Global::Problem::Instance()->OutputControlFile()->FileName();
+  std::string fileiter = Global::Problem::Instance()->OutputControlFile()->file_name();
   fileiter.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(fileiter.c_str()));
 
@@ -148,7 +148,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   {
     FOUR_C_THROW("writing energy not supported yet");
     //  TODO
-    //    std::string fileiter2 = Global::Problem::Instance()->OutputControlFile()->FileName();
+    //    std::string fileiter2 = Global::Problem::Instance()->OutputControlFile()->file_name();
     //    fileiter2.append(".fsienergy");
     //    logenergy_ = Teuchos::rcp(new std::ofstream(fileiter2.c_str()));
   }
@@ -1463,7 +1463,7 @@ bool FSI::MonolithicXFEM::evaluate()
   if (sdbg_ != Teuchos::null)
   {
     sdbg_->NewIteration();
-    sdbg_->WriteVector("x", *StructurePoro()->Interface()->ExtractFSICondVector(sx));
+    sdbg_->write_vector("x", *StructurePoro()->Interface()->ExtractFSICondVector(sx));
   }
 
 
@@ -2569,7 +2569,7 @@ void FSI::MonolithicXFEM::read_restart(int step)
 
   //--------------------------------
   // NOTE: do the following after structure_field()->read_restart and after
-  // fluid_field()->read_restart as ReadMesh can change the discretization and the dofrowmaps!!!
+  // fluid_field()->read_restart as read_mesh can change the discretization and the dofrowmaps!!!
 
   // read Lagrange multiplier (ie forces onto the structure, Robin-type forces
   // consisting of fluid forces and the Nitsche penalty term contribution)

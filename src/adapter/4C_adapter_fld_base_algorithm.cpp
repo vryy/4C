@@ -126,7 +126,7 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
   // context for output and restart
   // -------------------------------------------------------------------
   Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
-  output->WriteMesh(0, 0.0);
+  output->write_mesh(0, 0.0);
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -1591,7 +1591,7 @@ void Adapter::FluidBaseAlgorithm::set_general_parameters(
 
     fluidtimeparams->sublist("TURBULENCE MODEL")
         .set<std::string>(
-            "statistics outfile", Global::Problem::Instance()->OutputControlFile()->FileName());
+            "statistics outfile", Global::Problem::Instance()->OutputControlFile()->file_name());
   }
 
   // ---------------------------parallel evaluation

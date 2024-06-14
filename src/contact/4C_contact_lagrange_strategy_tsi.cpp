@@ -1035,10 +1035,10 @@ void CONTACT::LagrangeStrategyTsi::DoReadRestart(Core::IO::DiscretizationReader&
 
   CONTACT::AbstractStrategy::DoReadRestart(reader, dis);
   fscn_ = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
-  if (!restartwithcontact) reader.ReadVector(fscn_, "last_contact_force");
+  if (!restartwithcontact) reader.read_vector(fscn_, "last_contact_force");
 
   Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterDofMap()));
-  if (!restartwithcontact) reader.ReadVector(tmp, "last_thermo_force");
+  if (!restartwithcontact) reader.read_vector(tmp, "last_thermo_force");
   ftcn_ = coupST_->MasterToSlave(tmp);
   tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterToSlaveMap(gsmdofrowmap_)));
   Core::LinAlg::Export(*ftcn_, *tmp);

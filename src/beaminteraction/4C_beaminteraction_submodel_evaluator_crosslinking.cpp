@@ -1379,9 +1379,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
   // -------------------------------------------------------------------------
   // write data
   // -------------------------------------------------------------------------
-  bin_writer.WriteCharVector("Linker", db_linker);
-  bin_writer.WriteCharVector("ClData", cldata);
-  bin_writer.WriteCharVector("BeamData", beamdata);
+  bin_writer.write_char_data("Linker", db_linker);
+  bin_writer.write_char_data("ClData", cldata);
+  bin_writer.write_char_data("BeamData", beamdata);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1403,7 +1403,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   // 1) read list of double bonded crosslinker on each proc
   // -------------------------------------------------------------------------
   Teuchos::RCP<std::vector<char>> linkercharvec;
-  bin_reader.ReadCharVector(linkercharvec, "Linker");
+  bin_reader.read_char_vector(linkercharvec, "Linker");
 
   std::vector<char>::size_type index = 0;
   while (index < linkercharvec->size())
@@ -1424,7 +1424,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   // 2) read crosslinker data
   // -------------------------------------------------------------------------
   Teuchos::RCP<std::vector<char>> cldata_charvec;
-  bin_reader.ReadCharVector(cldata_charvec, "ClData");
+  bin_reader.read_char_vector(cldata_charvec, "ClData");
   crosslinker_data_.resize(BinDiscret().NumMyColNodes());
 
   std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData>> cl_not_owned;
@@ -1485,7 +1485,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   // 3) read beam data
   // -------------------------------------------------------------------------
   Teuchos::RCP<std::vector<char>> beamdata_charvec;
-  bin_reader.ReadCharVector(beamdata_charvec, "BeamData");
+  bin_reader.read_char_vector(beamdata_charvec, "BeamData");
   beam_data_.resize(Discret().NumMyColElements());
 
   std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BeamData>> beams_not_owned;

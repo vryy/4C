@@ -170,7 +170,7 @@ namespace Adapter
     }
 
     /// read only access to discretization
-    [[nodiscard]] virtual Teuchos::RCP<const Core::FE::Discretization> GetDiscretization() const
+    [[nodiscard]] virtual Teuchos::RCP<const Core::FE::Discretization> get_discretization() const
     {
       return structure_->discretization();
     }

@@ -289,7 +289,7 @@ void FSI::LungMonolithic::GeneralSetup()
   if (Comm().MyPID() == 0)
   {
     std::string outputprefix =
-        Global::Problem::Instance()->OutputControlFile()->NewOutputFileName();
+        Global::Problem::Instance()->OutputControlFile()->new_output_file_name();
     std::string dfluidfilename;
     std::string dstructfilename;
     std::string absstructfilename;

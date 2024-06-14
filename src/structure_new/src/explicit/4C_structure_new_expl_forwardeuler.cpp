@@ -132,8 +132,8 @@ void STR::EXPLICIT::ForwardEuler::write_restart(
 {
   check_init_setup();
   // write dynamic forces
-  iowriter.WriteVector("finert", finertian_ptr_);
-  iowriter.WriteVector("fvisco", fviscon_ptr_);
+  iowriter.write_vector("finert", finertian_ptr_);
+  iowriter.write_vector("fvisco", fviscon_ptr_);
 
   model_eval().write_restart(iowriter, forced_writerestart);
 }
@@ -143,8 +143,8 @@ void STR::EXPLICIT::ForwardEuler::write_restart(
 void STR::EXPLICIT::ForwardEuler::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
-  ioreader.ReadVector(finertian_ptr_, "finert");
-  ioreader.ReadVector(fviscon_ptr_, "fvisco");
+  ioreader.read_vector(finertian_ptr_, "finert");
+  ioreader.read_vector(fviscon_ptr_, "fvisco");
 
   model_eval().read_restart(ioreader);
   update_constant_state_contributions();

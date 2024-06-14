@@ -4739,7 +4739,7 @@ void Wear::LagrangeStrategyWear::DoReadRestart(
   // read restart information on actice set and slip set (leave sets empty
   // if this is a restart with contact of a non-contact simulation run)
   Teuchos::RCP<Epetra_Vector> activetoggle = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
-  if (!restartwithcontact) reader.ReadVector(activetoggle, "activetoggle");
+  if (!restartwithcontact) reader.read_vector(activetoggle, "activetoggle");
 
   // friction
   Teuchos::RCP<Epetra_Vector> sliptoggle;
@@ -4749,17 +4749,17 @@ void Wear::LagrangeStrategyWear::DoReadRestart(
   if (friction_)
   {
     sliptoggle = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
-    if (!restartwithcontact) reader.ReadVector(sliptoggle, "sliptoggle");
+    if (!restartwithcontact) reader.read_vector(sliptoggle, "sliptoggle");
   }
 
   // wear
   if (weightedwear_)
   {
     weightedwear = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
-    reader.ReadVector(weightedwear, "weightedwear");
+    reader.read_vector(weightedwear, "weightedwear");
 
     realwear = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    reader.ReadVector(realwear, "realwear");
+    reader.read_vector(realwear, "realwear");
   }
 
   // store restart information on active set and slip set
@@ -4801,8 +4801,8 @@ void Wear::LagrangeStrategyWear::DoReadRestart(
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  if (!restartwithcontact) reader.ReadVector(LagrMult(), "lagrmultold");
-  if (!restartwithcontact) reader.ReadVector(LagrMultOld(), "lagrmultold");
+  if (!restartwithcontact) reader.read_vector(LagrMult(), "lagrmultold");
+  if (!restartwithcontact) reader.read_vector(LagrMultOld(), "lagrmultold");
 
   // Lagrange multiplier increment is always zero (no restart value to be read)
   zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -4820,7 +4820,7 @@ void Wear::LagrangeStrategyWear::DoReadRestart(
   if (st == Inpar::CONTACT::solution_uzawa)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    if (!restartwithcontact) reader.ReadVector(LagrMultUzawa(), "lagrmultold");
+    if (!restartwithcontact) reader.read_vector(LagrMultUzawa(), "lagrmultold");
     store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
   }
 

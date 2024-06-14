@@ -190,10 +190,10 @@ void FS3I::ACFSI::read_restart()
           fsi_->fluid_field()->discretization(), input_control_file, restart);
       meanmanager_->read_restart(fluidreader);
 
-      fsiisperiodic_ = (bool)fluidreader.ReadInt("fsi_periodic_flag");
-      scatraisperiodic_ = (bool)fluidreader.ReadInt("scatra_periodic_flag");
+      fsiisperiodic_ = (bool)fluidreader.read_int("fsi_periodic_flag");
+      scatraisperiodic_ = (bool)fluidreader.read_int("scatra_periodic_flag");
 
-      fluidreader.ReadVector(wall_shear_stress_lp_, "wss_mean");
+      fluidreader.read_vector(wall_shear_stress_lp_, "wss_mean");
 
       if (not(fsiisperiodic_ and scatraisperiodic_))  // restart while in a small time scale loop
       {
@@ -207,8 +207,8 @@ void FS3I::ACFSI::read_restart()
         Teuchos::RCP<Epetra_Vector> WallShearStress_lp_new =
             Core::LinAlg::CreateVector(*fsi_->fluid_field()->dof_row_map(0), true);
 
-        fluidreaderbeginnperiod.ReadVector(WallShearStress_lp_new, "SumWss");
-        const double SumDtWss = fluidreaderbeginnperiod.ReadDouble("SumDtWss");
+        fluidreaderbeginnperiod.read_vector(WallShearStress_lp_new, "SumWss");
+        const double SumDtWss = fluidreaderbeginnperiod.read_double("SumDtWss");
         if (abs(SumDtWss - fsiperiod_) > 1e-14)
           FOUR_C_THROW(
               "SumWss and SumDtWss must be read from a step, which was written at the end of a fsi "
@@ -221,7 +221,7 @@ void FS3I::ACFSI::read_restart()
         if (diff_norm > 1e-10) FOUR_C_THROW("WallShearStress_lp_ is not written/read correctly!");
 
         // reconstruct fluidphinp_lp_
-        fluidreaderbeginnperiod.ReadVector(fluidphinp_lp_, "SumPhi");
+        fluidreaderbeginnperiod.read_vector(fluidphinp_lp_, "SumPhi");
         fluidphinp_lp_->Scale(1 / SumDtWss);
       }
       else  // restart while in a large time scale loop
@@ -234,7 +234,7 @@ void FS3I::ACFSI::read_restart()
       // AC-FSI specific input
       Core::IO::DiscretizationReader reader = Core::IO::DiscretizationReader(
           fsi_->fluid_field()->discretization(), input_control_file, restart);
-      reader.ReadVector(wall_shear_stress_lp_, "wss");
+      reader.read_vector(wall_shear_stress_lp_, "wss");
     }
   }
 
@@ -744,7 +744,7 @@ double FS3I::ACFSI::get_step_of_one_period_ago_and_prepare_reading(
   // Is this the right step? Let's check:
   {
     // we have to clean the mapstack, otherwise it would fill with each iteration
-    Global::Problem::Instance()->GetDis("structure")->Writer()->ClearMapCache();
+    Global::Problem::Instance()->GetDis("structure")->Writer()->clear_map_cache();
 
     // get filename in which the equivalent step of the last period is written
     std::string filename = GetFileName(previousperiodstep);
@@ -760,7 +760,7 @@ double FS3I::ACFSI::get_step_of_one_period_ago_and_prepare_reading(
         Core::IO::DiscretizationReader(fsi_->fluid_field()->discretization(),
             Global::Problem::Instance()->InputControlFile(), previousperiodstep);
 
-    double previousperiodtime = reader.ReadDouble("time");
+    double previousperiodtime = reader.read_double("time");
 
     // Now check if the candidate is right
     if (not IsRealtiveEqualTo(previousperiodtime + fsiperiod_, acttime, acttime))
@@ -787,7 +787,7 @@ double FS3I::ACFSI::get_step_of_beginn_of_this_period_and_prepare_reading(
   // Is this the right step? Let's check:
   {
     // we have to clean the mapstack, otherwise it would fill with each iteration
-    Global::Problem::Instance()->GetDis("structure")->Writer()->ClearMapCache();
+    Global::Problem::Instance()->GetDis("structure")->Writer()->clear_map_cache();
 
     // get filename in which the equivalent step of the last period is written
     std::string filename = GetFileName(teststep);
@@ -803,7 +803,7 @@ double FS3I::ACFSI::get_step_of_beginn_of_this_period_and_prepare_reading(
         Core::IO::DiscretizationReader(fsi_->fluid_field()->discretization(),
             Global::Problem::Instance()->InputControlFile(), teststep);
 
-    double testtime = reader.ReadDouble("time");
+    double testtime = reader.read_double("time");
 
     if (testtime - beginnperiodtime > 1e-10)
     {
@@ -839,16 +839,16 @@ std::string FS3I::ACFSI::GetFileName(const int step)
 
     if (step <= crit_step)  // the last period is written in the file we have restarted from
     {
-      filename = Global::Problem::Instance()->InputControlFile()->FileName();
+      filename = Global::Problem::Instance()->InputControlFile()->file_name();
     }
     else  // the last period is written in the newly written output file
     {
-      filename = Global::Problem::Instance()->OutputControlFile()->FileName();
+      filename = Global::Problem::Instance()->OutputControlFile()->file_name();
     }
   }
   else
   {
-    filename = Global::Problem::Instance()->OutputControlFile()->FileName();
+    filename = Global::Problem::Instance()->OutputControlFile()->file_name();
   }
   return filename;
 }
@@ -974,7 +974,7 @@ void FS3I::ACFSI::FsiOutput()
   {
     Teuchos::RCP<Core::IO::DiscretizationWriter> fluiddiskwriter =
         fsi_->fluid_field()->DiscWriter();
-    fluiddiskwriter->WriteVector("wss_mean", wall_shear_stress_lp_);
+    fluiddiskwriter->write_vector("wss_mean", wall_shear_stress_lp_);
   }
   // AC specific fluid output iff it is a restart step or we are at the end of a fsi circle
   if ((uprestart != 0 && step_ % uprestart == 0) or
@@ -983,11 +983,11 @@ void FS3I::ACFSI::FsiOutput()
     Teuchos::RCP<Core::IO::DiscretizationWriter> fluiddiskwriter =
         fsi_->fluid_field()->DiscWriter();
 
-    // fluiddiskwriter->WriteVector("wss", fsi_->fluid_field()->calculate_wall_shear_stresses());
+    // fluiddiskwriter->write_vector("wss", fsi_->fluid_field()->calculate_wall_shear_stresses());
     meanmanager_->write_restart(fluiddiskwriter);
 
-    fluiddiskwriter->WriteInt("fsi_periodic_flag", (int)fsiisperiodic_);
-    fluiddiskwriter->WriteInt("scatra_periodic_flag", (int)scatraisperiodic_);
+    fluiddiskwriter->write_int("fsi_periodic_flag", (int)fsiisperiodic_);
+    fluiddiskwriter->write_int("scatra_periodic_flag", (int)scatraisperiodic_);
   }
 
   // ale output

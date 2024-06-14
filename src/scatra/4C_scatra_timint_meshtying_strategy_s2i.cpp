@@ -1922,7 +1922,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
   kinetics_conditions_meshtying_slaveside_.clear();
   master_conditions_.clear();
   runtime_csvwriter_.emplace(scatratimint_->discretization()->Comm().MyPID(),
-      *scatratimint_->DiscWriter()->Output(), "kinetics_interface_flux");
+      *scatratimint_->DiscWriter()->output(), "kinetics_interface_flux");
 
   for (auto* s2imeshtying_cond : s2imeshtying_conditions)
   {
@@ -3164,13 +3164,13 @@ void ScaTra::MeshtyingStrategyS2I::write_restart() const
       intlayergrowth_evaluation_ == Inpar::S2I::growth_evaluation_semi_implicit)
   {
     // output state vector of discrete scatra-scatra interface layer thicknesses
-    scatratimint_->DiscWriter()->WriteVector("growthn", growthn_);
+    scatratimint_->DiscWriter()->write_vector("growthn", growthn_);
 
     if (intlayergrowth_evaluation_ == Inpar::S2I::growth_evaluation_monolithic)
     {
       // output state vector of time derivatives of discrete scatra-scatra interface layer
       // thicknesses
-      scatratimint_->DiscWriter()->WriteVector("growthdtn", growthdtn_);
+      scatratimint_->DiscWriter()->write_vector("growthdtn", growthdtn_);
     }
   }
 }
@@ -3195,12 +3195,12 @@ void ScaTra::MeshtyingStrategyS2I::read_restart(
           new Core::IO::DiscretizationReader(scatratimint_->discretization(), input, step));
 
     // read state vector of discrete scatra-scatra interface layer thicknesses
-    reader->ReadVector(growthn_, "growthn");
+    reader->read_vector(growthn_, "growthn");
 
     if (intlayergrowth_evaluation_ == Inpar::S2I::growth_evaluation_monolithic)
     {
       // read state vector of time derivatives of discrete scatra-scatra interface layer thicknesses
-      reader->ReadVector(growthdtn_, "growthdtn");
+      reader->read_vector(growthdtn_, "growthdtn");
 
       // copy restart state
       growthnp_->Update(1., *growthn_, 0.);
@@ -3277,7 +3277,7 @@ void ScaTra::MeshtyingStrategyS2I::Output() const
     }      // loop over all nodes
 
     // output target state vector of discrete scatra-scatra interface layer thicknesses
-    scatratimint_->DiscWriter()->WriteVector("intlayerthickness", intlayerthickness);
+    scatratimint_->DiscWriter()->write_vector("intlayerthickness", intlayerthickness);
   }
   if (output_interface_flux_) OutputInterfaceFlux();
 }

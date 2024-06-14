@@ -89,7 +89,7 @@ void PARTICLEWALL::WallHandlerBase::write_restart(const int step, const double t
   Teuchos::RCP<Core::IO::DiscretizationWriter> walldiscretizationwriter =
       walldiscretization_->Writer();
 
-  walldiscretizationwriter->NewStep(step, time);
+  walldiscretizationwriter->new_step(step, time);
 }
 
 void PARTICLEWALL::WallHandlerBase::read_restart(const int restartstep) {}

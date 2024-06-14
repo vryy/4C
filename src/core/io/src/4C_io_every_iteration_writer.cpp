@@ -50,7 +50,7 @@ void Core::IO::EveryIterationWriter::Init(const Core::IO::DiscretizationWriter* 
   interface_ = interface;
 
 
-  myrank_ = parent_writer_->Output()->MyRank();
+  myrank_ = parent_writer_->output()->my_rank();
 
   run_number_ = params.get<int>("RUN_NUMBER");
   write_only_this_step_ = params.get<int>("STEP_NP_NUMBER");
@@ -69,11 +69,11 @@ void Core::IO::EveryIterationWriter::Setup()
   /* Remove the restart counter from the folder name. Note that the restart
    * counter stays a part of the final file name of the corresponding step. */
   const std::string filename_without_restart = RemoveRestartStepFromFileName(
-      parent_writer().Output()->FileNameOnlyPrefix(), parent_writer().Output()->RestartStep());
+      parent_writer().output()->file_name_only_prefix(), parent_writer().output()->restart_step());
 
   const std::string dir_name(filename_without_restart + "_every_iter");
 
-  std::string file_dir_path = ExtractPath(parent_writer().Output()->FileName());
+  std::string file_dir_path = ExtractPath(parent_writer().output()->file_name());
   file_dir_path += dir_name;
   create_directory(file_dir_path);
 
@@ -83,7 +83,7 @@ void Core::IO::EveryIterationWriter::Setup()
 
   Teuchos::RCP<Core::IO::OutputControl> control_iteration = Teuchos::null;
   control_iteration =
-      Teuchos::rcp(new Core::IO::OutputControl(*parent_writer().Output(), prefix.c_str()));
+      Teuchos::rcp(new Core::IO::OutputControl(*parent_writer().output(), prefix.c_str()));
 
   // adjust steps per file
   adjust_steps_per_file(*control_iteration);
@@ -93,7 +93,7 @@ void Core::IO::EveryIterationWriter::Setup()
       parent_writer(), control_iteration, Core::IO::CopyType::shape));
 
   // save base file name
-  base_filename_ = every_iter_writer_->Output()->FileName();
+  base_filename_ = every_iter_writer_->output()->file_name();
 
   issetup_ = true;
 }
@@ -192,11 +192,11 @@ bool Core::IO::EveryIterationWriter::write_this_step() const
  *----------------------------------------------------------------------------*/
 void Core::IO::EveryIterationWriter::adjust_steps_per_file(Core::IO::OutputControl& control) const
 {
-  int new_file_steps = control.FileSteps() * MAX_NUMBER_LINE_SEARCH_ITERATIONS_;
+  int new_file_steps = control.file_steps() * MAX_NUMBER_LINE_SEARCH_ITERATIONS_;
   if (new_file_steps > std::numeric_limits<int>::max())
     new_file_steps = std::numeric_limits<int>::max();
 
-  control.SetFileSteps(new_file_steps);
+  control.set_file_steps(new_file_steps);
 }
 
 /*----------------------------------------------------------------------------*
@@ -223,9 +223,9 @@ void Core::IO::EveryIterationWriter::InitNewtonIteration()
   print_path2_screen(result_name.str());
 
   every_iter_writer_->new_result_file(result_name.str());
-  every_iter_writer_->WriteMesh(0, 0.0);
+  every_iter_writer_->write_mesh(0, 0.0);
 
-  every_iter_writer_->NewStep(0, 0.0);
+  every_iter_writer_->new_step(0, 0.0);
 
   constexpr bool force_prepare = false;
   interface_->prepare_output(force_prepare);
@@ -245,8 +245,8 @@ void Core::IO::EveryIterationWriter::AddNewtonIteration(const int newton_iterati
   if (not isnewton_initialized_) FOUR_C_THROW("Call InitNewtonIteration() first!");
 
   const int counter = MAX_NUMBER_LINE_SEARCH_ITERATIONS_ * newton_iteration;
-  every_iter_writer_->WriteMesh(counter, counter);
-  every_iter_writer_->NewStep(counter, counter);
+  every_iter_writer_->write_mesh(counter, counter);
+  every_iter_writer_->new_step(counter, counter);
 
   constexpr bool force_prepare = false;
   interface_->prepare_output(force_prepare);
@@ -271,8 +271,8 @@ void Core::IO::EveryIterationWriter::add_line_search_iteration(
         MAX_NUMBER_LINE_SEARCH_ITERATIONS_ - 1);
 
   const int counter = MAX_NUMBER_LINE_SEARCH_ITERATIONS_ * newton_iteration + linesearch_iteration;
-  every_iter_writer_->WriteMesh(counter, counter);
-  every_iter_writer_->NewStep(counter, counter);
+  every_iter_writer_->write_mesh(counter, counter);
+  every_iter_writer_->new_step(counter, counter);
 
   constexpr bool force_prepare = false;
   interface_->prepare_output(force_prepare);

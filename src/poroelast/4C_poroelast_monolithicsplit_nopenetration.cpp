@@ -599,7 +599,7 @@ void PoroElast::MonolithicSplitNoPenetration::Output(bool forced_writerestart)
   Teuchos::RCP<Epetra_Vector> fulllambda =
       Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*structure_field()->dof_row_map()));
   Core::LinAlg::Export(*lambdanp_, *fulllambda);
-  structure_field()->disc_writer()->WriteVector("poronopencond_lambda", fulllambda);
+  structure_field()->disc_writer()->write_vector("poronopencond_lambda", fulllambda);
 }
 
 void PoroElast::MonolithicSplitNoPenetration::setup_coupling_and_matrices()
@@ -673,7 +673,7 @@ void PoroElast::MonolithicSplitNoPenetration::read_restart(const int step)
         Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*structure_field()->dof_row_map()));
 
     // this is the lagrange multiplier on the whole structure field
-    reader.ReadVector(fulllambda, "poronopencond_lambda");
+    reader.read_vector(fulllambda, "poronopencond_lambda");
 
     // extract lambda on fsi interface vector
     lambda_ = structure_field()->Interface()->ExtractFSICondVector(fulllambda);

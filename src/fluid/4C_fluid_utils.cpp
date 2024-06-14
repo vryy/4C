@@ -844,7 +844,7 @@ void FLD::UTILS::WriteLiftDragToFile(
     std::ostringstream slabel;
     slabel << std::setw(3) << std::setfill('0') << liftdragval->first;
     std::ofstream f;
-    const std::string fname = Global::Problem::Instance()->OutputControlFile()->FileName() +
+    const std::string fname = Global::Problem::Instance()->OutputControlFile()->file_name() +
                               ".liftdrag_label_" + slabel.str() + ".txt";
 
     if (step <= 1)
@@ -1051,7 +1051,7 @@ void FLD::UTILS::WriteDoublesToFile(
     std::ostringstream slabel;
     slabel << std::setw(3) << std::setfill('0') << iter->first;
     std::ofstream f;
-    const std::string fname = Global::Problem::Instance()->OutputControlFile()->FileName() + "." +
+    const std::string fname = Global::Problem::Instance()->OutputControlFile()->file_name() + "." +
                               name + "_ID_" + slabel.str() + ".txt";
 
     if (step <= 1)

@@ -349,26 +349,6 @@ void ScaTra::ScaTraAlgorithm::outer_iteration_convection()
     std::cout << "**************************************************************\n";
   }
 
-#ifdef OUTPUT
-  // Output after each Outer Iteration step
-  const int numdim = 3;
-  // create output file name
-  std::stringstream temp;
-  temp << Global::Problem::Instance()->OutputControlFile()->FileName() << "_nonliniter_step"
-       << Step();
-  std::string outname = temp.str();
-  std::string probtype = Global::Problem::Instance()->ProblemName();
-
-  Teuchos::RCP<Core::IO::OutputControl> myoutputcontrol =
-      Teuchos::rcp(new Core::IO::OutputControl(ScaTraField().discretization()->Comm(), probtype,
-          Core::FE::ShapeFunctionType::polynomial, "myinput", outname, numdim, 0, 1000));
-  // create discretization writer with my own control settings
-  Teuchos::RCP<Core::IO::DiscretizationWriter> myoutput = ScaTraField().discretization()->Writer();
-  myoutput->SetOutput(myoutputcontrol);
-  // write mesh at step 0
-  myoutput->WriteMesh(0, 0.0);
-#endif
-
   while (!stopnonliniter)
   {
     natconvitnum++;
@@ -389,25 +369,6 @@ void ScaTra::ScaTraAlgorithm::outer_iteration_convection()
 
     // convergence check based on incremental values
     stopnonliniter = convergence_check(natconvitnum, natconvitmax_, natconvittol_);
-
-    // Test: Output of the flux across the boundary into the output text file
-    // after each outer Iteration step
-    // print mean concentration
-#ifdef OUTPUT
-    if (stopnonliniter == false)
-    {
-      printf("\n");
-      printf("Flux: Outer Iterations step: %3d \n", natconvitnum);
-      ScaTraField().output_problem_specific();
-      ScaTraField().output_total_and_mean_scalars();
-      printf("\n");
-    }
-
-    myoutput->NewStep(natconvitnum, natconvitnum);
-    myoutput->WriteVector("phinp", ScaTraField().Phinp());
-    myoutput->WriteVector("convec_velocity", ScaTraField().ConVel());
-    // myoutput->WriteVector("velnp", fluid_field()->Velnp());
-#endif
   }
 }
 

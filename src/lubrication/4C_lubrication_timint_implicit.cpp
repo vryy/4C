@@ -477,10 +477,10 @@ void LUBRICATION::TimIntImpl::Output(const int num)
   if (do_output())
   {
     // step number and time (only after that data output is possible)
-    output_->NewStep(step_, time_);
+    output_->new_step(step_, time_);
 
     // write domain decomposition for visualization (only once at step "upres"!)
-    if (step_ == upres_) output_->WriteElementData(true);
+    if (step_ == upres_) output_->write_element_data(true);
 
     // write state vectors
     output_state();
@@ -996,7 +996,7 @@ inline void LUBRICATION::TimIntImpl::print_convergence_finish_line()
 void LUBRICATION::TimIntImpl::output_state()
 {
   // solution
-  output_->WriteVector("prenp", prenp_);
+  output_->write_vector("prenp", prenp_);
 
   // displacement field
   if (isale_)
@@ -1016,7 +1016,7 @@ void LUBRICATION::TimIntImpl::output_state()
             (*dispnp)[dispnp->Map().LID(discret_->Dof(nds_disp_, node, idim))];
     }
 
-    output_->WriteVector("dispnp", dispnp_multi, Core::IO::nodevector);
+    output_->write_vector("dispnp", dispnp_multi, Core::IO::nodevector);
   }
 
   return;
@@ -1097,7 +1097,7 @@ void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
   {
     // print last error in a separate file
 
-    const std::string simulation = Global::Problem::Instance()->OutputControlFile()->FileName();
+    const std::string simulation = Global::Problem::Instance()->OutputControlFile()->file_name();
     const std::string fname = simulation + "_pressure_time.relerror";
 
     if (step_ == 0)
@@ -1137,7 +1137,7 @@ void LUBRICATION::TimIntImpl::output_to_gmsh(const int step, const double time) 
 
   // create Gmsh postprocessing file
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
-      "solution_field_pressure", discret_->Writer()->Output()->FileName(), step, 500, screen_out,
+      "solution_field_pressure", discret_->Writer()->output()->file_name(), step, 500, screen_out,
       discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   {
@@ -1194,7 +1194,7 @@ void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
       // file output
       std::stringstream number;
       number << num;
-      const std::string fname = Global::Problem::Instance()->OutputControlFile()->FileName() +
+      const std::string fname = Global::Problem::Instance()->OutputControlFile()->file_name() +
                                 number.str() + ".meanvalues.txt";
 
       std::ofstream f;

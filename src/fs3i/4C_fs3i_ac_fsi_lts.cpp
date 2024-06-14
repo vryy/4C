@@ -223,19 +223,19 @@ void FS3I::ACFSI::finish_large_time_scale_loop()
   output_writer->new_result_file(step_);
   // and write all meshes
   output_writer->create_new_result_and_mesh_file();
-  output_writer->WriteMesh(0, 0.0);
+  output_writer->write_mesh(0, 0.0);
   output_writer = Global::Problem::Instance()->GetDis("fluid")->Writer();
   output_writer->create_new_result_and_mesh_file();
-  output_writer->WriteMesh(0, 0.0);
+  output_writer->write_mesh(0, 0.0);
   output_writer = Global::Problem::Instance()->GetDis("ale")->Writer();
   output_writer->create_new_result_and_mesh_file();
-  output_writer->WriteMesh(0, 0.0);
+  output_writer->write_mesh(0, 0.0);
   output_writer = Global::Problem::Instance()->GetDis("scatra1")->Writer();
   output_writer->create_new_result_and_mesh_file();
-  output_writer->WriteMesh(0, 0.0);
+  output_writer->write_mesh(0, 0.0);
   output_writer = Global::Problem::Instance()->GetDis("scatra2")->Writer();
   output_writer->create_new_result_and_mesh_file();
-  output_writer->WriteMesh(0, 0.0);
+  output_writer->write_mesh(0, 0.0);
 
   // write outputs in new file
   constexpr bool force_prepare = false;
@@ -1002,11 +1002,11 @@ void FS3I::MeanManager::write_restart(
     FOUR_C_THROW("The time ranges you did mean over do not match!");
 
   // write all values
-  fluidwriter->WriteVector("SumWss", sum_wss_);
-  fluidwriter->WriteVector("SumPhi", sum_phi_);
-  //  fluidwriter->WriteVector("SumPres", SumPres_);
+  fluidwriter->write_vector("SumWss", sum_wss_);
+  fluidwriter->write_vector("SumPhi", sum_phi_);
+  //  fluidwriter->write_vector("SumPres", SumPres_);
   // we need only one SumDt since they are all the same
-  fluidwriter->WriteDouble("SumDtWss", sum_dt_wss_);
+  fluidwriter->write_double("SumDtWss", sum_dt_wss_);
 }
 
 /*----------------------------------------------------------------------*
@@ -1015,10 +1015,10 @@ void FS3I::MeanManager::write_restart(
 void FS3I::MeanManager::read_restart(Core::IO::DiscretizationReader& fluidreader)
 {
   // read all values...
-  fluidreader.ReadVector(sum_wss_, "SumWss");
-  fluidreader.ReadVector(sum_phi_, "SumPhi");
-  //  fluidreader.ReadVector(SumPres_, "SumPres");
-  sum_dt_wss_ = fluidreader.ReadDouble("SumDtWss");
+  fluidreader.read_vector(sum_wss_, "SumWss");
+  fluidreader.read_vector(sum_phi_, "SumPhi");
+  //  fluidreader.read_vector(SumPres_, "SumPres");
+  sum_dt_wss_ = fluidreader.read_double("SumDtWss");
   //...and recover the rest
   sum_dt_phi_ = sum_dt_wss_;
   sum_dt_pres_ = sum_dt_wss_;

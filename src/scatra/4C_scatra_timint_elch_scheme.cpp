@@ -126,19 +126,19 @@ void ScaTra::ScaTraTimIntElchOST::write_restart() const
 
         // electrode potential of the adjusted electrode kinetics BC at time n+1
         auto pot = mycond->parameters().Get<double>("pot");
-        output_->WriteDouble("pot_" + temp.str(), pot);
+        output_->write_double("pot_" + temp.str(), pot);
 
         // electrode potential of the adjusted electrode kinetics BC at time n
         auto pot0n = mycond->parameters().Get<double>("pot0n");
-        output_->WriteDouble("pot0n_" + temp.str(), pot0n);
+        output_->write_double("pot0n_" + temp.str(), pot0n);
 
         // electrode potential time derivative of the adjusted electrode kinetics BC at time n
         auto pot0dtn = mycond->parameters().Get<double>("pot0dtn");
-        output_->WriteDouble("pot0dtn_" + temp.str(), pot0dtn);
+        output_->write_double("pot0dtn_" + temp.str(), pot0dtn);
 
         // history of electrode potential of the adjusted electrode kinetics BC
         auto pothist = mycond->parameters().Get<double>("pot0hist");
-        output_->WriteDouble("pot0hist_" + temp.str(), pothist);
+        output_->write_double("pot0hist_" + temp.str(), pothist);
       }
     }
   }
@@ -186,13 +186,13 @@ void ScaTra::ScaTraTimIntElchOST::read_restart(
         std::stringstream temp;
         temp << condid;
 
-        double pot = reader->ReadDouble("pot_" + temp.str());
+        double pot = reader->read_double("pot_" + temp.str());
         mycond->parameters().Add("pot", pot);
-        double pot0n = reader->ReadDouble("pot0n_" + temp.str());
+        double pot0n = reader->read_double("pot0n_" + temp.str());
         mycond->parameters().Add("pot0n", pot0n);
-        double pot0hist = reader->ReadDouble("pot0hist_" + temp.str());
+        double pot0hist = reader->read_double("pot0hist_" + temp.str());
         mycond->parameters().Add("pot0hist", pot0hist);
-        double pot0dtn = reader->ReadDouble("pot0dtn_" + temp.str());
+        double pot0dtn = reader->read_double("pot0dtn_" + temp.str());
         mycond->parameters().Add("pot0dtn", pot0dtn);
         read_pot = true;
         if (myrank_ == 0)
@@ -413,19 +413,19 @@ void ScaTra::ScaTraTimIntElchBDF2::write_restart() const
       {
         // electrode potential of the adjusted electrode kinetics BC at time n+1
         auto pot = mycond->parameters().Get<double>("pot");
-        output_->WriteDouble("pot", pot);
+        output_->write_double("pot", pot);
 
         // electrode potential of the adjusted electrode kinetics BC at time n
         auto potn = mycond->parameters().Get<double>("pot0n");
-        output_->WriteDouble("pot0n", potn);
+        output_->write_double("pot0n", potn);
 
         // electrode potential of the adjusted electrode kinetics BC at time n -1
         auto potnm = mycond->parameters().Get<double>("potnm");
-        output_->WriteDouble("potnm", potnm);
+        output_->write_double("potnm", potnm);
 
         // history of electrode potential of the adjusted electrode kinetics BC
         auto pothist = mycond->parameters().Get<double>("pothist");
-        output_->WriteDouble("pothist", pothist);
+        output_->write_double("pothist", pothist);
       }
     }
   }
@@ -469,13 +469,13 @@ void ScaTra::ScaTraTimIntElchBDF2::read_restart(
       const int condid = mycond->parameters().Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
-        double pot = reader->ReadDouble("pot");
+        double pot = reader->read_double("pot");
         mycond->parameters().Add("pot", pot);
-        double potn = reader->ReadDouble("pot0n");
+        double potn = reader->read_double("pot0n");
         mycond->parameters().Add("pot0n", potn);
-        double potnm = reader->ReadDouble("potnm");
+        double potnm = reader->read_double("potnm");
         mycond->parameters().Add("potnm", potnm);
-        double pothist = reader->ReadDouble("pothist");
+        double pothist = reader->read_double("pothist");
         mycond->parameters().Add("pothist", pothist);
         read_pot = true;
         if (myrank_ == 0)
@@ -717,11 +717,11 @@ void ScaTra::ScaTraTimIntElchGenAlpha::write_restart() const
       {
         // electrode potential of the adjusted electrode kinetics BC at time n+1
         double pot = mycond->parameters().Get<double>("pot");
-        output_->WriteDouble("pot", pot);
+        output_->write_double("pot", pot);
 
         // electrode potential of the adjusted electrode kinetics BC at time n
         double potn = mycond->parameters().Get<double>("pot0n");
-        output_->WriteDouble("pot0n", potn);
+        output_->write_double("pot0n", potn);
       }
     }
   }
@@ -764,10 +764,10 @@ void ScaTra::ScaTraTimIntElchGenAlpha::read_restart(
       const int condid = mycond->parameters().Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
-        double pot = reader->ReadDouble("pot");
+        double pot = reader->read_double("pot");
         mycond->parameters().Add("pot", pot);
 
-        double potn = reader->ReadDouble("pot0n");
+        double potn = reader->read_double("pot0n");
         mycond->parameters().Add("pot0n", potn);
 
         read_pot = true;
@@ -956,7 +956,7 @@ void ScaTra::ScaTraTimIntElchStationary::write_restart() const
       {
         // electrode potential of the adjusted electrode kinetics BC at time n+1
         double pot = mycond->parameters().Get<double>("pot");
-        output_->WriteDouble("pot", pot);
+        output_->write_double("pot", pot);
       }
     }
   }
@@ -1000,7 +1000,7 @@ void ScaTra::ScaTraTimIntElchStationary::read_restart(
       const int condid = mycond->parameters().Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
-        double pot = reader->ReadDouble("pot");
+        double pot = reader->read_double("pot");
         mycond->parameters().Add("pot", pot);
         read_pot = true;
         if (myrank_ == 0)

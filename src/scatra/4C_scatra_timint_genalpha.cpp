@@ -385,9 +385,9 @@ void ScaTra::TimIntGenAlpha::write_restart() const
   ScaTraTimIntImpl::write_restart();
 
   // additional state vectors that are needed for generalized-alpha restart
-  output_->WriteVector("phidtnp", phidtnp_);
-  output_->WriteVector("phidtn", phidtn_);
-  output_->WriteVector("phin", phin_);
+  output_->write_vector("phidtnp", phidtnp_);
+  output_->write_vector("phidtn", phidtn_);
+  output_->write_vector("phin", phin_);
 }
 
 
@@ -409,18 +409,18 @@ void ScaTra::TimIntGenAlpha::read_restart(
   else
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
-  time_ = reader->ReadDouble("time");
-  step_ = reader->ReadInt("step");
+  time_ = reader->read_double("time");
+  step_ = reader->read_int("step");
 
   if (myrank_ == 0)
     std::cout << "Reading ScaTra restart data (time=" << time_ << " ; step=" << step_ << ")"
               << '\n';
 
   // read state vectors that are needed for generalized-alpha restart
-  reader->ReadVector(phinp_, "phinp");
-  reader->ReadVector(phin_, "phin");
-  reader->ReadVector(phidtnp_, "phidtnp");
-  reader->ReadVector(phidtn_, "phidtn");
+  reader->read_vector(phinp_, "phinp");
+  reader->read_vector(phin_, "phin");
+  reader->read_vector(phidtnp_, "phidtnp");
+  reader->read_vector(phidtn_, "phidtn");
 
   read_restart_problem_specific(step, *reader);
 

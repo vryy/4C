@@ -767,7 +767,7 @@ void Core::Geo::CutWizard::print_cell_stats() { intersection_->print_cell_stats(
  *------------------------------------------------------------------------------------------------*/
 void Core::Geo::CutWizard::dump_gmsh_num_dof_sets(bool include_inner)
 {
-  std::string filename = Global::Problem::Instance()->OutputControlFile()->FileName();
+  std::string filename = Global::Problem::Instance()->OutputControlFile()->file_name();
   std::stringstream str;
   str << filename;
 
@@ -780,7 +780,7 @@ void Core::Geo::CutWizard::dump_gmsh_num_dof_sets(bool include_inner)
  *------------------------------------------------------------------------------------------------*/
 void Core::Geo::CutWizard::dump_gmsh_volume_cells(bool include_inner)
 {
-  std::string name = Global::Problem::Instance()->OutputControlFile()->FileName();
+  std::string name = Global::Problem::Instance()->OutputControlFile()->file_name();
   std::stringstream str;
   str << name << ".CUT_volumecells." << myrank_ << ".pos";
   intersection_->dump_gmsh_volume_cells(str.str(), include_inner);
@@ -791,7 +791,7 @@ void Core::Geo::CutWizard::dump_gmsh_volume_cells(bool include_inner)
  *------------------------------------------------------------------------------------------------*/
 void Core::Geo::CutWizard::dump_gmsh_integration_cells()
 {
-  std::string name = Global::Problem::Instance()->OutputControlFile()->FileName();
+  std::string name = Global::Problem::Instance()->OutputControlFile()->file_name();
   std::stringstream str;
   str << name << ".CUT_integrationcells." << myrank_ << ".pos";
   intersection_->dump_gmsh_integration_cells(str.str());

@@ -1708,11 +1708,11 @@ void STR::TimInt::read_restart(const int step)
 {
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step);
-  if (step != reader.ReadInt("step")) FOUR_C_THROW("Time step on file not equal to given step");
+  if (step != reader.read_int("step")) FOUR_C_THROW("Time step on file not equal to given step");
 
   step_ = step;
   stepn_ = step_ + 1;
-  time_ = Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
+  time_ = Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, reader.read_double("time")));
   timen_ = (*time_)[0] + (*dt_)[0];
 
   ReadRestartState();
@@ -1768,20 +1768,20 @@ void STR::TimInt::ReadRestartState()
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step_);
 
-  reader.ReadVector(disn_, "displacement");
+  reader.read_vector(disn_, "displacement");
   dis_->UpdateSteps(*disn_);
 
   if ((dismatn_ != Teuchos::null))
   {
-    reader.ReadVector(dismatn_, "material_displacement");
+    reader.read_vector(dismatn_, "material_displacement");
     dismat_->UpdateSteps(*dismatn_);
   }
 
-  reader.ReadVector(veln_, "velocity");
+  reader.read_vector(veln_, "velocity");
   vel_->UpdateSteps(*veln_);
-  reader.ReadVector(accn_, "acceleration");
+  reader.read_vector(accn_, "acceleration");
   acc_->UpdateSteps(*accn_);
-  reader.ReadHistoryData(step_);
+  reader.read_history_data(step_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1796,7 +1796,7 @@ void STR::TimInt::SetRestartState(Teuchos::RCP<Epetra_Vector> disn,
   vel_->UpdateSteps(*veln);
   acc_->UpdateSteps(*accn);
 
-  // the following is copied from Readmesh()
+  // the following is copied from read_mesh()
   // before we unpack nodes/elements we store a copy of the nodal row/col map
   Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*discret_->NodeRowMap()));
   Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(*discret_->NodeColMap()));
@@ -1815,7 +1815,7 @@ void STR::TimInt::read_restart_constraint()
   {
     Core::IO::DiscretizationReader reader(
         discret_, Global::Problem::Instance()->InputControlFile(), step_);
-    double uzawatemp = reader.ReadDouble("uzawaparameter");
+    double uzawatemp = reader.read_double("uzawaparameter");
     consolv_->SetUzawaParameter(uzawatemp);
 
     conman_->read_restart(reader, (*time_)[0]);
@@ -1927,16 +1927,16 @@ void STR::TimInt::OutputEveryIter(bool nw, bool ls)
      | needs an average cumulated number of 5 Newton/Line-Search steps per time step. |
      *--------------------------------------------------------------------------------*/
     int newFileSteps = 0;
-    if (output_->Output()->FileSteps() >= std::numeric_limits<int>::max() / 50000)
+    if (output_->output()->file_steps() >= std::numeric_limits<int>::max() / 50000)
       newFileSteps = std::numeric_limits<int>::max();
     else
-      newFileSteps = output_->Output()->FileSteps() * 50000;
+      newFileSteps = output_->output()->file_steps() * 50000;
 
-    output_->Output()->SetFileSteps(newFileSteps);
+    output_->output()->set_file_steps(newFileSteps);
 
-    std::string resultname = output_->Output()->FileName() + "_EveryIter";
+    std::string resultname = output_->output()->file_name() + "_EveryIter";
     output_->new_result_file(resultname, oei_filecounter_);
-    output_->WriteMesh(0, 0.0);
+    output_->write_mesh(0, 0.0);
   }
 
   // increase counter value
@@ -1951,9 +1951,9 @@ void STR::TimInt::OutputEveryIter(bool nw, bool ls)
     outputcounter_ += 100000 - (outputcounter_ % 100000);
   // time and step number
 
-  output_->WriteMesh(outputcounter_, (double)outputcounter_);  //(*time_)[0]
+  output_->write_mesh(outputcounter_, (double)outputcounter_);  //(*time_)[0]
 
-  //  output_->OverwriteResultFile();
+  //  output_->overwrite_result_file();
   output_state(datawritten);
 }
 
@@ -2053,7 +2053,7 @@ void STR::TimInt::write_gmsh_struc_output_step()
   if (not gmsh_out_) return;
 
   const std::string filename = Core::IO::Gmsh::GetFileName(
-      "struct", discret_->Writer()->Output()->FileName(), stepn_, false, myrank_);
+      "struct", discret_->Writer()->output()->file_name(), stepn_, false, myrank_);
   std::ofstream gmshfilecontent(filename.c_str());
 
   // add 'View' to Gmsh postprocessing file
@@ -2108,14 +2108,14 @@ void STR::TimInt::output_restart(bool& datawritten)
   datawritten = true;
 
   // write restart output, please
-  if (step_ != 0) output_->WriteMesh(step_, (*time_)[0]);
-  output_->NewStep(step_, (*time_)[0]);
-  output_->WriteVector("displacement", (*dis_)(0));
-  if (dismat_ != Teuchos::null) output_->WriteVector("material_displacement", (*dismat_)(0));
-  output_->WriteVector("velocity", (*vel_)(0));
-  output_->WriteVector("acceleration", (*acc_)(0));
-  output_->WriteElementData(firstoutputofrun_);
-  output_->WriteNodeData(firstoutputofrun_);
+  if (step_ != 0) output_->write_mesh(step_, (*time_)[0]);
+  output_->new_step(step_, (*time_)[0]);
+  output_->write_vector("displacement", (*dis_)(0));
+  if (dismat_ != Teuchos::null) output_->write_vector("material_displacement", (*dismat_)(0));
+  output_->write_vector("velocity", (*vel_)(0));
+  output_->write_vector("acceleration", (*acc_)(0));
+  output_->write_element_data(firstoutputofrun_);
+  output_->write_node_data(firstoutputofrun_);
   WriteRestartForce(output_);
   // owner of elements is just written once because it does not change during simulation (so far)
   firstoutputofrun_ = false;
@@ -2123,19 +2123,19 @@ void STR::TimInt::output_restart(bool& datawritten)
   // constraints
   if (conman_->HaveConstraint())
   {
-    output_->WriteDouble("uzawaparameter", consolv_->GetUzawaParameter());
-    output_->WriteVector("lagrmultiplier", conman_->GetLagrMultVector());
-    output_->WriteVector("refconval", conman_->GetRefBaseValues());
+    output_->write_double("uzawaparameter", consolv_->GetUzawaParameter());
+    output_->write_vector("lagrmultiplier", conman_->GetLagrMultVector());
+    output_->write_vector("refconval", conman_->GetRefBaseValues());
   }
 
   // 0D cardiovascular models
   if (cardvasc0dman_->have_cardiovascular0_d())
   {
-    output_->WriteVector("cv0d_df_np", cardvasc0dman_->Get0D_df_np());
-    output_->WriteVector("cv0d_f_np", cardvasc0dman_->Get0D_f_np());
+    output_->write_vector("cv0d_df_np", cardvasc0dman_->Get0D_df_np());
+    output_->write_vector("cv0d_f_np", cardvasc0dman_->Get0D_f_np());
 
-    output_->WriteVector("cv0d_dof_np", cardvasc0dman_->Get0D_dof_np());
-    output_->WriteVector("vol_np", cardvasc0dman_->Get0D_vol_np());
+    output_->write_vector("cv0d_dof_np", cardvasc0dman_->Get0D_dof_np());
+    output_->write_vector("vol_np", cardvasc0dman_->Get0D_vol_np());
   }
 
   // contact and meshtying
@@ -2163,7 +2163,7 @@ void STR::TimInt::output_restart(bool& datawritten)
   // biofilm growth
   if (HaveBiofilmGrowth())
   {
-    output_->WriteVector("str_growth_displ", strgrdisp_);
+    output_->write_vector("str_growth_displ", strgrdisp_);
   }
 
   // springdashpot output
@@ -2188,34 +2188,34 @@ void STR::TimInt::output_state(bool& datawritten)
   // write now
   if (outputeveryiter_)
   {
-    output_->NewStep(outputcounter_, (double)outputcounter_);
-    output_->WriteVector("displacement", Teuchos::rcp_static_cast<Epetra_MultiVector>(disn_));
+    output_->new_step(outputcounter_, (double)outputcounter_);
+    output_->write_vector("displacement", Teuchos::rcp_static_cast<Epetra_MultiVector>(disn_));
   }
   else
   {
-    output_->NewStep(step_, (*time_)[0]);
-    output_->WriteVector("displacement", (*dis_)(0));
+    output_->new_step(step_, (*time_)[0]);
+    output_->write_vector("displacement", (*dis_)(0));
   }
 
-  if ((dismatn_ != Teuchos::null)) output_->WriteVector("material_displacement", (*dismat_)(0));
+  if ((dismatn_ != Teuchos::null)) output_->write_vector("material_displacement", (*dismat_)(0));
 
   // for visualization of vel and acc do not forget to comment in corresponding lines in
   // StructureEnsightWriter
   if (writevelacc_)
   {
-    output_->WriteVector("velocity", (*vel_)(0));
-    output_->WriteVector("acceleration", (*acc_)(0));
+    output_->write_vector("velocity", (*vel_)(0));
+    output_->write_vector("acceleration", (*acc_)(0));
   }
 
   // biofilm growth
   if (HaveBiofilmGrowth())
   {
-    output_->WriteVector("str_growth_displ", strgrdisp_);
+    output_->write_vector("str_growth_displ", strgrdisp_);
   }
 
   // owner of elements is just written once because it does not change during simulation (so far)
-  if (writeele_) output_->WriteElementData(firstoutputofrun_);
-  output_->WriteNodeData(firstoutputofrun_);
+  if (writeele_) output_->write_element_data(firstoutputofrun_);
+  output_->write_node_data(firstoutputofrun_);
   firstoutputofrun_ = false;
 
   // meshtying and contact output
@@ -2236,7 +2236,7 @@ void STR::TimInt::output_state(bool& datawritten)
   if (porositysplitter_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> porosity = porositysplitter_->ExtractCondVector((*dis_)(0));
-    output_->WriteVector("porosity_p1", porosity);
+    output_->write_vector("porosity_p1", porosity);
   }
 
   // springdashpot output
@@ -2250,8 +2250,8 @@ void STR::TimInt::add_restart_to_output_state()
   // add velocity and acceleration if necessary
   if (!writevelacc_)
   {
-    output_->WriteVector("velocity", (*vel_)(0));
-    output_->WriteVector("acceleration", (*acc_)(0));
+    output_->write_vector("velocity", (*vel_)(0));
+    output_->write_vector("acceleration", (*acc_)(0));
   }
 
   WriteRestartForce(output_);
@@ -2259,19 +2259,19 @@ void STR::TimInt::add_restart_to_output_state()
   // constraints
   if (conman_->HaveConstraint())
   {
-    output_->WriteDouble("uzawaparameter", consolv_->GetUzawaParameter());
-    output_->WriteVector("lagrmultiplier", conman_->GetLagrMultVector());
-    output_->WriteVector("refconval", conman_->GetRefBaseValues());
+    output_->write_double("uzawaparameter", consolv_->GetUzawaParameter());
+    output_->write_vector("lagrmultiplier", conman_->GetLagrMultVector());
+    output_->write_vector("refconval", conman_->GetRefBaseValues());
   }
 
   // 0D cardiovascular models
   if (cardvasc0dman_->have_cardiovascular0_d())
   {
-    output_->WriteVector("cv0d_df_np", cardvasc0dman_->Get0D_df_np());
-    output_->WriteVector("cv0d_f_np", cardvasc0dman_->Get0D_f_np());
+    output_->write_vector("cv0d_df_np", cardvasc0dman_->Get0D_df_np());
+    output_->write_vector("cv0d_f_np", cardvasc0dman_->Get0D_f_np());
 
-    output_->WriteVector("cv0d_dof_np", cardvasc0dman_->Get0D_dof_np());
-    output_->WriteVector("vol_np", cardvasc0dman_->Get0D_vol_np());
+    output_->write_vector("cv0d_dof_np", cardvasc0dman_->Get0D_dof_np());
+    output_->write_vector("vol_np", cardvasc0dman_->Get0D_vol_np());
   }
 
   // springdashpot output
@@ -2287,7 +2287,7 @@ void STR::TimInt::add_restart_to_output_state()
 
 
   // finally add the missing mesh information, order is important here
-  output_->WriteMesh(step_, (*time_)[0]);
+  output_->write_mesh(step_, (*time_)[0]);
 
   // info dedicated to user's eyes staring at standard out
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
@@ -2446,7 +2446,7 @@ void STR::TimInt::output_stress_strain(bool& datawritten)
   // Make new step
   if (not datawritten)
   {
-    output_->NewStep(step_, (*time_)[0]);
+    output_->new_step(step_, (*time_)[0]);
   }
   datawritten = true;
 
@@ -2466,7 +2466,7 @@ void STR::TimInt::output_stress_strain(bool& datawritten)
     {
       FOUR_C_THROW("requested stress type not supported");
     }
-    output_->WriteVector(stresstext, *stressdata_, *(discret_->ElementRowMap()));
+    output_->write_vector(stresstext, *stressdata_, *(discret_->ElementRowMap()));
     // we don't need this anymore
     stressdata_ = Teuchos::null;
   }
@@ -2487,7 +2487,7 @@ void STR::TimInt::output_stress_strain(bool& datawritten)
     {
       FOUR_C_THROW("requested stress type not supported");
     }
-    output_->WriteVector(couplstresstext, *couplstressdata_, *(discret_->ElementRowMap()));
+    output_->write_vector(couplstresstext, *couplstressdata_, *(discret_->ElementRowMap()));
     // we don't need this anymore
     couplstressdata_ = Teuchos::null;
   }
@@ -2512,7 +2512,7 @@ void STR::TimInt::output_stress_strain(bool& datawritten)
     {
       FOUR_C_THROW("requested strain type not supported");
     }
-    output_->WriteVector(straintext, *straindata_, *(discret_->ElementRowMap()));
+    output_->write_vector(straintext, *straindata_, *(discret_->ElementRowMap()));
     // we don't need this anymore
     straindata_ = Teuchos::null;
   }
@@ -2533,13 +2533,13 @@ void STR::TimInt::output_stress_strain(bool& datawritten)
     {
       FOUR_C_THROW("requested plastic strain type not supported");
     }
-    output_->WriteVector(plstraintext, *plstraindata_, *(discret_->ElementRowMap()));
+    output_->write_vector(plstraintext, *plstraindata_, *(discret_->ElementRowMap()));
     // we don't need this anymore
     plstraindata_ = Teuchos::null;
   }
 
   // write structural rotation tensor
-  if (writerotation_) output_->WriteVector("rotation", *rotdata_, *(discret_->ElementRowMap()));
+  if (writerotation_) output_->write_vector("rotation", *rotdata_, *(discret_->ElementRowMap()));
 }
 
 /*----------------------------------------------------------------------*/
@@ -2565,7 +2565,7 @@ void STR::TimInt::OutputOptQuantity(bool& datawritten)
   // Make new step
   if (not datawritten)
   {
-    output_->NewStep(step_, (*time_)[0]);
+    output_->new_step(step_, (*time_)[0]);
   }
   datawritten = true;
 
@@ -2578,7 +2578,7 @@ void STR::TimInt::OutputOptQuantity(bool& datawritten)
     else
       FOUR_C_THROW("requested optional quantity type not supported");
 
-    output_->WriteVector(optquantitytext, *optquantitydata_, *(discret_->ElementRowMap()));
+    output_->write_vector(optquantitytext, *optquantitydata_, *(discret_->ElementRowMap()));
     // we don't need this anymore
     optquantitydata_ = Teuchos::null;
   }
@@ -2691,7 +2691,7 @@ void STR::TimInt::OutputContact()
       {
         // path and filename
         std::ostringstream filename;
-        const std::string filebase = Global::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string filebase = Global::Problem::Instance()->OutputControlFile()->file_name();
         filename << filebase << ".energymomentum";
 
         // open file
@@ -3268,7 +3268,7 @@ void STR::TimInt::AttachEnergyFile()
   if (energyfile_.is_null())
   {
     std::string energyname =
-        Global::Problem::Instance()->OutputControlFile()->FileName() + ".energy";
+        Global::Problem::Instance()->OutputControlFile()->file_name() + ".energy";
     energyfile_ = Teuchos::rcp(new std::ofstream(energyname.c_str()));
     (*energyfile_) << "# timestep time total_energy"
                    << " kinetic_energy internal_energy external_energy" << std::endl;

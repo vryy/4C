@@ -596,28 +596,28 @@ void FLD::UTILS::FluidCouplingWrapperBase::write_restart(Core::IO::Discretizatio
   {
     std::stringstream stream;
     stream << it->first << "_3D_np";
-    output.WriteDouble(stream.str(), it->second);
+    output.write_double(stream.str(), it->second);
   }
   //! map of coupling variables returned by the 3-D model at time step n
   for (it = map3_dn_->begin(); it != map3_dn_->end(); it++)
   {
     std::stringstream stream;
     stream << it->first << "_3D_n";
-    output.WriteDouble(stream.str(), it->second);
+    output.write_double(stream.str(), it->second);
   }
   //! map of coupling variables returned by the reduced-D model at time step n+1
   for (it = map3_dnp_->begin(); it != map3_dnp_->end(); it++)
   {
     std::stringstream stream;
     stream << it->first << "_Red_np";
-    output.WriteDouble(stream.str(), it->second);
+    output.write_double(stream.str(), it->second);
   }
   //! map of coupling variables returned by the reduced-D model at time step n
   for (it = map_red_dn_->begin(); it != map_red_dn_->end(); it++)
   {
     std::stringstream stream;
     stream << it->first << "_Red_n";
-    output.WriteDouble(stream.str(), it->second);
+    output.write_double(stream.str(), it->second);
   }
 
   std::map<const int, Teuchos::RCP<class FluidCouplingBc>>::iterator mapiter;
@@ -648,7 +648,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::read_restart(Core::IO::Discretization
     std::stringstream stream;
     double val = 0.0;
     stream << it->first << "_3D_np";
-    val = reader.ReadDouble(stream.str());
+    val = reader.read_double(stream.str());
     it->second = val;
   }
   //! map of coupling variables returned by the 3-D model at time step n
@@ -657,7 +657,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::read_restart(Core::IO::Discretization
     std::stringstream stream;
     double val = 0.0;
     stream << it->first << "_3D_n";
-    val = reader.ReadDouble(stream.str());
+    val = reader.read_double(stream.str());
     it->second = val;
   }
   //! map of coupling variables returned by the reduced-D model at time step n+1
@@ -666,7 +666,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::read_restart(Core::IO::Discretization
     std::stringstream stream;
     double val = 0.0;
     stream << it->first << "_Red_np";
-    val = reader.ReadDouble(stream.str());
+    val = reader.read_double(stream.str());
     it->second = val;
   }
   //! map of coupling variables returned by the reduced-D model at time step n
@@ -675,7 +675,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::read_restart(Core::IO::Discretization
     std::stringstream stream;
     double val = 0.0;
     stream << it->first << "_Red_n";
-    val = reader.ReadDouble(stream.str());
+    val = reader.read_double(stream.str());
     it->second = val;
   }
 
@@ -807,12 +807,12 @@ void FLD::UTILS::FluidCouplingBc::write_restart(Core::IO::DiscretizationWriter& 
 
   // also write vector couplingbc_
   stream3 << "couplingbc" << condnum;
-  output.WriteVector(stream3.str(), couplingbc_);
+  output.write_vector(stream3.str(), couplingbc_);
 
 
   // write time steps size
-  output.WriteDouble("dta_3D", dt_f3_);
-  output.WriteDouble("reduced_D_dta", dt_rm_);
+  output.write_double("dta_3D", dt_f3_);
+  output.write_double("reduced_D_dta", dt_rm_);
 
   return;
 }
@@ -832,11 +832,11 @@ void FLD::UTILS::FluidCouplingBc::read_restart(Core::IO::DiscretizationReader& r
 
   // also read vector couplingbc_
   stream3 << "couplingbc" << condnum;
-  reader.ReadVector(couplingbc_, stream3.str());
+  reader.read_vector(couplingbc_, stream3.str());
 
   // read time steps size
-  dt_f3_ = reader.ReadDouble("dta_3D");
-  dt_rm_ = reader.ReadDouble("reduced_D_dta");
+  dt_f3_ = reader.read_double("dta_3D");
+  dt_rm_ = reader.read_double("reduced_D_dta");
 
 
   return;

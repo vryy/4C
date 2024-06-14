@@ -21,7 +21,7 @@ namespace Global
 {
   /// setup the discretizations
   void ReadFields(
-      Global::Problem& problem, Core::IO::DatFileReader& reader, const bool readmesh = true);
+      Global::Problem& problem, Core::IO::DatFileReader& reader, const bool read_mesh = true);
 
   void ReadMicroFields(Global::Problem& problem, Core::IO::DatFileReader& reader);
 

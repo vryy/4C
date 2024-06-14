@@ -1676,10 +1676,10 @@ void ScaTra::ScaTraTimIntImpl::check_and_write_output_and_restart()
 void ScaTra::ScaTraTimIntImpl::WriteResult()
 {
   // step number and time (only after that data output is possible)
-  output_->NewStep(step_, time_);
+  output_->new_step(step_, time_);
 
   // write domain decomposition for visualization (only once at the first time step!)
-  if (step_ == 0) output_->WriteElementData(true);
+  if (step_ == 0) output_->write_element_data(true);
 
   // write state vectors
   output_state();
@@ -1718,13 +1718,13 @@ void ScaTra::ScaTraTimIntImpl::WriteResult()
   // biofilm growth
   if (scfldgrdisp_ != Teuchos::null)
   {
-    output_->WriteVector("scfld_growth_displ", scfldgrdisp_);
+    output_->write_vector("scfld_growth_displ", scfldgrdisp_);
   }
 
   // biofilm growth
   if (scstrgrdisp_ != Teuchos::null)
   {
-    output_->WriteVector("scstr_growth_displ", scstrgrdisp_);
+    output_->write_vector("scstr_growth_displ", scstrgrdisp_);
   }
 
   // generate output associated with meshtying strategy
@@ -1748,7 +1748,7 @@ void ScaTra::ScaTraTimIntImpl::WriteResult()
   if ((step_ != 0) and (output_state_matlab_))
   {
     std::ostringstream filename;
-    filename << problem_->OutputControlFile()->FileName() << "-Result_Step" << step_ << ".m";
+    filename << problem_->OutputControlFile()->file_name() << "-Result_Step" << step_ << ".m";
     Core::LinAlg::PrintVectorInMatlabFormat(filename.str(), *phinp_);
   }
 }
@@ -3023,7 +3023,7 @@ std::string ScaTra::ScaTraTimIntImpl::map_tim_int_enum_to_string(
 void ScaTra::ScaTraTimIntImpl::output_state()
 {
   // solution
-  output_->WriteVector("phinp", phinp_);
+  output_->write_vector("phinp", phinp_);
 
   // convective velocity (written in case of coupled simulations since volmortar is now possible)
   if (velocity_field_type_ == Inpar::ScaTra::velocity_function or
@@ -3036,7 +3036,7 @@ void ScaTra::ScaTraTimIntImpl::output_state()
     Teuchos::RCP<Epetra_MultiVector> convel_multi =
         convert_dof_vector_to_componentwise_node_vector(convel, NdsVel());
 
-    output_->WriteVector("convec_velocity", convel_multi, Core::IO::nodevector);
+    output_->write_vector("convec_velocity", convel_multi, Core::IO::nodevector);
   }
 
   // displacement field
@@ -3049,7 +3049,7 @@ void ScaTra::ScaTraTimIntImpl::output_state()
     Teuchos::RCP<Epetra_MultiVector> dispnp_multi =
         convert_dof_vector_to_componentwise_node_vector(dispnp, NdsDisp());
 
-    output_->WriteVector("dispnp", dispnp_multi, Core::IO::nodevector);
+    output_->write_vector("dispnp", dispnp_multi, Core::IO::nodevector);
   }
 
   if (NdsMicro() != -1)
@@ -3060,7 +3060,7 @@ void ScaTra::ScaTraTimIntImpl::output_state()
     for (int inode = 0; inode < discret_->NumMyRowNodes(); ++inode)
       (*micro_conc_multi)[0][inode] = (*phinp_micro_)[inode];
 
-    output_->WriteVector("micro_conc", micro_conc_multi, Core::IO::nodevector);
+    output_->write_vector("micro_conc", micro_conc_multi, Core::IO::nodevector);
   }
 
   if (has_external_force_)
@@ -3069,12 +3069,12 @@ void ScaTra::ScaTraTimIntImpl::output_state()
         discret_->GetState(nds_vel_, "external_force");
     Teuchos::RCP<Epetra_MultiVector> output_external_force =
         convert_dof_vector_to_componentwise_node_vector(external_force, NdsVel());
-    output_->WriteVector("external_force", output_external_force, Core::IO::nodevector);
+    output_->write_vector("external_force", output_external_force, Core::IO::nodevector);
 
     Teuchos::RCP<const Epetra_Vector> mobility = discret_->GetState(nds_vel_, "intrinsic_mobility");
     Teuchos::RCP<Epetra_MultiVector> output_intrinsic_mobility =
         convert_dof_vector_to_componentwise_node_vector(mobility, NdsVel());
-    output_->WriteVector("intrinsic_mobility", output_intrinsic_mobility, Core::IO::nodevector);
+    output_->write_vector("intrinsic_mobility", output_intrinsic_mobility, Core::IO::nodevector);
   }
 }
 

@@ -61,7 +61,7 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
     Teuchos::RCP<const FLD::XFluidState> state, Teuchos::RCP<Epetra_Vector> dispnp,
     Teuchos::RCP<Epetra_Vector> gridvnp)
 {
-  discret_->Writer()->NewStep(step, time);
+  discret_->Writer()->new_step(step, time);
 
   // create vector according to the initial row map holding all standard fluid unknowns
   outvec_fluid_->PutScalar(0.0);
@@ -168,8 +168,8 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
 
   Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_out_->ExtractCondVector(outvec_fluid_);
 
-  discret_->Writer()->WriteVector("velnp", outvec_fluid_);
-  discret_->Writer()->WriteVector("pressure", pressure);
+  discret_->Writer()->write_vector("velnp", outvec_fluid_);
+  discret_->Writer()->write_vector("pressure", pressure);
 
   if (dispnp != Teuchos::null)
   {
@@ -178,21 +178,21 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
     // write ale displacement for t^{n+1}
     Teuchos::RCP<Epetra_Vector> dispnprm = Teuchos::rcp(new Epetra_Vector(*dispnp));
     dispnprm->ReplaceMap(outvec_fluid_->Map());  // to get dofs starting by 0 ...
-    discret_->Writer()->WriteVector("dispnp", dispnprm);
+    discret_->Writer()->write_vector("dispnp", dispnprm);
 
     // write grid velocity for t^{n+1}
     Teuchos::RCP<Epetra_Vector> gridvnprm = Teuchos::rcp(new Epetra_Vector(*gridvnp));
     gridvnprm->ReplaceMap(outvec_fluid_->Map());  // to get dofs starting by 0 ...
-    discret_->Writer()->WriteVector("gridv", gridvnprm);
+    discret_->Writer()->write_vector("gridv", gridvnprm);
 
     // write convective velocity for t^{n+1}
     Teuchos::RCP<Epetra_Vector> convvel =
         Teuchos::rcp(new Epetra_Vector(outvec_fluid_->Map(), true));
     convvel->Update(1.0, *outvec_fluid_, -1.0, *gridvnprm, 0.0);
-    discret_->Writer()->WriteVector("convel", convvel);
+    discret_->Writer()->write_vector("convel", convvel);
   }
 
-  discret_->Writer()->WriteElementData(firstoutputofrun_);
+  discret_->Writer()->write_element_data(firstoutputofrun_);
   firstoutputofrun_ = false;
 
   // write restart
@@ -203,21 +203,21 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
     restart_count_++;
 
     // velocity/pressure vector
-    discret_->Writer()->WriteVector("velnp_res", state->velnp_);
+    discret_->Writer()->write_vector("velnp_res", state->velnp_);
 
     // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
-    discret_->Writer()->WriteVector("accnp_res", state->accnp_);
-    discret_->Writer()->WriteVector("accn_res", state->accn_);
-    discret_->Writer()->WriteVector("veln_res", state->veln_);
-    discret_->Writer()->WriteVector("velnm_res", state->velnm_);
+    discret_->Writer()->write_vector("accnp_res", state->accnp_);
+    discret_->Writer()->write_vector("accn_res", state->accn_);
+    discret_->Writer()->write_vector("veln_res", state->veln_);
+    discret_->Writer()->write_vector("velnm_res", state->velnm_);
 
     if (dispnp != Teuchos::null)
     {
       // write ale displacement for t^{n+1} on full background
-      discret_->Writer()->WriteVector("full_dispnp_res", dispnp);
+      discret_->Writer()->write_vector("full_dispnp_res", dispnp);
 
       // write grid velocity for t^{n+1} on full background
-      discret_->Writer()->WriteVector("full_gridvnp_res", gridvnp);
+      discret_->Writer()->write_vector("full_gridvnp_res", gridvnp);
     }
   }
 
@@ -225,7 +225,7 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
   // REMARK on "Why to clear the MapCache" for restarts
   //-----------------------------------------------------------
   // every time, when output-vectors are written based on a new(!), still unknown map
-  // the map is stored in a mapstack (io.cpp, WriteVector-routine) for efficiency in standard
+  // the map is stored in a mapstack (io.cpp, write_vector-routine) for efficiency in standard
   // applications. However, in the XFEM for each timestep or FSI-iteration we have to cut and the
   // map is created newly (done by the fill_complete call). This is the reason why the MapStack
   // increases and the storage is overwritten for large problems. Hence, we have clear the MapCache
@@ -239,7 +239,7 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
       Core::IO::cout << "\t... Clear MapCache after " << restart_count_ << " written restarts."
                      << Core::IO::endl;
 
-    discret_->Writer()->ClearMapCache();  // clear the output's map-cache
+    discret_->Writer()->clear_map_cache();  // clear the output's map-cache
     restart_count_ = 0;
   }
 
@@ -415,7 +415,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
 
   bool screen_out = gmsh_debug_out_screen_;
 
-  auto file_name = discret_->Writer()->Output()->FileName();
+  auto file_name = discret_->Writer()->output()->file_name();
 
   // output for Element and Node IDs
   std::ostringstream filename_base_vel;
@@ -1303,7 +1303,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
 
   // output for Element and Node IDs
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("DISCRET",
-      discret_->Writer()->Output()->FileName(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
+      discret_->Writer()->output()->file_name(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
       discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
@@ -1334,7 +1334,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
 
   // output for Element and Node IDs
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("EOS",
-      discret_->Writer()->Output()->FileName(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
+      discret_->Writer()->output()->file_name(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
       discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);

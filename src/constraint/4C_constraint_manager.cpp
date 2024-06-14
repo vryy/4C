@@ -344,9 +344,9 @@ void CONSTRAINTS::ConstrManager::read_restart(
   //  consolv_->SetUzawaParameter(uzawatemp);
   Teuchos::RCP<Epetra_Map> constrmap = GetConstraintMap();
   Teuchos::RCP<Epetra_Vector> tempvec = Core::LinAlg::CreateVector(*constrmap, true);
-  reader.ReadVector(tempvec, "lagrmultiplier");
+  reader.read_vector(tempvec, "lagrmultiplier");
   SetLagrMultVector(tempvec);
-  reader.ReadVector(tempvec, "refconval");
+  reader.read_vector(tempvec, "refconval");
   SetRefBaseValues(tempvec, time);
 }
 

@@ -189,15 +189,15 @@ void ScaTra::TimIntStationary::read_restart(
   else
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
-  time_ = reader->ReadDouble("time");
-  step_ = reader->ReadInt("step");
+  time_ = reader->read_double("time");
+  step_ = reader->read_int("step");
 
   if (myrank_ == 0)
     std::cout << "Reading ScaTra restart data (time=" << time_ << " ; step=" << step_ << ")"
               << '\n';
 
   // read state vectors that are needed for restart
-  reader->ReadVector(phinp_, "phinp");
+  reader->read_vector(phinp_, "phinp");
 
   read_restart_problem_specific(step, *reader);
 }
@@ -228,9 +228,9 @@ void ScaTra::TimIntStationary::write_restart() const
 
   // This feature enables starting a time-dependent simulation from
   // a non-trivial steady-state solution that was calculated before.
-  output_->WriteVector("phin", phinp_);    // for OST and BDF2
-  output_->WriteVector("phinm", phinp_);   // for BDF2
-  output_->WriteVector("phidtn", zeros_);  // for OST
+  output_->write_vector("phin", phinp_);    // for OST and BDF2
+  output_->write_vector("phinm", phinp_);   // for BDF2
+  output_->write_vector("phidtn", zeros_);  // for OST
 }
 
 FOUR_C_NAMESPACE_CLOSE

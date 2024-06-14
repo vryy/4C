@@ -44,7 +44,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 void Global::ReadFields(
-    Global::Problem& problem, Core::IO::DatFileReader& reader, const bool readmesh)
+    Global::Problem& problem, Core::IO::DatFileReader& reader, const bool read_mesh)
 {
   Teuchos::RCP<Core::FE::Discretization> structdis = Teuchos::null;
   Teuchos::RCP<Core::FE::Discretization> fluiddis = Teuchos::null;
@@ -1427,7 +1427,7 @@ void Global::ReadFields(
       break;
   }
 
-  if (readmesh)  // now read and allocate!
+  if (read_mesh)  // now read and allocate!
   {
     // we read nodes and elements for the desired fields as specified above
     meshreader.ReadAndPartition();
@@ -1456,7 +1456,7 @@ void Global::ReadFields(
       default:
         break;
     }
-  }  // if(readmesh)
+  }  // if(read_mesh)
 }
 
 void Global::ReadMicroFields(Global::Problem& problem, Core::IO::DatFileReader& reader)

@@ -85,7 +85,7 @@ void Adapter::ThermoBaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& p
   // context for output and restart
   // -------------------------------------------------------------------
   Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
-  output->WriteMesh(0, 0.0);
+  output->write_mesh(0, 0.0);
 
   //  // get input parameter lists and copy them, because a few parameters are overwritten
   const Teuchos::RCP<Teuchos::ParameterList> ioflags =

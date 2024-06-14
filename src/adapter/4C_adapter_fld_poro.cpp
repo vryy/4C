@@ -169,26 +169,26 @@ void Adapter::FluidPoro::Output(const int step, const double time)
                 << std::endl;
 
     // step number and time
-    fluid_field()->DiscWriter()->NewStep(step, time);
+    fluid_field()->DiscWriter()->new_step(step, time);
 
     // time step, especially necessary for adaptive dt
-    fluid_field()->DiscWriter()->WriteDouble("timestep", fluid_field()->Dt());
+    fluid_field()->DiscWriter()->write_double("timestep", fluid_field()->Dt());
 
     // velocity/pressure vector
-    fluid_field()->DiscWriter()->WriteVector("velnp", fluid_field()->Velnp());
+    fluid_field()->DiscWriter()->write_vector("velnp", fluid_field()->Velnp());
     // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure =
         fluid_field()->GetVelPressSplitter()->ExtractCondVector(fluid_field()->Velnp());
-    fluid_field()->DiscWriter()->WriteVector("pressure", pressure);
+    fluid_field()->DiscWriter()->write_vector("pressure", pressure);
 
-    if (alefluid_) fluid_field()->DiscWriter()->WriteVector("dispnp", fluid_field()->Dispnp());
+    if (alefluid_) fluid_field()->DiscWriter()->write_vector("dispnp", fluid_field()->Dispnp());
 
     // write domain decomposition for visualization (only once!)
     if ((fluid_field()->Step() == upres_ or fluid_field()->Step() == 0) and
         !write_eledata_every_step_)
-      fluid_field()->DiscWriter()->WriteElementData(true);
+      fluid_field()->DiscWriter()->write_element_data(true);
     else
-      fluid_field()->DiscWriter()->WriteElementData(true);
+      fluid_field()->DiscWriter()->write_element_data(true);
 
     return;
 

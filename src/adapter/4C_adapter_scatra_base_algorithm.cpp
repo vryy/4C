@@ -68,7 +68,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   auto output = discret->Writer();
   if (discret->NumGlobalElements() == 0)
     FOUR_C_THROW("No elements in discretization %s", discret->Name().c_str());
-  output->WriteMesh(0, 0.0);
+  output->write_mesh(0, 0.0);
 
   // -------------------------------------------------------------------
   // create a solver

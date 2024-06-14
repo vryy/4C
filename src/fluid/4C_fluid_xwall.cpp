@@ -1431,12 +1431,12 @@ void FLD::XWall::read_restart(Core::IO::DiscretizationReader& reader)
 {
   Teuchos::RCP<Epetra_Vector> tauw =
       Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-  reader.ReadVector(tauw, "xwall_tauw");
+  reader.read_vector(tauw, "xwall_tauw");
   Core::LinAlg::Export(*tauw, *tauw_);
   Core::LinAlg::Export(*tauw, *tauwxwdis_);
 
   restart_wss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
-  reader.ReadVector(restart_wss_, "wss");
+  reader.read_vector(restart_wss_, "wss");
   return;
 }
 

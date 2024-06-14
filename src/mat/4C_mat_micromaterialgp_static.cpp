@@ -128,8 +128,8 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
   // macro control files on restart.
   Teuchos::RCP<Core::IO::OutputControl> macrocontrol =
       Global::Problem::Instance(0)->OutputControlFile();
-  std::string microprefix = macrocontrol->RestartName();
-  std::string micronewprefix = macrocontrol->NewOutputFileName();
+  std::string microprefix = macrocontrol->restart_name();
+  std::string micronewprefix = macrocontrol->new_output_file_name();
 
   Global::Problem* microproblem = Global::Problem::Instance(microdisnum_);
   Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->GetDis("structure");
@@ -182,14 +182,14 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
     Teuchos::RCP<Core::IO::OutputControl> microcontrol =
         Teuchos::rcp(new Core::IO::OutputControl(microdis->Comm(), "Structure",
             microproblem->spatial_approximation_type(), "micro-input-file-not-known", restartname_,
-            newfilename, ndim, restart, macrocontrol->FileSteps(),
+            newfilename, ndim, restart, macrocontrol->file_steps(),
             Core::UTILS::IntegralValue<bool>(microproblem->IOParams(), "OUTPUT_BIN"), adaptname));
 
     micro_output_ = Teuchos::rcp(new Core::IO::DiscretizationWriter(
         microdis, microcontrol, microproblem->spatial_approximation_type()));
-    micro_output_->SetOutput(microcontrol);
+    micro_output_->set_output(microcontrol);
 
-    micro_output_->WriteMesh(step_, time_);
+    micro_output_->write_mesh(step_, time_);
   }
 }
 

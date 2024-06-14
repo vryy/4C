@@ -133,7 +133,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::write_restart(
 {
   check_init_setup();
   // write modified acceleration vector
-  iowriter.WriteVector("accn_mod", accn_mod_);
+  iowriter.write_vector("accn_mod", accn_mod_);
 
   GenAlpha::write_restart(iowriter, forced_writerestart);
 }
@@ -143,7 +143,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::write_restart(
 void STR::IMPLICIT::GenAlphaLieGroup::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
-  ioreader.ReadVector(accn_mod_, "accn_mod");
+  ioreader.read_vector(accn_mod_, "accn_mod");
 
   GenAlpha::read_restart(ioreader);
 }

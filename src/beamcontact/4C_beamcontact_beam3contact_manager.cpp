@@ -5061,23 +5061,23 @@ bool CONTACT::Beam3cmanager::close_midpoint_distance(const Core::Elements::Eleme
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::read_restart(Core::IO::DiscretizationReader& reader)
 {
-  reader.ReadVector(fcold_, "fcold");
-  reader.ReadVector(dis_old_, "dis_old");
-  totpenaltywork_ = reader.ReadDouble("totpenaltywork");
+  reader.read_vector(fcold_, "fcold");
+  reader.read_vector(dis_old_, "dis_old");
+  totpenaltywork_ = reader.read_double("totpenaltywork");
 
-  maxtotalsimgap_ = reader.ReadDouble("maxtotalsimgap");
-  maxtotalsimgap_cp_ = reader.ReadDouble("maxtotalsimgap_cp");
-  maxtotalsimgap_gp_ = reader.ReadDouble("maxtotalsimgap_gp");
-  maxtotalsimgap_ep_ = reader.ReadDouble("maxtotalsimgap_ep");
-  maxtotalsimrelgap_ = reader.ReadDouble("maxtotalsimrelgap");
-  mintotalsimgap_ = reader.ReadDouble("mintotalsimgap");
-  mintotalsimgap_cp_ = reader.ReadDouble("mintotalsimgap_cp");
-  mintotalsimgap_gp_ = reader.ReadDouble("mintotalsimgap_gp");
-  mintotalsimgap_ep_ = reader.ReadDouble("mintotalsimgap_ep");
-  mintotalsimrelgap_ = reader.ReadDouble("mintotalsimrelgap");
-  mintotalsimunconvgap_ = reader.ReadDouble("mintotalsimunconvgap");
+  maxtotalsimgap_ = reader.read_double("maxtotalsimgap");
+  maxtotalsimgap_cp_ = reader.read_double("maxtotalsimgap_cp");
+  maxtotalsimgap_gp_ = reader.read_double("maxtotalsimgap_gp");
+  maxtotalsimgap_ep_ = reader.read_double("maxtotalsimgap_ep");
+  maxtotalsimrelgap_ = reader.read_double("maxtotalsimrelgap");
+  mintotalsimgap_ = reader.read_double("mintotalsimgap");
+  mintotalsimgap_cp_ = reader.read_double("mintotalsimgap_cp");
+  mintotalsimgap_gp_ = reader.read_double("mintotalsimgap_gp");
+  mintotalsimgap_ep_ = reader.read_double("mintotalsimgap_ep");
+  mintotalsimrelgap_ = reader.read_double("mintotalsimrelgap");
+  mintotalsimunconvgap_ = reader.read_double("mintotalsimunconvgap");
 
-  outputcounter_ = reader.ReadInt("outputcounter");
+  outputcounter_ = reader.read_int("outputcounter");
 
   return;
 }
@@ -5097,23 +5097,23 @@ void CONTACT::Beam3cmanager::write_restart(Teuchos::RCP<Core::IO::Discretization
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::write_restart(Core::IO::DiscretizationWriter& output)
 {
-  output.WriteVector("fcold", fcold_);
-  output.WriteVector("dis_old", dis_old_);
-  output.WriteDouble("totpenaltywork", totpenaltywork_);
+  output.write_vector("fcold", fcold_);
+  output.write_vector("dis_old", dis_old_);
+  output.write_double("totpenaltywork", totpenaltywork_);
 
-  output.WriteDouble("maxtotalsimgap", maxtotalsimgap_);
-  output.WriteDouble("maxtotalsimgap_cp", maxtotalsimgap_cp_);
-  output.WriteDouble("maxtotalsimgap_gp", maxtotalsimgap_gp_);
-  output.WriteDouble("maxtotalsimgap_ep", maxtotalsimgap_ep_);
-  output.WriteDouble("maxtotalsimrelgap", maxtotalsimrelgap_);
-  output.WriteDouble("mintotalsimgap", mintotalsimgap_);
-  output.WriteDouble("mintotalsimgap_cp", mintotalsimgap_cp_);
-  output.WriteDouble("mintotalsimgap_gp", mintotalsimgap_gp_);
-  output.WriteDouble("mintotalsimgap_ep", mintotalsimgap_ep_);
-  output.WriteDouble("mintotalsimrelgap", mintotalsimrelgap_);
-  output.WriteDouble("mintotalsimunconvgap", mintotalsimunconvgap_);
+  output.write_double("maxtotalsimgap", maxtotalsimgap_);
+  output.write_double("maxtotalsimgap_cp", maxtotalsimgap_cp_);
+  output.write_double("maxtotalsimgap_gp", maxtotalsimgap_gp_);
+  output.write_double("maxtotalsimgap_ep", maxtotalsimgap_ep_);
+  output.write_double("maxtotalsimrelgap", maxtotalsimrelgap_);
+  output.write_double("mintotalsimgap", mintotalsimgap_);
+  output.write_double("mintotalsimgap_cp", mintotalsimgap_cp_);
+  output.write_double("mintotalsimgap_gp", mintotalsimgap_gp_);
+  output.write_double("mintotalsimgap_ep", mintotalsimgap_ep_);
+  output.write_double("mintotalsimrelgap", mintotalsimrelgap_);
+  output.write_double("mintotalsimunconvgap", mintotalsimunconvgap_);
 
-  output.WriteInt("outputcounter", outputcounter_);  // ToDo needed?
+  output.write_int("outputcounter", outputcounter_);  // ToDo needed?
 
   return;
 }

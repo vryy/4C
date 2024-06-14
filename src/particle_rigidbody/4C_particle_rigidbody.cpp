@@ -105,7 +105,7 @@ void ParticleRigidBody::RigidBodyHandler::write_restart() const
   get_packed_rigid_body_states(*buffer);
 
   // write rigid body state data
-  binwriter->WriteCharVector("RigidBodyStateData", buffer);
+  binwriter->write_char_data("RigidBodyStateData", buffer);
 }
 
 void ParticleRigidBody::RigidBodyHandler::read_restart(
@@ -125,7 +125,7 @@ void ParticleRigidBody::RigidBodyHandler::read_restart(
 
   // read rigid body state data
   Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
-  reader->ReadCharVector(buffer, "RigidBodyStateData");
+  reader->read_char_vector(buffer, "RigidBodyStateData");
 
   // extract packed rigid body state data
   extract_packed_rigid_body_states(*buffer);

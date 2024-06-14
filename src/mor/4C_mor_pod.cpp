@@ -248,7 +248,7 @@ void ModelOrderRed::ProperOrthogonalDecomposition::ReadMatrix(
   // insert path to file if necessary
   if (filename[0] != '/')
   {
-    std::string pathfilename = Global::Problem::Instance()->OutputControlFile()->InputFileName();
+    std::string pathfilename = Global::Problem::Instance()->OutputControlFile()->input_file_name();
     std::string::size_type pos = pathfilename.rfind('/');
     if (pos != std::string::npos)
     {

@@ -271,24 +271,23 @@ void XFEM::LevelSetCoupling::Output(
     const int step, const double time, const bool write_restart_data, const int lsc_idx)
 {
   // output for level-set interface
-  // bg_output_->NewStep(step,time); // not required, as already called for the bgdis when output is
   // written for fluid fields
 
   std::ostringstream temp;
   temp << lsc_idx;
   std::string name = "phinp_" + temp.str();
 
-  bg_output_->WriteVector(name, phinp_);
+  bg_output_->write_vector(name, phinp_);
 
   // write restart
   if (write_restart_data)
   {
     std::string name_restart = "phinp_res_" + temp.str();
 
-    bg_output_->WriteVector(name_restart, phinp_);
+    bg_output_->write_vector(name_restart, phinp_);
   }
 
-  cutter_output_->NewStep(step,
+  cutter_output_->new_step(step,
       time);  // required, as already called for the bgdis when output is written for fluid fields
 
   // write restart
@@ -298,7 +297,7 @@ void XFEM::LevelSetCoupling::Output(
     temp2 << lsc_idx;
     std::string name_restart = "cutter_phinp_res_" + temp.str();
 
-    cutter_output_->WriteVector(name_restart, cutter_phinp_);
+    cutter_output_->write_vector(name_restart, cutter_phinp_);
   }
 }
 
@@ -316,7 +315,7 @@ void XFEM::LevelSetCoupling::GmshOutput(const std::string& filename_base, const 
   filename_base_fsi << filename_base << "_levelset";
 
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
-      filename_base_fsi.str(), cutter_output_->Output()->FileName(), step, gmsh_step_diff,
+      filename_base_fsi.str(), cutter_output_->output()->file_name(), step, gmsh_step_diff,
       gmsh_debug_out_screen, myrank_);
 
   std::ofstream gmshfilecontent(filename.c_str());
@@ -355,7 +354,7 @@ void XFEM::LevelSetCoupling::read_restart(const int step, const int lsc_idx)
   Core::IO::DiscretizationReader boundaryreader(
       cutter_dis_, Global::Problem::Instance()->InputControlFile(), step);
 
-  const double time = boundaryreader.ReadDouble("time");
+  const double time = boundaryreader.read_double("time");
 
   if (myrank_ == 0)
   {

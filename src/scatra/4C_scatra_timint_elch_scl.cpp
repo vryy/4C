@@ -392,7 +392,7 @@ void ScaTra::ScaTraTimIntElchSCL::write_coupling_to_csv(
   if (myrank_ == 0)
   {
     const std::string file_name_coupling =
-        problem_->OutputControlFile()->FileName() + "_micro_macro_coupling.csv";
+        problem_->OutputControlFile()->file_name() + "_micro_macro_coupling.csv";
 
     file.open(file_name_coupling, std::fstream::trunc);
     file << "macro_slave_node_gid,macro_master_node_gid,micro_slave_node_gid,micro_master_"
@@ -420,7 +420,7 @@ void ScaTra::ScaTraTimIntElchSCL::write_coupling_to_csv(
 
   // write node coordinates to .csv file
   const std::string file_name_coords =
-      problem_->OutputControlFile()->FileName() + "_micro_macro_coupling_coords.csv";
+      problem_->OutputControlFile()->file_name() + "_micro_macro_coupling_coords.csv";
 
   if (myrank_ == 0)
   {
