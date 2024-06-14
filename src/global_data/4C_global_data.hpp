@@ -470,6 +470,8 @@ namespace Global
 
     const Teuchos::ParameterList& SolverParams(int solverNr) const;
 
+    std::function<const Teuchos::ParameterList&(int)> solver_params_callback() const;
+
     const Teuchos::ParameterList& UMFPACKSolverParams();
 
     //@}

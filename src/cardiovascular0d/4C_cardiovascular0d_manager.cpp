@@ -1076,7 +1076,10 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
       Global::Problem::Instance()->cardiovascular0_d_structural_params();
   const int linsolvernumber = cardvasc0dstructparams.get<int>("LINEAR_COUPLED_SOLVER");
   solver_->Params() = Core::LinAlg::Solver::translate_solver_parameters(
-      Global::Problem::Instance()->SolverParams(linsolvernumber));
+      Global::Problem::Instance()->SolverParams(linsolvernumber),
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY"));
   switch (algochoice_)
   {
     case Inpar::CARDIOVASCULAR0D::cardvasc0dsolve_direct:

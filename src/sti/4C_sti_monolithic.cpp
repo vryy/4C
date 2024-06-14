@@ -53,7 +53,10 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       residual_(Teuchos::null),
       dtele_(0.),
       dtsolve_(0.),
-      solver_(Teuchos::rcp(new Core::LinAlg::Solver(solverparams, comm))),
+      solver_(Teuchos::rcp(new Core::LinAlg::Solver(solverparams, comm,
+          Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY")))),
       invrowsums_(Teuchos::null),
       icoupscatra_(Teuchos::null),
       icoupthermo_(Teuchos::null),

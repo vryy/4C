@@ -8,7 +8,6 @@
 *-----------------------------------------------------------------------*/
 #include "4C_linear_solver_method_linalg.hpp"
 
-#include "4C_global_data.hpp"  // access global problem. can we avoid this?
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linear_solver_method_direct.hpp"
@@ -28,11 +27,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::LinAlg::Solver::Solver(const Teuchos::ParameterList& inparams, const Epetra_Comm& comm,
-    const bool translate_params_to_belos)
+    const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
+    Core::IO::Verbositylevel verbosity, const bool translate_params_to_belos)
     : comm_(comm), params_(Teuchos::rcp(new Teuchos::ParameterList()))
 {
   if (translate_params_to_belos)
-    *params_ = translate_solver_parameters(inparams);
+    *params_ = translate_solver_parameters(inparams, get_solver_params, verbosity);
   else
     *params_ = inparams;
 }
@@ -232,8 +232,7 @@ int Core::LinAlg::Solver::NoxSolve(Epetra_LinearProblem& linProblem, const Solve
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::ParameterList Core::LinAlg::Solver::translate_four_c_to_ifpack(
-    const Teuchos::ParameterList& inparams)
+Teuchos::ParameterList translate_four_c_to_ifpack(const Teuchos::ParameterList& inparams)
 {
   Teuchos::ParameterList ifpacklist;
 
@@ -248,8 +247,9 @@ Teuchos::ParameterList Core::LinAlg::Solver::translate_four_c_to_ifpack(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::ParameterList Core::LinAlg::Solver::TranslateFourCToML(
-    const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist)
+Teuchos::ParameterList translate_four_c_to_ml(const Teuchos::ParameterList& inparams,
+    const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
+    Core::IO::Verbositylevel verbosity)
 {
   Teuchos::ParameterList mllist;
 
@@ -412,8 +412,8 @@ Teuchos::ParameterList Core::LinAlg::Solver::TranslateFourCToML(
         smolevelsublist.set("smoother: sweeps", mlsmotimessteps[i]);
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
-        SchurCompList = translate_solver_parameters(
-            Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+        SchurCompList = Core::LinAlg::Solver::translate_solver_parameters(
+            get_solver_params(inparams.get<int>("SUB_SOLVER1")), get_solver_params, verbosity);
       }
       break;
       case 11:  // SIMPLE smoother  (only for MueLu with BlockedOperators)
@@ -427,11 +427,11 @@ Teuchos::ParameterList Core::LinAlg::Solver::TranslateFourCToML(
         smolevelsublist.set("smoother: sweeps", mlsmotimessteps[i]);
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& predictList = smolevelsublist.sublist("smoother: Predictor list");
-        predictList = translate_solver_parameters(
-            Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+        predictList = Core::LinAlg::Solver::translate_solver_parameters(
+            get_solver_params(inparams.get<int>("SUB_SOLVER1")), get_solver_params, verbosity);
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
-        SchurCompList = translate_solver_parameters(
-            Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+        SchurCompList = Core::LinAlg::Solver::translate_solver_parameters(
+            get_solver_params(inparams.get<int>("SUB_SOLVER2")), get_solver_params, verbosity);
       }
       break;
       case 13:  // IBD: indefinite block diagonal preconditioner
@@ -440,11 +440,11 @@ Teuchos::ParameterList Core::LinAlg::Solver::TranslateFourCToML(
         smolevelsublist.set("smoother: sweeps", mlsmotimessteps[i]);
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& predictList = smolevelsublist.sublist("smoother: Predictor list");
-        predictList = translate_solver_parameters(
-            Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+        predictList = Core::LinAlg::Solver::translate_solver_parameters(
+            get_solver_params(inparams.get<int>("SUB_SOLVER1")), get_solver_params, verbosity);
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
-        SchurCompList = translate_solver_parameters(
-            Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+        SchurCompList = Core::LinAlg::Solver::translate_solver_parameters(
+            get_solver_params(inparams.get<int>("SUB_SOLVER2")), get_solver_params, verbosity);
       }
       break;
       case 14:  // Uzawa: inexact Uzawa smoother
@@ -453,11 +453,11 @@ Teuchos::ParameterList Core::LinAlg::Solver::TranslateFourCToML(
         smolevelsublist.set("smoother: sweeps", mlsmotimessteps[i]);
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& predictList = smolevelsublist.sublist("smoother: Predictor list");
-        predictList = translate_solver_parameters(
-            Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+        predictList = Core::LinAlg::Solver::translate_solver_parameters(
+            get_solver_params(inparams.get<int>("SUB_SOLVER1")), get_solver_params, verbosity);
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
-        SchurCompList = translate_solver_parameters(
-            Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+        SchurCompList = Core::LinAlg::Solver::translate_solver_parameters(
+            get_solver_params(inparams.get<int>("SUB_SOLVER2")), get_solver_params, verbosity);
       }
       break;
       default:
@@ -518,8 +518,8 @@ Teuchos::ParameterList Core::LinAlg::Solver::TranslateFourCToML(
       mllist.set("coarse: sweeps", mlsmotimessteps[coarse]);
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
-      SchurCompList = translate_solver_parameters(
-          Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+      SchurCompList = Core::LinAlg::Solver::translate_solver_parameters(
+          get_solver_params(inparams.get<int>("SUB_SOLVER2")), get_solver_params, verbosity);
     }
     break;
     case 11:  // SIMPLE smoother  (only for MueLu with BlockedOperators)
@@ -533,11 +533,11 @@ Teuchos::ParameterList Core::LinAlg::Solver::TranslateFourCToML(
       mllist.set("coarse: sweeps", mlsmotimessteps[coarse]);
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
-      predictList = translate_solver_parameters(
-          Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+      predictList = Core::LinAlg::Solver::translate_solver_parameters(
+          get_solver_params(inparams.get<int>("SUB_SOLVER1")), get_solver_params, verbosity);
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
-      SchurCompList = translate_solver_parameters(
-          Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+      SchurCompList = Core::LinAlg::Solver::translate_solver_parameters(
+          get_solver_params(inparams.get<int>("SUB_SOLVER2")), get_solver_params, verbosity);
     }
     break;
     case 13:  // IBD: indefinite block diagonal preconditioner
@@ -546,11 +546,11 @@ Teuchos::ParameterList Core::LinAlg::Solver::TranslateFourCToML(
       mllist.set("coarse: sweeps", mlsmotimessteps[coarse]);
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
-      predictList = translate_solver_parameters(
-          Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+      predictList = Core::LinAlg::Solver::translate_solver_parameters(
+          get_solver_params(inparams.get<int>("SUB_SOLVER1")), get_solver_params, verbosity);
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
-      SchurCompList = translate_solver_parameters(
-          Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+      SchurCompList = Core::LinAlg::Solver::translate_solver_parameters(
+          get_solver_params(inparams.get<int>("SUB_SOLVER2")), get_solver_params, verbosity);
     }
     break;
     case 14:  // Uzawa: inexact Uzawa smoother
@@ -559,11 +559,11 @@ Teuchos::ParameterList Core::LinAlg::Solver::TranslateFourCToML(
       mllist.set("coarse: sweeps", mlsmotimessteps[coarse]);
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
-      predictList = translate_solver_parameters(
-          Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+      predictList = Core::LinAlg::Solver::translate_solver_parameters(
+          get_solver_params(inparams.get<int>("SUB_SOLVER1")), get_solver_params, verbosity);
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
-      SchurCompList = translate_solver_parameters(
-          Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+      SchurCompList = Core::LinAlg::Solver::translate_solver_parameters(
+          get_solver_params(inparams.get<int>("SUB_SOLVER2")), get_solver_params, verbosity);
     }
     break;
     default:
@@ -582,7 +582,7 @@ Teuchos::ParameterList Core::LinAlg::Solver::TranslateFourCToML(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::ParameterList Core::LinAlg::Solver::translate_four_c_to_muelu(
+Teuchos::ParameterList translate_four_c_to_muelu(
     const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist)
 {
   Teuchos::ParameterList muelulist;
@@ -599,18 +599,15 @@ Teuchos::ParameterList Core::LinAlg::Solver::translate_four_c_to_muelu(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::ParameterList Core::LinAlg::Solver::translate_four_c_to_belos(
-    const Teuchos::ParameterList& inparams)
+Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& inparams,
+    const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
+    Core::IO::Verbositylevel verbosity)
 {
   Teuchos::ParameterList outparams;
   outparams.set("solver", "belos");
   Teuchos::ParameterList& beloslist = outparams.sublist("Belos Parameters");
 
-  // set verbosity
-  auto verbosityLevel = Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-      Global::Problem::Instance()->IOParams(), "VERBOSITY");
-
-  switch (verbosityLevel)
+  switch (verbosity)
   {
     case Core::IO::minimal:
       beloslist.set("Output Style", Belos::OutputType::Brief);
@@ -715,7 +712,7 @@ Teuchos::ParameterList Core::LinAlg::Solver::translate_four_c_to_belos(
       azprectyp == Core::LinearSolver::PreconditionerType::icc)
   {
     Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
-    ifpacklist = Core::LinAlg::Solver::translate_four_c_to_ifpack(inparams);
+    ifpacklist = translate_four_c_to_ifpack(inparams);
   }
 
   // set parameters for CheapSIMPLE if used
@@ -724,11 +721,11 @@ Teuchos::ParameterList Core::LinAlg::Solver::translate_four_c_to_belos(
     Teuchos::ParameterList& simplelist = outparams.sublist("CheapSIMPLE Parameters");
     simplelist.set("Prec Type", "CheapSIMPLE");  // not used
     Teuchos::ParameterList& predictList = simplelist.sublist("Inverse1");
-    predictList = translate_solver_parameters(
-        Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+    predictList = Core::LinAlg::Solver::translate_solver_parameters(
+        get_solver_params(inparams.get<int>("SUB_SOLVER1")), get_solver_params, verbosity);
     Teuchos::ParameterList& schurList = simplelist.sublist("Inverse2");
-    schurList = translate_solver_parameters(
-        Global::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+    schurList = Core::LinAlg::Solver::translate_solver_parameters(
+        get_solver_params(inparams.get<int>("SUB_SOLVER2")), get_solver_params, verbosity);
   }
 
   // set parameters for ML if used
@@ -737,37 +734,37 @@ Teuchos::ParameterList Core::LinAlg::Solver::translate_four_c_to_belos(
       azprectyp == Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2)
   {
     Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
-    mllist = Core::LinAlg::Solver::TranslateFourCToML(inparams, &beloslist);
+    mllist = translate_four_c_to_ml(inparams, get_solver_params, verbosity);
   }
   if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
-    muelulist = Core::LinAlg::Solver::translate_four_c_to_muelu(inparams, &beloslist);
+    muelulist = translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu_fluid)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Fluid) Parameters");
-    muelulist = Core::LinAlg::Solver::translate_four_c_to_muelu(inparams, &beloslist);
+    muelulist = translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu_tsi)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (TSI) Parameters");
-    muelulist = Core::LinAlg::Solver::translate_four_c_to_muelu(inparams, &beloslist);
+    muelulist = translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
-    muelulist = Core::LinAlg::Solver::translate_four_c_to_muelu(inparams, &beloslist);
+    muelulist = translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu_beamsolid)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (BeamSolid) Parameters");
-    muelulist = Core::LinAlg::Solver::translate_four_c_to_muelu(inparams, &beloslist);
+    muelulist = translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu_fsi)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (FSI) Parameters");
-    muelulist = Core::LinAlg::Solver::translate_four_c_to_muelu(inparams, &beloslist);
+    muelulist = translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectyp == Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2)
   {
@@ -807,7 +804,9 @@ Teuchos::ParameterList Core::LinAlg::Solver::translate_four_c_to_belos(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::ParameterList Core::LinAlg::Solver::translate_solver_parameters(
-    const Teuchos::ParameterList& inparams)
+    const Teuchos::ParameterList& inparams,
+    const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
+    Core::IO::Verbositylevel verbosity)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::Solver:  0)   translate_solver_parameters");
 
@@ -829,7 +828,7 @@ Teuchos::ParameterList Core::LinAlg::Solver::translate_solver_parameters(
       outparams.set("solver", "superlu");
       break;
     case Core::LinearSolver::SolverType::belos:
-      outparams = Core::LinAlg::Solver::translate_four_c_to_belos(inparams);
+      outparams = translate_four_c_to_belos(inparams, get_solver_params, verbosity);
       break;
     default:
       FOUR_C_THROW("Unsupported type of solver");

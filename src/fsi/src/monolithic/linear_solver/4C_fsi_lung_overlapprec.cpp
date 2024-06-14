@@ -54,7 +54,10 @@ FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(
   Teuchos::ParameterList constrsolvparams;
   Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
       "SOLVER", Core::LinearSolver::SolverType::umfpack, constrsolvparams);
-  constraintsolver_ = Teuchos::rcp(new Core::LinAlg::Solver(constrsolvparams, maps.Map(0)->Comm()));
+  constraintsolver_ = Teuchos::rcp(new Core::LinAlg::Solver(constrsolvparams, maps.Map(0)->Comm(),
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 }
 
 

@@ -3524,7 +3524,10 @@ void ScaTra::MeshtyingStrategyS2I::InitMeshtying()
       }
       extendedsolver_ = Teuchos::rcp(
           new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(extendedsolver),
-              scatratimint_->discretization()->Comm()));
+              scatratimint_->discretization()->Comm(),
+              Global::Problem::Instance()->solver_params_callback(),
+              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                  Global::Problem::Instance()->IOParams(), "VERBOSITY")));
     }
   }  // initialize scatra-scatra interface layer growth
 

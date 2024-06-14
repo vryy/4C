@@ -192,7 +192,10 @@ void Mat::ScatraMultiScaleGP::Init()
 
     // create solver
     Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(
-        Global::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), microdis->Comm()));
+        Global::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), microdis->Comm(),
+        Global::Problem::Instance()->solver_params_callback(),
+        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
     // provide solver with null space information if necessary
     microdis->compute_null_space_if_necessary(solver->Params());

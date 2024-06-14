@@ -201,7 +201,8 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::Setup(BlockedMatrix matrix)
   Teuchos::ParameterList solvparams;
   Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solvparams, a_->Comm()));
+  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(
+      solvparams, a_->Comm(), nullptr, Core::IO::Verbositylevel::standard));
 
   // Set up solver
   Core::LinAlg::SolverParams solver_params;
@@ -791,7 +792,8 @@ void Core::LinearSolver::AMGNxN::DirectSolverWrapper::Setup(
   else
     FOUR_C_THROW("Solver type not supported as direct solver in AMGNXN framework");
 
-  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(*params, a_->Comm()));
+  solver_ = Teuchos::rcp(
+      new Core::LinAlg::Solver(*params, a_->Comm(), nullptr, Core::IO::Verbositylevel::standard));
 
   // Set up solver
   Core::LinAlg::SolverParams solver_params;

@@ -748,7 +748,10 @@ void FLD::XWall::setup_l2_projection()
     const auto solvertype =
         Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
-    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, xwdiscret_->Comm()));
+    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, xwdiscret_->Comm(),
+        Global::Problem::Instance()->solver_params_callback(),
+        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
     if (solvertype != Core::LinearSolver::SolverType::umfpack)
     {

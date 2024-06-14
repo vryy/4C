@@ -95,8 +95,11 @@ void Adapter::AleBaseAlgorithm::setup_ale(
         "No linear solver defined for ALE problems. Please set "
         "LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
 
-  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(
-      Global::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(
+      new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(linsolvernumber),
+          actdis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY")));
   actdis->compute_null_space_if_necessary(solver->Params());
 
   // ---------------------------------------------------------------------------

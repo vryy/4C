@@ -190,8 +190,11 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
       }
 
       // create solver objects
-      solver = Teuchos::rcp(new Core::LinAlg::Solver(
-          Global::Problem::Instance()->SolverParams(mshsolver), actdis->Comm()));
+      solver = Teuchos::rcp(
+          new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(mshsolver),
+              actdis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                  Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
       // add sub block solvers/smoothers to block preconditioners
       switch (azprectype)
@@ -204,11 +207,17 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
           // set Inverse blocks for block preconditioner
           // for BGS preconditioner
           // This is only necessary for BGS. CheapSIMPLE has a more modern framework
-          solver->put_solver_params_to_sub_params(
-              "Inverse1", Global::Problem::Instance()->SolverParams(fluidsolver));
+          solver->put_solver_params_to_sub_params("Inverse1",
+              Global::Problem::Instance()->SolverParams(fluidsolver),
+              Global::Problem::Instance()->solver_params_callback(),
+              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                  Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
-          solver->put_solver_params_to_sub_params(
-              "Inverse2", Global::Problem::Instance()->SolverParams(fluidpressuresolver));
+          solver->put_solver_params_to_sub_params("Inverse2",
+              Global::Problem::Instance()->SolverParams(fluidpressuresolver),
+              Global::Problem::Instance()->solver_params_callback(),
+              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                  Global::Problem::Instance()->IOParams(), "VERBOSITY"));
         }
         break;
         default:
@@ -235,8 +244,11 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
             "no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in "
             "CONTACT DYNAMIC to a valid number!");
 
-      solver = Teuchos::rcp(new Core::LinAlg::Solver(
-          Global::Problem::Instance()->SolverParams(mshsolver), actdis->Comm()));
+      solver = Teuchos::rcp(
+          new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(mshsolver),
+              actdis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                  Global::Problem::Instance()->IOParams(), "VERBOSITY")));
     }
     break;
     case Inpar::FLUID::no_meshtying:  // no meshtying -> use FLUID SOLVER
@@ -250,8 +262,11 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         FOUR_C_THROW(
             "no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC "
             "to a valid number!");
-      solver = Teuchos::rcp(new Core::LinAlg::Solver(
-          Global::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+      solver = Teuchos::rcp(
+          new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(linsolvernumber),
+              actdis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                  Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
       break;
     }
@@ -1289,8 +1304,11 @@ void Adapter::FluidBaseAlgorithm::setup_inflow_fluid(
     FOUR_C_THROW(
         "no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to "
         "a valid number!");
-  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(
-      Global::Problem::Instance()->SolverParams(linsolvernumber), discret->Comm()));
+  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(
+      new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(linsolvernumber),
+          discret->Comm(), Global::Problem::Instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
   discret->compute_null_space_if_necessary(solver->Params(), true);
 

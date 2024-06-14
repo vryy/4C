@@ -77,7 +77,10 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
         "DYNAMIC to a valid number!");
 
   solver_ = Teuchos::rcp(new Core::LinAlg::Solver(
-      Global::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), discret_->Comm()));
+      Global::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), discret_->Comm(),
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY")));
   discret_->compute_null_space_if_necessary(solver_->Params());
 
   Inpar::STR::PredEnum pred =
@@ -1021,8 +1024,10 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
         Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
     // create solver
-    Teuchos::RCP<Core::LinAlg::Solver> solver =
-        Teuchos::rcp(new Core::LinAlg::Solver(solverparams, discret_->Comm()));
+    Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(solverparams,
+        discret_->Comm(), Global::Problem::Instance()->solver_params_callback(),
+        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
     // prescribe rigid body modes
     discret_->compute_null_space_if_necessary(solver->Params());

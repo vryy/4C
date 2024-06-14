@@ -97,7 +97,9 @@ Teuchos::RCP<Core::LinAlg::Solver> CONTACT::Aug::LagrangeMultiplierFunction::cre
   solver_type = Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
   Teuchos::RCP<Core::LinAlg::Solver> solver =
-      Teuchos::rcp(new Core::LinAlg::Solver(solverparams, comm));
+      Teuchos::rcp(new Core::LinAlg::Solver(solverparams, comm, nullptr,
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
   if (solver_type != Core::LinearSolver::SolverType::umfpack and
       solver_type != Core::LinearSolver::SolverType::superlu)

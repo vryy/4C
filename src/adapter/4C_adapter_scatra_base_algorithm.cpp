@@ -76,7 +76,10 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // TODO: TAW use of solverparams???
   // change input parameter to solver number instead of parameter list?
   // -> no default paramter possible any more
-  auto solver = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, discret->Comm()));
+  auto solver = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, discret->Comm(),
+      Global::Problem::Instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes

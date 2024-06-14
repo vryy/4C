@@ -578,8 +578,8 @@ void Core::FE::Nurbs::apply_nurbs_initial_condition(Core::FE::Discretization& di
   const double newtol = 1.0e-11;
   p.set("AZTOL", newtol);
 
-  Teuchos::RCP<Core::LinAlg::Solver> lssolver =
-      Teuchos::rcp(new Core::LinAlg::Solver(p, dis.Comm()));
+  Teuchos::RCP<Core::LinAlg::Solver> lssolver = Teuchos::rcp(
+      new Core::LinAlg::Solver(p, dis.Comm(), nullptr, Core::IO::Verbositylevel::standard));
   dis.compute_null_space_if_necessary(lssolver->Params());
 
   // get the processor ID from the communicator

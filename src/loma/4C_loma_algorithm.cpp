@@ -199,7 +199,10 @@ void LowMach::Algorithm::Setup()
 
     // use loma solver object
     lomasolver_ = Teuchos::rcp(
-        new Core::LinAlg::Solver(lomasolverparams, fluid_field()->discretization()->Comm()));
+        new Core::LinAlg::Solver(lomasolverparams, fluid_field()->discretization()->Comm(),
+            Global::Problem::Instance()->solver_params_callback(),
+            Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                Global::Problem::Instance()->IOParams(), "VERBOSITY")));
 
     // todo extract ScalarTransportFluidSolver
     const int fluidsolver = fluiddyn.get<int>("LINEAR_SOLVER");
@@ -209,8 +212,11 @@ void LowMach::Algorithm::Setup()
           "FLUID DYNAMIC to a valid number! This solver block is used for the primary variables "
           "(Inverse1 block) within BGS2x2 preconditioner.");
 
-    lomasolver_->put_solver_params_to_sub_params(
-        "Inverse1", Global::Problem::Instance()->SolverParams(fluidsolver));
+    lomasolver_->put_solver_params_to_sub_params("Inverse1",
+        Global::Problem::Instance()->SolverParams(fluidsolver),
+        Global::Problem::Instance()->solver_params_callback(),
+        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
     // get linear solver id from SCALAR TRANSPORT DYNAMIC
     const Teuchos::ParameterList& scatradyn =
@@ -222,8 +228,11 @@ void LowMach::Algorithm::Setup()
           "DYNAMIC to a valid number! This solver block is used for the secondary variables "
           "(Inverse2 block) within BGS2x2 preconditioner.");
 
-    lomasolver_->put_solver_params_to_sub_params(
-        "Inverse2", Global::Problem::Instance()->SolverParams(scalartransportsolvernumber));
+    lomasolver_->put_solver_params_to_sub_params("Inverse2",
+        Global::Problem::Instance()->SolverParams(scalartransportsolvernumber),
+        Global::Problem::Instance()->solver_params_callback(),
+        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Global::Problem::Instance()->IOParams(), "VERBOSITY"));
 
     fluid_field()->discretization()->compute_null_space_if_necessary(
         lomasolver_->Params().sublist("Inverse1"));

@@ -485,8 +485,8 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   //  if(myrank==0)
   //    cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<"\n";
 
-  Teuchos::RCP<Core::LinAlg::Solver> solver =
-      Teuchos::rcp(new Core::LinAlg::Solver(p, discret.Comm()));
+  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(
+      new Core::LinAlg::Solver(p, discret.Comm(), nullptr, Core::IO::Verbositylevel::standard));
   // FixMe actually the const qualifier could stay, if someone adds to each single
   // related ComputeNullSpace routine a "const"....
   const_cast<Core::FE::Discretization&>(discret).compute_null_space_if_necessary(solver->Params());
