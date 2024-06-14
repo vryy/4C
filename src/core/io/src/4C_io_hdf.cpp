@@ -418,7 +418,7 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_result_data_vec_char(s
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::ReadCharVector(
+Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_char_vector(
     std::string value_path, const Epetra_Comm& Comm) const
 {
   int new_proc_num = Comm.NumProc();

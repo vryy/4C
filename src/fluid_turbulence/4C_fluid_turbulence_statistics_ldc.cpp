@@ -1588,7 +1588,7 @@ void FLD::TurbulenceStatisticsLdc::ClearStatistics()
  *----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsLdc::read_restart(Core::IO::DiscretizationReader& reader)
 {
-  numsamp_ = reader.ReadDouble("numsamp");
+  numsamp_ = reader.read_double("numsamp");
 
   reader.read_redundant_double_vector(x1sumu_, "x1sumu");
   reader.read_redundant_double_vector(x1sumv_, "x1sumv");
@@ -1659,7 +1659,7 @@ void FLD::TurbulenceStatisticsLdc::read_restart(Core::IO::DiscretizationReader& 
  *----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsLdc::write_restart(Core::IO::DiscretizationWriter& writer)
 {
-  writer.WriteDouble("numsamp", numsamp_);
+  writer.write_double("numsamp", numsamp_);
 
   writer.write_redundant_double_vector("x1sumu", x1sumu_);
   writer.write_redundant_double_vector("x1sumv", x1sumv_);

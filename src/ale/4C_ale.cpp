@@ -454,7 +454,7 @@ void ALE::Ale::Output()
   }
 
   // write domain decomposition for visualization
-  if ((step_ == writeresultsevery_ or step_ == 0)) output_->WriteElementData(true);
+  if ((step_ == writeresultsevery_ or step_ == 0)) output_->write_element_data(true);
 
   return;
 }
@@ -464,13 +464,13 @@ void ALE::Ale::Output()
 void ALE::Ale::output_state(bool& datawritten)
 {
   // write output data
-  output_->NewStep(step_, time_);
-  output_->WriteVector("dispnp", dispnp_);
+  output_->new_step(step_, time_);
+  output_->write_vector("dispnp", dispnp_);
 
   if (elequalityyesno_)
   {
-    output_->WriteVector("det_j", eledetjac_, Core::IO::elementvector);
-    output_->WriteVector("element_quality", elequality_, Core::IO::elementvector);
+    output_->write_vector("det_j", eledetjac_, Core::IO::elementvector);
+    output_->write_vector("element_quality", elequality_, Core::IO::elementvector);
   }
 
   return;
@@ -481,9 +481,9 @@ void ALE::Ale::output_state(bool& datawritten)
 void ALE::Ale::output_restart(bool& datawritten)
 {
   // write restart data
-  output_->NewStep(step_, time_);
-  output_->WriteVector("dispnp", dispnp_);
-  output_->WriteVector("dispn", dispn_);
+  output_->new_step(step_, time_);
+  output_->write_vector("dispnp", dispnp_);
+  output_->write_vector("dispn", dispn_);
 
   // restart/output data has been written
   datawritten = true;
@@ -506,11 +506,11 @@ void ALE::Ale::read_restart(const int step)
 {
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
+  time_ = reader.read_double("time");
+  step_ = reader.read_int("step");
 
-  reader.ReadVector(dispnp_, "dispnp");
-  reader.ReadVector(dispn_, "dispn");
+  reader.read_vector(dispnp_, "dispnp");
+  reader.read_vector(dispn_, "dispn");
 }
 
 /*----------------------------------------------------------------------------*/

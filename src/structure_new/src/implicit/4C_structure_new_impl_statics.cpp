@@ -122,8 +122,8 @@ void STR::IMPLICIT::Statics::write_restart(
   auto fviscon = Core::LinAlg::CreateVector(*global_state().dof_row_map_view(), true);
 
   // write dynamic forces, so that it can be used later on for restart dynamics analysis
-  iowriter.WriteVector("finert", finertialn);
-  iowriter.WriteVector("fvisco", fviscon);
+  iowriter.write_vector("finert", finertialn);
+  iowriter.write_vector("fvisco", fviscon);
 
   model_eval().write_restart(iowriter, forced_writerestart);
 }

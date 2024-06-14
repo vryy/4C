@@ -835,18 +835,18 @@ void STR::TimIntGenAlpha::ReadRestartForce()
 {
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step_);
-  reader.ReadVector(fext_, "fexternal");
-  reader.ReadVector(fint_, "fint");
-  reader.ReadVector(finert_, "finert");
+  reader.read_vector(fext_, "fexternal");
+  reader.read_vector(fint_, "fint");
+  reader.read_vector(finert_, "finert");
 }
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
 void STR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
-  output->WriteVector("fexternal", fext_);
-  output->WriteVector("fint", fint_);
-  output->WriteVector("finert", finert_);
+  output->write_vector("fexternal", fext_);
+  output->write_vector("fint", fint_);
+  output->write_vector("finert", finert_);
 }
 
 /*-----------------------------------------------------------------------------*

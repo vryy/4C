@@ -1146,7 +1146,7 @@ void ScaTra::ScaTraTimIntImpl::output_to_gmsh(const int step, const double time)
   // create Gmsh postprocessing file
   const std::string filename =
       Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("solution_field_scalar",
-          DiscWriter()->Output()->file_name(), step, 500, screen_out, discret_->Comm().MyPID());
+          DiscWriter()->output()->file_name(), step, 500, screen_out, discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   //  {
   //    // add 'View' to Gmsh postprocessing file
@@ -1226,7 +1226,7 @@ void ScaTra::ScaTraTimIntImpl::output_flux(Teuchos::RCP<Epetra_MultiVector> flux
   if (nurbsdis != nullptr)
   {
     Teuchos::RCP<Epetra_Vector> normalflux = Teuchos::rcp(((*flux)(0)), false);
-    output_->WriteVector("normalflux", normalflux, Core::IO::dofvector);
+    output_->write_vector("normalflux", normalflux, Core::IO::dofvector);
     return;  // leave here
   }
 
@@ -1266,7 +1266,7 @@ void ScaTra::ScaTraTimIntImpl::output_flux(Teuchos::RCP<Epetra_MultiVector> flux
       err += fluxk->ReplaceMyValue(i, 2, zvalue);
       if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
     }
-    output_->WriteVector(name, fluxk, Core::IO::nodevector);
+    output_->write_vector(name, fluxk, Core::IO::nodevector);
   }
 }  // ScaTraTimIntImpl::OutputFlux
 
@@ -2500,7 +2500,7 @@ void ScaTra::OutputScalarsStrategyBase::Init(const ScaTraTimIntImpl* const scatr
   else
     filename = "scalarvalues";
 
-  runtime_csvwriter_.emplace(myrank_, *scatratimint->DiscWriter()->Output(), filename);
+  runtime_csvwriter_.emplace(myrank_, *scatratimint->DiscWriter()->output(), filename);
   init_strategy_specific(scatratimint);
 }
 

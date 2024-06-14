@@ -43,7 +43,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::write_restart(
     std::shared_ptr<Core::IO::DiscretizationWriter> writer) const
 {
   // write maximum global id in restart
-  writer->WriteInt(objectname_ + "maxglobalid", maxglobalid_);
+  writer->write_int(objectname_ + "maxglobalid", maxglobalid_);
 
   // write reusable global ids
   {
@@ -54,7 +54,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::write_restart(
 
     buffer->insert(buffer->end(), data().begin(), data().end());
 
-    writer->WriteCharVector(objectname_ + "reusableglobalids", buffer);
+    writer->write_char_data(objectname_ + "reusableglobalids", buffer);
   }
 }
 
@@ -62,13 +62,13 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::read_restart(
     const std::shared_ptr<Core::IO::DiscretizationReader> reader)
 {
   // get maximum global id from restart
-  maxglobalid_ = reader->ReadInt(objectname_ + "maxglobalid");
+  maxglobalid_ = reader->read_int(objectname_ + "maxglobalid");
 
   // get reusable global ids from restart
   {
     Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
 
-    reader->ReadCharVector(buffer, objectname_ + "reusableglobalids");
+    reader->read_char_vector(buffer, objectname_ + "reusableglobalids");
 
     std::vector<char>::size_type position = 0;
 

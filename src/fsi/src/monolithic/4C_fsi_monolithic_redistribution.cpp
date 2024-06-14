@@ -253,15 +253,15 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
 
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
-  fluidoutput->OverwriteResultFile();
-  aleoutput->OverwriteResultFile();
-  structureoutput->OverwriteResultFile();
+  fluidoutput->overwrite_result_file();
+  aleoutput->overwrite_result_file();
+  structureoutput->overwrite_result_file();
   create_structure_time_integrator(fsidyn, structuredis);
   SetLambda();
 
-  fluidoutput->OverwriteResultFile();
-  aleoutput->OverwriteResultFile();
-  structureoutput->OverwriteResultFile();
+  fluidoutput->overwrite_result_file();
+  aleoutput->overwrite_result_file();
+  structureoutput->overwrite_result_file();
   create_fluid_and_ale_time_integrator(fsidyn, fluiddis, aledis);
   SetLambda();
 
@@ -272,13 +272,13 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
    * is to overwrite the file and write the three fields in this order.
    */
 
-  structureoutput->OverwriteResultFile();
-  fluidoutput->OverwriteResultFile();
-  aleoutput->OverwriteResultFile();
+  structureoutput->overwrite_result_file();
+  fluidoutput->overwrite_result_file();
+  aleoutput->overwrite_result_file();
 
-  structureoutput->WriteMesh(0, 0.0);
-  fluidoutput->WriteMesh(0, 0.0);
-  aleoutput->WriteMesh(0, 0.0);
+  structureoutput->write_mesh(0, 0.0);
+  fluidoutput->write_mesh(0, 0.0);
+  aleoutput->write_mesh(0, 0.0);
 
   // setup has do be done again
   SetNotSetup();
@@ -478,45 +478,20 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const Inpar::FSI::R
 
   if (domain == Inpar::FSI::Redistribute_structure)
   {
-    fluidoutput->OverwriteResultFile();
-    aleoutput->OverwriteResultFile();
-    structureoutput->OverwriteResultFile();
+    fluidoutput->overwrite_result_file();
+    aleoutput->overwrite_result_file();
+    structureoutput->overwrite_result_file();
     create_structure_time_integrator(fsidyn, structuredis);
     SetLambda();
   }
   else if (domain == Inpar::FSI::Redistribute_fluid)
   {
-    fluidoutput->OverwriteResultFile();
-    aleoutput->OverwriteResultFile();
-    structureoutput->OverwriteResultFile();
+    fluidoutput->overwrite_result_file();
+    aleoutput->overwrite_result_file();
+    structureoutput->overwrite_result_file();
     create_fluid_and_ale_time_integrator(fsidyn, fluiddis, aledis);
     SetLambda();
   }
-
-  //  // add missing sections "fluid" and "ale" in control file
-  //  if (Core::UTILS::IntegralValue<int>(*ioflags,"OUTPUT_BIN")){
-  //    if (domain == Inpar::FSI::Redistribute_structure){
-  //      fluidoutput->WriteMesh(0, 0.0);
-  //      aleoutput->WriteMesh(0, 0.0);
-  //    }
-  //    else if (domain == Inpar::FSI::Redistribute_fluid){
-  ////      structureoutput->OverwriteResultFile();
-  ////      fluidoutput->OverwriteResultFile();
-  ////      aleoutput->OverwriteResultFile();
-  //      structureoutput->WriteMesh(0, 0.0);
-  ////      fluidoutput->WriteMesh(0, 0.0);
-  ////      aleoutput->WriteMesh(0, 0.0);
-  //    }
-  //  }
-
-
-  //  fluidoutput->OverwriteResultFile();
-  //  aleoutput->OverwriteResultFile();
-  //  structureoutput->OverwriteResultFile();
-  //
-  //  create_structure_time_integrator(fsidyn, structuredis);
-  //  create_fluid_and_ale_time_integrator(fsidyn, fluiddis, aledis);
-  //  SetLambda();
 
   /*
    * In the control file the three fields have to appear in the order
@@ -524,13 +499,13 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const Inpar::FSI::R
    * is to overwrite the file and write the three fields in this order.
    */
 
-  structureoutput->OverwriteResultFile();
-  fluidoutput->OverwriteResultFile();
-  aleoutput->OverwriteResultFile();
+  structureoutput->overwrite_result_file();
+  fluidoutput->overwrite_result_file();
+  aleoutput->overwrite_result_file();
 
-  structureoutput->WriteMesh(0, 0.0);
-  fluidoutput->WriteMesh(0, 0.0);
-  aleoutput->WriteMesh(0, 0.0);
+  structureoutput->write_mesh(0, 0.0);
+  fluidoutput->write_mesh(0, 0.0);
+  aleoutput->write_mesh(0, 0.0);
 
 
   /*

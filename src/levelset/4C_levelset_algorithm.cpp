@@ -418,10 +418,10 @@ void ScaTra::LevelSetAlgorithm::check_and_write_output_and_restart()
   if (IsResultStep())
   {
     // step number and time (only after that data output is possible)
-    output_->NewStep(step_, time_);
+    output_->new_step(step_, time_);
 
     // write domain decomposition for visualization (only once at step "upres"!)
-    if (step_ == upres_) output_->WriteElementData(true);
+    if (step_ == upres_) output_->write_element_data(true);
 
     // write state vectors
     output_state();

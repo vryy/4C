@@ -721,7 +721,7 @@ void FLD::TimIntHDGWeakComp::Output()
   if (step_ % upres_ == 0)
   {
     // step number and time
-    output_->NewStep(step_, time_);
+    output_->new_step(step_, time_);
 
     // get number of spatial dimensions
     const unsigned int nsd = params_->get<int>("number of velocity degrees of freedom");
@@ -754,12 +754,12 @@ void FLD::TimIntHDGWeakComp::Output()
     }
 
     // write solution variables
-    output_->WriteVector("Mixedvar", interpolatedMixedVar_, Core::IO::nodevector);
-    output_->WriteVector("Density", interpolatedDensity_, Core::IO::nodevector);
-    output_->WriteVector("Trace_density", traceDen, Core::IO::nodevector);
+    output_->write_vector("Mixedvar", interpolatedMixedVar_, Core::IO::nodevector);
+    output_->write_vector("Density", interpolatedDensity_, Core::IO::nodevector);
+    output_->write_vector("Trace_density", traceDen, Core::IO::nodevector);
 
     // write derived variables
-    output_->WriteVector("Pressure", interpolatedPressure, Core::IO::nodevector);
+    output_->write_vector("Pressure", interpolatedPressure, Core::IO::nodevector);
 
     // write ALE variables
     if (alefluid_)
@@ -769,10 +769,10 @@ void FLD::TimIntHDGWeakComp::Output()
       for (int i = 0; i < interpolatedDensity_->MyLength(); ++i)
         for (unsigned int d = 0; d < nsd; ++d) (*AleDisplacement)[d][i] = (*dispnp_)[(i * nsd) + d];
 
-      output_->WriteVector("Ale_displacement", AleDisplacement, Core::IO::nodevector);
+      output_->write_vector("Ale_displacement", AleDisplacement, Core::IO::nodevector);
     }
 
-    if (step_ == upres_ or step_ == 0) output_->WriteElementData(true);
+    if (step_ == upres_ or step_ == 0) output_->write_element_data(true);
   }
 }
 

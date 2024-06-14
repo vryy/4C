@@ -656,15 +656,15 @@ void Arteries::ArtNetExplicitTimeInt::Output(
   if (step_ % upres_ == 0)
   {
     // step number and time
-    output_.NewStep(step_, time_);
-    //    output_.WriteVector("NodeIDs",nodeIds_);
+    output_.new_step(step_, time_);
+    //    output_.write_vector("NodeIDs",nodeIds_);
 
     // "volumetric flow rate/cross-sectional area" vector
-    output_.WriteVector("qanp", qanp_);
+    output_.write_vector("qanp", qanp_);
 
 
     // write domain decomposition for visualization (only once!)
-    if (step_ == upres_) output_.WriteElementData(true);
+    if (step_ == upres_) output_.write_element_data(true);
 
     // #endif
     //  ------------------------------------------------------------------
@@ -685,52 +685,52 @@ void Arteries::ArtNetExplicitTimeInt::Output(
 
     // Export postpro results
     this->calc_postprocessing_values();
-    output_.WriteVector("one_d_artery_flow", qn_);
-    output_.WriteVector("one_d_artery_pressure", pn_);
-    output_.WriteVector("one_d_artery_area", an_);
+    output_.write_vector("one_d_artery_flow", qn_);
+    output_.write_vector("one_d_artery_pressure", pn_);
+    output_.write_vector("one_d_artery_area", an_);
 
     if (solvescatra_)
     {
       this->calc_scatra_from_scatra_fw(export_scatra_, scatraO2np_);
-      output_.WriteVector("one_d_o2_scatra", export_scatra_);
+      output_.write_vector("one_d_o2_scatra", export_scatra_);
     }
 
-    output_.WriteVector("forward_speed", Wfnp_);
-    output_.WriteVector("forward_speed0", Wfo_);
-    output_.WriteVector("backward_speed", Wbnp_);
-    output_.WriteVector("backward_speed0", Wbo_);
+    output_.write_vector("forward_speed", Wfnp_);
+    output_.write_vector("forward_speed0", Wfo_);
+    output_.write_vector("backward_speed", Wbnp_);
+    output_.write_vector("backward_speed0", Wbo_);
 
     if (CoupledTo3D)
     {
-      output_.WriteInt("Actual_RedD_step", step);
+      output_.write_int("Actual_RedD_step", step);
     }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ != 0 && step_ % uprestart_ == 0)
   {
     // step number and time
-    output_.NewStep(step_, time_);
+    output_.new_step(step_, time_);
 
     // "volumetric flow rate/cross-sectional area" vector
-    output_.WriteVector("qanp", qanp_);
+    output_.write_vector("qanp", qanp_);
 
     // Export postpro results
     this->calc_postprocessing_values();
-    output_.WriteVector("one_d_artery_flow", qn_);
-    output_.WriteVector("one_d_artery_pressure", pn_);
-    output_.WriteVector("one_d_artery_area", an_);
+    output_.write_vector("one_d_artery_flow", qn_);
+    output_.write_vector("one_d_artery_pressure", pn_);
+    output_.write_vector("one_d_artery_area", an_);
 
     if (solvescatra_)
     {
       this->calc_scatra_from_scatra_fw(export_scatra_, scatraO2np_);
-      output_.WriteVector("one_d_o2_scatra", export_scatra_);
+      output_.write_vector("one_d_o2_scatra", export_scatra_);
     }
 
 
-    output_.WriteVector("forward_speed", Wfnp_);
-    output_.WriteVector("forward_speed0", Wfo_);
-    output_.WriteVector("backward_speed", Wbnp_);
-    output_.WriteVector("backward_speed0", Wbo_);
+    output_.write_vector("forward_speed", Wfnp_);
+    output_.write_vector("forward_speed0", Wfo_);
+    output_.write_vector("backward_speed", Wbnp_);
+    output_.write_vector("backward_speed0", Wbo_);
 
     // ------------------------------------------------------------------
     // Export gnuplot format arteries
@@ -750,7 +750,7 @@ void Arteries::ArtNetExplicitTimeInt::Output(
 
     if (CoupledTo3D)
     {
-      output_.WriteInt("Actual_RedD_step", step);
+      output_.write_int("Actual_RedD_step", step);
     }
   }
 
@@ -779,18 +779,18 @@ void Arteries::ArtNetExplicitTimeInt::read_restart(int step, bool coupledTo3D)
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step);
 
-  time_ = reader.ReadDouble("time");
+  time_ = reader.read_double("time");
 
   if (coupledTo3D_)
   {
-    step_ = reader.ReadInt("Actual_RedD_step");
+    step_ = reader.read_int("Actual_RedD_step");
   }
   else
   {
-    step_ = reader.ReadInt("step");
+    step_ = reader.read_int("step");
   }
 
-  reader.ReadVector(qanp_, "qanp");
+  reader.read_vector(qanp_, "qanp");
 }
 
 

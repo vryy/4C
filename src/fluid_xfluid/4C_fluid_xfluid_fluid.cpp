@@ -50,7 +50,7 @@ FLD::XFluidFluid::XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& emb
       ale_embfluid_(ale_fluid),
       cond_name_("XFEMSurfFluidFluid")
 {
-  xfluiddis->Writer()->WriteMesh(0, 0.0);
+  xfluiddis->Writer()->write_mesh(0, 0.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -65,7 +65,7 @@ FLD::XFluidFluid::XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& emb
       ale_embfluid_(ale_fluid),
       cond_name_("XFEMSurfFluidFluid")
 {
-  xfluiddis->Writer()->WriteMesh(0, 0.0);
+  xfluiddis->Writer()->write_mesh(0, 0.0);
   meshcoupl_dis_.push_back(embedded_fluid->discretization());
 }
 

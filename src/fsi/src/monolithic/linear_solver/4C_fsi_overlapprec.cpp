@@ -86,7 +86,7 @@ int FSI::BlockPreconditioningMatrix::ApplyInverse(
 
     // X and Y are the same at this point (if we have been called by aztec!)
     Epetra_Vector& y = Teuchos::dyn_cast<Epetra_Vector>(Y);
-    pcdbg_->WriteVector("x", Teuchos::rcp(&y, false));
+    pcdbg_->write_vector("x", Teuchos::rcp(&y, false));
 
     r = Teuchos::rcp(new Epetra_Vector(y.Map()));
     Apply(X, *r);
@@ -101,9 +101,9 @@ int FSI::BlockPreconditioningMatrix::ApplyInverse(
   if (pcdbg_ != Teuchos::null)
   {
     Epetra_Vector& y = Teuchos::dyn_cast<Epetra_Vector>(Y);
-    pcdbg_->WriteVector("y", Teuchos::rcp(&y, false));
+    pcdbg_->write_vector("y", Teuchos::rcp(&y, false));
     r->Update(-1, y, 1);
-    pcdbg_->WriteVector("r", r);
+    pcdbg_->write_vector("r", r);
   }
 
   return 0;

@@ -813,7 +813,7 @@ bool FSI::Partitioned::computeF(const Epetra_Vector& x, Epetra_Vector& F, const 
   // Do the FSI step. The real work is in here.
   fsi_op(x, F, fillFlag);
 
-  if (debugwriter_ != Teuchos::null) debugwriter_->WriteVector("F", F);
+  if (debugwriter_ != Teuchos::null) debugwriter_->write_vector("F", F);
 
   const double endTime = timer.wallTime();
   if (Comm().MyPID() == 0)
@@ -959,7 +959,7 @@ void FSI::Partitioned::output()
           Teuchos::rcp_dynamic_cast<NOX::FSI::AitkenFactory>(linesearchfactory, true);
 
       // write aitken relaxation parameter
-      MBFluidField()->fluid_field()->DiscWriter()->WriteDouble(
+      MBFluidField()->fluid_field()->DiscWriter()->write_double(
           "omega", aitkenfactory->GetAitken()->GetOmega());
 
       break;
@@ -988,7 +988,7 @@ void FSI::Partitioned::read_restart(int step)
       {
         Core::IO::DiscretizationReader reader(
             MBFluidField()->fluid_field()->discretization(), input_control_file, step);
-        omega = reader.ReadDouble("omega");
+        omega = reader.read_double("omega");
       }
       else if (Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(MBFluidField()) != Teuchos::null)
       {
@@ -997,7 +997,7 @@ void FSI::Partitioned::read_restart(int step)
         Core::IO::DiscretizationReader reader(Teuchos::rcp_const_cast<Core::FE::Discretization>(
                                                   fluidale->ale_field()->discretization()),
             input_control_file, step);
-        omega = reader.ReadDouble("omega");
+        omega = reader.read_double("omega");
       }
       else
         FOUR_C_THROW(

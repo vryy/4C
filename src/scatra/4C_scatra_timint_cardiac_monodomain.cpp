@@ -97,7 +97,7 @@ void ScaTra::TimIntCardiacMonodomain::output_state()
       if ((*phinp_)[k] >= activation_threshold_ && (*activation_time_np_)[k] <= dta_ * 0.9)
         (*activation_time_np_)[k] = time_;
     }
-    output_->WriteVector("activation_time_np", activation_time_np_);
+    output_->write_vector("activation_time_np", activation_time_np_);
   }
 
   // Recover internal state of the material (for electrophysiology)
@@ -118,7 +118,7 @@ void ScaTra::TimIntCardiacMonodomain::output_state()
       temp << k + 1;
       material_internal_state_np_component_ =
           Teuchos::rcp((*material_internal_state_np_)(k), false);
-      output_->WriteVector("mat_int_state_" + temp.str(), material_internal_state_np_component_,
+      output_->write_vector("mat_int_state_" + temp.str(), material_internal_state_np_component_,
           Core::IO::elementvector);
     }
   }
@@ -141,7 +141,7 @@ void ScaTra::TimIntCardiacMonodomain::output_state()
       temp << k + 1;
       material_ionic_currents_np_component_ =
           Teuchos::rcp((*material_ionic_currents_np_)(k), false);
-      output_->WriteVector("mat_ionic_currents_" + temp.str(),
+      output_->write_vector("mat_ionic_currents_" + temp.str(),
           material_ionic_currents_np_component_, Core::IO::elementvector);
     }
   }

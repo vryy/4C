@@ -291,7 +291,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
       Core::IO::DiscretizationReader reader =
           Core::IO::DiscretizationReader(fluid_field()->discretization(),
               Global::Problem::Instance()->InputControlFile(), restart);
-      reader.ReadVector(lambdafullfluid, "fsilambda");
+      reader.read_vector(lambdafullfluid, "fsilambda");
 
       Teuchos::RCP<Epetra_Vector> lambdafluid =
           Teuchos::rcp(new Epetra_Vector(*fluid_field()->Interface()->FullMap(), true));
@@ -1271,7 +1271,7 @@ void FSI::MonolithicStructureSplit::OutputLambda()
   const int upres = timeparams_.get<int>("RESULTSEVRY");
   if ((uprestart != 0 && fluid_field()->Step() % uprestart == 0) or
       (upres != 0 and fluid_field()->Step() % upres == 0))
-    structure_field()->disc_writer()->WriteVector("fsilambda", lambdafull);
+    structure_field()->disc_writer()->write_vector("fsilambda", lambdafull);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1297,7 +1297,7 @@ void FSI::MonolithicStructureSplit::read_restart(int step)
         Teuchos::rcp(new Epetra_Vector(*structure_field()->dof_row_map(), true));
     Core::IO::DiscretizationReader reader = Core::IO::DiscretizationReader(
         structure_field()->discretization(), Global::Problem::Instance()->InputControlFile(), step);
-    reader.ReadVector(lambdafull, "fsilambda");
+    reader.read_vector(lambdafull, "fsilambda");
     lambdaold_ = structure_field()->Interface()->ExtractFSICondVector(lambdafull);
   }
 

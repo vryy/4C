@@ -845,7 +845,7 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
     if (sdbg_ != Teuchos::null)
     {
       sdbg_->NewIteration();
-      sdbg_->WriteVector("x", *structure_field()->Interface()->ExtractFSICondVector(sx));
+      sdbg_->write_vector("x", *structure_field()->Interface()->ExtractFSICondVector(sx));
     }
   }
 

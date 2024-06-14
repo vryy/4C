@@ -71,7 +71,7 @@ void FLD::TimIntPoro::read_restart(int step)
 {
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step);
-  reader.ReadVector(gridv_, "gridv");
+  reader.read_vector(gridv_, "gridv");
 }
 
 void FLD::TimIntPoro::set_element_custom_parameter()
@@ -175,13 +175,13 @@ void FLD::TimIntPoro::Output()
   {
     Teuchos::RCP<Epetra_Vector> convel = Teuchos::rcp(new Epetra_Vector(*velnp_));
     convel->Update(-1.0, *gridv_, 1.0);
-    output_->WriteVector("convel", convel);
-    output_->WriteVector("gridv", gridv_);
+    output_->write_vector("convel", convel);
+    output_->write_vector("gridv", gridv_);
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ > 0 && step_ % uprestart_ == 0)
   {
-    output_->WriteVector("gridv", gridv_);
+    output_->write_vector("gridv", gridv_);
   }
 }
 

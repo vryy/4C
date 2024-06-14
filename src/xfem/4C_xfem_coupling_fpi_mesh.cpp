@@ -595,7 +595,7 @@ void XFEM::MeshCouplingFPI::read_restart(const int step)
   Core::IO::DiscretizationReader boundaryreader(
       cutter_dis_, Global::Problem::Instance()->InputControlFile(), step);
 
-  const double time = boundaryreader.ReadDouble("time");
+  const double time = boundaryreader.read_double("time");
   //  const int    step = boundaryreader.ReadInt("step");
 
   if (myrank_ == 0)
@@ -604,13 +604,13 @@ void XFEM::MeshCouplingFPI::read_restart(const int step)
     Core::IO::cout << "step: " << step << Core::IO::endl;
   }
 
-  boundaryreader.ReadVector(iveln_, "iveln_res");
-  boundaryreader.ReadVector(idispn_, "idispn_res");
+  boundaryreader.read_vector(iveln_, "iveln_res");
+  boundaryreader.read_vector(idispn_, "idispn_res");
 
   // REMARK: ivelnp_ and idispnp_ are set again for the new time step in PrepareSolve()
-  boundaryreader.ReadVector(ivelnp_, "ivelnp_res");
-  boundaryreader.ReadVector(idispnp_, "idispnp_res");
-  boundaryreader.ReadVector(idispnpi_, "idispnpi_res");
+  boundaryreader.read_vector(ivelnp_, "ivelnp_res");
+  boundaryreader.read_vector(idispnp_, "idispnp_res");
+  boundaryreader.read_vector(idispnpi_, "idispnpi_res");
 
   if (not(cutter_dis_->dof_row_map())->SameAs(ivelnp_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
@@ -638,7 +638,7 @@ void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const i
 
 
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
-      filename_base_fsi.str(), cutter_dis_->Writer()->Output()->file_name(), step, gmsh_step_diff,
+      filename_base_fsi.str(), cutter_dis_->Writer()->output()->file_name(), step, gmsh_step_diff,
       gmsh_debug_out_screen, myrank_);
 
   std::ofstream gmshfilecontent(filename.c_str());
@@ -699,23 +699,23 @@ void XFEM::MeshCouplingFPI::gmsh_output_discretization(std::ostream& gmshfilecon
 void XFEM::MeshCouplingFPI::Output(const int step, const double time, const bool write_restart_data)
 {
   // output for interface
-  cutter_output_->NewStep(step, time);
+  cutter_output_->new_step(step, time);
 
-  cutter_output_->WriteVector("ivelnp", ivelnp_);
-  cutter_output_->WriteVector("idispnp", idispnp_);
-  cutter_output_->WriteVector("itrueresnp", itrueresidual_);
+  cutter_output_->write_vector("ivelnp", ivelnp_);
+  cutter_output_->write_vector("idispnp", idispnp_);
+  cutter_output_->write_vector("itrueresnp", itrueresidual_);
 
-  cutter_output_->WriteElementData(firstoutputofrun_);
+  cutter_output_->write_element_data(firstoutputofrun_);
   firstoutputofrun_ = false;
 
   // write restart
   if (write_restart_data)
   {
-    cutter_output_->WriteVector("iveln_res", iveln_);
-    cutter_output_->WriteVector("idispn_res", idispn_);
-    cutter_output_->WriteVector("ivelnp_res", ivelnp_);
-    cutter_output_->WriteVector("idispnp_res", idispnp_);
-    cutter_output_->WriteVector("idispnpi_res", idispnpi_);
+    cutter_output_->write_vector("iveln_res", iveln_);
+    cutter_output_->write_vector("idispn_res", idispn_);
+    cutter_output_->write_vector("ivelnp_res", ivelnp_);
+    cutter_output_->write_vector("idispnp_res", idispnp_);
+    cutter_output_->write_vector("idispnpi_res", idispnpi_);
   }
 }
 

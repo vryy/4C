@@ -126,7 +126,7 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
   // context for output and restart
   // -------------------------------------------------------------------
   Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
-  output->WriteMesh(0, 0.0);
+  output->write_mesh(0, 0.0);
 
   // -------------------------------------------------------------------
   // set some pointers and variables

@@ -173,10 +173,10 @@ void Airway::RedAirwayTissue::read_restart(const int step)
   redairways_->read_restart(step);
 
   // Read the coupling variables at restart
-  redairways_->GetRestartReader(step)->ReadVector(couppres_im_, "couppres_im");
-  redairways_->GetRestartReader(step)->ReadVector(coupflux_im_, "coupflux_im");
-  redairways_->GetRestartReader(step)->ReadVector(coupflux_ip_, "coupflux_im");
-  redairways_->GetRestartReader(step)->ReadVector(coupvol_im_, "coupvol_im");
+  redairways_->GetRestartReader(step)->read_vector(couppres_im_, "couppres_im");
+  redairways_->GetRestartReader(step)->read_vector(coupflux_im_, "coupflux_im");
+  redairways_->GetRestartReader(step)->read_vector(coupflux_ip_, "coupflux_im");
+  redairways_->GetRestartReader(step)->read_vector(coupvol_im_, "coupvol_im");
 
   // Set timestep and time after restart
   double restartTime = redairways_->Time();
@@ -452,9 +452,9 @@ void Airway::RedAirwayTissue::update_and_output()
   // In case of restart write all coupling variables to restart file
   if (redairways_->Step() % uprestart_ == 0)
   {
-    redairways_->GetOutputWriter().WriteVector("couppres_im", couppres_im_);
-    redairways_->GetOutputWriter().WriteVector("coupflux_im", coupflux_im_);
-    redairways_->GetOutputWriter().WriteVector("coupvol_im", coupvol_im_);
+    redairways_->GetOutputWriter().write_vector("couppres_im", couppres_im_);
+    redairways_->GetOutputWriter().write_vector("coupflux_im", coupflux_im_);
+    redairways_->GetOutputWriter().write_vector("coupvol_im", coupvol_im_);
   }
 }
 
@@ -473,7 +473,7 @@ void Airway::RedAirwayTissue::SetupRedAirways()
 
   // Context for output and restart
   Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
-  output->WriteMesh(0, 0.0);
+  output->write_mesh(0, 0.0);
 
   // Set some pointers and variables
   const Teuchos::ParameterList& rawdyn =

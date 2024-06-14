@@ -228,7 +228,7 @@ void Adapter::FluidAle::Output()
       Teuchos::RCP<Epetra_Vector> lambda = fluid_field()->extract_interface_forces();
       Teuchos::RCP<Epetra_Vector> lambdafull =
           fluid_field()->Interface()->InsertFSICondVector(lambda);
-      fluid_field()->DiscWriter()->WriteVector("fsilambda", lambdafull);
+      fluid_field()->DiscWriter()->write_vector("fsilambda", lambdafull);
     }
   }
 

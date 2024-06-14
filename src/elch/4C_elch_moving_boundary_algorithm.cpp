@@ -102,7 +102,7 @@ void ElCh::MovingBoundaryAlgorithm::TimeLoop()
   {
     fluid_field()->StatisticsAndOutput();
     if (algo_parameters().get<int>("RESTARTEVRY") != 0)
-      fluid_field()->DiscWriter()->WriteVector("idispn", idispnp_);
+      fluid_field()->DiscWriter()->write_vector("idispn", idispnp_);
     ale_field()->Output();
   }
 
@@ -312,7 +312,7 @@ void ElCh::MovingBoundaryAlgorithm::output()
   int uprestart = algo_parameters().get<int>("RESTARTEVRY");
   if ((uprestart != 0) && (fluid_field()->Step() % uprestart == 0))
   {
-    fluid_field()->DiscWriter()->WriteVector("idispn", idispnp_);
+    fluid_field()->DiscWriter()->write_vector("idispn", idispnp_);
   }
 
   // now the other physical fiels
@@ -388,9 +388,9 @@ void ElCh::MovingBoundaryAlgorithm::read_restart(int step)
   // finally read isdispn which was written to the fluid restart data
   Core::IO::DiscretizationReader reader(
       fluid_field()->discretization(), Global::Problem::Instance()->InputControlFile(), step);
-  reader.ReadVector(idispn_, "idispn");
+  reader.read_vector(idispn_, "idispn");
   // read same result into vector isdispnp_ as a 'good guess'
-  reader.ReadVector(idispnp_, "idispn");
+  reader.read_vector(idispnp_, "idispn");
 }
 
 /*----------------------------------------------------------------------*/

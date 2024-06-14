@@ -3512,77 +3512,77 @@ void FLD::FluidImplicitTimeInt::Output()
   {
     if (runtime_output_writer_ != Teuchos::null) WriteRuntimeOutput();
     // step number and time
-    output_->NewStep(step_, time_);
+    output_->new_step(step_, time_);
 
     // time step, especially necessary for adaptive dt
-    output_->WriteDouble("timestep", dta_);
+    output_->write_double("timestep", dta_);
 
     // velocity/pressure vector
-    output_->WriteVector("velnp", velnp_);
+    output_->write_vector("velnp", velnp_);
 
     // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->ExtractCondVector(velnp_);
-    output_->WriteVector("pressure", pressure);
+    output_->write_vector("pressure", pressure);
 
     if (xwall_ != Teuchos::null)
     {
-      output_->WriteVector("xwall_enrvelnp", xwall_->GetOutputVector(velnp_));
-      output_->WriteVector("xwall_tauw", xwall_->GetTauwVector());
+      output_->write_vector("xwall_enrvelnp", xwall_->GetOutputVector(velnp_));
+      output_->write_vector("xwall_tauw", xwall_->GetTauwVector());
     }
 
     if (params_->get<bool>("GMSH_OUTPUT")) output_to_gmsh(step_, time_, false);
 
-    if (alefluid_) output_->WriteVector("dispnp", dispnp_);
+    if (alefluid_) output_->write_vector("dispnp", dispnp_);
 
     if (physicaltype_ == Inpar::FLUID::varying_density or
         physicaltype_ == Inpar::FLUID::boussinesq or physicaltype_ == Inpar::FLUID::tempdepwater)
     {
       Teuchos::RCP<Epetra_Vector> scalar_field = velpressplitter_->ExtractCondVector(scaaf_);
-      output_->WriteVector("scalar_field", scalar_field);
+      output_->write_vector("scalar_field", scalar_field);
     }
 
     // only perform stress calculation when output is needed
     if (writestresses_)
     {
-      output_->WriteVector("traction", stressmanager_->GetPreCalcStresses(trueresidual_));
+      output_->write_vector("traction", stressmanager_->GetPreCalcStresses(trueresidual_));
     }
     // only perform wall shear stress calculation when output is needed
     if (write_wall_shear_stresses_ && xwall_ == Teuchos::null)
     {
-      output_->WriteVector("wss", stressmanager_->get_pre_calc_wall_shear_stresses(trueresidual_));
+      output_->write_vector("wss", stressmanager_->get_pre_calc_wall_shear_stresses(trueresidual_));
     }
 
     // biofilm growth
     if (fldgrdisp_ != Teuchos::null)
     {
-      output_->WriteVector("fld_growth_displ", fldgrdisp_);
+      output_->write_vector("fld_growth_displ", fldgrdisp_);
     }
 
     if (params_->get<bool>("COMPUTE_EKIN")) write_output_kinetic_energy();
 
     // write domain decomposition for visualization (only once!)
-    output_->WriteElementData(true);
+    output_->write_element_data(true);
 
-    if (step_ <= 1 and write_nodedata_first_step_) output_->WriteNodeData(true);
+    if (step_ <= 1 and write_nodedata_first_step_) output_->write_node_data(true);
 
     if (uprestart_ != 0 && step_ % uprestart_ == 0)  // add restart data
     {
       // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
-      output_->WriteVector("accnp", accnp_);
-      output_->WriteVector("accn", accn_);
-      output_->WriteVector("veln", veln_);
-      output_->WriteVector("velnm", velnm_);
+      output_->write_vector("accnp", accnp_);
+      output_->write_vector("accn", accn_);
+      output_->write_vector("veln", veln_);
+      output_->write_vector("velnm", velnm_);
 
       if (alefluid_)
       {
-        output_->WriteVector("dispn", dispn_);
-        output_->WriteVector("dispnm", dispnm_);
-        output_->WriteVector("gridvn", gridvn_);
+        output_->write_vector("dispn", dispn_);
+        output_->write_vector("dispnm", dispnm_);
+        output_->write_vector("gridvn", gridvn_);
       }
 
       if (xwall_ != Teuchos::null)
-        output_->WriteVector("wss", stressmanager_->get_pre_calc_wall_shear_stresses(
-                                        xwall_->FixDirichletInflow(trueresidual_)));
+        output_->write_vector("wss", stressmanager_->get_pre_calc_wall_shear_stresses(
+                                         xwall_->FixDirichletInflow(trueresidual_)));
 
       // flow rate, flow volume and impedance in case of flow-dependent pressure bc
       if (nonlinearbc_) OutputNonlinearBC();
@@ -3597,7 +3597,7 @@ void FLD::FluidImplicitTimeInt::Output()
       if ((step_ != 0) and
           ((params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("TDS")) !=
               "quasistatic"))
-        output_->WriteMesh(step_, time_);
+        output_->write_mesh(step_, time_);
 
       if (discret_->Comm().MyPID() == 0)
         std::cout << "====== Restart for field '" << discret_->Name() << "' written in step "
@@ -3608,21 +3608,21 @@ void FLD::FluidImplicitTimeInt::Output()
   else if (uprestart_ > 0 && step_ % uprestart_ == 0)
   {
     // step number and time
-    output_->NewStep(step_, time_);
+    output_->new_step(step_, time_);
 
     // time step, especially necessary for adaptive dt
-    output_->WriteDouble("timestep", dta_);
+    output_->write_double("timestep", dta_);
 
     // velocity/pressure vector
-    output_->WriteVector("velnp", velnp_);
+    output_->write_vector("velnp", velnp_);
 
-    // output_->WriteVector("residual", trueresidual_);
+    // output_->write_vector("residual", trueresidual_);
     if (alefluid_)
     {
-      output_->WriteVector("dispnp", dispnp_);
-      output_->WriteVector("dispn", dispn_);
-      output_->WriteVector("dispnm", dispnm_);
-      output_->WriteVector("gridvn", gridvn_);
+      output_->write_vector("dispnp", dispnp_);
+      output_->write_vector("dispn", dispn_);
+      output_->write_vector("dispnm", dispnm_);
+      output_->write_vector("gridvn", gridvn_);
     }
 
     // write mesh in each restart step --- the elements are required since
@@ -3633,29 +3633,29 @@ void FLD::FluidImplicitTimeInt::Output()
     if ((step_ != 0) and
         ((params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("TDS")) !=
             "quasistatic"))
-      output_->WriteMesh(step_, time_);
+      output_->write_mesh(step_, time_);
 
     // only perform stress calculation when output is needed
     if (writestresses_)
     {
-      output_->WriteVector("traction", stressmanager_->GetPreCalcStresses(trueresidual_));
+      output_->write_vector("traction", stressmanager_->GetPreCalcStresses(trueresidual_));
     }
     // only perform wall shear stress calculation when output is needed
     if (write_wall_shear_stresses_ && xwall_ == Teuchos::null)
     {
-      output_->WriteVector("wss", stressmanager_->get_pre_calc_wall_shear_stresses(trueresidual_));
+      output_->write_vector("wss", stressmanager_->get_pre_calc_wall_shear_stresses(trueresidual_));
     }
     // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
-    output_->WriteVector("accnp", accnp_);
-    output_->WriteVector("accn", accn_);
-    output_->WriteVector("veln", veln_);
-    output_->WriteVector("velnm", velnm_);
+    output_->write_vector("accnp", accnp_);
+    output_->write_vector("accn", accn_);
+    output_->write_vector("veln", veln_);
+    output_->write_vector("velnm", velnm_);
 
     if (xwall_ != Teuchos::null)
     {
-      output_->WriteVector("xwall_tauw", xwall_->GetTauwVector());
-      output_->WriteVector("wss", stressmanager_->get_pre_calc_wall_shear_stresses(
-                                      xwall_->FixDirichletInflow(trueresidual_)));
+      output_->write_vector("xwall_tauw", xwall_->GetTauwVector());
+      output_->write_vector("wss", stressmanager_->get_pre_calc_wall_shear_stresses(
+                                       xwall_->FixDirichletInflow(trueresidual_)));
     }
 
     // flow rate, flow volume and impedance in case of flow-dependent pressure bc
@@ -3746,27 +3746,27 @@ void FLD::FluidImplicitTimeInt::OutputNonlinearBC()
     {
       std::ostringstream ss;
       ss << "flowratenp" << i;
-      output_->WriteDouble(ss.str(), flowratenp_[i]);
+      output_->write_double(ss.str(), flowratenp_[i]);
 
       ss.str("");
       ss << "flowraten" << i;
-      output_->WriteDouble(ss.str(), flowraten_[i]);
+      output_->write_double(ss.str(), flowraten_[i]);
 
       ss.str("");
       ss << "flowratenm" << i;
-      output_->WriteDouble(ss.str(), flowratenm_[i]);
+      output_->write_double(ss.str(), flowratenm_[i]);
 
       ss.str("");
       ss << "flowvolumenp" << i;
-      output_->WriteDouble(ss.str(), flowvolumenp_[i]);
+      output_->write_double(ss.str(), flowvolumenp_[i]);
 
       ss.str("");
       ss << "flowvolumen" << i;
-      output_->WriteDouble(ss.str(), flowvolumen_[i]);
+      output_->write_double(ss.str(), flowvolumen_[i]);
 
       ss.str("");
       ss << "flowvolumenm" << i;
-      output_->WriteDouble(ss.str(), flowvolumenm_[i]);
+      output_->write_double(ss.str(), flowvolumenm_[i]);
     }
   }
   if (isimpedancebc_)
@@ -3790,13 +3790,13 @@ void FLD::FluidImplicitTimeInt::output_to_gmsh(
   if (inflow)
   {
     filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("solution_velpres_inflow",
-        discret_->Writer()->Output()->file_name(), step, 20, screen_out, discret_->Comm().MyPID());
+        discret_->Writer()->output()->file_name(), step, 20, screen_out, discret_->Comm().MyPID());
     // std::ofstream gmshfilecontent(filename.c_str());
   }
   else
   {
     filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("solution_velpres",
-        discret_->Writer()->Output()->file_name(), step, 20, screen_out, discret_->Comm().MyPID());
+        discret_->Writer()->output()->file_name(), step, 20, screen_out, discret_->Comm().MyPID());
     // std::ofstream gmshfilecontent(filename.c_str());
   }
   std::ofstream gmshfilecontent(filename.c_str());
@@ -3830,12 +3830,12 @@ void FLD::FluidImplicitTimeInt::output_external_forces()
 {
   if (external_loads_ != Teuchos::null)
   {
-    output_->WriteInt("have_fexternal", external_loads_->GlobalLength());
-    output_->WriteVector("fexternal", external_loads_);
+    output_->write_int("have_fexternal", external_loads_->GlobalLength());
+    output_->write_vector("fexternal", external_loads_);
   }
   else
   {
-    output_->WriteInt("have_fexternal", -1);
+    output_->write_int("have_fexternal", -1);
   }
 }
 
@@ -3847,21 +3847,21 @@ void FLD::FluidImplicitTimeInt::read_restart(int step)
 {
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
+  time_ = reader.read_double("time");
+  step_ = reader.read_int("step");
 
   // recover time step if adaptive time stepping is used
   if (cfl_ > 0.0)
   {
-    dta_ = reader.ReadDouble("timestep");
+    dta_ = reader.read_double("timestep");
     dtp_ = dta_;
   }
 
-  reader.ReadVector(velnp_, "velnp");
-  reader.ReadVector(veln_, "veln");
-  reader.ReadVector(velnm_, "velnm");
-  reader.ReadVector(accnp_, "accnp");
-  reader.ReadVector(accn_, "accn");
+  reader.read_vector(velnp_, "velnp");
+  reader.read_vector(veln_, "veln");
+  reader.read_vector(velnm_, "velnm");
+  reader.read_vector(accnp_, "accnp");
+  reader.read_vector(accn_, "accn");
 
   // set element time parameter after restart:
   // Here it is already needed by AVM3 and impedance boundary condition!!
@@ -3879,10 +3879,10 @@ void FLD::FluidImplicitTimeInt::read_restart(int step)
 
   if (alefluid_)
   {
-    reader.ReadVector(dispnp_, "dispnp");
-    reader.ReadVector(dispn_, "dispn");
-    reader.ReadVector(dispnm_, "dispnm");
-    reader.ReadVector(gridvn_, "gridvn");
+    reader.read_vector(dispnp_, "dispnp");
+    reader.read_vector(dispn_, "dispn");
+    reader.read_vector(dispnm_, "dispnm");
+    reader.read_vector(gridvn_, "gridvn");
   }
 
   // flow rate and flow volume in case of flow-dependent pressure bc
@@ -3899,27 +3899,27 @@ void FLD::FluidImplicitTimeInt::read_restart(int step)
       {
         std::ostringstream ss;
         ss << "flowratenp" << i;
-        flowratenp_[i] = reader.ReadDouble(ss.str());
+        flowratenp_[i] = reader.read_double(ss.str());
 
         ss.str("");
         ss << "flowraten" << i;
-        flowraten_[i] = reader.ReadDouble(ss.str());
+        flowraten_[i] = reader.read_double(ss.str());
 
         ss.str("");
         ss << "flowratenm" << i;
-        flowratenm_[i] = reader.ReadDouble(ss.str());
+        flowratenm_[i] = reader.read_double(ss.str());
 
         ss.str("");
         ss << "flowvolumenp" << i;
-        flowvolumenp_[i] = reader.ReadDouble(ss.str());
+        flowvolumenp_[i] = reader.read_double(ss.str());
 
         ss.str("");
         ss << "flowvolumen" << i;
-        flowvolumen_[i] = reader.ReadDouble(ss.str());
+        flowvolumen_[i] = reader.read_double(ss.str());
 
         ss.str("");
         ss << "flowvolumenm" << i;
-        flowvolumenm_[i] = reader.ReadDouble(ss.str());
+        flowvolumenm_[i] = reader.read_double(ss.str());
       }
     }
 
@@ -3932,11 +3932,11 @@ void FLD::FluidImplicitTimeInt::read_restart(int step)
   }
 
   // check whether external forces were written
-  const int have_fexternal = reader.ReadInt("have_fexternal");
+  const int have_fexternal = reader.read_int("have_fexternal");
   if (have_fexternal != -1)
   {
     external_loads_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
-    reader.ReadVector(external_loads_, "fexternal");
+    reader.read_vector(external_loads_, "fexternal");
     if (have_fexternal != external_loads_->GlobalLength())
       FOUR_C_THROW("reading of external loads failed");
   }
@@ -3944,7 +3944,7 @@ void FLD::FluidImplicitTimeInt::read_restart(int step)
   // read the previously written elements including the history data
   // only avalaible+required for time-dependent subgrid scales!
   if ((params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("TDS")) != "quasistatic")
-    reader.ReadHistoryData(step_);
+    reader.read_history_data(step_);
 
   // ensure that the overall dof numbering is identical to the one
   // that was used when the restart data was written. Especially
@@ -6269,7 +6269,7 @@ void FLD::FluidImplicitTimeInt::Reset(bool completeReset, int numsteps, int iter
     step_ = 0;
 
     if (numsteps == 1)  // just save last solution
-      output_->OverwriteResultFile();
+      output_->overwrite_result_file();
     else if (numsteps == 0)  // save all steps
     {
       if (iter < 0) FOUR_C_THROW("iteration number <0");
@@ -6283,7 +6283,7 @@ void FLD::FluidImplicitTimeInt::Reset(bool completeReset, int numsteps, int iter
     else
       FOUR_C_THROW("cannot save output for a negative number of steps");
 
-    output_->WriteMesh(0, 0.0);
+    output_->write_mesh(0, 0.0);
   }
   else
   {

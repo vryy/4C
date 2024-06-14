@@ -2253,7 +2253,7 @@ void XFEM::XFluidTimeInt::Output()
 
   // output for all dofsets of nodes
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("TIMINT_Method",
-      dis_->Writer()->Output()->file_name(), step_, step_diff, true, dis_->Comm().MyPID());
+      dis_->Writer()->output()->file_name(), step_, step_diff, true, dis_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
   gmshfilecontent.precision(16);

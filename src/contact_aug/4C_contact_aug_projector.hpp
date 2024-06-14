@@ -184,7 +184,7 @@ namespace CONTACT
     class EmptyProjDebugger
     {
      public:
-      inline void writeVector(std::ostream& os, ...) const {};
+      inline void write_vector(std::ostream& os, ...) const {};
       inline void writeMatrix(std::ostream& os, ...) const {};
     };
 
@@ -193,7 +193,7 @@ namespace CONTACT
     class ProjDebugger
     {
      public:
-      inline void writeVector(
+      inline void write_vector(
           std::ostream& os, unsigned dim, double* vals, const std::string& msg) const
       {
         os << msg << " (vector):\n";

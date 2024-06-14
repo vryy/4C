@@ -533,27 +533,27 @@ void FLD::TimIntHDG::Output()
   if (step_ % upres_ == 0)
   {
     // step number and time
-    output_->NewStep(step_, time_);
+    output_->new_step(step_, time_);
 
     Teuchos::RCP<Epetra_Vector> cellPres;
     Teuchos::RCP<Epetra_MultiVector> traceVel;
     getNodeVectorsHDG(*discret_, intvelnp_, velnp_,
         params_->get<int>("number of velocity degrees of freedom"), interpolatedVelocity_,
         interpolatedPressure_, traceVel, cellPres);
-    output_->WriteVector("velnp_hdg", interpolatedVelocity_, Core::IO::nodevector);
-    output_->WriteVector("pressure_hdg", interpolatedPressure_, Core::IO::nodevector);
-    output_->WriteVector("tracevel_hdg", traceVel, Core::IO::nodevector);
-    output_->WriteVector("pressure_avg", cellPres, Core::IO::elementvector);
+    output_->write_vector("velnp_hdg", interpolatedVelocity_, Core::IO::nodevector);
+    output_->write_vector("pressure_hdg", interpolatedPressure_, Core::IO::nodevector);
+    output_->write_vector("tracevel_hdg", traceVel, Core::IO::nodevector);
+    output_->write_vector("pressure_avg", cellPres, Core::IO::elementvector);
 
-    if (step_ == upres_ or step_ == 0) output_->WriteElementData(true);
+    if (step_ == upres_ or step_ == 0) output_->write_element_data(true);
 
     if (uprestart_ != 0 && step_ % uprestart_ == 0)  // add restart data
     {
       // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
-      // output_->WriteVector("accnp",intaccnp_);
-      // output_->WriteVector("accn", intaccn_);
-      // output_->WriteVector("veln", intveln_);
-      // output_->WriteVector("velnm",intvelnm_);
+      // output_->write_vector("accnp",intaccnp_);
+      // output_->write_vector("accn", intaccn_);
+      // output_->write_vector("veln", intveln_);
+      // output_->write_vector("velnm",intvelnm_);
     }
   }
 }

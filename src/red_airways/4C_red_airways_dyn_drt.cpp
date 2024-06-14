@@ -65,7 +65,7 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
 
   // 2. Context for output and restart
   Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
-  output->WriteMesh(0, 0.0);
+  output->write_mesh(0, 0.0);
 
   // 3. Set pointers and variables for ParameterList rawdyn
   const Teuchos::ParameterList& rawdyn =

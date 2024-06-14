@@ -246,20 +246,20 @@ void ScaTra::CCCVCondition::reset_phase_change_observer() { phasechanged_ = fals
 void ScaTra::CCCVCondition::read_restart(Core::IO::DiscretizationReader& reader)
 {
   // extract number of current charge or discharge half-cycle
-  ihalfcycle_ = reader.ReadInt("ihalfcycle");
+  ihalfcycle_ = reader.read_int("ihalfcycle");
 
   // check whether number of current charge or discharge half-cycle is even, i.e., whether
   // current half-cycle is opposite to first one w.r.t. charge/discharge
   charging_ = ihalfcycle_ % 2 == 0 ? !beginwithcharge_ : beginwithcharge_;
 
   // phase was changed since last time step adaptivity
-  phasechanged_ = static_cast<bool>(reader.ReadInt("phasechanged"));
+  phasechanged_ = static_cast<bool>(reader.read_int("phasechanged"));
 
   // we are in initial relaxation
-  phaseinitialrelaxation_ = static_cast<bool>(reader.ReadInt("phaseinitialrelaxation"));
+  phaseinitialrelaxation_ = static_cast<bool>(reader.read_int("phaseinitialrelaxation"));
 
   // phase was lastly change at that step
-  steplastphasechange_ = reader.ReadInt("steplastphasechange");
+  steplastphasechange_ = reader.read_int("steplastphasechange");
 
   // read restart in half cycles
   halfcycle_charge_->read_restart(reader);
@@ -372,10 +372,10 @@ bool ScaTra::CCCVHalfCycleCondition::is_adaptive_time_stepping_phase() const
 void ScaTra::CCCVHalfCycleCondition::read_restart(Core::IO::DiscretizationReader& reader)
 {
   // end time of current relaxation phase
-  relaxendtime_ = reader.ReadDouble("relaxendtime");
+  relaxendtime_ = reader.read_double("relaxendtime");
 
   // current phase in half cycle
-  phase_cccv_ = static_cast<Inpar::ElCh::CCCVHalfCyclePhase>(reader.ReadInt("phase_cccv"));
+  phase_cccv_ = static_cast<Inpar::ElCh::CCCVHalfCyclePhase>(reader.read_int("phase_cccv"));
 }
 
 FOUR_C_NAMESPACE_CLOSE

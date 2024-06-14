@@ -1218,7 +1218,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
 void CONTACT::Manager::write_restart(Core::IO::DiscretizationWriter& output, bool forcedrestart)
 {
   // clear cache of maps due to varying vector size
-  output.ClearMapCache();
+  output.clear_map_cache();
 
   // quantities to be written for restart
   std::map<std::string, Teuchos::RCP<Epetra_Vector>> restart_vectors;
@@ -1227,13 +1227,13 @@ void CONTACT::Manager::write_restart(Core::IO::DiscretizationWriter& output, boo
   GetStrategy().DoWriteRestart(restart_vectors, forcedrestart);
 
   if (GetStrategy().LagrMultOld() != Teuchos::null)
-    output.WriteVector("lagrmultold", GetStrategy().LagrMultOld());
+    output.write_vector("lagrmultold", GetStrategy().LagrMultOld());
 
   // write all vectors specified by used strategy
   for (std::map<std::string, Teuchos::RCP<Epetra_Vector>>::const_iterator p =
            restart_vectors.begin();
        p != restart_vectors.end(); ++p)
-    output.WriteVector(p->first, p->second);
+    output.write_vector(p->first, p->second);
 
   return;
 }
@@ -1319,7 +1319,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     activesetexp->Update(1.0, *mactivesetexp, 1.0);
   }
 
-  output.WriteVector("activeset", activesetexp);
+  output.write_vector("activeset", activesetexp);
 
   // *********************************************************************
   //  weighted gap
@@ -1333,7 +1333,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     Teuchos::RCP<Epetra_Vector> gapsexp = Teuchos::rcp(new Epetra_Vector(*gapnodes));
     Core::LinAlg::Export(*gaps, *gapsexp);
 
-    output.WriteVector("gap", gapsexp);
+    output.write_vector("gap", gapsexp);
   }
 
   // *********************************************************************
@@ -1358,8 +1358,8 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
 
   // write to output
   // contact tractions in normal and tangential direction
-  output.WriteVector("norcontactstress", normalstressesexp);
-  output.WriteVector("tancontactstress", tangentialstressesexp);
+  output.write_vector("norcontactstress", normalstressesexp);
+  output.write_vector("tancontactstress", tangentialstressesexp);
 
   if (GetStrategy().ContactNorForce() != Teuchos::null)
   {
@@ -1375,8 +1375,8 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
 
     // write to output
     // contact tractions in normal and tangential direction
-    output.WriteVector("norslaveforce", normalforceexp);
-    output.WriteVector("tanslaveforce", tangentialforceexp);
+    output.write_vector("norslaveforce", normalforceexp);
+    output.write_vector("tanslaveforce", tangentialforceexp);
   }
 
 
@@ -1480,10 +1480,10 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   Core::LinAlg::Export(*fcmastertan, *fcmastertanexp);
 
   // contact forces on slave and master side
-  output.WriteVector("norslaveforce", fcslavenorexp);
-  output.WriteVector("tanslaveforce", fcslavetanexp);
-  output.WriteVector("normasterforce", fcmasternorexp);
-  output.WriteVector("tanmasterforce", fcmastertanexp);
+  output.write_vector("norslaveforce", fcslavenorexp);
+  output.write_vector("tanslaveforce", fcslavetanexp);
+  output.write_vector("normasterforce", fcmasternorexp);
+  output.write_vector("tanmasterforce", fcmastertanexp);
 
 #ifdef CONTACTEXPORT
   // export averaged node forces to xxx.force
@@ -1536,7 +1536,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     Teuchos::RCP<Epetra_Vector> wearoutput = GetStrategy().ContactWear();
     Teuchos::RCP<Epetra_Vector> wearoutputexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     Core::LinAlg::Export(*wearoutput, *wearoutputexp);
-    output.WriteVector("wear", wearoutputexp);
+    output.write_vector("wear", wearoutputexp);
     GetStrategy().ContactWear()->PutScalar(0.0);
   }
 
@@ -1552,7 +1552,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     Teuchos::RCP<Epetra_Vector> lambdaout = costrategy.LambdaNoPen();
     Teuchos::RCP<Epetra_Vector> lambdaoutexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     Core::LinAlg::Export(*lambdaout, *lambdaoutexp);
-    output.WriteVector("poronopen_lambda", lambdaoutexp);
+    output.write_vector("poronopen_lambda", lambdaoutexp);
   }
   return;
 }

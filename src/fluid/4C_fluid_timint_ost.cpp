@@ -256,7 +256,7 @@ void FLD::TimIntOneStepTheta::output_external_forces()
 
   if (external_loadsn_ != Teuchos::null)
   {
-    output_->WriteVector("fexternal_n", external_loadsn_);
+    output_->write_vector("fexternal_n", external_loadsn_);
   }
 }
 
@@ -272,14 +272,14 @@ void FLD::TimIntOneStepTheta::read_restart(int step)
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step);
   // check whether external forces were written
-  const int have_fexternal = reader.ReadInt("have_fexternal");
+  const int have_fexternal = reader.read_int("have_fexternal");
   if (have_fexternal != -1)
   {
     external_loadsn_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
     external_loadsnp_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
     if (step_ > numstasteps_ && params_->get<double>("theta") != 1.0)
     {
-      reader.ReadVector(external_loadsn_, "fexternal_n");
+      reader.read_vector(external_loadsn_, "fexternal_n");
       if (have_fexternal != external_loadsn_->GlobalLength())
         FOUR_C_THROW("reading of external loads failed");
     }

@@ -239,7 +239,7 @@ void XFEM::XfsCouplingManager::Output(Core::IO::DiscretizationWriter& writer)
   Teuchos::RCP<Epetra_Vector> lambdafull =
       Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->FullMap(), true));
   InsertVector(0, lambda_, 0, lambdafull, CouplingCommManager::partial_to_full);
-  writer.WriteVector("fsilambda", lambdafull);
+  writer.write_vector("fsilambda", lambdafull);
   return;
 }
 /*----------------------------------------------------------------------*/
@@ -249,7 +249,7 @@ void XFEM::XfsCouplingManager::read_restart(Core::IO::DiscretizationReader& read
 {
   Teuchos::RCP<Epetra_Vector> lambdafull =
       Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->FullMap(), true));
-  reader.ReadVector(lambdafull, "fsilambda");
+  reader.read_vector(lambdafull, "fsilambda");
   InsertVector(0, lambdafull, 0, lambda_, CouplingCommManager::full_to_partial);
   return;
 }

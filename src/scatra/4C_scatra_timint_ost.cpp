@@ -314,11 +314,11 @@ void ScaTra::TimIntOneStepTheta::write_restart() const
   ScaTraTimIntImpl::write_restart();
 
   // additional state vectors that are needed for One-Step-Theta restart
-  output_->WriteVector("phidtn", phidtn_);
-  output_->WriteVector("phin", phin_);
+  output_->write_vector("phidtn", phidtn_);
+  output_->write_vector("phin", phin_);
 
   // write nodal micro concentration
-  if (macro_scale_ and NdsMicro() != -1) output_->WriteVector("phinp_micro", phinp_micro_);
+  if (macro_scale_ and NdsMicro() != -1) output_->write_vector("phinp_micro", phinp_micro_);
 }
 
 /*----------------------------------------------------------------------*
@@ -338,17 +338,17 @@ void ScaTra::TimIntOneStepTheta::read_restart(
   else
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
-  time_ = reader->ReadDouble("time");
-  step_ = reader->ReadInt("step");
+  time_ = reader->read_double("time");
+  step_ = reader->read_int("step");
 
   if (myrank_ == 0)
     std::cout << "Reading ScaTra restart data (time=" << time_ << " ; step=" << step_ << ")"
               << '\n';
 
   // read state vectors that are needed for One-Step-Theta restart
-  reader->ReadVector(phinp_, "phinp");
-  reader->ReadVector(phin_, "phin");
-  reader->ReadVector(phidtn_, "phidtn");
+  reader->read_vector(phinp_, "phinp");
+  reader->read_vector(phin_, "phin");
+  reader->read_vector(phidtn_, "phidtn");
 
   read_restart_problem_specific(step, *reader);
 
@@ -359,7 +359,7 @@ void ScaTra::TimIntOneStepTheta::read_restart(
   // read restart on micro scale in multi-scale simulations if necessary
   if (macro_scale_)
   {
-    if (NdsMicro() != -1) reader->ReadVector(phinp_micro_, "phinp_micro");
+    if (NdsMicro() != -1) reader->read_vector(phinp_micro_, "phinp_micro");
 
     // create parameter list for macro-scale elements
     Teuchos::ParameterList eleparams;

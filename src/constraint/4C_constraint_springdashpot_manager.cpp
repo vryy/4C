@@ -108,14 +108,14 @@ void CONSTRAINTS::SpringDashpotManager::Output(Teuchos::RCP<Core::IO::Discretiza
   // write vectors to output
   if (found_cursurfnormal)
   {
-    output->WriteVector("gap", gap);
-    output->WriteVector("curnormals", normals);
+    output->write_vector("gap", gap);
+    output->write_vector("curnormals", normals);
   }
 
   // write spring stress if defined in io-flag
   if (Core::UTILS::IntegralValue<bool>(Global::Problem::Instance()->IOParams(), "OUTPUT_SPRING") ==
       true)
-    output->WriteVector("springstress", springstress);
+    output->write_vector("springstress", springstress);
 
   return;
 }
@@ -144,9 +144,9 @@ void CONSTRAINTS::SpringDashpotManager::output_restart(
   }
 
   // write vector to output for restart
-  output->WriteVector("springoffsetprestr", springoffsetprestr);
+  output->write_vector("springoffsetprestr", springoffsetprestr);
   // write vector to output for restart
-  output->WriteVector("springoffsetprestr_old", springoffsetprestr_old);
+  output->write_vector("springoffsetprestr_old", springoffsetprestr_old);
 
   // normal output as well
   Output(output, discret, disp);
@@ -166,8 +166,8 @@ void CONSTRAINTS::SpringDashpotManager::read_restart(
   Teuchos::RCP<Epetra_MultiVector> tempvecold =
       Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()), 3, true));
 
-  reader.ReadVector(tempvec, "springoffsetprestr");
-  reader.ReadMultiVector(tempvecold, "springoffsetprestr_old");
+  reader.read_vector(tempvec, "springoffsetprestr");
+  reader.read_multi_vector(tempvecold, "springoffsetprestr_old");
 
   // loop over all spring dashpot conditions and set restart
   for (int i = 0; i < n_conds_; ++i)

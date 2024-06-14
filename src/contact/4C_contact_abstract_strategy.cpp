@@ -2101,7 +2101,7 @@ void CONTACT::AbstractStrategy::DoReadRestart(Core::IO::DiscretizationReader& re
   // read restart information on active set and slip set (leave sets empty
   // if this is a restart with contact of a non-contact simulation run)
   Teuchos::RCP<Epetra_Vector> activetoggle = Teuchos::rcp(new Epetra_Vector(SlRowNodes(), true));
-  if (!restartwithcontact) reader.ReadVector(activetoggle, "activetoggle");
+  if (!restartwithcontact) reader.read_vector(activetoggle, "activetoggle");
 
   // friction
   Teuchos::RCP<Epetra_Vector> sliptoggle;
@@ -2110,7 +2110,7 @@ void CONTACT::AbstractStrategy::DoReadRestart(Core::IO::DiscretizationReader& re
   if (friction_)
   {
     sliptoggle = Teuchos::rcp(new Epetra_Vector(SlRowNodes()));
-    if (!restartwithcontact) reader.ReadVector(sliptoggle, "sliptoggle");
+    if (!restartwithcontact) reader.read_vector(sliptoggle, "sliptoggle");
   }
 
   // store restart information on active set and slip set
@@ -2150,8 +2150,8 @@ void CONTACT::AbstractStrategy::DoReadRestart(Core::IO::DiscretizationReader& re
               "INT_STRATEGY") == "Standard" &&
             IsPenalty()))
     {
-      reader.ReadVector(LagrMult(), "lagrmultold");
-      reader.ReadVector(LagrMultOld(), "lagrmultold");
+      reader.read_vector(LagrMult(), "lagrmultold");
+      reader.read_vector(LagrMultOld(), "lagrmultold");
     }
 
   // Lagrange multiplier increment is always zero (no restart value to be read)
@@ -2165,7 +2165,7 @@ void CONTACT::AbstractStrategy::DoReadRestart(Core::IO::DiscretizationReader& re
   if (stype_ == Inpar::CONTACT::solution_uzawa)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
-    if (!restartwithcontact) reader.ReadVector(LagrMultUzawa(), "lagrmultold");
+    if (!restartwithcontact) reader.read_vector(LagrMultUzawa(), "lagrmultold");
     store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
   }
 

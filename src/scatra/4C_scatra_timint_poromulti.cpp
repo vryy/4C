@@ -129,7 +129,7 @@ void ScaTra::ScaTraTimIntPoroMulti::add_problem_specific_parameters_and_vectors(
 void ScaTra::ScaTraTimIntPoroMulti::output_state()
 {
   // solution
-  output_->WriteVector("phinp", phinp_);
+  output_->write_vector("phinp", phinp_);
 
   // displacement field
   if (isale_)
@@ -139,7 +139,7 @@ void ScaTra::ScaTraTimIntPoroMulti::output_state()
       FOUR_C_THROW("Cannot extract displacement field from discretization");
 
     const auto dispnp_multi = convert_dof_vector_to_componentwise_node_vector(dispnp, NdsDisp());
-    output_->WriteVector("dispnp", dispnp_multi, Core::IO::nodevector);
+    output_->write_vector("dispnp", dispnp_multi, Core::IO::nodevector);
   }
 
   if (has_external_force_)
@@ -149,12 +149,12 @@ void ScaTra::ScaTraTimIntPoroMulti::output_state()
     const auto external_force = discret_->GetState(nds_vel, "external_force");
     const auto output_external_force =
         convert_dof_vector_to_componentwise_node_vector(external_force, NdsVel());
-    output_->WriteVector("external_force", output_external_force, Core::IO::nodevector);
+    output_->write_vector("external_force", output_external_force, Core::IO::nodevector);
 
     const auto mobility = discret_->GetState(nds_vel, "intrinsic_mobility");
     const auto output_intrinsic_mobility =
         convert_dof_vector_to_componentwise_node_vector(mobility, NdsVel());
-    output_->WriteVector("intrinsic_mobility", output_intrinsic_mobility, Core::IO::nodevector);
+    output_->write_vector("intrinsic_mobility", output_intrinsic_mobility, Core::IO::nodevector);
   }
 }  // ScaTraTimIntImpl::output_state
 
@@ -234,7 +234,7 @@ void ScaTra::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
         }
       }
     }
-    output_->WriteVector("oxypartpress", oxypartpress, Core::IO::nodevector);
+    output_->write_vector("oxypartpress", oxypartpress, Core::IO::nodevector);
   }
   return;
 }

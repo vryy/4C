@@ -213,11 +213,11 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::assemble_jacobian(
 void STR::MODELEVALUATOR::Cardiovascular0D::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  iowriter.WriteVector("cv0d_df_np", cardvasc0dman_->Get0D_df_np());
-  iowriter.WriteVector("cv0d_f_np", cardvasc0dman_->Get0D_f_np());
+  iowriter.write_vector("cv0d_df_np", cardvasc0dman_->Get0D_df_np());
+  iowriter.write_vector("cv0d_f_np", cardvasc0dman_->Get0D_f_np());
 
-  iowriter.WriteVector("cv0d_dof_np", cardvasc0dman_->Get0D_dof_np());
-  iowriter.WriteVector("vol_np", cardvasc0dman_->Get0D_vol_np());
+  iowriter.write_vector("cv0d_dof_np", cardvasc0dman_->Get0D_dof_np());
+  iowriter.write_vector("vol_np", cardvasc0dman_->Get0D_vol_np());
 
   return;
 }

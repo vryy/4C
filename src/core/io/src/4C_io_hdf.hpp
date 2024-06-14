@@ -141,7 +141,7 @@ namespace Core::IO
         std::string value_path, int columns, const Epetra_Comm& Comm,
         Teuchos::RCP<Epetra_Map>& elemap) const;
 
-    Teuchos::RCP<std::vector<char>> ReadCharVector(
+    Teuchos::RCP<std::vector<char>> read_char_vector(
         std::string value_path, const Epetra_Comm& Comm) const;
 
     Teuchos::RCP<std::vector<double>> ReadDoubleVector(std::string path) const

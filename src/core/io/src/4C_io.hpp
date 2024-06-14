@@ -82,24 +82,24 @@ namespace Core::IO
     /**
      * \brief read in and return vector
      *
-     * This method is based on the method ReadMultiVector(const std::string name). Also refer to the
-     * documentation therein.
+     * This method is based on the method read_multi_vector(const std::string name). Also refer to
+     * the documentation therein.
      *
      * \param[in] name  name of vector to read in
      * \return          source vector as read in
      */
-    Teuchos::RCP<Epetra_MultiVector> ReadVector(std::string name);
+    Teuchos::RCP<Epetra_MultiVector> read_vector(std::string name);
 
     /**
      * \brief read into given vector
      *
-     * This method is based on the method ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec,
+     * This method is based on the method read_multi_vector(Teuchos::RCP<Epetra_MultiVector> vec,
      * std::string name). Also refer to the documentation therein.
      *
      * \param[in,out] vec   target vector to be filled
      * \param[in]     name  name of vector to read in
      */
-    void ReadVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
+    void read_vector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
 
     /**
      * \brief read in and return multi-vector
@@ -113,7 +113,7 @@ namespace Core::IO
      * \param[in] name  name of vector to read in
      * \return          source vector as read in
      */
-    Teuchos::RCP<Epetra_MultiVector> ReadMultiVector(const std::string name);
+    Teuchos::RCP<Epetra_MultiVector> read_multi_vector(const std::string name);
 
     /**
      * \brief read into given multi-vector
@@ -126,7 +126,7 @@ namespace Core::IO
      * \param[in,out] vec   target vector to be filled
      * \param[in]     name  name of vector to read in
      */
-    void ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
+    void read_multi_vector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
 
     /// read into given std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> >
     void read_serial_dense_matrix(
@@ -134,25 +134,25 @@ namespace Core::IO
         std::string name);
 
     /// check if an integer value exists in the control file
-    int HasInt(std::string name);
+    int has_int(std::string name);
 
     /// read an integer value from the control file
-    int ReadInt(std::string name);
+    int read_int(std::string name);
 
     /// read a double value from the control file
-    double ReadDouble(std::string name);
+    double read_double(std::string name);
 
     /// read into the discretization given in the constructor
-    void ReadMesh(int step);
+    void read_mesh(int step);
 
     /// read nodes into the discretization given in the constructor
-    void ReadNodesOnly(int step);
+    void read_nodes_only(int step);
 
     /// Read the history data of elements and nodes from restart files
-    void ReadHistoryData(int step);
+    void read_history_data(int step);
 
     /// read a non discretisation based vector of chars
-    void ReadCharVector(Teuchos::RCP<std::vector<char>>& charvec, const std::string name);
+    void read_char_vector(Teuchos::RCP<std::vector<char>>& charvec, const std::string name);
 
     //! read a non discretisation based vector of doubles
     /*!
@@ -171,9 +171,6 @@ namespace Core::IO
      */
     void read_redundant_int_vector(Teuchos::RCP<std::vector<int>>& intvec, const std::string name);
 
-    /// return number of procs which were used for restart output (read from control file)
-    int GetNumOutputProc(int step);
-
    protected:
     /// empty constructor (only used for the construction of derived classes)
     DiscretizationReader();
@@ -182,7 +179,7 @@ namespace Core::IO
     void find_result_group(int step, MAP* file);
 
     /// access the Epetra_Comm object
-    virtual const Epetra_Comm& comm() const;
+    [[nodiscard]] virtual const Epetra_Comm& comm() const;
 
     MAP* restart_step_map() { return restart_step_; }
 
@@ -199,11 +196,8 @@ namespace Core::IO
     void find_group(int step, MAP* file, const char* caption, const char* filestring,
         MAP*& result_info, MAP*& file_info);
 
-
-
-    /// Open data files.
+    /// open data files.
     Teuchos::RCP<HDFReader> open_files(const char* filestring, MAP* result_step);
-
 
     //! my discretization
     Teuchos::RCP<Core::FE::Discretization> dis_;
@@ -213,7 +207,6 @@ namespace Core::IO
 
     /// control file entry of this step
     MAP* restart_step_;
-
 
     Teuchos::RCP<HDFReader> reader_;
     Teuchos::RCP<HDFReader> meshreader_;
@@ -247,14 +240,12 @@ namespace Core::IO
      *  \param[in] writer  copy the writer of same type
      *  \param[in] output  use this control object if provided
      *  \parma[in] type    copy type
-     *
-     *  \author hiermeier \date 08/17 */
+     */
     DiscretizationWriter(const Core::IO::DiscretizationWriter& writer,
         const Teuchos::RCP<OutputControl>& control, enum CopyType type);
 
     /// cleanup, close hdf5 files
     virtual ~DiscretizationWriter();
-
 
     //!@name Output methods
     //@{
@@ -266,7 +257,7 @@ namespace Core::IO
       \param step : current time step
       \param time : current absolute time
     */
-    virtual void NewStep(const int step, const double time);
+    virtual void new_step(const int step, const double time);
 
     //! write a result double to control file
     /*!
@@ -275,11 +266,8 @@ namespace Core::IO
 
       \param name : control file entry name
       \param value  : the result data value
-
-      \author tk
-      \date 04/08
     */
-    virtual void WriteDouble(const std::string name, const double value);
+    virtual void write_double(const std::string name, const double value);
 
     //! write a result integer to constrol file
     /*!
@@ -288,12 +276,8 @@ namespace Core::IO
 
       \param name : control file entry name
       \param value  : the result data value
-
-      \author tk
-      \date 04/08
     */
-    virtual void WriteInt(const std::string name, const int value);
-
+    virtual void write_int(const std::string name, const int value);
 
     //! write a result vector
     /*!
@@ -304,7 +288,7 @@ namespace Core::IO
       \param vec  : the result data vector
       \param vt   : vector type
     */
-    virtual void WriteVector(const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec,
+    virtual void write_vector(const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec,
         VectorType vt = dofvector);
 
     //! write a result vector
@@ -317,7 +301,7 @@ namespace Core::IO
       \param elemap: element map of discretization
       \param vt   : vector type
     */
-    virtual void WriteVector(const std::string name, const std::vector<char>& vec,
+    virtual void write_vector(const std::string name, const std::vector<char>& vec,
         const Epetra_Map& elemap, VectorType vt = dofvector);
 
     //! write new mesh and result file next time it is possible
@@ -329,27 +313,27 @@ namespace Core::IO
 
     virtual bool have_result_or_mesh_file_changed()
     {
-      if (resultfile_changed_ == -1 or meshfile_changed_ == -1) return true;
-
-      return false;
+      return resultfile_changed_ == -1 or meshfile_changed_ == -1;
     }
 
     //! write new "field" group to control file including node and element chunks
-    virtual void WriteMesh(const int step, const double time);
+    virtual void write_mesh(const int step, const double time);
+
     // for MLMC purposes do not write new meshfile but write name of base mesh file to controlfile
-    virtual void WriteMesh(const int step, const double time, std::string name_base_file);
+    virtual void write_mesh(const int step, const double time, std::string name_base_file);
+
     // for particle simulations: write only nodes in new "field" group to control file
     virtual void write_only_nodes_in_new_field_group_to_control_file(
         const int step, const double time, const bool writerestart);
 
     //! write element data to file
-    virtual void WriteElementData(bool writeowner);
+    virtual void write_element_data(bool writeowner);
 
     //! write node data to file
-    virtual void WriteNodeData(bool writeowner);
+    virtual void write_node_data(bool writeowner);
 
     //! write a non discretisation based vector of chars
-    virtual void WriteCharVector(const std::string name, Teuchos::RCP<std::vector<char>> charvec);
+    virtual void write_char_data(const std::string name, Teuchos::RCP<std::vector<char>> charvec);
 
     //! write a non discretisation based vector of doubles
     /*!
@@ -369,9 +353,8 @@ namespace Core::IO
     virtual void write_redundant_int_vector(
         const std::string name, Teuchos::RCP<std::vector<int>> vectorint);
 
-
     /// overwrite result files
-    virtual void OverwriteResultFile();
+    virtual void overwrite_result_file();
 
     /// creating new result files
     virtual void new_result_file(int numb_run);
@@ -388,31 +371,28 @@ namespace Core::IO
     //@{
 
     /// clear all stored map data
-    virtual void ClearMapCache();
+    virtual void clear_map_cache();
 
     //@}
 
     /// get output control
-    virtual Teuchos::RCP<OutputControl> Output() const { return output_; }
+    [[nodiscard]] virtual Teuchos::RCP<OutputControl> output() const { return output_; }
 
     /// set output control
-    virtual void SetOutput(Teuchos::RCP<OutputControl> output);
+    virtual void set_output(Teuchos::RCP<OutputControl> output);
 
     /// access discretization
-    const Core::FE::Discretization& GetDiscret() const;
+    [[nodiscard]] const Core::FE::Discretization& get_discretization() const;
 
    protected:
     /// empty constructor (only used for the construction of derived classes)
     DiscretizationWriter();
 
     /// access the Epetra_Comm object
-    virtual const Epetra_Comm& comm() const;
+    [[nodiscard]] virtual const Epetra_Comm& comm() const;
 
     /*!
       \brief write a knotvector for a nurbs discretisation
-
-      \author gammi
-      \date 06/08
     */
     void write_knotvector() const;
 
@@ -428,14 +408,12 @@ namespace Core::IO
     int step_;
     double time_;
 
-
     hid_t meshfile_;
     hid_t resultfile_;
     std::string meshfilename_;
     std::string resultfilename_;
     hid_t meshgroup_;
     hid_t resultgroup_;
-
 
     /// cache to remember maps we have already written
     std::map<const Epetra_BlockMapData*, std::string> mapcache_;
@@ -454,7 +432,6 @@ namespace Core::IO
 
     Core::FE::ShapeFunctionType spatial_approx_;
   };
-
 
 }  // namespace Core::IO
 

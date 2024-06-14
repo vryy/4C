@@ -1825,20 +1825,20 @@ void Airway::RedAirwayImplicitTimeInt::Output(
   if (step_ % upres_ == 0)
   {
     // step number and time
-    output_.NewStep(step_, time_);
+    output_.new_step(step_, time_);
 
     // "pressure" vectors
-    output_.WriteVector("pnm", pnm_);
-    output_.WriteVector("pn", pn_);
-    output_.WriteVector("pnp", pnp_);
-    output_.WriteVector("p_nonlin", p_nonlin_);
+    output_.write_vector("pnm", pnm_);
+    output_.write_vector("pn", pn_);
+    output_.write_vector("pnp", pnp_);
+    output_.write_vector("p_nonlin", p_nonlin_);
 
     if (solveScatra_)
     {
-      output_.WriteVector("scatraO2np", scatraO2np_);
-      output_.WriteVector("scatraO2n", scatraO2n_);
-      output_.WriteVector("scatraO2nm", scatraO2nm_);
-      output_.WriteVector("dVO2", dVolumeO2_);
+      output_.write_vector("scatraO2np", scatraO2np_);
+      output_.write_vector("scatraO2n", scatraO2n_);
+      output_.write_vector("scatraO2nm", scatraO2nm_);
+      output_.write_vector("dVO2", dVolumeO2_);
       {
         // Export PO2
         // create the parameters for the discretization
@@ -1862,7 +1862,7 @@ void Airway::RedAirwayImplicitTimeInt::Output(
         discret_->Evaluate(
             eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
         discret_->ClearState();
-        output_.WriteVector("PO2", po2);
+        output_.write_vector("PO2", po2);
       }
       // Export acinar PO2
       {
@@ -1886,262 +1886,258 @@ void Airway::RedAirwayImplicitTimeInt::Output(
         discret_->Evaluate(
             eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
         discret_->ClearState();
-        output_.WriteVector("AcinarPO2", po2);
+        output_.write_vector("AcinarPO2", po2);
       }
       {
         Epetra_Export exporter(e1scatraO2np_->Map(), qexp_->Map());
         int err = qexp_->Export(*e1scatraO2np_, exporter, Zero);
         if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
-      output_.WriteVector("e1scatraO2np", qexp_);
+      output_.write_vector("e1scatraO2np", qexp_);
       {
         Epetra_Export exporter(e1scatraO2n_->Map(), qexp_->Map());
         int err = qexp_->Export(*e1scatraO2n_, exporter, Zero);
         if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
-      output_.WriteVector("e1scatraO2n", qexp_);
+      output_.write_vector("e1scatraO2n", qexp_);
       {
         Epetra_Export exporter(e1scatraO2nm_->Map(), qexp_->Map());
         int err = qexp_->Export(*e1scatraO2nm_, exporter, Zero);
         if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
-      output_.WriteVector("e1scatraO2nm", qexp_);
+      output_.write_vector("e1scatraO2nm", qexp_);
 
       {
         Epetra_Export exporter(e2scatraO2np_->Map(), qexp_->Map());
         int err = qexp_->Export(*e2scatraO2np_, exporter, Zero);
         if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
-      output_.WriteVector("e2scatraO2np", qexp_);
+      output_.write_vector("e2scatraO2np", qexp_);
       {
         Epetra_Export exporter(e2scatraO2n_->Map(), qexp_->Map());
         int err = qexp_->Export(*e2scatraO2n_, exporter, Zero);
         if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
-      output_.WriteVector("e2scatraO2n", qexp_);
+      output_.write_vector("e2scatraO2n", qexp_);
       {
         Epetra_Export exporter(e2scatraO2nm_->Map(), qexp_->Map());
         int err = qexp_->Export(*e2scatraO2nm_, exporter, Zero);
         if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
-      output_.WriteVector("e2scatraO2nm", qexp_);
+      output_.write_vector("e2scatraO2nm", qexp_);
       {
         Epetra_Export exporter(junctionVolumeInMix_->Map(), jVDofRowMix_->Map());
         int err = jVDofRowMix_->Export(*junctionVolumeInMix_, exporter, Zero);
         if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
-      output_.WriteVector("juncVolMix", jVDofRowMix_);
+      output_.write_vector("juncVolMix", jVDofRowMix_);
     }
 
     // write the flow values
     Core::LinAlg::Export(*qin_nm_, *qexp_);
-    output_.WriteVector("qin_nm", qexp_);
+    output_.write_vector("qin_nm", qexp_);
     Core::LinAlg::Export(*qin_n_, *qexp_);
-    output_.WriteVector("qin_n", qexp_);
+    output_.write_vector("qin_n", qexp_);
     Core::LinAlg::Export(*qin_np_, *qexp_);
-    output_.WriteVector("qin_np", qexp_);
+    output_.write_vector("qin_np", qexp_);
 
     Core::LinAlg::Export(*qout_nm_, *qexp_);
-    output_.WriteVector("qout_nm", qexp_);
+    output_.write_vector("qout_nm", qexp_);
     Core::LinAlg::Export(*qout_n_, *qexp_);
-    output_.WriteVector("qout_n", qexp_);
+    output_.write_vector("qout_n", qexp_);
     Core::LinAlg::Export(*qout_np_, *qexp_);
-    output_.WriteVector("qout_np", qexp_);
+    output_.write_vector("qout_np", qexp_);
 
     Core::LinAlg::Export(*x_n_, *qexp_);
-    output_.WriteVector("x_n", qexp_);
+    output_.write_vector("x_n", qexp_);
     Core::LinAlg::Export(*x_np_, *qexp_);
-    output_.WriteVector("x_np", qexp_);
+    output_.write_vector("x_np", qexp_);
     Core::LinAlg::Export(*open_, *qexp_);
-    output_.WriteVector("open", qexp_);
+    output_.write_vector("open", qexp_);
     Core::LinAlg::Export(*p_extnp_, *qexp_);
-    output_.WriteVector("p_extnp", qexp_);
+    output_.write_vector("p_extnp", qexp_);
     Core::LinAlg::Export(*p_extn_, *qexp_);
-    output_.WriteVector("p_extn", qexp_);
+    output_.write_vector("p_extn", qexp_);
     Core::LinAlg::Export(*airway_acinus_dep_, *qexp_);
-    output_.WriteVector("airway_acinus_dep", qexp_);
+    output_.write_vector("airway_acinus_dep", qexp_);
 
     Core::LinAlg::Export(*elemVolumenm_, *qexp_);
-    output_.WriteVector("elemVolumenm", qexp_);
+    output_.write_vector("elemVolumenm", qexp_);
     Core::LinAlg::Export(*elemVolumen_, *qexp_);
-    output_.WriteVector("elemVolumen", qexp_);
+    output_.write_vector("elemVolumen", qexp_);
     Core::LinAlg::Export(*elemVolumenp_, *qexp_);
-    output_.WriteVector("elemVolumenp", qexp_);
+    output_.write_vector("elemVolumenp", qexp_);
 
     Core::LinAlg::Export(*elemRadiusnp_, *qexp_);
-    output_.WriteVector("elemRadius_current", qexp_);
+    output_.write_vector("elemRadius_current", qexp_);
 
     {
       Epetra_Export exporter(acini_e_volumenm_->Map(), qexp_->Map());
       int err = qexp_->Export(*acini_e_volumenm_, exporter, Zero);
       if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      output_.WriteVector("acini_vnm", qexp_);
+      output_.write_vector("acini_vnm", qexp_);
     }
     {
       Epetra_Export exporter(acini_e_volumen_->Map(), qexp_->Map());
       int err = qexp_->Export(*acini_e_volumen_, exporter, Zero);
       if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      output_.WriteVector("acini_vn", qexp_);
+      output_.write_vector("acini_vn", qexp_);
     }
     {
       Epetra_Export exporter(acini_e_volumenp_->Map(), qexp_->Map());
       int err = qexp_->Export(*acini_e_volumenp_, exporter, Zero);
       if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      output_.WriteVector("acini_vnp", qexp_);
+      output_.write_vector("acini_vnp", qexp_);
     }
     {
       Epetra_Export exporter(acini_e_volume_strain_->Map(), qexp_->Map());
       int err = qexp_->Export(*acini_e_volume_strain_, exporter, Zero);
       if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      output_.WriteVector("acini_volumetric_strain", qexp_);
+      output_.write_vector("acini_volumetric_strain", qexp_);
     }
     {
       Epetra_Export exporter(acini_e_volume0_->Map(), qexp_->Map());
       int err = qexp_->Export(*acini_e_volume0_, exporter, Zero);
       if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      output_.WriteVector("acini_v0", qexp_);
+      output_.write_vector("acini_v0", qexp_);
     }
 
     if (step_ == upres_)
     {
       Core::LinAlg::Export(*elemVolume0_, *qexp_);
-      output_.WriteVector("elemVolume0", qexp_);
-      output_.WriteVector("NodeIDs", nodeIds_);
-      output_.WriteVector("radii", radii_);
+      output_.write_vector("elemVolume0", qexp_);
+      output_.write_vector("NodeIDs", nodeIds_);
+      output_.write_vector("radii", radii_);
       Core::LinAlg::Export(*generations_, *qexp_);
-      output_.WriteVector("generations", qexp_);
+      output_.write_vector("generations", qexp_);
       Core::LinAlg::Export(*acini_bc_, *qexp_);
-      output_.WriteVector("acin_bc", qexp_);
-      output_.WriteElementData(true);
+      output_.write_vector("acin_bc", qexp_);
+      output_.write_element_data(true);
       Core::LinAlg::Export(*elemArea0_, *qexp_);
-      output_.WriteVector("elemArea0", qexp_);
+      output_.write_vector("elemArea0", qexp_);
     }
-
-    // write mesh in each restart step --- the elements are required since
-    // they contain history variables (the time dependent subscales)
-    //    output_.WriteMesh(step_,time_);
 
     if (CoupledTo3D)
     {
-      output_.WriteInt("Actual_RedD_step", step);
+      output_.write_int("Actual_RedD_step", step);
     }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ != 0 && step_ % uprestart_ == 0)
   {
     // step number and time
-    output_.NewStep(step_, time_);
+    output_.new_step(step_, time_);
 
     // "pressure" vectors
-    output_.WriteVector("pnm", pnm_);
-    output_.WriteVector("pn", pn_);
-    output_.WriteVector("pnp", pnp_);
-    output_.WriteVector("p_nonlin", p_nonlin_);
+    output_.write_vector("pnm", pnm_);
+    output_.write_vector("pn", pn_);
+    output_.write_vector("pnp", pnp_);
+    output_.write_vector("p_nonlin", p_nonlin_);
 
     if (solveScatra_)
     {
-      output_.WriteVector("scatraO2np", scatraO2np_);
-      output_.WriteVector("scatraO2n", scatraO2n_);
-      output_.WriteVector("scatraO2nm", scatraO2nm_);
-      output_.WriteVector("dVO2", dVolumeO2_);
+      output_.write_vector("scatraO2np", scatraO2np_);
+      output_.write_vector("scatraO2n", scatraO2n_);
+      output_.write_vector("scatraO2nm", scatraO2nm_);
+      output_.write_vector("dVO2", dVolumeO2_);
       {
         Epetra_Export exporter(e1scatraO2np_->Map(), qexp_->Map());
         int err = qexp_->Export(*e1scatraO2np_, exporter, Zero);
         if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
-      output_.WriteVector("e1scatraO2np", qexp_);
+      output_.write_vector("e1scatraO2np", qexp_);
       {
         Epetra_Export exporter(e1scatraO2n_->Map(), qexp_->Map());
         int err = qexp_->Export(*e1scatraO2n_, exporter, Zero);
         if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
-      output_.WriteVector("e1scatraO2n", qexp_);
+      output_.write_vector("e1scatraO2n", qexp_);
       {
         Epetra_Export exporter(e1scatraO2nm_->Map(), qexp_->Map());
         int err = qexp_->Export(*e1scatraO2nm_, exporter, Zero);
         if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
-      output_.WriteVector("e1scatraO2nm", qexp_);
+      output_.write_vector("e1scatraO2nm", qexp_);
 
       {
         Epetra_Export exporter(e2scatraO2np_->Map(), qexp_->Map());
         int err = qexp_->Export(*e2scatraO2np_, exporter, Zero);
         if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
-      output_.WriteVector("e2scatraO2np", qexp_);
+      output_.write_vector("e2scatraO2np", qexp_);
       {
         Epetra_Export exporter(e2scatraO2n_->Map(), qexp_->Map());
         int err = qexp_->Export(*e2scatraO2n_, exporter, Zero);
         if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
-      output_.WriteVector("e2scatraO2n", qexp_);
+      output_.write_vector("e2scatraO2n", qexp_);
       {
         Epetra_Export exporter(e2scatraO2nm_->Map(), qexp_->Map());
         int err = qexp_->Export(*e2scatraO2nm_, exporter, Zero);
         if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
-      output_.WriteVector("e2scatraO2nm", qexp_);
+      output_.write_vector("e2scatraO2nm", qexp_);
       {
         Epetra_Export exporter(junctionVolumeInMix_->Map(), jVDofRowMix_->Map());
         int err = jVDofRowMix_->Export(*junctionVolumeInMix_, exporter, Zero);
         if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
-      output_.WriteVector("juncVolMix", jVDofRowMix_);
+      output_.write_vector("juncVolMix", jVDofRowMix_);
     }
     // write the flow values
     Core::LinAlg::Export(*qin_nm_, *qexp_);
-    output_.WriteVector("qin_nm", qexp_);
+    output_.write_vector("qin_nm", qexp_);
     Core::LinAlg::Export(*qin_n_, *qexp_);
-    output_.WriteVector("qin_n", qexp_);
+    output_.write_vector("qin_n", qexp_);
     Core::LinAlg::Export(*qin_np_, *qexp_);
-    output_.WriteVector("qin_np", qexp_);
+    output_.write_vector("qin_np", qexp_);
     //
     Core::LinAlg::Export(*qout_nm_, *qexp_);
-    output_.WriteVector("qout_nm", qexp_);
+    output_.write_vector("qout_nm", qexp_);
     Core::LinAlg::Export(*qout_n_, *qexp_);
-    output_.WriteVector("qout_n", qexp_);
+    output_.write_vector("qout_n", qexp_);
     Core::LinAlg::Export(*qout_np_, *qexp_);
-    output_.WriteVector("qout_np", qexp_);
+    output_.write_vector("qout_np", qexp_);
 
     Core::LinAlg::Export(*x_n_, *qexp_);
-    output_.WriteVector("x_n", qexp_);
+    output_.write_vector("x_n", qexp_);
     Core::LinAlg::Export(*x_np_, *qexp_);
-    output_.WriteVector("x_np", qexp_);
+    output_.write_vector("x_np", qexp_);
     Core::LinAlg::Export(*open_, *qexp_);
-    output_.WriteVector("open", qexp_);
+    output_.write_vector("open", qexp_);
     Core::LinAlg::Export(*p_extnp_, *qexp_);
-    output_.WriteVector("p_extnp", qexp_);
+    output_.write_vector("p_extnp", qexp_);
     Core::LinAlg::Export(*p_extn_, *qexp_);
-    output_.WriteVector("p_extn", qexp_);
+    output_.write_vector("p_extn", qexp_);
     Core::LinAlg::Export(*airway_acinus_dep_, *qexp_);
-    output_.WriteVector("airway_acinus_dep", qexp_);
+    output_.write_vector("airway_acinus_dep", qexp_);
 
     Core::LinAlg::Export(*elemVolumenm_, *qexp_);
-    output_.WriteVector("elemVolumenm", qexp_);
+    output_.write_vector("elemVolumenm", qexp_);
     Core::LinAlg::Export(*elemVolumen_, *qexp_);
-    output_.WriteVector("elemVolumen", qexp_);
+    output_.write_vector("elemVolumen", qexp_);
     Core::LinAlg::Export(*elemVolumenp_, *qexp_);
-    output_.WriteVector("elemVolumenp", qexp_);
+    output_.write_vector("elemVolumenp", qexp_);
 
     //
     Core::LinAlg::Export(*acini_e_volumenm_, *qexp_);
-    output_.WriteVector("acini_vnm", qexp_);
+    output_.write_vector("acini_vnm", qexp_);
     Core::LinAlg::Export(*acini_e_volumen_, *qexp_);
-    output_.WriteVector("acini_vn", qexp_);
+    output_.write_vector("acini_vn", qexp_);
     Core::LinAlg::Export(*acini_e_volumenp_, *qexp_);
-    output_.WriteVector("acini_vnp", qexp_);
+    output_.write_vector("acini_vnp", qexp_);
     Core::LinAlg::Export(*acini_e_volume_strain_, *qexp_);
-    output_.WriteVector("acini_volumetric_strain", qexp_);
+    output_.write_vector("acini_volumetric_strain", qexp_);
     Core::LinAlg::Export(*acini_e_volume0_, *qexp_);
-    output_.WriteVector("acini_v0", qexp_);
+    output_.write_vector("acini_v0", qexp_);
 
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
-    output_.WriteMesh(step_, time_);
+    output_.write_mesh(step_, time_);
 
     if (CoupledTo3D)
     {
-      output_.WriteInt("Actual_RedD_step", step);
+      output_.write_int("Actual_RedD_step", step);
     }
   }
 
@@ -2165,91 +2161,91 @@ void Airway::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
   coupledTo3D_ = coupledTo3D;
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step);
-  time_ = reader.ReadDouble("time");
+  time_ = reader.read_double("time");
 
   if (coupledTo3D_)
   {
-    step_ = reader.ReadInt("Actual_RedD_step");
+    step_ = reader.read_int("Actual_RedD_step");
   }
   else
   {
-    step_ = reader.ReadInt("step");
+    step_ = reader.read_int("step");
   }
 
-  reader.ReadVector(pnp_, "pnp");
-  reader.ReadVector(pn_, "pn");
-  reader.ReadVector(pnm_, "pnm");
-  reader.ReadVector(p_nonlin_, "p_nonlin");
+  reader.read_vector(pnp_, "pnp");
+  reader.read_vector(pn_, "pn");
+  reader.read_vector(pnm_, "pnm");
+  reader.read_vector(p_nonlin_, "p_nonlin");
 
-  reader.ReadVector(qexp_, "acini_vnm");
+  reader.read_vector(qexp_, "acini_vnm");
   Core::LinAlg::Export(*qexp_, *acini_e_volumenm_);
-  reader.ReadVector(qexp_, "acini_vn");
+  reader.read_vector(qexp_, "acini_vn");
   Core::LinAlg::Export(*qexp_, *acini_e_volumen_);
-  reader.ReadVector(qexp_, "acini_vnp");
+  reader.read_vector(qexp_, "acini_vnp");
   Core::LinAlg::Export(*qexp_, *acini_e_volumenp_);
-  reader.ReadVector(qexp_, "acini_volumetric_strain");
+  reader.read_vector(qexp_, "acini_volumetric_strain");
   Core::LinAlg::Export(*qexp_, *acini_e_volume_strain_);
-  reader.ReadVector(qexp_, "acini_v0");
+  reader.read_vector(qexp_, "acini_v0");
   Core::LinAlg::Export(*qexp_, *acini_e_volume0_);
 
-  reader.ReadVector(qexp_, "qin_nm");
+  reader.read_vector(qexp_, "qin_nm");
   Core::LinAlg::Export(*qexp_, *qin_nm_);
-  reader.ReadVector(qexp_, "qin_n");
+  reader.read_vector(qexp_, "qin_n");
   Core::LinAlg::Export(*qexp_, *qin_n_);
-  reader.ReadVector(qexp_, "qin_np");
+  reader.read_vector(qexp_, "qin_np");
   Core::LinAlg::Export(*qexp_, *qin_np_);
 
-  reader.ReadVector(qexp_, "qout_nm");
+  reader.read_vector(qexp_, "qout_nm");
   Core::LinAlg::Export(*qexp_, *qout_nm_);
-  reader.ReadVector(qexp_, "qout_n");
+  reader.read_vector(qexp_, "qout_n");
   Core::LinAlg::Export(*qexp_, *qout_n_);
-  reader.ReadVector(qexp_, "qout_np");
+  reader.read_vector(qexp_, "qout_np");
   Core::LinAlg::Export(*qexp_, *qout_np_);
 
-  reader.ReadVector(qexp_, "elemVolumenm");
+  reader.read_vector(qexp_, "elemVolumenm");
   Core::LinAlg::Export(*qexp_, *elemVolumenm_);
-  reader.ReadVector(qexp_, "elemVolumen");
+  reader.read_vector(qexp_, "elemVolumen");
   Core::LinAlg::Export(*qexp_, *elemVolumen_);
-  reader.ReadVector(qexp_, "elemVolumenp");
+  reader.read_vector(qexp_, "elemVolumenp");
   Core::LinAlg::Export(*qexp_, *elemVolumenp_);
 
-  reader.ReadVector(qexp_, "x_n");
+  reader.read_vector(qexp_, "x_n");
   Core::LinAlg::Export(*qexp_, *x_n_);
-  reader.ReadVector(qexp_, "x_np");
+  reader.read_vector(qexp_, "x_np");
   Core::LinAlg::Export(*qexp_, *x_np_);
-  reader.ReadVector(qexp_, "open");
+  reader.read_vector(qexp_, "open");
   Core::LinAlg::Export(*qexp_, *open_);
-  reader.ReadVector(qexp_, "p_extn");
+  reader.read_vector(qexp_, "p_extn");
   Core::LinAlg::Export(*qexp_, *p_extn_);
-  reader.ReadVector(qexp_, "p_extnp");
+  reader.read_vector(qexp_, "p_extnp");
   Core::LinAlg::Export(*qexp_, *p_extnp_);
-  reader.ReadVector(qexp_, "airway_acinus_dep");
+  reader.read_vector(qexp_, "airway_acinus_dep");
   Core::LinAlg::Export(*qexp_, *airway_acinus_dep_);
 
 
   // read the previously written elements including the history data
-  // reader.ReadMesh(step_);
+  // reader.read_mesh(step_);
   if (solveScatra_)
   {
-    reader.ReadVector(scatraO2np_, "scatraO2np");
-    reader.ReadVector(scatraO2n_, "scatraO2n");
-    reader.ReadVector(scatraO2nm_, "scatraO2nm");
+    reader.read_vector(scatraO2np_, "scatraO2np");
+    reader.read_vector(scatraO2n_, "scatraO2n");
+    reader.read_vector(scatraO2nm_, "scatraO2nm");
 
-    reader.ReadVector(qexp_, "e1scatraO2np");
+    reader.read_vector(qexp_, "e1scatraO2np");
     Core::LinAlg::Export(*qexp_, *e1scatraO2np_);
-    reader.ReadVector(qexp_, "e1scatraO2n");
+    reader.read_vector(qexp_, "e1scatraO2n");
     Core::LinAlg::Export(*qexp_, *e1scatraO2n_);
-    reader.ReadVector(qexp_, "e1scatraO2nm");
+    reader.read_vector(qexp_, "e1scatraO2nm");
     Core::LinAlg::Export(*qexp_, *e1scatraO2nm_);
 
-    reader.ReadVector(qexp_, "e2scatraO2np");
+    reader.read_vector(qexp_, "e2scatraO2np");
     Core::LinAlg::Export(*qexp_, *e2scatraO2np_);
-    reader.ReadVector(qexp_, "e2scatraO2n");
+    reader.read_vector(qexp_, "e2scatraO2n");
     Core::LinAlg::Export(*qexp_, *e2scatraO2n_);
-    reader.ReadVector(qexp_, "e2scatraO2nm");
+    reader.read_vector(qexp_, "e2scatraO2nm");
     Core::LinAlg::Export(*qexp_, *e2scatraO2nm_);
 
-    reader.ReadVector(jVDofRowMix_, "juncVolMix");
+    reader.read_vector(jVDofRowMix_, "juncVolMix");
     Core::LinAlg::Export(*jVDofRowMix_, *junctionVolumeInMix_);
   }
 

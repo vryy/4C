@@ -219,8 +219,8 @@ bool STR::MODELEVALUATOR::LagPenConstraint::assemble_jacobian(
 void STR::MODELEVALUATOR::LagPenConstraint::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  iowriter.WriteVector("lagrmultiplier", constrman_->GetLagrMultVector());
-  iowriter.WriteVector("refconval", constrman_->GetRefBaseValues());
+  iowriter.write_vector("lagrmultiplier", constrman_->GetLagrMultVector());
+  iowriter.write_vector("refconval", constrman_->GetRefBaseValues());
 }
 
 /*----------------------------------------------------------------------*

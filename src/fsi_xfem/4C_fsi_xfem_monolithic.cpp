@@ -1463,7 +1463,7 @@ bool FSI::MonolithicXFEM::evaluate()
   if (sdbg_ != Teuchos::null)
   {
     sdbg_->NewIteration();
-    sdbg_->WriteVector("x", *StructurePoro()->Interface()->ExtractFSICondVector(sx));
+    sdbg_->write_vector("x", *StructurePoro()->Interface()->ExtractFSICondVector(sx));
   }
 
 
@@ -2569,7 +2569,7 @@ void FSI::MonolithicXFEM::read_restart(int step)
 
   //--------------------------------
   // NOTE: do the following after structure_field()->read_restart and after
-  // fluid_field()->read_restart as ReadMesh can change the discretization and the dofrowmaps!!!
+  // fluid_field()->read_restart as read_mesh can change the discretization and the dofrowmaps!!!
 
   // read Lagrange multiplier (ie forces onto the structure, Robin-type forces
   // consisting of fluid forces and the Nitsche penalty term contribution)

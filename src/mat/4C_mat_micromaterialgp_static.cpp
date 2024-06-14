@@ -187,9 +187,9 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
 
     micro_output_ = Teuchos::rcp(new Core::IO::DiscretizationWriter(
         microdis, microcontrol, microproblem->spatial_approximation_type()));
-    micro_output_->SetOutput(microcontrol);
+    micro_output_->set_output(microcontrol);
 
-    micro_output_->WriteMesh(step_, time_);
+    micro_output_->write_mesh(step_, time_);
   }
 }
 

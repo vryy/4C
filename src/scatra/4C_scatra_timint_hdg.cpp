@@ -364,13 +364,13 @@ void ScaTra::TimIntHDG::output_state()
       discret_->NumDofSets());
 
   // write vector to output file
-  output_->WriteVector("phi_hdg", interpolatedPhinp_, Core::IO::nodevector);
-  output_->WriteVector("gradphi_hdg", interpolatedGradPhi, Core::IO::nodevector);
-  output_->WriteVector("tracephi_hdg", interpolatedtracePhi, Core::IO::nodevector);
+  output_->write_vector("phi_hdg", interpolatedPhinp_, Core::IO::nodevector);
+  output_->write_vector("gradphi_hdg", interpolatedGradPhi, Core::IO::nodevector);
+  output_->write_vector("tracephi_hdg", interpolatedtracePhi, Core::IO::nodevector);
 
   write_problem_specific_output(interpolatedPhinp_);
 
-  output_->WriteVector("elementdegree", elementdegree_, Core::IO::elementvector);
+  output_->write_vector("elementdegree", elementdegree_, Core::IO::elementvector);
 
 }  // output_state
 
@@ -379,11 +379,11 @@ void ScaTra::TimIntHDG::output_state()
 void ScaTra::TimIntHDG::write_restart() const
 {
   ScaTra::TimIntGenAlpha::write_restart();
-  output_->WriteVector("intphinp", intphinp_);
-  output_->WriteVector("phinp_trace", phinp_);
-  output_->WriteVector("intphin", intphin_);
+  output_->write_vector("intphinp", intphinp_);
+  output_->write_vector("phinp_trace", phinp_);
+  output_->write_vector("intphin", intphin_);
 
-  output_->WriteMesh(
+  output_->write_mesh(
       step_, time_);  // add info to control file for reading all variables in restart
 }
 
@@ -395,11 +395,11 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step);
 
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
+  time_ = reader.read_double("time");
+  step_ = reader.read_int("step");
 
-  reader.ReadHistoryData(step);  // Read all saved data in nodes and elements and call nodal and
-                                 // element Unpacking each global variable has to be read
+  reader.read_history_data(step);  // Read all saved data in nodes and elements and call nodal and
+                                   // element Unpacking each global variable has to be read
 
   if (padaptivity_)
   {
@@ -461,7 +461,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
 
   // clear map cache since after every fill_complete() / assign_degrees_of_freedom() old maps are
   // stored in the mapstack
-  output_->ClearMapCache();
+  output_->clear_map_cache();
 
   // reset the residual, increment and sysmat to the size
   residual_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
@@ -477,8 +477,8 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   phin_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
 
   // read state vectors that are needed for hdg
-  reader.ReadVector(phinp_, "phinp_trace");
-  reader.ReadVector(intphinp_, "intphinp");
+  reader.read_vector(phinp_, "phinp_trace");
+  reader.read_vector(intphinp_, "intphinp");
 
   intphin_->Update(1.0, *intphinp_, 0.0);
   phin_->Update(1.0, *phinp_, 0.0);
@@ -1201,7 +1201,7 @@ void ScaTra::TimIntHDG::adapt_degree()
 
   // clear map cache since after every fill_complete() / assign_degrees_of_freedom() old maps are
   // stored in the mapstack
-  output_->ClearMapCache();
+  output_->clear_map_cache();
 
   // copy old values of the state vectors phi and intphi into vectors, which are then used for the
   // projection

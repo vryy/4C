@@ -933,7 +933,7 @@ void FS3I::BiofilmFSI::StructGmshOutput()
       scatravec_[1]->ScaTraField()->discretization();
 
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("struct",
-      structdis->Writer()->Output()->file_name(), step_bio_, 701, false, structdis->Comm().MyPID());
+      structdis->Writer()->output()->file_name(), step_bio_, 701, false, structdis->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
 
   Teuchos::RCP<const Epetra_Vector> structdisp = fsi_->structure_field()->Dispn();
@@ -982,7 +982,7 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
       scatravec_[0]->ScaTraField()->discretization();
 
   const std::string filenamefluid = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("fluid",
-      fluiddis->Writer()->Output()->file_name(), step_bio_, 701, false, fluiddis->Comm().MyPID());
+      fluiddis->Writer()->output()->file_name(), step_bio_, 701, false, fluiddis->Comm().MyPID());
   std::ofstream gmshfilecontent(filenamefluid.c_str());
 
   Teuchos::RCP<const Epetra_Vector> fluidvel = fsi_->fluid_field()->Velnp();

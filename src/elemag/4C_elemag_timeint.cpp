@@ -128,7 +128,7 @@ void EleMag::ElemagTimeInt::Init()
       Teuchos::rcp(new Core::LinAlg::EquilibrationSparse(equilibration_method_, dofrowmap));
 
   // write mesh
-  output_->WriteMesh(0, 0.0);
+  output_->write_mesh(0, 0.0);
 
   return;
 }  // Init
@@ -969,25 +969,25 @@ void EleMag::ElemagTimeInt::Output()
       conductivity, permittivity, permeability);
 
   // Create the new step
-  output_->NewStep(step_, time_);
+  output_->new_step(step_, time_);
 
   if (step_ == 0)
   {
     getElementMaterialProperties(*discret_, conductivity, permittivity, permeability);
-    output_->WriteVector("conductivity", conductivity);
-    output_->WriteVector("permittivity", permittivity);
-    output_->WriteVector("permeability", permeability);
+    output_->write_vector("conductivity", conductivity);
+    output_->write_vector("permittivity", permittivity);
+    output_->write_vector("permeability", permeability);
 
-    output_->WriteElementData(true);
+    output_->write_element_data(true);
 
     if (myrank_ == 0) std::cout << "======= Element properties written" << std::endl;
   }
 
   // Output the reuslts
-  output_->WriteVector("magnetic", magnetic, Core::IO::nodevector);
-  output_->WriteVector("trace", trace, Core::IO::nodevector);
-  output_->WriteVector("electric", electric, Core::IO::nodevector);
-  output_->WriteVector("electric_post", electric_post, Core::IO::nodevector);
+  output_->write_vector("magnetic", magnetic, Core::IO::nodevector);
+  output_->write_vector("trace", trace, Core::IO::nodevector);
+  output_->write_vector("electric", electric, Core::IO::nodevector);
+  output_->write_vector("electric_post", electric_post, Core::IO::nodevector);
 
   // add restart data
 
@@ -1007,7 +1007,7 @@ void EleMag::ElemagTimeInt::write_restart()
 {
   if (myrank_ == 0) std::cout << "======= Restart written in step " << step_ << std::endl;
 
-  output_->WriteVector("traceRestart", trace);
+  output_->write_vector("traceRestart", trace);
 
   // write internal field for which we need to create and fill the corresponding vectors
   // since this requires some effort, the write_restart method should not be used excessively!
@@ -1029,8 +1029,8 @@ void EleMag::ElemagTimeInt::write_restart()
   matrix_state = discret_->GetState(1, "intVarnm");
   Core::LinAlg::Export(*matrix_state, *intVarnm);
 
-  output_->WriteVector("intVar", intVar);
-  output_->WriteVector("intVarnm", intVarnm);
+  output_->write_vector("intVar", intVar);
+  output_->write_vector("intVarnm", intVarnm);
 
   discret_->ClearState(true);
 
@@ -1045,12 +1045,12 @@ void EleMag::ElemagTimeInt::read_restart(int step)
 {
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
+  time_ = reader.read_double("time");
+  step_ = reader.read_int("step");
   Teuchos::RCP<Epetra_Vector> intVar = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map(1))));
   try
   {
-    reader.ReadVector(intVar, "intVar");
+    reader.read_vector(intVar, "intVar");
   }
   catch (...)
   {
@@ -1067,7 +1067,7 @@ void EleMag::ElemagTimeInt::read_restart(int step)
       Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map(1))));
   try
   {
-    reader.ReadVector(intVarnm, "intVarnm");
+    reader.read_vector(intVarnm, "intVarnm");
   }
   catch (...)
   {
@@ -1082,7 +1082,7 @@ void EleMag::ElemagTimeInt::read_restart(int step)
         "Consider fixing the code or restart a simulation that used BDF2 since the beginning.");
   }
   discret_->set_state(1, "intVarnm", intVarnm);
-  reader.ReadMultiVector(trace, "traceRestart");
+  reader.read_multi_vector(trace, "traceRestart");
 
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);

@@ -364,9 +364,9 @@ void ScaTra::ScaTraAlgorithm::outer_iteration_convection()
           Core::FE::ShapeFunctionType::polynomial, "myinput", outname, numdim, 0, 1000));
   // create discretization writer with my own control settings
   Teuchos::RCP<Core::IO::DiscretizationWriter> myoutput = ScaTraField().discretization()->Writer();
-  myoutput->SetOutput(myoutputcontrol);
+  myoutput->set_output(myoutputcontrol);
   // write mesh at step 0
-  myoutput->WriteMesh(0, 0.0);
+  myoutput->write_mesh(0, 0.0);
 #endif
 
   while (!stopnonliniter)
@@ -403,10 +403,9 @@ void ScaTra::ScaTraAlgorithm::outer_iteration_convection()
       printf("\n");
     }
 
-    myoutput->NewStep(natconvitnum, natconvitnum);
-    myoutput->WriteVector("phinp", ScaTraField().Phinp());
-    myoutput->WriteVector("convec_velocity", ScaTraField().ConVel());
-    // myoutput->WriteVector("velnp", fluid_field()->Velnp());
+    myoutput->new_step(natconvitnum, natconvitnum);
+    myoutput->write_vector("phinp", ScaTraField().Phinp());
+    myoutput->write_vector("convec_velocity", ScaTraField().ConVel());
 #endif
   }
 }

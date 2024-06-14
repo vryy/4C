@@ -188,8 +188,8 @@ void FSI::DirichletNeumannVel::output()
   FSI::DirichletNeumann::output();
   constraint_manager_->Output(Time(), Step());
   visualization_output_writer_->write_output_runtime(constraint_manager_, Step(), Time());
-  structure_field()->discretization()->Writer()->ClearMapCache();
-  MBFluidField()->discretization()->Writer()->ClearMapCache();
+  structure_field()->discretization()->Writer()->clear_map_cache();
+  MBFluidField()->discretization()->Writer()->clear_map_cache();
 }
 
 /*----------------------------------------------------------------------*/

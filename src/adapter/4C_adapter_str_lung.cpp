@@ -444,7 +444,7 @@ void Adapter::StructureLung::WriteVolConRestart(Teuchos::RCP<Epetra_Vector> OldF
 void Adapter::StructureLung::OutputForces(Teuchos::RCP<Epetra_Vector> Forces)
 {
   Teuchos::RCP<Core::IO::DiscretizationWriter> output = disc_writer();
-  output->WriteVector("Add_Forces", Forces);
+  output->write_vector("Add_Forces", Forces);
 }
 
 
@@ -456,7 +456,7 @@ void Adapter::StructureLung::ReadVolConRestart(const int step,
 {
   Core::IO::DiscretizationReader reader(
       discretization(), Global::Problem::Instance()->InputControlFile(), step);
-  if (step != reader.ReadInt("step")) FOUR_C_THROW("Time step on file not equal to given step");
+  if (step != reader.read_int("step")) FOUR_C_THROW("Time step on file not equal to given step");
   std::stringstream stream1;
   stream1 << "OldVols";
   std::stringstream stream2;

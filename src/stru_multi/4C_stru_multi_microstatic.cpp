@@ -665,9 +665,9 @@ void MultiScale::MicroStatic::Output(Teuchos::RCP<Core::IO::DiscretizationWriter
   //------------------------------------------------- write restart step
   if (restartevry_ and step % restartevry_ == 0)
   {
-    output->WriteMesh(step, time);
-    output->NewStep(step, time);
-    output->WriteVector("displacement", dis_);
+    output->write_mesh(step, time);
+    output->new_step(step, time);
+    output->write_vector("displacement", dis_);
     isdatawritten = true;
 
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> emptyalpha =
@@ -686,21 +686,21 @@ void MultiScale::MicroStatic::Output(Teuchos::RCP<Core::IO::DiscretizationWriter
         Core::Communication::ParObject::add_to_pack(data, *emptyalpha);
       }
     }
-    output->WriteVector("alpha", data(), *discret_->ElementColMap());
+    output->write_vector("alpha", data(), *discret_->ElementColMap());
   }
 
   //----------------------------------------------------- output results
   if (iodisp_ && resevrydisp_ && step % resevrydisp_ == 0 && !isdatawritten)
   {
-    output->NewStep(step, time);
-    output->WriteVector("displacement", dis_);
+    output->new_step(step, time);
+    output->write_vector("displacement", dis_);
     isdatawritten = true;
   }
 
   //------------------------------------- stress/strain output
   if (resevrystrs_ and !(step % resevrystrs_) and iostress_ != Inpar::STR::stress_none)
   {
-    if (!isdatawritten) output->NewStep(step, time);
+    if (!isdatawritten) output->new_step(step, time);
     isdatawritten = true;
 
     if (stress_ == Teuchos::null or strain_ == Teuchos::null or plstrain_ == Teuchos::null)
@@ -709,10 +709,10 @@ void MultiScale::MicroStatic::Output(Teuchos::RCP<Core::IO::DiscretizationWriter
     switch (iostress_)
     {
       case Inpar::STR::stress_cauchy:
-        output->WriteVector("gauss_cauchy_stresses_xyz", *stress_, *discret_->ElementRowMap());
+        output->write_vector("gauss_cauchy_stresses_xyz", *stress_, *discret_->ElementRowMap());
         break;
       case Inpar::STR::stress_2pk:
-        output->WriteVector("gauss_2PK_stresses_xyz", *stress_, *discret_->ElementRowMap());
+        output->write_vector("gauss_2PK_stresses_xyz", *stress_, *discret_->ElementRowMap());
         break;
       case Inpar::STR::stress_none:
         break;
@@ -724,10 +724,10 @@ void MultiScale::MicroStatic::Output(Teuchos::RCP<Core::IO::DiscretizationWriter
     switch (iostrain_)
     {
       case Inpar::STR::strain_ea:
-        output->WriteVector("gauss_EA_strains_xyz", *strain_, *discret_->ElementRowMap());
+        output->write_vector("gauss_EA_strains_xyz", *strain_, *discret_->ElementRowMap());
         break;
       case Inpar::STR::strain_gl:
-        output->WriteVector("gauss_GL_strains_xyz", *strain_, *discret_->ElementRowMap());
+        output->write_vector("gauss_GL_strains_xyz", *strain_, *discret_->ElementRowMap());
         break;
       case Inpar::STR::strain_none:
         break;
@@ -739,10 +739,10 @@ void MultiScale::MicroStatic::Output(Teuchos::RCP<Core::IO::DiscretizationWriter
     switch (ioplstrain_)
     {
       case Inpar::STR::strain_ea:
-        output->WriteVector("gauss_pl_EA_strains_xyz", *plstrain_, *discret_->ElementRowMap());
+        output->write_vector("gauss_pl_EA_strains_xyz", *plstrain_, *discret_->ElementRowMap());
         break;
       case Inpar::STR::strain_gl:
-        output->WriteVector("gauss_pl_GL_strains_xyz", *plstrain_, *discret_->ElementRowMap());
+        output->write_vector("gauss_pl_GL_strains_xyz", *plstrain_, *discret_->ElementRowMap());
         break;
       case Inpar::STR::strain_none:
         break;
@@ -764,15 +764,15 @@ void MultiScale::MicroStatic::read_restart(int step, Teuchos::RCP<Epetra_Vector>
   Teuchos::RCP<Core::IO::InputControl> inputcontrol =
       Teuchos::rcp(new Core::IO::InputControl(name, true));
   Core::IO::DiscretizationReader reader(discret_, inputcontrol, step);
-  double time = reader.ReadDouble("time");
-  int rstep = reader.ReadInt("step");
+  double time = reader.read_double("time");
+  int rstep = reader.read_int("step");
   if (rstep != step) FOUR_C_THROW("Time step on file not equal to given step");
 
-  reader.ReadVector(dis, "displacement");
+  reader.read_vector(dis, "displacement");
   // It does not make any sense to read the mesh and corresponding
   // element based data because we surely have different element based
   // data at every Gauss point
-  // reader.ReadMesh(step);
+  // reader.read_mesh(step);
 
   // Override current time and step with values from file
   time_ = time;

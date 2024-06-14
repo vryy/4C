@@ -108,9 +108,9 @@ void STR::MODELEVALUATOR::Contact::post_setup(Teuchos::ParameterList& cparams)
     Teuchos::ParameterList& plot_params = aug_params.sublist("PLOT");
     plot_params.set<const int*>("CURRENT_STEP", &global_state().get_step_np());
     plot_params.set<std::string>(
-        "OUTPUT_FILE_NAME", global_in_output().get_output_ptr()->Output()->file_name());
+        "OUTPUT_FILE_NAME", global_in_output().get_output_ptr()->output()->file_name());
     plot_params.set<std::string>(
-        "INPUT_FILE_NAME", global_in_output().get_output_ptr()->Output()->input_file_name());
+        "INPUT_FILE_NAME", global_in_output().get_output_ptr()->output()->input_file_name());
     plot_params.set<const Core::FE::Discretization*>(
         "DISCRETIZATION", global_state().get_discret().get());
     plot_params.set<STR::MODELEVALUATOR::Contact*>("MODELEVALUATOR", this);
@@ -357,7 +357,7 @@ void STR::MODELEVALUATOR::Contact::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // clear cache of maps due to varying vector size
-  iowriter.ClearMapCache();
+  iowriter.clear_map_cache();
 
   // quantities to be written for restart
   std::map<std::string, Teuchos::RCP<Epetra_Vector>> restart_vectors;
@@ -367,13 +367,13 @@ void STR::MODELEVALUATOR::Contact::write_restart(
   // write all vectors specified by used strategy
   std::map<std::string, Teuchos::RCP<Epetra_Vector>>::const_iterator p;
   for (p = restart_vectors.begin(); p != restart_vectors.end(); ++p)
-    iowriter.WriteVector(p->first, p->second);
+    iowriter.write_vector(p->first, p->second);
 
   /* ToDo Move this stuff into the DoWriteRestart() routine of the
    * AbstractStrategy as soon as the old structural time integration
    * is gone! */
   if (Strategy().GetLagrMultN(true) != Teuchos::null)
-    iowriter.WriteVector("lagrmultold", Strategy().GetLagrMultN(true));
+    iowriter.write_vector("lagrmultold", Strategy().GetLagrMultN(true));
 
   // since the global output_step_state() routine is not called, if the
   // restart is written, we have to do it here manually.
@@ -533,7 +533,7 @@ void STR::MODELEVALUATOR::Contact::output_step_state(Core::IO::DiscretizationWri
     activesetexp->Update(1.0, *mactivesetexp, 1.0);
   }
 
-  iowriter.WriteVector("activeset", activesetexp, Core::IO::nodevector);
+  iowriter.write_vector("activeset", activesetexp, Core::IO::nodevector);
 
   // *********************************************************************
   // contact tractions
@@ -554,8 +554,8 @@ void STR::MODELEVALUATOR::Contact::output_step_state(Core::IO::DiscretizationWri
 
   // write to output
   // contact tractions in normal and tangential direction
-  iowriter.WriteVector("norcontactstress", normalstressesexp);
-  iowriter.WriteVector("tancontactstress", tangentialstressesexp);
+  iowriter.write_vector("norcontactstress", normalstressesexp);
+  iowriter.write_vector("tancontactstress", tangentialstressesexp);
 
 #ifdef CONTACTFORCEOUTPUT
   FOUR_C_THROW("Untested in the new structural framework!");
@@ -645,10 +645,10 @@ void STR::MODELEVALUATOR::Contact::output_step_state(Core::IO::DiscretizationWri
   Core::LinAlg::Export(*fcmastertan, *fcmastertanexp);
 
   // contact forces on slave and master side
-  iowriter.WriteVector("norslaveforce", fcslavenorexp);
-  iowriter.WriteVector("tanslaveforce", fcslavetanexp);
-  iowriter.WriteVector("normasterforce", fcmasternorexp);
-  iowriter.WriteVector("tanmasterforce", fcmastertanexp);
+  iowriter.write_vector("norslaveforce", fcslavenorexp);
+  iowriter.write_vector("tanslaveforce", fcslavetanexp);
+  iowriter.write_vector("normasterforce", fcmasternorexp);
+  iowriter.write_vector("tanmasterforce", fcmastertanexp);
 
 #ifdef CONTACTEXPORT
   // export averaged node forces to xxx.force
@@ -690,7 +690,7 @@ void STR::MODELEVALUATOR::Contact::output_step_state(Core::IO::DiscretizationWri
     Teuchos::RCP<const Epetra_Vector> wearoutput = Strategy().ContactWear();
     Teuchos::RCP<Epetra_Vector> wearoutputexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     Core::LinAlg::Export(*wearoutput, *wearoutputexp);
-    iowriter.WriteVector("wear", wearoutputexp);
+    iowriter.write_vector("wear", wearoutputexp);
   }
 
   // *********************************************************************
@@ -704,7 +704,7 @@ void STR::MODELEVALUATOR::Contact::output_step_state(Core::IO::DiscretizationWri
     Teuchos::RCP<const Epetra_Vector> lambdaout = poro_strategy.LambdaNoPen();
     Teuchos::RCP<Epetra_Vector> lambdaoutexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     Core::LinAlg::Export(*lambdaout, *lambdaoutexp);
-    iowriter.WriteVector("poronopen_lambda", lambdaoutexp);
+    iowriter.write_vector("poronopen_lambda", lambdaoutexp);
   }
 
   /// general way to write the output corresponding to the active strategy

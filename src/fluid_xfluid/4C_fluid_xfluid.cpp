@@ -5088,8 +5088,8 @@ void FLD::XFluid::read_restart(int step)
   //-------- fluid discretization
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
+  time_ = reader.read_double("time");
+  step_ = reader.read_int("step");
 
   if (myrank_ == 0)
     Core::IO::cout << "read_restart for fluid dis (time=" << time_ << " ; step=" << step_ << ")"
@@ -5108,10 +5108,11 @@ void FLD::XFluid::read_restart(int step)
 
   if (alefluid_)
   {
-    reader.ReadVector(dispnp_, "full_dispnp_res");
-    reader.ReadVector(dispn_, "full_dispnp_res");  // as update() was called anyway before output...
-    reader.ReadVector(gridvnp_, "full_gridvnp_res");
-    reader.ReadVector(
+    reader.read_vector(dispnp_, "full_dispnp_res");
+    reader.read_vector(
+        dispn_, "full_dispnp_res");  // as update() was called anyway before output...
+    reader.read_vector(gridvnp_, "full_gridvnp_res");
+    reader.read_vector(
         gridvn_, "full_gridvnp_res");  // as update() was called anyway before output...
   }
 
@@ -5119,11 +5120,11 @@ void FLD::XFluid::read_restart(int step)
   CreateInitialState();  // Create an State with the deformed Fluid Mesh (otherwise state vectors
                          // wouldn't fit)
 
-  reader.ReadVector(state_->velnp_, "velnp_res");
-  reader.ReadVector(state_->velnm_, "velnm_res");
-  reader.ReadVector(state_->veln_, "veln_res");
-  reader.ReadVector(state_->accnp_, "accnp_res");
-  reader.ReadVector(state_->accn_, "accn_res");
+  reader.read_vector(state_->velnp_, "velnp_res");
+  reader.read_vector(state_->velnm_, "velnm_res");
+  reader.read_vector(state_->veln_, "veln_res");
+  reader.read_vector(state_->accnp_, "accnp_res");
+  reader.read_vector(state_->accn_, "accn_res");
 
   // set element time parameter after restart:
   // Here it is already needed by AVM3 and impedance boundary condition!!

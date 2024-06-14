@@ -577,7 +577,7 @@ void STR::TimeInt::Base::new_io_step(bool& datawritten)
   if (not datawritten)
   {
     // Make new step
-    dataio_->get_output_ptr()->NewStep(
+    dataio_->get_output_ptr()->new_step(
         dataglobalstate_->get_step_n(), dataglobalstate_->get_time_n());
 
     datawritten = true;
@@ -614,8 +614,8 @@ void STR::TimeInt::Base::output_state(
 {
   // owner of elements is just written once because it does not change during
   // simulation (so far)
-  iowriter.WriteElementData(write_owner);
-  iowriter.WriteNodeData(write_owner);
+  iowriter.write_element_data(write_owner);
+  iowriter.write_node_data(write_owner);
 
   int_ptr_->output_step_state(iowriter);
 }
@@ -645,7 +645,7 @@ void STR::TimeInt::Base::output_element_volume(Core::IO::DiscretizationWriter& i
 
   STR::MODELEVALUATOR::Data& evaldata = int_ptr_->eval_data();
 
-  iowriter.WriteVector("current_ele_volumes",
+  iowriter.write_vector("current_ele_volumes",
       Teuchos::rcpFromRef(evaldata.current_element_volume_data()), Core::IO::elementvector);
 
   evaldata.set_element_volume_data(Teuchos::null);
@@ -678,7 +678,7 @@ void STR::TimeInt::Base::output_stress_strain()
         FOUR_C_THROW("Requested stress type is not supported!");
         break;
     }
-    output_ptr->WriteVector(text, evaldata.stress_data(), *(discretization()->ElementRowMap()));
+    output_ptr->write_vector(text, evaldata.stress_data(), *(discretization()->ElementRowMap()));
   }
   // we don't need this anymore
   evaldata.stress_data_ptr() = Teuchos::null;
@@ -701,7 +701,7 @@ void STR::TimeInt::Base::output_stress_strain()
         FOUR_C_THROW("Requested coupling stress type is not supported!");
         break;
     }
-    output_ptr->WriteVector(
+    output_ptr->write_vector(
         text, evaldata.coupling_stress_data(), *(discretization()->ElementRowMap()));
   }
 
@@ -728,7 +728,7 @@ void STR::TimeInt::Base::output_stress_strain()
         FOUR_C_THROW("Requested strain type is not supported!");
         break;
     }
-    output_ptr->WriteVector(text, evaldata.strain_data(), *(discretization()->ElementRowMap()));
+    output_ptr->write_vector(text, evaldata.strain_data(), *(discretization()->ElementRowMap()));
   }
   // we don't need this anymore
   evaldata.strain_data_ptr() = Teuchos::null;
@@ -751,7 +751,7 @@ void STR::TimeInt::Base::output_stress_strain()
         FOUR_C_THROW("Requested plastic strain type is not supported!");
         break;
     }
-    output_ptr->WriteVector(
+    output_ptr->write_vector(
         text, evaldata.plastic_strain_data(), *(discretization()->ElementRowMap()));
   }
   // we don't need this anymore
@@ -812,7 +812,7 @@ void STR::TimeInt::Base::output_optional_quantity()
         FOUR_C_THROW("Requested optional quantity type is not supported!");
         break;
     }
-    output_ptr->WriteVector(
+    output_ptr->write_vector(
         text, evaldata.opt_quantity_data(), *(discretization()->ElementRowMap()));
   }
   // we don't need this anymore
@@ -828,16 +828,16 @@ void STR::TimeInt::Base::output_restart(bool& datawritten)
   Teuchos::RCP<Core::IO::DiscretizationWriter> output_ptr = dataio_->get_output_ptr();
   // write restart output, please
   if (dataglobalstate_->get_step_n() != 0)
-    output_ptr->WriteMesh(dataglobalstate_->get_step_n(), dataglobalstate_->get_time_n());
+    output_ptr->write_mesh(dataglobalstate_->get_step_n(), dataglobalstate_->get_time_n());
   new_io_step(datawritten);
 
-  output_ptr->WriteElementData(dataio_->is_first_output_of_run());
-  output_ptr->WriteNodeData(dataio_->is_first_output_of_run());
+  output_ptr->write_element_data(dataio_->is_first_output_of_run());
+  output_ptr->write_node_data(dataio_->is_first_output_of_run());
   dataio_->set_first_output_of_run(false);
 
   // add velocity and acceleration if necessary
-  output_ptr->WriteVector("velocity", dataglobalstate_->get_vel_n());
-  output_ptr->WriteVector("acceleration", dataglobalstate_->get_acc_n());
+  output_ptr->write_vector("velocity", dataglobalstate_->get_vel_n());
+  output_ptr->write_vector("acceleration", dataglobalstate_->get_acc_n());
 
   /* Add the restart information of the different time integrators and model
    * evaluators. */
@@ -862,8 +862,8 @@ void STR::TimeInt::Base::add_restart_to_output_state()
   // evaluators
   if (!dataio_->is_write_vel_acc())
   {
-    output_ptr->WriteVector("velocity", dataglobalstate_->get_vel_n());
-    output_ptr->WriteVector("acceleration", dataglobalstate_->get_acc_n());
+    output_ptr->write_vector("velocity", dataglobalstate_->get_vel_n());
+    output_ptr->write_vector("acceleration", dataglobalstate_->get_acc_n());
   }
 
   /* Add the restart information of the different time integrators and model
@@ -871,7 +871,7 @@ void STR::TimeInt::Base::add_restart_to_output_state()
   int_ptr_->write_restart(*output_ptr, true);
 
   // finally add the missing mesh information, order is important here
-  output_ptr->WriteMesh(data_global_state().get_step_n(), data_global_state().get_time_n());
+  output_ptr->write_mesh(data_global_state().get_step_n(), data_global_state().get_time_n());
 
   // info dedicated to user's eyes staring at standard out
   if ((dataglobalstate_->get_my_rank() == 0) and (dataio_->get_print2_screen_every_n_step() > 0) and
@@ -890,7 +890,7 @@ void STR::TimeInt::Base::write_gmsh_struc_output_step()
   if (!dataio_->is_gmsh()) return;
 
   const std::string filename =
-      Core::IO::Gmsh::GetFileName("struct", disc_writer()->Output()->file_name(),
+      Core::IO::Gmsh::GetFileName("struct", disc_writer()->output()->file_name(),
           dataglobalstate_->get_step_np(), false, dataglobalstate_->get_my_rank());
   std::ofstream gmshfilecontent(filename.c_str());
 
@@ -916,7 +916,7 @@ void STR::TimeInt::Base::read_restart(const int stepn)
   dataglobalstate_->get_step_n() = stepn;
   dataglobalstate_->get_step_np() = stepn + 1;
   dataglobalstate_->get_multi_time() =
-      Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, ioreader.ReadDouble("time")));
+      Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, ioreader.read_double("time")));
   const double& timen = dataglobalstate_->get_time_n();
   const double& dt = (*dataglobalstate_->get_delta_time())[0];
   dataglobalstate_->get_time_np() = timen + dt;
@@ -929,7 +929,7 @@ void STR::TimeInt::Base::read_restart(const int stepn)
   // (3) read specific time integrator and model evaluator data
   // ---------------------------------------------------------------------------
   // (0) read element and node data
-  ioreader.ReadHistoryData(stepn);
+  ioreader.read_history_data(stepn);
 
   // (1) Setup() the model evaluator and time integrator
   /* Since we call a redistribution on the structural discretization, we have to
@@ -939,10 +939,10 @@ void STR::TimeInt::Base::read_restart(const int stepn)
 
   // (2) read (or overwrite) the general dynamic state
   Teuchos::RCP<Epetra_Vector>& velnp = dataglobalstate_->get_vel_np();
-  ioreader.ReadVector(velnp, "velocity");
+  ioreader.read_vector(velnp, "velocity");
   dataglobalstate_->get_multi_vel()->UpdateSteps(*velnp);
   Teuchos::RCP<Epetra_Vector>& accnp = dataglobalstate_->get_acc_np();
-  ioreader.ReadVector(accnp, "acceleration");
+  ioreader.read_vector(accnp, "acceleration");
   dataglobalstate_->get_multi_acc()->UpdateSteps(*accnp);
 
   // (3) read specific time integrator (forces, etc.) and model evaluator data

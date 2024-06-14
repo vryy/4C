@@ -55,7 +55,7 @@ void ParticleInteraction::DEMHistoryPairs::write_restart() const
     if (not particletangentialhistorydata_.empty())
       pack_all_history_pairs(*buffer, particletangentialhistorydata_);
 
-    binwriter->WriteCharVector("ParticleTangentialHistoryData", buffer);
+    binwriter->write_char_data("ParticleTangentialHistoryData", buffer);
   }
 
   // particle-wall tangential history pair data
@@ -65,7 +65,7 @@ void ParticleInteraction::DEMHistoryPairs::write_restart() const
     if (not particlewalltangentialhistorydata_.empty())
       pack_all_history_pairs(*buffer, particlewalltangentialhistorydata_);
 
-    binwriter->WriteCharVector("ParticleWallTangentialHistoryData", buffer);
+    binwriter->write_char_data("ParticleWallTangentialHistoryData", buffer);
   }
 
   // particle rolling history data
@@ -75,7 +75,7 @@ void ParticleInteraction::DEMHistoryPairs::write_restart() const
     if (not particlerollinghistorydata_.empty())
       pack_all_history_pairs(*buffer, particlerollinghistorydata_);
 
-    binwriter->WriteCharVector("ParticleRollingHistoryData", buffer);
+    binwriter->write_char_data("ParticleRollingHistoryData", buffer);
   }
 
   // particle-wall rolling history pair data
@@ -85,7 +85,7 @@ void ParticleInteraction::DEMHistoryPairs::write_restart() const
     if (not particlewallrollinghistorydata_.empty())
       pack_all_history_pairs(*buffer, particlewallrollinghistorydata_);
 
-    binwriter->WriteCharVector("ParticleWallRollingHistoryData", buffer);
+    binwriter->write_char_data("ParticleWallRollingHistoryData", buffer);
   }
 
   // particle adhesion history data
@@ -95,7 +95,7 @@ void ParticleInteraction::DEMHistoryPairs::write_restart() const
     if (not particleadhesionhistorydata_.empty())
       pack_all_history_pairs(*buffer, particleadhesionhistorydata_);
 
-    binwriter->WriteCharVector("ParticleAdhesionHistoryData", buffer);
+    binwriter->write_char_data("ParticleAdhesionHistoryData", buffer);
   }
 
   // particle-wall adhesion history pair data
@@ -105,7 +105,7 @@ void ParticleInteraction::DEMHistoryPairs::write_restart() const
     if (not particlewalladhesionhistorydata_.empty())
       pack_all_history_pairs(*buffer, particlewalladhesionhistorydata_);
 
-    binwriter->WriteCharVector("ParticleWallAdhesionHistoryData", buffer);
+    binwriter->write_char_data("ParticleWallAdhesionHistoryData", buffer);
   }
 }
 
@@ -119,7 +119,7 @@ void ParticleInteraction::DEMHistoryPairs::read_restart(
   {
     buffer = Teuchos::rcp(new std::vector<char>);
 
-    reader->ReadCharVector(buffer, "ParticleTangentialHistoryData");
+    reader->read_char_vector(buffer, "ParticleTangentialHistoryData");
 
     if (buffer->size() > 0) unpack_history_pairs(*buffer, particletangentialhistorydata_);
   }
@@ -128,7 +128,7 @@ void ParticleInteraction::DEMHistoryPairs::read_restart(
   {
     buffer = Teuchos::rcp(new std::vector<char>);
 
-    reader->ReadCharVector(buffer, "ParticleWallTangentialHistoryData");
+    reader->read_char_vector(buffer, "ParticleWallTangentialHistoryData");
 
     if (buffer->size() > 0) unpack_history_pairs(*buffer, particlewalltangentialhistorydata_);
   }
@@ -137,7 +137,7 @@ void ParticleInteraction::DEMHistoryPairs::read_restart(
   {
     buffer = Teuchos::rcp(new std::vector<char>);
 
-    reader->ReadCharVector(buffer, "ParticleRollingHistoryData");
+    reader->read_char_vector(buffer, "ParticleRollingHistoryData");
 
     if (buffer->size() > 0) unpack_history_pairs(*buffer, particlerollinghistorydata_);
   }
@@ -146,7 +146,7 @@ void ParticleInteraction::DEMHistoryPairs::read_restart(
   {
     buffer = Teuchos::rcp(new std::vector<char>);
 
-    reader->ReadCharVector(buffer, "ParticleWallRollingHistoryData");
+    reader->read_char_vector(buffer, "ParticleWallRollingHistoryData");
 
     if (buffer->size() > 0) unpack_history_pairs(*buffer, particlewallrollinghistorydata_);
   }
@@ -155,7 +155,7 @@ void ParticleInteraction::DEMHistoryPairs::read_restart(
   {
     buffer = Teuchos::rcp(new std::vector<char>);
 
-    reader->ReadCharVector(buffer, "ParticleAdhesionHistoryData");
+    reader->read_char_vector(buffer, "ParticleAdhesionHistoryData");
 
     if (buffer->size() > 0) unpack_history_pairs(*buffer, particleadhesionhistorydata_);
   }
@@ -164,7 +164,7 @@ void ParticleInteraction::DEMHistoryPairs::read_restart(
   {
     buffer = Teuchos::rcp(new std::vector<char>);
 
-    reader->ReadCharVector(buffer, "ParticleWallAdhesionHistoryData");
+    reader->read_char_vector(buffer, "ParticleWallAdhesionHistoryData");
 
     if (buffer->size() > 0) unpack_history_pairs(*buffer, particlewalladhesionhistorydata_);
   }

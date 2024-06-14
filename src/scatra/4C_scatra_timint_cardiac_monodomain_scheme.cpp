@@ -73,7 +73,7 @@ void ScaTra::TimIntCardiacMonodomainOST::write_restart() const
   TimIntOneStepTheta::write_restart();
 
   // Cardiac Monodomain specific
-  output_->WriteMesh(
+  output_->write_mesh(
       step_, time_);  // add info to control file for reading all variables in restart
 
   return;
@@ -96,9 +96,9 @@ void ScaTra::TimIntCardiacMonodomainOST::read_restart(
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
   // Cardiac Monodomain specific
-  reader->ReadVector(activation_time_np_, "activation_time_np");
-  reader->ReadHistoryData(step);  // Read all saved data in nodes and elements und call nodal and
-                                  // element Unpacking each global variable has to be read
+  reader->read_vector(activation_time_np_, "activation_time_np");
+  reader->read_history_data(step);  // Read all saved data in nodes and elements und call nodal and
+                                    // element Unpacking each global variable has to be read
 
   return;
 }
@@ -170,7 +170,7 @@ void ScaTra::TimIntCardiacMonodomainBDF2::write_restart() const
   TimIntBDF2::write_restart();
 
   // Cardiac Monodomain specific
-  output_->WriteMesh(
+  output_->write_mesh(
       step_, time_);  // add info to control file for reading all variables in restart
 
   return;
@@ -194,9 +194,9 @@ void ScaTra::TimIntCardiacMonodomainBDF2::read_restart(
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
   // Cardiac Monodomain specific
-  reader->ReadVector(activation_time_np_, "activation_time_np");
-  reader->ReadHistoryData(step);  // Read all saved data in nodes and elements und call nodal and
-                                  // element Unpacking each global variable has to be read
+  reader->read_vector(activation_time_np_, "activation_time_np");
+  reader->read_history_data(step);  // Read all saved data in nodes and elements und call nodal and
+                                    // element Unpacking each global variable has to be read
 
   return;
 }
@@ -256,7 +256,7 @@ void ScaTra::TimIntCardiacMonodomainGenAlpha::write_restart() const
   TimIntGenAlpha::write_restart();
 
   // Cardiac Monodomain specific
-  output_->WriteMesh(
+  output_->write_mesh(
       step_, time_);  // add info to control file for reading all variables in restart
 
   return;
@@ -276,9 +276,9 @@ void ScaTra::TimIntCardiacMonodomainGenAlpha::read_restart(
       discret_, Global::Problem::Instance()->InputControlFile(), step);
 
   // Cardiac Monodomain specific
-  reader.ReadVector(activation_time_np_, "activation_time_np");
-  reader.ReadHistoryData(step);  // Read all saved data in nodes and elements und call nodal and
-                                 // element Unpacking each global variable has to be read
+  reader.read_vector(activation_time_np_, "activation_time_np");
+  reader.read_history_data(step);  // Read all saved data in nodes and elements und call nodal and
+                                   // element Unpacking each global variable has to be read
 
   return;
 }

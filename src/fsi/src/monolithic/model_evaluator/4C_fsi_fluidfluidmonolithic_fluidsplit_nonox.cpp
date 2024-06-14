@@ -724,7 +724,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::read_restart(int step)
         new Epetra_Vector(*(fluid_field()->x_fluid_fluid_map_extractor()->FluidMap()), true));
     Core::IO::DiscretizationReader reader = Core::IO::DiscretizationReader(
         fluid_field()->discretization(), Global::Problem::Instance()->InputControlFile(), step);
-    reader.ReadVector(lambdaemb, "fsilambda");
+    reader.read_vector(lambdaemb, "fsilambda");
     // Insert into vector containing the whole merged fluid DOF
     Teuchos::RCP<Epetra_Vector> lambdafull =
         fluid_field()->x_fluid_fluid_map_extractor()->InsertFluidVector(lambdaemb);
@@ -762,7 +762,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::output()
     const int upres = fsidyn.get<int>("RESULTSEVRY");
     if ((uprestart != 0 && fluid_field()->Step() % uprestart == 0) ||
         fluid_field()->Step() % upres == 0)
-      fluid_field()->DiscWriter()->WriteVector("fsilambda", lambdaemb);
+      fluid_field()->DiscWriter()->write_vector("fsilambda", lambdaemb);
   }
   ale_field()->Output();
 

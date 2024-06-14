@@ -688,18 +688,18 @@ void STR::MODELEVALUATOR::BeamInteraction::write_restart(
   Teuchos::RCP<Core::IO::DiscretizationWriter> bin_writer = bindis_->Writer();
 
   // write restart of ia_discret
-  ia_writer->WriteMesh(stepn, timen);
-  ia_writer->NewStep(stepn, timen);
+  ia_writer->write_mesh(stepn, timen);
+  ia_writer->new_step(stepn, timen);
 
   // mesh is not written to disc, only maximum node id is important for output
   // fixme: can we just write mesh
   bin_writer->write_only_nodes_in_new_field_group_to_control_file(stepn, timen, true);
-  bin_writer->NewStep(stepn, timen);
+  bin_writer->new_step(stepn, timen);
 
   // as we know that our maps have changed every time we write output, we can empty
   // the map cache as we can't get any advantage saving the maps anyway
-  ia_writer->ClearMapCache();
-  bin_writer->ClearMapCache();
+  ia_writer->clear_map_cache();
+  bin_writer->clear_map_cache();
 
   // sub model loop
   Vector::iterator sme_iter;
@@ -724,17 +724,17 @@ void STR::MODELEVALUATOR::BeamInteraction::read_restart(Core::IO::Discretization
   // read interaction discretization
   Core::IO::DiscretizationReader ia_reader(ia_discret_, input_control_file, stepn);
   // includes fill_complete()
-  ia_reader.ReadHistoryData(stepn);
+  ia_reader.read_history_data(stepn);
 
   // rebuild bin discret correctly in case crosslinker were present
   // Fixme: do just read history data like with ia discret
   // read correct nodes
   Core::IO::DiscretizationReader bin_reader(bindis_, input_control_file, stepn);
-  bin_reader.ReadNodesOnly(stepn);
+  bin_reader.read_nodes_only(stepn);
   bindis_->fill_complete(false, false, false);
 
   // need to read step next (as it was written next, do safety check)
-  if (stepn != ia_reader.ReadInt("step") or stepn != bin_reader.ReadInt("step"))
+  if (stepn != ia_reader.read_int("step") or stepn != bin_reader.read_int("step"))
     FOUR_C_THROW("Restart step not consistent with read restart step. ");
 
   // rebuild binning

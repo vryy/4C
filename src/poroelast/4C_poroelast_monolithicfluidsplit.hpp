@@ -45,7 +45,7 @@ namespace PoroElast
 
      \note We want to do this setup after reading the restart information, not
      directly in the constructor. This is necessary since during restart (if
-     ReadMesh is called), the dofmaps for the blocks might get invalid.
+     read_mesh is called), the dofmaps for the blocks might get invalid.
      */
     //! Setup the monolithic system
     void SetupSystem() override;

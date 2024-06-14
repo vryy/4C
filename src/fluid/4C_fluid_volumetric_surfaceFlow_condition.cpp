@@ -865,14 +865,14 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::output(
 
   // write the time step
   stream2 << ds_condname << "_dt" << condnum;
-  output.WriteDouble(stream2.str(), dta_);
+  output.write_double(stream2.str(), dta_);
 
   // write the condition velocities
   stream3 << ds_condname << "_velocities" << condnum;
-  output.WriteVector(stream3.str(), cond_velocities_);
+  output.write_vector(stream3.str(), cond_velocities_);
 
   stream4 << ds_condname << "_traction_vel_component" << condnum;
-  output.WriteVector(stream4.str(), cond_traction_vel_);
+  output.write_vector(stream4.str(), cond_traction_vel_);
   return;
 }
 
@@ -894,14 +894,14 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::read_restart(
 
   // old time step size
   stream2 << ds_condname << "_dt" << condnum;
-  double odta = reader.ReadDouble(stream2.str());
+  double odta = reader.read_double(stream2.str());
 
   // write the condition velocities
   stream3 << ds_condname << "_velocities" << condnum;
-  reader.ReadVector(cond_velocities_, stream3.str());
+  reader.read_vector(cond_velocities_, stream3.str());
 
   stream4 << ds_condname << "_traction_vel_component" << condnum;
-  reader.ReadVector(cond_traction_vel_, stream4.str());
+  reader.read_vector(cond_traction_vel_, stream4.str());
 
   // get time step of the current problems
   double ndta = dta_;

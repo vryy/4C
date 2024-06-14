@@ -205,7 +205,7 @@ bool CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
   std::copy(txi_center.A(), txi_center.A() + TAR_DIM, txi.A());
 
   rhs_gp(rhs_, x_ref_, n_ref_, target_ele, tar_coords_, target_xi, alpha);
-  DebugPolicy::writeVector(std::cout, probdim, rhs_.A(), "Rhs");
+  DebugPolicy::write_vector(std::cout, probdim, rhs_.A(), "Rhs");
 
   const double ref_rhs_nrm2 = std::max(1.0, rhs_.Norm2());
   double dx_nrm2 = 0.0;
@@ -235,18 +235,18 @@ bool CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
     for (unsigned i = 0; i < TAR_DIM; ++i) txi(i, 0) += dx_(i, 0);
     alpha += dx_(probdim - 1, 0);
 
-    DebugPolicy::writeVector(std::cout, TAR_DIM, txi.A(), "txi");
+    DebugPolicy::write_vector(std::cout, TAR_DIM, txi.A(), "txi");
 
     // new right-hand side
     if (not rhs_gp(rhs_, x_ref_, n_ref_, target_ele, tar_coords_, target_xi, alpha))
     {
-      DebugPolicy::writeVector(std::cout, probdim, rhs_.A(), "Rhs (failed)");
+      DebugPolicy::write_vector(std::cout, probdim, rhs_.A(), "Rhs (failed)");
       //      std::cout << "shape_function evaluation failed @ [" << txi(0,0) << ", " <<
       //          txi(1,0) << "]" << std::endl;
       iter_ = MORTARMAXITER;
       break;
     }
-    DebugPolicy::writeVector(std::cout, probdim, rhs_.A(), "Rhs");
+    DebugPolicy::write_vector(std::cout, probdim, rhs_.A(), "Rhs");
 
     rhs_nrm2 = rhs_.Norm2();
 

@@ -480,19 +480,19 @@ void Arteries::ArtNetImplStationary::Output(
   if (DoOutput())
   {
     // step number and time (only after that data output is possible)
-    output_.NewStep(step_, time_);
+    output_.new_step(step_, time_);
 
     // write domain decomposition for visualization (only once at step "upres"!)
     // and element radius
     if (step_ == upres_ or step_ == 0)
     {
-      output_.WriteElementData(true);
+      output_.write_element_data(true);
     }
     // for variable radius, we need the output of the radius at every time step
     OutputRadius();
 
     // "pressure in the arteries" vector
-    output_.WriteVector("one_d_artery_pressure", pressurenp_);
+    output_.write_vector("one_d_artery_pressure", pressurenp_);
 
     // output of flow
     OutputFlow();
@@ -529,7 +529,7 @@ void Arteries::ArtNetImplStationary::OutputRadius()
   }
 
   // write the output
-  output_.WriteVector("ele_radius", ele_radius_, Core::IO::elementvector);
+  output_.write_vector("ele_radius", ele_radius_, Core::IO::elementvector);
 
   return;
 }
@@ -573,7 +573,7 @@ void Arteries::ArtNetImplStationary::OutputFlow()
   }
 
   // write the output
-  output_.WriteVector("ele_volflow", ele_volflow_, Core::IO::elementvector);
+  output_.write_vector("ele_volflow", ele_volflow_, Core::IO::elementvector);
 
   return;
 }
@@ -621,15 +621,15 @@ void Arteries::ArtNetImplStationary::read_restart(int step, bool coupledTo3D)
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step);
 
-  if (step != reader.ReadInt("step")) FOUR_C_THROW("Time step on file not equal to given step");
+  if (step != reader.read_int("step")) FOUR_C_THROW("Time step on file not equal to given step");
 
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
+  time_ = reader.read_double("time");
+  step_ = reader.read_int("step");
 
-  reader.ReadVector(pressurenp_, "one_d_artery_pressure");
+  reader.read_vector(pressurenp_, "one_d_artery_pressure");
 
   // read restart for diameter of previous time step
-  reader.ReadVector(ele_radius_, "ele_radius");
+  reader.read_vector(ele_radius_, "ele_radius");
   Teuchos::RCP<Epetra_Vector> ele_radius_col =
       Core::LinAlg::CreateVector(*discret_->ElementColMap(), true);
   Core::LinAlg::Export(*ele_radius_, *ele_radius_col);

@@ -246,9 +246,9 @@ void STR::MODELEVALUATOR::SpringDashpot::write_restart(
   }
 
   // write vector to output for restart
-  iowriter.WriteVector("springoffsetprestr", springoffsetprestr);
+  iowriter.write_vector("springoffsetprestr", springoffsetprestr);
   // write vector to output for restart
-  iowriter.WriteVector("springoffsetprestr_old", springoffsetprestr_old);
+  iowriter.write_vector("springoffsetprestr_old", springoffsetprestr_old);
 }
 
 /*----------------------------------------------------------------------*
@@ -259,8 +259,8 @@ void STR::MODELEVALUATOR::SpringDashpot::read_restart(Core::IO::DiscretizationRe
   Teuchos::RCP<Epetra_MultiVector> tempvecold =
       Teuchos::rcp(new Epetra_MultiVector(*(discret().NodeRowMap()), 3, true));
 
-  ioreader.ReadVector(tempvec, "springoffsetprestr");
-  ioreader.ReadMultiVector(tempvecold, "springoffsetprestr_old");
+  ioreader.read_vector(tempvec, "springoffsetprestr");
+  ioreader.read_multi_vector(tempvecold, "springoffsetprestr_old");
 
   // loop over all spring dashpot conditions and set restart
   for (const auto& spring : springs_)
@@ -329,13 +329,13 @@ void STR::MODELEVALUATOR::SpringDashpot::output_step_state(
   // write vectors to output
   if (found_cursurfnormal)
   {
-    iowriter.WriteVector("gap", gap);
-    iowriter.WriteVector("curnormals", normals);
+    iowriter.write_vector("gap", gap);
+    iowriter.write_vector("curnormals", normals);
   }
 
   // write spring stress if defined in io-flag
   if (Core::UTILS::IntegralValue<bool>(Global::Problem::Instance()->IOParams(), "OUTPUT_SPRING"))
-    iowriter.WriteVector("springstress", springstress);
+    iowriter.write_vector("springstress", springstress);
 }
 
 /*----------------------------------------------------------------------*

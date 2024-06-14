@@ -51,7 +51,7 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::write_restart() const
   // pack all affiliation pairs
   if (not affiliationdata_.empty()) pack_all_affiliation_pairs(*buffer);
 
-  binwriter->WriteCharVector("RigidBodyAffiliationData", buffer);
+  binwriter->write_char_data("RigidBodyAffiliationData", buffer);
 }
 
 void ParticleRigidBody::RigidBodyAffiliationPairs::read_restart(
@@ -60,7 +60,7 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::read_restart(
   // prepare buffer
   Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
 
-  reader->ReadCharVector(buffer, "RigidBodyAffiliationData");
+  reader->read_char_vector(buffer, "RigidBodyAffiliationData");
 
   // unpack affiliation pairs
   if (buffer->size() > 0) unpack_affiliation_pairs(*buffer);

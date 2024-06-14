@@ -60,9 +60,9 @@ void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
       Core::UTILS::IntegralValue<bool>(Global::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
 
   writer_ = dis_->Writer();
-  writer_->SetOutput(control_);
+  writer_->set_output(control_);
   itnum_ = 0;
-  writer_->WriteMesh(0, 0.0);
+  writer_->write_mesh(0, 0.0);
 }
 
 
@@ -70,16 +70,16 @@ void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::DebugWriter::NewIteration()
 {
-  writer_->NewStep(itnum_, itnum_);
+  writer_->new_step(itnum_, itnum_);
   itnum_ += 1;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::DebugWriter::WriteVector(const std::string& name, const Epetra_Vector& v)
+void FSI::UTILS::DebugWriter::write_vector(const std::string& name, const Epetra_Vector& v)
 {
-  writer_->WriteVector(name, coup_->MasterToSlave(Teuchos::rcp(&v, false)));
+  writer_->write_vector(name, coup_->MasterToSlave(Teuchos::rcp(&v, false)));
 }
 
 
@@ -112,9 +112,9 @@ void FSI::UTILS::SimpleDebugWriter::NewLinearSystem(int step, std::string name)
       Core::UTILS::IntegralValue<bool>(Global::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
 
   writer_ = dis_->Writer();
-  writer_->SetOutput(control_);
+  writer_->set_output(control_);
   itnum_ = 0;
-  writer_->WriteMesh(0, 0.0);
+  writer_->write_mesh(0, 0.0);
 }
 
 
@@ -122,16 +122,16 @@ void FSI::UTILS::SimpleDebugWriter::NewLinearSystem(int step, std::string name)
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::SimpleDebugWriter::NewIteration()
 {
-  writer_->NewStep(itnum_, itnum_);
+  writer_->new_step(itnum_, itnum_);
   itnum_ += 1;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::SimpleDebugWriter::WriteVector(const std::string& name, Epetra_Vector& v)
+void FSI::UTILS::SimpleDebugWriter::write_vector(const std::string& name, Epetra_Vector& v)
 {
-  writer_->WriteVector(name, Teuchos::rcp(&v, false));
+  writer_->write_vector(name, Teuchos::rcp(&v, false));
 }
 
 
@@ -172,7 +172,7 @@ void FSI::UTILS::MonolithicDebugWriter::NewIteration()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::MonolithicDebugWriter::WriteVector(
+void FSI::UTILS::MonolithicDebugWriter::write_vector(
     const std::string& name, const Teuchos::RCP<Epetra_Vector>& v)
 {
   Teuchos::RCP<const Epetra_Vector> sx;
@@ -185,9 +185,9 @@ void FSI::UTILS::MonolithicDebugWriter::WriteVector(
   Epetra_Vector f(*fx);
   Epetra_Vector a(*ax);
 
-  struct_writer_->WriteVector(name, s);
-  fluid_writer_->WriteVector(name, f);
-  ale_writer_->WriteVector(name, a);
+  struct_writer_->write_vector(name, s);
+  fluid_writer_->write_vector(name, f);
+  ale_writer_->write_vector(name, a);
 }
 
 FOUR_C_NAMESPACE_CLOSE

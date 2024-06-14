@@ -262,23 +262,23 @@ void ScaTra::TimIntLomaGenAlpha::write_restart() const
   // required for restart of closed systems
 
   // thermodynamic pressure at time n+1
-  output_->WriteDouble("thermpressnp", thermpressnp_);
+  output_->write_double("thermpressnp", thermpressnp_);
   // thermodynamic pressure at time n
-  output_->WriteDouble("thermpressn", thermpressn_);
+  output_->write_double("thermpressn", thermpressn_);
   // thermodynamic pressure at time n+alpha_f
-  output_->WriteDouble("thermpressaf", thermpressaf_);
+  output_->write_double("thermpressaf", thermpressaf_);
   // thermodynamic pressure at time n+alpha_m
-  output_->WriteDouble("thermpressam", thermpressam_);
+  output_->write_double("thermpressam", thermpressam_);
   // time derivative of thermodynamic pressure at time n+1
-  output_->WriteDouble("thermpressdtnp", thermpressdtnp_);
+  output_->write_double("thermpressdtnp", thermpressdtnp_);
   // time derivative of thermodynamic pressure at time n
-  output_->WriteDouble("thermpressdtn", thermpressdtn_);
+  output_->write_double("thermpressdtn", thermpressdtn_);
   // time derivative of thermodynamic pressure at time n+alpha_f
-  output_->WriteDouble("thermpressdtaf", thermpressdtaf_);
+  output_->write_double("thermpressdtaf", thermpressdtaf_);
   // time derivative of thermodynamic pressure at time n+alpha_m
-  output_->WriteDouble("thermpressdtam", thermpressdtam_);
+  output_->write_double("thermpressdtam", thermpressdtam_);
   // as well as initial mass
-  output_->WriteDouble("initialmass", initialmass_);
+  output_->write_double("initialmass", initialmass_);
 
   return;
 }
@@ -304,23 +304,23 @@ void ScaTra::TimIntLomaGenAlpha::read_restart(
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
   // thermodynamic pressure at time n+1
-  thermpressnp_ = reader->ReadDouble("thermpressnp");
+  thermpressnp_ = reader->read_double("thermpressnp");
   // thermodynamic pressure at time n
-  thermpressn_ = reader->ReadDouble("thermpressn");
+  thermpressn_ = reader->read_double("thermpressn");
   // thermodynamic pressure at time n+alpha_f
-  thermpressaf_ = reader->ReadDouble("thermpressaf");
+  thermpressaf_ = reader->read_double("thermpressaf");
   // thermodynamic pressure at time n+alpha_m
-  thermpressam_ = reader->ReadDouble("thermpressam");
+  thermpressam_ = reader->read_double("thermpressam");
   // time derivative of thermodynamic pressure at time n+1
-  thermpressdtnp_ = reader->ReadDouble("thermpressdtnp");
+  thermpressdtnp_ = reader->read_double("thermpressdtnp");
   // time derivative of thermodynamic pressure at time n
-  thermpressdtn_ = reader->ReadDouble("thermpressdtn");
+  thermpressdtn_ = reader->read_double("thermpressdtn");
   // time derivative of thermodynamic pressure at time n+alpha_f
-  thermpressdtaf_ = reader->ReadDouble("thermpressdtaf");
+  thermpressdtaf_ = reader->read_double("thermpressdtaf");
   // time derivative of thermodynamic pressure at time n+alpha_m
-  thermpressdtam_ = reader->ReadDouble("thermpressdtam");
+  thermpressdtam_ = reader->read_double("thermpressdtam");
   // as well as initial mass
-  initialmass_ = reader->ReadDouble("initialmass");
+  initialmass_ = reader->read_double("initialmass");
 
   return;
 }

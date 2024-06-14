@@ -138,7 +138,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
   {
     // Add the reference geometry and displacement to the visualization.
     visualization->add_discretization_nodal_reference_position(
-        couplingenforcer->GetStructure()->GetDiscretization());
+        couplingenforcer->GetStructure()->get_discretization());
     visualization->add_discretization_nodal_data(
         "velocity", couplingenforcer->GetStructure()->Velnp());
     visualization->add_discretization_nodal_data(
@@ -148,17 +148,17 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
     std::vector<int> gid_beam_dof;
     std::vector<int> gid_node;
     for (int i_lid = 0;
-         i_lid < couplingenforcer->GetStructure()->GetDiscretization()->NumMyRowNodes(); i_lid++)
+         i_lid < couplingenforcer->GetStructure()->get_discretization()->NumMyRowNodes(); i_lid++)
     {
       gid_node.clear();
       Core::Nodes::Node* current_node =
-          couplingenforcer->GetStructure()->GetDiscretization()->lRowNode(i_lid);
-      couplingenforcer->GetStructure()->GetDiscretization()->Dof(current_node, gid_node);
+          couplingenforcer->GetStructure()->get_discretization()->lRowNode(i_lid);
+      couplingenforcer->GetStructure()->get_discretization()->Dof(current_node, gid_node);
       if (BEAMINTERACTION::UTILS::IsBeamNode(*current_node))
         for (unsigned int dim = 0; dim < 3; ++dim) gid_beam_dof.push_back(gid_node[dim]);
     }
     Epetra_Map beam_dof_map(-1, gid_beam_dof.size(), gid_beam_dof.data(), 0,
-        couplingenforcer->GetStructure()->GetDiscretization()->Comm());
+        couplingenforcer->GetStructure()->get_discretization()->Comm());
 
     // Extract the forces and add them to the discretization.
     Teuchos::RCP<Epetra_Vector> force_beam =
