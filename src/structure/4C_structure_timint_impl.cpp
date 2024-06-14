@@ -4032,7 +4032,7 @@ void STR::TimIntImpl::export_contact_quantities()
   // write number of active nodes for converged newton in textfile xx x.active
   FILE* MyFile = nullptr;
   std::ostringstream filename;
-  const std::string filebase = Global::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebase = Global::Problem::Instance()->OutputControlFile()->file_name();
   filename << filebase << ".active";
   MyFile = fopen(filename.str().c_str(), "at+");
 
@@ -4050,7 +4050,7 @@ void STR::TimIntImpl::export_contact_quantities()
   // write required time
   FILE* MyFile2 = nullptr;
   std::ostringstream filename2;
-  const std::string filebase2 = Global::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebase2 = Global::Problem::Instance()->OutputControlFile()->file_name();
   filename2 << filebase2 << ".time";
   MyFile2 = fopen(filename2.str().c_str(), "at+");
 
@@ -4339,7 +4339,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (iter_ == 1 && step_ == 0)
   {
-    std::string fname = Global::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+    std::string fname = Global::Problem::Instance()->OutputControlFile()->file_name_only_prefix();
     fname += ".stcmatrix1.mtl";
     if (myrank_ == 0) std::cout << "Printing stcmatrix1 to file" << std::endl;
     Core::LinAlg::PrintMatrixInMatlabFormat(
@@ -4365,7 +4365,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (iter_ == 1 && step_ == 0)
     {
-      std::string fname = Global::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+      std::string fname = Global::Problem::Instance()->OutputControlFile()->file_name_only_prefix();
       fname += ".stcmatrix2.mtl";
       if (myrank_ == 0) std::cout << "Printing stcmatrix2 to file" << std::endl;
       Core::LinAlg::PrintMatrixInMatlabFormat(fname,

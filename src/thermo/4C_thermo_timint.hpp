@@ -257,7 +257,7 @@ namespace THR
       if (not energyfile_)
       {
         std::string energyname =
-            Global::Problem::Instance()->OutputControlFile()->FileName() + ".thermo.energy";
+            Global::Problem::Instance()->OutputControlFile()->file_name() + ".thermo.energy";
         energyfile_ = new std::ofstream(energyname.c_str());
         *energyfile_ << "# timestep time internal_energy" << std::endl;
       }

@@ -108,9 +108,9 @@ void STR::MODELEVALUATOR::Contact::post_setup(Teuchos::ParameterList& cparams)
     Teuchos::ParameterList& plot_params = aug_params.sublist("PLOT");
     plot_params.set<const int*>("CURRENT_STEP", &global_state().get_step_np());
     plot_params.set<std::string>(
-        "OUTPUT_FILE_NAME", global_in_output().get_output_ptr()->Output()->FileName());
+        "OUTPUT_FILE_NAME", global_in_output().get_output_ptr()->Output()->file_name());
     plot_params.set<std::string>(
-        "INPUT_FILE_NAME", global_in_output().get_output_ptr()->Output()->InputFileName());
+        "INPUT_FILE_NAME", global_in_output().get_output_ptr()->Output()->input_file_name());
     plot_params.set<const Core::FE::Discretization*>(
         "DISCRETIZATION", global_state().get_discret().get());
     plot_params.set<STR::MODELEVALUATOR::Contact*>("MODELEVALUATOR", this);
@@ -665,7 +665,7 @@ void STR::MODELEVALUATOR::Contact::output_step_state(Core::IO::DiscretizationWri
     FILE* MyFile = nullptr;
     std::ostringstream filename;
     const std::string filebase =
-        Global::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+        Global::Problem::Instance()->OutputControlFile()->file_name_only_prefix();
     filename << filebase << ".force";
     MyFile = fopen(filename.str().c_str(), "at+");
     if (MyFile)

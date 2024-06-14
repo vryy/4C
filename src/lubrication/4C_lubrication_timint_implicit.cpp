@@ -1097,7 +1097,7 @@ void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
   {
     // print last error in a separate file
 
-    const std::string simulation = Global::Problem::Instance()->OutputControlFile()->FileName();
+    const std::string simulation = Global::Problem::Instance()->OutputControlFile()->file_name();
     const std::string fname = simulation + "_pressure_time.relerror";
 
     if (step_ == 0)
@@ -1137,7 +1137,7 @@ void LUBRICATION::TimIntImpl::output_to_gmsh(const int step, const double time) 
 
   // create Gmsh postprocessing file
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
-      "solution_field_pressure", discret_->Writer()->Output()->FileName(), step, 500, screen_out,
+      "solution_field_pressure", discret_->Writer()->Output()->file_name(), step, 500, screen_out,
       discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   {
@@ -1194,7 +1194,7 @@ void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
       // file output
       std::stringstream number;
       number << num;
-      const std::string fname = Global::Problem::Instance()->OutputControlFile()->FileName() +
+      const std::string fname = Global::Problem::Instance()->OutputControlFile()->file_name() +
                                 number.str() + ".meanvalues.txt";
 
       std::ofstream f;

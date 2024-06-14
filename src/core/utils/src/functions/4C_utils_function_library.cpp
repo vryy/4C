@@ -57,7 +57,7 @@ namespace
 
       // csv file needs to be placed in same folder as input file
       std::filesystem::path input_file_path =
-          Global::Problem::Instance()->OutputControlFile()->InputFileName();
+          Global::Problem::Instance()->OutputControlFile()->input_file_name();
       const auto csv_file_path = input_file_path.replace_filename(csv_file);
 
       return Teuchos::rcp(new Core::UTILS::CubicSplineFromCSV(csv_file_path.string()));

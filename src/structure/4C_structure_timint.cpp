@@ -1927,14 +1927,14 @@ void STR::TimInt::OutputEveryIter(bool nw, bool ls)
      | needs an average cumulated number of 5 Newton/Line-Search steps per time step. |
      *--------------------------------------------------------------------------------*/
     int newFileSteps = 0;
-    if (output_->Output()->FileSteps() >= std::numeric_limits<int>::max() / 50000)
+    if (output_->Output()->file_steps() >= std::numeric_limits<int>::max() / 50000)
       newFileSteps = std::numeric_limits<int>::max();
     else
-      newFileSteps = output_->Output()->FileSteps() * 50000;
+      newFileSteps = output_->Output()->file_steps() * 50000;
 
-    output_->Output()->SetFileSteps(newFileSteps);
+    output_->Output()->set_file_steps(newFileSteps);
 
-    std::string resultname = output_->Output()->FileName() + "_EveryIter";
+    std::string resultname = output_->Output()->file_name() + "_EveryIter";
     output_->new_result_file(resultname, oei_filecounter_);
     output_->WriteMesh(0, 0.0);
   }
@@ -2053,7 +2053,7 @@ void STR::TimInt::write_gmsh_struc_output_step()
   if (not gmsh_out_) return;
 
   const std::string filename = Core::IO::Gmsh::GetFileName(
-      "struct", discret_->Writer()->Output()->FileName(), stepn_, false, myrank_);
+      "struct", discret_->Writer()->Output()->file_name(), stepn_, false, myrank_);
   std::ofstream gmshfilecontent(filename.c_str());
 
   // add 'View' to Gmsh postprocessing file
@@ -2691,7 +2691,7 @@ void STR::TimInt::OutputContact()
       {
         // path and filename
         std::ostringstream filename;
-        const std::string filebase = Global::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string filebase = Global::Problem::Instance()->OutputControlFile()->file_name();
         filename << filebase << ".energymomentum";
 
         // open file
@@ -3268,7 +3268,7 @@ void STR::TimInt::AttachEnergyFile()
   if (energyfile_.is_null())
   {
     std::string energyname =
-        Global::Problem::Instance()->OutputControlFile()->FileName() + ".energy";
+        Global::Problem::Instance()->OutputControlFile()->file_name() + ".energy";
     energyfile_ = Teuchos::rcp(new std::ofstream(energyname.c_str()));
     (*energyfile_) << "# timestep time total_energy"
                    << " kinetic_energy internal_energy external_energy" << std::endl;

@@ -1018,7 +1018,7 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::evaluate_error_compared_to_analyt
         {
           std::ostringstream temp;
           const std::string simulation =
-              Global::Problem::Instance()->OutputControlFile()->FileName();
+              Global::Problem::Instance()->OutputControlFile()->file_name();
           const std::string fname = simulation + "_thermo.relerror";
 
           std::ofstream f;
@@ -1031,7 +1031,8 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::evaluate_error_compared_to_analyt
           f.close();
         }
 
-        const std::string simulation = Global::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string simulation =
+            Global::Problem::Instance()->OutputControlFile()->file_name();
         const std::string fname = simulation + "_thermo_time.relerror";
 
         if (step_ == 1)

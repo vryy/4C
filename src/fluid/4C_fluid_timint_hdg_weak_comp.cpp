@@ -567,7 +567,7 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
         {
           std::ostringstream temp;
           const std::string simulation =
-              Global::Problem::Instance()->OutputControlFile()->FileName();
+              Global::Problem::Instance()->OutputControlFile()->file_name();
           const std::string fname = simulation + ".abserror";
 
           std::ofstream f;
@@ -582,7 +582,8 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
         }
 
         std::ostringstream temp;
-        const std::string simulation = Global::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string simulation =
+            Global::Problem::Instance()->OutputControlFile()->file_name();
         const std::string fname = simulation + "_time.abserror";
 
         if (step_ == 1)

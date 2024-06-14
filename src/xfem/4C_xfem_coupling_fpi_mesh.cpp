@@ -638,7 +638,7 @@ void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const i
 
 
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
-      filename_base_fsi.str(), cutter_dis_->Writer()->Output()->FileName(), step, gmsh_step_diff,
+      filename_base_fsi.str(), cutter_dis_->Writer()->Output()->file_name(), step, gmsh_step_diff,
       gmsh_debug_out_screen, myrank_);
 
   std::ofstream gmshfilecontent(filename.c_str());
@@ -866,7 +866,7 @@ void XFEM::MeshCouplingFPI::LiftDrag(const int step, const double time) const
       << std::right << std::setw(16) << std::scientific << c(2);
 
     std::ofstream f;
-    const std::string fname = Global::Problem::Instance()->OutputControlFile()->FileName() +
+    const std::string fname = Global::Problem::Instance()->OutputControlFile()->file_name() +
                               ".liftdrag." + cond_name_ + ".txt";
     if (step <= 1)
     {

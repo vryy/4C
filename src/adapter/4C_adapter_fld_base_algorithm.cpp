@@ -1591,7 +1591,7 @@ void Adapter::FluidBaseAlgorithm::set_general_parameters(
 
     fluidtimeparams->sublist("TURBULENCE MODEL")
         .set<std::string>(
-            "statistics outfile", Global::Problem::Instance()->OutputControlFile()->FileName());
+            "statistics outfile", Global::Problem::Instance()->OutputControlFile()->file_name());
   }
 
   // ---------------------------parallel evaluation

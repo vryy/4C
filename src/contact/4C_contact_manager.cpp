@@ -1500,7 +1500,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     FILE* MyFile = nullptr;
     std::ostringstream filename;
     const std::string filebase =
-        Global::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+        Global::Problem::Instance()->OutputControlFile()->file_name_only_prefix();
     filename << filebase << ".force";
     MyFile = fopen(filename.str().c_str(), "at+");
     if (MyFile)

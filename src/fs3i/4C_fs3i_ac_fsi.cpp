@@ -839,16 +839,16 @@ std::string FS3I::ACFSI::GetFileName(const int step)
 
     if (step <= crit_step)  // the last period is written in the file we have restarted from
     {
-      filename = Global::Problem::Instance()->InputControlFile()->FileName();
+      filename = Global::Problem::Instance()->InputControlFile()->file_name();
     }
     else  // the last period is written in the newly written output file
     {
-      filename = Global::Problem::Instance()->OutputControlFile()->FileName();
+      filename = Global::Problem::Instance()->OutputControlFile()->file_name();
     }
   }
   else
   {
-    filename = Global::Problem::Instance()->OutputControlFile()->FileName();
+    filename = Global::Problem::Instance()->OutputControlFile()->file_name();
   }
   return filename;
 }

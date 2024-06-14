@@ -1612,7 +1612,7 @@ void SSI::SsiMono::print_system_matrix_rhs_to_mat_lab_format()
         for (int col = 0; col < block_matrix->Cols(); ++col)
         {
           std::ostringstream filename;
-          filename << Global::Problem::Instance()->OutputControlFile()->FileName()
+          filename << Global::Problem::Instance()->OutputControlFile()->file_name()
                    << "_block_system_matrix_" << row << "_" << col << ".csv";
 
           Core::LinAlg::PrintMatrixInMatlabFormat(
@@ -1627,7 +1627,7 @@ void SSI::SsiMono::print_system_matrix_rhs_to_mat_lab_format()
       auto sparse_matrix =
           Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(ssi_matrices_->SystemMatrix());
 
-      const std::string filename = Global::Problem::Instance()->OutputControlFile()->FileName() +
+      const std::string filename = Global::Problem::Instance()->OutputControlFile()->file_name() +
                                    "_sparse_system_matrix.csv";
 
       Core::LinAlg::PrintMatrixInMatlabFormat(filename, *sparse_matrix->EpetraMatrix(), true);
@@ -1644,14 +1644,14 @@ void SSI::SsiMono::print_system_matrix_rhs_to_mat_lab_format()
   // print rhs
   {
     const std::string filename =
-        Global::Problem::Instance()->OutputControlFile()->FileName() + "_system_vector.csv";
+        Global::Problem::Instance()->OutputControlFile()->file_name() + "_system_vector.csv";
     Core::LinAlg::PrintVectorInMatlabFormat(filename, *ssi_vectors_->Residual(), true);
   }
 
   // print full map
   {
     const std::string filename =
-        Global::Problem::Instance()->OutputControlFile()->FileName() + "_full_map.csv";
+        Global::Problem::Instance()->OutputControlFile()->file_name() + "_full_map.csv";
     Core::LinAlg::PrintMapInMatlabFormat(filename, *ssi_maps_->MapSystemMatrix(), true);
   }
 }

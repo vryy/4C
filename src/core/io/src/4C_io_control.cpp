@@ -48,7 +48,7 @@ Core::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string prob
     if (myrank_ == 0)
     {
       int number = 0;
-      size_t pos = RestartFinder(filename_);
+      size_t pos = restart_finder(filename_);
       if (pos != std::string::npos)
       {
         number = atoi(filename_.substr(pos + 1).c_str());
@@ -114,7 +114,7 @@ Core::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string prob
     {
       // check whether filename_ includes a dash and in case separate the number at the end
       int number = 0;
-      size_t pos = RestartFinder(filename_);
+      size_t pos = restart_finder(filename_);
       if (pos != std::string::npos)
       {
         number = atoi(filename_.substr(pos + 1).c_str());
@@ -219,7 +219,8 @@ Core::IO::OutputControl::OutputControl(const OutputControl& ocontrol, const char
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::OutputControl::OverwriteResultFile(const Core::FE::ShapeFunctionType& spatial_approx)
+void Core::IO::OutputControl::overwrite_result_file(
+    const Core::FE::ShapeFunctionType& spatial_approx)
 {
   std::stringstream name;
   name << filename_ << ".control";
@@ -329,7 +330,7 @@ void Core::IO::OutputControl::insert_restart_back_reference(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string Core::IO::OutputControl::FileNameOnlyPrefix() const
+std::string Core::IO::OutputControl::file_name_only_prefix() const
 {
   std::string filenameonlyprefix = filename_;
 
@@ -344,7 +345,7 @@ std::string Core::IO::OutputControl::FileNameOnlyPrefix() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string Core::IO::OutputControl::DirectoryName() const
+std::string Core::IO::OutputControl::directory_name() const
 {
   std::filesystem::path path(filename_);
   return path.parent_path();
@@ -389,7 +390,7 @@ Core::IO::InputControl::~InputControl() { destroy_map(&table_); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-size_t Core::IO::RestartFinder(const std::string& filename)
+size_t Core::IO::restart_finder(const std::string& filename)
 {
   size_t pos;
   for (pos = filename.size(); pos > 0; --pos)
@@ -403,13 +404,13 @@ size_t Core::IO::RestartFinder(const std::string& filename)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::IO::GetLastPossibleRestartStep(Core::IO::InputControl& inputcontrol)
+int Core::IO::get_last_possible_restart_step(Core::IO::InputControl& inputcontrol)
 {
   /* Go to the first symbol under the name "field" and get the
    * corresponding step. Note that it will find the last "field"
    * group starting from the end of the file and looking backwards. */
 
-  SYMBOL* symbol = map_find_symbol(inputcontrol.ControlFile(), "field");
+  SYMBOL* symbol = map_find_symbol(inputcontrol.control_file(), "field");
   if (symbol != nullptr && symbol_is_map(symbol))
   {
     MAP* map;
@@ -420,7 +421,7 @@ int Core::IO::GetLastPossibleRestartStep(Core::IO::InputControl& inputcontrol)
   FOUR_C_THROW(
       "No restart entry in symbol table. "
       "Control file corrupt?\n\nLooking for control file at: %s",
-      inputcontrol.FileName().c_str());
+      inputcontrol.file_name().c_str());
 
   return 0;
 }

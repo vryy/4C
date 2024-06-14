@@ -37,7 +37,7 @@ Core::IO::VisualizationParameters Core::IO::VisualizationParametersFactory(
   parameters.digits_for_time_step_ =
       visualization_ouput_parameter_list.get<int>("TIMESTEP_RESERVE_DIGITS");
 
-  parameters.directory_name_ = output_control.DirectoryName();
+  parameters.directory_name_ = output_control.directory_name();
 
   // Parameters for output during the nonlinear solver
   parameters.every_iteration_virtual_time_increment_ =
@@ -49,11 +49,11 @@ Core::IO::VisualizationParameters Core::IO::VisualizationParametersFactory(
   parameters.every_iteration_ =
       Core::UTILS::IntegralValue<bool>(visualization_ouput_parameter_list, "EVERY_ITERATION");
 
-  parameters.file_name_prefix_ = output_control.FileNameOnlyPrefix();
+  parameters.file_name_prefix_ = output_control.file_name_only_prefix();
 
   parameters.restart_time_ = restart_time;
 
-  parameters.restart_from_name_ = output_control.RestartName();
+  parameters.restart_from_name_ = output_control.restart_name();
 
   // Type of output writer
   const auto output_writer =

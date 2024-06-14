@@ -528,7 +528,7 @@ void FLD::FluidImplicitTimeInt::CompleteGeneralInit()
   {
     // write energy-file
     {
-      std::string fileiter = Global::Problem::Instance()->OutputControlFile()->FileName();
+      std::string fileiter = Global::Problem::Instance()->OutputControlFile()->file_name();
       fileiter.append(".fluidenergy");
       logenergy_ = Teuchos::rcp(new std::ofstream(fileiter.c_str()));
 
@@ -1402,7 +1402,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
     if (myrank_ == 0)
     {
       const std::string fname1 =
-          Global::Problem::Instance()->OutputControlFile()->FileName() + ".fdpressure";
+          Global::Problem::Instance()->OutputControlFile()->file_name() + ".fdpressure";
 
       std::ofstream f1;
 
@@ -1562,7 +1562,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
       if (myrank_ == 0)
       {
         const std::string fname1 =
-            Global::Problem::Instance()->OutputControlFile()->FileName() + ".fdpressure";
+            Global::Problem::Instance()->OutputControlFile()->file_name() + ".fdpressure";
 
         std::ofstream f1;
         f1.open(fname1.c_str(), std::fstream::ate | std::fstream::app);
@@ -1576,7 +1576,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
     if (myrank_ == 0)
     {
       const std::string fname1 =
-          Global::Problem::Instance()->OutputControlFile()->FileName() + ".fdpressure";
+          Global::Problem::Instance()->OutputControlFile()->file_name() + ".fdpressure";
 
       std::ofstream f1;
       f1.open(fname1.c_str(), std::fstream::ate | std::fstream::app);
@@ -3237,7 +3237,7 @@ void FLD::FluidImplicitTimeInt::time_update_nonlinear_bc()
     if (myrank_ == 0)
     {
       const std::string fname1 =
-          Global::Problem::Instance()->OutputControlFile()->FileName() + ".fdpressure";
+          Global::Problem::Instance()->OutputControlFile()->file_name() + ".fdpressure";
       std::ofstream f1;
       f1.open(fname1.c_str(), std::fstream::ate | std::fstream::app);
 
@@ -3790,13 +3790,13 @@ void FLD::FluidImplicitTimeInt::output_to_gmsh(
   if (inflow)
   {
     filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("solution_velpres_inflow",
-        discret_->Writer()->Output()->FileName(), step, 20, screen_out, discret_->Comm().MyPID());
+        discret_->Writer()->Output()->file_name(), step, 20, screen_out, discret_->Comm().MyPID());
     // std::ofstream gmshfilecontent(filename.c_str());
   }
   else
   {
     filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("solution_velpres",
-        discret_->Writer()->Output()->FileName(), step, 20, screen_out, discret_->Comm().MyPID());
+        discret_->Writer()->Output()->file_name(), step, 20, screen_out, discret_->Comm().MyPID());
     // std::ofstream gmshfilecontent(filename.c_str());
   }
   std::ofstream gmshfilecontent(filename.c_str());
@@ -4925,7 +4925,7 @@ FLD::FluidImplicitTimeInt::evaluate_error_compared_to_analytical_sol()
         {
           std::ostringstream temp;
           const std::string simulation =
-              Global::Problem::Instance()->OutputControlFile()->FileName();
+              Global::Problem::Instance()->OutputControlFile()->file_name();
           const std::string fname = simulation + ".relerror";
 
           std::ofstream f;
@@ -4941,7 +4941,8 @@ FLD::FluidImplicitTimeInt::evaluate_error_compared_to_analytical_sol()
 
 
         std::ostringstream temp;
-        const std::string simulation = Global::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string simulation =
+            Global::Problem::Instance()->OutputControlFile()->file_name();
         const std::string fname = simulation + "_time.relerror";
 
         if (step_ == 1)
@@ -5028,7 +5029,7 @@ Teuchos::RCP<double> FLD::FluidImplicitTimeInt::EvaluateDivU()
       std::cout << "| Norm(inf) = " << maxdivu << " | Norm(1) = " << *sumdivu << "  |" << std::endl;
       std::cout << "---------------------------------------------------" << std::endl << std::endl;
 
-      const std::string simulation = Global::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string simulation = Global::Problem::Instance()->OutputControlFile()->file_name();
       const std::string fname = simulation + ".divu";
 
       std::ofstream f;

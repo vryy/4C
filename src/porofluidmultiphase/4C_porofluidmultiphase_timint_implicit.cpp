@@ -1456,7 +1456,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::evaluate_domain_integrals()
   {
     // set filename and file
     const std::string filename(
-        Global::Problem::Instance()->OutputControlFile()->FileName() + ".domain_int" + ".csv");
+        Global::Problem::Instance()->OutputControlFile()->file_name() + ".domain_int" + ".csv");
     std::ofstream file;
 
     if (step_ == 0)
@@ -1800,7 +1800,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::evaluate_error_compared_to_analytical_sol(
   {
     // print last error in a separate file
 
-    const std::string simulation = Global::Problem::Instance()->OutputControlFile()->FileName();
+    const std::string simulation = Global::Problem::Instance()->OutputControlFile()->file_name();
     const std::string fname = simulation + "_pressure_time.relerror";
 
     if (step_ == 0)

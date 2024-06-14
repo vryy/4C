@@ -513,7 +513,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::CalcFluxAtBoundary(
       std::ostringstream temp;
       temp << icond;
       temp << discret_->Name();
-      const std::string fname = problem_->OutputControlFile()->FileName() +
+      const std::string fname = problem_->OutputControlFile()->file_name() +
                                 ".boundaryflux_ScaTraFluxCalc_" + temp.str() + ".txt";
 
       std::ofstream f;
@@ -1076,7 +1076,7 @@ void ScaTra::ScaTraTimIntImpl::output_lin_solver_stats(
   {
     // set file name
     std::string filename(
-        Global::Problem::Instance()->OutputControlFile()->FileName() + ".lin_solver_stats.csv");
+        Global::Problem::Instance()->OutputControlFile()->file_name() + ".lin_solver_stats.csv");
 
     // open file in appropriate mode and write header at beginning
     std::ofstream file;
@@ -1113,7 +1113,7 @@ void ScaTra::ScaTraTimIntImpl::output_nonlin_solver_stats(
   {
     // set file name
     std::string filename(
-        Global::Problem::Instance()->OutputControlFile()->FileName() + ".nonlin_solver_stats.csv");
+        Global::Problem::Instance()->OutputControlFile()->file_name() + ".nonlin_solver_stats.csv");
 
     // open file in appropriate mode and write header at beginning
     std::ofstream file;
@@ -1146,7 +1146,7 @@ void ScaTra::ScaTraTimIntImpl::output_to_gmsh(const int step, const double time)
   // create Gmsh postprocessing file
   const std::string filename =
       Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("solution_field_scalar",
-          DiscWriter()->Output()->FileName(), step, 500, screen_out, discret_->Comm().MyPID());
+          DiscWriter()->Output()->file_name(), step, 500, screen_out, discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   //  {
   //    // add 'View' to Gmsh postprocessing file
@@ -1318,7 +1318,7 @@ void ScaTra::ScaTraTimIntImpl::OutputIntegrReac(const int num)
       std::stringstream number;
       number << num;
       const std::string fname =
-          problem_->OutputControlFile()->FileName() + number.str() + ".integrreacvalues.txt";
+          problem_->OutputControlFile()->file_name() + number.str() + ".integrreacvalues.txt";
 
       std::ofstream f;
       if (Step() <= 1)
@@ -2166,7 +2166,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
           //        {
           //          std::ostringstream temp;
           //          temp << k;
-          //          const std::string simulation = problem_->OutputControlFile()->FileName();
+          //          const std::string simulation = problem_->OutputControlFile()->file_name();
           //          const std::string fname = simulation+"_c"+temp.str()+".relerror";
           //
           //          std::ofstream f;
@@ -2179,7 +2179,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
 
           std::ostringstream temp;
           temp << k;
-          const std::string simulation = problem_->OutputControlFile()->FileName();
+          const std::string simulation = problem_->OutputControlFile()->file_name();
           const std::string fname = simulation + "_c" + temp.str() + "_time.relerror";
           std::ofstream f;
 
@@ -2268,7 +2268,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
           std::ostringstream temp;
           temp << k;
           const std::string fname =
-              problem_->OutputControlFile()->FileName() + "_dof_" + temp.str() + ".relerror";
+              problem_->OutputControlFile()->file_name() + "_dof_" + temp.str() + ".relerror";
 
           // initialize output file stream
           std::ofstream f;
@@ -2878,7 +2878,7 @@ void ScaTra::OutputDomainIntegralStrategy::evaluate_integrals_and_print_results(
                 << std::setprecision(3) << (*integralvalue)(0) << "        |" << std::endl;
 
       // set file name
-      const std::string filename(Global::Problem::Instance()->OutputControlFile()->FileName() +
+      const std::string filename(Global::Problem::Instance()->OutputControlFile()->file_name() +
                                  "." + label + "_integrals.csv");
 
       // open file in appropriate mode and write header at beginning

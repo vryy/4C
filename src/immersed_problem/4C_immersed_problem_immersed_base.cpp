@@ -617,7 +617,7 @@ void Immersed::ImmersedBase::WriteExtraOutput(const Epetra_Comm& comm, const dou
   if (comm.MyPID() == 0)
   {
     const std::string fname1 =
-        Global::Problem::Instance()->OutputControlFile()->FileName() + "." + filenameending;
+        Global::Problem::Instance()->OutputControlFile()->file_name() + "." + filenameending;
 
     std::ofstream f1;
     f1.open(fname1.c_str(), std::fstream::ate | std::fstream::app);

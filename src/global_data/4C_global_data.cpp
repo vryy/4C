@@ -175,7 +175,7 @@ void Global::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string
 
     if (restartstep_ < 0)
     {
-      int r = Core::IO::GetLastPossibleRestartStep(*inputcontrol_);
+      int r = Core::IO::get_last_possible_restart_step(*inputcontrol_);
       SetRestartStep(r);
     }
   }
@@ -199,7 +199,7 @@ void Global::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string
 /*----------------------------------------------------------------------*/
 void Global::Problem::write_input_parameters()
 {
-  std::string s = OutputControlFile()->FileName();
+  std::string s = OutputControlFile()->file_name();
   s.append(".parameter");
   std::ofstream stream(s.c_str());
   Input::PrintDatHeader(stream, *parameters_, "", false);

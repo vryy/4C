@@ -51,7 +51,7 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
     // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->discretization()));
   }
 
-  std::string s = Global::Problem::Instance()->OutputControlFile()->FileName();
+  std::string s = Global::Problem::Instance()->OutputControlFile()->file_name();
   s.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(s.c_str()));
   itermax_ = fsimono.get<int>("ITEMAX");

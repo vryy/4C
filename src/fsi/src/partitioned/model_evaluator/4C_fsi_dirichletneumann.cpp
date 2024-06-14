@@ -45,8 +45,8 @@ void FSI::DirichletNeumann::fsi_op(
   // test cases
   if (Core::UTILS::IntegralValue<int>(Global::Problem::Instance()->structural_dynamic_params(),
           "INT_STRATEGY") == Inpar::STR::int_old &&
-      Global::Problem::Instance()->OutputControlFile()->InputFileName().find("fs3i_ac_prestress") ==
-          std::string::npos)
+      Global::Problem::Instance()->OutputControlFile()->input_file_name().find(
+          "fs3i_ac_prestress") == std::string::npos)
   {
     FOUR_C_THROW(
         "You are using the old structural time integration! Partitioned FSI is already migrated to "

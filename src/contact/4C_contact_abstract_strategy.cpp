@@ -2440,7 +2440,7 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
     {
       FILE* MyFile = nullptr;
       std::ostringstream filename;
-      const std::string filebase = Global::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string filebase = Global::Problem::Instance()->OutputControlFile()->file_name();
       filename << filebase << ".interface";
       MyFile = fopen(filename.str().c_str(), "at+");
 
@@ -2795,7 +2795,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
       FILE* MyFile = nullptr;
       std::ostringstream filename;
       const std::string filebase =
-          Global::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+          Global::Problem::Instance()->OutputControlFile()->file_name_only_prefix();
       filename << filebase << ".jump";
       MyFile = fopen(filename.str().c_str(), "at+");
       if (MyFile)

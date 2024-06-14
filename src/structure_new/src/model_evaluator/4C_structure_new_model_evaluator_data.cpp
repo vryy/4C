@@ -763,7 +763,7 @@ int STR::MODELEVALUATOR::Data::get_step_np() const { return global_state().get_s
 std::string STR::MODELEVALUATOR::ContactData::get_output_file_path() const
 {
   check_init();
-  return in_output().get_output_ptr()->Output()->FileName();
+  return in_output().get_output_ptr()->Output()->file_name();
 }
 
 /*----------------------------------------------------------------------------*

@@ -339,14 +339,14 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   }
 
   // write iterations-file
-  std::string fileiter = Global::Problem::Instance()->OutputControlFile()->FileName();
+  std::string fileiter = Global::Problem::Instance()->OutputControlFile()->file_name();
   fileiter.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(fileiter.c_str()));
 
   // write energy-file
   if (Core::UTILS::IntegralValue<int>(fsidyn.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
   {
-    std::string fileiter2 = Global::Problem::Instance()->OutputControlFile()->FileName();
+    std::string fileiter2 = Global::Problem::Instance()->OutputControlFile()->file_name();
     fileiter2.append(".fsienergy");
     logenergy_ = Teuchos::rcp(new std::ofstream(fileiter2.c_str()));
   }

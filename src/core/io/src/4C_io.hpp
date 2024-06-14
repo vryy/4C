@@ -68,9 +68,6 @@ namespace Core::IO
 
   /*!
     \brief base class of 4C restart
-
-    \author m.kue
-    \date 04/07
    */
   class DiscretizationReader
   {
@@ -230,9 +227,6 @@ namespace Core::IO
     and results you want to write. Data are written in parallel to
     processor local files. The first process additionally maintains the
     (plain text) control file that glues all result files together.
-
-    \author m.kue
-    \date 02/07
   */
   class DiscretizationWriter
   {

@@ -162,12 +162,12 @@ namespace Core::IO
   RuntimeCsvWriterProc0::RuntimeCsvWriterProc0(
       const Core::IO::OutputControl& output_control, std::string outputname)
       : outputname_(std::move(outputname)),
-        restart_step_(output_control.RestartStep()),
+        restart_step_(output_control.restart_step()),
         time_(0.0),
         timestep_(-1)
   {
     // determine full path to output prefix
-    const std::string fullpathoutputprefix = output_control.FileName();
+    const std::string fullpathoutputprefix = output_control.file_name();
 
     // set full path to output file
     fullpathoutputfile_ = fullpathoutputprefix + "-" + outputname_ + ".csv";
@@ -182,7 +182,7 @@ namespace Core::IO
     if (restart_step_)
     {
       // determine full path to restart prefix
-      const std::string fullpathrestartprefix = output_control.RestartName();
+      const std::string fullpathrestartprefix = output_control.restart_name();
 
       // set full path to restart file
       const std::string fullpathrestartfile = fullpathrestartprefix + "-" + outputname_ + ".csv";

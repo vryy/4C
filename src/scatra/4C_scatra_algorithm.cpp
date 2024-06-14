@@ -354,7 +354,7 @@ void ScaTra::ScaTraAlgorithm::outer_iteration_convection()
   const int numdim = 3;
   // create output file name
   std::stringstream temp;
-  temp << Global::Problem::Instance()->OutputControlFile()->FileName() << "_nonliniter_step"
+  temp << Global::Problem::Instance()->OutputControlFile()->file_name() << "_nonliniter_step"
        << Step();
   std::string outname = temp.str();
   std::string probtype = Global::Problem::Instance()->ProblemName();

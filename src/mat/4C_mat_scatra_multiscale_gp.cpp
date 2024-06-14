@@ -397,8 +397,8 @@ void Mat::ScatraMultiScaleGP::new_result_file()
   // get properties from macro scale
   Teuchos::RCP<Core::IO::OutputControl> macrocontrol =
       Global::Problem::Instance()->OutputControlFile();
-  std::string microprefix = macrocontrol->RestartName();
-  std::string micronewprefix = macrocontrol->NewOutputFileName();
+  std::string microprefix = macrocontrol->restart_name();
+  std::string micronewprefix = macrocontrol->new_output_file_name();
 
   // extract micro-scale problem and discretization
   Global::Problem* microproblem = Global::Problem::Instance(microdisnum_);

@@ -893,7 +893,7 @@ void ScaTra::TimIntHDG::evaluate_error_compared_to_analytical_sol()
       if (myrank_ == 0)
       {
         // print last error in a separate file
-        const std::string simulation = problem_->OutputControlFile()->FileName();
+        const std::string simulation = problem_->OutputControlFile()->file_name();
         const std::string fname = simulation + "_time.relerror";
         std::ofstream f;
 

@@ -586,7 +586,7 @@ void STI::Monolithic::OutputMatrixToFile(
     // set file name
     std::ostringstream nproc;
     nproc << comm.NumProc();
-    const std::string filename(Global::Problem::Instance()->OutputControlFile()->FileName() +
+    const std::string filename(Global::Problem::Instance()->OutputControlFile()->file_name() +
                                ".matrix_" + nproc.str() + "proc.csv");
 
     // open file and write header at beginning
@@ -678,7 +678,7 @@ void STI::Monolithic::OutputVectorToFile(
     // set file name
     std::ostringstream nproc;
     nproc << comm.NumProc();
-    const std::string filename(Global::Problem::Instance()->OutputControlFile()->FileName() +
+    const std::string filename(Global::Problem::Instance()->OutputControlFile()->file_name() +
                                ".vector_" + nproc.str() + "proc.csv");
 
     // open file and write header at beginning

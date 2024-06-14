@@ -1203,7 +1203,7 @@ void ScaTra::ScaTraTimIntElch::post_process_single_electrode_info(
     std::ostringstream temp;
     temp << id;
     const std::string fname =
-        problem_->OutputControlFile()->FileName() + ".electrode_status_" + temp.str() + ".txt";
+        problem_->OutputControlFile()->file_name() + ".electrode_status_" + temp.str() + ".txt";
 
     std::ofstream f;
     if (Step() == 0)

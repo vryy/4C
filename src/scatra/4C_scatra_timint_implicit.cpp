@@ -1748,7 +1748,7 @@ void ScaTra::ScaTraTimIntImpl::WriteResult()
   if ((step_ != 0) and (output_state_matlab_))
   {
     std::ostringstream filename;
-    filename << problem_->OutputControlFile()->FileName() << "-Result_Step" << step_ << ".m";
+    filename << problem_->OutputControlFile()->file_name() << "-Result_Step" << step_ << ".m";
     Core::LinAlg::PrintVectorInMatlabFormat(filename.str(), *phinp_);
   }
 }

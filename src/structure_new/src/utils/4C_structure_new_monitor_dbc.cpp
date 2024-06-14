@@ -154,9 +154,9 @@ void STR::MonitorDbc::Setup()
 
   // create directory ...
   const std::string full_dirpath(
-      Global::Problem::Instance()->OutputControlFile()->FileName() + "_monitor_dbc");
+      Global::Problem::Instance()->OutputControlFile()->file_name() + "_monitor_dbc");
   const std::string filename_only_prefix(
-      Global::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix());
+      Global::Problem::Instance()->OutputControlFile()->file_name_only_prefix());
   Core::IO::create_directory(full_dirpath, comm().MyPID());
   // ... create files paths ...
   full_filepaths_ = create_file_paths(rconds, full_dirpath, filename_only_prefix, filetype);
@@ -168,9 +168,9 @@ void STR::MonitorDbc::Setup()
   if (Global::Problem::Instance()->Restart())
   {
     const std::string full_restart_dirpath(
-        Global::Problem::Instance()->OutputControlFile()->RestartName() + "_monitor_dbc");
-    const std::string filename_restart_only_prefix(
-        Core::IO::ExtractFileName(Global::Problem::Instance()->OutputControlFile()->RestartName()));
+        Global::Problem::Instance()->OutputControlFile()->restart_name() + "_monitor_dbc");
+    const std::string filename_restart_only_prefix(Core::IO::ExtractFileName(
+        Global::Problem::Instance()->OutputControlFile()->restart_name()));
 
     std::vector<std::string> full_restart_filepaths =
         create_file_paths(rconds, full_restart_dirpath, filename_restart_only_prefix, filetype);

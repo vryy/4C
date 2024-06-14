@@ -890,7 +890,7 @@ void STR::TimeInt::Base::write_gmsh_struc_output_step()
   if (!dataio_->is_gmsh()) return;
 
   const std::string filename =
-      Core::IO::Gmsh::GetFileName("struct", disc_writer()->Output()->FileName(),
+      Core::IO::Gmsh::GetFileName("struct", disc_writer()->Output()->file_name(),
           dataglobalstate_->get_step_np(), false, dataglobalstate_->get_my_rank());
   std::ofstream gmshfilecontent(filename.c_str());
 

@@ -45,7 +45,7 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<Core::FE::Discretization> dis)
 void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
 {
   std::stringstream s;
-  s << Global::Problem::Instance()->OutputControlFile()->FileName();
+  s << Global::Problem::Instance()->OutputControlFile()->file_name();
   if (name != "") s << "-" << name;
   s << "-step" << step;
 
@@ -97,7 +97,7 @@ FSI::UTILS::SimpleDebugWriter::SimpleDebugWriter(
 void FSI::UTILS::SimpleDebugWriter::NewLinearSystem(int step, std::string name)
 {
   std::stringstream s;
-  s << Global::Problem::Instance()->OutputControlFile()->FileName() << "-" << name_;
+  s << Global::Problem::Instance()->OutputControlFile()->file_name() << "-" << name_;
   if (name != "") s << "-" << name;
   s << "-step" << step;
 

@@ -3107,7 +3107,7 @@ bool Mat::ConstraintMixture::VisData(
 void Mat::ConstraintMixtureOutputToGmsh(
     const Teuchos::RCP<Core::FE::Discretization> dis, const int timestep, const int iter)
 {
-  const std::string filebase = Global::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebase = Global::Problem::Instance()->OutputControlFile()->file_name();
   // file for stress
   std::stringstream filename;
   filename << filebase << "_massdensity" << std::setw(3) << std::setfill('0') << timestep

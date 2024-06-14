@@ -230,7 +230,7 @@ void PoroElast::Monolithic::Solve()
   //      << std::right << std::setw(10) << std::scientific << iter_-1;
   //
   //    std::ofstream f;
-  //    const std::string fname = Global::Problem::Instance()->OutputControlFile()->FileName()
+  //    const std::string fname = Global::Problem::Instance()->OutputControlFile()->file_name()
   //                            + "_numiter.txt";
   //
   //    if (Step() <= 1)

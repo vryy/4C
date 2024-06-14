@@ -100,7 +100,7 @@ void FSI::Monolithic::init_tim_int_ada(const Teuchos::ParameterList& fsidyn)
   //----------------------------------------------------------------------------
   // write adaptivity file
   //----------------------------------------------------------------------------
-  std::string fileada = Global::Problem::Instance()->OutputControlFile()->FileName();
+  std::string fileada = Global::Problem::Instance()->OutputControlFile()->file_name();
   fileada.append(".adaptivity");
   logada_ = Teuchos::rcp(new std::ofstream(fileada.c_str()));
 

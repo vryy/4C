@@ -50,7 +50,7 @@ void Core::IO::EveryIterationWriter::Init(const Core::IO::DiscretizationWriter* 
   interface_ = interface;
 
 
-  myrank_ = parent_writer_->Output()->MyRank();
+  myrank_ = parent_writer_->Output()->my_rank();
 
   run_number_ = params.get<int>("RUN_NUMBER");
   write_only_this_step_ = params.get<int>("STEP_NP_NUMBER");
@@ -69,11 +69,11 @@ void Core::IO::EveryIterationWriter::Setup()
   /* Remove the restart counter from the folder name. Note that the restart
    * counter stays a part of the final file name of the corresponding step. */
   const std::string filename_without_restart = RemoveRestartStepFromFileName(
-      parent_writer().Output()->FileNameOnlyPrefix(), parent_writer().Output()->RestartStep());
+      parent_writer().Output()->file_name_only_prefix(), parent_writer().Output()->restart_step());
 
   const std::string dir_name(filename_without_restart + "_every_iter");
 
-  std::string file_dir_path = ExtractPath(parent_writer().Output()->FileName());
+  std::string file_dir_path = ExtractPath(parent_writer().Output()->file_name());
   file_dir_path += dir_name;
   create_directory(file_dir_path);
 
@@ -93,7 +93,7 @@ void Core::IO::EveryIterationWriter::Setup()
       parent_writer(), control_iteration, Core::IO::CopyType::shape));
 
   // save base file name
-  base_filename_ = every_iter_writer_->Output()->FileName();
+  base_filename_ = every_iter_writer_->Output()->file_name();
 
   issetup_ = true;
 }
@@ -192,11 +192,11 @@ bool Core::IO::EveryIterationWriter::write_this_step() const
  *----------------------------------------------------------------------------*/
 void Core::IO::EveryIterationWriter::adjust_steps_per_file(Core::IO::OutputControl& control) const
 {
-  int new_file_steps = control.FileSteps() * MAX_NUMBER_LINE_SEARCH_ITERATIONS_;
+  int new_file_steps = control.file_steps() * MAX_NUMBER_LINE_SEARCH_ITERATIONS_;
   if (new_file_steps > std::numeric_limits<int>::max())
     new_file_steps = std::numeric_limits<int>::max();
 
-  control.SetFileSteps(new_file_steps);
+  control.set_file_steps(new_file_steps);
 }
 
 /*----------------------------------------------------------------------------*

@@ -79,7 +79,8 @@ Mat::PAR::Electrode::Electrode(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
 
           break;
         }
-        std::string ocpcsvpath = Global::Problem::Instance()->OutputControlFile()->InputFileName();
+        std::string ocpcsvpath =
+            Global::Problem::Instance()->OutputControlFile()->input_file_name();
         ocpcsvpath = ocpcsvpath.substr(0, ocpcsvpath.rfind('/') + 1);
         ocpcsv.insert(ocpcsv.begin(), ocpcsvpath.begin(), ocpcsvpath.end());
       }
