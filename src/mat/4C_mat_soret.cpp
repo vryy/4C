@@ -16,8 +16,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                               fang 06/15 |
  *----------------------------------------------------------------------*/
-Mat::PAR::Soret::Soret(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
-    : FourierIso(matdata), soretcoefficient_(matdata->Get<double>("SORET"))
+Mat::PAR::Soret::Soret(const Core::Mat::PAR::Parameter::Data& matdata)
+    : FourierIso(matdata), soretcoefficient_(matdata.parameters.Get<double>("SORET"))
 {
   return;
 }

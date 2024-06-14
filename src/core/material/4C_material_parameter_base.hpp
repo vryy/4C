@@ -40,55 +40,8 @@ namespace Core::Mat
 
 namespace Core::Mat::PAR
 {
-  /// Legacy container for read-in materials
-  ///
-  /// This object stores the validated material parameters as
-  /// Core::IO::InputParameterContainer.
-  class Material : public Core::IO::InputParameterContainer
-  {
-   public:
-    /// @name life span
-    //@{
-
-    /// Standard constructor
-    Material(const int id,                        ///< unique material ID
-        const Core::Materials::MaterialType type  ///< type of material
-    );
-
-    /// Copy the input_data into this object.
-    Material(int id, Core::Materials::MaterialType type,
-        const Core::IO::InputParameterContainer& input_data);
-
-    /// Default constructor without information from the input lines.
-    Material() = default;
-
-    //@}
-
-    /// @name Query methods
-    //@{
-
-    /// Return material id
-    [[nodiscard]] inline virtual int Id() const { return id_; }
-
-    /// Return type of material
-    [[nodiscard]] inline virtual Core::Materials::MaterialType Type() const { return type_; }
-
-    //@}
-
-    /// don't want = operator
-    Material operator=(const Material& old) = delete;
-    Material(const Core::Mat::PAR::Material& old) = delete;
-
-   protected:
-    /// Unique ID of this material, no second material of same ID may exist
-    int id_{};
-
-    /// Type of this material
-    Core::Materials::MaterialType type_{};
-  };
-
   /*----------------------------------------------------------------------*/
-  /// Base object to hold 'quick' access material parameters
+  /// Base class to hold material parameters
   ///
   /// Core::Mat::PAR::Parameters is derived for the various implemented
   /// materials. These provide the 'quick' access to the read-in
@@ -99,19 +52,41 @@ namespace Core::Mat::PAR
   class Parameter
   {
    public:
-    /// construct the material object given material parameters
-    Parameter(Teuchos::RCP<const Core::Mat::PAR::Material>
-            matdata  ///< read and validated material data (of 'slow' access)
-    );
+    /**
+     * Additional data that is required to create the enclosing Parameter object.
+     */
+    struct Data
+    {
+      /**
+       * An ID that is unique for each material and supplied from the input file.
+       */
+      int id{-1};
+
+      /**
+       * The type of the material.
+       */
+      Core::Materials::MaterialType type{Core::Materials::MaterialType::m_none};
+
+      /**
+       * A dynamic container for any additional parameters that a concrete derived class may
+       * require.
+       */
+      Core::IO::InputParameterContainer parameters;
+    };
+
+    /**
+     * Base class constructor taking the @p data with basic information about the material.
+     */
+    Parameter(Data data);
 
     /// destructor
     virtual ~Parameter() = default;
 
     /// (unique) material ID
-    [[nodiscard]] int Id() const { return id_; }
+    [[nodiscard]] int Id() const { return data_.id; }
 
     /// material type
-    [[nodiscard]] Core::Materials::MaterialType Type() const { return type_; }
+    [[nodiscard]] Core::Materials::MaterialType Type() const { return data_.type; }
 
     /// create material instance of matching type with my parameters
     virtual Teuchos::RCP<Core::Mat::Material> create_material() = 0;
@@ -123,7 +98,7 @@ namespace Core::Mat::PAR
     /**
      * Access to the raw input data.
      */
-    const Core::IO::InputParameterContainer& raw_parameters() const { return *raw_parameters_; }
+    const Core::IO::InputParameterContainer& raw_parameters() const { return data_.parameters; }
 
    protected:
     /*! \brief
@@ -135,15 +110,10 @@ namespace Core::Mat::PAR
     std::vector<Teuchos::RCP<Epetra_Vector>> matparams_;
 
    private:
-    /// material ID, as defined in input file
-    int id_;
-
-    /// material type
-    Core::Materials::MaterialType type_;
-
-    /// raw input parameters
-    Teuchos::RCP<const Core::Mat::PAR::Material> raw_parameters_;
-
+    /**
+     * Data as supplied during construction.
+     */
+    Data data_;
   };  // class Parameter
 
 }  // namespace Core::Mat::PAR

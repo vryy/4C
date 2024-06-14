@@ -36,8 +36,7 @@ namespace MIXTURE
     class MixtureConstituentElastHyperBase : public MIXTURE::PAR::MixtureConstituent
     {
      public:
-      explicit MixtureConstituentElastHyperBase(
-          const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+      explicit MixtureConstituentElastHyperBase(const Core::Mat::PAR::Parameter::Data& matdata);
       int get_prestressing_mat_id() const { return matid_prestress_strategy_; }
 
       /// @name material parameters

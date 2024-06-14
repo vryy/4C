@@ -44,7 +44,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      ConstraintMixture(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ConstraintMixture(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

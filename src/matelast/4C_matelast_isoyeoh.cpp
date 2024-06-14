@@ -13,11 +13,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::Elastic::PAR::IsoYeoh::IsoYeoh(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+Mat::Elastic::PAR::IsoYeoh::IsoYeoh(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      c1_(matdata->Get<double>("C1")),
-      c2_(matdata->Get<double>("C2")),
-      c3_(matdata->Get<double>("C3"))
+      c1_(matdata.parameters.Get<double>("C1")),
+      c2_(matdata.parameters.Get<double>("C2")),
+      c3_(matdata.parameters.Get<double>("C3"))
 {
 }
 

@@ -25,13 +25,13 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::PAR::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      nummat_elast_(matdata->Get<int>("NUMMATEL")),
-      matids_elast_(matdata->Get<std::vector<int>>("MATIDSEL")),
-      numfac_inel_(matdata->Get<int>("NUMFACINEL")),
-      inel_defgradfacids_(matdata->Get<std::vector<int>>("INELDEFGRADFACIDS")),
-      density_(matdata->Get<double>("DENS"))
+      nummat_elast_(matdata.parameters.Get<int>("NUMMATEL")),
+      matids_elast_(matdata.parameters.Get<std::vector<int>>("MATIDSEL")),
+      numfac_inel_(matdata.parameters.Get<int>("NUMFACINEL")),
+      inel_defgradfacids_(matdata.parameters.Get<std::vector<int>>("INELDEFGRADFACIDS")),
+      density_(matdata.parameters.Get<double>("DENS"))
 {
   // check if sizes fit
   if (nummat_elast_ != static_cast<int>(matids_elast_.size()))

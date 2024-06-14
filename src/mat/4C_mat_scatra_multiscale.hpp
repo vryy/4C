@@ -28,7 +28,7 @@ namespace Mat
     {
      public:
       //! constructor
-      ScatraMultiScale(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ScatraMultiScale(const Core::Mat::PAR::Parameter::Data& matdata);
 
 
       //! create material

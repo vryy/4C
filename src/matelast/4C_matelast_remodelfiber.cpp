@@ -19,14 +19,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::Elastic::PAR::RemodelFiber::RemodelFiber(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+Mat::Elastic::PAR::RemodelFiber::RemodelFiber(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      nummat_(matdata->Get<int>("NUMMAT")),
-      matids_(matdata->Get<std::vector<int>>("MATIDS")),
-      t_decay_(matdata->Get<double>("TDECAY")),
-      k_growth_(matdata->Get<double>("GROWTHFAC")),
-      init_w_col_(matdata->Get<std::vector<double>>("COLMASSFRAC")),
-      G_(matdata->Get<double>("DEPOSITIONSTRETCH"))
+      nummat_(matdata.parameters.Get<int>("NUMMAT")),
+      matids_(matdata.parameters.Get<std::vector<int>>("MATIDS")),
+      t_decay_(matdata.parameters.Get<double>("TDECAY")),
+      k_growth_(matdata.parameters.Get<double>("GROWTHFAC")),
+      init_w_col_(matdata.parameters.Get<std::vector<double>>("COLMASSFRAC")),
+      G_(matdata.parameters.Get<double>("DEPOSITIONSTRETCH"))
 {
   // check if sizes fit
   if (nummat_ != (int)matids_.size())

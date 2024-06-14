@@ -25,14 +25,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-Mat::PAR::ViscoNeoHooke::ViscoNeoHooke(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::ViscoNeoHooke::ViscoNeoHooke(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_slow_(matdata->Get<double>("YOUNGS_SLOW")),
-      poisson_(matdata->Get<double>("POISSON")),
-      density_(matdata->Get<double>("DENS")),
-      youngs_fast_(matdata->Get<double>("YOUNGS_FAST")),
-      relax_(matdata->Get<double>("RELAX")),
-      theta_(matdata->Get<double>("THETA"))
+      youngs_slow_(matdata.parameters.Get<double>("YOUNGS_SLOW")),
+      poisson_(matdata.parameters.Get<double>("POISSON")),
+      density_(matdata.parameters.Get<double>("DENS")),
+      youngs_fast_(matdata.parameters.Get<double>("YOUNGS_FAST")),
+      relax_(matdata.parameters.Get<double>("RELAX")),
+      theta_(matdata.parameters.Get<double>("THETA"))
 {
 }
 

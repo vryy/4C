@@ -14,10 +14,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::PAR::PoroLaw::PoroLaw(Teuchos::RCP<Core::Mat::PAR::Material> matdata) : Parameter(matdata) {}
+Mat::PAR::PoroLaw::PoroLaw(const Core::Mat::PAR::Parameter::Data& matdata) : Parameter(matdata) {}
 
-Mat::PAR::PoroLawLinear::PoroLawLinear(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
-    : PoroLaw(matdata), bulk_modulus_(matdata->Get<double>("BULKMODULUS"))
+Mat::PAR::PoroLawLinear::PoroLawLinear(const Core::Mat::PAR::Parameter::Data& matdata)
+    : PoroLaw(matdata), bulk_modulus_(matdata.parameters.Get<double>("BULKMODULUS"))
 {
 }
 
@@ -51,10 +51,10 @@ void Mat::PAR::PoroLawLinear::constitutive_derivatives(const Teuchos::ParameterL
   if (dW_dphiref) *dW_dphiref = bulk_modulus_ * (-2.0 + J);
 }
 
-Mat::PAR::PoroLawNeoHooke::PoroLawNeoHooke(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::PoroLawNeoHooke::PoroLawNeoHooke(const Core::Mat::PAR::Parameter::Data& matdata)
     : PoroLaw(matdata),
-      bulk_modulus_(matdata->Get<double>("BULKMODULUS")),
-      penalty_parameter_(matdata->Get<double>("PENALTYPARAMETER"))
+      bulk_modulus_(matdata.parameters.Get<double>("BULKMODULUS")),
+      penalty_parameter_(matdata.parameters.Get<double>("PENALTYPARAMETER"))
 {
 }
 
@@ -156,7 +156,7 @@ void Mat::PAR::PoroLawNeoHooke::constitutive_derivatives(const Teuchos::Paramete
   }
 }
 
-Mat::PAR::PoroLawConstant::PoroLawConstant(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::PoroLawConstant::PoroLawConstant(const Core::Mat::PAR::Parameter::Data& matdata)
     : PoroLaw(matdata)
 {
 }
@@ -192,7 +192,7 @@ void Mat::PAR::PoroLawConstant::constitutive_derivatives(const Teuchos::Paramete
 }
 
 Mat::PAR::PoroLawIncompSkeleton::PoroLawIncompSkeleton(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : PoroLaw(matdata)
 {
 }
@@ -227,10 +227,10 @@ void Mat::PAR::PoroLawIncompSkeleton::constitutive_derivatives(const Teuchos::Pa
   if (dW_dphiref) *dW_dphiref = 1.0;
 }
 
-Mat::PAR::PoroLawLinBiot::PoroLawLinBiot(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::PoroLawLinBiot::PoroLawLinBiot(const Core::Mat::PAR::Parameter::Data& matdata)
     : PoroLaw(matdata),
-      inv_biot_modulus_(matdata->Get<double>("INVBIOTMODULUS")),
-      biot_coeff_(matdata->Get<double>("BIOTCEOFF"))
+      inv_biot_modulus_(matdata.parameters.Get<double>("INVBIOTMODULUS")),
+      biot_coeff_(matdata.parameters.Get<double>("BIOTCEOFF"))
 {
 }
 
@@ -265,10 +265,10 @@ void Mat::PAR::PoroLawLinBiot::constitutive_derivatives(const Teuchos::Parameter
 }
 
 Mat::PAR::PoroLawDensityDependent::PoroLawDensityDependent(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : PoroLaw(matdata)
 {
-  const int densityID = matdata->Get<int>("DENSITYLAWID");
+  const int densityID = matdata.parameters.Get<int>("DENSITYLAWID");
   density_law_ = Mat::PAR::PoroDensityLaw::CreateDensityLaw(densityID);
 }
 

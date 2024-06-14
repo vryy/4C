@@ -55,7 +55,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      ScatraMatMultiPoroFluid(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ScatraMatMultiPoroFluid(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;
@@ -80,7 +80,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      ScatraMatMultiPoroVolFrac(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ScatraMatMultiPoroVolFrac(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;
@@ -99,7 +99,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      ScatraMatMultiPoroSolid(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ScatraMatMultiPoroSolid(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;
@@ -118,7 +118,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      ScatraMatMultiPoroTemperature(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ScatraMatMultiPoroTemperature(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;

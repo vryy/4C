@@ -12,8 +12,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::Elastic::PAR::CoupVarga::CoupVarga(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
-    : Parameter(matdata), mue_(matdata->Get<double>("MUE")), beta_(matdata->Get<double>("BETA"))
+Mat::Elastic::PAR::CoupVarga::CoupVarga(const Core::Mat::PAR::Parameter::Data& matdata)
+    : Parameter(matdata),
+      mue_(matdata.parameters.Get<double>("MUE")),
+      beta_(matdata.parameters.Get<double>("BETA"))
 {
 }
 

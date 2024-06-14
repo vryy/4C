@@ -36,7 +36,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      ElectromagneticMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ElectromagneticMat(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;

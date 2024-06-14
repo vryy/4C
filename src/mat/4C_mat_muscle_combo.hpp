@@ -36,7 +36,7 @@ namespace Mat
     {
      public:
       /// constructor
-      MuscleCombo(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      MuscleCombo(const Core::Mat::PAR::Parameter::Data& matdata);
 
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 

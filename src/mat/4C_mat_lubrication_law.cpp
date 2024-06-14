@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Mat::PAR::LubricationLaw::LubricationLaw(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::LubricationLaw::LubricationLaw(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata)
 {
   return;
@@ -24,8 +24,8 @@ Mat::PAR::LubricationLaw::LubricationLaw(Teuchos::RCP<Core::Mat::PAR::Material> 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Mat::PAR::LubricationLawConstant::LubricationLawConstant(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
-    : LubricationLaw(matdata), viscosity_(matdata->Get<double>("VISCOSITY"))
+    const Core::Mat::PAR::Parameter::Data& matdata)
+    : LubricationLaw(matdata), viscosity_(matdata.parameters.Get<double>("VISCOSITY"))
 {
   return;
 }
@@ -60,10 +60,10 @@ void Mat::PAR::LubricationLawConstant::constitutive_derivatives(
  *---------------------------------------------------------------------*/
 
 // Standard Constructor
-Mat::PAR::LubricationLawBarus::LubricationLawBarus(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::LubricationLawBarus::LubricationLawBarus(const Core::Mat::PAR::Parameter::Data& matdata)
     : LubricationLaw(matdata),
-      ABSViscosity_(matdata->Get<double>("ABSViscosity")),
-      PreVisCoeff_(matdata->Get<double>("PreVisCoeff"))
+      ABSViscosity_(matdata.parameters.Get<double>("ABSViscosity")),
+      PreVisCoeff_(matdata.parameters.Get<double>("PreVisCoeff"))
 {
   return;
 }
@@ -97,12 +97,12 @@ void Mat::PAR::LubricationLawBarus::constitutive_derivatives(
 
 // Standard Constructor
 Mat::PAR::LubricationLawRoeland::LubricationLawRoeland(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : LubricationLaw(matdata),
-      ABSViscosity_(matdata->Get<double>("ABSViscosity")),
-      PreVisCoeff_(matdata->Get<double>("PreVisCoeff")),
-      RefVisc_(matdata->Get<double>("RefVisc")),
-      RefPress_(matdata->Get<double>("RefPress"))
+      ABSViscosity_(matdata.parameters.Get<double>("ABSViscosity")),
+      PreVisCoeff_(matdata.parameters.Get<double>("PreVisCoeff")),
+      RefVisc_(matdata.parameters.Get<double>("RefVisc")),
+      RefPress_(matdata.parameters.Get<double>("RefPress"))
 {
   z_ = (PreVisCoeff_ * RefPress_) / (log(ABSViscosity_ / RefVisc_));
   return;

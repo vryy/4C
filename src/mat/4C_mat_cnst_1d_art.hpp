@@ -46,7 +46,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      Cnst1dArt(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      Cnst1dArt(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

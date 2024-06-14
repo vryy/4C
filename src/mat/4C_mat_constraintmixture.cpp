@@ -44,40 +44,39 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-Mat::PAR::ConstraintMixture::ConstraintMixture(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::ConstraintMixture::ConstraintMixture(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      density_(matdata->Get<double>("DENS")),
-      mue_(matdata->Get<double>("MUE")),
-      nue_(matdata->Get<double>("NUE")),
-      phielastin_(matdata->Get<double>("PHIE")),
-      prestretchelastin_(matdata->Get<double>("PREELA")),
-      k1_(matdata->Get<double>("K1")),
-      k2_(matdata->Get<double>("K2")),
-      numhom_(matdata->Get<int>("NUMHOM")),
-      prestretchcollagen_((matdata->Get<std::vector<double>>("PRECOLL"))),
-      damagestretch_(matdata->Get<double>("DAMAGE")),
-      k1muscle_(matdata->Get<double>("K1M")),
-      k2muscle_(matdata->Get<double>("K2M")),
-      phimuscle_(matdata->Get<double>("PHIM")),
-      prestretchmuscle_(matdata->Get<double>("PREMUS")),
-      Smax_(matdata->Get<double>("SMAX")),
-      kappa_(matdata->Get<double>("KAPPA")),
-      lifetime_(matdata->Get<double>("LIFETIME")),
-      // growthfactor_(matdata->Get<double>("GROWTHFAC")),
-      homstress_((matdata->Get<std::vector<double>>("HOMSTR"))),
-      sheargrowthfactor_(matdata->Get<double>("SHEARGROWTHFAC")),
-      homradius_(matdata->Get<double>("HOMRAD")),
-      starttime_(matdata->Get<double>("STARTTIME")),
-      integration_(matdata->Get<std::string>("INTEGRATION")),
-      abstol_(matdata->Get<double>("TOL")),
-      growthforce_(matdata->Get<std::string>("GROWTHFORCE")),
-      elastindegrad_(matdata->Get<std::string>("ELASTINDEGRAD")),
-      massprodfunc_(matdata->Get<std::string>("MASSPROD")),
-      initstretch_(matdata->Get<std::string>("INITSTRETCH")),
-      timecurve_(matdata->Get<int>("CURVE")),
-      degoption_((matdata->Get<std::string>("DEGOPTION"))),
-      maxmassprodfac_(matdata->Get<double>("MAXMASSPRODFAC")),
-      storehistory_(matdata->Get<bool>("STOREHISTORY")),
+      density_(matdata.parameters.Get<double>("DENS")),
+      mue_(matdata.parameters.Get<double>("MUE")),
+      nue_(matdata.parameters.Get<double>("NUE")),
+      phielastin_(matdata.parameters.Get<double>("PHIE")),
+      prestretchelastin_(matdata.parameters.Get<double>("PREELA")),
+      k1_(matdata.parameters.Get<double>("K1")),
+      k2_(matdata.parameters.Get<double>("K2")),
+      numhom_(matdata.parameters.Get<int>("NUMHOM")),
+      prestretchcollagen_((matdata.parameters.Get<std::vector<double>>("PRECOLL"))),
+      damagestretch_(matdata.parameters.Get<double>("DAMAGE")),
+      k1muscle_(matdata.parameters.Get<double>("K1M")),
+      k2muscle_(matdata.parameters.Get<double>("K2M")),
+      phimuscle_(matdata.parameters.Get<double>("PHIM")),
+      prestretchmuscle_(matdata.parameters.Get<double>("PREMUS")),
+      Smax_(matdata.parameters.Get<double>("SMAX")),
+      kappa_(matdata.parameters.Get<double>("KAPPA")),
+      lifetime_(matdata.parameters.Get<double>("LIFETIME")),
+      homstress_((matdata.parameters.Get<std::vector<double>>("HOMSTR"))),
+      sheargrowthfactor_(matdata.parameters.Get<double>("SHEARGROWTHFAC")),
+      homradius_(matdata.parameters.Get<double>("HOMRAD")),
+      starttime_(matdata.parameters.Get<double>("STARTTIME")),
+      integration_(matdata.parameters.Get<std::string>("INTEGRATION")),
+      abstol_(matdata.parameters.Get<double>("TOL")),
+      growthforce_(matdata.parameters.Get<std::string>("GROWTHFORCE")),
+      elastindegrad_(matdata.parameters.Get<std::string>("ELASTINDEGRAD")),
+      massprodfunc_(matdata.parameters.Get<std::string>("MASSPROD")),
+      initstretch_(matdata.parameters.Get<std::string>("INITSTRETCH")),
+      timecurve_(matdata.parameters.Get<int>("CURVE")),
+      degoption_((matdata.parameters.Get<std::string>("DEGOPTION"))),
+      maxmassprodfac_(matdata.parameters.Get<double>("MAXMASSPRODFAC")),
+      storehistory_(matdata.parameters.Get<bool>("STOREHISTORY")),
       degtol_(1.0e-6)
 {
   Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::Instance()->GetCommunicators()->LocalComm()));
@@ -85,8 +84,8 @@ Mat::PAR::ConstraintMixture::ConstraintMixture(Teuchos::RCP<Core::Mat::PAR::Mate
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
-  matparams_.at(growthfactor)->PutScalar(matdata->Get<double>("GROWTHFAC"));
-  matparams_.at(elastin_survival)->PutScalar(matdata->Get<double>("ELASTINFAC"));
+  matparams_.at(growthfactor)->PutScalar(matdata.parameters.Get<double>("GROWTHFAC"));
+  matparams_.at(elastin_survival)->PutScalar(matdata.parameters.Get<double>("ELASTINFAC"));
 }
 
 

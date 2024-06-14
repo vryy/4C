@@ -21,18 +21,18 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::Scl::Scl(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::Scl::Scl(const Core::Mat::PAR::Parameter::Data& matdata)
     : ElchSingleMat(matdata),
-      valence_(matdata->Get<double>("VALENCE")),
-      transnrcurve_(matdata->Get<int>("TRANSNR")),
-      transnrparanum_(matdata->Get<int>("TRANS_PARA_NUM")),
-      transnr_(matdata->Get<std::vector<double>>("TRANS_PARA")),
-      cmax_(matdata->Get<double>("MAX_CONC")),
-      extrapolation_diffussion_coeff_strategy_(matdata->Get<int>("EXTRAPOL_DIFF")),
-      clim_(matdata->Get<double>("LIM_CONC")),
-      cbulk_(matdata->Get<double>("BULK_CONC")),
-      susceptibility_(matdata->Get<double>("SUSCEPT")),
-      delta_nu_(matdata->Get<double>("DELTA_NU")),
+      valence_(matdata.parameters.Get<double>("VALENCE")),
+      transnrcurve_(matdata.parameters.Get<int>("TRANSNR")),
+      transnrparanum_(matdata.parameters.Get<int>("TRANS_PARA_NUM")),
+      transnr_(matdata.parameters.Get<std::vector<double>>("TRANS_PARA")),
+      cmax_(matdata.parameters.Get<double>("MAX_CONC")),
+      extrapolation_diffussion_coeff_strategy_(matdata.parameters.Get<int>("EXTRAPOL_DIFF")),
+      clim_(matdata.parameters.Get<double>("LIM_CONC")),
+      cbulk_(matdata.parameters.Get<double>("BULK_CONC")),
+      susceptibility_(matdata.parameters.Get<double>("SUSCEPT")),
+      delta_nu_(matdata.parameters.Get<double>("DELTA_NU")),
       faraday_(Global::Problem::Instance()->ELCHControlParams().get<double>("FARADAY_CONSTANT")),
       epsilon_0_(Global::Problem::Instance()
                      ->ELCHControlParams()

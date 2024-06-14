@@ -37,7 +37,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      Maxwell0dAcinus(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      Maxwell0dAcinus(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

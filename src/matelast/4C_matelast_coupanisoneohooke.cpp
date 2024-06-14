@@ -16,12 +16,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 Mat::Elastic::PAR::CoupAnisoNeoHooke::CoupAnisoNeoHooke(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : ParameterAniso(matdata),
-      c_(matdata->Get<double>("C")),
-      gamma_(matdata->Get<double>("GAMMA")),
-      init_(matdata->Get<int>("INIT")),
-      adapt_angle_(matdata->Get<bool>("ADAPT_ANGLE"))
+      c_(matdata.parameters.Get<double>("C")),
+      gamma_(matdata.parameters.Get<double>("GAMMA")),
+      init_(matdata.parameters.Get<int>("INIT")),
+      adapt_angle_(matdata.parameters.Get<bool>("ADAPT_ANGLE"))
 {
 }
 

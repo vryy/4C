@@ -32,7 +32,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        IsoNeoHooke(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        IsoNeoHooke(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

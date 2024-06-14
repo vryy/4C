@@ -23,18 +23,18 @@ FOUR_C_NAMESPACE_OPEN
 
 
 Mat::Elastic::PAR::IsoMuscleBlemker::IsoMuscleBlemker(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      G1_(matdata->Get<double>("G1")),
-      G2_(matdata->Get<double>("G2")),
-      P1_(matdata->Get<double>("P1")),
-      P2_(matdata->Get<double>("P2")),
-      sigma_max_(matdata->Get<double>("SIGMAMAX")),
-      lambda_ofl_(matdata->Get<double>("LAMBDAOFL")),
-      lambda_star_(matdata->Get<double>("LAMBDASTAR")),
-      alpha_(matdata->Get<double>("ALPHA")),
-      beta_(matdata->Get<double>("BETA")),
-      t_act_start_(matdata->Get<double>("ACTSTARTTIME"))
+      G1_(matdata.parameters.Get<double>("G1")),
+      G2_(matdata.parameters.Get<double>("G2")),
+      P1_(matdata.parameters.Get<double>("P1")),
+      P2_(matdata.parameters.Get<double>("P2")),
+      sigma_max_(matdata.parameters.Get<double>("SIGMAMAX")),
+      lambda_ofl_(matdata.parameters.Get<double>("LAMBDAOFL")),
+      lambda_star_(matdata.parameters.Get<double>("LAMBDASTAR")),
+      alpha_(matdata.parameters.Get<double>("ALPHA")),
+      beta_(matdata.parameters.Get<double>("BETA")),
+      t_act_start_(matdata.parameters.Get<double>("ACTSTARTTIME"))
 {
   // error handling for parameter ranges
   if (G1_ < 0.0) FOUR_C_THROW("Material parameter G1 must be positive or zero");

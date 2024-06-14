@@ -23,7 +23,7 @@ namespace MIXTURE
     class IsotropicGrowthStrategy : public MIXTURE::PAR::MixtureGrowthStrategy
     {
      public:
-      explicit IsotropicGrowthStrategy(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+      explicit IsotropicGrowthStrategy(const Core::Mat::PAR::Parameter::Data& matdata);
 
       std::unique_ptr<MIXTURE::MixtureGrowthStrategy> create_growth_strategy() override;
     };

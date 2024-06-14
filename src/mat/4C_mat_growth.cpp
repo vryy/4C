@@ -22,12 +22,12 @@ growth laws.
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
-Mat::PAR::Growth::Growth(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::Growth::Growth(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      idmatelastic_(matdata->Get<int>("IDMATELASTIC")),
-      idgrowthlaw_(matdata->Get<int>("GROWTHLAW")),
-      starttime_(matdata->Get<double>("STARTTIME")),
-      endtime_(matdata->Get<double>("ENDTIME"))
+      idmatelastic_(matdata.parameters.Get<int>("IDMATELASTIC")),
+      idgrowthlaw_(matdata.parameters.Get<int>("GROWTHLAW")),
+      starttime_(matdata.parameters.Get<double>("STARTTIME")),
+      endtime_(matdata.parameters.Get<double>("ENDTIME"))
 {
   // retrieve problem instance to read from
   const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();

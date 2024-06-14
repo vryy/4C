@@ -50,26 +50,26 @@ using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
 /*----------------------------------------------------------------------*
  | constructor (public)                                   hemmler 09/16 |
  *----------------------------------------------------------------------*/
-Mat::PAR::SuperElasticSMA::SuperElasticSMA(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::SuperElasticSMA::SuperElasticSMA(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      density_(matdata->Get<double>("DENS")),
-      youngs_(matdata->Get<double>("YOUNG")),
-      poissonratio_(matdata->Get<double>("NUE")),
-      epsilon_L_(matdata->Get<double>("EPSILON_L")),
-      T_AS_s_(matdata->Get<double>("T_AS_s")),
-      T_AS_f_(matdata->Get<double>("T_AS_f")),
-      T_SA_s_(matdata->Get<double>("T_SA_s")),
-      T_SA_f_(matdata->Get<double>("T_SA_f")),
-      C_AS_(matdata->Get<double>("C_AS")),
-      C_SA_(matdata->Get<double>("C_SA")),
-      sigma_AS_s_(matdata->Get<double>("SIGMA_AS_s")),
-      sigma_AS_f_(matdata->Get<double>("SIGMA_AS_f")),
-      sigma_SA_s_(matdata->Get<double>("SIGMA_SA_s")),
-      sigma_SA_f_(matdata->Get<double>("SIGMA_SA_f")),
-      alpha_(matdata->Get<double>("ALPHA")),
-      model_(matdata->Get<int>("MODEL")),
-      beta_AS_(matdata->Get<double>("BETA_AS")),
-      beta_SA_(matdata->Get<double>("BETA_SA"))
+      density_(matdata.parameters.Get<double>("DENS")),
+      youngs_(matdata.parameters.Get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.Get<double>("NUE")),
+      epsilon_L_(matdata.parameters.Get<double>("EPSILON_L")),
+      T_AS_s_(matdata.parameters.Get<double>("T_AS_s")),
+      T_AS_f_(matdata.parameters.Get<double>("T_AS_f")),
+      T_SA_s_(matdata.parameters.Get<double>("T_SA_s")),
+      T_SA_f_(matdata.parameters.Get<double>("T_SA_f")),
+      C_AS_(matdata.parameters.Get<double>("C_AS")),
+      C_SA_(matdata.parameters.Get<double>("C_SA")),
+      sigma_AS_s_(matdata.parameters.Get<double>("SIGMA_AS_s")),
+      sigma_AS_f_(matdata.parameters.Get<double>("SIGMA_AS_f")),
+      sigma_SA_s_(matdata.parameters.Get<double>("SIGMA_SA_s")),
+      sigma_SA_f_(matdata.parameters.Get<double>("SIGMA_SA_f")),
+      alpha_(matdata.parameters.Get<double>("ALPHA")),
+      model_(matdata.parameters.Get<int>("MODEL")),
+      beta_AS_(matdata.parameters.Get<double>("BETA_AS")),
+      beta_SA_(matdata.parameters.Get<double>("BETA_SA"))
 {
 }
 

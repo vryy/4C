@@ -15,8 +15,10 @@ Mechanics, 2000"
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::Elastic::PAR::VolOgden::VolOgden(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
-    : Parameter(matdata), kappa_(matdata->Get<double>("KAPPA")), beta_(matdata->Get<double>("BETA"))
+Mat::Elastic::PAR::VolOgden::VolOgden(const Core::Mat::PAR::Parameter::Data& matdata)
+    : Parameter(matdata),
+      kappa_(matdata.parameters.Get<double>("KAPPA")),
+      beta_(matdata.parameters.Get<double>("BETA"))
 {
 }
 

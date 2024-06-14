@@ -62,7 +62,7 @@ namespace Mat
     {
      public:
       //! standard constructor
-      ThermoPlasticLinElast(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ThermoPlasticLinElast(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! @name material parameters
       //@{

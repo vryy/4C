@@ -31,15 +31,15 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                          cbert 09/12 |
  *----------------------------------------------------------------------*/
-Mat::PAR::Myocard::Myocard(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::Myocard::Myocard(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      diff1(matdata->Get<double>("DIFF1")),
-      diff2(matdata->Get<double>("DIFF2")),
+      diff1(matdata.parameters.Get<double>("DIFF1")),
+      diff2(matdata.parameters.Get<double>("DIFF2")),
       diff3(0.0),
-      dt_deriv(matdata->Get<double>("PERTUBATION_DERIV")),
-      model(matdata->Get<std::string>("MODEL")),
-      tissue(matdata->Get<std::string>("TISSUE")),
-      time_scale(matdata->Get<double>("TIME_SCALE")),
+      dt_deriv(matdata.parameters.Get<double>("PERTUBATION_DERIV")),
+      model(matdata.parameters.Get<std::string>("MODEL")),
+      tissue(matdata.parameters.Get<std::string>("TISSUE")),
+      time_scale(matdata.parameters.Get<double>("TIME_SCALE")),
       num_gp(0)
 {
 }

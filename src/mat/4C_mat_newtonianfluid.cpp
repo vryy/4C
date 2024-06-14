@@ -21,11 +21,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::NewtonianFluid::NewtonianFluid(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::NewtonianFluid::NewtonianFluid(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      viscosity_(matdata->Get<double>("DYNVISCOSITY")),
-      density_(matdata->Get<double>("DENSITY")),
-      gamma_(matdata->Get<double>("GAMMA"))
+      viscosity_(matdata.parameters.Get<double>("DYNVISCOSITY")),
+      density_(matdata.parameters.Get<double>("DENSITY")),
+      gamma_(matdata.parameters.Get<double>("GAMMA"))
 {
 }
 

@@ -19,12 +19,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Mat::PAR::WeaklyCompressibleFluid::WeaklyCompressibleFluid(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      viscosity_(matdata->Get<double>("VISCOSITY")),
-      refdensity_(matdata->Get<double>("REFDENSITY")),
-      refpressure_(matdata->Get<double>("REFPRESSURE")),
-      comprcoeff_(matdata->Get<double>("COMPRCOEFF"))
+      viscosity_(matdata.parameters.Get<double>("VISCOSITY")),
+      refdensity_(matdata.parameters.Get<double>("REFDENSITY")),
+      refpressure_(matdata.parameters.Get<double>("REFPRESSURE")),
+      comprcoeff_(matdata.parameters.Get<double>("COMPRCOEFF"))
 {
 }
 

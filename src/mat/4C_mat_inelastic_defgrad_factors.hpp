@@ -59,7 +59,7 @@ namespace Mat
     class InelasticDefgradNoGrowth : public Core::Mat::PAR::Parameter
     {
      public:
-      explicit InelasticDefgradNoGrowth(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit InelasticDefgradNoGrowth(const Core::Mat::PAR::Parameter::Data& matdata);
 
       Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; }
     };
@@ -75,7 +75,7 @@ namespace Mat
     class InelasticDefgradScalar : public Core::Mat::PAR::Parameter
     {
      public:
-      explicit InelasticDefgradScalar(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit InelasticDefgradScalar(const Core::Mat::PAR::Parameter::Data& matdata);
 
       Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; }
 
@@ -103,7 +103,7 @@ namespace Mat
     class InelasticDefgradTimeFunct : public Core::Mat::PAR::Parameter
     {
      public:
-      explicit InelasticDefgradTimeFunct(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit InelasticDefgradTimeFunct(const Core::Mat::PAR::Parameter::Data& matdata);
 
       Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; }
 
@@ -125,7 +125,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit InelasticDefgradLinScalar(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit InelasticDefgradLinScalar(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! molar factor that causes growth
       double scalar1_molar_growth_fac() { return scalar1_molar_growth_fac_; }
@@ -146,7 +146,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit InelasticDefgradLinScalarAniso(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit InelasticDefgradLinScalarAniso(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// reference to matrix that determines growth direction
       const Core::LinAlg::Matrix<3, 3>& GrowthDirMat() { return growth_dir_->GrowthDirMat(); }
@@ -166,7 +166,7 @@ namespace Mat
     class InelasticDefgradIntercalFrac : public InelasticDefgradScalar
     {
      public:
-      explicit InelasticDefgradIntercalFrac(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit InelasticDefgradIntercalFrac(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// saturation concentration of material
       double Cmax() const { return c_max_; }
@@ -190,7 +190,7 @@ namespace Mat
     class InelasticDefgradPolyIntercalFrac : public InelasticDefgradIntercalFrac
     {
      public:
-      explicit InelasticDefgradPolyIntercalFrac(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit InelasticDefgradPolyIntercalFrac(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// return value of polynomial at reference intercalation fraction
       double get_polynom_reference_value() const { return polynom_reference_value_; }
@@ -235,7 +235,7 @@ namespace Mat
      public:
       /// standard constructor
       explicit InelasticDefgradPolyIntercalFracAniso(
-          Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+          const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// return reference to matrix that determines growth direction
       const Core::LinAlg::Matrix<3, 3>& GrowthDirMat() const
@@ -257,7 +257,7 @@ namespace Mat
     class InelasticDefgradLinTempIso : public Core::Mat::PAR::Parameter
     {
      public:
-      explicit InelasticDefgradLinTempIso(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit InelasticDefgradLinTempIso(const Core::Mat::PAR::Parameter::Data& matdata);
 
       Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
 

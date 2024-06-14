@@ -34,7 +34,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        Coup13aPow(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        Coup13aPow(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

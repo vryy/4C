@@ -21,17 +21,15 @@ namespace
    protected:
     void SetUp() override
     {
-      // initialize container for material parameters
-      const Teuchos::RCP<Core::Mat::PAR::Material> container =
-          Teuchos::rcp(new Core::Mat::PAR::Material());
-
+      Core::IO::InputParameterContainer container;
       // add material parameters to container
-      container->Add("YOUNG", young_);
-      container->Add("NUE", nu_);
-      container->Add("DENS", rho_);
+      container.Add("YOUNG", young_);
+      container.Add("NUE", nu_);
+      container.Add("DENS", rho_);
 
       // initialize parameter class for StVenantKirchhoff material with container
-      parameters_stvenantkirchhoff_ = Teuchos::rcp(new Mat::PAR::StVenantKirchhoff(container));
+      parameters_stvenantkirchhoff_ = Teuchos::rcp(new Mat::PAR::StVenantKirchhoff(
+          Core::Mat::PAR::Parameter::Data{.parameters = container}));
 
       // initialize stvenantkirchhoff material with parameter class
       stvenantkirchhoff_ =

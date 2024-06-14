@@ -30,12 +30,12 @@ namespace
     template <typename Number>
     const MIXTURE::PAR::RemodelFiberMaterialExponential<Number>* create_material()
     {
-      const auto container = Teuchos::rcp(new Core::Mat::PAR::Material());
-      container->Add("K1", 1.3);
-      container->Add("K2", 1.3);
-      container->Add("COMPRESSION", true);
-      static auto params =
-          std::make_shared<MIXTURE::PAR::RemodelFiberMaterialExponential<Number>>(container);
+      Core::IO::InputParameterContainer container;
+      container.Add("K1", 1.3);
+      container.Add("K2", 1.3);
+      container.Add("COMPRESSION", true);
+      static auto params = std::make_shared<MIXTURE::PAR::RemodelFiberMaterialExponential<Number>>(
+          Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       return params.get();
     }

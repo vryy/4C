@@ -26,7 +26,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        CoupSVK(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        CoupSVK(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

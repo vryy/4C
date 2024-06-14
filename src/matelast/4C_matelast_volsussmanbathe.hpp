@@ -34,7 +34,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        VolSussmanBathe(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        VolSussmanBathe(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

@@ -183,7 +183,7 @@ namespace Mat
     {
      public:
       //! standard constructor
-      CrystalPlasticity(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      CrystalPlasticity(const Core::Mat::PAR::Parameter::Data& matdata);
 
 
       //! create material instance

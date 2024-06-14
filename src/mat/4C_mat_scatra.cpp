@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::ScatraMat::ScatraMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata) : Parameter(matdata)
+Mat::PAR::ScatraMat::ScatraMat(const Core::Mat::PAR::Parameter::Data& matdata) : Parameter(matdata)
 {
   // extract relevant communicator
   const Epetra_Comm& comm = Global::Problem::Instance()->Materials()->GetReadFromProblem() == 0
@@ -33,11 +33,11 @@ Mat::PAR::ScatraMat::ScatraMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata) :
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
-  matparams_.at(diff)->PutScalar(matdata->Get<double>("DIFFUSIVITY"));
-  matparams_.at(reac)->PutScalar(matdata->Get<double>("REACOEFF"));
-  matparams_.at(densific)->PutScalar(matdata->Get<double>("DENSIFICATION"));
+  matparams_.at(diff)->PutScalar(matdata.parameters.Get<double>("DIFFUSIVITY"));
+  matparams_.at(reac)->PutScalar(matdata.parameters.Get<double>("REACOEFF"));
+  matparams_.at(densific)->PutScalar(matdata.parameters.Get<double>("DENSIFICATION"));
   matparams_.at(reacts_to_external_force)
-      ->PutScalar(matdata->Get<bool>("REACTS_TO_EXTERNAL_FORCE"));
+      ->PutScalar(matdata.parameters.Get<bool>("REACTS_TO_EXTERNAL_FORCE"));
 }
 
 

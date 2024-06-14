@@ -30,8 +30,7 @@ namespace MIXTURE
     class MixtureConstituentSolidMaterial : public MIXTURE::PAR::MixtureConstituent
     {
      public:
-      explicit MixtureConstituentSolidMaterial(
-          const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+      explicit MixtureConstituentSolidMaterial(const Core::Mat::PAR::Parameter::Data& matdata);
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 

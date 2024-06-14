@@ -13,8 +13,10 @@ invariant
 
 FOUR_C_NAMESPACE_OPEN
 
-Mat::Elastic::PAR::Coup1Pow::Coup1Pow(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
-    : Parameter(matdata), c_(matdata->Get<double>("C")), d_(matdata->Get<int>("D"))
+Mat::Elastic::PAR::Coup1Pow::Coup1Pow(const Core::Mat::PAR::Parameter::Data& matdata)
+    : Parameter(matdata),
+      c_(matdata.parameters.Get<double>("C")),
+      d_(matdata.parameters.Get<int>("D"))
 {
 }
 

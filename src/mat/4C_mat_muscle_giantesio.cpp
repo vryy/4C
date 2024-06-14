@@ -208,31 +208,31 @@ namespace
   }
 }  // namespace
 
-Mat::PAR::MuscleGiantesio::MuscleGiantesio(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::MuscleGiantesio::MuscleGiantesio(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      alpha_(matdata->Get<double>("ALPHA")),
-      beta_(matdata->Get<double>("BETA")),
-      gamma_(matdata->Get<double>("GAMMA")),
-      kappa_(matdata->Get<double>("KAPPA")),
-      omega0_(matdata->Get<double>("OMEGA0")),
-      Na_(matdata->Get<double>("ACTMUNUM")),
-      muTypesNum_(matdata->Get<int>("MUTYPESNUM")),
-      I_((matdata->Get<std::vector<double>>("INTERSTIM"))),
-      rho_((matdata->Get<std::vector<double>>("FRACACTMU"))),
-      F_((matdata->Get<std::vector<double>>("FTWITCH"))),
-      T_((matdata->Get<std::vector<double>>("TTWITCH"))),
-      lambdaMin_(matdata->Get<double>("LAMBDAMIN")),
-      lambdaOpt_(matdata->Get<double>("LAMBDAOPT")),
-      dotLambdaMMin_(matdata->Get<double>("DOTLAMBDAMIN")),
-      ke_(matdata->Get<double>("KE")),
-      kc_(matdata->Get<double>("KC")),
-      de_(matdata->Get<double>("DE")),
-      dc_(matdata->Get<double>("DC")),
-      actTimesNum_(matdata->Get<int>("ACTTIMESNUM")),
-      actTimes_((matdata->Get<std::vector<double>>("ACTTIMES"))),
-      actIntervalsNum_(matdata->Get<int>("ACTINTERVALSNUM")),
-      actValues_((matdata->Get<std::vector<double>>("ACTVALUES"))),
-      density_(matdata->Get<double>("DENS"))
+      alpha_(matdata.parameters.Get<double>("ALPHA")),
+      beta_(matdata.parameters.Get<double>("BETA")),
+      gamma_(matdata.parameters.Get<double>("GAMMA")),
+      kappa_(matdata.parameters.Get<double>("KAPPA")),
+      omega0_(matdata.parameters.Get<double>("OMEGA0")),
+      Na_(matdata.parameters.Get<double>("ACTMUNUM")),
+      muTypesNum_(matdata.parameters.Get<int>("MUTYPESNUM")),
+      I_((matdata.parameters.Get<std::vector<double>>("INTERSTIM"))),
+      rho_((matdata.parameters.Get<std::vector<double>>("FRACACTMU"))),
+      F_((matdata.parameters.Get<std::vector<double>>("FTWITCH"))),
+      T_((matdata.parameters.Get<std::vector<double>>("TTWITCH"))),
+      lambdaMin_(matdata.parameters.Get<double>("LAMBDAMIN")),
+      lambdaOpt_(matdata.parameters.Get<double>("LAMBDAOPT")),
+      dotLambdaMMin_(matdata.parameters.Get<double>("DOTLAMBDAMIN")),
+      ke_(matdata.parameters.Get<double>("KE")),
+      kc_(matdata.parameters.Get<double>("KC")),
+      de_(matdata.parameters.Get<double>("DE")),
+      dc_(matdata.parameters.Get<double>("DC")),
+      actTimesNum_(matdata.parameters.Get<int>("ACTTIMESNUM")),
+      actTimes_((matdata.parameters.Get<std::vector<double>>("ACTTIMES"))),
+      actIntervalsNum_(matdata.parameters.Get<int>("ACTINTERVALSNUM")),
+      actValues_((matdata.parameters.Get<std::vector<double>>("ACTVALUES"))),
+      density_(matdata.parameters.Get<double>("DENS"))
 {
   // error handling for parameter ranges
   // passive material parameters

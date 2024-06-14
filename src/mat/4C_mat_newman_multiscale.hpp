@@ -25,7 +25,7 @@ namespace Mat
     {
      public:
       //! constructor
-      NewmanMultiScale(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      NewmanMultiScale(const Core::Mat::PAR::Parameter::Data& matdata);
 
 
       //! create instance of Newman multi-scale material

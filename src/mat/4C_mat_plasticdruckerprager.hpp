@@ -41,7 +41,7 @@ namespace Mat
     {
      public:
       //! standard constructor
-      PlasticDruckerPrager(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      PlasticDruckerPrager(const Core::Mat::PAR::Parameter::Data& matdata);
       //! @name material parameters
       //@{
       //! Young's modulus

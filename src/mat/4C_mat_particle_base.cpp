@@ -20,10 +20,10 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-Mat::PAR::ParticleMaterialBase::ParticleMaterialBase(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::ParticleMaterialBase::ParticleMaterialBase(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      initRadius_(matdata->Get<double>("INITRADIUS")),
-      initDensity_(matdata->Get<double>("INITDENSITY"))
+      initRadius_(matdata.parameters.Get<double>("INITRADIUS")),
+      initDensity_(matdata.parameters.Get<double>("INITDENSITY"))
 {
   // empty constructor
 }

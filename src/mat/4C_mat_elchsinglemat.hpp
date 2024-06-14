@@ -73,7 +73,7 @@ namespace Mat
 
      protected:
       //! constructor
-      explicit ElchSingleMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit ElchSingleMat(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! check whether number of parameters is consistent with curve number
       void check_provided_params(int functnr, const std::vector<double>& functparams);

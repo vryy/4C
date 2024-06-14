@@ -18,10 +18,10 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::PAR::ScatraMicroMacroCoupling::ScatraMicroMacroCoupling(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
-    : microfile_((matdata->Get<std::string>("MICROFILE"))),
-      microdisnum_(matdata->Get<int>("MICRODIS_NUM")),
-      A_s_(matdata->Get<double>("A_s"))
+    const Core::Mat::PAR::Parameter::Data& matdata)
+    : microfile_((matdata.parameters.Get<std::string>("MICROFILE"))),
+      microdisnum_(matdata.parameters.Get<int>("MICRODIS_NUM")),
+      A_s_(matdata.parameters.Get<double>("A_s"))
 {
 }
 

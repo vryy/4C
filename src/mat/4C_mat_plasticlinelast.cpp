@@ -39,15 +39,15 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 04/11 |
  *----------------------------------------------------------------------*/
-Mat::PAR::PlasticLinElast::PlasticLinElast(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::PlasticLinElast::PlasticLinElast(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata->Get<double>("YOUNG")),
-      poissonratio_(matdata->Get<double>("NUE")),
-      density_(matdata->Get<double>("DENS")),
-      yield_(matdata->Get<double>("YIELD")),
-      isohard_(matdata->Get<double>("ISOHARD")),
-      kinhard_(matdata->Get<double>("KINHARD")),
-      abstol_(matdata->Get<double>("TOL"))
+      youngs_(matdata.parameters.Get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.Get<double>("NUE")),
+      density_(matdata.parameters.Get<double>("DENS")),
+      yield_(matdata.parameters.Get<double>("YIELD")),
+      isohard_(matdata.parameters.Get<double>("ISOHARD")),
+      kinhard_(matdata.parameters.Get<double>("KINHARD")),
+      abstol_(matdata.parameters.Get<double>("TOL"))
 {
 }
 

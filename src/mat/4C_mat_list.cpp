@@ -20,11 +20,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::MatList::MatList(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::MatList::MatList(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      nummat_(matdata->Get<int>("NUMMAT")),
-      matids_(matdata->Get<std::vector<int>>("MATIDS")),
-      local_((matdata->Get<bool>("LOCAL")))
+      nummat_(matdata.parameters.Get<int>("NUMMAT")),
+      matids_(matdata.parameters.Get<std::vector<int>>("MATIDS")),
+      local_((matdata.parameters.Get<bool>("LOCAL")))
 {
   // check if sizes fit
   if (nummat_ != (int)matids_.size())

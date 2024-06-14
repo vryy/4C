@@ -31,14 +31,14 @@ namespace Mat
      *
      *  \author grill
      *  \date 02/17 */
-    double DetermineShearModulus(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+    double DetermineShearModulus(const Core::Mat::PAR::Parameter::Data& matdata);
 
     /** \brief determine default value for interaction radius from area moment of inertia just in
      * case that no value was explicitly specified
      *
      *  \author grill
      *  \date 02/17 */
-    double DetermineDefaultInteractionRadius(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+    double DetermineDefaultInteractionRadius(const Core::Mat::PAR::Parameter::Data& matdata);
 
     /** \brief determine default value for interaction radius from area moment of inertia just in
      * case that no value was explicitly specified: isotropic case, i.e. only one moment of inertia
@@ -46,7 +46,7 @@ namespace Mat
      *  \author grill
      *  \date 02/17 */
     double DetermineDefaultInteractionRadiusIsotropic(
-        const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        const Core::Mat::PAR::Parameter::Data& matdata);
 
     /*-------------------------------------------------------------------------------------------*/
     /// (generic) constitutive parameters for a beam material based on hyperelastic stored energy
@@ -55,7 +55,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      BeamElastHyperMaterialParameterGeneric(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      BeamElastHyperMaterialParameterGeneric(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name accessors to 'modal' constitutive parameters
       //@{
@@ -118,7 +118,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      BeamReissnerElastHyperMaterialParams(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      BeamReissnerElastHyperMaterialParams(const Core::Mat::PAR::Parameter::Data& matdata);
 
 
       /// @name derived: accessors to 'modal' constitutive parameters
@@ -234,7 +234,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      BeamReissnerElastHyperMaterialParamsByMode(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      BeamReissnerElastHyperMaterialParamsByMode(const Core::Mat::PAR::Parameter::Data& matdata);
 
 
       /// @name derived: accessors to 'modal' constitutive parameters
@@ -323,7 +323,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      BeamKirchhoffElastHyperMaterialParams(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      BeamKirchhoffElastHyperMaterialParams(const Core::Mat::PAR::Parameter::Data& matdata);
 
 
       /// @name derived: accessors to 'modal' constitutive parameters
@@ -424,7 +424,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      BeamKirchhoffElastHyperMaterialParamsByMode(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      BeamKirchhoffElastHyperMaterialParamsByMode(const Core::Mat::PAR::Parameter::Data& matdata);
 
 
       /// @name derived: accessors to 'modal' constitutive parameters
@@ -511,7 +511,7 @@ namespace Mat
      public:
       /// standard constructor
       BeamKirchhoffTorsionFreeElastHyperMaterialParams(
-          Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+          const Core::Mat::PAR::Parameter::Data& matdata);
 
 
       /// @name derived: accessors to 'modal' constitutive parameters
@@ -588,7 +588,7 @@ namespace Mat
      public:
       /// standard constructor
       BeamKirchhoffTorsionFreeElastHyperMaterialParamsByMode(
-          Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+          const Core::Mat::PAR::Parameter::Data& matdata);
 
 
       /// @name derived: accessors to 'modal' constitutive parameters

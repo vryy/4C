@@ -34,7 +34,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        VolPenalty(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        VolPenalty(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

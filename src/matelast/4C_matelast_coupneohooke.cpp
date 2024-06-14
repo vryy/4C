@@ -16,8 +16,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::Elastic::PAR::CoupNeoHooke::CoupNeoHooke(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
-    : Parameter(matdata), youngs_(matdata->Get<double>("YOUNG")), nue_(matdata->Get<double>("NUE"))
+Mat::Elastic::PAR::CoupNeoHooke::CoupNeoHooke(const Core::Mat::PAR::Parameter::Data& matdata)
+    : Parameter(matdata),
+      youngs_(matdata.parameters.Get<double>("YOUNG")),
+      nue_(matdata.parameters.Get<double>("NUE"))
 {
   // Material Constants c and beta
   c_ = youngs_ / (4.0 * (1.0 + nue_));

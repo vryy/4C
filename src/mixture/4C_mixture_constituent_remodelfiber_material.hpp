@@ -30,7 +30,7 @@ namespace MIXTURE
     class RemodelFiberMaterial : public Core::Mat::PAR::Parameter
     {
      public:
-      RemodelFiberMaterial(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+      RemodelFiberMaterial(const Core::Mat::PAR::Parameter::Data& matdata);
       Teuchos::RCP<Core::Mat::Material> create_material() override
       {
         FOUR_C_THROW("This type of material is not created with create_material()");

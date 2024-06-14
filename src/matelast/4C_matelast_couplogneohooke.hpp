@@ -34,7 +34,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        CoupLogNeoHooke(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        CoupLogNeoHooke(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

@@ -30,7 +30,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      HerschelBulkley(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      HerschelBulkley(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

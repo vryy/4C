@@ -18,10 +18,10 @@ FOUR_C_NAMESPACE_OPEN
 
 template <typename T>
 MIXTURE::PAR::RemodelFiberMaterialExponential<T>::RemodelFiberMaterialExponential(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : RemodelFiberMaterial<T>(matdata),
-      params_{
-          matdata->Get<double>("K1"), matdata->Get<double>("K2"), matdata->Get<bool>("COMPRESSION")}
+      params_{matdata.parameters.Get<double>("K1"), matdata.parameters.Get<double>("K2"),
+          matdata.parameters.Get<bool>("COMPRESSION")}
 {
 }
 

@@ -26,15 +26,13 @@ namespace
         : parameters_isoogden_(std::invoke(
               []()
               {
-                // initialize container for material parameters
-                const Teuchos::RCP<Core::Mat::PAR::Material> container =
-                    Teuchos::rcp(new Core::Mat::PAR::Material());
+                Core::IO::InputParameterContainer container;
 
                 // add material parameters to container
-                container->Add("ALPHA", -25.0);
-                container->Add("MUE", 0.8);
+                container.Add("ALPHA", -25.0);
+                container.Add("MUE", 0.8);
 
-                return Mat::Elastic::PAR::IsoOgden(container);
+                return Mat::Elastic::PAR::IsoOgden({.parameters = container});
               })),
           isoogden_(&parameters_isoogden_)
     {

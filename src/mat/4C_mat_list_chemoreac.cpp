@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | standard constructor                                     thon 06/15 |
  *----------------------------------------------------------------------*/
-Mat::PAR::MatListChemoReac::MatListChemoReac(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::MatListChemoReac::MatListChemoReac(const Core::Mat::PAR::Parameter::Data& matdata)
     : MatList(matdata), MatListReactions(matdata), MatListChemotaxis(matdata)
 {
 }

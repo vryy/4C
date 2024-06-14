@@ -14,21 +14,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Core::Mat::PAR::Material::Material(const int id, const Core::Materials::MaterialType type)
-    : InputParameterContainer(), id_(id), type_(type)
-{
-}
-
-Core::Mat::PAR::Material::Material(
-    int id, Core::Materials::MaterialType type, const Core::IO::InputParameterContainer& input_data)
-    : InputParameterContainer(input_data), id_(id), type_(type)
-{
-}
-
-Core::Mat::PAR::Parameter::Parameter(Teuchos::RCP<const Core::Mat::PAR::Material> matdata)
-    : id_(matdata->Id()), type_(matdata->Type()), raw_parameters_(matdata)
-{
-}
+Core::Mat::PAR::Parameter::Parameter(Data data) : data_(std::move(data)) {}
 
 double Core::Mat::PAR::Parameter::GetParameter(int parametername, const int EleId)
 {

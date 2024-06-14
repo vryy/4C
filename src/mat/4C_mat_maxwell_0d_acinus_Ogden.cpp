@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::Maxwell0dAcinusOgden::Maxwell0dAcinusOgden(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::Maxwell0dAcinusOgden::Maxwell0dAcinusOgden(const Core::Mat::PAR::Parameter::Data& matdata)
     : Maxwell0dAcinus(matdata)
 {
 }

@@ -25,7 +25,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit LubricationLaw(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit LubricationLaw(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// compute current viscosity and save it
       virtual void ComputeViscosity(
@@ -48,7 +48,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit LubricationLawConstant(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit LubricationLawConstant(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;
@@ -77,7 +77,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit LubricationLawBarus(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit LubricationLawBarus(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;
@@ -110,7 +110,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit LubricationLawRoeland(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit LubricationLawRoeland(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;

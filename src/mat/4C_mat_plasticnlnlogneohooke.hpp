@@ -55,7 +55,7 @@ namespace Mat
     {
      public:
       //! standard constructor
-      PlasticNlnLogNeoHooke(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      PlasticNlnLogNeoHooke(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! @name material parameters
       //@{

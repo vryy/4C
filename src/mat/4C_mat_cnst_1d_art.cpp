@@ -23,22 +23,23 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::Cnst1dArt::Cnst1dArt(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::Cnst1dArt::Cnst1dArt(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      viscosity_(matdata->Get<double>("VISCOSITY")),
-      density_(matdata->Get<double>("DENS")),
-      young_(matdata->Get<double>("YOUNG")),
-      nue_(matdata->Get<double>("NUE")),
-      th_(matdata->Get<double>("TH")),
-      pext1_(matdata->Get<double>("PEXT1")),
-      pext2_(matdata->Get<double>("PEXT2")),
+      viscosity_(matdata.parameters.Get<double>("VISCOSITY")),
+      density_(matdata.parameters.Get<double>("DENS")),
+      young_(matdata.parameters.Get<double>("YOUNG")),
+      nue_(matdata.parameters.Get<double>("NUE")),
+      th_(matdata.parameters.Get<double>("TH")),
+      pext1_(matdata.parameters.Get<double>("PEXT1")),
+      pext2_(matdata.parameters.Get<double>("PEXT2")),
       viscositylaw_(viscositylaw_undefined),
       diameterlaw_(diameterlaw_undefined),
-      blood_visc_scale_diam_to_microns_(matdata->Get<double>("BLOOD_VISC_SCALE_DIAM_TO_MICRONS")),
-      diameter_law_funct_(matdata->Get<int>("VARYING_DIAMETER_FUNCTION")),
-      collapse_threshold_(matdata->Get<double>("COLLAPSE_THRESHOLD"))
+      blood_visc_scale_diam_to_microns_(
+          matdata.parameters.Get<double>("BLOOD_VISC_SCALE_DIAM_TO_MICRONS")),
+      diameter_law_funct_(matdata.parameters.Get<int>("VARYING_DIAMETER_FUNCTION")),
+      collapse_threshold_(matdata.parameters.Get<double>("COLLAPSE_THRESHOLD"))
 {
-  const std::string& typestring_visc = matdata->Get<std::string>("VISCOSITYLAW");
+  const std::string& typestring_visc = matdata.parameters.Get<std::string>("VISCOSITYLAW");
 
   if (typestring_visc == "CONSTANT")
     viscositylaw_ = viscositylaw_constant;
@@ -48,7 +49,7 @@ Mat::PAR::Cnst1dArt::Cnst1dArt(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     FOUR_C_THROW(
         "wrong type of viscosity law for artery material, only CONSTANT and BLOOD are valid");
 
-  const std::string& typestring_diam = matdata->Get<std::string>("VARYING_DIAMETERLAW");
+  const std::string& typestring_diam = matdata.parameters.Get<std::string>("VARYING_DIAMETERLAW");
 
   if (typestring_diam == "CONSTANT")
     diameterlaw_ = diameterlaw_constant;

@@ -20,9 +20,9 @@ FOUR_C_NAMESPACE_OPEN
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituentElastHyperDamage::MixtureConstituentElastHyperDamage(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureConstituentElastHyperBase(matdata),
-      damage_function_id_(matdata->Get<int>("DAMAGE_FUNCT"))
+      damage_function_id_(matdata.parameters.Get<int>("DAMAGE_FUNCT"))
 {
   // nothing to do here
 }

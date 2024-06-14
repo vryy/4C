@@ -38,7 +38,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      Growth(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      Growth(const Core::Mat::PAR::Parameter::Data& matdata);
 
 
       /// @name material parameters

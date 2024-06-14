@@ -26,7 +26,7 @@ Mat::ParticleMaterialDEMType Mat::ParticleMaterialDEMType::instance_;
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-Mat::PAR::ParticleMaterialDEM::ParticleMaterialDEM(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::ParticleMaterialDEM::ParticleMaterialDEM(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata), ParticleMaterialBase(matdata)
 {
   // empty constructor

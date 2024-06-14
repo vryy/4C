@@ -32,7 +32,7 @@ using vmap = Core::LinAlg::Voigt::IndexMappings;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::PlasticElastHyperVCU::PlasticElastHyperVCU(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::PlasticElastHyperVCU::PlasticElastHyperVCU(const Core::Mat::PAR::Parameter::Data& matdata)
     : Mat::PAR::PlasticElastHyper(matdata)
 {
   // polyconvexity check is just implemented for isotropic hyperlastic materials

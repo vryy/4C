@@ -32,7 +32,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      NewtonianFluid(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      NewtonianFluid(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

@@ -46,7 +46,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      ScalarDepInterp(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ScalarDepInterp(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

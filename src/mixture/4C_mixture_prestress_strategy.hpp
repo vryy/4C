@@ -69,7 +69,7 @@ namespace MIXTURE
 
      public:
       /// constructor
-      explicit PrestressStrategy(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+      explicit PrestressStrategy(const Core::Mat::PAR::Parameter::Data& matdata)
           : Parameter(matdata)
       {
       }

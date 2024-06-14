@@ -39,7 +39,7 @@ namespace Mat
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      explicit Mixture(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+      explicit Mixture(const Core::Mat::PAR::Parameter::Data& matdata);
 
 
       /// @name material parameters

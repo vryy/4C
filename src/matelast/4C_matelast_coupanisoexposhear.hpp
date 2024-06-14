@@ -103,7 +103,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        explicit CoupAnisoExpoShear(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        explicit CoupAnisoExpoShear(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand

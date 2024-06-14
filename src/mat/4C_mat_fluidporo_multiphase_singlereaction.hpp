@@ -46,7 +46,7 @@ namespace Mat
 
      public:
       /// standard constructor
-      FluidPoroSingleReaction(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      FluidPoroSingleReaction(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;
@@ -106,7 +106,7 @@ namespace Mat
      private:
       /// returns the enum of the current coupling type
       Mat::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling set_coupling_type(
-          Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+          const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! templated internal Initialize implementation
       template <int dim>

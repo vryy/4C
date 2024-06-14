@@ -18,11 +18,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-Mat::PAR::StVenantKirchhoff::StVenantKirchhoff(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::StVenantKirchhoff::StVenantKirchhoff(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata->Get<double>("YOUNG")),
-      poissonratio_(matdata->Get<double>("NUE")),
-      density_(matdata->Get<double>("DENS"))
+      youngs_(matdata.parameters.Get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.Get<double>("NUE")),
+      density_(matdata.parameters.Get<double>("DENS"))
 {
   if (youngs_ <= 0.) FOUR_C_THROW("Young's modulus must be greater zero");
   if (poissonratio_ >= 0.5 || poissonratio_ < -1.)

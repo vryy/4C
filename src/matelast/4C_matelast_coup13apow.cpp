@@ -13,11 +13,11 @@ and the Jacobi determinant
 
 FOUR_C_NAMESPACE_OPEN
 
-Mat::Elastic::PAR::Coup13aPow::Coup13aPow(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+Mat::Elastic::PAR::Coup13aPow::Coup13aPow(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      c_(matdata->Get<double>("C")),
-      d_(matdata->Get<int>("D")),
-      a_(matdata->Get<double>("A"))
+      c_(matdata.parameters.Get<double>("C")),
+      d_(matdata.parameters.Get<int>("D")),
+      a_(matdata.parameters.Get<double>("A"))
 {
 }
 

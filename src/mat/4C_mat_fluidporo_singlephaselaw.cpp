@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Mat::PAR::FluidPoroPhaseLaw::FluidPoroPhaseLaw(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::FluidPoroPhaseLaw::FluidPoroPhaseLaw(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata)
 {
   return;
@@ -80,12 +80,12 @@ Mat::PAR::FluidPoroPhaseLaw* Mat::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(int pha
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroPhaseLawLinear::FluidPoroPhaseLawLinear(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : FluidPoroPhaseLaw(matdata),
-      numdof_(matdata->Get<int>("NUMDOF")),
-      presids_(matdata->Get<std::vector<int>>("PRESCOEFF")),
-      reltensions_(matdata->Get<double>("RELTENSION")),
-      sat0_(matdata->Get<double>("SATURATION_0"))
+      numdof_(matdata.parameters.Get<int>("NUMDOF")),
+      presids_(matdata.parameters.Get<std::vector<int>>("PRESCOEFF")),
+      reltensions_(matdata.parameters.Get<double>("RELTENSION")),
+      sat0_(matdata.parameters.Get<double>("SATURATION_0"))
 {
   // check if sizes fit
   if (numdof_ != (int)presids_.size())
@@ -169,13 +169,13 @@ double Mat::PAR::FluidPoroPhaseLawLinear::EvaluateGenPressure(double saturation)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroPhaseLawTangent::FluidPoroPhaseLawTangent(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : FluidPoroPhaseLaw(matdata),
-      numdof_(matdata->Get<int>("NUMDOF")),
-      presids_(matdata->Get<std::vector<int>>("PRESCOEFF")),
-      reltensions_(matdata->Get<double>("RELTENSION")),
-      exp_(matdata->Get<double>("EXP")),
-      sat0_(matdata->Get<double>("SATURATION_0"))
+      numdof_(matdata.parameters.Get<int>("NUMDOF")),
+      presids_(matdata.parameters.Get<std::vector<int>>("PRESCOEFF")),
+      reltensions_(matdata.parameters.Get<double>("RELTENSION")),
+      exp_(matdata.parameters.Get<double>("EXP")),
+      sat0_(matdata.parameters.Get<double>("SATURATION_0"))
 {
   // check if sizes fit
   if (numdof_ != (int)presids_.size())
@@ -282,12 +282,12 @@ double Mat::PAR::FluidPoroPhaseLawTangent::EvaluateGenPressure(double saturation
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroPhaseLawByFunction::FluidPoroPhaseLawByFunction(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : FluidPoroPhaseLaw(matdata),
-      numdof_(matdata->Get<int>("NUMDOF")),
-      presids_(matdata->Get<std::vector<int>>("PRESCOEFF")),
-      functionID_saturation_(matdata->Get<int>("FUNCTSAT")),
-      functionID_pressure_(matdata->Get<int>("FUNCTPRES"))
+      numdof_(matdata.parameters.Get<int>("NUMDOF")),
+      presids_(matdata.parameters.Get<std::vector<int>>("PRESCOEFF")),
+      functionID_saturation_(matdata.parameters.Get<int>("FUNCTSAT")),
+      functionID_pressure_(matdata.parameters.Get<int>("FUNCTPRES"))
 {
   // check if sizes fit
   if (numdof_ != (int)presids_.size())

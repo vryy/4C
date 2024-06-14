@@ -30,7 +30,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      Sutherland(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      Sutherland(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

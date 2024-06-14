@@ -19,21 +19,21 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-Mat::PAR::CrosslinkerMat::CrosslinkerMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::CrosslinkerMat::CrosslinkerMat(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      link_element_matnum_(matdata->Get<double>("MATNUM")),
-      jointtype_(
-          Inpar::BEAMINTERACTION::String2JointType((matdata->Get<std::string>("JOINTTYPE")))),
-      linkinglength_(matdata->Get<double>("LINKINGLENGTH")),
-      linkinglengthtol_(matdata->Get<double>("LINKINGLENGTHTOL")),
-      linkingangle_(matdata->Get<double>("LINKINGANGLE")),
-      linkingangletol_(matdata->Get<double>("LINKINGANGLETOL")),
-      k_on_(matdata->Get<double>("K_ON")),
-      k_off_(matdata->Get<double>("K_OFF")),
-      deltabelleq_(matdata->Get<double>("DELTABELLEQ")),
-      nobonddistsphere(matdata->Get<double>("NOBONDDISTSPHERE")),
-      linkertype_(
-          Inpar::BEAMINTERACTION::String2CrosslinkerType((matdata->Get<std::string>("TYPE"))))
+      link_element_matnum_(matdata.parameters.Get<double>("MATNUM")),
+      jointtype_(Inpar::BEAMINTERACTION::String2JointType(
+          (matdata.parameters.Get<std::string>("JOINTTYPE")))),
+      linkinglength_(matdata.parameters.Get<double>("LINKINGLENGTH")),
+      linkinglengthtol_(matdata.parameters.Get<double>("LINKINGLENGTHTOL")),
+      linkingangle_(matdata.parameters.Get<double>("LINKINGANGLE")),
+      linkingangletol_(matdata.parameters.Get<double>("LINKINGANGLETOL")),
+      k_on_(matdata.parameters.Get<double>("K_ON")),
+      k_off_(matdata.parameters.Get<double>("K_OFF")),
+      deltabelleq_(matdata.parameters.Get<double>("DELTABELLEQ")),
+      nobonddistsphere(matdata.parameters.Get<double>("NOBONDDISTSPHERE")),
+      linkertype_(Inpar::BEAMINTERACTION::String2CrosslinkerType(
+          (matdata.parameters.Get<std::string>("TYPE"))))
 {
   if (link_element_matnum_ < 0)
     FOUR_C_THROW(

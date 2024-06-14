@@ -33,8 +33,7 @@ namespace MIXTURE
     class MixtureConstituentRemodelFiberExpl : public MIXTURE::PAR::MixtureConstituent
     {
      public:
-      explicit MixtureConstituentRemodelFiberExpl(
-          const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+      explicit MixtureConstituentRemodelFiberExpl(const Core::Mat::PAR::Parameter::Data& matdata);
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 

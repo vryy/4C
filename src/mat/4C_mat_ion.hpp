@@ -31,7 +31,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      Ion(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      Ion(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

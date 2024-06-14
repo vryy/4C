@@ -25,10 +25,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::ConstantPrestressStrategy::ConstantPrestressStrategy(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : PrestressStrategy(matdata), prestretch_()
 {
-  std::copy_n(matdata->Get<std::vector<double>>("PRESTRETCH").begin(), 9, prestretch_.begin());
+  std::copy_n(
+      matdata.parameters.Get<std::vector<double>>("PRESTRETCH").begin(), 9, prestretch_.begin());
 }
 
 std::unique_ptr<MIXTURE::PrestressStrategy>

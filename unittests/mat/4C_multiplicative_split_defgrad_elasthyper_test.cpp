@@ -114,19 +114,20 @@ namespace
 
       // create MultiplicativeSplitDefgrad_ElastHyper object;
       // initialize container for material parameters first
-      auto multiplicativeSplitDefgradData = Teuchos::rcp(new Core::Mat::PAR::Material());
+      Core::IO::InputParameterContainer multiplicativeSplitDefgradData;
 
-      multiplicativeSplitDefgradData->Add("NUMMATEL", 1);
+      multiplicativeSplitDefgradData.Add("NUMMATEL", 1);
       std::vector<int> matids_elastic = {matid_elastic};
-      multiplicativeSplitDefgradData->Add("MATIDSEL", matids_elastic);
-      multiplicativeSplitDefgradData->Add("NUMFACINEL", 1);
+      multiplicativeSplitDefgradData.Add("MATIDSEL", matids_elastic);
+      multiplicativeSplitDefgradData.Add("NUMFACINEL", 1);
       std::vector<int> inelastic_defgrad_factor_ids = {inelastic_defgrad_id};
-      multiplicativeSplitDefgradData->Add("INELDEFGRADFACIDS", inelastic_defgrad_factor_ids);
-      multiplicativeSplitDefgradData->Add("DENS", 1.32e1);
+      multiplicativeSplitDefgradData.Add("INELDEFGRADFACIDS", inelastic_defgrad_factor_ids);
+      multiplicativeSplitDefgradData.Add("DENS", 1.32e1);
 
       // get pointer to parameter class
-      parameters_multiplicative_split_defgrad_ = Teuchos::rcp(
-          new Mat::PAR::MultiplicativeSplitDefgradElastHyper(multiplicativeSplitDefgradData));
+      parameters_multiplicative_split_defgrad_ =
+          Teuchos::rcp(new Mat::PAR::MultiplicativeSplitDefgradElastHyper(
+              Core::Mat::PAR::Parameter::Data{.parameters = multiplicativeSplitDefgradData}));
 
       // setup pointer to MultiplicativeSplitDefgrad_ElastHyper object
       multiplicative_split_defgrad_ = Teuchos::rcp(new Mat::MultiplicativeSplitDefgradElastHyper(
@@ -373,7 +374,8 @@ namespace
 
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateCauchyNDirAndDerivatives)
   {
-    // we need to first set this dummy concentration. otherwise the call below results in a segfault
+    // we need to first set this dummy concentration. otherwise the call below results in a
+    // segfault
     const double dummy_conc(-1.0);
     set_concentration_to_inelastic_material(dummy_conc);
 
@@ -476,7 +478,8 @@ namespace
 
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateLinearizationOD)
   {
-    // we need to first set this dummy concentration. otherwise the call below results in a segfault
+    // we need to first set this dummy concentration. otherwise the call below results in a
+    // segfault
     const double dummy_conc(-1.0);
     set_concentration_to_inelastic_material(dummy_conc);
 

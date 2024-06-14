@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::MixtureGrowthStrategy::MixtureGrowthStrategy(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Core::Mat::PAR::Parameter(matdata)
 {
 }

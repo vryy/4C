@@ -19,15 +19,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::HerschelBulkley::HerschelBulkley(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::HerschelBulkley::HerschelBulkley(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      tau0_(matdata->Get<double>("TAU_0")),
-      kfac_(matdata->Get<double>("KFAC")),
-      nexp_(matdata->Get<double>("NEXP")),
-      mexp_(matdata->Get<double>("MEXP")),
-      lolimshearrate_(matdata->Get<double>("LOLIMSHEARRATE")),
-      uplimshearrate_(matdata->Get<double>("UPLIMSHEARRATE")),
-      density_(matdata->Get<double>("DENSITY"))
+      tau0_(matdata.parameters.Get<double>("TAU_0")),
+      kfac_(matdata.parameters.Get<double>("KFAC")),
+      nexp_(matdata.parameters.Get<double>("NEXP")),
+      mexp_(matdata.parameters.Get<double>("MEXP")),
+      lolimshearrate_(matdata.parameters.Get<double>("LOLIMSHEARRATE")),
+      uplimshearrate_(matdata.parameters.Get<double>("UPLIMSHEARRATE")),
+      density_(matdata.parameters.Get<double>("DENSITY"))
 {
 }
 

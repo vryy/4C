@@ -44,7 +44,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      FluidPoroSinglePhase(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      FluidPoroSinglePhase(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;
@@ -81,7 +81,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      FluidPoroSingleVolFrac(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      FluidPoroSingleVolFrac(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;
@@ -120,7 +120,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      FluidPoroVolFracPressure(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      FluidPoroVolFracPressure(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;

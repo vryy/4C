@@ -32,7 +32,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      WeaklyCompressibleFluid(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      WeaklyCompressibleFluid(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

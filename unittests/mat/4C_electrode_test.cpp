@@ -22,8 +22,7 @@ namespace
     void SetUp() override
     {
       // initialize container for material parameters
-      const Teuchos::RCP<Core::Mat::PAR::Material> container =
-          Teuchos::rcp(new Core::Mat::PAR::Material());
+      Core::IO::InputParameterContainer container;
 
       // create dummy elch parameter list and add dummy value for gas constant
       auto parameter_list = Teuchos::rcp(new Teuchos::ParameterList());
@@ -34,37 +33,38 @@ namespace
       Global::Problem::Instance()->setParameterList(parameter_list);
 
       // add dummy parameters to container
-      container->Add("DIFF_COEF_CONC_DEP_FUNCT", 0);
-      container->Add("DIFF_COEF_TEMP_SCALE_FUNCT", 0);
-      container->Add("DIFF_PARA_NUM", 0);
-      container->Add("DIFF_PARA", std::vector<double>(0, 0.0));
-      container->Add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM", 0);
-      container->Add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
-      container->Add("COND_CONC_DEP_FUNCT", 0);
-      container->Add("COND_TEMP_SCALE_FUNCT", 0);
-      container->Add("COND_PARA_NUM", 0);
-      container->Add("COND_PARA", std::vector<double>(0, 0.0));
-      container->Add("COND_TEMP_SCALE_FUNCT_PARA_NUM", 0);
-      container->Add("COND_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
+      container.Add("DIFF_COEF_CONC_DEP_FUNCT", 0);
+      container.Add("DIFF_COEF_TEMP_SCALE_FUNCT", 0);
+      container.Add("DIFF_PARA_NUM", 0);
+      container.Add("DIFF_PARA", std::vector<double>(0, 0.0));
+      container.Add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM", 0);
+      container.Add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
+      container.Add("COND_CONC_DEP_FUNCT", 0);
+      container.Add("COND_TEMP_SCALE_FUNCT", 0);
+      container.Add("COND_PARA_NUM", 0);
+      container.Add("COND_PARA", std::vector<double>(0, 0.0));
+      container.Add("COND_TEMP_SCALE_FUNCT_PARA_NUM", 0);
+      container.Add("COND_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
 
       // obtain half-cell open-circuit equilibrium potential from cubic spline interpolation of
       // *.csv data points
-      container->Add("OCP_MODEL", std::string("csv"));
+      container.Add("OCP_MODEL", std::string("csv"));
 
       // add cathode parameters to container according to master thesis by Alexander Rupp (2017)
-      container->Add("C_MAX", 4793.3);
-      container->Add("CHI_MAX", 1.0);
-      container->Add("OCP_PARA_NUM", 0);
-      container->Add("OCP_PARA", std::vector<double>(0, 0.0));
+      container.Add("C_MAX", 4793.3);
+      container.Add("CHI_MAX", 1.0);
+      container.Add("OCP_PARA_NUM", 0);
+      container.Add("OCP_PARA", std::vector<double>(0, 0.0));
       std::string ocpcsv(__FILE__);
       ocpcsv.replace(ocpcsv.end() - 3, ocpcsv.end(), "csv");
 
-      container->Add("OCP_CSV", ocpcsv);
-      container->Add("X_MIN", -1.0);
-      container->Add("X_MAX", -1.0);
+      container.Add("OCP_CSV", ocpcsv);
+      container.Add("X_MIN", -1.0);
+      container.Add("X_MAX", -1.0);
 
       // initialize parameter class for cathode material
-      parameters_cathode_csv_ = Teuchos::rcp(new Mat::PAR::Electrode(container));
+      parameters_cathode_csv_ = Teuchos::rcp(
+          new Mat::PAR::Electrode(Core::Mat::PAR::Parameter::Data{.parameters = container}));
 
       // initialize cathode material
       cathode_csv_ = Teuchos::rcp(new Mat::Electrode(parameters_cathode_csv_.get()));
@@ -79,12 +79,12 @@ namespace
 
       // choose semi-empirical Redlich-Kister expansion to model half-cell open-circuit equilibrium
       // potential
-      container->Add("OCP_MODEL", std::string("Redlich-Kister"));
+      container.Add("OCP_MODEL", std::string("Redlich-Kister"));
 
       // add anode parameters to container according to Goldin et al., Electrochimica Acta 64 (2012)
       // 118-129
-      container->Add("C_MAX", 16.1);
-      container->Add("OCP_PARA_NUM", 16);
+      container.Add("C_MAX", 16.1);
+      container.Add("OCP_PARA_NUM", 16);
       std::vector<double> ocp_para(16, 0.0);
       ocp_para[0] = 1.1652e4;
       ocp_para[1] = -3.268e3;
@@ -102,13 +102,14 @@ namespace
       ocp_para[13] = 3.956e4;
       ocp_para[14] = 9.302e4;
       ocp_para[15] = -3.280e4;
-      container->Add("OCP_PARA", ocp_para);
-      container->Add("OCP_CSV", std::string(""));
-      container->Add("X_MIN", -1.0);
-      container->Add("X_MAX", -1.0);
+      container.Add("OCP_PARA", ocp_para);
+      container.Add("OCP_CSV", std::string(""));
+      container.Add("X_MIN", -1.0);
+      container.Add("X_MAX", -1.0);
 
       // initialize parameter class for anode material
-      parameters_anode_redlichkister_ = Teuchos::rcp(new Mat::PAR::Electrode(container));
+      parameters_anode_redlichkister_ = Teuchos::rcp(
+          new Mat::PAR::Electrode(Core::Mat::PAR::Parameter::Data{.parameters = container}));
 
       // initialize anode material
       anode_redlichkister_ =
@@ -126,8 +127,8 @@ namespace
 
       // add cathode parameters to container according to Goldin et al., Electrochimica Acta 64
       // (2012) 118-129
-      container->Add("C_MAX", 23.9);
-      container->Add("OCP_PARA_NUM", 21);
+      container.Add("C_MAX", 23.9);
+      container.Add("OCP_PARA_NUM", 21);
       ocp_para.resize(21, 0.0);
       ocp_para[0] = 3.954616e5;
       ocp_para[1] = -7.676e4;
@@ -150,13 +151,14 @@ namespace
       ocp_para[18] = -1.599e5;
       ocp_para[19] = 6.658e5;
       ocp_para[20] = -1.084e6;
-      container->Add("OCP_PARA", ocp_para);
-      container->Add("OCP_CSV", std::string(""));
-      container->Add("X_MIN", -1.0);
-      container->Add("X_MAX", -1.0);
+      container.Add("OCP_PARA", ocp_para);
+      container.Add("OCP_CSV", std::string(""));
+      container.Add("X_MIN", -1.0);
+      container.Add("X_MAX", -1.0);
 
       // initialize parameter class for cathode material
-      parameters_cathode_redlichkister_ = Teuchos::rcp(new Mat::PAR::Electrode(container));
+      parameters_cathode_redlichkister_ = Teuchos::rcp(
+          new Mat::PAR::Electrode(Core::Mat::PAR::Parameter::Data{.parameters = container}));
 
       // initialize cathode material
       cathode_redlichkister_ =
@@ -175,24 +177,25 @@ namespace
 
       // choose half-cell open-circuit equilibrium potential according to Taralov, Taralova, Popov,
       // Iliev, Latz, and Zausch (2012)
-      container->Add("OCP_MODEL", std::string("Taralov"));
+      container.Add("OCP_MODEL", std::string("Taralov"));
 
       // add anode parameters to container according to Taralov, Taralova, Popov, Iliev, Latz, and
       // Zausch (2012)
-      container->Add("C_MAX", 24.681);
-      container->Add("OCP_PARA_NUM", 13);
+      container.Add("C_MAX", 24.681);
+      container.Add("OCP_PARA_NUM", 13);
       ocp_para.resize(13, 0.0);
       std::fill(ocp_para.begin(), ocp_para.end(), 0.0);
       ocp_para[0] = -0.132;
       ocp_para[10] = 1.41;
       ocp_para[11] = -3.52;
-      container->Add("OCP_PARA", ocp_para);
-      container->Add("OCP_CSV", std::string(""));
-      container->Add("X_MIN", -1.0);
-      container->Add("X_MAX", -1.0);
+      container.Add("OCP_PARA", ocp_para);
+      container.Add("OCP_CSV", std::string(""));
+      container.Add("X_MIN", -1.0);
+      container.Add("X_MAX", -1.0);
 
       // initialize parameter class for anode material
-      parameters_anode_taralov_ = Teuchos::rcp(new Mat::PAR::Electrode(container));
+      parameters_anode_taralov_ = Teuchos::rcp(
+          new Mat::PAR::Electrode(Core::Mat::PAR::Parameter::Data{.parameters = container}));
 
       // initialize anode material
       anode_taralov_ = Teuchos::rcp(new Mat::Electrode(parameters_anode_taralov_.get()));
@@ -206,7 +209,7 @@ namespace
 
       // add cathode parameters to container according to Taralov, Taralova, Popov, Iliev, Latz, and
       // Zausch (2012)
-      container->Add("C_MAX", 23.671);
+      container.Add("C_MAX", 23.671);
       ocp_para[0] = 4.06279;
       ocp_para[1] = 0.0677504;
       ocp_para[2] = -21.8502;
@@ -220,13 +223,14 @@ namespace
       ocp_para[10] = 0.01;
       ocp_para[11] = -200.0;
       ocp_para[12] = -0.19;
-      container->Add("OCP_PARA", ocp_para);
-      container->Add("OCP_CSV", std::string(""));
-      container->Add("X_MIN", -1.0);
-      container->Add("X_MAX", -1.0);
+      container.Add("OCP_PARA", ocp_para);
+      container.Add("OCP_CSV", std::string(""));
+      container.Add("X_MIN", -1.0);
+      container.Add("X_MAX", -1.0);
 
       // initialize parameter class for cathode material
-      parameters_cathode_taralov_ = Teuchos::rcp(new Mat::PAR::Electrode(container));
+      parameters_cathode_taralov_ = Teuchos::rcp(
+          new Mat::PAR::Electrode(Core::Mat::PAR::Parameter::Data{.parameters = container}));
 
       // initialize cathode material
       cathode_taralov_ = Teuchos::rcp(new Mat::Electrode(parameters_cathode_taralov_.get()));
@@ -239,20 +243,21 @@ namespace
       concentrations_cathode_taralov_[2] = 21.3039;  // cathode concentration at 17% state of charge
 
       // choose polynomial half-cell open-circuit equilibrium potential
-      container->Add("OCP_MODEL", std::string("Polynomial"));
+      container.Add("OCP_MODEL", std::string("Polynomial"));
 
       // add parameters for lithium metal anode to container
-      container->Add("C_MAX", 100000.0);
-      container->Add("OCP_PARA_NUM", 1);
+      container.Add("C_MAX", 100000.0);
+      container.Add("OCP_PARA_NUM", 1);
       ocp_para.resize(1, 0.0);
       ocp_para[0] = 0.0;
-      container->Add("OCP_PARA", ocp_para);
-      container->Add("OCP_CSV", std::string(""));
-      container->Add("X_MIN", -1.0);
-      container->Add("X_MAX", -1.0);
+      container.Add("OCP_PARA", ocp_para);
+      container.Add("OCP_CSV", std::string(""));
+      container.Add("X_MIN", -1.0);
+      container.Add("X_MAX", -1.0);
 
       // initialize parameter class for anode material
-      parameters_anode_polynomial_ = Teuchos::rcp(new Mat::PAR::Electrode(container));
+      parameters_anode_polynomial_ = Teuchos::rcp(
+          new Mat::PAR::Electrode(Core::Mat::PAR::Parameter::Data{.parameters = container}));
 
       // initialize anode material
       anode_polynomial_ = Teuchos::rcp(new Mat::Electrode(parameters_anode_polynomial_.get()));
@@ -265,21 +270,22 @@ namespace
 
       // add cathode parameters to container according to Ji et al., Journal of The Electrochemical
       // Society 160 (4) (2013) A636-A649
-      container->Add("C_MAX", 4793.3);
-      container->Add("OCP_PARA_NUM", 5);
+      container.Add("C_MAX", 4793.3);
+      container.Add("OCP_PARA_NUM", 5);
       ocp_para.resize(5, 0.0);
       ocp_para[0] = 4.563;
       ocp_para[1] = 2.595;
       ocp_para[2] = -16.77;
       ocp_para[3] = 23.88;
       ocp_para[4] = -10.72;
-      container->Add("OCP_PARA", ocp_para);
-      container->Add("OCP_CSV", std::string(""));
-      container->Add("X_MIN", 0.3);
-      container->Add("X_MAX", 1.0);
+      container.Add("OCP_PARA", ocp_para);
+      container.Add("OCP_CSV", std::string(""));
+      container.Add("X_MIN", 0.3);
+      container.Add("X_MAX", 1.0);
 
       // initialize parameter class for cathode material
-      parameters_cathode_polynomial_ = Teuchos::rcp(new Mat::PAR::Electrode(container));
+      parameters_cathode_polynomial_ = Teuchos::rcp(
+          new Mat::PAR::Electrode(Core::Mat::PAR::Parameter::Data{.parameters = container}));
 
       // initialize cathode material
       cathode_polynomial_ = Teuchos::rcp(new Mat::Electrode(parameters_cathode_polynomial_.get()));

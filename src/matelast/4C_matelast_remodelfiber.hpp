@@ -304,7 +304,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        RemodelFiber(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        RemodelFiber(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// length of material list
         const int nummat_;

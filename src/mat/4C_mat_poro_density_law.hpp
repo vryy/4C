@@ -25,7 +25,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit PoroDensityLaw(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+      explicit PoroDensityLaw(const Core::Mat::PAR::Parameter::Data& matdata)
           : Parameter(matdata){};
 
       //! compute derivative of density w.r.t. pressure
@@ -67,7 +67,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit PoroDensityLawConstant(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+      explicit PoroDensityLawConstant(const Core::Mat::PAR::Parameter::Data& matdata)
           : PoroDensityLaw(matdata){};
 
       /// create material instance of matching type with my parameters
@@ -124,7 +124,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit PoroDensityLawExp(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit PoroDensityLawExp(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;

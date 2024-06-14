@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-Mat::PAR::AAAneohooke::AAAneohooke(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::AAAneohooke::AAAneohooke(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata)
 {
   Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::Instance()->GetCommunicators()->LocalComm()));
@@ -36,10 +36,10 @@ Mat::PAR::AAAneohooke::AAAneohooke(Teuchos::RCP<Core::Mat::PAR::Material> matdat
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
-  matparams_.at(young)->PutScalar(matdata->Get<double>("YOUNG"));
-  matparams_.at(nue)->PutScalar(matdata->Get<double>("NUE"));
-  matparams_.at(beta)->PutScalar(matdata->Get<double>("BETA"));
-  matparams_.at(density)->PutScalar(matdata->Get<double>("DENS"));
+  matparams_.at(young)->PutScalar(matdata.parameters.Get<double>("YOUNG"));
+  matparams_.at(nue)->PutScalar(matdata.parameters.Get<double>("NUE"));
+  matparams_.at(beta)->PutScalar(matdata.parameters.Get<double>("BETA"));
+  matparams_.at(density)->PutScalar(matdata.parameters.Get<double>("DENS"));
 }
 
 

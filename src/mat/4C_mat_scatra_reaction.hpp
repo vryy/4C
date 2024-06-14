@@ -237,13 +237,13 @@ namespace Mat
     {
      public:
       /// standard constructor
-      ScatraReactionMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ScatraReactionMat(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// returns the enum of the current coupling type
-      Mat::PAR::ReactionCoupling set_coupling_type(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      Mat::PAR::ReactionCoupling set_coupling_type(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// Initialize
       void Initialize();

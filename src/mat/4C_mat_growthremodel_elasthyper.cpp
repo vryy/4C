@@ -36,27 +36,27 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Mat::PAR::GrowthRemodelElastHyper::GrowthRemodelElastHyper(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      nummat_remodelfiber_(matdata->Get<int>("NUMMATRF")),
-      nummat_elastiniso_(matdata->Get<int>("NUMMATEL3D")),
-      nummat_elastinmem_(matdata->Get<int>("NUMMATEL2D")),
-      matids_remodelfiber_(matdata->Get<std::vector<int>>("MATIDSRF")),
-      matids_elastiniso_(matdata->Get<std::vector<int>>("MATIDSEL3D")),
-      matids_elastinmem_(matdata->Get<std::vector<int>>("MATIDSEL2D")),
-      matid_penalty_(matdata->Get<int>("MATIDELPENALTY")),
-      init_w_el_(matdata->Get<double>("ELMASSFRAC")),
-      density_(matdata->Get<double>("DENS")),
-      lamb_prestretch_cir_(matdata->Get<double>("PRESTRETCHELASTINCIR")),
-      lamb_prestretch_ax_(matdata->Get<double>("PRESTRETCHELASTINAX")),
-      t_ref_(matdata->Get<double>("THICKNESS")),
-      p_mean_(matdata->Get<double>("MEANPRESSURE")),
-      ri_(matdata->Get<double>("RADIUS")),
-      damage_(matdata->Get<int>("DAMAGE")),
-      growthtype_(matdata->Get<int>("GROWTHTYPE")),
-      loctimeint_(matdata->Get<int>("LOCTIMEINT")),
-      membrane_(matdata->Get<int>("MEMBRANE")),
-      cylinder_(matdata->Get<int>("CYLINDER"))
+      nummat_remodelfiber_(matdata.parameters.Get<int>("NUMMATRF")),
+      nummat_elastiniso_(matdata.parameters.Get<int>("NUMMATEL3D")),
+      nummat_elastinmem_(matdata.parameters.Get<int>("NUMMATEL2D")),
+      matids_remodelfiber_(matdata.parameters.Get<std::vector<int>>("MATIDSRF")),
+      matids_elastiniso_(matdata.parameters.Get<std::vector<int>>("MATIDSEL3D")),
+      matids_elastinmem_(matdata.parameters.Get<std::vector<int>>("MATIDSEL2D")),
+      matid_penalty_(matdata.parameters.Get<int>("MATIDELPENALTY")),
+      init_w_el_(matdata.parameters.Get<double>("ELMASSFRAC")),
+      density_(matdata.parameters.Get<double>("DENS")),
+      lamb_prestretch_cir_(matdata.parameters.Get<double>("PRESTRETCHELASTINCIR")),
+      lamb_prestretch_ax_(matdata.parameters.Get<double>("PRESTRETCHELASTINAX")),
+      t_ref_(matdata.parameters.Get<double>("THICKNESS")),
+      p_mean_(matdata.parameters.Get<double>("MEANPRESSURE")),
+      ri_(matdata.parameters.Get<double>("RADIUS")),
+      damage_(matdata.parameters.Get<int>("DAMAGE")),
+      growthtype_(matdata.parameters.Get<int>("GROWTHTYPE")),
+      loctimeint_(matdata.parameters.Get<int>("LOCTIMEINT")),
+      membrane_(matdata.parameters.Get<int>("MEMBRANE")),
+      cylinder_(matdata.parameters.Get<int>("CYLINDER"))
 {
   // check if sizes fit
   if (nummat_remodelfiber_ != (int)matids_remodelfiber_.size())

@@ -88,6 +88,7 @@ Core::IO::DatFileUtils::read_matching_lines_in_section(Core::IO::DatFileReader& 
         return;
       }
     }
+    // None of the possible lines matched.
     unparsed_lines.emplace_back(input_line);
   };
 

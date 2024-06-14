@@ -177,9 +177,8 @@ namespace
       Core::Materials::MaterialType type, const Core::IO::InputParameterContainer& input_data)
   {
     static_assert(std::is_base_of_v<Core::Mat::PAR::Parameter, MaterialParameter>);
-    auto legacy_material_wrapper =
-        Teuchos::make_rcp<Core::Mat::PAR::Material>(id, type, input_data);
-    return std::make_unique<MaterialParameter>(legacy_material_wrapper);
+    return std::make_unique<MaterialParameter>(
+        Core::Mat::PAR::Parameter::Data{.id = id, .type = type, .parameters = input_data});
   }
 }  // namespace
 

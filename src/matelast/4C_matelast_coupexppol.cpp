@@ -14,11 +14,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::Elastic::PAR::CoupExpPol::CoupExpPol(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+Mat::Elastic::PAR::CoupExpPol::CoupExpPol(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      a_(matdata->Get<double>("A")),
-      b_(matdata->Get<double>("B")),
-      c_(matdata->Get<double>("C"))
+      a_(matdata.parameters.Get<double>("A")),
+      b_(matdata.parameters.Get<double>("B")),
+      c_(matdata.parameters.Get<double>("C"))
 {
 }
 

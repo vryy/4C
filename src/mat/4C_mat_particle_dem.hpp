@@ -34,7 +34,7 @@ namespace Mat
     {
      public:
       //! constructor
-      ParticleMaterialDEM(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ParticleMaterialDEM(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! create material instance of matching type with parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;

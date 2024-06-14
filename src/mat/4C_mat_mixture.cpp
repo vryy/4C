@@ -17,11 +17,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 // constructor of the parameters
-Mat::PAR::Mixture::Mixture(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+Mat::PAR::Mixture::Mixture(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata), constituents_(0)
 {
-  const int num_constituents = matdata->Get<int>("NUMCONST");
-  const auto& constituent_matids = matdata->Get<std::vector<int>>("MATIDSCONST");
+  const int num_constituents = matdata.parameters.Get<int>("NUMCONST");
+  const auto& constituent_matids = matdata.parameters.Get<std::vector<int>>("MATIDSCONST");
 
   // check, if size of constituents fits to the number of constituents
   if (num_constituents != (int)constituent_matids.size())
@@ -40,7 +40,8 @@ Mat::PAR::Mixture::Mixture(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata
   }
 
   // Create mixture rule
-  mixture_rule_ = MIXTURE::PAR::MixtureRule::Factory(matdata->Get<int>("MATIDMIXTURERULE"));
+  mixture_rule_ =
+      MIXTURE::PAR::MixtureRule::Factory(matdata.parameters.Get<int>("MATIDMIXTURERULE"));
 }
 
 // Create a material instance from parameters

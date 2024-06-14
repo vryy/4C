@@ -25,10 +25,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | standard constructor                                      thon 06/15 |
  *----------------------------------------------------------------------*/
-Mat::PAR::MatListChemotaxis::MatListChemotaxis(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::MatListChemotaxis::MatListChemotaxis(const Core::Mat::PAR::Parameter::Data& matdata)
     : MatList(matdata),
-      numpair_((matdata->Get<int>("NUMPAIR"))),
-      pairids_((matdata->Get<std::vector<int>>("PAIRIDS")))
+      numpair_((matdata.parameters.Get<int>("NUMPAIR"))),
+      pairids_((matdata.parameters.Get<std::vector<int>>("PAIRIDS")))
 {
   // check if sizes fit
   if (numpair_ != (int)pairids_.size())

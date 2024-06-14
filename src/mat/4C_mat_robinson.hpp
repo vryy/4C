@@ -50,7 +50,7 @@ namespace Mat
     {
      public:
       //! standard constructor
-      Robinson(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      Robinson(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! @name material parameters
       //@{

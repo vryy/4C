@@ -29,7 +29,7 @@ namespace MIXTURE
 
      public:
       /// constructor
-      explicit MixtureGrowthStrategy(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+      explicit MixtureGrowthStrategy(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// Override this method and throw error, as only the create_growth_strategy() should be used.
       Teuchos::RCP<Core::Mat::Material> create_material() final

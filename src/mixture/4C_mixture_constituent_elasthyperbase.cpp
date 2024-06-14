@@ -24,11 +24,11 @@ FOUR_C_NAMESPACE_OPEN
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureConstituent(matdata),
-      matid_prestress_strategy_(matdata->Get<int>("PRESTRESS_STRATEGY")),
-      nummat_(matdata->Get<int>("NUMMAT")),
-      matids_(matdata->Get<std::vector<int>>("MATIDS"))
+      matid_prestress_strategy_(matdata.parameters.Get<int>("PRESTRESS_STRATEGY")),
+      nummat_(matdata.parameters.Get<int>("NUMMAT")),
+      matids_(matdata.parameters.Get<std::vector<int>>("MATIDS"))
 {
   // check, if size of summands fits to the number of summands
   if (nummat_ != (int)matids_.size())

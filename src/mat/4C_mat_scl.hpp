@@ -29,7 +29,7 @@ namespace Mat
     class Scl : public ElchSingleMat
     {
      public:
-      Scl(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      Scl(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

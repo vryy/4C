@@ -19,10 +19,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::Spring::Spring(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::Spring::Spring(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      stiffness_(matdata->Get<double>("STIFFNESS")),
-      density_(matdata->Get<double>("DENS"))
+      stiffness_(matdata.parameters.Get<double>("STIFFNESS")),
+      density_(matdata.parameters.Get<double>("DENS"))
 {
 }
 

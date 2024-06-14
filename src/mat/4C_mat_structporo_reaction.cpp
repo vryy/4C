@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::StructPoroReaction::StructPoroReaction(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
-    : StructPoro(matdata), dofIDReacScalar_(matdata->Get<int>("DOFIDREACSCALAR"))
+Mat::PAR::StructPoroReaction::StructPoroReaction(const Core::Mat::PAR::Parameter::Data& matdata)
+    : StructPoro(matdata), dofIDReacScalar_(matdata.parameters.Get<int>("DOFIDREACSCALAR"))
 {
 }
 

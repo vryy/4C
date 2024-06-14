@@ -27,8 +27,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Constructor of the mixture constituent parameters
-MIXTURE::PAR::MixtureConstituent::MixtureConstituent(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+MIXTURE::PAR::MixtureConstituent::MixtureConstituent(const Core::Mat::PAR::Parameter::Data& matdata)
     : Core::Mat::PAR::Parameter(matdata)
 {
 }

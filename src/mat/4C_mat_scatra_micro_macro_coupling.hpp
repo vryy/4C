@@ -12,16 +12,13 @@ problems. This material handles the communication between micro and macro materi
 
 #include "4C_config.hpp"
 
+#include "4C_material_parameter_base.hpp"
+
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
-
-namespace Core::Mat::PAR
-{
-  class Material;
-}
 
 namespace Mat
 {
@@ -35,7 +32,7 @@ namespace Mat
     {
      public:
       //! constructor
-      ScatraMicroMacroCoupling(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ScatraMicroMacroCoupling(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! return name of micro-scale input file
       std::string MicroInputFileName() const { return microfile_; }

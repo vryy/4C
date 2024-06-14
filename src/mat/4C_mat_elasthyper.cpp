@@ -26,12 +26,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::ElastHyper::ElastHyper(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+Mat::PAR::ElastHyper::ElastHyper(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      nummat_(matdata->Get<int>("NUMMAT")),
-      matids_(matdata->Get<std::vector<int>>("MATIDS")),
-      density_(matdata->Get<double>("DENS")),
-      polyconvex_(matdata->Get<int>("POLYCONVEX"))
+      nummat_(matdata.parameters.Get<int>("NUMMAT")),
+      matids_(matdata.parameters.Get<std::vector<int>>("MATIDS")),
+      density_(matdata.parameters.Get<double>("DENS")),
+      polyconvex_(matdata.parameters.Get<int>("POLYCONVEX"))
 
 {
   // check if sizes fit

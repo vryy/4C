@@ -20,15 +20,15 @@ FOUR_C_NAMESPACE_OPEN
  *  constructor (public)                               vuong 08/16      |
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      numscal_(matdata->Get<int>("NUMSCAL")),
-      numvolfrac_(matdata->Get<int>("NUMVOLFRAC")),
-      totalnummultiphasedof_(matdata->Get<int>("TOTALNUMDOF")),
+      numscal_(matdata.parameters.Get<int>("NUMSCAL")),
+      numvolfrac_(matdata.parameters.Get<int>("NUMVOLFRAC")),
+      totalnummultiphasedof_(matdata.parameters.Get<int>("TOTALNUMDOF")),
       numfluidphases_(totalnummultiphasedof_ - 2 * numvolfrac_),
-      scale_(matdata->Get<std::vector<int>>("SCALE")),
+      scale_(matdata.parameters.Get<std::vector<int>>("SCALE")),
       coupling_(set_coupling_type(matdata)),
-      functID_(matdata->Get<int>("FUNCTID")),
+      functID_(matdata.parameters.Get<int>("FUNCTID")),
       isinit_(false),
       scalarnames_(numscal_),
       pressurenames_(numfluidphases_),
@@ -340,13 +340,13 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroSingleReaction::create_mate
  *  translate coupling type                             vuong 08/16      |
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling
-Mat::PAR::FluidPoroSingleReaction::set_coupling_type(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::FluidPoroSingleReaction::set_coupling_type(const Core::Mat::PAR::Parameter::Data& matdata)
 {
-  if ((matdata->Get<std::string>("COUPLING")) == "scalar_by_function")
+  if ((matdata.parameters.Get<std::string>("COUPLING")) == "scalar_by_function")
   {
     return porofluid_reac_coup_scalarsbyfunction;
   }
-  else if ((matdata->Get<std::string>("COUPLING")) == "no_coupling")
+  else if ((matdata.parameters.Get<std::string>("COUPLING")) == "no_coupling")
   {
     return porofluid_reac_coup_none;
   }

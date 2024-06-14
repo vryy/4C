@@ -33,7 +33,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      LinearDensityViscosity(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      LinearDensityViscosity(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

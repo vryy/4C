@@ -24,13 +24,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStrategy(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : PrestressStrategy(matdata),
-      inner_radius_(matdata->Get<double>("INNER_RADIUS")),
-      wall_thickness_(matdata->Get<double>("WALL_THICKNESS")),
-      axial_prestretch_(matdata->Get<double>("AXIAL_PRESTRETCH")),
-      circumferential_prestretch_(matdata->Get<double>("CIRCUMFERENTIAL_PRESTRETCH")),
-      pressure_(matdata->Get<double>("PRESSURE"))
+      inner_radius_(matdata.parameters.Get<double>("INNER_RADIUS")),
+      wall_thickness_(matdata.parameters.Get<double>("WALL_THICKNESS")),
+      axial_prestretch_(matdata.parameters.Get<double>("AXIAL_PRESTRETCH")),
+      circumferential_prestretch_(matdata.parameters.Get<double>("CIRCUMFERENTIAL_PRESTRETCH")),
+      pressure_(matdata.parameters.Get<double>("PRESSURE"))
 {
 }
 

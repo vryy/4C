@@ -32,7 +32,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        CoupVarga(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        CoupVarga(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

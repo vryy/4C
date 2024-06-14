@@ -13,8 +13,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::Elastic::PAR::IsoOgden::IsoOgden(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
-    : Parameter(matdata), mue_(matdata->Get<double>("MUE")), alpha_(matdata->Get<double>("ALPHA"))
+Mat::Elastic::PAR::IsoOgden::IsoOgden(const Core::Mat::PAR::Parameter::Data& matdata)
+    : Parameter(matdata),
+      mue_(matdata.parameters.Get<double>("MUE")),
+      alpha_(matdata.parameters.Get<double>("ALPHA"))
 {
 }
 

@@ -34,7 +34,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        CoupAnisoNeoHookeVarProp(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        CoupAnisoNeoHookeVarProp(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

@@ -13,8 +13,8 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::Elastic::PAR::IsoNeoHooke::IsoNeoHooke(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
-    : Parameter(matdata), mue_(matdata->Get<double>("MUE"))
+Mat::Elastic::PAR::IsoNeoHooke::IsoNeoHooke(const Core::Mat::PAR::Parameter::Data& matdata)
+    : Parameter(matdata), mue_(matdata.parameters.Get<double>("MUE"))
 {
 }
 
