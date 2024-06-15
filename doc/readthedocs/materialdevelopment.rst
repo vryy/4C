@@ -52,7 +52,7 @@ Define the class for Material Parameters in the namespace ``Mat::PAR`` as
 
 Here we need the methods
 
--	Constructor ``MyNewMaterial(Teuchos::RCP<Core::Mat::PAR::Material> matdata)``
+-	Constructor ``MyNewMaterial(Core::Mat::PAR::Parameter::Data matdata)``
 -	``Teuchos::RCP<Core::Mat::Material> CreateMaterial()``
 
 **Definition of the material type class**
@@ -114,7 +114,7 @@ The base classes of the material models representing a single physics environmen
    * - Sclar transport
      - ``Mat::Material``
 
-Note that not all existing materials use this heritage,
+Note that not all existing materials use a physics-specific base class,
 some materials are simply derived from ``Mat::Material`` even though a more specialized class exists.
 
 It is probably a good idea to start with a clone of the material law given in the table above, and define a new class, e.g.:

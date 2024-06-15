@@ -1,19 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Base object to hold 'quick' access to material parameters
-
-\level 1
-
+\brief Base class to hold material parameters
+\level 0
 */
-
 /*----------------------------------------------------------------------*/
 
 #ifndef FOUR_C_MATERIAL_PARAMETER_BASE_HPP
 #define FOUR_C_MATERIAL_PARAMETER_BASE_HPP
 
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_config.hpp"
 
 #include "4C_io_input_parameter_container.hpp"
@@ -24,31 +18,24 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-/*----------------------------------------------------------------------*/
-/* forward declarations */
 namespace Core::Mat
 {
   class Material;
-  namespace PAR
-  {
-    class Parameter;
-  }
 }  // namespace Core::Mat
-
-/*----------------------------------------------------------------------*/
-/* declarations */
 
 namespace Core::Mat::PAR
 {
-  /*----------------------------------------------------------------------*/
-  /// Base class to hold material parameters
-  ///
-  /// Core::Mat::PAR::Parameters is derived for the various implemented
-  /// materials. These provide the 'quick' access to the read-in
-  /// material parameters.
-  ///
-  /// For every read-in material will exist a single instance (of
-  /// a derived class) of this object.
+  /**
+   * Base class for material parameters.
+   *
+   * This class is used to store the parameters of a material once. Through the virtual method
+   * create_material() a material instance can be created which will use the stored parameters.
+   * Thus, the parameters in this class are shared across all created material instances.
+   *
+   * When defining a new material, a new derived class of Parameter must be created. This derived
+   * class must implement the create_material() method to create the material instance of the
+   * correct type.
+   */
   class Parameter
   {
    public:
@@ -79,45 +66,47 @@ namespace Core::Mat::PAR
      */
     Parameter(Data data);
 
-    /// destructor
+    /**
+     * Virtual destructor.
+     */
     virtual ~Parameter() = default;
 
-    /// (unique) material ID
+    /**
+     * The ID of the material.
+     */
     [[nodiscard]] int Id() const { return data_.id; }
 
-    /// material type
+    /**
+     * The type of the material.
+     */
     [[nodiscard]] Core::Materials::MaterialType Type() const { return data_.type; }
 
-    /// create material instance of matching type with my parameters
-    virtual Teuchos::RCP<Core::Mat::Material> create_material() = 0;
-
-    //! \brief return element specific or global material parameter using enum parametername which
-    //! is defined in respective Mat::PAR classes
-    double GetParameter(int parametername, const int EleId);
 
     /**
-     * Access to the raw input data.
+     * Create a new material instance from the stored parameters.
+     *
+     * @note This method must be implemented by derived classes.
      */
-    const Core::IO::InputParameterContainer& raw_parameters() const { return data_.parameters; }
+    virtual Teuchos::RCP<Core::Mat::Material> create_material() = 0;
 
-   protected:
-    /*! \brief
-     * data structure to store all material parameters in.
-     * By default all elements with the same mat share the same material properties, hence the
-     * Epetra_Vector has length 1 However for elementwise material properties the Epetra_Vector
-     * has EleColMap layout.
+    /**
+     * Access to the raw input parameters. Derived classes usually store the parameters in a more
+     * convenient way. This method grants access to the raw input parameters without specific
+     * knowledge of the derived class.
      */
-    std::vector<Teuchos::RCP<Epetra_Vector>> matparams_;
+    [[nodiscard]] const Core::IO::InputParameterContainer& raw_parameters() const
+    {
+      return data_.parameters;
+    }
+
 
    private:
     /**
      * Data as supplied during construction.
      */
     Data data_;
-  };  // class Parameter
-
+  };
 }  // namespace Core::Mat::PAR
-
 
 FOUR_C_NAMESPACE_CLOSE
 
