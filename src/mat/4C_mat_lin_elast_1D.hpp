@@ -27,7 +27,7 @@ namespace Mat
     class LinElast1D : public Core::Mat::PAR::Parameter
     {
      public:
-      LinElast1D(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      LinElast1D(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{
@@ -44,7 +44,7 @@ namespace Mat
     class LinElast1DGrowth : public LinElast1D
     {
      public:
-      LinElast1DGrowth(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      LinElast1DGrowth(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

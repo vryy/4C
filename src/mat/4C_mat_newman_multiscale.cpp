@@ -17,11 +17,11 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------*
  | constructor                                             fang 07/17 |
  *--------------------------------------------------------------------*/
-Mat::PAR::NewmanMultiScale::NewmanMultiScale(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::NewmanMultiScale::NewmanMultiScale(const Core::Mat::PAR::Parameter::Data& matdata)
     : Newman(matdata),
       ScatraMicroMacroCoupling(matdata),
-      electronic_cond_(matdata->Get<double>("ELECTRONIC_COND")),
-      conc_dep_scale_func_num_(matdata->Get<int>("ELECTRONIC_COND_CONC_SCALE_FUNC_NUM"))
+      electronic_cond_(matdata.parameters.Get<double>("ELECTRONIC_COND")),
+      conc_dep_scale_func_num_(matdata.parameters.Get<int>("ELECTRONIC_COND_CONC_SCALE_FUNC_NUM"))
 {
 }
 

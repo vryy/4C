@@ -30,7 +30,7 @@ namespace MIXTURE
     class MixtureConstituentElastHyper : public MIXTURE::PAR::MixtureConstituentElastHyperBase
     {
      public:
-      explicit MixtureConstituentElastHyper(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+      explicit MixtureConstituentElastHyper(const Core::Mat::PAR::Parameter::Data& matdata);
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 

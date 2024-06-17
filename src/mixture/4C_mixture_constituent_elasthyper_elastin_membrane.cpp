@@ -95,12 +95,11 @@ MIXTURE::ElastinMembraneAnisotropyExtension::get_orthogonal_structural_tensor(in
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane::
-    MixtureConstituentElastHyperElastinMembrane(
-        const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    MixtureConstituentElastHyperElastinMembrane(const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureConstituentElastHyperBase(matdata),
-      damage_function_id_(matdata->Get<int>("DAMAGE_FUNCT")),
-      nummat_membrane_(matdata->Get<int>("MEMBRANENUMMAT")),
-      matids_membrane_(matdata->Get<std::vector<int>>("MEMBRANEMATIDS"))
+      damage_function_id_(matdata.parameters.Get<int>("DAMAGE_FUNCT")),
+      nummat_membrane_(matdata.parameters.Get<int>("MEMBRANENUMMAT")),
+      matids_membrane_(matdata.parameters.Get<std::vector<int>>("MEMBRANEMATIDS"))
 {
   if (nummat_membrane_ != (int)matids_membrane_.size())
   {

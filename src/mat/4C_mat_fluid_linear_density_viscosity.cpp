@@ -19,14 +19,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Mat::PAR::LinearDensityViscosity::LinearDensityViscosity(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      refdensity_(matdata->Get<double>("REFDENSITY")),
-      refviscosity_(matdata->Get<double>("REFVISCOSITY")),
-      refpressure_(matdata->Get<double>("REFPRESSURE")),
-      coeffdensity_(matdata->Get<double>("COEFFDENSITY")),
-      coeffviscosity_(matdata->Get<double>("COEFFVISCOSITY")),
-      gamma_(matdata->Get<double>("GAMMA"))
+      refdensity_(matdata.parameters.Get<double>("REFDENSITY")),
+      refviscosity_(matdata.parameters.Get<double>("REFVISCOSITY")),
+      refpressure_(matdata.parameters.Get<double>("REFPRESSURE")),
+      coeffdensity_(matdata.parameters.Get<double>("COEFFDENSITY")),
+      coeffviscosity_(matdata.parameters.Get<double>("COEFFVISCOSITY")),
+      gamma_(matdata.parameters.Get<double>("GAMMA"))
 {
 }
 

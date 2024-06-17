@@ -14,8 +14,8 @@ modified from Pioletti, 1997
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::Elastic::PAR::IsoRateDep::IsoRateDep(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
-    : Parameter(matdata), n_(matdata->Get<double>("N"))
+Mat::Elastic::PAR::IsoRateDep::IsoRateDep(const Core::Mat::PAR::Parameter::Data& matdata)
+    : Parameter(matdata), n_(matdata.parameters.Get<double>("N"))
 {
 }
 

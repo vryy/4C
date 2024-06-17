@@ -27,7 +27,7 @@ Mat::ParticleMaterialSPHBoundaryType Mat::ParticleMaterialSPHBoundaryType::insta
  | constructor                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 Mat::PAR::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata), ParticleMaterialBase(matdata), ParticleMaterialThermo(matdata)
 {
   // empty constructor

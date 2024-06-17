@@ -33,7 +33,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        GenMax(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        GenMax(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

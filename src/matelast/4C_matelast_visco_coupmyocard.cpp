@@ -14,8 +14,8 @@ the collagen and elastin matrix surrounding the myocardial fiber (chappelle12)
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::Elastic::PAR::CoupMyocard::CoupMyocard(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
-    : Parameter(matdata), n_(matdata->Get<double>("N"))
+Mat::Elastic::PAR::CoupMyocard::CoupMyocard(const Core::Mat::PAR::Parameter::Data& matdata)
+    : Parameter(matdata), n_(matdata.parameters.Get<double>("N"))
 {
 }
 

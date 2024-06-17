@@ -39,7 +39,7 @@ namespace Mat
     {
      public:
       /// construct the material object given material parameters
-      ParameterAniso(Teuchos::RCP<const Core::Mat::PAR::Material> matdata);
+      ParameterAniso(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// return pointer to strategy
       const Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>& structural_tensor_strategy()

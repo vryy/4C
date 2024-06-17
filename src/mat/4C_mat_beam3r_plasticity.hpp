@@ -44,7 +44,7 @@ namespace Mat
     {
      public:
       //! standard constructor
-      BeamReissnerElastPlasticMaterialParams(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      BeamReissnerElastPlasticMaterialParams(const Core::Mat::PAR::Parameter::Data& matdata);
 
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 

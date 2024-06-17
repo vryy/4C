@@ -27,11 +27,11 @@ Mat::ParticleWallMaterialDEMType Mat::ParticleWallMaterialDEMType::instance_;
  | constructor                                                sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
 Mat::PAR::ParticleWallMaterialDEM::ParticleWallMaterialDEM(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      frictionTang_(matdata->Get<double>("FRICT_COEFF_TANG")),
-      frictionRoll_(matdata->Get<double>("FRICT_COEFF_ROLL")),
-      adhesionSurfaceEnergy_(matdata->Get<double>("ADHESION_SURFACE_ENERGY"))
+      frictionTang_(matdata.parameters.Get<double>("FRICT_COEFF_TANG")),
+      frictionRoll_(matdata.parameters.Get<double>("FRICT_COEFF_ROLL")),
+      adhesionSurfaceEnergy_(matdata.parameters.Get<double>("ADHESION_SURFACE_ENERGY"))
 {
   // empty constructor
 }

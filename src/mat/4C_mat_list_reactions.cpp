@@ -23,10 +23,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | standard constructor                                     thon 11/14 |
  *----------------------------------------------------------------------*/
-Mat::PAR::MatListReactions::MatListReactions(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::MatListReactions::MatListReactions(const Core::Mat::PAR::Parameter::Data& matdata)
     : MatList(matdata),
-      numreac_((matdata->Get<int>("NUMREAC"))),
-      reacids_((matdata->Get<std::vector<int>>("REACIDS")))
+      numreac_((matdata.parameters.Get<int>("NUMREAC"))),
+      reacids_((matdata.parameters.Get<std::vector<int>>("REACIDS")))
 {
   // check if sizes fit
   if (numreac_ != (int)reacids_.size())

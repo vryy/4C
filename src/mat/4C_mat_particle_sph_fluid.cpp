@@ -27,17 +27,17 @@ Mat::ParticleMaterialSPHFluidType Mat::ParticleMaterialSPHFluidType::instance_;
  | constructor                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 Mat::PAR::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
       ParticleMaterialBase(matdata),
       ParticleMaterialThermo(matdata),
-      refDensFac_(matdata->Get<double>("REFDENSFAC")),
-      exponent_(matdata->Get<double>("EXPONENT")),
-      backgroundPressure_(matdata->Get<double>("BACKGROUNDPRESSURE")),
-      bulkModulus_(matdata->Get<double>("BULK_MODULUS")),
-      dynamicViscosity_(matdata->Get<double>("DYNAMIC_VISCOSITY")),
-      bulkViscosity_(matdata->Get<double>("BULK_VISCOSITY")),
-      artificialViscosity_(matdata->Get<double>("ARTIFICIAL_VISCOSITY"))
+      refDensFac_(matdata.parameters.Get<double>("REFDENSFAC")),
+      exponent_(matdata.parameters.Get<double>("EXPONENT")),
+      backgroundPressure_(matdata.parameters.Get<double>("BACKGROUNDPRESSURE")),
+      bulkModulus_(matdata.parameters.Get<double>("BULK_MODULUS")),
+      dynamicViscosity_(matdata.parameters.Get<double>("DYNAMIC_VISCOSITY")),
+      bulkViscosity_(matdata.parameters.Get<double>("BULK_VISCOSITY")),
+      artificialViscosity_(matdata.parameters.Get<double>("ARTIFICIAL_VISCOSITY"))
 {
   // empty constructor
 }

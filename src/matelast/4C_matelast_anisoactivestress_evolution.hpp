@@ -35,7 +35,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        explicit AnisoActiveStressEvolution(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        explicit AnisoActiveStressEvolution(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

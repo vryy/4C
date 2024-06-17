@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::IsotropicGrowthStrategy::IsotropicGrowthStrategy(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : MIXTURE::PAR::MixtureGrowthStrategy(matdata)
 {
 }

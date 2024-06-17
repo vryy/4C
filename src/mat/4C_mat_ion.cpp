@@ -20,13 +20,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::Ion::Ion(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::Ion::Ion(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      valence_(matdata->Get<double>("VALENCE")),
-      diffusivity_(matdata->Get<double>("DIFFUSIVITY")),
-      densification_(matdata->Get<double>("DENSIFICATION")),
-      elimvalence_(matdata->Get<double>("ELIM_VALENCE")),
-      elimdiffusivity_(matdata->Get<double>("ELIM_DIFFUSIVITY"))
+      valence_(matdata.parameters.Get<double>("VALENCE")),
+      diffusivity_(matdata.parameters.Get<double>("DIFFUSIVITY")),
+      densification_(matdata.parameters.Get<double>("DENSIFICATION")),
+      elimvalence_(matdata.parameters.Get<double>("ELIM_VALENCE")),
+      elimdiffusivity_(matdata.parameters.Get<double>("ELIM_DIFFUSIVITY"))
 {
 }
 

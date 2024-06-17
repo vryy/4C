@@ -40,7 +40,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      Myocard(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      Myocard(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

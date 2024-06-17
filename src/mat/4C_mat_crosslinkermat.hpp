@@ -34,7 +34,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      CrosslinkerMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      CrosslinkerMat(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// number of material for underlying linker element
       int const link_element_matnum_;

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituentElastHyper::MixtureConstituentElastHyper(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureConstituentElastHyperBase(matdata)
 {
   // do nothing

@@ -34,7 +34,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        IsoRateDep(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        IsoRateDep(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

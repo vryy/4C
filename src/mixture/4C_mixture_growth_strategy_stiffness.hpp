@@ -23,7 +23,7 @@ namespace MIXTURE
     class StiffnessGrowthStrategy : public MIXTURE::PAR::MixtureGrowthStrategy
     {
      public:
-      explicit StiffnessGrowthStrategy(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+      explicit StiffnessGrowthStrategy(const Core::Mat::PAR::Parameter::Data& matdata);
 
       std::unique_ptr<MIXTURE::MixtureGrowthStrategy> create_growth_strategy() override;
 

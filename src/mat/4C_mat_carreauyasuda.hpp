@@ -31,7 +31,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      CarreauYasuda(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      CarreauYasuda(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

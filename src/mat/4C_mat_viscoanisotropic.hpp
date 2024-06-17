@@ -34,7 +34,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      ViscoAnisotropic(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ViscoAnisotropic(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

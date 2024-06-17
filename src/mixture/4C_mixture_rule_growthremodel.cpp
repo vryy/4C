@@ -34,11 +34,11 @@ namespace Core::Communication
 }
 
 MIXTURE::PAR::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureRule(matdata),
-      growth_strategy_matid_(matdata->Get<int>("GROWTH_STRATEGY")),
-      initial_reference_density_(matdata->Get<double>("DENS")),
-      mass_fractions_(matdata->Get<std::vector<double>>("MASSFRAC"))
+      growth_strategy_matid_(matdata.parameters.Get<int>("GROWTH_STRATEGY")),
+      initial_reference_density_(matdata.parameters.Get<double>("DENS")),
+      mass_fractions_(matdata.parameters.Get<std::vector<double>>("MASSFRAC"))
 {
 }
 

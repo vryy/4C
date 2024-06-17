@@ -33,7 +33,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        IsoMuscleBlemker(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        IsoMuscleBlemker(const Core::Mat::PAR::Parameter::Data& matdata);
 
         //! @name muscle shear moduli
         //! @{

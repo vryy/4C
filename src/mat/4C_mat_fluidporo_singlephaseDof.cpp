@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *  constructor (public)                               vuong 08/16      |
  *----------------------------------------------------------------------*/
-Mat::PAR::FluidPoroPhaseDof::FluidPoroPhaseDof(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::FluidPoroPhaseDof::FluidPoroPhaseDof(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata)
 {
 }
@@ -75,10 +75,10 @@ Mat::PAR::FluidPoroPhaseDof* Mat::PAR::FluidPoroPhaseDof::CreatePhaseDof(int pha
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroPhaseDofDiffPressure::FluidPoroPhaseDofDiffPressure(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : FluidPoroPhaseDof(matdata),
-      diffpresCoeffs_(matdata->Get<std::vector<int>>("PRESCOEFF")),
-      phaselawId_(matdata->Get<int>("PHASELAWID"))
+      diffpresCoeffs_(matdata.parameters.Get<std::vector<int>>("PRESCOEFF")),
+      phaselawId_(matdata.parameters.Get<int>("PHASELAWID"))
 {
   phaselaw_ = Mat::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(phaselawId_);
 }
@@ -181,8 +181,8 @@ double Mat::PAR::FluidPoroPhaseDofDiffPressure::evaluate_deriv_of_dof_wrt_pressu
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroPhaseDofPressure::FluidPoroPhaseDofPressure(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
-    : FluidPoroPhaseDof(matdata), phaselawId_(matdata->Get<int>("PHASELAWID"))
+    const Core::Mat::PAR::Parameter::Data& matdata)
+    : FluidPoroPhaseDof(matdata), phaselawId_(matdata.parameters.Get<int>("PHASELAWID"))
 {
   phaselaw_ = Mat::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(phaselawId_);
   return;
@@ -279,8 +279,8 @@ double Mat::PAR::FluidPoroPhaseDofPressure::evaluate_deriv_of_dof_wrt_pressure(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroPhaseDofSaturation::FluidPoroPhaseDofSaturation(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
-    : FluidPoroPhaseDof(matdata), phaselawId_(matdata->Get<int>("PHASELAWID"))
+    const Core::Mat::PAR::Parameter::Data& matdata)
+    : FluidPoroPhaseDof(matdata), phaselawId_(matdata.parameters.Get<int>("PHASELAWID"))
 {
   phaselaw_ = Mat::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(phaselawId_);
   return;

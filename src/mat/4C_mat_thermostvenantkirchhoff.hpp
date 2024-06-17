@@ -44,7 +44,7 @@ namespace Mat
     {
      public:
       //! standard constructor
-      explicit ThermoStVenantKirchhoff(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit ThermoStVenantKirchhoff(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! @name material parameters
       //@{

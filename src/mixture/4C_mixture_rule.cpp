@@ -41,7 +41,7 @@ namespace Input
 }
 
 // Constructor of the material parameters
-MIXTURE::PAR::MixtureRule::MixtureRule(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+MIXTURE::PAR::MixtureRule::MixtureRule(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata)
 {
 }

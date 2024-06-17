@@ -30,13 +30,14 @@ namespace
     template <typename T>
     MIXTURE::Implementation::RemodelFiberImplementation<2, T> generate_fiber()
     {
-      const auto container = Teuchos::rcp(new Core::Mat::PAR::Material());
-      container->Add("K1", 1.3);
-      container->Add("K2", 1.3);
-      container->Add("COMPRESSION", true);
+      Core::IO::InputParameterContainer container;
+      container.Add("K1", 1.3);
+      container.Add("K2", 1.3);
+      container.Add("COMPRESSION", true);
 
       fiber_material_parameter_ =
-          std::make_shared<MIXTURE::PAR::RemodelFiberMaterialExponential<FADdouble>>(container);
+          std::make_shared<MIXTURE::PAR::RemodelFiberMaterialExponential<FADdouble>>(
+              Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       const auto material =
           std::make_shared<const MIXTURE::RemodelFiberMaterialExponential<FADdouble>>(

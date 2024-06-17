@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::PAR::InelasticDefgradNoGrowth::InelasticDefgradNoGrowth(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata)
 {
   // do nothing here
@@ -33,37 +33,37 @@ Mat::PAR::InelasticDefgradNoGrowth::InelasticDefgradNoGrowth(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::PAR::InelasticDefgradScalar::InelasticDefgradScalar(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      scalar1_(matdata->Get<int>("SCALAR1")),
-      scalar1_ref_conc_(matdata->Get<double>("SCALAR1_RefConc"))
+      scalar1_(matdata.parameters.Get<int>("SCALAR1")),
+      scalar1_ref_conc_(matdata.parameters.Get<double>("SCALAR1_RefConc"))
 {
   // safety checks
   // in case not all scatra dofs are transported scalars, the last scatra dof is a potential and can
   // not be treated as a concentration but it is treated like that in so3_scatra_evaluate.cpp in the
   // pre_evaluate method!
   if (scalar1_ != 1) FOUR_C_THROW("At the moment it is only possible that SCALAR1 induces growth");
-  if (matdata->Get<double>("SCALAR1_RefConc") < 0.0)
+  if (matdata.parameters.Get<double>("SCALAR1_RefConc") < 0.0)
     FOUR_C_THROW("The reference concentration of SCALAR1 can't be negative");
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::PAR::InelasticDefgradLinScalar::InelasticDefgradLinScalar(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : InelasticDefgradScalar(matdata),
-      scalar1_molar_growth_fac_(matdata->Get<double>("SCALAR1_MolarGrowthFac"))
+      scalar1_molar_growth_fac_(matdata.parameters.Get<double>("SCALAR1_MolarGrowthFac"))
 {
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::PAR::InelasticDefgradIntercalFrac::InelasticDefgradIntercalFrac(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : InelasticDefgradScalar(matdata)
 {
   // get matid
-  const int matid = matdata->Get<int>("MATID");
+  const int matid = matdata.parameters.Get<int>("MATID");
 
   // Check if the material specified by user with MATID is an electrode material
   if (matid > 0)
@@ -94,14 +94,15 @@ Mat::PAR::InelasticDefgradIntercalFrac::InelasticDefgradIntercalFrac(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::PAR::InelasticDefgradPolyIntercalFrac::InelasticDefgradPolyIntercalFrac(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : InelasticDefgradIntercalFrac(matdata),
-      poly_coeffs_(matdata->Get<std::vector<double>>("POLY_PARAMS")),
-      x_max_(matdata->Get<double>("X_max")),
-      x_min_(matdata->Get<double>("X_min"))
+      poly_coeffs_(matdata.parameters.Get<std::vector<double>>("POLY_PARAMS")),
+      x_max_(matdata.parameters.Get<double>("X_max")),
+      x_min_(matdata.parameters.Get<double>("X_min"))
 {
   // safety check
-  if (poly_coeffs_.size() != static_cast<unsigned int>(matdata->Get<int>("POLY_PARA_NUM")))
+  if (poly_coeffs_.size() !=
+      static_cast<unsigned int>(matdata.parameters.Get<int>("POLY_PARA_NUM")))
   {
     FOUR_C_THROW(
         "Number of coefficients POLY_PARA_NUM you entered in input file has to match the size "
@@ -112,20 +113,20 @@ Mat::PAR::InelasticDefgradPolyIntercalFrac::InelasticDefgradPolyIntercalFrac(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::PAR::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : InelasticDefgradLinScalar(matdata),
-      growth_dir_(Teuchos::rcp(
-          new InelasticDeformationDirection(matdata->Get<std::vector<double>>("GrowthDirection"))))
+      growth_dir_(Teuchos::rcp(new InelasticDeformationDirection(
+          matdata.parameters.Get<std::vector<double>>("GrowthDirection"))))
 {
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::PAR::InelasticDefgradPolyIntercalFracAniso::InelasticDefgradPolyIntercalFracAniso(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : InelasticDefgradPolyIntercalFrac(matdata),
-      growth_dir_(Teuchos::rcp(
-          new InelasticDeformationDirection(matdata->Get<std::vector<double>>("GrowthDirection"))))
+      growth_dir_(Teuchos::rcp(new InelasticDeformationDirection(
+          matdata.parameters.Get<std::vector<double>>("GrowthDirection"))))
 {
 }
 
@@ -161,10 +162,10 @@ Mat::PAR::InelasticDeformationDirection::InelasticDeformationDirection(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::PAR::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      ref_temp_(matdata->Get<double>("RefTemp")),
-      temp_growth_fac_(matdata->Get<double>("Temp_GrowthFac"))
+      ref_temp_(matdata.parameters.Get<double>("RefTemp")),
+      temp_growth_fac_(matdata.parameters.Get<double>("Temp_GrowthFac"))
 
 {
   // safety checks
@@ -180,8 +181,8 @@ Mat::PAR::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::PAR::InelasticDefgradTimeFunct::InelasticDefgradTimeFunct(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
-    : Parameter(matdata), funct_num_(matdata->Get<int>("FUNCT_NUM"))
+    const Core::Mat::PAR::Parameter::Data& matdata)
+    : Parameter(matdata), funct_num_(matdata.parameters.Get<int>("FUNCT_NUM"))
 {
 }
 

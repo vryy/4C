@@ -40,7 +40,7 @@ namespace MIXTURE
 
      public:
       /// constructor
-      explicit IterativePrestressStrategy(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+      explicit IterativePrestressStrategy(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create prestress strategy instance of matching type with my parameters
       std::unique_ptr<MIXTURE::PrestressStrategy> create_prestress_strategy() override;

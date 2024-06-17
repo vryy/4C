@@ -21,13 +21,13 @@ FOUR_C_NAMESPACE_OPEN
  | constructor                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 Mat::PAR::ParticleMaterialThermo::ParticleMaterialThermo(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      initTemperature_(matdata->Get<double>("INITTEMPERATURE")),
-      thermalCapacity_(matdata->Get<double>("THERMALCAPACITY")),
+      initTemperature_(matdata.parameters.Get<double>("INITTEMPERATURE")),
+      thermalCapacity_(matdata.parameters.Get<double>("THERMALCAPACITY")),
       invThermalCapacity_((thermalCapacity_ > 0.0) ? (1.0 / thermalCapacity_) : 0.0),
-      thermalConductivity_(matdata->Get<double>("THERMALCONDUCTIVITY")),
-      thermalAbsorptivity_(matdata->Get<double>("THERMALABSORPTIVITY"))
+      thermalConductivity_(matdata.parameters.Get<double>("THERMALCONDUCTIVITY")),
+      thermalAbsorptivity_(matdata.parameters.Get<double>("THERMALABSORPTIVITY"))
 {
   // empty constructor
 }

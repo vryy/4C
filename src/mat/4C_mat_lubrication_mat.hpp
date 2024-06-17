@@ -31,7 +31,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      LubricationMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      LubricationMat(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// density
       const double density_;

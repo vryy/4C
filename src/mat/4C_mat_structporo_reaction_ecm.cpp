@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Mat::PAR::StructPoroReactionECM::StructPoroReactionECM(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
-    : StructPoroReaction(matdata), densCollagen_(matdata->Get<double>("DENSCOLLAGEN"))
+    const Core::Mat::PAR::Parameter::Data& matdata)
+    : StructPoroReaction(matdata), densCollagen_(matdata.parameters.Get<double>("DENSCOLLAGEN"))
 {
 }
 

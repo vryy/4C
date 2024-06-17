@@ -14,11 +14,11 @@ SLS-model
 
 FOUR_C_NAMESPACE_OPEN
 
-Mat::Elastic::PAR::GenMax::GenMax(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+Mat::Elastic::PAR::GenMax::GenMax(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      tau_(matdata->Get<double>("TAU")),
-      beta_(matdata->Get<double>("BETA")),
-      solve_(matdata->Get<std::string>("SOLVE"))
+      tau_(matdata.parameters.Get<double>("TAU")),
+      beta_(matdata.parameters.Get<double>("BETA")),
+      solve_(matdata.parameters.Get<std::string>("SOLVE"))
 {
 }
 

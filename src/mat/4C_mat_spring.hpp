@@ -29,7 +29,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      Spring(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      Spring(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

@@ -21,14 +21,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::CarreauYasuda::CarreauYasuda(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::CarreauYasuda::CarreauYasuda(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      nu_0_(matdata->Get<double>("NU_0")),
-      nu_inf_(matdata->Get<double>("NU_INF")),
-      lambda_(matdata->Get<double>("LAMBDA")),
-      a_param_(matdata->Get<double>("APARAM")),
-      b_param_(matdata->Get<double>("BPARAM")),
-      density_(matdata->Get<double>("DENSITY"))
+      nu_0_(matdata.parameters.Get<double>("NU_0")),
+      nu_inf_(matdata.parameters.Get<double>("NU_INF")),
+      lambda_(matdata.parameters.Get<double>("LAMBDA")),
+      a_param_(matdata.parameters.Get<double>("APARAM")),
+      b_param_(matdata.parameters.Get<double>("BPARAM")),
+      density_(matdata.parameters.Get<double>("DENSITY"))
 {
 }
 

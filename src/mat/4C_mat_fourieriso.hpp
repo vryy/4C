@@ -37,7 +37,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      FourierIso(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      FourierIso(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

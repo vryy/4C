@@ -35,7 +35,7 @@ namespace Mat
     {
      public:
       //! constructor
-      explicit Electrode(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit Electrode(const Core::Mat::PAR::Parameter::Data& matdata);
 
 
       //! create instance of electrode material

@@ -24,7 +24,7 @@ namespace Mat
     {
      public:
       //! constructor
-      Soret(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      Soret(const Core::Mat::PAR::Parameter::Data& matdata);
 
 
       //! create instance of Soret material

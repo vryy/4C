@@ -14,11 +14,11 @@ mechanics", 2001.
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::Elastic::PAR::CoupBlatzKo::CoupBlatzKo(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+Mat::Elastic::PAR::CoupBlatzKo::CoupBlatzKo(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      mue_(matdata->Get<double>("MUE")),
-      nue_(matdata->Get<double>("NUE")),
-      f_(matdata->Get<double>("F"))
+      mue_(matdata.parameters.Get<double>("MUE")),
+      nue_(matdata.parameters.Get<double>("NUE")),
+      f_(matdata.parameters.Get<double>("F"))
 {
 }
 

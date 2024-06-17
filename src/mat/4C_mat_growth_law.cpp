@@ -31,8 +31,8 @@ Mat::GrowthLaw::GrowthLaw() : params_(nullptr) {}
 Mat::GrowthLaw::GrowthLaw(Core::Mat::PAR::Parameter* params) : params_(params) {}
 
 /*----------------------------------------------------------------------------*/
-Mat::PAR::GrowthLawDyn::GrowthLawDyn(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
-    : Parameter(matdata), abstol_(matdata->Get<double>("TOL"))
+Mat::PAR::GrowthLawDyn::GrowthLawDyn(const Core::Mat::PAR::Parameter::Data& matdata)
+    : Parameter(matdata), abstol_(matdata.parameters.Get<double>("TOL"))
 {
 }
 
@@ -283,15 +283,15 @@ Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAnisoStrain::CreateGrowthLaw()
 }
 
 /*----------------------------------------------------------------------------*/
-Mat::PAR::GrowthLawAnisoStrain::GrowthLawAnisoStrain(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::GrowthLawAnisoStrain::GrowthLawAnisoStrain(const Core::Mat::PAR::Parameter::Data& matdata)
     : GrowthLawDyn(matdata),
-      tau_(matdata->Get<double>("TAU")),
-      taurev_(matdata->Get<double>("TAU_REV")),
-      thetamin_(matdata->Get<double>("THETA_MIN")),
-      thetamax_(matdata->Get<double>("THETA_MAX")),
-      gamma_(matdata->Get<double>("GAMMA")),
-      gammarev_(matdata->Get<double>("GAMMA_REV")),
-      lambdacrit_(matdata->Get<double>("LAMBDA_CRIT"))
+      tau_(matdata.parameters.Get<double>("TAU")),
+      taurev_(matdata.parameters.Get<double>("TAU_REV")),
+      thetamin_(matdata.parameters.Get<double>("THETA_MIN")),
+      thetamax_(matdata.parameters.Get<double>("THETA_MAX")),
+      gamma_(matdata.parameters.Get<double>("GAMMA")),
+      gammarev_(matdata.parameters.Get<double>("GAMMA_REV")),
+      lambdacrit_(matdata.parameters.Get<double>("LAMBDA_CRIT"))
 {
 }
 
@@ -466,15 +466,15 @@ Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAnisoStress::CreateGrowthLaw()
 }
 
 /*----------------------------------------------------------------------------*/
-Mat::PAR::GrowthLawAnisoStress::GrowthLawAnisoStress(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::GrowthLawAnisoStress::GrowthLawAnisoStress(const Core::Mat::PAR::Parameter::Data& matdata)
     : GrowthLawDyn(matdata),
-      tau_(matdata->Get<double>("TAU")),
-      taurev_(matdata->Get<double>("TAU_REV")),
-      thetamin_(matdata->Get<double>("THETA_MIN")),
-      thetamax_(matdata->Get<double>("THETA_MAX")),
-      gamma_(matdata->Get<double>("GAMMA")),
-      gammarev_(matdata->Get<double>("GAMMA_REV")),
-      pcrit_(matdata->Get<double>("P_CRIT"))
+      tau_(matdata.parameters.Get<double>("TAU")),
+      taurev_(matdata.parameters.Get<double>("TAU_REV")),
+      thetamin_(matdata.parameters.Get<double>("THETA_MIN")),
+      thetamax_(matdata.parameters.Get<double>("THETA_MAX")),
+      gamma_(matdata.parameters.Get<double>("GAMMA")),
+      gammarev_(matdata.parameters.Get<double>("GAMMA_REV")),
+      pcrit_(matdata.parameters.Get<double>("P_CRIT"))
 {
 }
 
@@ -694,7 +694,7 @@ Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAnisoStrainConstTrig::CreateGrow
 
 /*----------------------------------------------------------------------------*/
 Mat::PAR::GrowthLawAnisoStrainConstTrig::GrowthLawAnisoStrainConstTrig(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : GrowthLawAnisoStrain(matdata)
 {
 }
@@ -785,7 +785,7 @@ Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAnisoStressConstTrig::CreateGrow
 
 /*----------------------------------------------------------------------------*/
 Mat::PAR::GrowthLawAnisoStressConstTrig::GrowthLawAnisoStressConstTrig(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : GrowthLawAnisoStress(matdata)
 {
 }
@@ -875,15 +875,15 @@ Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawIsoStress::CreateGrowthLaw()
 }
 
 /*----------------------------------------------------------------------------*/
-Mat::PAR::GrowthLawIsoStress::GrowthLawIsoStress(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::GrowthLawIsoStress::GrowthLawIsoStress(const Core::Mat::PAR::Parameter::Data& matdata)
     : GrowthLawDyn(matdata),
-      thetaplus_(matdata->Get<double>("THETAPLUS")),
-      kthetaplus_(matdata->Get<double>("KPLUS")),
-      mthetaplus_(matdata->Get<double>("MPLUS")),
-      thetaminus_(matdata->Get<double>("THETAMINUS")),
-      kthetaminus_(matdata->Get<double>("KMINUS")),
-      mthetaminus_(matdata->Get<double>("MMINUS")),
-      hommandel_(matdata->Get<double>("HOMMANDEL"))
+      thetaplus_(matdata.parameters.Get<double>("THETAPLUS")),
+      kthetaplus_(matdata.parameters.Get<double>("KPLUS")),
+      mthetaplus_(matdata.parameters.Get<double>("MPLUS")),
+      thetaminus_(matdata.parameters.Get<double>("THETAMINUS")),
+      kthetaminus_(matdata.parameters.Get<double>("KMINUS")),
+      mthetaminus_(matdata.parameters.Get<double>("MMINUS")),
+      hommandel_(matdata.parameters.Get<double>("HOMMANDEL"))
 {
 }
 
@@ -1050,12 +1050,12 @@ double Mat::GrowthLawIsoStress::DensityDerivScale(const double theta)
 
 
 /*----------------------------------------------------------------------------*/
-Mat::PAR::GrowthLawAC::GrowthLawAC(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::GrowthLawAC::GrowthLawAC(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      Sc1_(matdata->Get<int>("SCALAR1")),
-      alpha_(matdata->Get<double>("ALPHA")),
-      Sc2_(matdata->Get<int>("SCALAR2")),
-      beta_(matdata->Get<double>("BETA"))
+      Sc1_(matdata.parameters.Get<int>("SCALAR1")),
+      alpha_(matdata.parameters.Get<double>("ALPHA")),
+      Sc2_(matdata.parameters.Get<int>("SCALAR2")),
+      beta_(matdata.parameters.Get<double>("BETA"))
 {
   if (Sc1_ < 1) FOUR_C_THROW("At least on scalar field must induce growth");
   if (alpha_ < 0) FOUR_C_THROW("The influence of scalar field SCALAR1 to growth can't be negativ");
@@ -1173,7 +1173,7 @@ double Mat::GrowthLawAC::DensityDerivScale(const double theta) { return 3.0 * th
 
 
 /*----------------------------------------------------------------------------*/
-Mat::PAR::GrowthLawACRadial::GrowthLawACRadial(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::GrowthLawACRadial::GrowthLawACRadial(const Core::Mat::PAR::Parameter::Data& matdata)
     : GrowthLawAC(matdata)
 {
 }
@@ -1298,7 +1298,7 @@ double Mat::GrowthLawACRadial::DensityDerivScale(const double theta) { return 1.
 
 /*----------------------------------------------------------------------------*/
 Mat::PAR::GrowthLawACRadialRefConc::GrowthLawACRadialRefConc(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : GrowthLawAC(matdata)
 {
 }
@@ -1403,7 +1403,7 @@ Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawConst::CreateGrowthLaw()
 }
 
 /*----------------------------------------------------------------------------*/
-Mat::PAR::GrowthLawConst::GrowthLawConst(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::GrowthLawConst::GrowthLawConst(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata)
 {
   Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::Instance()->GetCommunicators()->LocalComm()));
@@ -1411,7 +1411,7 @@ Mat::PAR::GrowthLawConst::GrowthLawConst(Teuchos::RCP<Core::Mat::PAR::Material> 
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
-  matparams_.at(thetarate)->PutScalar(matdata->Get<double>("THETARATE"));
+  matparams_.at(thetarate)->PutScalar(matdata.parameters.Get<double>("THETARATE"));
 }
 
 /*----------------------------------------------------------------------------*/

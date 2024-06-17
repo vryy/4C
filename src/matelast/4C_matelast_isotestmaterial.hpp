@@ -32,7 +32,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        IsoTestMaterial(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        IsoTestMaterial(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

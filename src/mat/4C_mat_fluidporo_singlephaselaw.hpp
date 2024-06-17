@@ -34,7 +34,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit FluidPoroPhaseLaw(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit FluidPoroPhaseLaw(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! build the phase law
       static FluidPoroPhaseLaw* CreatePhaseLaw(int phaselawId);
@@ -73,7 +73,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit FluidPoroPhaseLawLinear(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit FluidPoroPhaseLawLinear(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// initialize
       void Initialize() override { return; };
@@ -118,7 +118,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit FluidPoroPhaseLawTangent(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit FluidPoroPhaseLawTangent(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// initialize
       void Initialize() override { return; };
@@ -166,7 +166,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit FluidPoroPhaseLawConstraint(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+      explicit FluidPoroPhaseLawConstraint(const Core::Mat::PAR::Parameter::Data& matdata)
           : FluidPoroPhaseLaw(matdata){};
 
       /// initialize
@@ -227,7 +227,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit FluidPoroPhaseLawByFunction(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit FluidPoroPhaseLawByFunction(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// initialize
       void Initialize() override;

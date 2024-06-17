@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                           sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-Mat::PAR::MembraneElastHyper::MembraneElastHyper(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::MembraneElastHyper::MembraneElastHyper(const Core::Mat::PAR::Parameter::Data& matdata)
     : Mat::PAR::ElastHyper(matdata)
 {
   return;

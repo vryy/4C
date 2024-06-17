@@ -35,7 +35,7 @@ namespace Mat
     {
      public:
       //! constructor
-      ParticleMaterialSPHBoundary(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ParticleMaterialSPHBoundary(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! create material instance of matching type with parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;

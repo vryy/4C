@@ -27,16 +27,16 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                     brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-Mat::PAR::MembraneActiveStrain::MembraneActiveStrain(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::MembraneActiveStrain::MembraneActiveStrain(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      matid_passive_(matdata->Get<int>("MATIDPASSIVE")),
-      scalid_voltage_(matdata->Get<int>("SCALIDVOLTAGE")),
-      density_(matdata->Get<double>("DENS")),
-      beta1_(matdata->Get<double>("BETA1")),
-      beta2_(matdata->Get<double>("BETA2")),
-      voltage_threshold_(matdata->Get<double>("VOLTHRESH")),
-      alpha1_(matdata->Get<double>("ALPHA1")),
-      alpha2_(matdata->Get<double>("ALPHA2"))
+      matid_passive_(matdata.parameters.Get<int>("MATIDPASSIVE")),
+      scalid_voltage_(matdata.parameters.Get<int>("SCALIDVOLTAGE")),
+      density_(matdata.parameters.Get<double>("DENS")),
+      beta1_(matdata.parameters.Get<double>("BETA1")),
+      beta2_(matdata.parameters.Get<double>("BETA2")),
+      voltage_threshold_(matdata.parameters.Get<double>("VOLTHRESH")),
+      alpha1_(matdata.parameters.Get<double>("ALPHA1")),
+      alpha2_(matdata.parameters.Get<double>("ALPHA2"))
 {
   return;
 }  // Mat::PAR::MembraneActiveStrain::MembraneActiveStrain

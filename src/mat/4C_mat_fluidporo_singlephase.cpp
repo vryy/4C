@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *  constructor (public)                               vuong 08/16      |
  *----------------------------------------------------------------------*/
-Mat::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
-    : Parameter(matdata), density_(matdata->Get<double>("DENSITY")), isinit_(false)
+Mat::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(const Core::Mat::PAR::Parameter::Data& matdata)
+    : Parameter(matdata), density_(matdata.parameters.Get<double>("DENSITY")), isinit_(false)
 {
   // retrieve problem instance to read from
   const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -36,18 +36,19 @@ Mat::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<Core::Mat::PAR
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // create density law
-  densitylaw_ = Mat::PAR::PoroDensityLaw::CreateDensityLaw(matdata->Get<int>("DENSITYLAWID"));
+  densitylaw_ =
+      Mat::PAR::PoroDensityLaw::CreateDensityLaw(matdata.parameters.Get<int>("DENSITYLAWID"));
 
   // create permeability law
   relpermeabilitylaw_ = Mat::PAR::FluidPoroRelPermeabilityLaw::create_rel_permeability_law(
-      matdata->Get<int>("RELPERMEABILITYLAWID"));
+      matdata.parameters.Get<int>("RELPERMEABILITYLAWID"));
 
   // create viscosity law
-  viscositylaw_ =
-      Mat::PAR::FluidPoroViscosityLaw::CreateViscosityLaw(matdata->Get<int>("VISCOSITYLAWID"));
+  viscositylaw_ = Mat::PAR::FluidPoroViscosityLaw::CreateViscosityLaw(
+      matdata.parameters.Get<int>("VISCOSITYLAWID"));
 
   auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(
-      matdata->Get<int>("DOFTYPEID"));
+      matdata.parameters.Get<int>("DOFTYPEID"));
 
   switch (curmat->Type())
   {
@@ -255,14 +256,14 @@ double Mat::FluidPoroSinglePhase::evaluate_deriv_of_dof_wrt_pressure(
  *  constructor (public)                               kremheller 10/17 |
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      density_(matdata->Get<double>("DENSITY")),
-      diffusivity_(matdata->Get<double>("DIFFUSIVITY")),
-      scalardependentflux_(matdata->Get<bool>("AddScalarDependentFlux")),
-      numscal_(matdata->Get<int>("NUMSCAL")),
-      scalardiffs_((matdata->Get<std::vector<double>>("SCALARDIFFS"))),
-      omega_half_((matdata->Get<std::vector<double>>("OMEGA_HALF"))),
+      density_(matdata.parameters.Get<double>("DENSITY")),
+      diffusivity_(matdata.parameters.Get<double>("DIFFUSIVITY")),
+      scalardependentflux_(matdata.parameters.Get<bool>("AddScalarDependentFlux")),
+      numscal_(matdata.parameters.Get<int>("NUMSCAL")),
+      scalardiffs_((matdata.parameters.Get<std::vector<double>>("SCALARDIFFS"))),
+      omega_half_((matdata.parameters.Get<std::vector<double>>("OMEGA_HALF"))),
       isinit_(false)
 {
   // retrieve problem instance to read from
@@ -409,10 +410,10 @@ void Mat::FluidPoroSingleVolFrac::Initialize()
  *  constructor (public)                               kremheller 02/18 |
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroVolFracPressure::FluidPoroVolFracPressure(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      permeability_(matdata->Get<double>("PERMEABILITY")),
-      min_volfrac_(matdata->Get<double>("MIN_VOLFRAC")),
+      permeability_(matdata.parameters.Get<double>("PERMEABILITY")),
+      min_volfrac_(matdata.parameters.Get<double>("MIN_VOLFRAC")),
       isinit_(false)
 {
   // retrieve problem instance to read from
@@ -426,8 +427,8 @@ Mat::PAR::FluidPoroVolFracPressure::FluidPoroVolFracPressure(
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // create viscosity law
-  viscositylaw_ =
-      Mat::PAR::FluidPoroViscosityLaw::CreateViscosityLaw(matdata->Get<int>("VISCOSITYLAWID"));
+  viscositylaw_ = Mat::PAR::FluidPoroViscosityLaw::CreateViscosityLaw(
+      matdata.parameters.Get<int>("VISCOSITYLAWID"));
 }
 
 /*----------------------------------------------------------------------*

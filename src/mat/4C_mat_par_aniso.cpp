@@ -22,11 +22,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const Core::Mat::PAR::Material> matdata)
+Mat::PAR::ParameterAniso::ParameterAniso(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata)
 {
   // get MAT ID for definiton of structural tensor
-  int mat_id_structural_tensor = matdata->Get<int>("STR_TENS_ID");
+  int mat_id_structural_tensor = matdata.parameters.Get<int>("STR_TENS_ID");
   // get pointer to material
   auto* mat_str_tens =
       Global::Problem::Instance()->Materials()->ParameterById(mat_id_structural_tensor);

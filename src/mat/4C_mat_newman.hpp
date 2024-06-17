@@ -30,7 +30,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      Newman(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      Newman(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

@@ -26,7 +26,7 @@ namespace Mat
      public:
       /// standard constructor
       explicit FluidPoroViscosityLaw(
-          Teuchos::RCP<Core::Mat::PAR::Material> matdata, bool constviscosity)
+          const Core::Mat::PAR::Parameter::Data& matdata, bool constviscosity)
           : Parameter(matdata), constviscosity_(constviscosity){};
 
       // get viscosity
@@ -50,7 +50,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit FluidPoroViscosityLawConstant(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit FluidPoroViscosityLawConstant(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
@@ -81,7 +81,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit FluidPoroViscosityLawCellAdherence(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit FluidPoroViscosityLawCellAdherence(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };

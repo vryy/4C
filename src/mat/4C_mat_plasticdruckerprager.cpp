@@ -26,18 +26,18 @@ John Wiley & Sons, Ltd, 2008
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::PAR::PlasticDruckerPrager::PlasticDruckerPrager(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::PlasticDruckerPrager::PlasticDruckerPrager(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata->Get<double>("YOUNG")),
-      poissonratio_(matdata->Get<double>("NUE")),
-      density_(matdata->Get<double>("DENS")),
-      isohard_(matdata->Get<double>("ISOHARD")),
-      abstol_(matdata->Get<double>("TOL")),
-      cohesion_(matdata->Get<double>("C")),
-      eta_(matdata->Get<double>("ETA")),
-      xi_(matdata->Get<double>("XI")),
-      etabar_(matdata->Get<double>("ETABAR")),
-      itermax_(matdata->Get<int>("MAXITER"))
+      youngs_(matdata.parameters.Get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.Get<double>("NUE")),
+      density_(matdata.parameters.Get<double>("DENS")),
+      isohard_(matdata.parameters.Get<double>("ISOHARD")),
+      abstol_(matdata.parameters.Get<double>("TOL")),
+      cohesion_(matdata.parameters.Get<double>("C")),
+      eta_(matdata.parameters.Get<double>("ETA")),
+      xi_(matdata.parameters.Get<double>("XI")),
+      etabar_(matdata.parameters.Get<double>("ETABAR")),
+      itermax_(matdata.parameters.Get<int>("MAXITER"))
 {
 }
 

@@ -14,16 +14,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Mat::Elastic::PAR::CoupAnisoPow::CoupAnisoPow(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+Mat::Elastic::PAR::CoupAnisoPow::CoupAnisoPow(const Core::Mat::PAR::Parameter::Data& matdata)
     : ParameterAniso(matdata),
-      k_(matdata->Get<double>("K")),
-      d1_(matdata->Get<double>("D1")),
-      d2_(matdata->Get<double>("D2")),
-      fibernumber_(matdata->Get<int>("FIBER")),
-      activethres_(matdata->Get<double>("ACTIVETHRES")),
-      gamma_(matdata->Get<double>("GAMMA")),
-      init_(matdata->Get<int>("INIT")),
-      adapt_angle_(matdata->Get<bool>("ADAPT_ANGLE"))
+      k_(matdata.parameters.Get<double>("K")),
+      d1_(matdata.parameters.Get<double>("D1")),
+      d2_(matdata.parameters.Get<double>("D2")),
+      fibernumber_(matdata.parameters.Get<int>("FIBER")),
+      activethres_(matdata.parameters.Get<double>("ACTIVETHRES")),
+      gamma_(matdata.parameters.Get<double>("GAMMA")),
+      init_(matdata.parameters.Get<int>("INIT")),
+      adapt_angle_(matdata.parameters.Get<bool>("ADAPT_ANGLE"))
 {
 }
 

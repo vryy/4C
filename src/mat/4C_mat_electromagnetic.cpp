@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::ElectromagneticMat::ElectromagneticMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::ElectromagneticMat::ElectromagneticMat(const Core::Mat::PAR::Parameter::Data &matdata)
     : Parameter(matdata)
 {
   Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::Instance()->GetCommunicators()->LocalComm()));
@@ -31,9 +31,9 @@ Mat::PAR::ElectromagneticMat::ElectromagneticMat(Teuchos::RCP<Core::Mat::PAR::Ma
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
-  matparams_.at(sigma_)->PutScalar(matdata->Get<double>("CONDUCTIVITY"));
-  matparams_.at(epsilon_)->PutScalar(matdata->Get<double>("PERMITTIVITY"));
-  matparams_.at(mu_)->PutScalar(matdata->Get<double>("PERMEABILITY"));
+  matparams_.at(sigma_)->PutScalar(matdata.parameters.Get<double>("CONDUCTIVITY"));
+  matparams_.at(epsilon_)->PutScalar(matdata.parameters.Get<double>("PERMITTIVITY"));
+  matparams_.at(mu_)->PutScalar(matdata.parameters.Get<double>("PERMEABILITY"));
 
   return;
 }

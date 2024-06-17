@@ -33,7 +33,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        CoupSimoPister(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        CoupSimoPister(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

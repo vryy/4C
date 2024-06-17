@@ -16,9 +16,8 @@ Mechanics, 2000"
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::Elastic::PAR::VolSussmanBathe::VolSussmanBathe(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
-    : Parameter(matdata), kappa_(matdata->Get<double>("KAPPA"))
+Mat::Elastic::PAR::VolSussmanBathe::VolSussmanBathe(const Core::Mat::PAR::Parameter::Data& matdata)
+    : Parameter(matdata), kappa_(matdata.parameters.Get<double>("KAPPA"))
 {
 }
 

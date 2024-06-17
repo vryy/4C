@@ -32,7 +32,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        CoupMooneyRivlin(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        CoupMooneyRivlin(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

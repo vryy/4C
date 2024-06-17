@@ -66,7 +66,7 @@ namespace MIXTURE
       static constexpr int GROWTH_TYPE_ANISOTROPIC = 1;
 
       /// constructor
-      explicit GrowthRemodelMixtureRule(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+      explicit GrowthRemodelMixtureRule(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// Create mixturerule instance
       std::unique_ptr<MIXTURE::MixtureRule> CreateRule() override;

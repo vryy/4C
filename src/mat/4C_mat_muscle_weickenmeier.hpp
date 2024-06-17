@@ -34,7 +34,7 @@ namespace Mat
     {
      public:
       /// constructor
-      MuscleWeickenmeier(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      MuscleWeickenmeier(const Core::Mat::PAR::Parameter::Data& matdata);
 
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 

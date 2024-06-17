@@ -165,7 +165,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      GrowthLawDyn(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      GrowthLawDyn(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{
@@ -471,7 +471,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      GrowthLawAnisoStrain(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      GrowthLawAnisoStrain(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{
@@ -615,7 +615,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      GrowthLawAnisoStress(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      GrowthLawAnisoStress(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{
@@ -758,7 +758,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      GrowthLawAnisoStrainConstTrig(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      GrowthLawAnisoStrainConstTrig(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;
@@ -860,7 +860,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      GrowthLawAnisoStressConstTrig(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      GrowthLawAnisoStressConstTrig(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;
@@ -962,7 +962,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      GrowthLawIsoStress(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      GrowthLawIsoStress(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{
@@ -1110,7 +1110,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      GrowthLawAC(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      GrowthLawAC(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{
@@ -1214,7 +1214,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      GrowthLawACRadial(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      GrowthLawACRadial(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create growth law instance of matching type with my parameters
       Teuchos::RCP<Mat::GrowthLaw> CreateGrowthLaw();
@@ -1298,7 +1298,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      GrowthLawACRadialRefConc(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      GrowthLawACRadialRefConc(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create growth law instance of matching type with my parameters
       Teuchos::RCP<Mat::GrowthLaw> CreateGrowthLaw();
@@ -1383,7 +1383,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      GrowthLawConst(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      GrowthLawConst(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{
@@ -1401,6 +1401,32 @@ namespace Mat
 
       /// create growth law instance of matching type with my parameters
       Teuchos::RCP<Mat::GrowthLaw> CreateGrowthLaw();
+
+      double GetParameter(int parametername, const int EleId)
+      {
+        // check if we have an element based value via size
+        if (matparams_[parametername]->GlobalLength() == 1)
+        {
+          // we have a global value hence we directly return the first entry
+          return (*matparams_[parametername])[0];
+        }
+        // If someone calls this functions without a valid EleID and we have element based values
+        // throw error
+        else if (EleId < 0 && matparams_[parametername]->GlobalLength() > 1)
+        {
+          FOUR_C_THROW("Global mat parameter requested but we have elementwise mat params");
+          return 0.0;
+        }
+        // otherwise just return the element specific value
+        else
+        {
+          // calculate LID here, instead of before each call
+          return (*matparams_[parametername])[matparams_[parametername]->Map().LID(EleId)];
+        }
+      }
+
+     private:
+      std::vector<Teuchos::RCP<Epetra_Vector>> matparams_;
 
     };  // class Growth
 

@@ -29,7 +29,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      StVenantKirchhoff(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      StVenantKirchhoff(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

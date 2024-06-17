@@ -44,7 +44,7 @@ namespace Mat
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      PlasticElastHyperVCU(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      PlasticElastHyperVCU(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

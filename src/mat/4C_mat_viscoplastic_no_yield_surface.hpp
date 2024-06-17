@@ -28,7 +28,7 @@ namespace Mat
     class ViscoPlasticNoYieldSurface : public Core::Mat::PAR::Parameter
     {
      public:
-      explicit ViscoPlasticNoYieldSurface(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      explicit ViscoPlasticNoYieldSurface(const Core::Mat::PAR::Parameter::Data& matdata);
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! @name return methods of material parameters

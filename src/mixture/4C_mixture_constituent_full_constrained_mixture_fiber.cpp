@@ -72,22 +72,21 @@ namespace
 }  // namespace
 
 MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber::
-    MixtureConstituentFullConstrainedMixtureFiber(
-        const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    MixtureConstituentFullConstrainedMixtureFiber(const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureConstituent(matdata),
-      fiber_id_(matdata->Get<int>("FIBER_ID") - 1),
-      init_(matdata->Get<int>("INIT")),
-      fiber_material_id_(matdata->Get<int>("FIBER_MATERIAL_ID")),
+      fiber_id_(matdata.parameters.Get<int>("FIBER_ID") - 1),
+      init_(matdata.parameters.Get<int>("INIT")),
+      fiber_material_id_(matdata.parameters.Get<int>("FIBER_MATERIAL_ID")),
       fiber_material_(FiberMaterialFactory(fiber_material_id_)),
-      growth_enabled_(matdata->Get<bool>("GROWTH_ENABLED")),
-      poisson_decay_time_(matdata->Get<double>("DECAY_TIME")),
-      growth_constant_(matdata->Get<double>("GROWTH_CONSTANT")),
-      deposition_stretch_(matdata->Get<double>("DEPOSITION_STRETCH")),
+      growth_enabled_(matdata.parameters.Get<bool>("GROWTH_ENABLED")),
+      poisson_decay_time_(matdata.parameters.Get<double>("DECAY_TIME")),
+      growth_constant_(matdata.parameters.Get<double>("GROWTH_CONSTANT")),
+      deposition_stretch_(matdata.parameters.Get<double>("DEPOSITION_STRETCH")),
       initial_deposition_stretch_timefunc_num_(
-          matdata->Get<int>("INITIAL_DEPOSITION_STRETCH_TIMEFUNCT")),
+          matdata.parameters.Get<int>("INITIAL_DEPOSITION_STRETCH_TIMEFUNCT")),
       adaptive_history_strategy_(GetHistoryAdaptionStrategyFromInput(
-          matdata->Get<std::string>("ADAPTIVE_HISTORY_STRATEGY"))),
-      adaptive_history_tolerance_(matdata->Get<double>("ADAPTIVE_HISTORY_TOLERANCE"))
+          matdata.parameters.Get<std::string>("ADAPTIVE_HISTORY_STRATEGY"))),
+      adaptive_history_tolerance_(matdata.parameters.Get<double>("ADAPTIVE_HISTORY_TOLERANCE"))
 {
 }
 

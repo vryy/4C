@@ -1,19 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Base object to hold 'quick' access to material parameters
-
-\level 1
-
+\brief Base class to hold material parameters
+\level 0
 */
-
 /*----------------------------------------------------------------------*/
 
 #ifndef FOUR_C_MATERIAL_PARAMETER_BASE_HPP
 #define FOUR_C_MATERIAL_PARAMETER_BASE_HPP
 
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_config.hpp"
 
 #include "4C_io_input_parameter_container.hpp"
@@ -24,130 +18,95 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-/*----------------------------------------------------------------------*/
-/* forward declarations */
 namespace Core::Mat
 {
   class Material;
-  namespace PAR
-  {
-    class Parameter;
-  }
 }  // namespace Core::Mat
-
-/*----------------------------------------------------------------------*/
-/* declarations */
 
 namespace Core::Mat::PAR
 {
-  /// Legacy container for read-in materials
-  ///
-  /// This object stores the validated material parameters as
-  /// Core::IO::InputParameterContainer.
-  class Material : public Core::IO::InputParameterContainer
-  {
-   public:
-    /// @name life span
-    //@{
-
-    /// Standard constructor
-    Material(const int id,                        ///< unique material ID
-        const Core::Materials::MaterialType type  ///< type of material
-    );
-
-    /// Copy the input_data into this object.
-    Material(int id, Core::Materials::MaterialType type,
-        const Core::IO::InputParameterContainer& input_data);
-
-    /// Default constructor without information from the input lines.
-    Material() = default;
-
-    //@}
-
-    /// @name Query methods
-    //@{
-
-    /// Return material id
-    [[nodiscard]] inline virtual int Id() const { return id_; }
-
-    /// Return type of material
-    [[nodiscard]] inline virtual Core::Materials::MaterialType Type() const { return type_; }
-
-    //@}
-
-    /// don't want = operator
-    Material operator=(const Material& old) = delete;
-    Material(const Core::Mat::PAR::Material& old) = delete;
-
-   protected:
-    /// Unique ID of this material, no second material of same ID may exist
-    int id_{};
-
-    /// Type of this material
-    Core::Materials::MaterialType type_{};
-  };
-
-  /*----------------------------------------------------------------------*/
-  /// Base object to hold 'quick' access material parameters
-  ///
-  /// Core::Mat::PAR::Parameters is derived for the various implemented
-  /// materials. These provide the 'quick' access to the read-in
-  /// material parameters.
-  ///
-  /// For every read-in material will exist a single instance (of
-  /// a derived class) of this object.
+  /**
+   * Base class for material parameters.
+   *
+   * This class is used to store the parameters of a material once. Through the virtual method
+   * create_material() a material instance can be created which will use the stored parameters.
+   * Thus, the parameters in this class are shared across all created material instances.
+   *
+   * When defining a new material, a new derived class of Parameter must be created. This derived
+   * class must implement the create_material() method to create the material instance of the
+   * correct type.
+   */
   class Parameter
   {
    public:
-    /// construct the material object given material parameters
-    Parameter(Teuchos::RCP<const Core::Mat::PAR::Material>
-            matdata  ///< read and validated material data (of 'slow' access)
-    );
+    /**
+     * Additional data that is required to create the enclosing Parameter object.
+     */
+    struct Data
+    {
+      /**
+       * An ID that is unique for each material and supplied from the input file.
+       */
+      int id{-1};
 
-    /// destructor
-    virtual ~Parameter() = default;
+      /**
+       * The type of the material.
+       */
+      Core::Materials::MaterialType type{Core::Materials::MaterialType::m_none};
 
-    /// (unique) material ID
-    [[nodiscard]] int Id() const { return id_; }
-
-    /// material type
-    [[nodiscard]] Core::Materials::MaterialType Type() const { return type_; }
-
-    /// create material instance of matching type with my parameters
-    virtual Teuchos::RCP<Core::Mat::Material> create_material() = 0;
-
-    //! \brief return element specific or global material parameter using enum parametername which
-    //! is defined in respective Mat::PAR classes
-    double GetParameter(int parametername, const int EleId);
+      /**
+       * A dynamic container for any additional parameters that a concrete derived class may
+       * require.
+       */
+      Core::IO::InputParameterContainer parameters;
+    };
 
     /**
-     * Access to the raw input data.
+     * Base class constructor taking the @p data with basic information about the material.
      */
-    const Core::IO::InputParameterContainer& raw_parameters() const { return *raw_parameters_; }
+    Parameter(Data data);
 
-   protected:
-    /*! \brief
-     * data structure to store all material parameters in.
-     * By default all elements with the same mat share the same material properties, hence the
-     * Epetra_Vector has length 1 However for elementwise material properties the Epetra_Vector
-     * has EleColMap layout.
+    /**
+     * Virtual destructor.
      */
-    std::vector<Teuchos::RCP<Epetra_Vector>> matparams_;
+    virtual ~Parameter() = default;
+
+    /**
+     * The ID of the material.
+     */
+    [[nodiscard]] int Id() const { return data_.id; }
+
+    /**
+     * The type of the material.
+     */
+    [[nodiscard]] Core::Materials::MaterialType Type() const { return data_.type; }
+
+
+    /**
+     * Create a new material instance from the stored parameters.
+     *
+     * @note This method must be implemented by derived classes.
+     */
+    virtual Teuchos::RCP<Core::Mat::Material> create_material() = 0;
+
+    /**
+     * Access to the raw input parameters. Derived classes usually store the parameters in a more
+     * convenient way. This method grants access to the raw input parameters without specific
+     * knowledge of the derived class.
+     */
+    [[nodiscard]] const Core::IO::InputParameterContainer& raw_parameters() const
+    {
+      return data_.parameters;
+    }
+
 
    private:
-    /// material ID, as defined in input file
-    int id_;
-
-    /// material type
-    Core::Materials::MaterialType type_;
-
-    /// raw input parameters
-    Teuchos::RCP<const Core::Mat::PAR::Material> raw_parameters_;
-
-  };  // class Parameter
-
+    /**
+     * Data as supplied during construction.
+     */
+    Data data_;
+  };
 }  // namespace Core::Mat::PAR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

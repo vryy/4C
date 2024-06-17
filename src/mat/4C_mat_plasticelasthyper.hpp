@@ -58,7 +58,7 @@ namespace Mat
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      PlasticElastHyper(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      PlasticElastHyper(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

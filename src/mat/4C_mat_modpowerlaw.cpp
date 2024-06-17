@@ -20,12 +20,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::ModPowerLaw::ModPowerLaw(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::ModPowerLaw::ModPowerLaw(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      m_cons_(matdata->Get<double>("MCONS")),
-      delta_(matdata->Get<double>("DELTA")),
-      a_exp_(matdata->Get<double>("AEXP")),
-      density_(matdata->Get<double>("DENSITY"))
+      m_cons_(matdata.parameters.Get<double>("MCONS")),
+      delta_(matdata.parameters.Get<double>("DELTA")),
+      a_exp_(matdata.parameters.Get<double>("AEXP")),
+      density_(matdata.parameters.Get<double>("DENSITY"))
 {
 }
 

@@ -14,8 +14,10 @@ thesis)
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::Elastic::PAR::VolPenalty::VolPenalty(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
-    : Parameter(matdata), eps_(matdata->Get<double>("EPSILON")), gam_(matdata->Get<double>("GAMMA"))
+Mat::Elastic::PAR::VolPenalty::VolPenalty(const Core::Mat::PAR::Parameter::Data& matdata)
+    : Parameter(matdata),
+      eps_(matdata.parameters.Get<double>("EPSILON")),
+      gam_(matdata.parameters.Get<double>("GAMMA"))
 {
   if (eps_ < 0. || gam_ <= 0.)
     FOUR_C_THROW("VolPenalty parameters EPSILON and GAMMA have to be greater zero");

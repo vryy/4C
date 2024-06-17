@@ -33,7 +33,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        IsoYeoh(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        IsoYeoh(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

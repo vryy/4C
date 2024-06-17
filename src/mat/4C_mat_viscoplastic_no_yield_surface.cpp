@@ -31,21 +31,21 @@ struct Mat::PreCalculatedTerms
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Mat::PAR::ViscoPlasticNoYieldSurface::ViscoPlasticNoYieldSurface(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      density_(matdata->Get<double>("DENS")),
-      nue_(matdata->Get<double>("NUE")),
-      young_(matdata->Get<double>("YOUNG")),
-      temperature_(matdata->Get<double>("TEMPERATURE")),
-      pre_exp_fac_(matdata->Get<double>("PRE_EXP_FAC")),
-      activation_energy_(matdata->Get<double>("ACTIVATION_ENERGY")),
-      gas_constant_(matdata->Get<double>("GAS_CONSTANT")),
-      strain_rate_sensitivity_(matdata->Get<double>("STRAIN_RATE_SENS")),
-      init_flow_res_(matdata->Get<double>("INIT_FLOW_RES")),
-      flow_res_exp_(matdata->Get<double>("FLOW_RES_EXP")),
-      flow_res_pre_fac_(matdata->Get<double>("FLOW_RES_PRE_FAC")),
-      flow_res_sat_fac_(matdata->Get<double>("FLOW_RES_SAT_FAC")),
-      flow_res_sat_exp_(matdata->Get<double>("FLOW_RES_SAT_EXP"))
+      density_(matdata.parameters.Get<double>("DENS")),
+      nue_(matdata.parameters.Get<double>("NUE")),
+      young_(matdata.parameters.Get<double>("YOUNG")),
+      temperature_(matdata.parameters.Get<double>("TEMPERATURE")),
+      pre_exp_fac_(matdata.parameters.Get<double>("PRE_EXP_FAC")),
+      activation_energy_(matdata.parameters.Get<double>("ACTIVATION_ENERGY")),
+      gas_constant_(matdata.parameters.Get<double>("GAS_CONSTANT")),
+      strain_rate_sensitivity_(matdata.parameters.Get<double>("STRAIN_RATE_SENS")),
+      init_flow_res_(matdata.parameters.Get<double>("INIT_FLOW_RES")),
+      flow_res_exp_(matdata.parameters.Get<double>("FLOW_RES_EXP")),
+      flow_res_pre_fac_(matdata.parameters.Get<double>("FLOW_RES_PRE_FAC")),
+      flow_res_sat_fac_(matdata.parameters.Get<double>("FLOW_RES_SAT_FAC")),
+      flow_res_sat_exp_(matdata.parameters.Get<double>("FLOW_RES_SAT_EXP"))
 {
 }
 

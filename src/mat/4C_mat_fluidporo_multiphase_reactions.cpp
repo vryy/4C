@@ -21,10 +21,10 @@ FOUR_C_NAMESPACE_OPEN
  | rstandard constructor                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : FluidPoroMultiPhase(matdata),
-      numreac_((matdata->Get<int>("NUMREAC"))),
-      reacids_((matdata->Get<std::vector<int>>("REACIDS")))
+      numreac_((matdata.parameters.Get<int>("NUMREAC"))),
+      reacids_((matdata.parameters.Get<std::vector<int>>("REACIDS")))
 {
   // check if sizes fit
   if (numreac_ != (int)reacids_.size())

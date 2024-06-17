@@ -22,10 +22,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::IterativePrestressStrategy::IterativePrestressStrategy(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : PrestressStrategy(matdata),
-      isochoric_(matdata->Get<bool>("ISOCHORIC")),
-      is_active_(matdata->Get<bool>("ACTIVE"))
+      isochoric_(matdata.parameters.Get<bool>("ISOCHORIC")),
+      is_active_(matdata.parameters.Get<bool>("ACTIVE"))
 {
 }
 

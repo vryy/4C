@@ -24,15 +24,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::Newman::Newman(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::Newman::Newman(const Core::Mat::PAR::Parameter::Data& matdata)
     : ElchSingleMat(matdata),
-      valence_(matdata->Get<double>("VALENCE")),
-      transnrcurve_(matdata->Get<int>("TRANSNR")),
-      thermfaccurve_(matdata->Get<int>("THERMFAC")),
-      transnrparanum_(matdata->Get<int>("TRANS_PARA_NUM")),
-      transnrpara_(matdata->Get<std::vector<double>>("TRANS_PARA")),
-      thermfacparanum_(matdata->Get<int>("THERM_PARA_NUM")),
-      thermfacpara_(matdata->Get<std::vector<double>>("THERM_PARA"))
+      valence_(matdata.parameters.Get<double>("VALENCE")),
+      transnrcurve_(matdata.parameters.Get<int>("TRANSNR")),
+      thermfaccurve_(matdata.parameters.Get<int>("THERMFAC")),
+      transnrparanum_(matdata.parameters.Get<int>("TRANS_PARA_NUM")),
+      transnrpara_(matdata.parameters.Get<std::vector<double>>("TRANS_PARA")),
+      thermfacparanum_(matdata.parameters.Get<int>("THERM_PARA_NUM")),
+      thermfacpara_(matdata.parameters.Get<std::vector<double>>("THERM_PARA"))
 {
   if (transnrparanum_ != (int)transnrpara_.size())
     FOUR_C_THROW("number of materials %d does not fit to size of material vector %d",

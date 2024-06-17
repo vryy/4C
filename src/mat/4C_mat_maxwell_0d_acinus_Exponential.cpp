@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Mat::PAR::Maxwell0dAcinusExponential::Maxwell0dAcinusExponential(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Maxwell0dAcinus(matdata)
 {
 }

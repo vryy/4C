@@ -27,16 +27,16 @@ FOUR_C_NAMESPACE_OPEN
  |                                                           dano 02/10 |
  *----------------------------------------------------------------------*/
 Mat::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_((matdata->Get<std::vector<double>>("YOUNG"))),
-      poissonratio_(matdata->Get<double>("NUE")),
-      density_(matdata->Get<double>("DENS")),
-      thermexpans_(matdata->Get<double>("THEXPANS")),
-      capa_(matdata->Get<double>("CAPA")),
-      conduct_(matdata->Get<double>("CONDUCT")),
-      thetainit_(matdata->Get<double>("INITTEMP")),
-      thermomat_(matdata->Get<int>("THERMOMAT"))
+      youngs_((matdata.parameters.Get<std::vector<double>>("YOUNG"))),
+      poissonratio_(matdata.parameters.Get<double>("NUE")),
+      density_(matdata.parameters.Get<double>("DENS")),
+      thermexpans_(matdata.parameters.Get<double>("THEXPANS")),
+      capa_(matdata.parameters.Get<double>("CAPA")),
+      conduct_(matdata.parameters.Get<double>("CONDUCT")),
+      thetainit_(matdata.parameters.Get<double>("INITTEMP")),
+      thermomat_(matdata.parameters.Get<int>("THERMOMAT"))
 {
   if (poissonratio_ >= 0.5 || poissonratio_ < -1.)
     FOUR_C_THROW("Poisson's ratio must be in [-1;0.5)");

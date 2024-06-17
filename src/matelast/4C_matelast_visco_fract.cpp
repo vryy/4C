@@ -12,11 +12,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Mat::Elastic::PAR::Fract::Fract(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+Mat::Elastic::PAR::Fract::Fract(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      tau_(matdata->Get<double>("TAU")),
-      alpha_(matdata->Get<double>("ALPHA")),
-      beta_(matdata->Get<double>("BETA"))
+      tau_(matdata.parameters.Get<double>("TAU")),
+      alpha_(matdata.parameters.Get<double>("ALPHA")),
+      beta_(matdata.parameters.Get<double>("BETA"))
 {
 }
 

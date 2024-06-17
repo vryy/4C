@@ -56,7 +56,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        StructuralTensorParameter(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        StructuralTensorParameter(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

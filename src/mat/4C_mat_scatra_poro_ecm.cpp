@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::ScatraMatPoroECM::ScatraMatPoroECM(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
-    : ScatraReactionMat(matdata), reacscale_(matdata->Get<double>("REACSCALE"))
+Mat::PAR::ScatraMatPoroECM::ScatraMatPoroECM(const Core::Mat::PAR::Parameter::Data& matdata)
+    : ScatraReactionMat(matdata), reacscale_(matdata.parameters.Get<double>("REACSCALE"))
 {
 }
 

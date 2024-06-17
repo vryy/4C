@@ -34,7 +34,7 @@ namespace Mat
     {
      public:
       /// constructor
-      MuscleGiantesio(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      MuscleGiantesio(const Core::Mat::PAR::Parameter::Data& matdata);
 
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 

@@ -22,13 +22,13 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 Mat::PAR::BeamReissnerElastPlasticMaterialParams::BeamReissnerElastPlasticMaterialParams(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : BeamReissnerElastHyperMaterialParams(matdata),
-      yield_stress_n_(matdata->Get<double>("YIELDN")),
-      yield_stress_m_(matdata->Get<double>("YIELDM")),
-      isohard_modulus_n_(matdata->Get<double>("ISOHARDN")),
-      isohard_modulus_m_(matdata->Get<double>("ISOHARDM")),
-      torsion_plasticity_(matdata->Get<bool>("TORSIONPLAST"))
+      yield_stress_n_(matdata.parameters.Get<double>("YIELDN")),
+      yield_stress_m_(matdata.parameters.Get<double>("YIELDM")),
+      isohard_modulus_n_(matdata.parameters.Get<double>("ISOHARDN")),
+      isohard_modulus_m_(matdata.parameters.Get<double>("ISOHARDM")),
+      torsion_plasticity_(matdata.parameters.Get<bool>("TORSIONPLAST"))
 {
   if (yield_stress_n_ == -1.0 && yield_stress_m_ == -1.0 && isohard_modulus_n_ == -1.0 &&
       isohard_modulus_m_ == -1.0)

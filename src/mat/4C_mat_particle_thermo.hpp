@@ -37,7 +37,7 @@ namespace Mat
     {
      public:
       //! constructor
-      ParticleMaterialThermo(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ParticleMaterialThermo(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! @name material parameters
       //@{

@@ -29,18 +29,18 @@ namespace
   using ActivationMapType = std::unordered_map<int, std::vector<std::pair<double, double>>>;
 
   Mat::PAR::MuscleCombo::ActivationParameterVariant GetActivationParams(
-      const Teuchos::RCP<Core::Mat::PAR::Material>& matdata,
+      const Core::Mat::PAR::Parameter::Data& matdata,
       const Inpar::Mat::ActivationType& activation_type)
   {
     if (activation_type == Inpar::Mat::ActivationType::function_of_space_time)
     {
-      auto actFunctId = matdata->Get<int>("FUNCTID");
+      auto actFunctId = matdata.parameters.Get<int>("FUNCTID");
       if (actFunctId <= 0) FOUR_C_THROW("Function id must be positive");
       return actFunctId;
     }
     else if (activation_type == Inpar::Mat::ActivationType::map)
     {
-      return matdata->Get<const ActivationMapType>("MAPFILE");
+      return matdata.parameters.Get<const ActivationMapType>("MAPFILE");
     }
     else
       return std::monostate{};
@@ -96,19 +96,20 @@ namespace
 }  // namespace
 
 
-Mat::PAR::MuscleCombo::MuscleCombo(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::MuscleCombo::MuscleCombo(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      alpha_(matdata->Get<double>("ALPHA")),
-      beta_(matdata->Get<double>("BETA")),
-      gamma_(matdata->Get<double>("GAMMA")),
-      kappa_(matdata->Get<double>("KAPPA")),
-      omega0_(matdata->Get<double>("OMEGA0")),
-      Popt_(matdata->Get<double>("POPT")),
-      lambdaMin_(matdata->Get<double>("LAMBDAMIN")),
-      lambdaOpt_(matdata->Get<double>("LAMBDAOPT")),
-      activationType_(static_cast<Inpar::Mat::ActivationType>(matdata->Get<int>("ACTEVALTYPE"))),
+      alpha_(matdata.parameters.Get<double>("ALPHA")),
+      beta_(matdata.parameters.Get<double>("BETA")),
+      gamma_(matdata.parameters.Get<double>("GAMMA")),
+      kappa_(matdata.parameters.Get<double>("KAPPA")),
+      omega0_(matdata.parameters.Get<double>("OMEGA0")),
+      Popt_(matdata.parameters.Get<double>("POPT")),
+      lambdaMin_(matdata.parameters.Get<double>("LAMBDAMIN")),
+      lambdaOpt_(matdata.parameters.Get<double>("LAMBDAOPT")),
+      activationType_(
+          static_cast<Inpar::Mat::ActivationType>(matdata.parameters.Get<int>("ACTEVALTYPE"))),
       activationParams_(GetActivationParams(matdata, activationType_)),
-      density_(matdata->Get<double>("DENS"))
+      density_(matdata.parameters.Get<double>("DENS"))
 {
   // error handling for parameter ranges
   // passive material parameters

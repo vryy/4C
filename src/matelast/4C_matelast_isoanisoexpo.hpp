@@ -36,7 +36,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        IsoAnisoExpo(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        IsoAnisoExpo(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

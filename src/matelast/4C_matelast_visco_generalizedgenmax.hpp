@@ -33,7 +33,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        GeneralizedGenMax(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        GeneralizedGenMax(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{
@@ -61,7 +61,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        ViscoBranch(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        ViscoBranch(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{
@@ -96,7 +96,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        ViscoPart(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        ViscoPart(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

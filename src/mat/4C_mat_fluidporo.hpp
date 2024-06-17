@@ -50,7 +50,7 @@ namespace Mat
     {
      public:
       //! standard constructor
-      FluidPoro(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      FluidPoro(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! set initial porosity from structural material and calculate
       //! permeability_correction_factor_

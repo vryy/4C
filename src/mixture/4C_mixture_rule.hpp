@@ -72,7 +72,7 @@ namespace MIXTURE
 
      public:
       /// constructor
-      explicit MixtureRule(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+      explicit MixtureRule(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// Override this method and throw error, as only the CreateRule() should be used.
       Teuchos::RCP<Core::Mat::Material> create_material() final

@@ -180,10 +180,10 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_gp_data_init
 }
 
 Mat::Elastic::PAR::CoupAnisoExpoShear::CoupAnisoExpoShear(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : Core::Mat::PAR::Parameter(matdata), Mat::Elastic::PAR::CoupAnisoExpoBase(matdata)
 {
-  std::copy_n(matdata->Get<std::vector<int>>("FIBER_IDS").begin(), 2, fiber_id_.begin());
+  std::copy_n(matdata.parameters.Get<std::vector<int>>("FIBER_IDS").begin(), 2, fiber_id_.begin());
 
   for (int& i : fiber_id_) i -= 1;
 }

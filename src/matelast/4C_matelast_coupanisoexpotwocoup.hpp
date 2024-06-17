@@ -36,7 +36,7 @@ namespace Mat
       {
        public:
         /// constructor with given material parameters
-        explicit CoupAnisoExpoTwoCoup(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        explicit CoupAnisoExpoTwoCoup(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

@@ -18,10 +18,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : MIXTURE::PAR::MixtureGrowthStrategy(matdata),
-      init_mode_(matdata->Get<int>("INIT")),
-      fiber_id_(matdata->Get<int>("FIBER_ID"))
+      init_mode_(matdata.parameters.Get<int>("INIT")),
+      fiber_id_(matdata.parameters.Get<int>("FIBER_ID"))
 {
 }
 

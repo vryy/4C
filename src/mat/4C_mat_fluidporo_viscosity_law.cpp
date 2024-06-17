@@ -58,19 +58,19 @@ Mat::PAR::FluidPoroViscosityLaw* Mat::PAR::FluidPoroViscosityLaw::CreateViscosit
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroViscosityLawConstant::FluidPoroViscosityLawConstant(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
-    : FluidPoroViscosityLaw(matdata, true), viscosity_(matdata->Get<double>("VALUE"))
+    const Core::Mat::PAR::Parameter::Data& matdata)
+    : FluidPoroViscosityLaw(matdata, true), viscosity_(matdata.parameters.Get<double>("VALUE"))
 {
   return;
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroViscosityLawCellAdherence::FluidPoroViscosityLawCellAdherence(
-    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : FluidPoroViscosityLaw(matdata, false),
-      visc0_(matdata->Get<double>("VISC_0")),
-      xi_(matdata->Get<double>("XI")),
-      psi_(matdata->Get<double>("PSI"))
+      visc0_(matdata.parameters.Get<double>("VISC_0")),
+      xi_(matdata.parameters.Get<double>("XI")),
+      psi_(matdata.parameters.Get<double>("PSI"))
 
 {
   if (visc0_ <= 0.0) FOUR_C_THROW("VISC_0 cannot be smaller or equal to zero!");

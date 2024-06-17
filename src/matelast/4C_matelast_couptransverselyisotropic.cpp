@@ -21,14 +21,14 @@ FOUR_C_NAMESPACE_OPEN
 
 
 Mat::Elastic::PAR::CoupTransverselyIsotropic::CoupTransverselyIsotropic(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : ParameterAniso(matdata),
-      alpha_(matdata->Get<double>("ALPHA")),
-      beta_(matdata->Get<double>("BETA")),
-      gamma_(matdata->Get<double>("GAMMA")),
-      angle_(matdata->Get<double>("ANGLE")),
-      fiber_gid_(matdata->Get<int>("FIBER")),
-      init_(matdata->Get<int>("INIT"))
+      alpha_(matdata.parameters.Get<double>("ALPHA")),
+      beta_(matdata.parameters.Get<double>("BETA")),
+      gamma_(matdata.parameters.Get<double>("GAMMA")),
+      angle_(matdata.parameters.Get<double>("ANGLE")),
+      fiber_gid_(matdata.parameters.Get<int>("FIBER")),
+      init_(matdata.parameters.Get<int>("INIT"))
 {
   /* empty */
 }

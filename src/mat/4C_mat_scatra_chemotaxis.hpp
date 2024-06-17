@@ -29,7 +29,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      ScatraChemotaxisMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ScatraChemotaxisMat(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;

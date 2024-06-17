@@ -31,7 +31,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      ModPowerLaw(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      ModPowerLaw(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{

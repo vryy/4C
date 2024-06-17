@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::ViscoElastHyper::ViscoElastHyper(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+Mat::PAR::ViscoElastHyper::ViscoElastHyper(const Core::Mat::PAR::Parameter::Data& matdata)
     : Mat::PAR::ElastHyper(matdata)
 {
   // polyconvexity check is just implemented for isotropic hyperlastic materials

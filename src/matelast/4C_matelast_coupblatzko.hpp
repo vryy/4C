@@ -33,7 +33,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        CoupBlatzKo(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        CoupBlatzKo(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

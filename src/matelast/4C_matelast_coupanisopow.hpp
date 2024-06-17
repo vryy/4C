@@ -33,7 +33,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        CoupAnisoPow(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+        CoupAnisoPow(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{

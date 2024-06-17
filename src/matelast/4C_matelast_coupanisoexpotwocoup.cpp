@@ -17,18 +17,18 @@ FOUR_C_NAMESPACE_OPEN
 
 
 Mat::Elastic::PAR::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
-    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    const Core::Mat::PAR::Parameter::Data& matdata)
     : ParameterAniso(matdata),
-      A4_(matdata->Get<double>("A4")),
-      B4_(matdata->Get<double>("B4")),
-      A6_(matdata->Get<double>("A6")),
-      B6_(matdata->Get<double>("B6")),
-      A8_(matdata->Get<double>("A8")),
-      B8_(matdata->Get<double>("B8")),
-      gamma_(matdata->Get<double>("GAMMA")),
-      init_(matdata->Get<int>("INIT")),
-      fib_comp_(matdata->Get<bool>("FIB_COMP")),
-      adapt_angle_(matdata->Get<bool>("ADAPT_ANGLE"))
+      A4_(matdata.parameters.Get<double>("A4")),
+      B4_(matdata.parameters.Get<double>("B4")),
+      A6_(matdata.parameters.Get<double>("A6")),
+      B6_(matdata.parameters.Get<double>("B6")),
+      A8_(matdata.parameters.Get<double>("A8")),
+      B8_(matdata.parameters.Get<double>("B8")),
+      gamma_(matdata.parameters.Get<double>("GAMMA")),
+      init_(matdata.parameters.Get<int>("INIT")),
+      fib_comp_(matdata.parameters.Get<bool>("FIB_COMP")),
+      adapt_angle_(matdata.parameters.Get<bool>("ADAPT_ANGLE"))
 {
 }
 
