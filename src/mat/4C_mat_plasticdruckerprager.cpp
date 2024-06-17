@@ -37,6 +37,7 @@ Mat::PAR::PlasticDruckerPrager::PlasticDruckerPrager(const Core::Mat::PAR::Param
       eta_(matdata.parameters.Get<double>("ETA")),
       xi_(matdata.parameters.Get<double>("XI")),
       etabar_(matdata.parameters.Get<double>("ETABAR")),
+      tang_(matdata.parameters.Get<std::string>("TANG")),
       itermax_(matdata.parameters.Get<int>("MAXITER"))
 {
 }
@@ -250,6 +251,7 @@ void Mat::PlasticDruckerPrager::EvaluateFAD(const Core::LinAlg::Matrix<3, 3>* de
   ScalarT xi = params_->xi_;
   ScalarT etabar = params_->etabar_;
   const int itermax = params_->itermax_;
+  const std::string tang_str = params_->tang_;
   ScalarT G = 0.0;
   G = young / (2.0 * (1.0 + nu));
   ScalarT kappa = 0.0;
@@ -257,6 +259,16 @@ void Mat::PlasticDruckerPrager::EvaluateFAD(const Core::LinAlg::Matrix<3, 3>* de
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> id2(true);
   for (int i = 0; i < 3; i++) id2(i) = 1.0;
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1, ScalarT> strain(*linstrain);
+  const int tang = std::invoke(
+      [tang_str]() -> int
+      {
+        if (tang_str == "consistent")
+          return 1;
+        else if (tang_str == "elastic")
+          return 0;
+        else
+          return 1;
+      });
 
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1, ScalarT> strain_p(false);
   for (int i = 0; i < 6; i++) strain_p(i, 0) = strainpllast_.at(gp)(i, 0);
@@ -336,7 +348,7 @@ void Mat::PlasticDruckerPrager::EvaluateFAD(const Core::LinAlg::Matrix<3, 3>* de
     strainplcurr_.at(gp) = strainpllast_.at(gp);
     strainbarplcurr_.at(gp) = strainbarpllast_.at(gp);
   }
-  if (Phi_trial > 0)
+  if ((Phi_trial > 0) && (tang == 1))
   {
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> devstraindouble =
         Core::FADUtils::CastToDouble(devstrain);
