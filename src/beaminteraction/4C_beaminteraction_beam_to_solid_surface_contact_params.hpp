@@ -76,6 +76,15 @@ namespace BEAMINTERACTION
     inline double get_penalty_parameter_g0() const { return penalty_parameter_g0_; }
 
     /**
+     * \brief Returns the configuration where the mortar contact is defined in.
+     */
+    inline Inpar::BeamToSolid::BeamToSolidSurfaceContactMortarDefinedIn
+    get_beam_to_solid_surface_contact_mortar_defined_in() const
+    {
+      return mortar_contact_configuration_;
+    }
+
+    /**
      * \brief Returns a pointer to the visualization output parameters.
      * @return Pointer to visualization output parameters.
      */
@@ -93,6 +102,9 @@ namespace BEAMINTERACTION
 
     //! Regularization parameter for the penalty law.
     double penalty_parameter_g0_;
+
+    //! Configuration where the mortar contact is defined
+    Inpar::BeamToSolid::BeamToSolidSurfaceContactMortarDefinedIn mortar_contact_configuration_;
 
     //! Pointer to the visualization output parameters for beam to solid surface problems.
     Teuchos::RCP<BeamToSolidSurfaceVisualizationOutputParams> output_params_ptr_;

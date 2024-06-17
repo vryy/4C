@@ -68,6 +68,10 @@ namespace BEAMINTERACTION
 
 namespace BEAMINTERACTION
 {
+  // FAD type templated for two variables with a maximum derivative order of 1
+  using fad_type_1st_order_2_variables =
+      typename Core::FADUtils::HigherOrderFadType<1, Sacado::ELRFad::SLFad<double, 2>>::type;
+
   /**
    * \brief Evaluate the penalty force depending on the gap function.
    * @param gap (in) Gap function value.

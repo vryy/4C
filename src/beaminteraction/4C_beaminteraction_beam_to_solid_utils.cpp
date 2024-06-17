@@ -825,6 +825,7 @@ namespace BEAMINTERACTION
       const scalar_type&, const Teuchos::RCP<const BeamToSolidSurfaceContactParams>&);
 
   initialize_template_penalty(double);
+  initialize_template_penalty(fad_type_1st_order_2_variables);
   initialize_template_penalty(line_to_surface_patch_scalar_type_1st_order);
   initialize_template_penalty(line_to_surface_patch_scalar_type_fixed_size_1st_order_line2_nurbs_9);
   initialize_template_penalty(

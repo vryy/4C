@@ -11,8 +11,9 @@
 
 #include "4C_beam3_euler_bernoulli.hpp"
 #include "4C_beam3_reissner.hpp"
-#include "4C_beaminteraction_beam_to_solid_mortar_manager.hpp"
+#include "4C_beaminteraction_beam_to_solid_mortar_manager_contact.hpp"
 #include "4C_beaminteraction_beam_to_solid_surface_contact_pair.hpp"
+#include "4C_beaminteraction_beam_to_solid_surface_contact_pair_mortar.hpp"
 #include "4C_beaminteraction_beam_to_solid_surface_contact_params.hpp"
 #include "4C_beaminteraction_beam_to_solid_surface_meshtying_pair_gauss_point.hpp"
 #include "4C_beaminteraction_beam_to_solid_surface_meshtying_pair_gauss_point_FAD.hpp"
@@ -120,9 +121,19 @@ BEAMINTERACTION::BeamToSolidCondition::create_indirect_assembly_manager(
   {
     // Create the mortar manager. We add 1 to the MaxAllGID since this gives the maximum GID and NOT
     // the length of the GIDs.
-    const auto mortar_manager = Teuchos::rcp<BEAMINTERACTION::BeamToSolidMortarManager>(
-        new BEAMINTERACTION::BeamToSolidMortarManager(
-            discret, beam_to_solid_params_, discret->dof_row_map()->MaxAllGID() + 1));
+    const int start_gid_lambda = discret->dof_row_map()->MaxAllGID() + 1;
+    Teuchos::RCP<BeamToSolidMortarManager> mortar_manager = Teuchos::null;
+    if (Teuchos::rcp_dynamic_cast<const BeamToSolidSurfaceContactParams>(beam_to_solid_params_) ==
+        Teuchos::null)
+    {
+      mortar_manager = Teuchos::rcp(new BEAMINTERACTION::BeamToSolidMortarManager(
+          discret, beam_to_solid_params_, start_gid_lambda));
+    }
+    else
+    {
+      mortar_manager = Teuchos::rcp(new BEAMINTERACTION::BeamToSolidMortarManagerContact(
+          discret, beam_to_solid_params_, start_gid_lambda));
+    }
 
     // Setup the mortar manager.
     mortar_manager->Setup();
@@ -696,7 +707,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
   else
   {
     // Create beam-to-surface pairs for contact.
-    auto beam_to_surface_contact_params =
+    const auto beam_to_surface_contact_params =
         Teuchos::rcp_dynamic_cast<const BeamToSolidSurfaceContactParams>(
             beam_to_solid_params_, true);
 
@@ -774,7 +785,11 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
             default:
               FOUR_C_THROW("Wrong contact type.");
           }
-          break;
+        }
+        case Inpar::BeamToSolid::BeamToSolidContactDiscretization::mortar:
+        {
+          return BeamToSolidSurfaceContactPairMortarFactory(
+              beam_to_surface_contact_params, shape, beam_is_hermite);
         }
         default:
           FOUR_C_THROW("Wrong contact discretization.");
