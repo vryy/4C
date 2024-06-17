@@ -13,8 +13,9 @@
 
 #include "4C_structure_new_timint_basedatasdyn.hpp"
 
-#include "4C_beaminteraction_periodic_boundingbox.hpp"
+#include "4C_comm_utils.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_geometry_periodic_boundingbox.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_new_utils.hpp"
@@ -324,8 +325,14 @@ void STR::TimeInt::BaseDataSDyn::Setup()
       case Inpar::STR::model_browniandyn:
       {
         periodic_boundingbox_ = Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
-        periodic_boundingbox_->Init();
-        periodic_boundingbox_->Setup();
+        periodic_boundingbox_->Init(Global::Problem::Instance()->binning_strategy_params());
+        Teuchos::RCP<Core::FE::Discretization> boundingbox_dis =
+            Global::Problem::Instance()->DoesExistDis("boundingbox")
+                ? Global::Problem::Instance()->GetDis("boundingbox")
+                : Teuchos::null;
+        periodic_boundingbox_->Setup(Global::Problem::Instance()->IOParams(), boundingbox_dis,
+            *Global::Problem::Instance()->GetCommunicators()->GlobalComm(),
+            Global::Problem::Instance()->NDim(), *Global::Problem::Instance()->OutputControlFile());
         break;
       }
       default:

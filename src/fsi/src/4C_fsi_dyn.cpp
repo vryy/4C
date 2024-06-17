@@ -331,7 +331,12 @@ void fsi_immersed_drt()
   if (structdis->GetCondition("PointCoupling") != nullptr)
   {
     structdis->fill_complete(false, false, false);
-    Core::Rebalance::RebalanceDiscretizationsByBinning({structdis}, true);
+    Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+    Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+        "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+        binning_params);
+    Core::Rebalance::RebalanceDiscretizationsByBinning(
+        binning_params, Global::Problem::Instance()->OutputControlFile(), {structdis}, true);
   }
   else if (not structdis->Filled() || not structdis->HaveDofs())
   {
@@ -349,8 +354,12 @@ void fsi_immersed_drt()
   dis.push_back(structdis);
 
   // binning strategy is created
-  Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-      Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
+  Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+  Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+      "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+      binning_params);
+  auto binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(
+      binning_params, Global::Problem::Instance()->OutputControlFile(), comm, comm.MyPID(), dis));
 
   const Teuchos::ParameterList& fbidyn = problem->FBIParams();
 
@@ -362,7 +371,6 @@ void fsi_immersed_drt()
   {
     std::vector<Teuchos::RCP<Epetra_Map>> stdelecolmap;
     std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
-    binningstrategy->Init(dis);
     Teuchos::RCP<Epetra_Map> rowbins =
         binningstrategy
             ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
@@ -429,7 +437,12 @@ void fsi_ale_drt()
   if (structdis->GetCondition("PointCoupling") != nullptr)
   {
     structdis->fill_complete(false, false, false);
-    Core::Rebalance::RebalanceDiscretizationsByBinning({structdis}, true);
+    Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+    Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+        "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+        binning_params);
+    Core::Rebalance::RebalanceDiscretizationsByBinning(
+        binning_params, Global::Problem::Instance()->OutputControlFile(), {structdis}, true);
   }
   else if (not structdis->Filled() || not structdis->HaveDofs())
   {
@@ -485,9 +498,13 @@ void fsi_ale_drt()
       if (structdis->Comm().NumProc() > 1)
       {
         // binning strategy is created and parallel redistribution is performed
-        Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-            Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
-        binningstrategy->Init(dis);
+        Teuchos::ParameterList binning_params =
+            Global::Problem::Instance()->binning_strategy_params();
+        Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+            "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+            binning_params);
+        auto binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params,
+            Global::Problem::Instance()->OutputControlFile(), comm, comm.MyPID(), dis));
         binningstrategy
             ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
                 dis, stdelecolmap, stdnodecolmap);

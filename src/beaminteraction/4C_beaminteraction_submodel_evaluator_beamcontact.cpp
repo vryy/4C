@@ -120,7 +120,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
           Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none)
   {
-    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Beam);
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::BinContentType::Beam);
 
     beam_contact_params_ptr_->build_beam_to_beam_contact_params();
   }
@@ -130,14 +130,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   Discret().GetCondition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
   if (beampenaltycouplingconditions.size() > 0)
   {
-    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Beam);
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::BinContentType::Beam);
   }
 
   if (Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
           Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none)
   {
-    contactelementtypes_.push_back(BINSTRATEGY::UTILS::RigidSphere);
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::BinContentType::RigidSphere);
 
     beam_contact_params_ptr_->build_beam_to_sphere_contact_params();
   }
@@ -150,7 +150,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
           beam_to_solid_volume_parameters, "CONTACT_DISCRETIZATION") !=
       Inpar::BeamToSolid::BeamToSolidContactDiscretization::none)
   {
-    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::BinContentType::Solid);
 
     beam_contact_params_ptr_->build_beam_to_solid_volume_meshtying_params();
 
@@ -181,7 +181,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
           beam_to_solid_surface_parameters, "CONTACT_DISCRETIZATION") !=
       Inpar::BeamToSolid::BeamToSolidContactDiscretization::none)
   {
-    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::BinContentType::Solid);
 
     beam_contact_params_ptr_->build_beam_to_solid_surface_meshtying_params();
 
@@ -212,7 +212,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
           beam_to_solid_surface_contact_parameters, "CONTACT_DISCRETIZATION") !=
       Inpar::BeamToSolid::BeamToSolidContactDiscretization::none)
   {
-    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::BinContentType::Solid);
 
     beam_contact_params_ptr_->build_beam_to_solid_surface_contact_params();
   }
@@ -719,7 +719,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
       dynamic_cast<const Epetra_MpiComm*>(&(Discret().Comm()))->Comm());
 
   // i) beam to beam contact
-  if (have_contact_type(BINSTRATEGY::UTILS::Beam))
+  if (have_contact_type(BINSTRATEGY::UTILS::BinContentType::Beam))
   {
     // safety factor
     globalmax_beam_ia_distance *= safe_fac;
@@ -735,7 +735,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
   }
 
   // ii) beam to sphere contact
-  if (have_contact_type(BINSTRATEGY::UTILS::RigidSphere))
+  if (have_contact_type(BINSTRATEGY::UTILS::BinContentType::RigidSphere))
   {
     // loop over all spheres
     double curr_ia_dist = 0.0;
@@ -772,7 +772,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
   }
 
   // iii) beam to solid contact
-  if (have_contact_type(BINSTRATEGY::UTILS::Solid))
+  if (have_contact_type(BINSTRATEGY::UTILS::BinContentType::Solid))
   {
     FOUR_C_THROW("Not yet implemented for beam to solid contact");
   }

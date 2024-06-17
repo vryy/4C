@@ -9,12 +9,14 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FOUR_C_BEAMINTERACTION_PERIODIC_BOUNDINGBOX_HPP
-#define FOUR_C_BEAMINTERACTION_PERIODIC_BOUNDINGBOX_HPP
+#ifndef FOUR_C_FEM_GEOMETRY_PERIODIC_BOUNDINGBOX_HPP
+#define FOUR_C_FEM_GEOMETRY_PERIODIC_BOUNDINGBOX_HPP
 
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_utils_function_manager.hpp"
+#include "4C_utils_random.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
@@ -25,7 +27,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::IO
 {
   class DiscretizationVisualizationWriterMesh;
-}
+  class OutputControl;
+}  // namespace Core::IO
 namespace Core::FE
 {
   class Discretization;
@@ -46,13 +49,15 @@ namespace Core::Geo
       virtual ~BoundingBox() = default;
 
       /// initialize bounding box object
-      void Init();
+      void Init(const Teuchos::ParameterList& binning_params);
 
       /// initialize bounding box object
       void Init(Core::LinAlg::Matrix<3, 2> const& box, std::vector<bool> const& pbconoff);
 
       /// setup bounding box object, setup call is needed in case of box dirichlet
-      void Setup();
+      void Setup(const Teuchos::ParameterList& io_params,
+          Teuchos::RCP<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
+          int n_dim, const Core::IO::OutputControl& output_control);
 
       /// get edge length
       double EdgeLength(int dim) const { return edgelength_[dim]; }
@@ -70,7 +75,8 @@ namespace Core::Geo
       double operator()(int i, int j) const { return box_(i, j); }
 
       /// initialize bounding box discretization
-      void setup_bounding_box_discretization();
+      void setup_bounding_box_discretization(Teuchos::RCP<Core::FE::Discretization> boundingbox_dis,
+          const Epetra_Comm& comm, const int n_dim);
 
       /*!
       \brief shift node (if outside) back in box if periodic boundary conditions
@@ -110,7 +116,7 @@ namespace Core::Geo
       /*!
       \brief get random position inside box
       */
-      void RandomPosWithin(Core::LinAlg::Matrix<3, 1>& pos) const;
+      void RandomPosWithin(Core::LinAlg::Matrix<3, 1>& pos, Core::UTILS::Random* random) const;
 
       /*!
        \brief If necessary make the boundingbox larger to include this point as one of the corners
@@ -181,12 +187,13 @@ namespace Core::Geo
       /*!
        \brief Apply dirichlet condition according to input file
       */
-      void ApplyDirichlet(double timen);
+      void ApplyDirichlet(double timen, const Core::UTILS::FunctionManager& function_manager);
 
       /*!
        \brief init runtime output object for bounding box discretization
       */
-      void InitRuntimeOutput();
+      void InitRuntimeOutput(
+          const Teuchos::ParameterList& io_params, const Core::IO::OutputControl& output_control);
 
       //! @name public function dealing with mapping of positions in case of a deforming bounding
       //! box

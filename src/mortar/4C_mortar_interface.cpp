@@ -1034,21 +1034,26 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> Mortar::Interface::setup_binning_stra
   }
 
   // increase XAABB by 2x cutoff radius
+  std::stringstream domain_bounding_box_stream;
   for (unsigned int dim = 0; dim < 3; ++dim)
   {
-    XAABB(dim, 0) = globmin[dim] - cutoff;
-    XAABB(dim, 1) = globmax[dim] + cutoff;
+    domain_bounding_box_stream << globmin[dim] - cutoff << " ";
+  }
+  for (unsigned int dim = 0; dim < 3; ++dim)
+  {
+    domain_bounding_box_stream << globmax[dim] + cutoff << " ";
   }
 
+  Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+
+  binning_params.set<double>("BIN_SIZE_LOWER_BOUND", cutoff);
+  binning_params.set<std::string>("DOMAINBOUNDINGBOX", domain_bounding_box_stream.str());
+  Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+      "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+      binning_params);
   Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-      Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
-
-  // Set cutoff and bounding box size
-  binningstrategy->set_bin_size_lower_bound(cutoff);
-  binningstrategy->set_domain_bounding_box_corner_positions(XAABB);
-
-  // compute bins
-  binningstrategy->create_bins_based_on_bin_size_lower_bound_and_binning_domain_dimensions();
+      Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params,
+          Global::Problem::Instance()->OutputControlFile(), Comm(), Comm().MyPID()));
 
   return binningstrategy;
 }

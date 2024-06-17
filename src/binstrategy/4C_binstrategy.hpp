@@ -47,13 +47,16 @@ namespace Core::Nodes
   class Node;
 }
 
-namespace Core::Geo
+
+namespace Core::Geo::MeshFree
 {
-  namespace MeshFree
-  {
-    class BoundingBox;
-  }
-}  // namespace Core::Geo
+  class BoundingBox;
+}
+
+namespace Core::IO
+{
+  class OutputControl;
+}
 
 /*----------------------------------------------------------------------*
  | binning strategy                                         ghamm 11/13 |
@@ -107,30 +110,21 @@ namespace BINSTRATEGY
   {
    public:
     /*!
-     * \brief standard, empty constructor
-     */
-    BinningStrategy();
-
-    /*!
-     * \brief initialize binning strategy
+     * \brief construct binning strategy
      *
+     * \param[in] binning_params binning parameters from input
+     * \param[in] output_control output control file
+     * \param[in] comm Epetra Communicator
+     * \param[in] id of this process
      * \param[in] discret vector of discretizations as basis for build up of binning domain
      * (optional, only needed if binning domain is not described via input file)
      * \param[in] disnp vector of column displacement states (belonging to input discrets) so that
      * current positions of elements and nodes can be considered for build up of binning domain
      */
-    void Init(std::vector<Teuchos::RCP<Core::FE::Discretization>> const discret =
-                  std::vector<Teuchos::RCP<Core::FE::Discretization>>(),
-        std::vector<Teuchos::RCP<const Epetra_Vector>> disnp =
-            std::vector<Teuchos::RCP<const Epetra_Vector>>());
-
-    /*!
-     * \brief set up binning strategy
-     */
-    inline void Setup(){
-        // nothing to do so far
-    };
-
+    BinningStrategy(const Teuchos::ParameterList& binning_params,
+        Teuchos::RCP<Core::IO::OutputControl> output_control, const Epetra_Comm& comm,
+        const int my_rank, const std::vector<Teuchos::RCP<Core::FE::Discretization>>& discret = {},
+        std::vector<Teuchos::RCP<const Epetra_Vector>> disnp = {});
 
     //! \name Read access functions
     //! \{
@@ -172,14 +166,14 @@ namespace BINSTRATEGY
      *
      * \return const pointer to array containing bin sizes in all tree directions
      */
-    inline double const* BinSize() const { return bin_size_; }
+    inline std::array<double, 3> BinSize() const { return bin_size_; }
 
     /*!
      * \brief get number of bins in all three directions
      *
      * \return const pointer to array containing number of bins in all directions
      */
-    inline int const* BinPerDir() const { return bin_per_dir_; }
+    inline std::array<int, 3> BinPerDir() const { return bin_per_dir_; }
 
     /*!
      * \brief check if periodic boundary conditions are applied in at least one direction
@@ -220,39 +214,6 @@ namespace BINSTRATEGY
     inline Core::LinAlg::Matrix<3, 2> const& domain_bounding_box_corner_positions() const
     {
       return domain_bounding_box_corner_positions_;
-    }
-
-    /*!
-     * \brief get pointer to array containing inverse of size of bins in all three directions
-     *
-     * \return pointer to array containing inverses of bin sizes
-     */
-    inline double const* InvBinSize() const { return inv_bin_size_; }
-
-    //! \}
-
-    //! \name Set access functions
-    //! \{
-
-    /*!
-     * \brief set lower bound for bin size
-     *
-     * \param[in] bin_size_lower_bound_ lower bound for bin size
-     */
-    inline void set_bin_size_lower_bound(double bin_size_lower_bound)
-    {
-      bin_size_lower_bound_ = bin_size_lower_bound;
-    }
-
-    /*!
-     * \brief set binning domain dimensions
-     *
-     * \param[in] domain_bounding_box_corner_positions dimension for binning domain
-     */
-    inline void set_domain_bounding_box_corner_positions(
-        Core::LinAlg::Matrix<3, 2> const& domain_bounding_box_corner_positions)
-    {
-      domain_bounding_box_corner_positions_ = domain_bounding_box_corner_positions;
     }
 
     /*!
@@ -407,7 +368,7 @@ namespace BINSTRATEGY
     /*!
      * \brief build periodic boundary conditions
      */
-    void BuildPeriodicBC();
+    void BuildPeriodicBC(const Teuchos::ParameterList& binning_params);
 
     /*!
      * \brief determine boundary row bins
@@ -559,15 +520,8 @@ namespace BINSTRATEGY
      * \param[in] roweles flag indicating to just consider elements owned by myrank
      */
     void GetBinContent(std::set<Core::Elements::Element*>& eles,
-        std::vector<BINSTRATEGY::UTILS::BinContentType> bincontent, std::vector<int>& binIds,
+        const std::vector<BINSTRATEGY::UTILS::BinContentType>& bincontent, std::vector<int>& binIds,
         bool roweles = false) const;
-
-    /*!
-     * \brief remove elements of specific type from all bins
-     *
-     * \param[in] bincontent type of element to be removed from all bins
-     */
-    void remove_specific_eles_from_bins(BINSTRATEGY::UTILS::BinContentType bincontent);
 
     /*!
      * \brief remove all eles from bins
@@ -826,42 +780,42 @@ namespace BINSTRATEGY
     /*!
      * \brief size of each bin in Cartesian coordinates
      */
-    double bin_size_[3];
+    std::array<double, 3> bin_size_ = {0.0, 0.0, 0.0};
 
     /*!
      * \brief inverse of size of each bin in Cartesian coordinates
      */
-    double inv_bin_size_[3];
+    std::array<double, 3> inv_bin_size_ = {0.0, 0.0, 0.0};
 
     /*!
      * \brief number of bins per direction
      */
-    int bin_per_dir_[3];
+    std::array<int, 3> bin_per_dir_ = {0, 0, 0};
 
     /*!
      * \brief number of bins per direction for bin id calculation
      */
-    int id_calc_bin_per_dir_[3];
+    std::array<int, 3> id_calc_bin_per_dir_ = {0, 0, 0};
 
     /*!
      * \brief exponent 2^x = number of bins per direction for bin id calculation
      */
-    int id_calc_exp_bin_per_dir_[3];
+    std::array<int, 3> id_calc_exp_bin_per_dir_ = {0, 0, 0};
 
     /*!
      * \brief global flag whether periodic boundary conditions are specified
      */
-    bool havepbc_;
+    bool havepbc_ = false;
 
     /*!
      * \brief flags for existence of pbcs in x, y, z direction
      */
-    bool pbconoff_[3];
+    std::array<bool, 3> pbconoff_ = {false, false, false};
 
     /*!
      * \brief edge length of binning domain in x, y, z direction
      */
-    double edge_length_binning_domain_[3];
+    std::array<double, 3> edge_length_binning_domain_ = {0, 0, 0};
 
     /*!
      * \brief my rank

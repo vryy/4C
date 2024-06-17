@@ -15,8 +15,8 @@
 
 #include "4C_beam3_base.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
-#include "4C_beaminteraction_periodic_boundingbox.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_geometry_periodic_boundingbox.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
@@ -115,7 +115,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Reset(const Epetra_Vector& x)
 
   // todo: somewhat illegal considering of const correctness
   tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box()->ApplyDirichlet(
-      global_state().get_time_n());
+      global_state().get_time_n(), Global::Problem::Instance()->FunctionManager());
 
   // -------------------------------------------------------------------------
   // reset brownian (stochastic and damping) forces

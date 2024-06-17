@@ -18,11 +18,11 @@
 #include "4C_beaminteraction_link.hpp"
 #include "4C_beaminteraction_link_beam3_reissner_line2_pinjointed.hpp"
 #include "4C_beaminteraction_link_beam3_reissner_line2_rigidjointed.hpp"
-#include "4C_beaminteraction_periodic_boundingbox.hpp"
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
 #include "4C_beaminteraction_utils_parallel_proctoproc.hpp"
 #include "4C_binstrategy_meshfree_multibin.hpp"
 #include "4C_fem_geometry_intersection_math.hpp"
+#include "4C_fem_geometry_periodic_boundingbox.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_discretization_visualization_writer_nodes.hpp"
@@ -346,7 +346,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
         // get set of neighboring beam elements (i.e. elements that somehow touch nb bins)
         // we also need col elements (flag = false) here (in contrast to "normal" crosslinking)
         std::set<Core::Elements::Element*> neighboring_beams;
-        std::vector<BINSTRATEGY::UTILS::BinContentType> bc(1, BINSTRATEGY::UTILS::Beam);
+        std::vector<BINSTRATEGY::UTILS::BinContentType> bc(
+            1, BINSTRATEGY::UTILS::BinContentType::Beam);
         BinStrategyPtr()->GetBinContent(neighboring_beams, bc, neighboring_binIds, false);
 
         // in case there are no neighbors, go to next binding spot
@@ -723,7 +724,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::add_crosslinker_to_bin_di
       {
         // random reference position of crosslinker in bounding box
         Core::LinAlg::Matrix<3, 1> Xmat;
-        linker_init_box->RandomPosWithin(Xmat);
+        linker_init_box->RandomPosWithin(Xmat, Global::Problem::Instance()->Random());
 
         std::vector<double> X(3);
         for (int dim = 0; dim < 3; ++dim) X[dim] = Xmat(dim);
@@ -2325,10 +2326,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
   // get set of neighboring beam elements (i.e. elements that somehow touch nb bins)
   // as explained above, we only need row elements (true flag in GetBinContent())
   std::set<Core::Elements::Element*> neighboring_row_beams;
-  std::vector<BINSTRATEGY::UTILS::BinContentType> bc_beam(1, BINSTRATEGY::UTILS::Beam);
+  std::vector<BINSTRATEGY::UTILS::BinContentType> bc_beam(
+      1, BINSTRATEGY::UTILS::BinContentType::Beam);
   BinStrategyPtr()->GetBinContent(neighboring_row_beams, bc_beam, neighboring_binIds, true);
   std::set<Core::Elements::Element*> neighboring_col_spheres;
-  std::vector<BINSTRATEGY::UTILS::BinContentType> bc_sphere(1, BINSTRATEGY::UTILS::RigidSphere);
+  std::vector<BINSTRATEGY::UTILS::BinContentType> bc_sphere(
+      1, BINSTRATEGY::UTILS::BinContentType::RigidSphere);
   BinStrategyPtr()->GetBinContent(neighboring_col_spheres, bc_sphere, neighboring_binIds, false);
 
 

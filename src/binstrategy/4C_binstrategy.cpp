@@ -10,15 +10,12 @@
 #include "4C_binstrategy.hpp"
 
 #include "4C_beam3_base.hpp"
-#include "4C_beaminteraction_periodic_boundingbox.hpp"
 #include "4C_binstrategy_meshfree_multibin.hpp"
 #include "4C_binstrategy_utils.hpp"
-#include "4C_comm_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_dofset_independent.hpp"
 #include "4C_fem_geometry_intersection_math.hpp"
-#include "4C_fem_geometry_searchtree_service.hpp"
-#include "4C_global_data.hpp"
+#include "4C_fem_geometry_periodic_boundingbox.hpp"
 #include "4C_inpar_binningstrategy.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
@@ -36,65 +33,45 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-BINSTRATEGY::BinningStrategy::BinningStrategy()
-    : bindis_(Teuchos::null),
-      visbindis_(Teuchos::null),
-      bin_size_lower_bound_(0.0),
-      domain_bounding_box_corner_positions_(true),
-      deforming_simulation_domain_handler_(Teuchos::null),
-      writebinstype_(Core::UTILS::IntegralValue<Inpar::BINSTRATEGY::Writebins>(
-          Global::Problem::Instance()->binning_strategy_params(), ("WRITEBINS"))),
-      havepbc_(false),
-      myrank_(Global::Problem::Instance()->GetCommunicators()->GlobalComm()->MyPID()),
-      comm_(Global::Problem::Instance()->GetCommunicators()->LocalComm()->Clone())
-{
-  // initialize arrays
-  for (int idim = 0; idim < 3; ++idim)
-  {
-    bin_size_[idim] = 0.0;
-    inv_bin_size_[idim] = 0.0;
-    bin_per_dir_[idim] = 0;
-    id_calc_bin_per_dir_[idim] = 0;
-    id_calc_exp_bin_per_dir_[idim] = 0;
-    pbconoff_[idim] = false;
-    edge_length_binning_domain_[idim] = 0.0;
-  }
-  boundaryrowbins_.clear();
-  boundarycolbins_.clear();
-}
-
-void BINSTRATEGY::BinningStrategy::Init(
-    std::vector<Teuchos::RCP<Core::FE::Discretization>> const discret,
+BINSTRATEGY::BinningStrategy::BinningStrategy(const Teuchos::ParameterList& binning_params,
+    Teuchos::RCP<Core::IO::OutputControl> output_control, const Epetra_Comm& comm,
+    const int my_rank, const std::vector<Teuchos::RCP<Core::FE::Discretization>>& discret,
     std::vector<Teuchos::RCP<const Epetra_Vector>> disnp)
+    : bin_size_lower_bound_(binning_params.get<double>("BIN_SIZE_LOWER_BOUND")),
+      deforming_simulation_domain_handler_(Teuchos::null),
+      writebinstype_(
+          Core::UTILS::IntegralValue<Inpar::BINSTRATEGY::Writebins>(binning_params, ("WRITEBINS"))),
+      myrank_(my_rank),
+      comm_(comm.Clone())
 {
   // create binning discretization
-  bindis_ = Teuchos::rcp(
-      new Core::FE::Discretization("binning", comm_, Global::Problem::Instance()->NDim()));
+  bindis_ = Teuchos::rcp(new Core::FE::Discretization("binning", comm_, 3));
 
   // create discretization writer
+  auto spatial_approximation_type = Teuchos::getIntegralValue<Core::FE::ShapeFunctionType>(
+      binning_params, "spatial_approximation_type");
   bindis_->SetWriter(Teuchos::rcp(
-      new Core::IO::DiscretizationWriter(bindis_, Global::Problem::Instance()->OutputControlFile(),
-          Global::Problem::Instance()->spatial_approximation_type())));
+      new Core::IO::DiscretizationWriter(bindis_, output_control, spatial_approximation_type)));
   bindis_->fill_complete(false, false, false);
 
-  // binning strategy params
-  const Teuchos::ParameterList& binstrategyparams =
-      Global::Problem::Instance()->binning_strategy_params();
+  visbindis_ = Teuchos::rcp(new Core::FE::Discretization("bins", comm_, 3));
+  // create discretization writer
+  visbindis_->SetWriter(Teuchos::rcp(
+      new Core::IO::DiscretizationWriter(visbindis_, output_control, spatial_approximation_type)));
 
   // try to read valid input
-  bool feasibleboxinput = true;
   domain_bounding_box_corner_positions_.PutScalar(1.0e12);
   // get bounding box specified in the input file
-  std::istringstream xaabbstream(
-      Teuchos::getNumericStringParameter(binstrategyparams, "DOMAINBOUNDINGBOX"));
+  std::istringstream domain_bounding_box_stream(
+      Teuchos::getNumericStringParameter(binning_params, "DOMAINBOUNDINGBOX"));
   for (int col = 0; col < 2; ++col)
   {
     for (int row = 0; row < 3; ++row)
     {
       std::string value;
-      if (xaabbstream >> value)
+      if (domain_bounding_box_stream >> value)
       {
-        double doublevalue = std::atof(value.c_str());
+        const double doublevalue = std::atof(value.c_str());
         domain_bounding_box_corner_positions_(row, col) = doublevalue;
       }
       else
@@ -103,14 +80,7 @@ void BINSTRATEGY::BinningStrategy::Init(
     }
   }
 
-  for (int col = 0; col < 2; ++col)
-    for (int row = 0; row < 3; ++row)
-      if (domain_bounding_box_corner_positions_(row, col) > 1.0e11) feasibleboxinput = false;
-
-  // get number of bins per direction
-  bool feasiblebininput = true;
-  std::istringstream binstream(
-      Teuchos::getNumericStringParameter(binstrategyparams, "BIN_PER_DIR"));
+  std::istringstream binstream(Teuchos::getNumericStringParameter(binning_params, "BIN_PER_DIR"));
   for (int idim = 0; idim < 3; ++idim)
   {
     std::string val;
@@ -120,13 +90,15 @@ void BINSTRATEGY::BinningStrategy::Init(
       if (intval > 0) bin_per_dir_[idim] = intval;
     }
     else
+    {
       FOUR_C_THROW(
           "You need to specify three figures for BIN_PER_DIR in input file for three dimensional "
           "problem. ");
+    }
   }
 
-  // get lower bound for bin size
-  bin_size_lower_bound_ = binstrategyparams.get<double>("BIN_SIZE_LOWER_BOUND");
+  // check input
+  bool feasiblebininput = true;
 
   for (int idim = 0; idim < 3; ++idim)
     if (bin_per_dir_[idim] < 1) feasiblebininput = false;
@@ -135,22 +107,26 @@ void BINSTRATEGY::BinningStrategy::Init(
   if (feasiblebininput and bin_size_lower_bound_ > 0.0)
     FOUR_C_THROW("Choose either bin_size_lower_bound_ or binsperdir to specify binning domain.");
 
+  boundaryrowbins_.clear();
+  boundarycolbins_.clear();
+
   // init vectors for function calls
-  if (disnp.size() == 0)
-  {
-    disnp.resize(discret.size());
-    for (unsigned int i = 0; i < disnp.size(); ++i) disnp[i] = Teuchos::null;
-  }
+  if (disnp.size() == 0) disnp.resize(discret.size(), Teuchos::null);
+
+  bool feasibleboxinput = true;
+  for (int col = 0; col < 2; ++col)
+    for (int row = 0; row < 3; ++row)
+      if (domain_bounding_box_corner_positions_(row, col) > 1.0e11) feasibleboxinput = false;
 
   if (not feasibleboxinput)
   {
-    if (discret.size() == 0) FOUR_C_THROW("We need a discretization at this point.");
+    FOUR_C_THROW_UNLESS(discret.size() != 0, "We need a discretization at this point.");
     compute_min_binning_domain_containing_all_elements_of_multiple_discrets(
         discret, disnp, domain_bounding_box_corner_positions_, bin_size_lower_bound_ < 0.0);
   }
   else if (bin_size_lower_bound_ < 0.0)
   {
-    if (discret.size() == 0) FOUR_C_THROW("We need a discretization at this point.");
+    FOUR_C_THROW_UNLESS(discret.size() != 0, "We need a discretization at this point.");
     bin_size_lower_bound_ =
         compute_lower_bound_for_bin_size_as_max_edge_length_of_aabb_of_largest_ele(discret, disnp);
   }
@@ -164,13 +140,13 @@ void BINSTRATEGY::BinningStrategy::Init(
   create_bins_based_on_bin_size_lower_bound_and_binning_domain_dimensions();
 
   // build periodic boundary condition
-  BuildPeriodicBC();
+  BuildPeriodicBC(binning_params);
 }
 
 void BINSTRATEGY::BinningStrategy::GidsInijkRange(
     const int* ijk_range, std::set<int>& binIds, bool checkexistence) const
 {
-  if (checkexistence == true and bindis_ == Teuchos::null)
+  if (checkexistence and bindis_ == Teuchos::null)
     FOUR_C_THROW("particle discretization is not set up correctly");
 
   for (int i = ijk_range[0]; i <= ijk_range[1]; ++i)
@@ -196,14 +172,12 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(
       }  // end for int k
     }    // end for int j
   }      // end for int i
-
-  return;
 }
 
 void BINSTRATEGY::BinningStrategy::GidsInijkRange(
     const int* ijk_range, std::vector<int>& binIds, bool checkexistence) const
 {
-  if (checkexistence == true and bindis_ == Teuchos::null)
+  if (checkexistence and bindis_ == Teuchos::null)
     FOUR_C_THROW("particle discretization is not set up correctly");
 
   for (int i = ijk_range[0]; i <= ijk_range[1]; ++i)
@@ -229,8 +203,6 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(
       }  // end for int k
     }    // end for int j
   }      // end for int i
-
-  return;
 }
 
 int BINSTRATEGY::BinningStrategy::get_number_of_bins_inijk_range(int const ijk_range[6]) const
@@ -303,8 +275,6 @@ void BINSTRATEGY::BinningStrategy::ConvertGidToijk(const int gid, int* ijk) cons
       ijk[1] >= bin_per_dir_[1] || ijk[2] >= bin_per_dir_[2])
     FOUR_C_THROW("ijk (%d %d %d) for given gid: %d is outside of range (bin per dir: %d %d %d)",
         ijk[0], ijk[1], ijk[2], gid, bin_per_dir_[0], bin_per_dir_[1], bin_per_dir_[2]);
-
-  return;
 }
 
 
@@ -347,8 +317,6 @@ void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const double* pos, int* ijk) 
       ijk[dim] = static_cast<int>(std::floor(
           (pos[dim] - domain_bounding_box_corner_positions_(dim, 0)) * inv_bin_size_[dim]));
   }
-
-  return;
 }
 
 void BINSTRATEGY::BinningStrategy::ConvertPosToijk(
@@ -369,8 +337,6 @@ void BINSTRATEGY::BinningStrategy::ConvertPosToijk(
       ijk[dim] = static_cast<int>(std::floor(
           (pos(dim) - domain_bounding_box_corner_positions_(dim, 0)) * inv_bin_size_[dim]));
   }
-
-  return;
 }
 
 int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const Core::LinAlg::Matrix<3, 1>& pos) const
@@ -416,8 +382,6 @@ void BINSTRATEGY::BinningStrategy::GetNeighborBinIds(
       }
     }
   }
-
-  return;
 }
 
 void BINSTRATEGY::BinningStrategy::get_neighbor_and_own_bin_ids(
@@ -436,8 +400,6 @@ void BINSTRATEGY::BinningStrategy::get_neighbor_and_own_bin_ids(
     std::sort(binIds.begin(), binIds.end());
     binIds.erase(std::unique(binIds.begin(), binIds.end()), binIds.end());
   }
-
-  return;
 }
 
 void BINSTRATEGY::BinningStrategy::GetBinCorners(
@@ -471,8 +433,6 @@ void BINSTRATEGY::BinningStrategy::GetBinCorners(
   // change entries to get node numbering according to 4C convention
   std::swap(bincorners[2], bincorners[3]);
   std::swap(bincorners[6], bincorners[7]);
-
-  return;
 }
 
 void BINSTRATEGY::BinningStrategy::GetAllBinCenters(
@@ -516,10 +476,10 @@ double BINSTRATEGY::BinningStrategy::GetMaxBinSize() const
   return std::max(bin_size_[0], std::max(bin_size_[1], bin_size_[2]));
 }
 
-void BINSTRATEGY::BinningStrategy::BuildPeriodicBC()
+void BINSTRATEGY::BinningStrategy::BuildPeriodicBC(const Teuchos::ParameterList& binning_params)
 {
-  std::istringstream periodicbc(Teuchos::getNumericStringParameter(
-      Global::Problem::Instance()->binning_strategy_params(), "PERIODICONOFF"));
+  std::istringstream periodicbc(
+      Teuchos::getNumericStringParameter(binning_params, "PERIODICONOFF"));
 
   // loop over all spatial directions
   for (int dim = 0; dim < 3; ++dim)
@@ -554,8 +514,6 @@ void BINSTRATEGY::BinningStrategy::BuildPeriodicBC()
           "file ...");
     }
   }
-
-  return;
 }
 
 void BINSTRATEGY::BinningStrategy::determine_boundary_row_bins()
@@ -564,7 +522,7 @@ void BINSTRATEGY::BinningStrategy::determine_boundary_row_bins()
   boundaryrowbins_.clear();
 
   // fill discret if necessary to obtain bin row map
-  if (bindis_->Filled() == false) bindis_->fill_complete(false, false, false);
+  if (!bindis_->Filled()) bindis_->fill_complete(false, false, false);
 
   // determine maximal possible number of neighbors
   size_t nummaxneighbors = 26;
@@ -589,9 +547,9 @@ void BINSTRATEGY::BinningStrategy::determine_boundary_row_bins()
     // a bin with less than 26 (or 8 in 2D) row neighbors is a boundary bin between processors
     std::vector<int> rowbinvec;
     rowbinvec.reserve(nummaxneighbors);
-    for (std::vector<int>::const_iterator it = binvec.begin(); it != binvec.end(); ++it)
+    for (int& it : binvec)
     {
-      if (binrowmap->LID(*it) != -1) rowbinvec.push_back(*it);
+      if (binrowmap->LID(it) != -1) rowbinvec.push_back(it);
     }
 
     if (rowbinvec.size() < nummaxneighbors) boundaryrowbins_.push_back(currbin);
@@ -666,12 +624,6 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
   // create new discretization containing the bins as elements
   // -------------------------------------------------------------------------
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(bindis_->Comm().Clone());
-  visbindis_ =
-      Teuchos::rcp(new Core::FE::Discretization("bins", com, Global::Problem::Instance()->NDim()));
-  // create discretization writer
-  visbindis_->SetWriter(Teuchos::rcp(new Core::IO::DiscretizationWriter(visbindis_,
-      Global::Problem::Instance()->OutputControlFile(),
-      Global::Problem::Instance()->spatial_approximation_type())));
 
   // store gids of ghosted elements
   std::map<int, std::vector<Core::LinAlg::Matrix<3, 1>>> ghostcorners;
@@ -950,13 +902,9 @@ void BINSTRATEGY::BinningStrategy::distribute_eles_to_bins(
       GidsInijkRange(ijk_range, binIds, false);
 
       // assign element to bins
-      for (std::vector<int>::const_iterator biniter = binIds.begin(); biniter != binIds.end();
-           ++biniter)
-        binelemap[*biniter].insert(ele->Id());
+      for (int binId : binIds) binelemap[binId].insert(ele->Id());
     }
   }
-
-  return;
 }
 
 void BINSTRATEGY::BinningStrategy::distribute_row_elements_to_bins_using_ele_aabb(
@@ -1065,7 +1013,7 @@ void BINSTRATEGY::BinningStrategy::AssignElesToBins(Teuchos::RCP<Core::FE::Discr
     if (lid < 0) continue;
 
     // get current bin
-    Discret::MeshFree::MeshfreeMultiBin* currbin =
+    auto* currbin =
         dynamic_cast<Discret::MeshFree::MeshfreeMultiBin*>(bindis_->gElement(biniter->first));
 
     // loop over ele content of this bin
@@ -1074,14 +1022,14 @@ void BINSTRATEGY::BinningStrategy::AssignElesToBins(Teuchos::RCP<Core::FE::Discr
     {
       // add eleid and elepointer to current bin
       currbin->AddAssociatedEle(
-          BINSTRATEGY::UTILS::ConvertElementToBinContentType(discret->gElement(*eleiter)), *eleiter,
+          BINSTRATEGY::UTILS::ConvertElementToBinContentType(discret->gElement(*eleiter)),
           discret->gElement(*eleiter));
     }
   }
 }
 
 void BINSTRATEGY::BinningStrategy::GetBinContent(std::set<Core::Elements::Element*>& eles,
-    std::vector<BINSTRATEGY::UTILS::BinContentType> bincontent, std::vector<int>& binIds,
+    const std::vector<BINSTRATEGY::UTILS::BinContentType>& bincontent, std::vector<int>& binIds,
     bool roweles) const
 {
   // loop over all bins
@@ -1093,34 +1041,19 @@ void BINSTRATEGY::BinningStrategy::GetBinContent(std::set<Core::Elements::Elemen
     if (lid < 0) continue;
 
     // get content of current bin
-    Discret::MeshFree::MeshfreeMultiBin* bin =
-        static_cast<Discret::MeshFree::MeshfreeMultiBin*>(bindis_->lColElement(lid));
+    auto* bin = static_cast<Discret::MeshFree::MeshfreeMultiBin*>(bindis_->lColElement(lid));
 
     // loop over bincontent you want to get
-    for (int bc_i = 0; bc_i < static_cast<int>(bincontent.size()); ++bc_i)
+    for (const auto& bc_i : bincontent)
     {
       // gather elements of with specific bincontent type
-      Core::Elements::Element** elements = bin->AssociatedEles(bincontent[bc_i]);
-      const int numeles = bin->NumAssociatedEle(bincontent[bc_i]);
-      for (int iele = 0; iele < numeles; ++iele)
+      auto elements = bin->AssociatedEles(bc_i);
+      for (const auto& ele : elements)
       {
-        if (roweles && elements[iele]->Owner() != myrank_) continue;
-        eles.insert(elements[iele]);
+        if (roweles && ele->Owner() != myrank_) continue;
+        eles.insert(ele);
       }
     }
-  }
-}
-
-void BINSTRATEGY::BinningStrategy::remove_specific_eles_from_bins(
-    BINSTRATEGY::UTILS::BinContentType bincontent)
-{
-  // loop over all bins and remove assigned elements
-  const int numcolbins = bindis_->NumMyColElements();
-  for (int binlid = 0; binlid < numcolbins; ++binlid)
-  {
-    Core::Elements::Element* currentbin = bindis_->lColElement(binlid);
-    dynamic_cast<Discret::MeshFree::MeshfreeMultiBin*>(currentbin)
-        ->remove_specific_associated_eles(bincontent);
   }
 }
 
@@ -1164,17 +1097,14 @@ void BINSTRATEGY::BinningStrategy::distribute_row_nodes_to_bins(
     ConvertPosToijk(coords, ijk);
     const int binid = ConvertijkToGid(ijk);
 
-    if (binid == -1)
-      FOUR_C_THROW(
-          "Node %i in your discretization resides outside the binning \n"
-          "domain, this does not work at this point.",
-          node->Id());
+    FOUR_C_THROW_UNLESS(binid != -1,
+        "Node %i in your discretization resides outside the binning \n"
+        "domain, this does not work at this point.",
+        node->Id());
 
     // assign node to bin
     bin_to_rownodes_map[binid].push_back(node->Id());
   }
-
-  return;
 }
 
 Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::
@@ -1266,7 +1196,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::
 
     // fillcomplete discret with extended ghosting
     discret[i]->fill_complete();
-    if (myrank_ == 0) std::cout << "parallel distribution with extended ghosting" << std::endl;
+    if (myrank_ == 0) std::cout << "parallel distribution with extended ghosting\n";
     Core::Rebalance::UTILS::print_parallel_distribution(*discret[i]);
   }
 
@@ -1285,15 +1215,18 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::weighted_distribution_of_
   // some safety checks to ensure efficiency
   {
     if (numbin < discret[0]->Comm().NumProc() && myrank_ == 0)
+    {
       FOUR_C_THROW(
           "ERROR:NumProc %i > NumBin %i. Too many processors to "
           "distribute your bins properly!!!",
           numbin, numbin < discret[0]->Comm().NumProc());
+    }
 
     if (numbin < 8 * discret[0]->Comm().NumProc() && myrank_ == 0)
+    {
       std::cout << "\n\nWARNING: partitioning not useful, choose less procs. "
-                   " Owner distribution may be inefficient!\n\n"
-                << std::endl;
+                   " Owner distribution may be inefficient!\n\n";
+    }
   }
 
   // row bin distribution
@@ -1630,8 +1563,6 @@ void BINSTRATEGY::BinningStrategy::standard_discretization_ghosting(
   if (myrank_ == 0) std::cout << "parallel distribution with standard ghosting" << std::endl;
   Core::Rebalance::UTILS::print_parallel_distribution(*discret);
 #endif
-
-  return;
 }
 
 void BINSTRATEGY::BinningStrategy::
@@ -1669,9 +1600,11 @@ void BINSTRATEGY::BinningStrategy::
     {
       // now each procs checks if row nodes lie in bins of iproc ...
       if (mynodesinbins.find(binids[i]) != mynodesinbins.end())
+      {
         // ... if so, each proc assignes its node gids to iprocs bins
         sdata[binids[i]].insert(sdata[binids[i]].begin(), mynodesinbins[binids[i]].begin(),
             mynodesinbins[binids[i]].end());
+      }
     }
 
     // iprocs gathers all this information from other procs
@@ -1685,8 +1618,6 @@ void BINSTRATEGY::BinningStrategy::
       allnodesinmybins.insert(rdata.begin(), rdata.end());
     }
   }
-
-  return;
 }
 
 void BINSTRATEGY::BinningStrategy::revert_extended_ghosting(
@@ -1709,7 +1640,7 @@ void BINSTRATEGY::BinningStrategy::revert_extended_ghosting(
 
     // fillcomplete discret with standard ghosting
     dis[i]->fill_complete();
-    if (myrank_ == 0) std::cout << "parallel distribution with reverted ghosting" << std::endl;
+    if (myrank_ == 0) std::cout << "parallel distribution with reverted ghosting\n";
     Core::Rebalance::UTILS::print_parallel_distribution(*dis[i]);
   }
 }
@@ -1718,17 +1649,16 @@ void BINSTRATEGY::BinningStrategy::
     compute_min_binning_domain_containing_all_elements_of_multiple_discrets(
         std::vector<Teuchos::RCP<Core::FE::Discretization>> discret,
         std::vector<Teuchos::RCP<const Epetra_Vector>> disnp,
-        Core::LinAlg::Matrix<3, 2>& domain_bounding_box_corner_positions_,
+        Core::LinAlg::Matrix<3, 2>& domain_bounding_box_corner_positions,
         bool set_bin_size_lower_bound_)
 {
   // reset lower bound for bin size
   if (set_bin_size_lower_bound_) bin_size_lower_bound_ = 0.0;
 
   // safety check
-  if (discret[0]->NodeRowMap()->NumMyElements() == 0)
-    FOUR_C_THROW(
-        "At least one proc does not even own at least one element, this leads to problems."
-        " Choose less procs or change parallel distribution");
+  FOUR_C_THROW_UNLESS(discret[0]->NodeRowMap()->NumMyElements() > 0,
+      "At least one proc does not even own at least one element, this leads to problems."
+      " Choose less procs or change parallel distribution");
 
   // initialize XAABB_ as rectangle around the first node of first discret
   const Core::Nodes::Node* node = discret[0]->lRowNode(0);
@@ -1739,8 +1669,8 @@ void BINSTRATEGY::BinningStrategy::
 
   for (int dim = 0; dim < 3; ++dim)
   {
-    domain_bounding_box_corner_positions_(dim, 0) = currpos[dim] - Core::Geo::TOL7;
-    domain_bounding_box_corner_positions_(dim, 1) = currpos[dim] + Core::Geo::TOL7;
+    domain_bounding_box_corner_positions(dim, 0) = currpos[dim] - Core::Geo::TOL7;
+    domain_bounding_box_corner_positions(dim, 1) = currpos[dim] + Core::Geo::TOL7;
   }
 
   // build XAABB_ from XAABB of all discrets and determine maximal element extension
@@ -1754,10 +1684,10 @@ void BINSTRATEGY::BinningStrategy::
     // set XAABB_ considering all input discrets
     for (int dim = 0; dim < 3; ++dim)
     {
-      domain_bounding_box_corner_positions_(dim, 0) =
-          std::min(domain_bounding_box_corner_positions_(dim, 0), locXAABB(dim, 0));
-      domain_bounding_box_corner_positions_(dim, 1) =
-          std::max(domain_bounding_box_corner_positions_(dim, 1), locXAABB(dim, 1));
+      domain_bounding_box_corner_positions(dim, 0) =
+          std::min(domain_bounding_box_corner_positions(dim, 0), locXAABB(dim, 0));
+      domain_bounding_box_corner_positions(dim, 1) =
+          std::max(domain_bounding_box_corner_positions(dim, 1), locXAABB(dim, 1));
     }
   }
 
@@ -1877,18 +1807,15 @@ void BINSTRATEGY::BinningStrategy::
     inv_bin_size_[dim] = 1.0 / bin_size_[dim];
   }
 
-  if (id_calc_bin_per_dir_[0] * id_calc_bin_per_dir_[1] * id_calc_bin_per_dir_[2] >
-      std::numeric_limits<int>::max())
-    FOUR_C_THROW(
-        "number of bins is larger than an integer can hold! Reduce number of bins by increasing "
-        "the bin_size_lower_bound_");
+  FOUR_C_THROW_UNLESS(id_calc_bin_per_dir_[0] * id_calc_bin_per_dir_[1] * id_calc_bin_per_dir_[2] <
+                          std::numeric_limits<int>::max(),
+      "number of bins is larger than an integer can hold! Reduce number of bins by increasing "
+      "the bin_size_lower_bound_");
 
   // determine lower bound for bin size if number of bins per dir was prescribed
   // was prescribed in input file
   if (bin_size_lower_bound_ <= 0.0)
     bin_size_lower_bound_ = std::min(bin_size_[0], std::min(bin_size_[1], bin_size_[2]));
-
-  return;
 }
 
 void BINSTRATEGY::BinningStrategy::
@@ -1940,9 +1867,11 @@ void BINSTRATEGY::BinningStrategy::
 
     // compute lower bound for bin size as largest element in discret
     if (set_bin_size_lower_bound_)
+    {
       for (int dim = 0; dim < 3; ++dim)
         locmax_set_bin_size_lower_bound =
             std::max(locmax_set_bin_size_lower_bound, eleXAABB(dim, 1) - eleXAABB(dim, 0));
+    }
 
     // merge XAABB of all roweles
     for (int dim = 0; dim < 3; dim++)
@@ -1977,9 +1906,6 @@ void BINSTRATEGY::BinningStrategy::
     // this is necessary if more than one discret is relevant
     bin_size_lower_bound_ = std::max(globmax_set_bin_size_lower_bound, bin_size_lower_bound_);
   }
-
-  // that is it
-  return;
 }
 
 void BINSTRATEGY::BinningStrategy::transfer_nodes_and_elements(

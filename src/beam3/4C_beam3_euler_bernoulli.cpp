@@ -10,8 +10,9 @@
 
 #include "4C_beam3_euler_bernoulli.hpp"
 
-#include "4C_beaminteraction_periodic_boundingbox.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_geometry_periodic_boundingbox.hpp"
+#include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
@@ -241,7 +242,8 @@ int Discret::ELEMENTS::Beam3ebType::Initialize(Core::FE::Discretization& dis)
     // configuration (i.e. elements cut by the periodic boundary) in the input file
     Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox =
         Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
-    periodic_boundingbox->Init();  // no Setup() call needed here
+    periodic_boundingbox->Init(
+        Global::Problem::Instance()->binning_strategy_params());  // no Setup() call needed here
 
     std::vector<double> disp_shift;
     int numdof = currele->NumDofPerNode(*(currele->Nodes()[0]));

@@ -823,7 +823,10 @@ void PARTICLEENGINE::ParticleEngine::get_particles_within_radius(const double* p
   }
 }
 
-const double* PARTICLEENGINE::ParticleEngine::BinSize() const { return binstrategy_->BinSize(); }
+std::array<double, 3> PARTICLEENGINE::ParticleEngine::BinSize() const
+{
+  return binstrategy_->BinSize();
+}
 
 bool PARTICLEENGINE::ParticleEngine::have_periodic_boundary_conditions() const
 {
@@ -920,8 +923,12 @@ void PARTICLEENGINE::ParticleEngine::WriteBinDisOutput(const int step, const dou
 void PARTICLEENGINE::ParticleEngine::init_binning_strategy()
 {
   // create and init binning strategy and create bins
-  binstrategy_ = std::make_shared<BINSTRATEGY::BinningStrategy>();
-  binstrategy_->Init();
+  Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+  Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+      "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+      binning_params);
+  binstrategy_ = std::make_shared<BINSTRATEGY::BinningStrategy>(
+      binning_params, Global::Problem::Instance()->OutputControlFile(), comm_, comm_.MyPID());
 }
 
 void PARTICLEENGINE::ParticleEngine::setup_binning_strategy()
@@ -1134,7 +1141,7 @@ void PARTICLEENGINE::ParticleEngine::determine_bin_dis_dependent_maps_and_sets()
   std::set<int> innerbinids;
 
   // get number of bins in all spatial directions
-  const int* binperdir = binstrategy_->BinPerDir();
+  const auto binperdir = binstrategy_->BinPerDir();
 
   // safety check
   for (int dim = 0; dim < 3; ++dim)
@@ -2087,10 +2094,10 @@ void PARTICLEENGINE::ParticleEngine::relate_owned_particles_to_bins()
 void PARTICLEENGINE::ParticleEngine::determine_min_relevant_bin_size()
 {
   // get number of bins in all spatial directions
-  const int* binperdir = binstrategy_->BinPerDir();
+  const auto binperdir = binstrategy_->BinPerDir();
 
   // get bin size
-  const double* binsize = binstrategy_->BinSize();
+  const std::array<double, 3> binsize = binstrategy_->BinSize();
 
   // initialize minimum bin size to maximum bin size
   minbinsize_ = binstrategy_->GetMaxBinSize();

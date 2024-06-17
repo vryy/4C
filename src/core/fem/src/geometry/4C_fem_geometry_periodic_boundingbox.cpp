@@ -9,13 +9,11 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "4C_beaminteraction_periodic_boundingbox.hpp"
+#include "4C_fem_geometry_periodic_boundingbox.hpp"
 
-#include "4C_binstrategy_utils.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_dofset_independent.hpp"
 #include "4C_fem_geometry_intersection_math.hpp"
-#include "4C_global_data.hpp"
 #include "4C_inpar_binningstrategy.hpp"
 #include "4C_io.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
@@ -51,15 +49,15 @@ Core::Geo::MeshFree::BoundingBox::BoundingBox()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::Init()
+void Core::Geo::MeshFree::BoundingBox::Init(const Teuchos::ParameterList& binning_params)
 {
   issetup_ = false;
 
   // get bounding box specified in the input file
   // fixme: like this or by eight nodes of element in discret
   box_.PutScalar(1.0e12);
-  std::istringstream xaabbstream(Teuchos::getNumericStringParameter(
-      Global::Problem::Instance()->binning_strategy_params(), "DOMAINBOUNDINGBOX"));
+  std::istringstream xaabbstream(
+      Teuchos::getNumericStringParameter(binning_params, "DOMAINBOUNDINGBOX"));
   for (int col = 0; col < 2; ++col)
   {
     for (int row = 0; row < 3; ++row)
@@ -78,8 +76,8 @@ void Core::Geo::MeshFree::BoundingBox::Init()
   }
 
   // set up boundary conditions
-  std::istringstream periodicbc(Teuchos::getNumericStringParameter(
-      Global::Problem::Instance()->binning_strategy_params(), "PERIODICONOFF"));
+  std::istringstream periodicbc(
+      Teuchos::getNumericStringParameter(binning_params, "PERIODICONOFF"));
 
   // loop over all spatial directions
   for (int dim = 0; dim < 3; ++dim)
@@ -141,12 +139,14 @@ void Core::Geo::MeshFree::BoundingBox::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::Setup()
+void Core::Geo::MeshFree::BoundingBox::Setup(const Teuchos::ParameterList& io_params,
+    Teuchos::RCP<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
+    const int n_dim, const Core::IO::OutputControl& output_control)
 {
   throw_if_not_init();
 
   // initialize bounding box discretization
-  setup_bounding_box_discretization();
+  setup_bounding_box_discretization(boundingbox_dis, comm, n_dim);
 
   if (boxdiscret_->GetCondition("Dirichlet") != nullptr) havedirichletbc_ = true;
 
@@ -155,11 +155,8 @@ void Core::Geo::MeshFree::BoundingBox::Setup()
   disn_col_ = Core::LinAlg::CreateVector(*boxdiscret_->DofColMap(), true);
 
   // initialize bounding box runtime output
-  if (Global::Problem::Instance()
-          ->IOParams()
-          .sublist("RUNTIME VTK OUTPUT")
-          .get<int>("INTERVAL_STEPS") != -1)
-    InitRuntimeOutput();
+  if (io_params.sublist("RUNTIME VTK OUTPUT").get<int>("INTERVAL_STEPS") != -1)
+    InitRuntimeOutput(io_params, output_control);
 
   issetup_ = true;
 }
@@ -167,11 +164,13 @@ void Core::Geo::MeshFree::BoundingBox::Setup()
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization()
+void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
+    Teuchos::RCP<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
+    const int n_dim)
 {
-  if (Global::Problem::Instance()->DoesExistDis("boundingbox"))
+  if (boundingbox_dis != Teuchos::null)
   {
-    boxdiscret_ = Global::Problem::Instance()->GetDis("boundingbox");
+    boxdiscret_ = boundingbox_dis;
 
     if (boxdiscret_->Filled() == false) boxdiscret_->fill_complete(true, false, false);
 
@@ -188,19 +187,17 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization()
     boxdiscret_->fill_complete(true, false, false);
   }
 
-  if (not Global::Problem::Instance()->DoesExistDis("boundingbox") or
-      boxdiscret_->NumMyColElements() == 0)
+  if (boundingbox_dis == Teuchos::null or boxdiscret_->NumMyColElements() == 0)
   {
-    if (not Global::Problem::Instance()->DoesExistDis("boundingbox"))
+    if (boundingbox_dis == Teuchos::null)
     {
-      Teuchos::RCP<Epetra_Comm> com =
-          Teuchos::rcp(Global::Problem::Instance()->GetDis("structure")->Comm().Clone());
+      auto com = Teuchos::rcp(comm.Clone());
       boxdiscret_ = Teuchos::rcp(
-          new Core::FE::Discretization("boundingbox", com, Global::Problem::Instance()->NDim()));
+          new Core::FE::Discretization("boundingbox", Teuchos::rcp(comm.Clone()), n_dim));
     }
     else
     {
-      boxdiscret_ = Global::Problem::Instance()->GetDis("boundingbox");
+      boxdiscret_ = boundingbox_dis;
     }
 
     // create nodes
@@ -472,13 +469,14 @@ bool Core::Geo::MeshFree::BoundingBox::in_between(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::RandomPosWithin(Core::LinAlg::Matrix<3, 1>& randpos) const
+void Core::Geo::MeshFree::BoundingBox::RandomPosWithin(
+    Core::LinAlg::Matrix<3, 1>& randpos, Core::UTILS::Random* random) const
 {
   throw_if_not_init();
 
-  Global::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
+  random->SetRandRange(0.0, 1.0);
   std::vector<double> randuni;
-  Global::Problem::Instance()->Random()->Uni(randuni, 3);
+  random->Uni(randuni, 3);
 
   Core::LinAlg::Matrix<3, 1> randpos_ud(true);
   for (int dim = 0; dim < 3; ++dim)
@@ -597,14 +595,14 @@ void Core::Geo::MeshFree::BoundingBox::Print()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::ApplyDirichlet(double timen)
+void Core::Geo::MeshFree::BoundingBox::ApplyDirichlet(
+    const double timen, const Core::UTILS::FunctionManager& function_manager)
 {
   throw_if_not_init_or_setup();
 
   Teuchos::ParameterList p;
   p.set("total time", timen);
-  p.set<const Core::UTILS::FunctionManager*>(
-      "function_manager", &Global::Problem::Instance()->FunctionManager());
+  p.set<const Core::UTILS::FunctionManager*>("function_manager", &function_manager);
 
   // disn_ then also holds prescribed new Dirichlet displacements
   boxdiscret_->ClearState();
@@ -618,7 +616,8 @@ void Core::Geo::MeshFree::BoundingBox::ApplyDirichlet(double timen)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::InitRuntimeOutput()
+void Core::Geo::MeshFree::BoundingBox::InitRuntimeOutput(
+    const Teuchos::ParameterList& io_params, const Core::IO::OutputControl& output_control)
 {
   // TODO This does not work for restarted simulations as the time is obviously wrong. However, this
   // is called before the restart is read and someone with knowledge on the module has to refactor
@@ -629,8 +628,7 @@ void Core::Geo::MeshFree::BoundingBox::InitRuntimeOutput()
   visualization_output_writer_ptr_ =
       Teuchos::rcp(new Core::IO::DiscretizationVisualizationWriterMesh(
           boxdiscret_, Core::IO::VisualizationParametersFactory(
-                           Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-                           *Global::Problem::Instance()->OutputControlFile(), restart_time)));
+                           io_params.sublist("RUNTIME VTK OUTPUT"), output_control, restart_time)));
 }
 
 /*----------------------------------------------------------------------------*

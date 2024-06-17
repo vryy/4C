@@ -703,8 +703,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::find_and_store_neighbori
     // set of elements that lie in neighboring bins
     std::set<Core::Elements::Element*> neighboring_elements;
     std::vector<BINSTRATEGY::UTILS::BinContentType> bc(2);
-    bc[0] = BINSTRATEGY::UTILS::Beam;
-    bc[1] = BINSTRATEGY::UTILS::RigidSphere;
+    bc[0] = BINSTRATEGY::UTILS::BinContentType::Beam;
+    bc[1] = BINSTRATEGY::UTILS::BinContentType::RigidSphere;
     BinStrategyPtr()->GetBinContent(neighboring_elements, bc, glob_neighboring_binIds);
 
     // sort out elements that should not be considered in contact evaluation

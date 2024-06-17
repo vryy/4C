@@ -12,7 +12,6 @@
 
 #include "4C_beam3_base.hpp"
 #include "4C_bele_bele3.hpp"
-#include "4C_binstrategy.hpp"
 #include "4C_comm_exporter.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_io_pstream.hpp"
@@ -82,28 +81,28 @@ namespace BINSTRATEGY
 
       if (dynamic_cast<Discret::ELEMENTS::Transport const*>(eleptr) != nullptr)
       {
-        return BINSTRATEGY::UTILS::Scatra;
+        return BINSTRATEGY::UTILS::BinContentType::Scatra;
       }
       else if (dynamic_cast<Discret::ELEMENTS::Fluid const*>(eleptr) != nullptr)
       {
-        return BINSTRATEGY::UTILS::Fluid;
+        return BINSTRATEGY::UTILS::BinContentType::Fluid;
       }
       else if (dynamic_cast<Discret::ELEMENTS::Bele3 const*>(eleptr) != nullptr)
       {
-        return BINSTRATEGY::UTILS::BELE3;
+        return BINSTRATEGY::UTILS::BinContentType::BELE3;
       }
       else if (dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(eleptr) != nullptr)
       {
-        return BINSTRATEGY::UTILS::Beam;
+        return BINSTRATEGY::UTILS::BinContentType::Beam;
       }
       else if (dynamic_cast<Discret::ELEMENTS::Rigidsphere const*>(eleptr) != nullptr)
       {
-        return BINSTRATEGY::UTILS::RigidSphere;
+        return BINSTRATEGY::UTILS::BinContentType::RigidSphere;
       }
       else if (dynamic_cast<Discret::ELEMENTS::SoBase const*>(eleptr) != nullptr ||
                dynamic_cast<Discret::ELEMENTS::Solid const*>(eleptr) != nullptr)
       {
-        return BINSTRATEGY::UTILS::Solid;
+        return BINSTRATEGY::UTILS::BinContentType::Solid;
       }
       else
       {

@@ -186,7 +186,7 @@ namespace PARTICLEENGINE
      *
      * \return pointer to bin size
      */
-    virtual const double* BinSize() const = 0;
+    virtual std::array<double, 3> BinSize() const = 0;
 
     /*!
      * \brief get minimum relevant bin size

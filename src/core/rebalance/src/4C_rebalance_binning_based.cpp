@@ -30,6 +30,8 @@ FOUR_C_NAMESPACE_OPEN
  |  Rebalance using BinningStrategy                         rauch 08/16 |
  *----------------------------------------------------------------------*/
 void Core::Rebalance::RebalanceDiscretizationsByBinning(
+    const Teuchos::ParameterList& binning_params,
+    Teuchos::RCP<Core::IO::OutputControl> output_control,
     const std::vector<Teuchos::RCP<Core::FE::Discretization>>& vector_of_discretizations,
     bool revertextendedghosting)
 {
@@ -63,10 +65,9 @@ void Core::Rebalance::RebalanceDiscretizationsByBinning(
     std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
 
     // binning strategy is created and parallel redistribution is performed
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-        Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
-
-    binningstrategy->Init(vector_of_discretizations);
+    auto binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params,
+        output_control, vector_of_discretizations[0]->Comm(),
+        vector_of_discretizations[0]->Comm().MyPID(), vector_of_discretizations));
 
     binningstrategy
         ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(

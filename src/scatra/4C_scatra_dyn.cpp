@@ -152,7 +152,14 @@ void scatra_dyn(int restart)
         std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
         dis.push_back(scatradis);
 
-        Core::Rebalance::RebalanceDiscretizationsByBinning(dis, false);
+        Teuchos::ParameterList binning_params =
+            Global::Problem::Instance()->binning_strategy_params();
+        Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+            "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+            binning_params);
+
+        Core::Rebalance::RebalanceDiscretizationsByBinning(
+            binning_params, Global::Problem::Instance()->OutputControlFile(), dis, false);
       }
 
       // assign degrees of freedom and rebuild geometries
@@ -282,7 +289,14 @@ void scatra_dyn(int restart)
         dis.push_back(fluiddis);
         dis.push_back(scatradis);
 
-        Core::Rebalance::RebalanceDiscretizationsByBinning(dis, false);
+        Teuchos::ParameterList binning_params =
+            Global::Problem::Instance()->binning_strategy_params();
+        Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+            "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+            binning_params);
+
+        Core::Rebalance::RebalanceDiscretizationsByBinning(
+            binning_params, Global::Problem::Instance()->OutputControlFile(), dis, false);
       }
 
       // ensure that all dofs are assigned in the right order;
