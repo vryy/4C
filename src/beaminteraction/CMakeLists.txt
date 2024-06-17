@@ -4,7 +4,6 @@ set(_dependencies
     # cmake-format: sortable
     beam3
     beamcontact
-    binstrategy
     config
     core
     geometry_pair

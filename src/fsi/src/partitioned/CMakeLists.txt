@@ -4,7 +4,6 @@ set(_dependencies
     # cmake-format: sortable
     adapter
     ale
-    binstrategy
     config
     constraint
     core

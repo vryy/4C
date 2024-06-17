@@ -5,7 +5,6 @@ set(_dependencies
     adapter
     beam3
     beaminteraction
-    binstrategy
     config
     core
     fluid

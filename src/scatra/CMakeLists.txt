@@ -3,7 +3,6 @@ four_c_auto_define_module()
 set(_dependencies
     # cmake-format: sortable
     adapter
-    binstrategy
     config
     core
     fluid
