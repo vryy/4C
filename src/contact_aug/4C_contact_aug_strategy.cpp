@@ -488,7 +488,7 @@ void CONTACT::Aug::Strategy::create_rhs_state(const Epetra_Map& gAugInactiveSlav
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::Initialize(enum Mortar::ActionType actiontype)
+void CONTACT::Aug::Strategy::initialize(enum Mortar::ActionType actiontype)
 {
   // get inactive slave dofs
   Teuchos::RCP<Epetra_Map> gAugInactiveSlaveDofs = Teuchos::null;
@@ -584,7 +584,7 @@ void CONTACT::Aug::Strategy::InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInter
     CONTACT::Aug::Interface& interface = dynamic_cast<CONTACT::Aug::Interface&>(**cit);
 
     // initialize / reset interfaces
-    interface.Initialize();
+    interface.initialize();
 
     // store required integration time
     data().IntTime() += interface.Inttime();
@@ -787,7 +787,7 @@ void CONTACT::Aug::Strategy::pre_eval_force(CONTACT::ParamsInterface& cparams)
   split_mortar();
 
   // initialize all rhs vectors and linearization matrices
-  Initialize(cparams.get_action_type());
+  initialize(cparams.get_action_type());
 }
 
 /*----------------------------------------------------------------------------*
@@ -1057,7 +1057,7 @@ void CONTACT::Aug::Strategy::eval_static_constraint_rhs(CONTACT::ParamsInterface
   InitEvalInterface(cparams);
 
   // --- Assemble the gap vectors ---------------------------------------------
-  Initialize(cparams.get_action_type());
+  initialize(cparams.get_action_type());
   assemble_gap();
 
   // --- Evaluate only the forces coming from the constraints -----------------

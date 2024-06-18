@@ -43,7 +43,7 @@ namespace CONSTRAINTS
 
 
     /// unused
-    void Initialize(
+    void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Epetra_Vector> systemvector3  ///< distributed vector that may be filled by
@@ -51,12 +51,12 @@ namespace CONSTRAINTS
     );
 
     /// initialization routine called by the manager ctor
-    void Initialize(Teuchos::ParameterList&
+    void initialize(Teuchos::ParameterList&
             params  ///< parameter list to communicate between elements and discretization
     );
 
     /// initialization routine called at restart to activate the right conditions
-    void Initialize(const double& time  ///< current time
+    void initialize(const double& time  ///< current time
     );
 
     //! Evaluate routine to call from outside. In here the right action is determined and the

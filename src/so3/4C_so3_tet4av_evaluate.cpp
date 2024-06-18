@@ -598,7 +598,7 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
 /*----------------------------------------------------------------------*
  |  init the element (public)                               seitz 03/16 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet4avType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoTet4avType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

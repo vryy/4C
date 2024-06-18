@@ -162,7 +162,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_p
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {
     // Setup variables.
-    auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::Initialize(nullptr);
+    auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::initialize(nullptr);
     Core::LinAlg::Matrix<3, 1, scalar_type> current_beamposition;
     Core::LinAlg::Matrix<3, 1, scalar_type> ref_beamposition;
     Core::LinAlg::Matrix<3, 1, scalar_type> beamdisplacement;

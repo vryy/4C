@@ -136,7 +136,7 @@ namespace CONTACT
     multipliers.
 
     */
-    void Initialize() override;
+    void initialize() override;
 
     /*!
     \brief Evaluate contact
@@ -182,7 +182,7 @@ namespace CONTACT
     iterarion in order to create an of an out-of-balance force again. First,
     the contact force and stiffness terms are removed from feff and kteff.
     Then the LM and derivatives are updated (Uzawa AugmentedLagrange) and the new
-    contact forces and stiffness terms are created by calling Initialize()
+    contact forces and stiffness terms are created by calling initialize()
     and finally evaluate().
 
     */

@@ -127,7 +127,7 @@ void Adapter::CouplingEhlMortar::Integrate(Teuchos::RCP<const Epetra_Vector> dis
   interface_->set_state(Mortar::state_new_displacement, *disp);
 
   // init internal data
-  interface_->Initialize();
+  interface_->initialize();
   interface_->set_element_areas();
   // call interface evaluate (d,m,gap...)
   interface_->evaluate();

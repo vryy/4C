@@ -1045,7 +1045,7 @@ void CONTACT::Interface::FDCheckNormalDeriv()
     int w = 0;
 
     // reset normal etc.
-    Initialize();
+    initialize();
 
     // compute element areas
     set_element_areas();
@@ -1236,7 +1236,7 @@ void CONTACT::Interface::FDCheckNormalDeriv()
 
   // back to normal...
   // reset normal etc.
-  Initialize();
+  initialize();
 
   // compute element areas
   set_element_areas();
@@ -1312,7 +1312,7 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
     int w = 0;
 
     // reset normal etc.
-    Initialize();
+    initialize();
 
     // compute element areas
     set_element_areas();
@@ -1523,7 +1523,7 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
     int w = 0;
 
     // reset normal etc.
-    Initialize();
+    initialize();
 
     // compute element areas
     set_element_areas();
@@ -1725,7 +1725,7 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
 
   // back to normal...
   // reset normal etc.
-  Initialize();
+  initialize();
 
   // compute element areas
   set_element_areas();
@@ -1784,7 +1784,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -1891,7 +1891,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -1994,7 +1994,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
   // back to normal...
 
   // Initialize
-  Initialize();
+  initialize();
 
   // compute element areas
   set_element_areas();
@@ -2053,7 +2053,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -2159,7 +2159,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -2261,7 +2261,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
   // back to normal...
 
   // Initialize
-  Initialize();
+  initialize();
 
   // compute element areas
   set_element_areas();
@@ -2312,7 +2312,7 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -2410,7 +2410,7 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -2501,7 +2501,7 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
   }
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   return;
@@ -2546,7 +2546,7 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -2644,7 +2644,7 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -2735,7 +2735,7 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
   }
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   return;
@@ -2827,7 +2827,7 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -2979,7 +2979,7 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -3108,7 +3108,7 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
   }
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   return;
@@ -3158,7 +3158,7 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -3313,7 +3313,7 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -3490,7 +3490,7 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
   }
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   return;
@@ -3540,7 +3540,7 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -3695,7 +3695,7 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -3871,7 +3871,7 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
   }
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   return;
@@ -3962,7 +3962,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -4113,7 +4113,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -4240,7 +4240,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
   }
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   return;
@@ -4916,7 +4916,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -5130,7 +5130,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -5339,7 +5339,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
   }
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   return;
@@ -5707,7 +5707,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
   for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -5946,7 +5946,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
   for (int fd = 0; fd < dim * mnodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -6179,7 +6179,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
   }
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   return;
@@ -6245,7 +6245,7 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
   for (int fd = 0; fd < 3 * snodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / 3);
@@ -6352,7 +6352,7 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
   for (int fd = 0; fd < 3 * mnodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / 3);
@@ -6457,7 +6457,7 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
   // back to normal...
 
   // Initialize
-  Initialize();
+  initialize();
 
   // compute element areas
   set_element_areas();
@@ -6613,7 +6613,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
   for (int fd = 0; fd < 3 * snodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / 3);
@@ -6832,7 +6832,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
   for (int fd = 0; fd < 3 * mnodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / 3);
@@ -7047,7 +7047,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
   }
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
   // EvaluateRelMov();
 

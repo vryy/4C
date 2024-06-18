@@ -1443,7 +1443,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8fbarType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex8fbarType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

@@ -50,10 +50,10 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::setup()
   BeamToSolidVolumeMeshtyingPairBase<beam, fluid>::setup();
 
   // Initialize the element data containers
-  ele1vel_ = GEOMETRYPAIR::InitializeElementData<beam, scalar_type>::Initialize(this->Element1());
-  ele2vel_ = GEOMETRYPAIR::InitializeElementData<fluid, scalar_type>::Initialize(this->Element2());
-  ele1poscur_ = GEOMETRYPAIR::InitializeElementData<beam, double>::Initialize(this->Element1());
-  ele2poscur_ = GEOMETRYPAIR::InitializeElementData<fluid, double>::Initialize(this->Element2());
+  ele1vel_ = GEOMETRYPAIR::InitializeElementData<beam, scalar_type>::initialize(this->Element1());
+  ele2vel_ = GEOMETRYPAIR::InitializeElementData<fluid, scalar_type>::initialize(this->Element2());
+  ele1poscur_ = GEOMETRYPAIR::InitializeElementData<beam, double>::initialize(this->Element1());
+  ele2poscur_ = GEOMETRYPAIR::InitializeElementData<fluid, double>::initialize(this->Element2());
 
   // Initialize current nodal velocities for beam element
   for (unsigned int i = 0; i < beam::n_dof_; i++) this->ele1vel_.element_position_(i) = 0.0;

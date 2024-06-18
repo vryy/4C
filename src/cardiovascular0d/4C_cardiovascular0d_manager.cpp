@@ -284,7 +284,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
         Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
 
     // initialize everything
-    cardvasc0d_model_->Initialize(p, v_n_red, cv0ddof_n_red);
+    cardvasc0d_model_->initialize(p, v_n_red, cv0ddof_n_red);
 
     v_n_->PutScalar(0.0);
     v_n_->Export(*v_n_red, *cardvasc0dimpo_, Add);

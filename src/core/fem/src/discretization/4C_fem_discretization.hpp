@@ -1096,7 +1096,7 @@ namespace Core::FE
     \param assigndegreesoffreedom (in) : if true, resets existing dofsets and performs
                                          assigning of degrees of freedoms to nodes and
                                          elements.
-    \param initelements (in) : if true, build element register classes and call Initialize()
+    \param initelements (in) : if true, build element register classes and call initialize()
                                on each type of finite element present
     \param doboundaryconditions (in) : if true, build geometry of boundary conditions
                                        present.
@@ -1239,7 +1239,7 @@ namespace Core::FE
                                          assigning of degrees of freedoms to nodes and
                                          elements.
     \param initelements           (in) : if true, build element register classes and
-                                         call Initialize() on each type of finite element
+                                         call initialize() on each type of finite element
                                          present
     \param doboundaryconditions   (in) : if true, build geometry of boundary conditions
                                          present.
@@ -1263,7 +1263,7 @@ namespace Core::FE
                                          assigning of degrees of freedoms to nodes and
                                          elements.
     \param initelements           (in) : if true, build element register classes and
-                                         call Initialize() on each type of finite element
+                                         call initialize() on each type of finite element
                                          present
     \param doboundaryconditions   (in) : if true, build geometry of boundary conditions
                                          present.

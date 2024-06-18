@@ -54,7 +54,7 @@ namespace Discret
           override;
 
       /// initialize element
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
       /// pre-evaluation
       void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,

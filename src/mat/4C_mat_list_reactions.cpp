@@ -89,7 +89,7 @@ Mat::MatListReactions::MatListReactions(Mat::PAR::MatListReactions* params)
 /*----------------------------------------------------------------------*
  | setup of material map                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::MatListReactions::Initialize()
+void Mat::MatListReactions::initialize()
 {
   if (paramsreac_ != nullptr)
   {
@@ -101,7 +101,7 @@ void Mat::MatListReactions::Initialize()
       if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
       Teuchos::RCP<Mat::ScatraReactionMat> reacmat =
           Teuchos::rcp_dynamic_cast<Mat::ScatraReactionMat>(mat, true);
-      reacmat->Initialize();
+      reacmat->initialize();
     }
   }
   return;

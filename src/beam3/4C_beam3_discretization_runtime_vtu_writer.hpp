@@ -81,7 +81,7 @@ class BeamDiscretizationRuntimeOutputWriter
    *
    *  \author grill
    *  \date 03/17 */
-  void Initialize(Teuchos::RCP<Core::FE::Discretization> discretization,
+  void initialize(Teuchos::RCP<Core::FE::Discretization> discretization,
       bool use_absolute_positions_for_point_coordinates, const unsigned int n_subsegments,
       Teuchos::RCP<const Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox);
 

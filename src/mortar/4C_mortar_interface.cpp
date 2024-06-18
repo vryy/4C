@@ -1940,7 +1940,7 @@ Teuchos::RCP<Epetra_Map> Mortar::Interface::redistribute_lag_mult_sets() const
 /*----------------------------------------------------------------------*
  |  initialize / reset mortar interface                       popp 01/08|
  *----------------------------------------------------------------------*/
-void Mortar::Interface::Initialize()
+void Mortar::Interface::initialize()
 {
   // loop over all nodes to reset stuff (fully overlapping column map)
   for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)

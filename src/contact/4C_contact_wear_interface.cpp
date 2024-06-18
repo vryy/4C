@@ -3798,7 +3798,7 @@ void Wear::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
 /*----------------------------------------------------------------------*
  |  initialize / reset interface for wear                    farah 09/13|
  *----------------------------------------------------------------------*/
-void Wear::WearInterface::Initialize()
+void Wear::WearInterface::initialize()
 {
   // loop over all nodes to reset stuff (fully overlapping column map)
   // (use fully overlapping column map)

@@ -233,12 +233,12 @@ CONTACT::Aug::Interface::create_node_based_assemble_strategy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Interface::Initialize()
+void CONTACT::Aug::Interface::initialize()
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
   // call initialization routine of the contact_interface
-  CONTACT::Interface::Initialize();
+  CONTACT::Interface::initialize();
 
   // setup member variables (has to be done only once)
   setup();

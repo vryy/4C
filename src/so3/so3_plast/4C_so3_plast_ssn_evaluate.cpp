@@ -785,7 +785,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate_neumann(Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------*
  | initialise Jacobian                                      seitz 07/13 |
- | is called once in Initialize() in so3_ssn_plast_eletypes.cpp         |
+ | is called once in initialize() in so3_ssn_plast_eletypes.cpp         |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Plast<distype>::init_jacobian_mapping()

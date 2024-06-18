@@ -43,7 +43,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
 
       /// initialize
-      virtual void Initialize() = 0;
+      virtual void initialize() = 0;
 
       /// pressure ids involved in phase law
       virtual const std::vector<int>* PresIds() = 0;
@@ -76,7 +76,7 @@ namespace Mat
       explicit FluidPoroPhaseLawLinear(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// initialize
-      void Initialize() override { return; };
+      void initialize() override { return; };
 
       /// @name material parameters
       //@{
@@ -121,7 +121,7 @@ namespace Mat
       explicit FluidPoroPhaseLawTangent(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// initialize
-      void Initialize() override { return; };
+      void initialize() override { return; };
 
       /// @name material parameters
       //@{
@@ -170,7 +170,7 @@ namespace Mat
           : FluidPoroPhaseLaw(matdata){};
 
       /// initialize
-      void Initialize() override { return; };
+      void initialize() override { return; };
 
       /// pressure ids involved in phase law
       const std::vector<int>* PresIds() override
@@ -230,7 +230,7 @@ namespace Mat
       explicit FluidPoroPhaseLawByFunction(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// initialize
-      void Initialize() override;
+      void initialize() override;
 
       /// @name material parameters
       //@{

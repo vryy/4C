@@ -137,20 +137,20 @@ void CONSTRAINTS::ConstrManager::setup(
     p.set("OffsetID", offset_id_);
     p.set("total time", time);
     actdisc_->set_state("displacement", disp);
-    volconstr3d_->Initialize(p, refbaseredundant);
-    areaconstr3d_->Initialize(p, refbaseredundant);
-    areaconstr2d_->Initialize(p, refbaseredundant);
-    volconstr3dpen_->Initialize(p);
-    areaconstr3dpen_->Initialize(p);
+    volconstr3d_->initialize(p, refbaseredundant);
+    areaconstr3d_->initialize(p, refbaseredundant);
+    areaconstr2d_->initialize(p, refbaseredundant);
+    volconstr3dpen_->initialize(p);
+    areaconstr3dpen_->initialize(p);
 
     mpconline2d_->SetConstrState("displacement", disp);
-    mpconline2d_->Initialize(p, refbaseredundant);
+    mpconline2d_->initialize(p, refbaseredundant);
     mpconplane3d_->SetConstrState("displacement", disp);
-    mpconplane3d_->Initialize(p, refbaseredundant);
+    mpconplane3d_->initialize(p, refbaseredundant);
     mpcnormcomp3d_->SetConstrState("displacement", disp);
-    mpcnormcomp3d_->Initialize(p, refbaseredundant);
+    mpcnormcomp3d_->initialize(p, refbaseredundant);
     mpcnormcomp3dpen_->SetConstrState("displacement", disp);
-    mpcnormcomp3dpen_->Initialize(p);
+    mpcnormcomp3dpen_->initialize(p);
 
     // Export redundant vector into distributed one
     refbasevalues_->Export(*refbaseredundant, *conimpo_, Add);
@@ -355,12 +355,12 @@ void CONSTRAINTS::ConstrManager::read_restart(
 void CONSTRAINTS::ConstrManager::SetRefBaseValues(
     Teuchos::RCP<Epetra_Vector> newrefval, const double& time)
 {
-  volconstr3d_->Initialize(time);
-  areaconstr3d_->Initialize(time);
-  areaconstr2d_->Initialize(time);
-  mpconplane3d_->Initialize(time);
-  mpcnormcomp3d_->Initialize(time);
-  mpconline2d_->Initialize(time);
+  volconstr3d_->initialize(time);
+  areaconstr3d_->initialize(time);
+  areaconstr2d_->initialize(time);
+  mpconplane3d_->initialize(time);
+  mpcnormcomp3d_->initialize(time);
+  mpconline2d_->initialize(time);
 
   refbasevalues_->Update(1.0, *newrefval, 0.0);
 }

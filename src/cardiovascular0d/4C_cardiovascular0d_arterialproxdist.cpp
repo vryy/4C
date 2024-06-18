@@ -338,7 +338,7 @@ void UTILS::Cardiovascular0DArterialProxDist::evaluate(Teuchos::ParameterList& p
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList& params,
+void UTILS::Cardiovascular0DArterialProxDist::initialize(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> sysvec1, Teuchos::RCP<Epetra_Vector> sysvec2)
 {
   if (!(actdisc_->Filled())) FOUR_C_THROW("fill_complete() was not called");

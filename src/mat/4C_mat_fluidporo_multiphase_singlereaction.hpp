@@ -52,7 +52,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// initialize
-      void Initialize();
+      void initialize();
 
       /// evaluate reaction for by-function definition
       void evaluate_function(std::vector<double>& reacval,
@@ -125,7 +125,7 @@ namespace Mat
           const std::vector<double>& volfracs, const std::vector<double>& volfracpressures,
           const std::vector<double>& scalar);
 
-      /// flag if Initialize() has been called
+      /// flag if initialize() has been called
       bool isinit_;
 
       /// string name used for scalars in function parser
@@ -228,7 +228,7 @@ namespace Mat
     //@}
 
     /// initialize
-    void Initialize() override;
+    void initialize() override;
 
     /// Return quick accessible material parameter data
     Core::Mat::PAR::Parameter* Parameter() const override { return params_; }

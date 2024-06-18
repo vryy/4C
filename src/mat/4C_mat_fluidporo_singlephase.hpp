@@ -50,7 +50,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// initialize
-      void Initialize();
+      void initialize();
 
       /// @name material parameters
       //@{
@@ -87,7 +87,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// initialize
-      void Initialize();
+      void initialize();
 
       /// @name material parameters
       //@{
@@ -126,7 +126,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// initialize
-      void Initialize();
+      void initialize();
 
       /// @name material parameters
       //@{
@@ -210,7 +210,7 @@ namespace Mat
     FluidPoroSinglePhaseBase(){};
 
     /// initialize
-    virtual void Initialize() = 0;
+    virtual void initialize() = 0;
   };
 
   /*----------------------------------------------------------------------*/
@@ -268,7 +268,7 @@ namespace Mat
     //@}
 
     /// initialize
-    void Initialize() override;
+    void initialize() override;
 
     /// material type
     Core::Materials::MaterialType MaterialType() const override
@@ -413,7 +413,7 @@ namespace Mat
     //@}
 
     /// initialize
-    void Initialize() override;
+    void initialize() override;
 
     /// material type
     Core::Materials::MaterialType MaterialType() const override
@@ -508,7 +508,7 @@ namespace Mat
     //@}
 
     /// initialize
-    void Initialize() override;
+    void initialize() override;
 
     /// material type
     Core::Materials::MaterialType MaterialType() const override

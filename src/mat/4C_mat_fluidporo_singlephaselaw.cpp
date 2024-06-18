@@ -297,7 +297,7 @@ Mat::PAR::FluidPoroPhaseLawByFunction::FluidPoroPhaseLawByFunction(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroPhaseLawByFunction::Initialize()
+void Mat::PAR::FluidPoroPhaseLawByFunction::initialize()
 {
   switch (Global::Problem::Instance()->NDim())
   {

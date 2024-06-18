@@ -102,7 +102,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8PlastType::Create(
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 05/14 |
 *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh8PlastType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
 {
   // sosh8_gmshplotdis(dis);
 

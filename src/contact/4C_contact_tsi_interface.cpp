@@ -825,9 +825,9 @@ void CONTACT::TSIInterface::AssembleInactive(Core::LinAlg::SparseMatrix* linCond
 /*----------------------------------------------------------------------*
  |  initialize / reset interface for tsi                     seitz 08/15|
  *----------------------------------------------------------------------*/
-void CONTACT::TSIInterface::Initialize()
+void CONTACT::TSIInterface::initialize()
 {
-  CONTACT::Interface::Initialize();
+  CONTACT::Interface::initialize();
 
   // loop over all nodes to reset stuff (fully overlapping column map)
   // (use fully overlapping column map)

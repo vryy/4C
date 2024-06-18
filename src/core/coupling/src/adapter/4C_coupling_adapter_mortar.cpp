@@ -1128,7 +1128,7 @@ void Core::Adapter::CouplingMortar::evaluate()
   check_setup();
 
   // in the following two steps MORTAR does all the work for new interface displacements
-  interface_->Initialize();
+  interface_->initialize();
   interface_->evaluate();
 
   // preparation for AssembleDM
@@ -1196,7 +1196,7 @@ void Core::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
   interface_->set_state(Mortar::state_new_displacement, *idisp);
 
   // in the following two steps MORTAR does all the work for new interface displacements
-  interface_->Initialize();
+  interface_->initialize();
   interface_->evaluate();
 
   // preparation for AssembleDM

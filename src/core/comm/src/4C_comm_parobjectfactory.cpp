@@ -243,7 +243,7 @@ void Core::Communication::ParObjectFactory::initialize_elements(Core::FE::Discre
     if (eot != nullptr)
     {
       ae.insert(eot);
-      int err = eot->Initialize(dis);
+      int err = eot->initialize(dis);
       if (err) FOUR_C_THROW("Element Initialize returned err=%d", err);
     }
     else

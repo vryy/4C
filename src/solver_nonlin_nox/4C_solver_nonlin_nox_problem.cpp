@@ -65,12 +65,12 @@ NOX::Nln::Problem::Problem(const Teuchos::RCP<NOX::Nln::GlobalData>& noxNlnGloba
       jac_(nullptr),
       precMat_(Teuchos::null)
 {
-  Initialize(x, A);
+  initialize(x, A);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::Problem::Initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
+void NOX::Nln::Problem::initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& A)
 {
   // in the standard case, we use the input rhs and matrix

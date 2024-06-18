@@ -84,11 +84,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroSinglePhase::create_materia
 /*----------------------------------------------------------------------*
  *  Create Material (public)                             vuong 08/16      |
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroSinglePhase::Initialize()
+void Mat::PAR::FluidPoroSinglePhase::initialize()
 {
   if (not isinit_)
   {
-    phasedof_->Initialize();
+    phasedof_->initialize();
     isinit_ = true;
   }
   return;
@@ -173,9 +173,9 @@ void Mat::FluidPoroSinglePhase::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  *  initialize                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSinglePhase::Initialize()
+void Mat::FluidPoroSinglePhase::initialize()
 {
-  params_->Initialize();
+  params_->initialize();
   return;
 }
 
@@ -314,7 +314,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroSingleVolFrac::create_mater
 /*----------------------------------------------------------------------*
  *  Create Material (public)                           kremheller 10/17 |
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroSingleVolFrac::Initialize()
+void Mat::PAR::FluidPoroSingleVolFrac::initialize()
 {
   isinit_ = true;
   return;
@@ -400,9 +400,9 @@ void Mat::FluidPoroSingleVolFrac::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  *  initialize                                         kremheller 10/17 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSingleVolFrac::Initialize()
+void Mat::FluidPoroSingleVolFrac::initialize()
 {
-  params_->Initialize();
+  params_->initialize();
   return;
 }
 
@@ -442,7 +442,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroVolFracPressure::create_mat
 /*----------------------------------------------------------------------*
  *  Create Material (public)                           kremheller 02/18 |
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroVolFracPressure::Initialize()
+void Mat::PAR::FluidPoroVolFracPressure::initialize()
 {
   isinit_ = true;
   return;
@@ -528,9 +528,9 @@ void Mat::FluidPoroVolFracPressure::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  *  initialize                                         kremheller 02/18 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroVolFracPressure::Initialize()
+void Mat::FluidPoroVolFracPressure::initialize()
 {
-  params_->Initialize();
+  params_->initialize();
   return;
 }
 

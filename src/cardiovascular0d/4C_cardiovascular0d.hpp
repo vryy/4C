@@ -93,7 +93,7 @@ namespace UTILS
 
     /// initialization routine called by the manager ctor to get correct reference base values and
     /// activating the right conditions at the beginning
-    virtual void Initialize(
+    virtual void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vector that may be filled by assembly

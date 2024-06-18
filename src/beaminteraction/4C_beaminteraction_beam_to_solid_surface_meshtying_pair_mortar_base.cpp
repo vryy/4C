@@ -80,7 +80,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
         visualization_params.get<Teuchos::RCP<Epetra_Vector>>("lambda");
 
     // Get the lambda GIDs of this pair.
-    auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::Initialize(nullptr);
+    auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::initialize(nullptr);
     const auto& [lambda_row_pos, _] = mortar_manager->LocationVector(*this);
     std::vector<double> lambda_pair;
     Core::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row_pos);

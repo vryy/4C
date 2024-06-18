@@ -196,7 +196,7 @@ Mat::PAR::ScatraReactionMat::ScatraReactionMat(const Core::Mat::PAR::Parameter::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::PAR::ScatraReactionMat::Initialize() { reaction_->Initialize(numscal_, couprole_); }
+void Mat::PAR::ScatraReactionMat::initialize() { reaction_->initialize(numscal_, couprole_); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

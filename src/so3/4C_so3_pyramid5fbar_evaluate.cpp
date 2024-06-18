@@ -1345,7 +1345,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoPyramid5fbarType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoPyramid5fbarType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

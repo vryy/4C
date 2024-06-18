@@ -1425,7 +1425,7 @@ void Discret::ELEMENTS::SoHex20::soh20_shapederiv(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex20Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex20Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

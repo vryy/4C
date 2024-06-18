@@ -246,7 +246,7 @@ namespace Mat
       Mat::PAR::ReactionCoupling set_coupling_type(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// Initialize
-      void Initialize();
+      void initialize();
 
       /// number of scalars in this reaction
       const int numscal_;
@@ -353,7 +353,7 @@ namespace Mat
     //@}
 
     /// initialize
-    virtual void Initialize() { params_->Initialize(); }
+    virtual void initialize() { params_->initialize(); }
 
     /// material type
     Core::Materials::MaterialType MaterialType() const override

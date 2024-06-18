@@ -477,7 +477,7 @@ namespace CONTACT
     the global derivative matrices S and P and Tresca friction matrix L + vector r.
 
     */
-    void Initialize() override;
+    void initialize() override;
 
     /*!
     \brief Evaluate contact

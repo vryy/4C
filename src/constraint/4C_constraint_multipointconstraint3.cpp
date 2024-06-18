@@ -69,7 +69,7 @@ CONSTRAINTS::MPConstraint3::MPConstraint3(Teuchos::RCP<Core::FE::Discretization>
 |(public)                                                       tk 08/08  |
 |Initialization routine activates conditions (restart)                    |
 *------------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3::Initialize(const double& time)
+void CONSTRAINTS::MPConstraint3::initialize(const double& time)
 {
   for (auto* cond : constrcond_)
   {
@@ -93,7 +93,7 @@ void CONSTRAINTS::MPConstraint3::Initialize(const double& time)
 |(public)                                                        tk 07/08|
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3::Initialize(
+void CONSTRAINTS::MPConstraint3::initialize(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   const double time = params.get("total time", -1.0);
@@ -388,7 +388,7 @@ void CONSTRAINTS::MPConstraint3::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
         Teuchos::RCP<Epetra_Vector> displast = params.get<Teuchos::RCP<Epetra_Vector>>("old disp");
         SetConstrState("displacement", displast);
         // last converged step is used reference
-        Initialize(params, systemvector2);
+        initialize(params, systemvector2);
         Teuchos::RCP<Epetra_Vector> disp = params.get<Teuchos::RCP<Epetra_Vector>>("new disp");
         SetConstrState("displacement", disp);
         params.set("action", action);

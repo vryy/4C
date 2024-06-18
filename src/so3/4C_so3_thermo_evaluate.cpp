@@ -2424,7 +2424,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::g_lto_ea(
 
 /*----------------------------------------------------------------------*
  | initialise Jacobian                                       dano 08/12 |
- | is called once in Initialize() in so3_thermo_eletypes.cpp            |
+ | is called once in initialize() in so3_thermo_eletypes.cpp            |
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::init_jacobian_mapping_special_for_nurbs(

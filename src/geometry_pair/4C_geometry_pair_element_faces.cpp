@@ -38,7 +38,7 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::setup(
   // At the moment we need to get the structure discretization at this point since the beam
   // interaction discretization is a copy - without the nurbs information
   face_reference_position_ =
-      GEOMETRYPAIR::InitializeElementData<surface, double>::Initialize(this->GetDrtFaceElement());
+      GEOMETRYPAIR::InitializeElementData<surface, double>::initialize(this->GetDrtFaceElement());
   const Core::Nodes::Node* const* nodes = drt_face_element_->Nodes();
   for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -58,7 +58,7 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::set_state(
   Core::FE::ExtractMyValues(*displacement, patch_displacement, patch_dof_gid_);
 
   // Create the full length FAD types.
-  face_position_ = GEOMETRYPAIR::InitializeElementData<surface, scalar_type>::Initialize(
+  face_position_ = GEOMETRYPAIR::InitializeElementData<surface, scalar_type>::initialize(
       this->GetDrtFaceElement());
   const unsigned int n_patch_dof = patch_dof_gid_.size();
   std::vector<scalar_type> patch_displacement_fad(n_patch_dof);
@@ -250,7 +250,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::set_state(
   Core::FE::ExtractMyValues(*displacement, patch_displacement, this->patch_dof_gid_);
 
   // Create the full length FAD types.
-  this->face_position_ = GEOMETRYPAIR::InitializeElementData<surface, scalar_type>::Initialize(
+  this->face_position_ = GEOMETRYPAIR::InitializeElementData<surface, scalar_type>::initialize(
       this->GetDrtFaceElement());
   const unsigned int n_patch_dof = this->patch_dof_gid_.size();
   std::vector<scalar_type> patch_displacement_fad(n_patch_dof);
@@ -287,7 +287,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::set_state(
 
       // Setup an element data container for the other element, but with the FAD type and ordering
       // for this patch
-      auto q_other_face = InitializeElementData<surface, scalar_type>::Initialize(
+      auto q_other_face = InitializeElementData<surface, scalar_type>::initialize(
           face_element->GetDrtFaceElement());
       for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
       {
@@ -446,9 +446,9 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
 
   // Set the reference position.
   volume_reference_position_ =
-      GEOMETRYPAIR::InitializeElementData<volume, double>::Initialize(nullptr);
+      GEOMETRYPAIR::InitializeElementData<volume, double>::initialize(nullptr);
   this->face_reference_position_ =
-      GEOMETRYPAIR::InitializeElementData<surface, double>::Initialize(nullptr);
+      GEOMETRYPAIR::InitializeElementData<surface, double>::initialize(nullptr);
   const Core::Nodes::Node* const* nodes = this->drt_face_element_->parent_element()->Nodes();
   for (unsigned int i_node = 0; i_node < volume::n_nodes_; i_node++)
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -546,7 +546,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
   // Create the full length FAD types.
   std::vector<scalar_type> patch_displacement_fad(volume::n_dof_);
 
-  volume_position_ = GEOMETRYPAIR::InitializeElementData<volume, scalar_type>::Initialize(nullptr);
+  volume_position_ = GEOMETRYPAIR::InitializeElementData<volume, scalar_type>::initialize(nullptr);
   for (unsigned int i_dof = 0; i_dof < volume::n_dof_; i_dof++)
   {
     volume_position_.element_position_(i_dof) =
@@ -555,7 +555,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
             volume_displacement[i_dof] + volume_reference_position_.element_position_(i_dof));
   }
   this->face_position_ =
-      GEOMETRYPAIR::InitializeElementData<surface, scalar_type>::Initialize(nullptr);
+      GEOMETRYPAIR::InitializeElementData<surface, scalar_type>::initialize(nullptr);
   for (unsigned int i_dof = 0; i_dof < surface::n_dof_; i_dof++)
     this->face_position_.element_position_(i_dof) =
         volume_position_.element_position_(surface_dof_lid_map_(i_dof));

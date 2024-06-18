@@ -42,7 +42,7 @@ Mat::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroSingleReaction::Initialize()
+void Mat::PAR::FluidPoroSingleReaction::initialize()
 {
   switch (Global::Problem::Instance()->NDim())
   {
@@ -436,9 +436,9 @@ void Mat::FluidPoroSingleReaction::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  *  initialize                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSingleReaction::Initialize()
+void Mat::FluidPoroSingleReaction::initialize()
 {
-  params_->Initialize();
+  params_->initialize();
   return;
 }
 

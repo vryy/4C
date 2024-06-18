@@ -278,7 +278,7 @@ namespace Wear
     Derived version!
 
     */
-    void Initialize() final;
+    void initialize() final;
 
 
     /*!

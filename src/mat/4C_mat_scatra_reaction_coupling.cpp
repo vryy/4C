@@ -184,11 +184,11 @@ std::vector<double> Mat::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::modify_p
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::PAR::REACTIONCOUPLING::ReacStart::Initialize(int numscal,  //!< number of scalars
+void Mat::PAR::REACTIONCOUPLING::ReacStart::initialize(int numscal,  //!< number of scalars
     const std::vector<double>& couprole                              //!< coupling role vector
 )
 {
-  reaction_->Initialize(numscal, couprole);
+  reaction_->initialize(numscal, couprole);
 }
 
 /*----------------------------------------------------------------------*
@@ -276,12 +276,12 @@ std::vector<double> Mat::PAR::REACTIONCOUPLING::ReacStart::modify_phi(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::PAR::REACTIONCOUPLING::SimpleMultiplicative::Initialize(
+void Mat::PAR::REACTIONCOUPLING::SimpleMultiplicative::initialize(
     int numscal,                         //!< number of scalars
     const std::vector<double>& couprole  //!< coupling role vector
 )
 {
-  ReactionBase::Initialize(numscal, couprole);
+  ReactionBase::initialize(numscal, couprole);
 }
 
 /*----------------------------------------------------------------------*
@@ -353,12 +353,12 @@ void Mat::PAR::REACTIONCOUPLING::SimpleMultiplicative::calc_rea_body_force_deriv
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::PAR::REACTIONCOUPLING::PowerMultiplicative::Initialize(
+void Mat::PAR::REACTIONCOUPLING::PowerMultiplicative::initialize(
     int numscal,                         //!< number of scalars
     const std::vector<double>& couprole  //!< coupling role vector
 )
 {
-  ReactionBase::Initialize(numscal, couprole);
+  ReactionBase::initialize(numscal, couprole);
 }
 
 /*----------------------------------------------------------------------*
@@ -432,11 +432,11 @@ void Mat::PAR::REACTIONCOUPLING::PowerMultiplicative::calc_rea_body_force_deriv(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::PAR::REACTIONCOUPLING::Constant::Initialize(int numscal,  //!< number of scalars
+void Mat::PAR::REACTIONCOUPLING::Constant::initialize(int numscal,  //!< number of scalars
     const std::vector<double>& couprole                             //!< coupling role vector
 )
 {
-  ReactionBase::Initialize(numscal, couprole);
+  ReactionBase::initialize(numscal, couprole);
 }
 
 /*----------------------------------------------------------------------*
@@ -480,11 +480,11 @@ void Mat::PAR::REACTIONCOUPLING::Constant::calc_rea_body_force_deriv(int k,  //!
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::PAR::REACTIONCOUPLING::MichaelisMenten::Initialize(int numscal,  //!< number of scalars
+void Mat::PAR::REACTIONCOUPLING::MichaelisMenten::initialize(int numscal,  //!< number of scalars
     const std::vector<double>& couprole                                    //!< coupling role vector
 )
 {
-  ReactionBase::Initialize(numscal, couprole);
+  ReactionBase::initialize(numscal, couprole);
 }
 
 /*----------------------------------------------------------------------*
@@ -566,7 +566,7 @@ void Mat::PAR::REACTIONCOUPLING::MichaelisMenten::calc_rea_body_force_deriv(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::PAR::REACTIONCOUPLING::ByFunction::Initialize(int numscal,  //!< number of scalars
+void Mat::PAR::REACTIONCOUPLING::ByFunction::initialize(int numscal,  //!< number of scalars
     const std::vector<double>& couprole                               //!< coupling role vector
 )
 {
@@ -624,7 +624,7 @@ void Mat::PAR::REACTIONCOUPLING::ByFunction::initialize_internal(
 
 
   // call base class
-  ReactionBase::Initialize(numscal, couprole);
+  ReactionBase::initialize(numscal, couprole);
 }
 
 /*----------------------------------------------------------------------*

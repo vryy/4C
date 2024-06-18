@@ -1609,7 +1609,7 @@ void Discret::ELEMENTS::SoHex27::soh27_shapederiv(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex27Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex27Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

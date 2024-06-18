@@ -90,8 +90,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_p
   // Initialize variables for evaluation of the positional coupling terms.
   std::array<Core::LinAlg::Matrix<beam::n_dof_, 1, int>, 2> gid_pos;
   std::array<GEOMETRYPAIR::ElementData<beam, scalar_type_pos>, 2> beam_pos = {
-      GEOMETRYPAIR::InitializeElementData<beam, scalar_type_pos>::Initialize(beam_ele[0]),
-      GEOMETRYPAIR::InitializeElementData<beam, scalar_type_pos>::Initialize(beam_ele[1])};
+      GEOMETRYPAIR::InitializeElementData<beam, scalar_type_pos>::initialize(beam_ele[0]),
+      GEOMETRYPAIR::InitializeElementData<beam, scalar_type_pos>::initialize(beam_ele[1])};
   std::array<Core::LinAlg::Matrix<3, 1, scalar_type_pos>, 2> r;
   Core::LinAlg::Matrix<3, 1, scalar_type_pos> force;
   std::array<Core::LinAlg::Matrix<beam::n_dof_, 1, scalar_type_pos>, 2> force_element;

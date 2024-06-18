@@ -72,7 +72,7 @@ namespace Mat
     //! \param[in] ele_id         macro-scale element ID
     //! \param[in] gp_id          macro-scale Gauss point ID
     //! \param[in] is_ale         true, if the underlying macro dis deforms
-    void Initialize(const int ele_id, const int gp_id, bool is_ale);
+    void initialize(const int ele_id, const int gp_id, bool is_ale);
 
     /*!
      * @brief prepare time step on micro scale

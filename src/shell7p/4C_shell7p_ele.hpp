@@ -65,7 +65,7 @@ namespace Discret
 
       Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
       [[nodiscard]] std::string Name() const override { return "Shell7pType"; }
 

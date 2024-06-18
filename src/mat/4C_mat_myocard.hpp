@@ -240,7 +240,7 @@ namespace Mat
     double GetIonicCurrents(const int k, int gp) const;
 
     /// initialize internal variables (called by constructors)
-    void Initialize();
+    void initialize();
 
     /// resize internal state variables
     void resize_internal_state_variables();

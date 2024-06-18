@@ -137,7 +137,7 @@ void CONTACT::PenaltyStrategy::evaluate_rel_mov_predict()
 /*----------------------------------------------------------------------*
  | initialize global contact variables for next Newton step   popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::Initialize()
+void CONTACT::PenaltyStrategy::initialize()
 {
   // (re)setup global matrices containing fc derivatives
   // must use FE_MATRIX type here, as we will do non-local assembly!
@@ -551,8 +551,8 @@ void CONTACT::PenaltyStrategy::InitializeUzawa(
     }
   }
 
-  // now redo Initialize()
-  Initialize();
+  // now redo initialize()
+  initialize();
 
   // and finally redo evaluate()
   Teuchos::RCP<Epetra_Vector> nullvec = Teuchos::null;
@@ -736,7 +736,7 @@ void CONTACT::PenaltyStrategy::eval_force(CONTACT::ParamsInterface& cparams)
   update_active_set_semi_smooth();
 
   // apply contact forces and stiffness
-  Initialize();  // init lin-matrices
+  initialize();  // init lin-matrices
 
   // assemble force and stiffness
   Assemble();

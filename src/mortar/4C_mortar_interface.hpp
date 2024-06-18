@@ -1117,7 +1117,7 @@ namespace Mortar
     \brief Initialize / reset mortar interface
 
     */
-    virtual void Initialize();
+    virtual void initialize();
 
     /*!
     \brief Set current deformation state

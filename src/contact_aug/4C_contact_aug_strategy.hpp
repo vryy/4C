@@ -1078,9 +1078,9 @@ namespace CONTACT
       void update_active_set_semi_smooth(const CONTACT::ParamsInterface& cparams);
 
       //! Initialize all matrices
-      void Initialize() override { Initialize(Mortar::eval_force_stiff); }
+      void initialize() override { initialize(Mortar::eval_force_stiff); }
       //! Initialize only the necessary member variables
-      void Initialize(enum Mortar::ActionType actiontype);
+      void initialize(enum Mortar::ActionType actiontype);
 
       /*! \brief Projection of the nodal LM values in the nodal normal and tangential direction.
        *

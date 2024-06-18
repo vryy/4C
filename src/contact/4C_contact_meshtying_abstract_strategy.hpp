@@ -245,7 +245,7 @@ namespace CONTACT
     \brief Do mortar coupling in reference configuration
 
     Only do this ONCE for meshtying upon initialization!
-    This method calls Initialize() on all contact interfaces, which
+    This method calls initialize() on all contact interfaces, which
     resets all kind of nodal quantities. It then calls evaluate() on
     all meshtying interfaces, which does all the geometric coupling stuff.
     Concretely, this is an evaluation of all involved quantities at nodal
@@ -457,7 +457,7 @@ namespace CONTACT
     }
     void InitEvalInterface() override {}
     void InitMortar() override {}
-    void Initialize() override {}
+    void initialize() override {}
     double Inttime() override { return inttime_; };
     void Inttime_init() override { inttime_ = 0.0; };
     int NumberOfActiveNodes() const override { return 0; }

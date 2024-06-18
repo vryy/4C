@@ -60,7 +60,7 @@ CONTACT::LagrangeStrategy::LagrangeStrategy(
 /*----------------------------------------------------------------------*
  | initialize global contact variables for next Newton step   popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::Initialize()
+void CONTACT::LagrangeStrategy::initialize()
 {
   // (re)setup global matrices containing fc derivatives
   // must use FE_MATRIX type here, as we will do non-local assembly!
@@ -3372,7 +3372,7 @@ void CONTACT::LagrangeStrategy::eval_force(CONTACT::ParamsInterface& cparams)
   update_active_set_semi_smooth(firstTimeStepAndPredictor);
 
   // apply contact forces and stiffness
-  Initialize();  // init lin-matrices
+  initialize();  // init lin-matrices
   assemble_all_contact_terms();
 
   if (SystemType() != Inpar::CONTACT::system_condensed)

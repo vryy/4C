@@ -67,7 +67,7 @@ CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
   }
 }
 
-void CONSTRAINTS::ConstraintPenalty::Initialize(
+void CONSTRAINTS::ConstraintPenalty::initialize(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   FOUR_C_THROW("method not used for penalty formulation!");
@@ -75,7 +75,7 @@ void CONSTRAINTS::ConstraintPenalty::Initialize(
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintPenalty::Initialize(Teuchos::ParameterList& params)
+void CONSTRAINTS::ConstraintPenalty::initialize(Teuchos::ParameterList& params)
 {
   // choose action
   switch (constrtype_)
@@ -100,7 +100,7 @@ void CONSTRAINTS::ConstraintPenalty::Initialize(Teuchos::ParameterList& params)
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintPenalty::Initialize(const double& time)
+void CONSTRAINTS::ConstraintPenalty::initialize(const double& time)
 {
   for (auto* cond : constrcond_)
   {
@@ -206,7 +206,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
       {
         const std::string action = params.get<std::string>("action");
         // last converged step is used reference
-        Initialize(params);
+        initialize(params);
         params.set("action", action);
       }
 

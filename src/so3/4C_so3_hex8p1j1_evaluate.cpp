@@ -944,7 +944,7 @@ void Discret::ELEMENTS::SoHex8P1J1::PushPullOperator(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                   lw 12/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8P1J1Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex8P1J1Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

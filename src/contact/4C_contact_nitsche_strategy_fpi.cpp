@@ -31,7 +31,7 @@ void CONTACT::NitscheStrategyFpi::do_contact_search()
 {
   for (auto& interface : interface_)
   {
-    interface->Initialize();
+    interface->initialize();
     interface->evaluate_search_binarytree();
     interface->evaluate_nodal_normals();
     interface->export_nodal_normals();

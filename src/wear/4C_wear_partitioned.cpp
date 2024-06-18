@@ -659,7 +659,7 @@ void Wear::Partitioned::wear_spatial_master_map(
     winterface->set_state(Mortar::state_new_displacement, *structure_field()->WriteAccessDispnp());
 
     // 2. initialize
-    winterface->Initialize();
+    winterface->initialize();
 
     // 3. calc N and areas
     winterface->set_element_areas();
@@ -1019,7 +1019,7 @@ void Wear::Partitioned::wear_pull_back_slave(Teuchos::RCP<Epetra_Vector>& disint
     interfacesMat_[m]->set_state(Mortar::state_new_displacement, *structure_field()->DispMat());
 
     // 2. initialize
-    interfacesMat_[m]->Initialize();
+    interfacesMat_[m]->initialize();
 
     // 3. calc N and areas
     interfacesMat_[m]->set_element_areas();
@@ -1206,7 +1206,7 @@ void Wear::Partitioned::wear_pull_back_master(Teuchos::RCP<Epetra_Vector>& disin
     winterfaceMat->set_state(Mortar::state_new_displacement, *structure_field()->DispMat());
 
     // 2. initialize
-    winterfaceMat->Initialize();
+    winterfaceMat->initialize();
 
     // 3. calc N and areas
     winterfaceMat->set_element_areas();

@@ -446,7 +446,7 @@ void Discret::ELEMENTS::Truss3::LocationVector(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Truss3Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::Truss3Type::initialize(Core::FE::Discretization& dis)
 {
   // reference node positions
   std::vector<double> xrefe;

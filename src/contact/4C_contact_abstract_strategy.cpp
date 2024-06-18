@@ -971,7 +971,7 @@ void CONTACT::AbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> d
     // apply contact forces and stiffness
     Comm().Barrier();
     const double t_start4 = Teuchos::Time::wallTime();
-    Initialize();          // init lin-matrices
+    initialize();          // init lin-matrices
     evaluate(kt, f, dis);  // assemble lin. matrices, condensation ...
     EvalConstrRHS();       // evaluate the constraint rhs (saddle-point system only)
 
@@ -1023,7 +1023,7 @@ void CONTACT::AbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> d
     if (!predictor) update_active_set_semi_smooth();
 
     // apply contact forces and stiffness
-    Initialize();          // init lin-matrices
+    initialize();          // init lin-matrices
     evaluate(kt, f, dis);  // assemble lin. matrices, condensation ...
     EvalConstrRHS();       // evaluate the constraint rhs (saddle-point system only)
 
@@ -1183,7 +1183,7 @@ void CONTACT::AbstractStrategy::InitEvalInterface(
   for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // initialize / reset interfaces
-    interfaces()[i]->Initialize();
+    interfaces()[i]->initialize();
 
     // store required integration time
     inttime_ += interfaces()[i]->Inttime();

@@ -83,9 +83,9 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::WallQuad4PoroP1Type::ComputeN
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
-int Discret::ELEMENTS::WallQuad4PoroP1Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::WallQuad4PoroP1Type::initialize(Core::FE::Discretization& dis)
 {
-  Discret::ELEMENTS::Wall1Type::Initialize(dis);
+  Discret::ELEMENTS::Wall1Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -164,9 +164,9 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::WallQuad9PoroP1Type::ComputeN
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
-int Discret::ELEMENTS::WallQuad9PoroP1Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::WallQuad9PoroP1Type::initialize(Core::FE::Discretization& dis)
 {
-  Discret::ELEMENTS::Wall1Type::Initialize(dis);
+  Discret::ELEMENTS::Wall1Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -246,9 +246,9 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::WallTri3PoroP1Type::ComputeNu
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
-int Discret::ELEMENTS::WallTri3PoroP1Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::WallTri3PoroP1Type::initialize(Core::FE::Discretization& dis)
 {
-  Discret::ELEMENTS::Wall1Type::Initialize(dis);
+  Discret::ELEMENTS::Wall1Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;

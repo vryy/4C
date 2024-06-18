@@ -33,7 +33,7 @@ Mat::ScatraMicroMacroCoupling::ScatraMicroMacroCoupling() : matgp_() {}
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::ScatraMicroMacroCoupling::Initialize(const int ele_id, const int gp_id, const bool is_ale)
+void Mat::ScatraMicroMacroCoupling::initialize(const int ele_id, const int gp_id, const bool is_ale)
 {
   // safety check
   if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");

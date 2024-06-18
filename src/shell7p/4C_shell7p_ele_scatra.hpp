@@ -44,7 +44,7 @@ namespace Discret::ELEMENTS
 
     [[nodiscard]] std::string Name() const override { return "Shell7pScatraType"; }
 
-    int Initialize(Core::FE::Discretization& dis) override;
+    int initialize(Core::FE::Discretization& dis) override;
 
     void nodal_block_information(
         Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;

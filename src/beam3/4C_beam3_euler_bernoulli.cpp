@@ -216,7 +216,7 @@ void Discret::ELEMENTS::Beam3ebType::setup_element_definition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Beam3ebType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::Beam3ebType::initialize(Core::FE::Discretization& dis)
 {
   // setting up geometric variables for beam3eb elements
   for (int num = 0; num < dis.NumMyColElements(); ++num)

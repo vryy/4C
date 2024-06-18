@@ -359,7 +359,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::Aug::ComboStrategy::ConstrRhs() { return ge
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::ComboStrategy::Initialize() { FOUR_C_THROW("Unnecessary in this Strategy."); }
+void CONTACT::Aug::ComboStrategy::initialize() { FOUR_C_THROW("Unnecessary in this Strategy."); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -509,7 +509,7 @@ void CONTACT::Aug::ComboStrategy::eval_static_constraint_rhs(CONTACT::ParamsInte
   get().set_current_eval_state(cparams);
   get().InitEvalInterface(cparams);
 
-  get().Initialize(cparams.get_action_type());
+  get().initialize(cparams.get_action_type());
   get().assemble_gap();
 
   get().eval_constraint_forces();

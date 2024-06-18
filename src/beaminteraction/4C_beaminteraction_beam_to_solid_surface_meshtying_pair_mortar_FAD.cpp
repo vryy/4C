@@ -65,7 +65,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   const auto& [lambda_gid_pos, _] = mortar_manager->LocationVector(*this);
   std::vector<double> local_lambda_pos;
   Core::FE::ExtractMyValues(global_lambda, local_lambda_pos, lambda_gid_pos);
-  auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::Initialize(nullptr);
+  auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::initialize(nullptr);
   q_lambda.element_position_ =
       Core::LinAlg::Matrix<mortar::n_dof_, 1, double>(local_lambda_pos.data());
 

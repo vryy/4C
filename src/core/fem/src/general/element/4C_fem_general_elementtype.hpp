@@ -74,7 +74,7 @@ namespace Core::Elements
     virtual Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) = 0;
 
     /// initialize the element type
-    virtual int Initialize(Core::FE::Discretization& dis);
+    virtual int initialize(Core::FE::Discretization& dis);
 
     /// preevaluation
     virtual inline void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,

@@ -1017,7 +1017,7 @@ void STR::MODELEVALUATOR::Structure::init_output_runtime_beams()
       tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box();
 
   // initialize the writer object with current displacement state
-  beam_vtu_writer_ptr_->Initialize(const_cast<STR::MODELEVALUATOR::Structure*>(this)->discret_ptr(),
+  beam_vtu_writer_ptr_->initialize(const_cast<STR::MODELEVALUATOR::Structure*>(this)->discret_ptr(),
       beam_output_params.use_absolute_positions(),
       beam_output_params.get_number_visualization_subsegments(), bounding_box_ptr);
 }

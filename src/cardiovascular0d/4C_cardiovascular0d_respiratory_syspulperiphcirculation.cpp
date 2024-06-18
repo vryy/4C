@@ -8939,7 +8939,7 @@ double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2ctCO2_dppCO2
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
+void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::initialize(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> sysvec1,
     Teuchos::RCP<Epetra_Vector> sysvec2)
 {

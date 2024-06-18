@@ -2709,7 +2709,7 @@ void Discret::ELEMENTS::SoHex8::soh8_recover_from_eas_backup_state()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 04/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex8Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

@@ -1532,7 +1532,7 @@ namespace CONTACT
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     void evaluate_rel_mov_predict() override = 0;
     double InitialPenalty() override = 0;
-    void Initialize() override = 0;
+    void initialize() override = 0;
     void InitializeUzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override = 0;
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override = 0;
@@ -1790,7 +1790,7 @@ namespace CONTACT
 
     /*! \brief Initialize and evaluate interface for the next Newton step
 
-     This method calls Initialize() on all contact interfaces, which
+     This method calls initialize() on all contact interfaces, which
      resets all kind of nodal quantities like normal vector, weighted
      gap or Mortar and linearization maps. It then calls evaluate() on
      all contact interfaces, which does all the geometric contact stuff.

@@ -314,7 +314,7 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // initialize / reset interfaces
-    interface_[i]->Initialize();
+    interface_[i]->initialize();
 
     // evaluate interfaces
     interface_[i]->evaluate();

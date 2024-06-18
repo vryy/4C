@@ -1058,7 +1058,7 @@ std::vector<double> Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_gpweights()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Nurbs::SoNurbs27Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::Nurbs::SoNurbs27Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

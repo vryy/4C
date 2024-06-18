@@ -1990,7 +1990,7 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh8Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
 {
   // sosh8_gmshplotdis(dis);
 

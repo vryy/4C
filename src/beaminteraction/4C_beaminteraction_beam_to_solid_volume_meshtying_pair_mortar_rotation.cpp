@@ -72,7 +72,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   // Set the FAD variables for the solid DOFs. For the terms calculated here we only need first
   // order derivatives.
   auto q_solid =
-      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_1st>::Initialize(this->Element2());
+      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_1st>::initialize(this->Element2());
   for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
     q_solid.element_position_(i_solid) =
         Core::FADUtils::HigherOrderFadValue<scalar_type_rot_1st>::apply(3 + solid::n_dof_,
@@ -356,7 +356,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   // Set the FAD variables for the solid DOFs. For the terms calculated here we only need first
   // order derivatives.
   auto q_solid =
-      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_2nd>::Initialize(this->Element2());
+      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_2nd>::initialize(this->Element2());
   for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
     q_solid.element_position_(i_solid) =
         Core::FADUtils::HigherOrderFadValue<scalar_type_rot_2nd>::apply(3 + solid::n_dof_,

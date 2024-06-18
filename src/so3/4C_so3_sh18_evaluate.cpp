@@ -425,7 +425,7 @@ void Discret::ELEMENTS::SoSh18::soh18_lumpmass(
 /*----------------------------------------------------------------------*
  |  init the element (public)                               seitz 11/14 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh18Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoSh18Type::initialize(Core::FE::Discretization& dis)
 {
   // here we order the nodes such that we have a positive definite jacobian
   //       maybe the python script generating the hex18 elements would be a better place for this.

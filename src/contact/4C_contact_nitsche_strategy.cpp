@@ -44,7 +44,7 @@ void CONTACT::NitscheStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> di
   // Evaluation for all interfaces
   for (const auto& interface : interface_)
   {
-    interface->Initialize();
+    interface->initialize();
     interface->evaluate(0, step_, iter_);
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
     {
@@ -87,7 +87,7 @@ void CONTACT::NitscheStrategy::DoReadRestart(Core::IO::DiscretizationReader& rea
   set_state(Mortar::state_old_displacement, *dis);
 
   // Evaluation for all interfaces
-  for (const auto& interface : interface_) interface->Initialize();
+  for (const auto& interface : interface_) interface->initialize();
 
   if (friction_)
   {
@@ -223,7 +223,7 @@ void CONTACT::NitscheStrategy::Integrate(const CONTACT::ParamsInterface& cparams
   for (const auto& interface : interface_)
   {
     interface->interface_params().set<double>("TIMESTEP", cparams.get_delta_time());
-    interface->Initialize();
+    interface->initialize();
     interface->evaluate(0, step_, iter_);
 
     // store required integration time

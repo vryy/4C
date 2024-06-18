@@ -55,7 +55,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(int id, int owner) override;
 
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;

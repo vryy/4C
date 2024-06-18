@@ -1143,7 +1143,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_lumpmass(Core::LinAlg::Matrix<NUMDOF_WEG6, 
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 04/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoWeg6Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoWeg6Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

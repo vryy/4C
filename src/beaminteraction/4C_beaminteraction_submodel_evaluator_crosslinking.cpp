@@ -1207,7 +1207,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_stru
   //
   //
   //  // initialize the writer object
-  //  vtp_writer_ptr->Initialize();   // Fixme
+  //  vtp_writer_ptr->initialize();   // Fixme
   //
   //  // set geometry manually
   //  const unsigned int num_spatial_dimensions = 3;

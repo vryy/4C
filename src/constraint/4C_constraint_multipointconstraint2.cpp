@@ -52,7 +52,7 @@ CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<Core::FE::Discretization>
 |(public)                                                       tk 08/08  |
 |Initialization routine activates conditions (restart)                    |
 *------------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint2::Initialize(const double& time)
+void CONSTRAINTS::MPConstraint2::initialize(const double& time)
 {
   for (auto* cond : constrcond_)
   {
@@ -76,7 +76,7 @@ void CONSTRAINTS::MPConstraint2::Initialize(const double& time)
 |(public)                                                        tk 07/08|
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint2::Initialize(
+void CONSTRAINTS::MPConstraint2::initialize(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   const double time = params.get("total time", -1.0);
@@ -301,7 +301,7 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
       if (activecons_.find(condID)->second == false)
       {
         const std::string action = params.get<std::string>("action");
-        Initialize(params, systemvector2);
+        initialize(params, systemvector2);
         params.set("action", action);
       }
 

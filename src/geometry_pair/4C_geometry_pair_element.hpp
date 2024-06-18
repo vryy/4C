@@ -475,7 +475,7 @@ namespace GEOMETRYPAIR
   template <typename element_type, typename scalar_type>
   struct InitializeElementData
   {
-    static GEOMETRYPAIR::ElementData<element_type, scalar_type> Initialize(
+    static GEOMETRYPAIR::ElementData<element_type, scalar_type> initialize(
         const Core::Elements::Element* element)
     {
       GEOMETRYPAIR::ElementData<element_type, scalar_type> element_data;

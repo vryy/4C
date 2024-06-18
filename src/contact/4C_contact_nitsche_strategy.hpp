@@ -176,7 +176,7 @@ namespace CONTACT
     void ModifyPenalty() override {}
     void update_uzawa_augmented_lagrange() override {}
     void update_constraint_norm(int uzawaiter) override {}
-    void Initialize() override{};
+    void initialize() override{};
     void EvaluateContact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override
     {

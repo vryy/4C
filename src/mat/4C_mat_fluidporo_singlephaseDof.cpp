@@ -86,9 +86,9 @@ Mat::PAR::FluidPoroPhaseDofDiffPressure::FluidPoroPhaseDofDiffPressure(
 /*----------------------------------------------------------------------*
  *  Initialize                                               vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroPhaseDofDiffPressure::Initialize()
+void Mat::PAR::FluidPoroPhaseDofDiffPressure::initialize()
 {
-  phaselaw_->Initialize();
+  phaselaw_->initialize();
   return;
 }
 
@@ -191,9 +191,9 @@ Mat::PAR::FluidPoroPhaseDofPressure::FluidPoroPhaseDofPressure(
 /*----------------------------------------------------------------------*
  *  Initialize                                               vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroPhaseDofPressure::Initialize()
+void Mat::PAR::FluidPoroPhaseDofPressure::initialize()
 {
-  phaselaw_->Initialize();
+  phaselaw_->initialize();
   return;
 }
 
@@ -289,9 +289,9 @@ Mat::PAR::FluidPoroPhaseDofSaturation::FluidPoroPhaseDofSaturation(
 /*----------------------------------------------------------------------*
  *  Initialize                                               vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroPhaseDofSaturation::Initialize()
+void Mat::PAR::FluidPoroPhaseDofSaturation::initialize()
 {
-  phaselaw_->Initialize();
+  phaselaw_->initialize();
   return;
 }
 

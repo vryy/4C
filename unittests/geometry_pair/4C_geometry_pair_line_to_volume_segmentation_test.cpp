@@ -79,7 +79,7 @@ namespace
       std::vector<GEOMETRYPAIR::ElementData<el2, double>> q_volume(q_volume_elements.size());
       for (unsigned int i_volume = 0; i_volume < volume_elements_.size(); i_volume++)
       {
-        q_volume[i_volume] = GEOMETRYPAIR::InitializeElementData<el2, double>::Initialize(
+        q_volume[i_volume] = GEOMETRYPAIR::InitializeElementData<el2, double>::initialize(
             volume_elements_[i_volume].get());
         q_volume[i_volume].element_position_ = q_volume_elements[i_volume];
       }

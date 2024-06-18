@@ -464,9 +464,9 @@ void Wear::LagrangeStrategyWear::AssembleMortar()
 /*----------------------------------------------------------------------*
  | initialize global contact variables for next Newton step  farah 09/13|
  *----------------------------------------------------------------------*/
-void Wear::LagrangeStrategyWear::Initialize()
+void Wear::LagrangeStrategyWear::initialize()
 {
-  CONTACT::LagrangeStrategy::Initialize();
+  CONTACT::LagrangeStrategy::initialize();
 
   // (re)setup global tangent matrix
   tmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivet_, 3));

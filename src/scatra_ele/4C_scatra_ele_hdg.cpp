@@ -335,7 +335,7 @@ int Discret::ELEMENTS::ScaTraHDG::initialize()
         !actmat->MyocardMat())  // in case we are not in post-process mode
     {
       actmat->SetGP(gp);
-      actmat->Initialize();
+      actmat->initialize();
     }
   }
 

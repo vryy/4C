@@ -764,7 +764,7 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
   interface_->set_state(Mortar::state_new_displacement, *dispn);
 
   // in the following two steps MORTAR does all the work
-  interface_->Initialize();
+  interface_->initialize();
 
   // set setup flag
   issetup_ = true;
@@ -796,7 +796,7 @@ void Adapter::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
   interface_->set_state(Mortar::state_lagrange_multiplier, *veclm);
 
   // general interface init: data container etc...
-  interface_->Initialize();
+  interface_->initialize();
   interface_->set_element_areas();
 
   // loop over all slave col elements and direct integration
@@ -861,7 +861,7 @@ void Adapter::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
   interface_->set_state(Mortar::state_lagrange_multiplier, *veclm);
 
   // init internal data
-  interface_->Initialize();
+  interface_->initialize();
   interface_->set_element_areas();
 
   // call interface evaluate (d,m,gap...)
@@ -960,7 +960,7 @@ void Adapter::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
   interface_->set_state(Mortar::state_lagrange_multiplier, *veclm);
 
   // init internal data
-  interface_->Initialize();
+  interface_->initialize();
   interface_->set_element_areas();
 
   // call interface evaluate (d,m,gap...)
@@ -1004,7 +1004,7 @@ void Adapter::CouplingNonLinMortar::EvaluateSliding(const std::string& statename
   interface_->set_state(Mortar::state_lagrange_multiplier, *veclm);
 
   // init internal data
-  interface_->Initialize();
+  interface_->initialize();
   interface_->set_element_areas();
 
   interface_->BuildActiveSet(true);

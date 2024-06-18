@@ -150,7 +150,7 @@ namespace CONTACT
       Teuchos::RCP<Epetra_Vector> ConstrRhs() override;
 
       /// function wrapper
-      void Initialize() override;
+      void initialize() override;
 
       /// function wrapper
       void EvalConstrRHS() override;

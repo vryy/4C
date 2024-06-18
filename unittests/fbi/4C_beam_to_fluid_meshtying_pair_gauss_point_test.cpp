@@ -101,13 +101,13 @@ namespace
       pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);
       pair.init(intersection_params, pair_elements);
 
-      pair.ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam_type, scalar_type>::Initialize(
+      pair.ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam_type, scalar_type>::initialize(
           beam_element.get());
       pair.ele1posref_ =
-          GEOMETRYPAIR::InitializeElementData<beam_type, double>::Initialize(beam_element.get());
+          GEOMETRYPAIR::InitializeElementData<beam_type, double>::initialize(beam_element.get());
       pair.ele1poscur_ =
-          GEOMETRYPAIR::InitializeElementData<beam_type, double>::Initialize(beam_element.get());
-      pair.ele1vel_ = GEOMETRYPAIR::InitializeElementData<beam_type, scalar_type>::Initialize(
+          GEOMETRYPAIR::InitializeElementData<beam_type, double>::initialize(beam_element.get());
+      pair.ele1vel_ = GEOMETRYPAIR::InitializeElementData<beam_type, scalar_type>::initialize(
           beam_element.get());
       pair.ele1posref_.element_position_ = q_beam;
       pair.ele2posref_.element_position_ = q_fluid;

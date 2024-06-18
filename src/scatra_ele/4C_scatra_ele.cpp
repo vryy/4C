@@ -244,7 +244,7 @@ void Discret::ELEMENTS::TransportType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::TransportType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::TransportType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -687,7 +687,7 @@ int Discret::ELEMENTS::Transport::initialize()
     // a diamond inheritance structure
     Teuchos::RCP<Mat::MatListReactions> actmat =
         Teuchos::rcp_dynamic_cast<Mat::MatListReactions>(mat);
-    actmat->Initialize();
+    actmat->initialize();
   }
   else if (mat->MaterialType() == Core::Materials::m_myocard)
   {
@@ -704,7 +704,7 @@ int Discret::ELEMENTS::Transport::initialize()
         !actmat->MyocardMat())  // in case we are not in post-process mode
     {
       actmat->SetGP(gp);
-      actmat->Initialize();
+      actmat->initialize();
     }
   }
 

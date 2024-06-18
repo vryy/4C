@@ -621,7 +621,7 @@ void EHL::Base::setup_field_coupling(
 
   Teuchos::RCP<Epetra_Vector> idisp = Core::LinAlg::CreateVector(
       *(structdis->dof_row_map()), true);  // Structure displacement at the lubricated interface
-  mortaradapter_->Interface()->Initialize();
+  mortaradapter_->Interface()->initialize();
   mortaradapter_->Interface()->set_state(Mortar::state_old_displacement, *idisp);
   mortaradapter_->Interface()->set_state(Mortar::state_new_displacement, *idisp);
   mortaradapter_->Interface()->evaluate_nodal_normals();

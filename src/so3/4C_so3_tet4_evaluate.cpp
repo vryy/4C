@@ -1581,7 +1581,7 @@ void Discret::ELEMENTS::SoTet4::so_tet4_lumpmass(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 05/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet4Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoTet4Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

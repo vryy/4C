@@ -73,9 +73,9 @@ void Discret::ELEMENTS::WallQuad4PoroType::setup_element_definition(
                       .build();
 }
 
-int Discret::ELEMENTS::WallQuad4PoroType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::WallQuad4PoroType::initialize(Core::FE::Discretization& dis)
 {
-  Discret::ELEMENTS::Wall1Type::Initialize(dis);
+  Discret::ELEMENTS::Wall1Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -141,9 +141,9 @@ void Discret::ELEMENTS::WallQuad9PoroType::setup_element_definition(
                       .build();
 }
 
-int Discret::ELEMENTS::WallQuad9PoroType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::WallQuad9PoroType::initialize(Core::FE::Discretization& dis)
 {
-  Discret::ELEMENTS::Wall1Type::Initialize(dis);
+  Discret::ELEMENTS::Wall1Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -210,9 +210,9 @@ void Discret::ELEMENTS::WallNurbs4PoroType::setup_element_definition(
                        .build();
 }
 
-int Discret::ELEMENTS::WallNurbs4PoroType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::WallNurbs4PoroType::initialize(Core::FE::Discretization& dis)
 {
-  Discret::ELEMENTS::Wall1Type::Initialize(dis);
+  Discret::ELEMENTS::Wall1Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -279,9 +279,9 @@ void Discret::ELEMENTS::WallNurbs9PoroType::setup_element_definition(
                        .build();
 }
 
-int Discret::ELEMENTS::WallNurbs9PoroType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::WallNurbs9PoroType::initialize(Core::FE::Discretization& dis)
 {
-  Discret::ELEMENTS::Wall1Type::Initialize(dis);
+  Discret::ELEMENTS::Wall1Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -350,9 +350,9 @@ void Discret::ELEMENTS::WallTri3PoroType::setup_element_definition(
                      .build();
 }
 
-int Discret::ELEMENTS::WallTri3PoroType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::WallTri3PoroType::initialize(Core::FE::Discretization& dis)
 {
-  Discret::ELEMENTS::Wall1Type::Initialize(dis);
+  Discret::ELEMENTS::Wall1Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;

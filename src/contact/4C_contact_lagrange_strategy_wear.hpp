@@ -313,7 +313,7 @@ namespace Wear
     the global derivative matrices S and P and Tresca friction matrix L + vector r.
 
     */
-    void Initialize() override;
+    void initialize() override;
 
     /*!
     \brief Setup this strategy object (maps, vectors, etc.)

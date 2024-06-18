@@ -731,7 +731,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void Initialize() override;
+    void initialize() override;
 
     /*!
     \brief Set element areas

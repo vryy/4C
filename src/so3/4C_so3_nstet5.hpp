@@ -65,7 +65,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
       void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
           Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,

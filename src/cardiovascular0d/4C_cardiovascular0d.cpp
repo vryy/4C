@@ -229,7 +229,7 @@ UTILS::Cardiovascular0D::Cardiovascular0DType UTILS::Cardiovascular0D::get_cardi
 |(public)                                                      mhv 10/13  |
 |Initialization routine computes ref base values and activates conditions |
  *------------------------------------------------------------------------*/
-void UTILS::Cardiovascular0D::Initialize(Teuchos::ParameterList& params,
+void UTILS::Cardiovascular0D::initialize(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> sysvec1, Teuchos::RCP<Epetra_Vector> sysvec2)
 {
   FOUR_C_THROW("Overridden by derived class!");

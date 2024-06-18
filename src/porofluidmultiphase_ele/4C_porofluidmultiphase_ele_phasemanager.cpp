@@ -229,7 +229,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::PhaseManagerCore(
       numfluidphases_(numfluidphases),
       numvolfrac_(
           (int)((totalnumdofpernode - numfluidphases) /
-                2)),  // note: check is performed in Mat::PAR::FluidPoroMultiPhase::Initialize()
+                2)),  // note: check is performed in Mat::PAR::FluidPoroMultiPhase::initialize()
       genpressure_(numfluidphases, 0.0),
       volfrac_(numvolfrac_, 0.0),
       volfracpressure_(numvolfrac_, 0.0),

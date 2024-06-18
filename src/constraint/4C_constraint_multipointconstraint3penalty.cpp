@@ -82,7 +82,7 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3Penalty::Initialize(const double& time)
+void CONSTRAINTS::MPConstraint3Penalty::initialize(const double& time)
 {
   for (auto* cond : constrcond_)
   {
@@ -104,7 +104,7 @@ void CONSTRAINTS::MPConstraint3Penalty::Initialize(const double& time)
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3Penalty::Initialize(
+void CONSTRAINTS::MPConstraint3Penalty::initialize(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   FOUR_C_THROW("method not used for penalty formulation!");
@@ -112,7 +112,7 @@ void CONSTRAINTS::MPConstraint3Penalty::Initialize(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3Penalty::Initialize(Teuchos::ParameterList& params)
+void CONSTRAINTS::MPConstraint3Penalty::initialize(Teuchos::ParameterList& params)
 {
   const double time = params.get("total time", -1.0);
 
@@ -377,7 +377,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(
         Teuchos::RCP<Epetra_Vector> displast = params.get<Teuchos::RCP<Epetra_Vector>>("old disp");
         SetConstrState("displacement", displast);
         // last converged step is used reference
-        Initialize(params);
+        initialize(params);
         Teuchos::RCP<Epetra_Vector> disp = params.get<Teuchos::RCP<Epetra_Vector>>("new disp");
         SetConstrState("displacement", disp);
         params.set("action", action);

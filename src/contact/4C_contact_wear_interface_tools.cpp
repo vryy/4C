@@ -64,7 +64,7 @@ void Wear::WearInterface::FDCheckGapDeriv()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -168,7 +168,7 @@ void Wear::WearInterface::FDCheckGapDeriv()
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -295,7 +295,7 @@ void Wear::WearInterface::FDCheckGapDeriv()
   }
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   return;
@@ -339,7 +339,7 @@ void Wear::WearInterface::FDCheckGapDeriv_W()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -407,7 +407,7 @@ void Wear::WearInterface::FDCheckGapDeriv_W()
   }
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   return;
@@ -470,7 +470,7 @@ void Wear::WearInterface::FDCheckDerivE_D(Core::LinAlg::SparseMatrix& linedis)
   for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -599,7 +599,7 @@ void Wear::WearInterface::FDCheckDerivE_D(Core::LinAlg::SparseMatrix& linedis)
   for (int fd = 0; fd < dim * mnodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -722,7 +722,7 @@ void Wear::WearInterface::FDCheckDerivE_D(Core::LinAlg::SparseMatrix& linedis)
     }
   }  // loop over procs slave nodes
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   return;
@@ -785,7 +785,7 @@ void Wear::WearInterface::fd_check_deriv_e_d_master(Core::LinAlg::SparseMatrix& 
   for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -914,7 +914,7 @@ void Wear::WearInterface::fd_check_deriv_e_d_master(Core::LinAlg::SparseMatrix& 
   for (int fd = 0; fd < dim * mnodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -1037,7 +1037,7 @@ void Wear::WearInterface::fd_check_deriv_e_d_master(Core::LinAlg::SparseMatrix& 
     }
   }  // loop over procs slave nodes
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   return;
@@ -1104,7 +1104,7 @@ void Wear::WearInterface::FDCheckDerivT_D(Core::LinAlg::SparseMatrix& lintdis)
   for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -1228,7 +1228,7 @@ void Wear::WearInterface::FDCheckDerivT_D(Core::LinAlg::SparseMatrix& lintdis)
   }  // loop over procs slave nodes
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   return;
@@ -1295,7 +1295,7 @@ void Wear::WearInterface::fd_check_deriv_t_d_master(Core::LinAlg::SparseMatrix& 
   for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -1419,7 +1419,7 @@ void Wear::WearInterface::fd_check_deriv_t_d_master(Core::LinAlg::SparseMatrix& 
   }  // loop over procs slave nodes
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   return;
@@ -1786,7 +1786,7 @@ void Wear::WearInterface::FDCheckSlipDeriv(Core::LinAlg::SparseMatrix& linslipLM
   for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -2025,7 +2025,7 @@ void Wear::WearInterface::FDCheckSlipDeriv(Core::LinAlg::SparseMatrix& linslipLM
   for (int fd = 0; fd < dim * mnodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -2263,7 +2263,7 @@ void Wear::WearInterface::FDCheckSlipDeriv(Core::LinAlg::SparseMatrix& linslipLM
   for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -2478,7 +2478,7 @@ void Wear::WearInterface::FDCheckSlipDeriv(Core::LinAlg::SparseMatrix& linslipLM
   }
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   return;
@@ -2535,7 +2535,7 @@ void Wear::WearInterface::FDCheckMortarTDeriv()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -2642,7 +2642,7 @@ void Wear::WearInterface::FDCheckMortarTDeriv()
   // back to normal...
 
   // Initialize
-  Initialize();
+  initialize();
 
   // compute element areas
   set_element_areas();
@@ -2705,7 +2705,7 @@ void Wear::WearInterface::fd_check_mortar_t_master_deriv()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -2819,7 +2819,7 @@ void Wear::WearInterface::fd_check_mortar_t_master_deriv()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -2926,7 +2926,7 @@ void Wear::WearInterface::fd_check_mortar_t_master_deriv()
   // back to normal...
 
   // Initialize
-  Initialize();
+  initialize();
 
   // compute element areas
   set_element_areas();
@@ -2989,7 +2989,7 @@ void Wear::WearInterface::FDCheckMortarEDeriv()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -3096,7 +3096,7 @@ void Wear::WearInterface::FDCheckMortarEDeriv()
   // back to normal...
 
   // Initialize
-  Initialize();
+  initialize();
 
   // compute element areas
   set_element_areas();
@@ -3159,7 +3159,7 @@ void Wear::WearInterface::fd_check_mortar_e_master_deriv()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -3274,7 +3274,7 @@ void Wear::WearInterface::fd_check_mortar_e_master_deriv()
     int w = 0;
 
     // Initialize
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -3381,7 +3381,7 @@ void Wear::WearInterface::fd_check_mortar_e_master_deriv()
   // back to normal...
 
   // Initialize
-  Initialize();
+  initialize();
 
   // compute element areas
   set_element_areas();
@@ -3434,7 +3434,7 @@ void Wear::WearInterface::FDCheckWearDerivLm()
     int w = 0;
 
     // Initialize -- set WearData.Wear() = 0 !!!
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -3526,7 +3526,7 @@ void Wear::WearInterface::FDCheckWearDerivLm()
   // LM only on slave nodes!!!
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   // write the init. wear back into the node
@@ -3585,7 +3585,7 @@ void Wear::WearInterface::FDCheckWearDeriv()
     int w = 0;
 
     // Initialize -- set WearData.Wear() = 0 !!!
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
@@ -3685,7 +3685,7 @@ void Wear::WearInterface::FDCheckWearDeriv()
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
-    Initialize();
+    initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
@@ -3777,7 +3777,7 @@ void Wear::WearInterface::FDCheckWearDeriv()
   }
 
   // back to normal...
-  Initialize();
+  initialize();
   evaluate();
 
   // write the init. wear back into the node

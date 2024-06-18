@@ -2516,7 +2516,7 @@ void Discret::ELEMENTS::SoSh8p8::do_calc_stc_matrix(Core::LinAlg::Matrix<NUMDOF_
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh8p8Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoSh8p8Type::initialize(Core::FE::Discretization& dis)
 {
   // sosh8_gmshplotdis(dis);
 

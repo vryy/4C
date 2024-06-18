@@ -44,7 +44,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// initialize the material
-      virtual void Initialize();
+      virtual void initialize();
 
       /// @name material parameters
       //@{
@@ -162,7 +162,7 @@ namespace Mat
     Mat::PAR::FluidPoroMultiPhase* Parameter() const override { return paramsporo_; }
 
     /// initialize the material
-    virtual void Initialize();
+    virtual void initialize();
 
     /// return whether reaction terms need to be evaluated
     virtual bool IsReactive() const { return false; };

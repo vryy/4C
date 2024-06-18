@@ -46,7 +46,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroMultiPhase::create_material
 /*----------------------------------------------------------------------*
  | initialize                                               vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroMultiPhase::Initialize()
+void Mat::PAR::FluidPoroMultiPhase::initialize()
 {
   //  matrix holding the conversion from pressures and dofs
   dof2pres_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(numfluidphases_, numfluidphases_));
@@ -217,7 +217,7 @@ void Mat::FluidPoroMultiPhase::clear()
 /*----------------------------------------------------------------------*
  | initialize                                               vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroMultiPhase::Initialize()
+void Mat::FluidPoroMultiPhase::initialize()
 {
   std::map<int, Teuchos::RCP<Core::Mat::Material>>* materials;
 
@@ -233,10 +233,10 @@ void Mat::FluidPoroMultiPhase::Initialize()
     {
       Teuchos::RCP<Mat::FluidPoroSinglePhaseBase> actphase =
           Teuchos::rcp_dynamic_cast<FluidPoroSinglePhaseBase>(it->second, true);
-      actphase->Initialize();
+      actphase->initialize();
     }
 
-    if (not paramsporo_->isinit_) paramsporo_->Initialize();
+    if (not paramsporo_->isinit_) paramsporo_->initialize();
   }
   return;
 }

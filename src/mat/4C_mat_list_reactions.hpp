@@ -123,7 +123,7 @@ namespace Mat
     //@}
 
     /// initialize
-    virtual void Initialize();
+    virtual void initialize();
 
     /// material type
     Core::Materials::MaterialType MaterialType() const override

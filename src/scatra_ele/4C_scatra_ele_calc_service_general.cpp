@@ -508,7 +508,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
         {
           // initialize micro scale in multi-scale simulations
           Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())
-              ->Initialize(ele->Id(), iquad, scatrapara_->IsAle());
+              ->initialize(ele->Id(), iquad, scatrapara_->IsAle());
         }
       }
 

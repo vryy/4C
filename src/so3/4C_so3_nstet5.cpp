@@ -599,7 +599,7 @@ void Discret::ELEMENTS::NStet5Type::init_adjacency(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 03/12|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::NStet5Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::NStet5Type::initialize(Core::FE::Discretization& dis)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::NStet5Type::Initialize");
 

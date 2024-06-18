@@ -1458,7 +1458,7 @@ const std::vector<double>& Discret::ELEMENTS::SoTet10::so_tet10_11gp_weights()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet10Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoTet10Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

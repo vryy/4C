@@ -280,7 +280,7 @@ namespace Mortar
     virtual bool Friction() const = 0;
     virtual void InitEvalInterface() = 0;
     virtual void InitMortar() = 0;
-    virtual void Initialize() = 0;
+    virtual void initialize() = 0;
     virtual void InitializeUzawa(
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     virtual double InitialPenalty() = 0;

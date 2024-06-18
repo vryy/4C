@@ -174,7 +174,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::PoroFluidMultiPhaseBoun
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::PoroFluidMultiPhaseType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::PoroFluidMultiPhaseType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -239,7 +239,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhase::initialize()
   Teuchos::RCP<Mat::FluidPoroMultiPhase> actmat =
       Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(Material(), true);
 
-  actmat->Initialize();
+  actmat->initialize();
   return;
 }
 

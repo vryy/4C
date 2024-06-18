@@ -200,7 +200,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
       // loop over all Gauss points
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
         // initialize micro scale in multi-scale simulations
-        newmanmultiscale->Initialize(ele->Id(), iquad, my::scatrapara_->IsAle());
+        newmanmultiscale->initialize(ele->Id(), iquad, my::scatrapara_->IsAle());
 
       break;
     }

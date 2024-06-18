@@ -75,9 +75,9 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18PlastType::Create
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 11/14 |
 *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh18PlastType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoSh18PlastType::initialize(Core::FE::Discretization& dis)
 {
-  return SoSh18Type::Initialize(dis);
+  return SoSh18Type::initialize(dis);
 }
 
 /*----------------------------------------------------------------------*

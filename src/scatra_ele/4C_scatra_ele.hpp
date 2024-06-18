@@ -69,7 +69,7 @@ namespace Discret
           Teuchos::RCP<Epetra_Vector> systemvector3) override;
 
       /// initialize the element type
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
      private:
       static TransportType instance_;

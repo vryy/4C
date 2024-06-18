@@ -261,7 +261,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::evaluate(Teuchos::ParameterList&
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterList& params,
+void UTILS::Cardiovascular0D4ElementWindkessel::initialize(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> sysvec1, Teuchos::RCP<Epetra_Vector> sysvec2)
 {
   if (!(actdisc_->Filled())) FOUR_C_THROW("fill_complete() was not called");

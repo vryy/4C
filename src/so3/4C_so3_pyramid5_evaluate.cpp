@@ -1539,7 +1539,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_shapederiv(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoPyramid5Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoPyramid5Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

@@ -438,7 +438,7 @@ void Adapter::CouplingPoroMortar::EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fve
   // linearization
   porolagstrategy_->SetParentState("displacement", sdisp, sdis);
 
-  interface_->Initialize();
+  interface_->initialize();
   // in the end of Evaluate coupling condition residuals and linearizations are computed in contact
   // integrator
   interface_->evaluate();

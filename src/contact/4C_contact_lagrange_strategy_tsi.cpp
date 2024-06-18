@@ -119,7 +119,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   // set the new displacements
   set_state(Mortar::state_new_displacement, *dis);
 
-  for (unsigned i = 0; i < interface_.size(); ++i) interface_[i]->Initialize();
+  for (unsigned i = 0; i < interface_.size(); ++i) interface_[i]->initialize();
 
   // set new temperatures
   Teuchos::RCP<Epetra_Vector> temp2 = coupST()->SlaveToMaster(temp);
@@ -142,7 +142,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   update_active_set_semi_smooth();
 
   // init lin-matrices
-  Initialize();
+  initialize();
 
   // get the necessary maps on the thermo dofs
   Teuchos::RCP<Epetra_Map> gactive_themo_dofs = coupST->MasterToSlaveMap(gactivedofs_);

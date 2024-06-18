@@ -171,7 +171,7 @@ void Mat::Myocard::unpack(const std::vector<char>& data)
       if (num_gp > 0)
       {
         // Initialize material
-        Initialize();
+        initialize();
 
         // unpack history data
         double val;
@@ -549,7 +549,7 @@ double Mat::Myocard::GetIonicCurrents(const int k) const
 /*----------------------------------------------------------------------*
  |  initialize internal variables (called by constructors)   cbert 09/12 |
  *----------------------------------------------------------------------*/
-void Mat::Myocard::Initialize()
+void Mat::Myocard::initialize()
 {
   if ((params_->model) == "MV")
     myocard_mat_ =
