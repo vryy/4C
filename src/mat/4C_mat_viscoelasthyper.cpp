@@ -809,7 +809,7 @@ void Mat::ViscoElastHyper::evaluate_iso_visco_modified(
   // contribution: 2/3*Tr(J^(-2/3)modstress) (Cinv \odot Cinv - 1/3 Cinv \otimes Cinv)
   modcmat.Clear();
   modcmat.MultiplyNT(-1.0 / 3.0, icg, icg);
-  AddtoCmatHolzapfelProduct(modcmat, icg, 1.0);
+  add_holzapfel_product(modcmat, icg, 1.0);
   Core::LinAlg::Matrix<1, 1> tracemat;
   tracemat.MultiplyTN(2. / 3. * std::pow(modinv(2), -2. / 3.), modstress, rcg);
   cmatisomodisovisco.Update(tracemat(0, 0), modcmat, 1.0);

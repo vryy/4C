@@ -45,15 +45,16 @@ MIXTURE::PAR::MixtureGrowthStrategy* MIXTURE::PAR::MixtureGrowthStrategy::Factor
   {
     case Core::Materials::mix_growth_strategy_isotropic:
     {
-      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::IsotropicGrowthStrategy>(curmat);
+      return Mat::create_material_parameter_instance<MIXTURE::PAR::IsotropicGrowthStrategy>(curmat);
     }
     case Core::Materials::mix_growth_strategy_anisotropic:
     {
-      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::AnisotropicGrowthStrategy>(curmat);
+      return Mat::create_material_parameter_instance<MIXTURE::PAR::AnisotropicGrowthStrategy>(
+          curmat);
     }
     case Core::Materials::mix_growth_strategy_stiffness:
     {
-      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::StiffnessGrowthStrategy>(curmat);
+      return Mat::create_material_parameter_instance<MIXTURE::PAR::StiffnessGrowthStrategy>(curmat);
     }
     default:
       FOUR_C_THROW(

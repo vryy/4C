@@ -222,7 +222,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
     nn.MultiplyNT(n_v, n_v);
 
     Core::LinAlg::Matrix<6, 6> cn;
-    Mat::AddSymmetricHolzapfelProduct(cn, rcg, nn, .25);
+    Mat::add_symmetric_holzapfel_product(cn, rcg, nn, .25);
 
     Core::LinAlg::Matrix<6, 6> tmp1, tmp2;
     tmp1.Multiply(cmat, id4);

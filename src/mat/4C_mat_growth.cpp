@@ -520,7 +520,7 @@ void Mat::GrowthVolumetric::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
-    cmatelast = Mat::PullBackFourTensor<3>(F_ginv, cmatdach);
+    cmatelast = Mat::pull_back_four_tensor<3>(F_ginv, cmatdach);
 
     //--------------------------------------------------------------------------------------
     // call material law with elastic part of defgr and elastic part of glstrain
@@ -606,7 +606,7 @@ void Mat::GrowthVolumetric::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
-    cmatelast = Mat::PullBackFourTensor<3>(F_ginv, cmatdach);
+    cmatelast = Mat::pull_back_four_tensor<3>(F_ginv, cmatdach);
 
     *cmat = cmatelast;
   }

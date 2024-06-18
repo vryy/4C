@@ -70,19 +70,20 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
   {
     case Core::Materials::mix_rule_function:
     {
-      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::FunctionMixtureRule>(curmat);
+      return Mat::create_material_parameter_instance<MIXTURE::PAR::FunctionMixtureRule>(curmat);
     }
     case Core::Materials::mix_rule_map:
     {
-      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::MapMixtureRule>(curmat);
+      return Mat::create_material_parameter_instance<MIXTURE::PAR::MapMixtureRule>(curmat);
     }
     case Core::Materials::mix_rule_simple:
     {
-      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::SimpleMixtureRule>(curmat);
+      return Mat::create_material_parameter_instance<MIXTURE::PAR::SimpleMixtureRule>(curmat);
     }
     case Core::Materials::mix_rule_growthremodel:
     {
-      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::GrowthRemodelMixtureRule>(curmat);
+      return Mat::create_material_parameter_instance<MIXTURE::PAR::GrowthRemodelMixtureRule>(
+          curmat);
     }
     default:
       FOUR_C_THROW("The referenced material with id %d is not registered as a mixturerule!", matid);

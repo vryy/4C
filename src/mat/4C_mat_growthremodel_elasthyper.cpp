@@ -1316,8 +1316,8 @@ void Mat::GrowthRemodelElastHyper::evaluate_isotropic_princ_elast(
   cmatisoprinc.MultiplyNT(delta(4), iCinCiCinv, iCv, 1.);
   cmatisoprinc.MultiplyNT(delta(4), iCv, iCinCiCinv, 1.);
   cmatisoprinc.MultiplyNT(delta(5), iCv, iCv, 1.);
-  AddtoCmatHolzapfelProduct(cmatisoprinc, iCv, delta(6));
-  AddtoCmatHolzapfelProduct(cmatisoprinc, iCinv, delta(7));
+  add_holzapfel_product(cmatisoprinc, iCv, delta(6));
+  add_holzapfel_product(cmatisoprinc, iCinv, delta(7));
 }
 
 
@@ -1340,8 +1340,8 @@ void Mat::GrowthRemodelElastHyper::evaluated_sdi_fg(Core::LinAlg::Matrix<6, 9>& 
   dSdiFin.Clear();
 
   // derivative of second Piola Kirchhoff stress w.r.t. inverse growth deformation gradient
-  Mat::AddRightNonSymmetricHolzapfelProduct(dSdiFin, id, iFinM, gamma(0));
-  Mat::AddRightNonSymmetricHolzapfelProduct(dSdiFin, iCinCM, iFinM, gamma(1));
+  Mat::add_right_non_symmetric_holzapfel_product(dSdiFin, id, iFinM, gamma(0));
+  Mat::add_right_non_symmetric_holzapfel_product(dSdiFin, iCinCM, iFinM, gamma(1));
   dSdiFin.MultiplyNT(delta(0), iCinv, CiFin9x1, 1.);
   dSdiFin.MultiplyNT(delta(1), iCinv, CiFinCe9x1, 1.);
   dSdiFin.MultiplyNT(delta(1), iCinCiCinv, CiFin9x1, 1.);
@@ -1351,12 +1351,12 @@ void Mat::GrowthRemodelElastHyper::evaluated_sdi_fg(Core::LinAlg::Matrix<6, 9>& 
   dSdiFin.MultiplyNT(delta(4), iCinCiCinv, CiFiniCe9x1, 1.);
   dSdiFin.MultiplyNT(delta(4), iCv, CiFinCe9x1, 1.);
   dSdiFin.MultiplyNT(delta(5), iCv, CiFiniCe9x1, 1.);
-  Mat::AddRightNonSymmetricHolzapfelProduct(dSdiFin, id, iFinCeM, 0.5 * delta(7));
+  Mat::add_right_non_symmetric_holzapfel_product(dSdiFin, id, iFinCeM, 0.5 * delta(7));
 
   // diFin/diFg
   static Core::LinAlg::Matrix<9, 9> diFindiFg(true);
   diFindiFg.Clear();
-  Mat::AddNonSymmetricProduct(1.0, id, gm_[gp], diFindiFg);
+  Mat::add_non_symmetric_product(1.0, id, gm_[gp], diFindiFg);
 
   dSdiFg.MultiplyNN(1.0, dSdiFin, diFindiFg, 0.0);
 }
@@ -1494,7 +1494,7 @@ void Mat::GrowthRemodelElastHyper::evaluate_stress_cmat_membrane(
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(YM, Yv);
   static Core::LinAlg::Matrix<6, 6> dYdC(true);
   dYdC.Clear();
-  Mat::AddtoCmatHolzapfelProduct(dYdC, Yv, -0.5);
+  Mat::add_holzapfel_product(dYdC, Yv, -0.5);
 
   cmat.MultiplyNT(0.5 * mue_el_mem * cur_rho_el_[gp] * mue_frac_[gp] / X_det.val(), Yv, Yv, 0.0);
   cmat.Update(-mue_el_mem * cur_rho_el_[gp] * mue_frac_[gp] / X_det.val(), dYdC, 1.0);

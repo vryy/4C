@@ -231,13 +231,14 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
   modcmat.Update(delta8, IddI5sumdI5Id, 1.0);
   modcmat.Update(delta10, dI5dI5, 1.0);
   modcmat.Update(delta11, MdI5sumdI5M, 1.0);
-  ElastSymTensorMultiply(modcmat, delta12, Id3, M, 1.0);  // summand 12 = ddI5/dC^2 = Id_ik*M_jl ...
-  ElastSymTensorMultiply(modcmat, delta12, M, Id3, 1.0);  // ... + M_ik*Id_jl
+  add_elasticity_tensor_product(
+      modcmat, delta12, Id3, M, 1.0);  // summand 12 = ddI5/dC^2 = Id_ik*M_jl ...
+  add_elasticity_tensor_product(modcmat, delta12, M, Id3, 1.0);  // ... + M_ik*Id_jl
   modcmat.Scale(std::pow(J, -4.0 / 3.0));
 
   // modified projection tensor Psl = Cinv o Cinv - 1/3 Cinv x Cinv
   Core::LinAlg::Matrix<6, 6> Psl(true);
-  AddtoCmatHolzapfelProduct(Psl, icg, 1.0);
+  add_holzapfel_product(Psl, icg, 1.0);
   Psl.MultiplyNT(-1.0 / 3.0, icg, icg, 1.0);
 
   // Right Cauchy-Green tensor in stress-like Voigt notation

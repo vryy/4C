@@ -887,12 +887,13 @@ void Mat::SuperElasticSMA::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     cmat_eul_2.Scale(2.0 * G_star);
 
     // Build up (n (x) n) and scale with M1*
-    ElastSymTensorMultiply(
+    add_elasticity_tensor_product(
         cmat_eul_3, M1_star, scaled_load_deviatoric_tensor, scaled_load_deviatoric_tensor, 0.0);
 
     // Build up (n (x) 1 + 1 (x) n) and scale with M2*
-    ElastSymTensorMultiply(cmat_eul_4, -M2_star, scaled_load_deviatoric_tensor, eye, 0.0);
-    ElastSymTensorMultiply(cmat_eul_4_tmp, -M2_star, eye, scaled_load_deviatoric_tensor, 0.0);
+    add_elasticity_tensor_product(cmat_eul_4, -M2_star, scaled_load_deviatoric_tensor, eye, 0.0);
+    add_elasticity_tensor_product(
+        cmat_eul_4_tmp, -M2_star, eye, scaled_load_deviatoric_tensor, 0.0);
     cmat_eul_4.Update(1.0, cmat_eul_4_tmp, 1.0);
 
 
@@ -960,7 +961,7 @@ void Mat::SuperElasticSMA::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
       // - sum_1^3 (2 * tau N_aaaa)
       tmp1.MultiplyNT(
           material_principal_directions.at(a), material_principal_directions.at(a));  // N_{aa}
-      ElastSymTensorMultiply(*cmat, -2.0 * (dev_KH(a) + pressure), tmp1, tmp1, 1.0);
+      add_elasticity_tensor_product(*cmat, -2.0 * (dev_KH(a) + pressure), tmp1, tmp1, 1.0);
 
       for (int b = 0; b < 3; b++)
       {
@@ -970,7 +971,7 @@ void Mat::SuperElasticSMA::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
             material_principal_directions.at(a), material_principal_directions.at(a));  // N_{aa}
         tmp2.MultiplyNT(
             material_principal_directions.at(b), material_principal_directions.at(b));  // N_{bb}
-        ElastSymTensorMultiply(*cmat, D_ep_principal(a, b), tmp1, tmp2, 1.0);
+        add_elasticity_tensor_product(*cmat, D_ep_principal(a, b), tmp1, tmp2, 1.0);
 
         if (a != b)
         {
@@ -993,8 +994,8 @@ void Mat::SuperElasticSMA::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
               material_principal_directions.at(a), material_principal_directions.at(b));  // N_{ab}
           tmp2.MultiplyNT(
               material_principal_directions.at(b), material_principal_directions.at(a));  // N_{ba}
-          ElastSymTensorMultiply(*cmat, fac, tmp1, tmp1, 1.0);  // N_{abab}
-          ElastSymTensorMultiply(*cmat, fac, tmp1, tmp2, 1.0);  // N_{abba}
+          add_elasticity_tensor_product(*cmat, fac, tmp1, tmp1, 1.0);  // N_{abab}
+          add_elasticity_tensor_product(*cmat, fac, tmp1, tmp2, 1.0);  // N_{abba}
 
         }  // end if (a!=b)
       }    // end loop b

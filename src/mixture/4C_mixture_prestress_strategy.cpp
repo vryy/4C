@@ -47,16 +47,18 @@ MIXTURE::PAR::PrestressStrategy* MIXTURE::PAR::PrestressStrategy::Factory(int ma
   {
     case Core::Materials::mix_prestress_strategy_cylinder:
     {
-      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::IsotropicCylinderPrestressStrategy>(
-          curmat);
+      return Mat::create_material_parameter_instance<
+          MIXTURE::PAR::IsotropicCylinderPrestressStrategy>(curmat);
     }
     case Core::Materials::mix_prestress_strategy_iterative:
     {
-      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::IterativePrestressStrategy>(curmat);
+      return Mat::create_material_parameter_instance<MIXTURE::PAR::IterativePrestressStrategy>(
+          curmat);
     }
     case Core::Materials::mix_prestress_strategy_constant:
     {
-      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::ConstantPrestressStrategy>(curmat);
+      return Mat::create_material_parameter_instance<MIXTURE::PAR::ConstantPrestressStrategy>(
+          curmat);
     }
     default:
       FOUR_C_THROW(

@@ -351,8 +351,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_stress_c_mat
   static Core::LinAlg::Matrix<6, 6> dAradgriXAradgr_symdC(false);
   dAradgriXAradgr_symdC.Clear();
 
-  Mat::AddtoCmatHolzapfelProduct(
-      dAradgriXAradgr_symdC, iFinTAorthgrTiXTAorthgriFin_sym_stress, -2.0);
+  Mat::add_holzapfel_product(dAradgriXAradgr_symdC, iFinTAorthgrTiXTAorthgriFin_sym_stress, -2.0);
 
   cmat.MultiplyNT(2.0 * mue * mue_frac_[gp] / detX, iFinTAorthgrTiXTAorthgriFin_sym_stress,
       iFinTAorthgrTiXTAorthgriFin_sym_stress, 0.0);

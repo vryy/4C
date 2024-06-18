@@ -28,7 +28,7 @@ namespace
     sym_tensor(0, 2) = sym_tensor(2, 0) = 0.03;
 
     Core::LinAlg::Matrix<3, 1> prinv(false);
-    Mat::InvariantsPrincipal(prinv, sym_tensor);
+    Mat::invariants_principal(prinv, sym_tensor);
 
     Core::LinAlg::Matrix<3, 1> prinv_reference(false);
     prinv_reference(0) = 3.5999999999999996;
@@ -38,7 +38,7 @@ namespace
     FOUR_C_EXPECT_NEAR(prinv, prinv_reference, 1.0e-10);
   }
 
-  TEST(MaterialServiceTest, TestAddDerivInvABInvBProduct)
+  TEST(MaterialServiceTest, Testadd_derivative_of_inva_b_inva_product)
   {
     Core::LinAlg::Matrix<6, 1> A(false);
     A(0) = 0.5;
@@ -60,7 +60,7 @@ namespace
     double scalar = 0.5;
 
     // result_ijkl = A_ik InvABInvB_jl +  A_il InvABInvB_jk + A_jk InvABInvB_il + A_jl InvABInvB_ik
-    Mat::AddDerivInvABInvBProduct(scalar, A, InvABInvB, Result);
+    Mat::add_derivative_of_inva_b_inva_product(scalar, A, InvABInvB, Result);
 
     Core::LinAlg::Matrix<6, 6> Result_reference(false);
     Result_reference(0, 0) = -0.86;
@@ -113,7 +113,7 @@ namespace
     stress(0, 1) = stress(1, 0) = 0.1;
     stress(1, 2) = stress(2, 1) = 0.0;
     stress(0, 2) = stress(2, 0) = 0.0;
-    const double j2 = Mat::ComputeJ2(stress);
+    const double j2 = Mat::second_invariant_of_deviatoric_stress(stress);
     const double j2_ref = 0.5 * (2 + 2 * 0.1 * 0.1);
     EXPECT_NEAR(j2, j2_ref, 1.0e-10);
   }
@@ -125,10 +125,10 @@ namespace
     Core::LinAlg::FourTensor<3> Ce;
     const double E = 2.0;
     const double NU = 0.3;
-    Mat::CalculateLinearIsotropicElasticTensor(Ce, E, NU);
+    Mat::calculate_linear_isotropic_elastic_tensor(Ce, E, NU);
 
     Core::LinAlg::Matrix<6, 6> De;
-    Mat::FourTensorToMatrix(Ce, De);
+    Mat::four_tensor_to_matrix(Ce, De);
 
     Core::LinAlg::Matrix<6, 6> De_ref;
     const double c1 = E / ((1.00 + NU) * (1 - 2 * NU));
@@ -181,7 +181,7 @@ namespace
     // test the calculation of fourth order deviatoric tensor and contraction of fourth order tensor
     // and Matrix
     Core::LinAlg::FourTensor<3> Id;
-    Mat::CalculateDeviatoricProjectionTensor(Id);
+    Mat::calculate_deviatoric_projection_tensor(Id);
 
     Core::LinAlg::Matrix<3, 3> stress(false);
     stress(0, 0) = 1.0;
@@ -200,7 +200,7 @@ namespace
     s_ref(0, 2) = s_ref(2, 0) = 0.6;
 
     Core::LinAlg::Matrix<3, 3> s;
-    Mat::AddContractionFourTensorMatrix(s, 1.0, Id, stress);
+    Mat::add_contraction_matrix_four_tensor(s, 1.0, Id, stress);
 
     FOUR_C_EXPECT_NEAR(s, s_ref, 1.0e-10);
   }
@@ -217,10 +217,10 @@ namespace
     stress(0, 2) = stress(2, 0) = 0.6;
 
     Core::LinAlg::FourTensor<3> T;
-    Mat::AddDyadicProductMatrixMatrix(T, 1.0, stress, stress);
+    Mat::add_dyadic_product_matrix_matrix(T, 1.0, stress, stress);
 
     Core::LinAlg::Matrix<3, 3> result;
-    Mat::AddContractionFourTensorMatrix(result, 1.0, T, stress);
+    Mat::add_contraction_matrix_four_tensor(result, 1.0, T, stress);
 
     Core::LinAlg::Matrix<3, 3> result_ref = stress;
     result_ref.Scale(std::pow(stress.Norm2(), 2));
