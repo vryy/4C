@@ -39,7 +39,7 @@ using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            bborn 03/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SoSh8p8::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -1096,7 +1096,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress_tensor(true);  // 2nd PK stress
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
 
-    SolidMaterial()->Evaluate(&defgrad, &glstrain, params, &stress_tensor, &cmat, gp, Id());
+    SolidMaterial()->evaluate(&defgrad, &glstrain, params, &stress_tensor, &cmat, gp, Id());
     if (iso_ == iso_enforced)
     {
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> pk2gen(

@@ -210,7 +210,7 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
  |  Evaluate the element (public)                             meier 02/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate(
+bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate(
     Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp,
     std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
     Teuchos::ParameterList& timeintparams, bool fdcheck)

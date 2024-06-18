@@ -163,7 +163,7 @@ void Mat::AAAneohooke::Unpack(const std::vector<char>& data)
      with nu = 0.45  we have K =  20 alpha
 
  */
-void Mat::AAAneohooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::AAAneohooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)

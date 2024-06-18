@@ -45,7 +45,7 @@ void CONTACT::NitscheStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> di
   for (const auto& interface : interface_)
   {
     interface->Initialize();
-    interface->Evaluate(0, step_, iter_);
+    interface->evaluate(0, step_, iter_);
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
     {
       auto* mele = dynamic_cast<Mortar::Element*>(
@@ -224,7 +224,7 @@ void CONTACT::NitscheStrategy::Integrate(const CONTACT::ParamsInterface& cparams
   {
     interface->interface_params().set<double>("TIMESTEP", cparams.get_delta_time());
     interface->Initialize();
-    interface->Evaluate(0, step_, iter_);
+    interface->evaluate(0, step_, iter_);
 
     // store required integration time
     inttime_ += interface->Inttime();

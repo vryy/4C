@@ -792,7 +792,7 @@ void STR::TimIntGenAlpha::UpdateStepElement()
 
   if (!HaveNonlinearMass())
   {
-    discret_->Evaluate(
+    discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
   else
@@ -816,7 +816,7 @@ void STR::TimIntGenAlpha::UpdateStepElement()
     update_acc = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
 
-    discret_->Evaluate(p, Teuchos::null, Teuchos::null, update_disp, update_vel, update_acc);
+    discret_->evaluate(p, Teuchos::null, Teuchos::null, update_disp, update_vel, update_acc);
 
     disn_->Update(1.0, *update_disp, 1.0);
     (*dis_)(0)->Update(1.0, *update_disp, 1.0);

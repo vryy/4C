@@ -120,7 +120,7 @@ struct WriteNodalStressStep : public SpecialFieldInterface
     Teuchos::ParameterList p;
     Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
 
-    dis->Evaluate(
+    dis->evaluate(
         [&](Core::Elements::Element& ele) {
           Core::FE::ExtrapolateGaussPointQuantityToNodes(
               ele, *data->at(ele.Id()), *dis, nodal_stress);
@@ -157,7 +157,7 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
 
     Epetra_MultiVector elestress(*(dis->ElementRowMap()), 6);
 
-    dis->Evaluate(
+    dis->evaluate(
         [&](Core::Elements::Element& ele) {
           Core::FE::EvaluateGaussPointQuantityAtElementCenter(ele, *data->at(ele.Id()), elestress);
         });
@@ -192,7 +192,7 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
         result.read_result_serialdensematrix(groupname);
 
     Epetra_MultiVector elerotation(*(dis->ElementRowMap()), 9);
-    dis->Evaluate(
+    dis->evaluate(
         [&](Core::Elements::Element& ele)
         {
           const Core::LinAlg::SerialDenseMatrix& elecenterrot = *data->at(ele.Id());
@@ -244,7 +244,7 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
     Epetra_MultiVector* tmp = new Epetra_MultiVector(*noderowmap, 1, true);
     Teuchos::RCP<Epetra_MultiVector> nodal_thickness = Teuchos::rcp(tmp);
     p.set("postthick", nodal_thickness);
-    dis->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    dis->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     if (nodal_thickness == Teuchos::null)
     {
       FOUR_C_THROW("vector containing nodal thickness not available");
@@ -404,7 +404,7 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
 
     Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
 
-    dis->Evaluate(
+    dis->evaluate(
         [&](Core::Elements::Element& ele) {
           Core::FE::ExtrapolateGaussPointQuantityToNodes(
               ele, *data->at(ele.Id()), *dis, nodal_stress);
@@ -519,7 +519,7 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
 
     Epetra_MultiVector element_stress(*dis->ElementRowMap(), 6, true);
 
-    dis->Evaluate(
+    dis->evaluate(
         [&](Core::Elements::Element& ele) {
           Core::FE::EvaluateGaussPointQuantityAtElementCenter(
               ele, *data->at(ele.Id()), element_stress);

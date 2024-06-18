@@ -52,11 +52,11 @@ PoroElast::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
 
 void PoroElast::MonolithicMeshtying::SetupSystem() { Monolithic::SetupSystem(); }
 
-void PoroElast::MonolithicMeshtying::Evaluate(
+void PoroElast::MonolithicMeshtying::evaluate(
     Teuchos::RCP<const Epetra_Vector> iterinc, bool firstiter)
 {
   // evaluate monolithic system for newton iterations
-  Monolithic::Evaluate(iterinc, firstiter);
+  Monolithic::evaluate(iterinc, firstiter);
 
   // get state vectors to store in contact data container
   Teuchos::RCP<Epetra_Vector> fvel = fluid_structure_coupling().SlaveToMaster(

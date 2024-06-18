@@ -47,7 +47,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
 {
   if (!this->meshtying_is_evaluated_)
   {
-    this->cast_geometry_pair()->Evaluate(
+    this->cast_geometry_pair()->evaluate(
         this->ele1poscur_, this->ele2poscur_, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -98,11 +98,11 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
       N_mortar.Clear();
       N_beam.Clear();
       N_fluid.Clear();
-      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::Evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::evaluate(
           N_mortar, projected_gauss_point.GetEta());
-      GEOMETRYPAIR::EvaluateShapeFunction<beam>::Evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<beam>::evaluate(
           N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
-      GEOMETRYPAIR::EvaluateShapeFunction<fluid>::Evaluate(N_fluid, projected_gauss_point.GetXi());
+      GEOMETRYPAIR::EvaluateShapeFunction<fluid>::evaluate(N_fluid, projected_gauss_point.GetXi());
 
       // Fill in the local templated mortar matrix D.
       for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)

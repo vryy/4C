@@ -67,10 +67,10 @@ namespace Discret
 
       <h3>Usability</h3>
 
-      The calculations are done by the Evaluate() method. There are two
+      The calculations are done by the evaluate() method. There are two
       version. The virtual method that is inherited from ScatraEleInterface
       (and called from Scatra) and the non-virtual one that does the actual
-      work. The non-virtual Evaluate() method must be callable without an actual
+      work. The non-virtual evaluate() method must be callable without an actual
       Scatra object.
     */
 
@@ -95,7 +95,7 @@ namespace Discret
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      int evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

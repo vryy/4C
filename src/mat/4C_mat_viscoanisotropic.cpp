@@ -403,7 +403,7 @@ void Mat::ViscoAnisotropic::UpdateFiberDirs(const int gp, Core::LinAlg::Matrix<3
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoAnisotropic::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ViscoAnisotropic::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)

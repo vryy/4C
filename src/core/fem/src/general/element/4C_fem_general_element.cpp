@@ -982,26 +982,26 @@ void Core::Elements::Element::SetFace(
 /*----------------------------------------------------------------------*
  |  evaluate element dummy (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
-int Core::Elements::Element::Evaluate(Teuchos::ParameterList& params,
+int Core::Elements::Element::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  return Evaluate(params, discretization, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
+  return evaluate(params, discretization, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
 }
 
 /*----------------------------------------------------------------------*
  |  evaluate element dummy (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
-int Core::Elements::Element::Evaluate(Teuchos::ParameterList& params,
+int Core::Elements::Element::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   std::cout << "Core::Elements::Element::Evaluate:\n"
-            << "Base class dummy routine Core::Elements::Element::Evaluate(...) called\n"
+            << "Base class dummy routine Core::Elements::Element::evaluate(...) called\n"
             << __FILE__ << ":" << __LINE__ << std::endl;
   return -1;
 }

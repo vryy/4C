@@ -412,7 +412,7 @@ namespace FLD
 
       Monolithic FSI needs to access the linear fluid problem.
     */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    void evaluate(Teuchos::RCP<const Epetra_Vector>
             stepinc  ///< solution increment between time step n and n+1
         ) override;
 
@@ -1429,7 +1429,7 @@ namespace FLD
     ///< Evaluate mass matrix
     virtual void evaluate_mass_matrix();
 
-    /// mass matrix (not involved in standard Evaluate() since it is invluded in #sysmat_)
+    /// mass matrix (not involved in standard evaluate() since it is invluded in #sysmat_)
     Teuchos::RCP<Core::LinAlg::SparseOperator> massmat_;
 
     /// output stream for energy-file

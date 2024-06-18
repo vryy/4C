@@ -92,7 +92,7 @@ void STR::TimIntPrestress::UpdateStepElement()
 
   // go to elements
   discret_->set_state("displacement", (*dis_)(0));
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
 
   if (pre_stress == Inpar::STR::PreStress::mulf && (*time_)[0] <= pstime + 1e-15)

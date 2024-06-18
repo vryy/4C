@@ -169,7 +169,7 @@ void Mat::Maxwell0dAcinusDoubleExponential::Setup(Input::LineDefinition* linedef
  | Evaluate DoubleExponential material and build system matrix and rhs. |
  |                                                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusDoubleExponential::Evaluate(Core::LinAlg::SerialDenseVector& epnp,
+void Mat::Maxwell0dAcinusDoubleExponential::evaluate(Core::LinAlg::SerialDenseVector& epnp,
     Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
     Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
     const Discret::ReducedLung::ElemParams& params, const double NumOfAcini, const double Vo,

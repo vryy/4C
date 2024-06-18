@@ -858,7 +858,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
         peconvvelaf_(idim, jnode) =
             Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-                .Evaluate(jx, time, idim);
+                .evaluate(jx, time, idim);
     }
 
     // neighbor element
@@ -869,7 +869,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
         neconvvelaf_(idim, jnode) =
             Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-                .Evaluate(jx, time, idim);
+                .evaluate(jx, time, idim);
     }
 
     if (pele->IsAle()) FOUR_C_THROW("is ALE for Oseen really reasonable");

@@ -73,7 +73,7 @@ namespace Mat
        all growth materials.
 
        Further it basically passes through the interfaces functions
-       Evaluate(...) and EvaluateNonLinMass(...).
+       evaluate(...) and EvaluateNonLinMass(...).
 
        \author kehl
        \date 6/2015
@@ -171,7 +171,7 @@ namespace Mat
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
         const int eleGID) override = 0;
@@ -401,7 +401,7 @@ namespace Mat
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
         const int eleGID) override;

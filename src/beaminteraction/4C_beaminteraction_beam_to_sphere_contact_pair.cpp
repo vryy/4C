@@ -110,7 +110,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::pre_eva
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluate(
+bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)

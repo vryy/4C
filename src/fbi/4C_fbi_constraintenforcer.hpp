@@ -110,7 +110,7 @@ namespace Adapter
      * of the structure elements, the fluid elements and their position relative to each other
      */
 
-    virtual void Evaluate();
+    virtual void evaluate();
 
     /**
      * \brief Recomputes all coupling related quantities without performing a search

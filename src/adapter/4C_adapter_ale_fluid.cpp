@@ -42,9 +42,9 @@ Teuchos::RCP<const ALE::UTILS::MapExtractor> Adapter::AleFluidWrapper::Interface
 int Adapter::AleFluidWrapper::Solve()
 {
   if (interface_->FSICondRelevant())
-    Evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_part_fsi);
+    evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_part_fsi);
   else
-    Evaluate();
+    evaluate();
 
   int err = AleWrapper::Solve();
   UpdateIter();

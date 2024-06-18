@@ -168,7 +168,7 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Adapter::FluidFluidFSI::BlockS
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Adapter::FluidFluidFSI::Evaluate(
+void Adapter::FluidFluidFSI::evaluate(
     Teuchos::RCP<const Epetra_Vector> stepinc  ///< solution increment between time step n and n+1
 )
 {
@@ -176,7 +176,7 @@ void Adapter::FluidFluidFSI::Evaluate(
     *xfluidfluid_->write_access_disp_old_state() = *fluidimpl_->Dispnp();
 
   // call the usual routine
-  xfluidfluid_->Evaluate(stepinc);
+  xfluidfluid_->evaluate(stepinc);
 
   // for fixed ALE approach, we only refresh the global fluid map extractor in Update()
   if (monolithic_approach_ != Inpar::XFEM::XFFSI_Full_Newton) return;

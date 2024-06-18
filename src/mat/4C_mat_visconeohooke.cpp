@@ -219,7 +219,7 @@ void Mat::ViscoNeoHooke::Update()
 /*----------------------------------------------------------------------*
  |  Evaluate Material                             (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoNeoHooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ViscoNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, const int gp, const int eleGID)

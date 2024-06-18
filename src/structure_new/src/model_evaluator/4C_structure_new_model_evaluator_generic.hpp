@@ -134,7 +134,7 @@ namespace STR
 
       /*! \brief Reset model specific variables (without jacobian)
        *
-       *  This function is always called before the actual Evaluate() routine is going to start.
+       *  This function is always called before the actual evaluate() routine is going to start.
        *  You can use it to reset model specific stuff at the beginning of a new evaluation round.
        *
        *  \param[in] x current full state vector
@@ -176,7 +176,7 @@ namespace STR
        *  \author hiermeier \date 12/17 */
       virtual bool evaluate_cheap_soc_rhs() { return true; };
 
-      /*! \brief Perform actions just before the Evaluate() call
+      /*! \brief Perform actions just before the evaluate() call
        *
        * Called in the very beginning of each call to one of the
        * STR::ModelEvaluator::Evaluate routines, such as evaluate_force,
@@ -186,7 +186,7 @@ namespace STR
        */
       virtual void pre_evaluate() = 0;
 
-      /*! \brief Perform actions right after the Evaluate() call
+      /*! \brief Perform actions right after the evaluate() call
        *
        * Called at the end of each call to one of the
        * STR::ModelEvaluator::Evaluate routines, i.e. evaluate_force,

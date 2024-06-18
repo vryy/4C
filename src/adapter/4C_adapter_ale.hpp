@@ -172,7 +172,7 @@ namespace Adapter
      *  In case the StructureNOXCorrectionWrapper is applied, the step increment
      *  is expected which is then transformed into an iteration increment
      */
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    virtual void evaluate(Teuchos::RCP<const Epetra_Vector>
                               disiterinc,  ///< step increment such that \f$ x_{n+1}^{k+1} =
                                            ///< x_{n}^{converged}+ stepinc \f$
         ALE::UTILS::MapExtractor::AleDBCSetType

@@ -757,7 +757,7 @@ void FS3I::BiofilmFSI::FluidAleSolve()
   }
 
   fsi_->ale_field()->create_system_matrix(Teuchos::null);
-  fsi_->ale_field()->Evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
+  fsi_->ale_field()->evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
   int error = fsi_->ale_field()->Solve();
   if (error == 1) FOUR_C_THROW("Could not solve fluid ALE in biofilm FS3I!");
   fsi_->ale_field()->UpdateIter();
@@ -806,7 +806,7 @@ void FS3I::BiofilmFSI::StructAleSolve()
   }
 
   ale_->create_system_matrix(Teuchos::null);
-  ale_->Evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
+  ale_->evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
   int error = ale_->Solve();
   if (error == 1) FOUR_C_THROW("Could not solve fluid ALE in biofilm FS3I!");
   ale_->UpdateIter();

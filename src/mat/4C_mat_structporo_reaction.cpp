@@ -201,13 +201,13 @@ void Mat::StructPoroReaction::reaction(const double porosity, const double J,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::StructPoroReaction::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::StructPoroReaction::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
   // call base class
-  StructPoro::Evaluate(defgrd, glstrain, params, stress, cmat, gp, eleGID);
+  StructPoro::evaluate(defgrd, glstrain, params, stress, cmat, gp, eleGID);
 
   // scale stresses and cmat
   stress->Scale((1.0 - refporosity_) / (1.0 - params_->init_porosity_));

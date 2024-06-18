@@ -39,7 +39,7 @@ namespace PoroElast
     void SetupSystem() override;
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void Evaluate(
+    void evaluate(
         Teuchos::RCP<const Epetra_Vector> iterinc,  //!< increment between iteration i and i+1
         bool firstiter = false) override;
 

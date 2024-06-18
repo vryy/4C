@@ -60,7 +60,7 @@ namespace Core::UTILS
      *                      which should be evaluated
      * @return function value
      */
-    virtual double Evaluate(const double* x, double t, std::size_t component) const = 0;
+    virtual double evaluate(const double* x, double t, std::size_t component) const = 0;
 
     /*!
      * \brief Evaluation of first spatial derivative of time and space dependent function
@@ -125,7 +125,7 @@ namespace Core::UTILS
     SymbolicFunctionOfSpaceTime(const std::vector<std::string>& expressions,
         std::vector<Teuchos::RCP<FunctionVariable>> variables);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_spatial_derivative(
         const double* x, double t, std::size_t component) const override;
@@ -191,7 +191,7 @@ namespace Core::UTILS
      * \param component (i) For vector-valued functions, component defines the function-component
      * which should be evaluated
      */
-    virtual double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+    virtual double evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const = 0;
 
@@ -233,7 +233,7 @@ namespace Core::UTILS
         const std::string& component, std::vector<std::pair<std::string, double>> constants);
 
 
-    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+    double evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 

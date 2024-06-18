@@ -235,7 +235,7 @@ UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::
  |Experiment-based parameter estimation for patient-specific cardiac     |
  |mechanics", IJNMBE, 2016)                                              |
  *-----------------------------------------------------------------------*/
-void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
+void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
     Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,
@@ -283,11 +283,11 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
   if (atrium_act_curve_l_ >= 0 && usetime)
     y_at_l_np = Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfTime>(atrium_act_curve_l_ - 1)
-                    .Evaluate(tim);
+                    .evaluate(tim);
   if (atrium_act_curve_r_ >= 0 && usetime)
     y_at_r_np = Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfTime>(atrium_act_curve_r_ - 1)
-                    .Evaluate(tim);
+                    .evaluate(tim);
   // 0D time-varying atrial elastance
   double E_at_l_np = 0.;
   double E_at_r_np = 0.;
@@ -298,11 +298,11 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
   if (ventricle_act_curve_l_ >= 0 && usetime)
     y_v_l_np = Global::Problem::Instance()
                    ->FunctionById<Core::UTILS::FunctionOfTime>(ventricle_act_curve_l_ - 1)
-                   .Evaluate(tim);
+                   .evaluate(tim);
   if (ventricle_act_curve_r_ >= 0 && usetime)
     y_v_r_np = Global::Problem::Instance()
                    ->FunctionById<Core::UTILS::FunctionOfTime>(ventricle_act_curve_r_ - 1)
-                   .Evaluate(tim);
+                   .evaluate(tim);
   // 0D time-varying ventricular elastance
   double E_v_l_np = 0.;
   double E_v_r_np = 0.;
@@ -313,11 +313,11 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
   if (atrium_prescr_e_curve_l_ >= 0 && usetime)
     E_at_l_prescr_np = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfTime>(atrium_prescr_e_curve_l_ - 1)
-                           .Evaluate(tim);
+                           .evaluate(tim);
   if (atrium_prescr_e_curve_r_ >= 0 && usetime)
     E_at_r_prescr_np = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfTime>(atrium_prescr_e_curve_r_ - 1)
-                           .Evaluate(tim);
+                           .evaluate(tim);
   // prescribed ventricular elastances
   double E_v_l_prescr_np = 0.0;
   double E_v_r_prescr_np = 0.0;
@@ -325,12 +325,12 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
     E_v_l_prescr_np =
         Global::Problem::Instance()
             ->FunctionById<Core::UTILS::FunctionOfTime>(ventricle_prescr_e_curve_l_ - 1)
-            .Evaluate(tim);
+            .evaluate(tim);
   if (ventricle_prescr_e_curve_r_ >= 0 && usetime)
     E_v_r_prescr_np =
         Global::Problem::Instance()
             ->FunctionById<Core::UTILS::FunctionOfTime>(ventricle_prescr_e_curve_r_ - 1)
-            .Evaluate(tim);
+            .evaluate(tim);
 
 
   switch (atrium_model_)
@@ -977,7 +977,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
       }
 
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(
+      int err = curr->second->evaluate(
           params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -1105,7 +1105,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
   if (u_t_curve_ >= 0 && usetime)
     U_t = Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(u_t_curve_ - 1)
-              .Evaluate(tim);
+              .evaluate(tim);
 
   // extract values of dof vector at t_{n+1}
   const double p_at_l_np = (*dofvec)[0];
@@ -9016,7 +9016,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
       if (u_t_curve_ >= 0)
         U_t_0 = Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfTime>(u_t_curve_ - 1)
-                    .Evaluate(0);
+                    .evaluate(0);
 
       double V_alv_0 = respirpar.get("V_alv_0", -1.0);
       if (V_alv_0 >= 0) initvals[34] = V_alv_0;
@@ -9123,7 +9123,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
       elevector3.size(1);
 
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(
+      int err = curr->second->evaluate(
           params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 

@@ -197,7 +197,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate_service_x_w
  | Action type: Evaluate                                            bk 06/2014 |
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate(Discret::ELEMENTS::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -233,7 +233,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Evaluate(Discret::EL
     if (nodecount != 0)
       FOUR_C_THROW("something is wrong in this element with the number of virtual nodes vs dofs");
 
-    int err = my::Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+    int err = my::evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
         elevec1_epetra, elevec2_epetra, elevec3_epetra, my::intpoints_);
 
     int row1 = 0;

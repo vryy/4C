@@ -181,9 +181,9 @@ namespace Adapter
       return;
     }
     void PrepareSolve() override { fluid_->PrepareSolve(); }
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc) override
+    void evaluate(Teuchos::RCP<const Epetra_Vector> stepinc) override
     {
-      return fluid_->Evaluate(stepinc);
+      return fluid_->evaluate(stepinc);
     }
     bool convergence_check(int itnum, int itmax, const double velrestol, const double velinctol,
         const double presrestol, const double presinctol) override

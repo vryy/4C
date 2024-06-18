@@ -429,13 +429,13 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagBoun
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                      berardocco 02/18 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::ElemagBoundary::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::ElemagBoundary::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  Discret::ELEMENTS::ElemagBoundaryImplInterface::Impl(this)->Evaluate(
+  Discret::ELEMENTS::ElemagBoundaryImplInterface::Impl(this)->evaluate(
       this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
   return 0;
 }
@@ -797,7 +797,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagIntF
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                      berardocco 02/18 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::ElemagIntFace::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::ElemagIntFace::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,

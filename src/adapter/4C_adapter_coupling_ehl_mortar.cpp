@@ -130,7 +130,7 @@ void Adapter::CouplingEhlMortar::Integrate(Teuchos::RCP<const Epetra_Vector> dis
   interface_->Initialize();
   interface_->set_element_areas();
   // call interface evaluate (d,m,gap...)
-  interface_->Evaluate();
+  interface_->evaluate();
 
   // some first assemblies, that don't require any additional states
   D_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 81, false, false));

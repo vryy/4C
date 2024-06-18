@@ -40,7 +40,7 @@ namespace Discret
     class ZalesaksDiskFunction : public Core::UTILS::FunctionOfSpaceTime
     {
      public:
-      double Evaluate(const double* x, double t, std::size_t component) const override;
+      double evaluate(const double* x, double t, std::size_t component) const override;
 
       [[nodiscard]] std::size_t NumberComponents() const override
       {
@@ -52,7 +52,7 @@ namespace Discret
     class CollapsingWaterColumnFunction : public Core::UTILS::FunctionOfSpaceTime
     {
      public:
-      double Evaluate(const double* x, double t, std::size_t component) const override;
+      double evaluate(const double* x, double t, std::size_t component) const override;
 
       [[nodiscard]] std::size_t NumberComponents() const override
       {

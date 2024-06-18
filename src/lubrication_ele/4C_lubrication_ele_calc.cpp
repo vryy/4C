@@ -91,7 +91,7 @@ Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::Instance(const std::str
  * Action type: Evaluate                                    wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::Evaluate(Core::Elements::Element* ele,
+int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -1353,7 +1353,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared
 
         pre_exact = Global::Problem::Instance()
                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
-                        .Evaluate(position, t, 0);
+                        .evaluate(position, t, 0);
 
         std::vector<double> gradpre_exact_vec =
             Global::Problem::Instance()

@@ -141,7 +141,7 @@ void Core::Adapter::CouplingMortar::Setup(const Teuchos::RCP<Core::FE::Discretiz
   }
 
   // evaluate interface
-  Evaluate();
+  evaluate();
 
   // print message
   if (myrank == 0) std::cout << "done!" << std::endl << std::endl;
@@ -1045,14 +1045,14 @@ void Core::Adapter::CouplingMortar::create_p()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Adapter::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idisp)
+void Core::Adapter::CouplingMortar::evaluate(Teuchos::RCP<Epetra_Vector> idisp)
 {
   // safety check
   check_setup();
 
   // set new displacement state in mortar interface
   interface_->set_state(Mortar::state_new_displacement, *idisp);
-  Evaluate();
+  evaluate();
   matrix_row_col_transform();
 
   return;
@@ -1061,7 +1061,7 @@ void Core::Adapter::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idisp)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Adapter::CouplingMortar::Evaluate(
+void Core::Adapter::CouplingMortar::evaluate(
     Teuchos::RCP<Epetra_Vector> idispma, Teuchos::RCP<Epetra_Vector> idispsl)
 {
   // safety checks
@@ -1094,7 +1094,7 @@ void Core::Adapter::CouplingMortar::Evaluate(
   // set new displacement state in mortar interface
   interface_->set_state(Mortar::state_new_displacement, *idisp_master_slave);
 
-  Evaluate();
+  evaluate();
   matrix_row_col_transform();
 
   idispsl->ReplaceMap(stdmap);
@@ -1122,14 +1122,14 @@ void Core::Adapter::CouplingMortar::EvaluateGeometry(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Adapter::CouplingMortar::Evaluate()
+void Core::Adapter::CouplingMortar::evaluate()
 {
   // safety check
   check_setup();
 
   // in the following two steps MORTAR does all the work for new interface displacements
   interface_->Initialize();
-  interface_->Evaluate();
+  interface_->evaluate();
 
   // preparation for AssembleDM
   // (Note that redistslave and redistmaster are the slave and master row maps
@@ -1197,7 +1197,7 @@ void Core::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
 
   // in the following two steps MORTAR does all the work for new interface displacements
   interface_->Initialize();
-  interface_->Evaluate();
+  interface_->evaluate();
 
   // preparation for AssembleDM
   // (Note that redistslave and redistmaster are the slave and master row maps

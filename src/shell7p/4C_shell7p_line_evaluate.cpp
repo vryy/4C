@@ -105,7 +105,7 @@ int Discret::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
           // evaluate function at current gauss point
           functfac = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                         .Evaluate(coordgpref, time, i);
+                         .evaluate(coordgpref, time, i);
         }
 
         const double fac = (*val)[i] * intpoints.qwgt[gp] * dL * functfac;

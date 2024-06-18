@@ -119,7 +119,7 @@ void CONSTRAINTS::MPConstraint2::Initialize(
 |(public)                                                        tk 07/08|
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint2::Evaluate(Teuchos::ParameterList& params,
+void CONSTRAINTS::MPConstraint2::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -333,7 +333,7 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
       params.set<Teuchos::RCP<Core::Conditions::Condition>>(
           "condition", Teuchos::rcp(&cond, false));
       // call the element evaluate method
-      int err = actele->Evaluate(
+      int err = actele->evaluate(
           params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err)
         FOUR_C_THROW(
@@ -379,7 +379,7 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
       if (curvenum >= 0 && usetime)
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                       .Evaluate(time);
+                       .evaluate(time);
       Teuchos::RCP<Epetra_Vector> timefact =
           params.get<Teuchos::RCP<Epetra_Vector>>("vector curve factors");
       timefact->ReplaceGlobalValues(1, &curvefac, &gindex);

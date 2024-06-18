@@ -84,7 +84,7 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
       std::vector<int> coupleddof(1, 1);
       adaptermeshtying_->Setup(actdis, actdis, Teuchos::null, coupleddof, "Mortar", actdis->Comm(),
           Global::Problem::Instance()->FunctionManager(), false, false, 0, 0);
-      adaptermeshtying_->Evaluate();
+      adaptermeshtying_->evaluate();
     }
   }
 }
@@ -103,7 +103,7 @@ void THR::TimIntImpl::IntegrateStep()
  | build linear system tangent matrix, rhs/force residual   bborn 08/09 |
  | Monolithic TSI accesses the linearised thermo problem                |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> tempi)
+void THR::TimIntImpl::evaluate(Teuchos::RCP<const Epetra_Vector> tempi)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And
@@ -134,14 +134,14 @@ void THR::TimIntImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> tempi)
   update_iter_incrementally(tempi);
 
   // builds tangent, residual and applies DBC
-  Evaluate();
+  evaluate();
 }
 
 /*----------------------------------------------------------------------*
  | build linear system tangent matrix, rhs/force residual    dano 02/11 |
  | Monolithic TSI accesses the linearised thermo problem                |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::Evaluate()
+void THR::TimIntImpl::evaluate()
 {
   // builds tangent, residual and applies DBC
   evaluate_rhs_tang_residual();
@@ -359,7 +359,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
     // set the total time
     p.set("total time", (*time_)[0]);
     // go to elements
-    discret_->Evaluate(
+    discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -1066,7 +1066,7 @@ void THR::TimIntImpl::fd_check()
       disturbtempi->ReplaceGlobalValue(i, 0, 0.0);
     }
     // evaluate the element with disturb temperature increment
-    Evaluate(disturbtempi);
+    evaluate(disturbtempi);
     rhs_copy->Update(1.0, *fres_, 0.0);
     tempi_->PutScalar(0.0);
     Core::LinAlg::apply_dirichlet_to_system(
@@ -1095,7 +1095,7 @@ void THR::TimIntImpl::fd_check()
   }  // loop over columns
 
   // evaluate the element with changed disturbed incremental vector
-  Evaluate(disturbtempi);
+  evaluate(disturbtempi);
   tang_approx->FillComplete();
   // copy tang_approx
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tang_approx_sparse =

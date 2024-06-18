@@ -374,7 +374,7 @@ double Mat::PAR::FluidPoroPhaseLawByFunction::evaluate_saturation_internal(
 
   return Global::Problem::Instance()
       ->FunctionById<Core::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)
-      .Evaluate(dp_, {}, 0);
+      .evaluate(dp_, {}, 0);
 }
 
 /*----------------------------------------------------------------------*
@@ -502,7 +502,7 @@ double Mat::PAR::FluidPoroPhaseLawByFunction::evaluate_gen_pressure_internal(dou
 
   return Global::Problem::Instance()
       ->FunctionById<Core::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
-      .Evaluate(s_, {}, 0);
+      .evaluate(s_, {}, 0);
 }
 
 FOUR_C_NAMESPACE_CLOSE

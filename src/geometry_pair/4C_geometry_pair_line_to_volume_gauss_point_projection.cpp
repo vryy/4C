@@ -65,13 +65,13 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, lin
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, line,
-    volume>::Evaluate(const ElementData<line, scalar_type>& element_data_line,
+    volume>::evaluate(const ElementData<line, scalar_type>& element_data_line,
     const ElementData<volume, scalar_type>& element_data_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Call the pre_evaluate method of the general Gauss point projection class.
   LineTo3DGaussPointProjection<
-      GeometryPairLineToVolumeGaussPointProjection<scalar_type, line, volume>>::Evaluate(this,
+      GeometryPairLineToVolumeGaussPointProjection<scalar_type, line, volume>>::evaluate(this,
       element_data_line, element_data_volume, segments);
 }
 

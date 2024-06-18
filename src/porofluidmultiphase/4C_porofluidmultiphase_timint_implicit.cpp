@@ -348,7 +348,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::set_element_general_parameters() const
     eleparams.set<int>("domainint_funct_" + std::to_string(ifunct), domainint_funct_[ifunct]);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   return;
@@ -763,7 +763,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::assemble_mat_and_rhs()
   add_time_integration_specific_vectors();
 
   // call loop over elements
-  discret_->Evaluate(eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
 
   // clean up
   discret_->ClearState();
@@ -807,7 +807,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::evaluate_valid_volume_frac_press_and_spec(
   add_time_integration_specific_vectors();
 
   // call loop over elements (with valid volume fraction pressure DOFs)
-  discret_->Evaluate(eleparams, Teuchos::null, Teuchos::null, Teuchos::null,
+  discret_->evaluate(eleparams, Teuchos::null, Teuchos::null, Teuchos::null,
       valid_volfracpress_dofs_, valid_volfracspec_dofs_);
 
   // clean up
@@ -927,7 +927,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_starting_dbc()
               const double dbc_value = Global::Problem::Instance()
                                            ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
                                                starting_dbc_funct_[dof_idx] - 1)
-                                           .Evaluate(current_node->X().data(), time_, 0);
+                                           .evaluate(current_node->X().data(), time_, 0);
               phinp_->ReplaceGlobalValue(gid, 0, dbc_value);
             }
           }
@@ -983,7 +983,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::assemble_fluid_struct_coupling_mat(
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // Evaluate coupling matrix
-  discret_->Evaluate(eleparams, fluidstrategy);
+  discret_->evaluate(eleparams, fluidstrategy);
 
   // clean up
   discret_->ClearState();
@@ -1027,7 +1027,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::assemble_fluid_scatra_coupling_mat(
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // Evaluate coupling matrix
-  discret_->Evaluate(eleparams, fluidstrategy);
+  discret_->evaluate(eleparams, fluidstrategy);
 
   // clean up
   discret_->ClearState();
@@ -1069,7 +1069,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::nonlinear_solve()
 
     // call elements to calculate system matrix and rhs and assemble
     // note: DBC is applied herein
-    Evaluate();
+    evaluate();
 
     // abort nonlinear iteration if desired
     if (abort_nonlin_iter(iternum_, itemax_, abstolres, actresidual)) break;
@@ -1274,7 +1274,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_pressures_and_saturations()
         Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
 
     // call loop over elements
-    discret_->Evaluate(eleparams, Teuchos::null, Teuchos::null, pressure_, saturation_, counter);
+    discret_->evaluate(eleparams, Teuchos::null, Teuchos::null, pressure_, saturation_, counter);
 
     discret_->ClearState();
 
@@ -1322,7 +1322,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_solid_pressures()
       nds_solidpressure_, 0, Teuchos::null, Teuchos::null, solidpressure_, counter, Teuchos::null);
 
   // call loop over elements
-  discret_->Evaluate(eleparams, strategysolidpressure);
+  discret_->evaluate(eleparams, strategysolidpressure);
 
   discret_->ClearState();
 
@@ -1418,7 +1418,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_porosity()
       nds_solidpressure_, 0, Teuchos::null, Teuchos::null, porosity_, counter, Teuchos::null);
 
   // call loop over elements
-  discret_->Evaluate(eleparams, strategyporosity);
+  discret_->evaluate(eleparams, strategyporosity);
 
   discret_->ClearState();
 
@@ -1838,7 +1838,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::evaluate_error_compared_to_analytical_sol(
 /*----------------------------------------------------------------------*
  | build linear system tangent matrix, rhs/force residual   vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::Evaluate()
+void POROFLUIDMULTIPHASE::TimIntImpl::evaluate()
 {
   // call elements to calculate system matrix and rhs and assemble
   assemble_mat_and_rhs();
@@ -1850,7 +1850,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Evaluate()
   prepare_system_for_newton_solve();
 
   // evaluate mesh tying
-  strategy_->Evaluate();
+  strategy_->evaluate();
 }
 
 /*----------------------------------------------------------------------*
@@ -1975,7 +1975,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
           // evaluate component k of spatial function
           double initialval = Global::Problem::Instance()
                                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X().data(), time_, k);
+                                  .evaluate(lnode->X().data(), time_, k);
           int err = phin_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
@@ -2094,7 +2094,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::calc_initial_time_derivative()
   // mp * dphidt + msp * dphidt + msat * dphidt = - rhsfac (sdivvel + diff + reac)
   // (      only    matrix                    )   (          only rhs              )
   // later we will also have to scale the system matrix with rhsfac
-  discret_->Evaluate(eleparams, sysmat_, residual_);
+  discret_->evaluate(eleparams, sysmat_, residual_);
   discret_->ClearState();
 
   // potential residual scaling and potential addition of Neumann terms

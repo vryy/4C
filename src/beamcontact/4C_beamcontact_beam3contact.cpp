@@ -220,7 +220,7 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
  |  Evaluate the element (public)                             meier 02/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-bool CONTACT::Beam3contact<numnodes, numnodalvalues>::Evaluate(
+bool CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate(
     Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp,
     std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
     Teuchos::ParameterList& timeintparams, bool fdcheck)
@@ -5439,7 +5439,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::fd_check(
 
   std::cout << "undisturbed configuration: " << std::endl;
 
-  this->Evaluate(stiffmatrix_analyt, fint1, pp, contactpairmap, timeintparams, true);
+  this->evaluate(stiffmatrix_analyt, fint1, pp, contactpairmap, timeintparams, true);
 
   //  std::cout << std::setprecision(25) << "fint1: " << std::endl;
 
@@ -5473,7 +5473,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::fd_check(
     fint2.PutScalar(0.0);
     stiffmatrix_dummy.PutScalar(0.0);
 
-    this->Evaluate(stiffmatrix_dummy, fint2, pp, contactpairmap, timeintparams, true);
+    this->evaluate(stiffmatrix_dummy, fint2, pp, contactpairmap, timeintparams, true);
 
     //    std::cout << std::setprecision(25) << "fint2: " << std::endl;
     //

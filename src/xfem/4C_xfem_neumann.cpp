@@ -148,7 +148,7 @@ void XFEM::EvaluateNeumannStandard(
     if (functnum >= 0)
     {
       functfac =
-          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(functnum).Evaluate(
+          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(functnum).evaluate(
               time);
     }
     for (int i = 0; i < nnode; ++i)

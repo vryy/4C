@@ -55,7 +55,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
   // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
   if (!this->meshtying_is_evaluated_)
   {
-    this->cast_geometry_pair()->Evaluate(
+    this->cast_geometry_pair()->evaluate(
         this->ele1posref_, this->ele2posref_, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }

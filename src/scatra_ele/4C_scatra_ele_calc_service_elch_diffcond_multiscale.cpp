@@ -240,7 +240,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
           // solve micro scale
           std::vector<double> dummy(3, 0.0);
           const double detF = my::eval_det_f_at_int_point(ele, intpoints, iquad);
-          newmanmultiscale->Evaluate(iquad, phinp, dummy[0], dummy, detF);
+          newmanmultiscale->evaluate(iquad, phinp, dummy[0], dummy, detF);
         }
       }
 

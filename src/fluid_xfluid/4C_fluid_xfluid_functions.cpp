@@ -353,7 +353,7 @@ void Discret::UTILS::AddValidXfluidFunctions(Core::UTILS::FunctionManager& funct
 
 Discret::UTILS::GerstenbergerForwardfacingStep::GerstenbergerForwardfacingStep() {}
 
-double Discret::UTILS::GerstenbergerForwardfacingStep::Evaluate(
+double Discret::UTILS::GerstenbergerForwardfacingStep::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   //  //cube_Gerstenberger:
@@ -457,7 +457,7 @@ Discret::UTILS::MovingLevelSetCylinder::MovingLevelSetCylinder(std::vector<doubl
   // std::cout << "T_halfcycle: " << (L/2)/maxspeed * PI; //i.e. -d/2 -> d/2
 }
 
-double Discret::UTILS::MovingLevelSetCylinder::Evaluate(
+double Discret::UTILS::MovingLevelSetCylinder::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // d = L/2 * sin(f*t-PI/2)
@@ -593,7 +593,7 @@ Discret::UTILS::MovingLevelSetTorus::MovingLevelSetTorus(std::vector<double>* or
 {
 }
 
-double Discret::UTILS::MovingLevelSetTorus::Evaluate(
+double Discret::UTILS::MovingLevelSetTorus::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // d = L/2 * sin(f*t-PI/2)
@@ -705,7 +705,7 @@ Discret::UTILS::MovingLevelSetTorusVelocity::MovingLevelSetTorusVelocity(
 {
 }
 
-double Discret::UTILS::MovingLevelSetTorusVelocity::Evaluate(
+double Discret::UTILS::MovingLevelSetTorusVelocity::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // d = L/2 * sin(f*t-PI/2)
@@ -835,7 +835,7 @@ Discret::UTILS::MovingLevelSetTorusSliplength::MovingLevelSetTorusSliplength(
   }
 }
 
-double Discret::UTILS::MovingLevelSetTorusSliplength::Evaluate(
+double Discret::UTILS::MovingLevelSetTorusSliplength::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // coefficient for sinus.
@@ -1022,7 +1022,7 @@ Discret::UTILS::TaylorCouetteFlow::TaylorCouetteFlow(double radius_inner, double
         (0.5 * ((radius_outer * radius_outer) - (radius_inner * radius_inner)));
 }
 
-double Discret::UTILS::TaylorCouetteFlow::Evaluate(
+double Discret::UTILS::TaylorCouetteFlow::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   double radius = sqrt(xp[0] * xp[0] + xp[1] * xp[1]);
@@ -1151,7 +1151,7 @@ Discret::UTILS::UrquizaBoxFlow::UrquizaBoxFlow(double lengthx, double lengthy, d
   (rotvector_[1])[1] = cos(rotation_);
 }
 
-double Discret::UTILS::UrquizaBoxFlow::Evaluate(
+double Discret::UTILS::UrquizaBoxFlow::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // CASE 1:
@@ -1404,7 +1404,7 @@ Discret::UTILS::UrquizaBoxFlowForce::UrquizaBoxFlowForce(double lengthx, double 
 {
 }
 
-double Discret::UTILS::UrquizaBoxFlowForce::Evaluate(
+double Discret::UTILS::UrquizaBoxFlowForce::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   double x = xp[0];
@@ -1558,7 +1558,7 @@ Discret::UTILS::UrquizaBoxFlowTraction::UrquizaBoxFlowTraction(double lengthx, d
 {
 }
 
-double Discret::UTILS::UrquizaBoxFlowTraction::Evaluate(
+double Discret::UTILS::UrquizaBoxFlowTraction::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   double tol = 1e-13;

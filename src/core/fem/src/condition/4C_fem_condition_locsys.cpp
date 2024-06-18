@@ -228,14 +228,14 @@ void Core::Conditions::LocsysManager::Update(const double time,
                   // Evaluate function with current node position
                   functfac = (function_manager.FunctionById<Core::UTILS::FunctionOfSpaceTime>(
                                   (*funct)[j] - 1))
-                                 .Evaluate(currPos.data(), time, j);
+                                 .evaluate(currPos.data(), time, j);
                 }
                 else
                 {
                   // Evaluate function with reference node position
                   functfac = (function_manager.FunctionById<Core::UTILS::FunctionOfSpaceTime>(
                                   (*funct)[j] - 1))
-                                 .Evaluate(node->X().data(), time, j);
+                                 .evaluate(node->X().data(), time, j);
                 }
               }
               currotangle(j) = (*rotangle)[j] * functfac;

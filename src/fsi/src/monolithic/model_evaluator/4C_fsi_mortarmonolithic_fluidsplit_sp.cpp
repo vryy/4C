@@ -1113,7 +1113,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::unscale_solution(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate(
+void FSI::MortarMonolithicFluidSplitSaddlePoint::evaluate(
     Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate");
@@ -1142,14 +1142,14 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate(
 
   {
     Teuchos::Time ts("structure", true);
-    structure_field()->Evaluate(sx);
+    structure_field()->evaluate(sx);
     if (verbosity_ >= Inpar::FSI::verbosity_medium)
       utils()->out() << "structure           : " << ts.totalElapsedTime(true) << " sec\n";
   }
 
   {
     Teuchos::Time ta("ale", true);
-    ale_field()->Evaluate(ax);
+    ale_field()->evaluate(ax);
     if (verbosity_ >= Inpar::FSI::verbosity_medium)
       utils()->out() << "ale                 : " << ta.totalElapsedTime(true) << " sec\n";
   }
@@ -1160,7 +1160,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate(
 
   {
     Teuchos::Time tf("fluid", true);
-    fluid_field()->Evaluate(fx);
+    fluid_field()->evaluate(fx);
     if (verbosity_ >= Inpar::FSI::verbosity_medium)
       utils()->out() << "fluid                : " << tf.totalElapsedTime(true) << " sec\n";
   }

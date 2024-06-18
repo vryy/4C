@@ -156,7 +156,7 @@ namespace FSI
     Since this is a saddle-point formulation, we also need to evaluate the Lagrange multipliers
     #lag_mult_.
     */
-    void Evaluate(
+    void evaluate(
         Teuchos::RCP<const Epetra_Vector> step_increment  ///< increment between time step n and n+1
         ) override;
 

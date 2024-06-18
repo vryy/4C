@@ -2218,7 +2218,7 @@ void Mortar::Interface::EvaluateGeometry(std::vector<Teuchos::RCP<Mortar::IntCel
 /*----------------------------------------------------------------------*
  |  evaluate mortar coupling (public)                         popp 11/07|
  *----------------------------------------------------------------------*/
-void Mortar::Interface::Evaluate(
+void Mortar::Interface::evaluate(
     int rriter, const int& step, const int& iter, Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Mortar::Interface::Evaluate");

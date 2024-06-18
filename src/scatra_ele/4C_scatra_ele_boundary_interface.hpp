@@ -50,7 +50,7 @@ namespace Discret
       /// Virtual destructor.
       virtual ~ScaTraBoundaryInterface() = default;
 
-      virtual int Evaluate(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+      virtual int evaluate(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,

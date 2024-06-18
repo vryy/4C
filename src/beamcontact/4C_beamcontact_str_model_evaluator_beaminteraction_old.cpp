@@ -86,7 +86,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_force()
   beamcontactparams.set("dt", eval_data().get_delta_time());
   beamcontactparams.set("numstep", eval_data().get_step_np());
 
-  beamcman_->Evaluate(*stiff_beaminteract_ptr_, *f_beaminteract_np_ptr_, *disnp_ptr_,
+  beamcman_->evaluate(*stiff_beaminteract_ptr_, *f_beaminteract_np_ptr_, *disnp_ptr_,
       beamcontactparams, true, eval_data().get_total_time());
 
   return true;
@@ -105,7 +105,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_stiff()
   beamcontactparams.set("dt", eval_data().get_delta_time());
   beamcontactparams.set("numstep", eval_data().get_step_np());
 
-  beamcman_->Evaluate(*stiff_beaminteract_ptr_, *f_beaminteract_np_ptr_, *disnp_ptr_,
+  beamcman_->evaluate(*stiff_beaminteract_ptr_, *f_beaminteract_np_ptr_, *disnp_ptr_,
       beamcontactparams, true, eval_data().get_total_time());
 
   return true;
@@ -123,7 +123,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_force_stiff()
   beamcontactparams.set("dt", eval_data().get_delta_time());
   beamcontactparams.set("numstep", eval_data().get_step_np());
 
-  beamcman_->Evaluate(*stiff_beaminteract_ptr_, *f_beaminteract_np_ptr_, *disnp_ptr_,
+  beamcman_->evaluate(*stiff_beaminteract_ptr_, *f_beaminteract_np_ptr_, *disnp_ptr_,
       beamcontactparams, true, eval_data().get_total_time());
 
   // visualization of current Newton step

@@ -35,7 +35,7 @@ BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam,
 /*------------------------------------------------------------------------------------------------*/
 
 template <typename beam, typename fluid>
-bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
+bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
@@ -43,7 +43,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
   // Call Evaluate on the geometry Pair
   if (!this->meshtying_is_evaluated_)
   {
-    this->cast_geometry_pair()->Evaluate(
+    this->cast_geometry_pair()->evaluate(
         this->ele1poscur_, this->ele2poscur_, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -106,9 +106,9 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
       N_fluid.Clear();
 
       // Evaluate the chapefunctions at the current gauss point
-      GEOMETRYPAIR::EvaluateShapeFunction<beam>::Evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<beam>::evaluate(
           N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
-      GEOMETRYPAIR::EvaluateShapeFunction<fluid>::Evaluate(N_fluid, projected_gauss_point.GetXi());
+      GEOMETRYPAIR::EvaluateShapeFunction<fluid>::evaluate(N_fluid, projected_gauss_point.GetXi());
 
       // assemble fluid mass matrix
       if (stiffmat22 != nullptr)

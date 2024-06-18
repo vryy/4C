@@ -19,20 +19,20 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::TransportBoundary::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  FOUR_C_THROW("not implemented. Use the Evaluate() method with Location Array instead!");
+  FOUR_C_THROW("not implemented. Use the evaluate() method with Location Array instead!");
   return -1;
 }
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::TransportBoundary::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -99,7 +99,7 @@ int Discret::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& param
   // call element-specific routines
   return Discret::ELEMENTS::ScaTraBoundaryFactory::ProvideImpl(
       this, parent_element()->ImplType(), numdofpernode, numscal, discretization.Name())
-      ->Evaluate(this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
+      ->evaluate(this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
 }
 
 
@@ -118,7 +118,7 @@ int Discret::ELEMENTS::TransportBoundary::evaluate_neumann(Teuchos::ParameterLis
   Core::Elements::Element::LocationVector(discretization, la, false);
 
   // evaluate boundary element
-  return Evaluate(params, discretization, la, *elemat1, *elemat1, elevec1, elevec1, elevec1);
+  return evaluate(params, discretization, la, *elemat1, *elemat1, elevec1, elevec1, elevec1);
 }
 
 

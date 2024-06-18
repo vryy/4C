@@ -258,7 +258,7 @@ void Mat::ScatraMultiScaleGP::prepare_time_step(const std::vector<double>& phinp
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::ScatraMultiScaleGP::Evaluate(const std::vector<double>& phinp_macro, double& q_micro,
+void Mat::ScatraMultiScaleGP::evaluate(const std::vector<double>& phinp_macro, double& q_micro,
     std::vector<double>& dq_dphi_micro, const double detFnp, const bool solve)
 {
   // extract micro-scale time integrator

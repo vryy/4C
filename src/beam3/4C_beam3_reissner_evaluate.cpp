@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) cyron 01/08|
  *----------------------------------------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Beam3r::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1,  // nonlinear stiffness matrix
     Core::LinAlg::SerialDenseMatrix& elemat2,  // nonlinear mass matrix
@@ -660,7 +660,7 @@ int Discret::ELEMENTS::Beam3r::evaluate_neumann(Teuchos::ParameterList& params,
       if (functnum > 0)
         functionfac = Global::Problem::Instance()
                           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                          .Evaluate(X_ref.data(), time, dof);
+                          .evaluate(X_ref.data(), time, dof);
       else
         functionfac = 1.0;
 

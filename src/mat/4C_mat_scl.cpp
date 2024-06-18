@@ -132,7 +132,7 @@ double Mat::Scl::compute_transference_number(const double cint) const
   {
     return Global::Problem::Instance()
         ->FunctionById<Core::UTILS::FunctionOfScalar>(trans_nr_curve() - 1)
-        .Evaluate(cint);
+        .evaluate(cint);
   }
 }
 

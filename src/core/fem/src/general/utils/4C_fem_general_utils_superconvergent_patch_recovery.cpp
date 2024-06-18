@@ -141,7 +141,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
 
     // call the element specific evaluate method (elevec1 = velocity gradient, elevec2 = element
     // centroid)
-    actele->Evaluate(params, dis, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);
+    actele->evaluate(params, dis, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);
 
     // store computed values (e.g. velocity gradient) for each element
     for (int j = 0; j < numvec; ++j)

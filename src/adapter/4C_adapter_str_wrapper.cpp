@@ -24,7 +24,7 @@ void Adapter::StructureNOXCorrectionWrapper::prepare_time_step()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::StructureNOXCorrectionWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disstepinc)
+void Adapter::StructureNOXCorrectionWrapper::evaluate(Teuchos::RCP<const Epetra_Vector> disstepinc)
 {
   // The field solver always expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
@@ -54,11 +54,11 @@ void Adapter::StructureNOXCorrectionWrapper::Evaluate(Teuchos::RCP<const Epetra_
     }
 
     // do structural update with provided residual displacements - iteration increment
-    StructureWrapper::Evaluate(disiterinc);
+    StructureWrapper::evaluate(disiterinc);
   }
   else
   {
-    StructureWrapper::Evaluate(Teuchos::null);
+    StructureWrapper::evaluate(Teuchos::null);
   }
 }
 

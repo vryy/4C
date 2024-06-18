@@ -337,7 +337,7 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
         // cast the const qualifier away, thus the Evaluate routine can be called.
         Core::FE::DiscretizationFaces& non_const_dis =
             const_cast<Core::FE::DiscretizationFaces&>(discret);
-        faceele->ParentMasterElement()->Evaluate(
+        faceele->ParentMasterElement()->evaluate(
             initParams, non_const_dis, dummy, elemat1, elemat2, elevec1, elevec2, elevec3);
       }
       else

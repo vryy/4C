@@ -1307,7 +1307,7 @@ namespace FLD
 
         interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
-        ele->Evaluate(
+        ele->evaluate(
             params, *discret_, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
         // sum values on nodes into vectors and record the touch count (build average of values)
@@ -1750,7 +1750,7 @@ namespace FLD
 
         interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
-        ele->Evaluate(
+        ele->evaluate(
             params, *discret_, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
         // sum values on nodes into vectors and record the touch count (build average of values)
@@ -1934,7 +1934,7 @@ namespace FLD
         Core::LinAlg::SerialDenseVector interpolVec;
         interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
-        ele->Evaluate(
+        ele->evaluate(
             params, *discret_, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
         // sum values on nodes into vectors and record the touch count (build average of values)
@@ -1979,7 +1979,7 @@ namespace FLD
         ele->LocationVector(*discret_, la, false);
         if (elevec1.numRows() != discret_->NumDof(1, ele)) elevec1.size(discret_->NumDof(1, ele));
 
-        ele->Evaluate(
+        ele->evaluate(
             initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, interpolVec, elevec3);
 
         if (ele->Owner() == discret_->Comm().MyPID())

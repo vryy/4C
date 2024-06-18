@@ -65,7 +65,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
 // * Action type: Evaluate                                    vuong 07/14 |
 // *----------------------------------------------------------------------*/
 // template <Core::FE::CellType distype>
-// int Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::Evaluate(
+// int Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::evaluate(
 //  Core::Elements::Element*              ele,
 //  Teuchos::ParameterList&    params,
 //  Core::FE::Discretization&       discretization,
@@ -113,7 +113,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
 //    }
 //    default:
 //    {
-//      return my::Evaluate(
+//      return my::evaluate(
 //          ele,
 //          params,
 //          discretization,

@@ -1690,23 +1690,23 @@ namespace Core::FE
                                    the underlying assembly methods that add element
                                    contributions.
     */
-    virtual void Evaluate(Teuchos::ParameterList& params,
+    virtual void evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3);
 
     /// Call elements to evaluate
-    virtual void Evaluate(Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy);
+    virtual void evaluate(Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy);
 
     /**
      * Loop over all elements of the discretization and perform the given @p element_action. In
-     * contrast to the other overloads of Evaluate(), this function allows to perform any local
+     * contrast to the other overloads of evaluate(), this function allows to perform any local
      * action on an Element that can be encoded within the passed function object @p element_action.
      * This is very useful for one-off actions, that one does not want to implement inside the
      * actual Element's Evaluate call.
      */
-    virtual void Evaluate(Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy,
+    virtual void evaluate(Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy,
         const std::function<void(Core::Elements::Element&, Core::Elements::Element::LocationArray&,
             Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&,
             Core::LinAlg::SerialDenseVector&, Core::LinAlg::SerialDenseVector&,
@@ -1714,7 +1714,7 @@ namespace Core::FE
 
     /// Call elements to evaluate
     /*!
-      Abbreviated Evaluate() call that always assembles one matrix and
+      Abbreviated evaluate() call that always assembles one matrix and
       one vector. No need to set assemble instructions to the
       Teuchos::ParameterList.
 
@@ -1732,7 +1732,7 @@ namespace Core::FE
                                   the underlying assembly methods that add element
                                   contributions.
      */
-    void Evaluate(Teuchos::ParameterList& params,
+    void evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<Epetra_Vector> systemvector);
 
@@ -1749,9 +1749,9 @@ namespace Core::FE
                             commands and parameters for the elements and
                             containing assembly instructions
    */
-    void Evaluate(Teuchos::ParameterList& params);
+    void evaluate(Teuchos::ParameterList& params);
 
-    virtual void Evaluate(const std::function<void(Core::Elements::Element&)>& element_action);
+    virtual void evaluate(const std::function<void(Core::Elements::Element&)>& element_action);
 
     /** \brief Evaluate Neumann boundary conditions
      *

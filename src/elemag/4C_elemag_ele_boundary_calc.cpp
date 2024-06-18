@@ -123,7 +123,7 @@ int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate_neumann(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(Discret::ELEMENTS::ElemagBoundary* ele,
+int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate(Discret::ELEMENTS::ElemagBoundary* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -167,7 +167,7 @@ int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(Discret::ELEMENTS::
         {
           // i is the number we were searching for!!!!
           params.set<int>("face", i);
-          ele->parent_element()->Evaluate(params, discretization, lm, elemat1_epetra,
+          ele->parent_element()->evaluate(params, discretization, lm, elemat1_epetra,
               elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
           // break;
         }
@@ -209,7 +209,7 @@ int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(Discret::ELEMENTS::
                 if (nodeids[n] == nodeidsface[j]) (*indices)[n] = j;
             }
             params.set<Teuchos::RCP<std::vector<int>>>("nodeindices", indices);
-            ele->parent_element()->Evaluate(params, discretization, lm, elemat1_epetra,
+            ele->parent_element()->evaluate(params, discretization, lm, elemat1_epetra,
                 elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
           }
         }
@@ -263,7 +263,7 @@ int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(Discret::ELEMENTS::
         {
           // i is the number we were searching for!!!!
           params.set<int>("face", i);
-          ele->parent_element()->Evaluate(params, discretization, lm, elemat1_epetra,
+          ele->parent_element()->evaluate(params, discretization, lm, elemat1_epetra,
               elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
           break;
         }

@@ -155,7 +155,7 @@ namespace Adapter
     void calculate_phase_velocities() override;
 
     //! build linear system tangent matrix, rhs/force residual
-    void Evaluate() override;
+    void evaluate() override;
 
     // Assemble Off-Diagonal Fluid-Structure Coupling matrix
     void assemble_fluid_struct_coupling_mat(

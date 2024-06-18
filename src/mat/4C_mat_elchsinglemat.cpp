@@ -264,7 +264,7 @@ double Mat::ElchSingleMat::compute_diffusion_coefficient_concentration_dependent
     diffusionCoefficient = Global::Problem::Instance()
                                ->FunctionById<Core::UTILS::FunctionOfTime>(
                                    diffusion_coefficient_concentration_dependence_funct_num() - 1)
-                               .Evaluate(concentration);
+                               .evaluate(concentration);
   }
 
   return diffusionCoefficient;
@@ -291,7 +291,7 @@ double Mat::ElchSingleMat::compute_temperature_dependent_scale_factor(const doub
     temperatureDependentScaleFactor =
         Global::Problem::Instance()
             ->FunctionById<Core::UTILS::FunctionOfTime>(functionNumber - 1)
-            .Evaluate(temperature);
+            .evaluate(temperature);
   }
   else
   {
@@ -437,7 +437,7 @@ double Mat::ElchSingleMat::compute_conductivity_concentration_dependent(
     conductivity = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(
                            conductivity_concentration_dependence_funct_num() - 1)
-                       .Evaluate(concentration);
+                       .evaluate(concentration);
   }
 
   return conductivity;

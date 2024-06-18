@@ -122,10 +122,10 @@ namespace Mat
     //! @name Evaluation methods
 
     /// evaluates material law
-    void Evaluate(const Core::LinAlg::SerialDenseVector* glstrain_e,
+    void evaluate(const Core::LinAlg::SerialDenseVector* glstrain_e,
         Core::LinAlg::SerialDenseMatrix* cmat_e, Core::LinAlg::SerialDenseVector* stress_e);
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;

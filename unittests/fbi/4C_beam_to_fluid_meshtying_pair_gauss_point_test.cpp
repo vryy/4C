@@ -126,7 +126,7 @@ namespace
       Core::LinAlg::SerialDenseVector local_ff;
       pair.pre_evaluate();
       bool projects =
-          pair.Evaluate(&local_fs, &local_ff, &local_kss, &local_ksf, &local_kfs, &local_kff);
+          pair.evaluate(&local_fs, &local_ff, &local_kss, &local_ksf, &local_kfs, &local_kff);
 
       EXPECT_TRUE(projects);
       EXPECT_EQ(local_kff.numRows(), fluid_dofs);

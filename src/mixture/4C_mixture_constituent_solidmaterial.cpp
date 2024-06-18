@@ -148,7 +148,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::evaluate(const Core::LinAlg::Matr
     Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)
 {
-  material_->Evaluate(&F, &E_strain, params, &S_stress, &cmat, gp, eleGID);
+  material_->evaluate(&F, &E_strain, params, &S_stress, &cmat, gp, eleGID);
 }
 
 void MIXTURE::MixtureConstituentSolidMaterial::register_output_data_names(

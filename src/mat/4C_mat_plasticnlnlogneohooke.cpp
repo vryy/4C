@@ -50,7 +50,7 @@ namespace
     std::vector<std::pair<std::string, double>> dp;
     dp.emplace_back("epsp", accplstrain + Dgamma);
 
-    const double y_d = hardeningfunction.Evaluate(dp, {}, 0);
+    const double y_d = hardeningfunction.evaluate(dp, {}, 0);
     double y_d_visc = y_d * pow(visc * Dgamma / dt + 1., eps);
 
     const std::vector<double> dy_d_dgvector = hardeningfunction.EvaluateDerivative(dp, {}, 0);
@@ -115,7 +115,7 @@ namespace
     //! vector for input of accumulated strain to function
     std::vector<std::pair<std::string, double>> dp;
     dp.emplace_back("epsp", accplstrain_last + Dgamma);
-    const double y_d = hardening_function.Evaluate(dp, {}, 0);
+    const double y_d = hardening_function.evaluate(dp, {}, 0);
 
     std::vector<double> dy_d_dgvector = hardening_function.EvaluateDerivative(dp, {}, 0);
     double dy_d_dgamma = dy_d_dgvector[0] * pow(visc * Dgamma / dt + 1., eps) +
@@ -394,7 +394,7 @@ void Mat::PlasticNlnLogNeoHooke::Update()
 /*----------------------------------------------------------------------*
  | calculate stress and constitutive tensor                             |
  *----------------------------------------------------------------------*/
-void Mat::PlasticNlnLogNeoHooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -525,7 +525,7 @@ void Mat::PlasticNlnLogNeoHooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defg
   std::vector<std::pair<std::string, double>> dp;
   dp.emplace_back("epsp", accplstrainlast_.at(gp));
   const double y_d = hardening_function_
-                         ? hardening_function_->Evaluate(dp, {}, 0)
+                         ? hardening_function_->evaluate(dp, {}, 0)
                          : yield + isohard * accplstrainlast_.at(gp) +
                                (infyield - yield) * (1. - exp(-hardexp * accplstrainlast_.at(gp)));
 
@@ -664,7 +664,7 @@ void Mat::PlasticNlnLogNeoHooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 
   return;
 
-}  // Evaluate()
+}  // evaluate()
 
 
 /*---------------------------------------------------------------------*

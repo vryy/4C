@@ -679,7 +679,7 @@ namespace Discret::ELEMENTS
   {
     Stress<celltype> stress;
 
-    material.Evaluate(&defgrd, &gl_strain, params, &stress.pk2_, &stress.cmat_, gp, eleGID);
+    material.evaluate(&defgrd, &gl_strain, params, &stress.pk2_, &stress.cmat_, gp, eleGID);
     return stress;
   }
 

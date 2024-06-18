@@ -280,13 +280,13 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Output()
 /*----------------------------------------------------------------------*
  | evaluate matrix and rhs                             kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Evaluate()
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::evaluate()
 {
   arttoporofluidcoupling_->SetSolutionVectors(
       porofluidmultitimint_->Phinp(), porofluidmultitimint_->Phin(), artnettimint_->Pressurenp());
 
   // evaluate the coupling
-  arttoporofluidcoupling_->Evaluate(comb_systemmatrix_, rhs_);
+  arttoporofluidcoupling_->evaluate(comb_systemmatrix_, rhs_);
 
   // evaluate artery
   artnettimint_->assemble_mat_and_rhs();

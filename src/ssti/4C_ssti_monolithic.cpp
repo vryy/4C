@@ -528,7 +528,7 @@ void SSTI::SSTIMono::evaluate_subproblems()
   distribute_solution_all_fields();
 
   // evaluate all subproblems
-  structure_field()->Evaluate();
+  structure_field()->evaluate();
   ScaTraField()->PrepareLinearSolve();
   ThermoField()->PrepareLinearSolve();
 

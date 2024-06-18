@@ -355,7 +355,7 @@ void Mat::ThermoPlasticLinElast::Update()
 /*----------------------------------------------------------------------*
  | evaluate material (public)                                dano 08/11 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain,
     Teuchos::ParameterList& params,                  // parameter list for communication & HISTORY
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,  // 2nd PK-stress
@@ -881,7 +881,7 @@ void Mat::ThermoPlasticLinElast::Evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 
   return;
 
-}  // Evaluate()
+}  // evaluate()
 
 
 /*----------------------------------------------------------------------*
@@ -1305,7 +1305,7 @@ void Mat::ThermoPlasticLinElast::dissipation_coupl_cond(
 /*----------------------------------------------------------------------*
  | calculate stresses by evaluating the temperature tangent  dano 08/11 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::Evaluate(
+void Mat::ThermoPlasticLinElast::evaluate(
     const Core::LinAlg::Matrix<1, 1>& Ntemp,  // shapefcts . temperatures
     Core::LinAlg::Matrix<6, 1>& ctemp, Core::LinAlg::Matrix<6, 1>& stresstemp)
 {

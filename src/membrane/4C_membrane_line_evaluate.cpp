@@ -138,7 +138,7 @@ int Discret::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::Paramete
               // evaluate function at current gauss point
               functfac = Global::Problem::Instance()
                              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                             .Evaluate(coordgpref, time, i);
+                             .evaluate(coordgpref, time, i);
             }
 
             const double fac = (*val)[i] * gpweight * dL * functfac;

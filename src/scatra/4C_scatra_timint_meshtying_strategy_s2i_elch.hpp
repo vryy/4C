@@ -197,7 +197,7 @@ namespace ScaTra
 
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types
-    void Evaluate(const Core::FE::Discretization& idiscret,  //!< interface discretization
+    void evaluate(const Core::FE::Discretization& idiscret,  //!< interface discretization
         Mortar::IntCell& cell,                               //!< mortar integration cell
         Mortar::Element& slaveelement,                       //!< slave-side mortar element
         Mortar::Element& masterelement,                      //!< master-side mortar element
@@ -275,7 +275,7 @@ namespace ScaTra
 
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types
-    void Evaluate(const Core::FE::Discretization& idiscret,  //!< interface discretization
+    void evaluate(const Core::FE::Discretization& idiscret,  //!< interface discretization
         Mortar::IntCell& cell,                               //!< mortar integration cell
         Mortar::Element& slaveelement,                       //!< slave-side mortar element
         Mortar::Element& masterelement,                      //!< master-side mortar element

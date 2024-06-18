@@ -44,7 +44,7 @@ namespace Mat
      * @param[in] gp       Current Gauss point
      * @param[in] eleGID   Global element ID
      */
-    virtual void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrad,
+    virtual void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrad,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) = 0;

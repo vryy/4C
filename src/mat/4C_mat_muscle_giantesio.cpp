@@ -410,7 +410,7 @@ void Mat::MuscleGiantesio::Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int 
   lambda_m_old_ = Mat::UTILS::Muscle::FiberStretch(C, M);
 }
 
-void Mat::MuscleGiantesio::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)

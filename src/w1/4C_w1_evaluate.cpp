@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -771,7 +771,7 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
         // evaluate function at current gauss point
         functfac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                       .Evaluate(coordgpref, time, i);
+                       .evaluate(coordgpref, time, i);
       }
 
       ar[i] = fac * (*onoff)[i] * (*val)[i] * functfac;
@@ -1703,7 +1703,7 @@ void Discret::ELEMENTS::Wall1::w1_boplin_cure(Core::LinAlg::SerialDenseMatrix& b
 //    {
 //      Mat::StVenantKirchhoff* stvk = static_cast <Mat::StVenantKirchhoff*>(mat.get());
 //
-//      stvk->Evaluate(glstrain,cmat,stress);
+//      stvk->evaluate(glstrain,cmat,stress);
 //
 //      *density = stvk->Density();
 //

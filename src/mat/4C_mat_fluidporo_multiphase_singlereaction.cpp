@@ -199,7 +199,7 @@ void Mat::PAR::FluidPoroSingleReaction::evaluate_function_internal(std::vector<d
   // evaluate the reaction term
   double curval = Global::Problem::Instance()
                       ->FunctionById<Core::UTILS::FunctionOfAnything>(functID_ - 1)
-                      .Evaluate(variables, constants, 0);
+                      .evaluate(variables, constants, 0);
   // evaluate derivatives
   std::vector<double> curderivs(Global::Problem::Instance()
                                     ->FunctionById<Core::UTILS::FunctionOfAnything>(functID_ - 1)

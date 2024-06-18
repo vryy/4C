@@ -441,7 +441,7 @@ void Adapter::CouplingPoroMortar::EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fve
   interface_->Initialize();
   // in the end of Evaluate coupling condition residuals and linearizations are computed in contact
   // integrator
-  interface_->Evaluate();
+  interface_->evaluate();
 
   porolagstrategy_->poro_mt_prepare_fluid_coupling();
   porolagstrategy_->PoroInitialize(coupfs, fdofrowmap, firstinit_);

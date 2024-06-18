@@ -254,7 +254,7 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::pre_evaluate(const p
  *
  */
 template <typename pair_type>
-void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_type* pair,
+void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::evaluate(const pair_type* pair,
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<other, scalar_type>& element_data_other,
     std::vector<LineSegment<scalar_type>>& segments)
@@ -348,7 +348,7 @@ GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::get_line_projection_vecto
  *
  */
 template <typename pair_type>
-void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pair,
+void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::evaluate(const pair_type* pair,
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<other, scalar_type>& element_data_other,
     std::vector<LineSegment<scalar_type>>& segments)

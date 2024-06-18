@@ -299,7 +299,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
         Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
     Teuchos::RCP<Epetra_Vector> cardvasc0d_f_n_red =
         Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
-    cardvasc0d_model_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, cardvasc0d_df_n_red,
+    cardvasc0d_model_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, cardvasc0d_df_n_red,
         cardvasc0d_f_n_red, Teuchos::null, cv0ddof_n_red, v_n_red2);
 
     // insert compartment volumes into vol vector
@@ -376,7 +376,7 @@ void UTILS::Cardiovascular0DManager::evaluate_force_stiff(const double time,
   actdisc_->set_state("displacement", disp);
 
   // evaluate current 3D volume only
-  cardvasc0d_model_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null,
+  cardvasc0d_model_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null,
       Teuchos::null, v_np_red, Teuchos::null, Teuchos::null);
 
   // import into vol vector at end-point
@@ -394,7 +394,7 @@ void UTILS::Cardiovascular0DManager::evaluate_force_stiff(const double time,
 
   // assemble Cardiovascular0D stiffness and offdiagonal coupling matrices as well as rhs
   // contributions
-  cardvasc0d_model_->Evaluate(p, cardiovascular0dstiffness_, mat_dcardvasc0d_dd_,
+  cardvasc0d_model_->evaluate(p, cardiovascular0dstiffness_, mat_dcardvasc0d_dd_,
       mat_dstruct_dcv0ddof_, cardvasc0d_df_np_red, cardvasc0d_f_np_red, Teuchos::null,
       cv0ddof_np_red, v_np_red2);
 

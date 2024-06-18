@@ -255,7 +255,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       Core::LinAlg::Inverse(T_solid_inv);
 
       // Evaluate shape functions.
-      GEOMETRYPAIR::EvaluateShapeFunction<mortar_rot>::Evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<mortar_rot>::evaluate(
           lambda_shape_functions, projected_gauss_point.GetEta());
       for (unsigned int i_node = 0; i_node < mortar_rot::n_nodes_; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -546,7 +546,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       Core::LinAlg::Inverse(T_solid_inv);
 
       // Evaluate shape functions.
-      GEOMETRYPAIR::EvaluateShapeFunction<mortar_rot>::Evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<mortar_rot>::evaluate(
           lambda_shape_functions, projected_gauss_point.GetEta());
       for (unsigned int i_node = 0; i_node < mortar_rot::n_nodes_; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)

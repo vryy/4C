@@ -62,13 +62,13 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, li
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line,
-    surface>::Evaluate(const ElementData<line, scalar_type>& element_data_line,
+    surface>::evaluate(const ElementData<line, scalar_type>& element_data_line,
     const ElementData<surface, scalar_type>& element_data_surface,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Call the pre_evaluate method of the general Gauss point projection class.
   LineTo3DGaussPointProjection<
-      GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line, surface>>::Evaluate(this,
+      GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line, surface>>::evaluate(this,
       element_data_line, element_data_surface, segments);
 }
 

@@ -189,16 +189,16 @@ void STR::TimeInt::Implicit::determine_stress_strain() { impl_int().determine_st
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void STR::TimeInt::Implicit::evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   update_state_incrementally(disiterinc);
 
-  Evaluate();
+  evaluate();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::Evaluate()
+void STR::TimeInt::Implicit::evaluate()
 {
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();

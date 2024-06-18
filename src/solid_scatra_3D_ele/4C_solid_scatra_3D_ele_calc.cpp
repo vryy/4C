@@ -56,7 +56,7 @@ namespace
 
     // The derivative of the solid stress w.r.t. the scalar is implemented in the normal material
     // Evaluate call by not passing the linearization matrix.
-    solid_material.Evaluate(
+    solid_material.evaluate(
         &deformation_gradient, &gl_strain, params, &dStressDScalar, nullptr, gp, eleGID);
 
     return dStressDScalar;

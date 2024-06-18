@@ -242,12 +242,12 @@ namespace Adapter
     In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
     which is then transformed into an iteration increment
     */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    void evaluate(Teuchos::RCP<const Epetra_Vector>
             disiterinc  ///< displacement increment between Newton iteration i and i+1
         ) override = 0;
 
     /// don't update displacement but evaluate elements (implicit only)
-    void Evaluate() override = 0;
+    void evaluate() override = 0;
 
     /// update at time step end
     void Update() override = 0;

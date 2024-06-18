@@ -94,7 +94,7 @@ namespace Adapter
 
   <h3>Monolithic TSI</h3>
 
-  Monolithic TSI is based on Evaluate() of elements. This results in a new
+  Monolithic TSI is based on evaluate() of elements. This results in a new
   RHS() and a new SysMat(). Together with the initial_guess() these form the
   building blocks for a block based Newton's method.
 
@@ -189,10 +189,10 @@ namespace Adapter
     virtual void prepare_time_step() = 0;
 
     /// evaluate residual at given temperature increment
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> tempi) = 0;
+    virtual void evaluate(Teuchos::RCP<const Epetra_Vector> tempi) = 0;
 
     /// evaluate residual at given temperature increment
-    virtual void Evaluate() = 0;
+    virtual void evaluate() = 0;
 
     /// update temperature increment after Newton step
     virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi) = 0;

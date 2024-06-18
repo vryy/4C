@@ -1020,7 +1020,7 @@ bool FSI::MonolithicXFEM::newton()
     //    std::cout << "Evaluate-Call " << "iter_ " << iter_ << "/" << itermax_ << std::endl;
 
     /*----------------------------------------------------------------------*/
-    // Evaluate()- call
+    // evaluate()- call
     // * calls evaluate methods for single fields
     // * assembles single field rhs and system-matrices and fluid-structure coupling blocks
     // * check if dofsets between last two Newton iterations drastically changed or maybe simply
@@ -1542,7 +1542,7 @@ bool FSI::MonolithicXFEM::evaluate()
     coupit->second->SetCouplingStates();
 
   // update ALE
-  if (HaveAle()) ale_field()->Evaluate();
+  if (HaveAle()) ale_field()->evaluate();
 
 
   //-------------------
@@ -1596,7 +1596,7 @@ bool FSI::MonolithicXFEM::evaluate()
         fluid_field()->Set_EvaluateCut(true);
     }
 
-    fluid_field()->Evaluate();
+    fluid_field()->evaluate();
 
     if (Comm().MyPID() == 0)
       Core::IO::cout << "fluid time : " << tf.totalElapsedTime(true) << Core::IO::endl;
@@ -1624,7 +1624,7 @@ bool FSI::MonolithicXFEM::evaluate()
     Teuchos::Time ts("structure", true);
 
     // Evaluate Structure (do not set state again)
-    StructurePoro()->Evaluate(Teuchos::null, iter_ == 1);
+    StructurePoro()->evaluate(Teuchos::null, iter_ == 1);
 
     if (Comm().MyPID() == 0)
       Core::IO::cout << "structure time: " << ts.totalElapsedTime(true) << Core::IO::endl;

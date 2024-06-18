@@ -88,7 +88,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::SetupCalc(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Evaluate(
+int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -545,7 +545,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_neumann
           // evaluate function at current Gauss point (provide always 3D coordinates!)
           functfac = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                         .Evaluate(coordgpref, time, dof);
+                         .evaluate(coordgpref, time, dof);
         }
         else
           functfac = 1.;
@@ -2572,7 +2572,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
 
       functfac = Global::Problem::Instance()
                      ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-                     .Evaluate(coordgp3D.data(), time, 0);
+                     .evaluate(coordgp3D.data(), time, 0);
     }
     else
       functfac = 1.0;

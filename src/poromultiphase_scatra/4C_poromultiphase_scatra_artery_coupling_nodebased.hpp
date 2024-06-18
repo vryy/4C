@@ -47,7 +47,7 @@ namespace PoroMultiPhaseScaTra
         const std::string& artcoupleddofname, const std::string& contcoupleddofname);
 
     //! Evaluate the 1D-3D coupling
-    void Evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    void evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs) override
     {
       // nothing to do here, is done in SetupSystem for this type of coupling

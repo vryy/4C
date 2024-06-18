@@ -88,7 +88,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::pre_evaluate(Teuchos::Paramet
       }
       const double* coordgpref = xrefe.data();
       double functfac =
-          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(num).Evaluate(
+          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(num).evaluate(
               coordgpref, time, 0);
       params.set<double>("scalar", functfac);
     }
@@ -96,7 +96,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::pre_evaluate(Teuchos::Paramet
 }
 
 template <class so3_ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3Poro<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::So3Poro<so3_ele, distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -149,7 +149,7 @@ int Discret::ELEMENTS::So3Poro<so3_ele, distype>::Evaluate(Teuchos::ParameterLis
       pre_evaluate(params, discretization, la);
 
       // evaluate parent solid element
-      so3_ele::Evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
+      so3_ele::evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
       // add volume coupling specific terms

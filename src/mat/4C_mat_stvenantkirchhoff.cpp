@@ -155,7 +155,7 @@ void Mat::StVenantKirchhoff::FillCmat(
 /*----------------------------------------------------------------------*
 //calculates stresses using one of the above method to evaluate the elasticity tensor
  *----------------------------------------------------------------------*/
-void Mat::StVenantKirchhoff::Evaluate(const Core::LinAlg::SerialDenseVector* glstrain_e,
+void Mat::StVenantKirchhoff::evaluate(const Core::LinAlg::SerialDenseVector* glstrain_e,
     Core::LinAlg::SerialDenseMatrix* cmat_e, Core::LinAlg::SerialDenseVector* stress_e)
 {
   // this is temporary as long as the material does not have a
@@ -173,7 +173,7 @@ void Mat::StVenantKirchhoff::Evaluate(const Core::LinAlg::SerialDenseVector* gls
 /*----------------------------------------------------------------------*
 //calculates stresses using one of the above method to evaluate the elasticity tensor
  *----------------------------------------------------------------------*/
-void Mat::StVenantKirchhoff::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::StVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)

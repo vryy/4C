@@ -288,7 +288,7 @@ namespace Discret
       /// Evaluate so_sh8p8 element stiffness, mass, internal forces, etc.
       ///
       /// \return 0 if successful, negative otherwise
-      int Evaluate(Teuchos::ParameterList& params,   ///< (in/out) ParameterList for communication
+      int evaluate(Teuchos::ParameterList& params,   ///< (in/out) ParameterList for communication
                                                      ///< between control routine and elements
           Core::FE::Discretization& discretization,  ///< pointer to discretization for de-assembly
           std::vector<int>& lm,                      ///< (in) location matrix for de-assembly

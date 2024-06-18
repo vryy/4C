@@ -736,7 +736,7 @@ void Mat::ConstraintMixture::reset_step()
 /*----------------------------------------------------------------------*
  |  Evaluate                                      (public)         12/10|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ConstraintMixture::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -984,7 +984,7 @@ void Mat::ConstraintMixture::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
       if (curvenum)
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum - 1)
-                       .Evaluate(time);
+                       .evaluate(time);
       if (curvefac > (1.0 + eps) || curvefac < (0.0 - eps))
         FOUR_C_THROW("correct your time curve for prestretch, just values in [0,1] are allowed %f",
             curvefac);
@@ -1459,7 +1459,7 @@ void Mat::ConstraintMixture::evaluate_elastin(const Core::LinAlg::Matrix<NUM_STR
     if (curvenum)
       curvefac = Global::Problem::Instance()
                      ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum - 1)
-                     .Evaluate(time);
+                     .evaluate(time);
     if (curvefac > 1.0 || curvefac < 0.0)
       FOUR_C_THROW(
           "correct your time curve for prestretch, just values in [0,1] are allowed %f", curvefac);

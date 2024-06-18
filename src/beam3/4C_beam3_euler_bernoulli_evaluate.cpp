@@ -30,7 +30,7 @@ using FAD = Sacado::Fad::DFad<double>;
 
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -326,7 +326,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
       if (functnum >= 0)
         functfac[i] = Global::Problem::Instance()
                           ->FunctionById<Core::UTILS::FunctionOfTime>(functnum - 1)
-                          .Evaluate(time);
+                          .evaluate(time);
     }
 
     // add forces to Res_external according to (5.56). There is a factor (-1) needed, as fext is
@@ -515,7 +515,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
           // evaluate function at the position of the current node       --> dof here correct?
           functionfac = Global::Problem::Instance()
                             ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                            .Evaluate(X_ref.data(), time, dof);
+                            .evaluate(X_ref.data(), time, dof);
         }
         else
           functionfac = 1.0;

@@ -370,7 +370,7 @@ double Mat::UTILS::Muscle::EvaluateTimeSpaceDependentActiveStressByFunct(const d
   const std::vector<double> x_vec{x(0), x(1), x(2)};
 
   // compute time-dependency ft
-  const double ft = activation_function.Evaluate(&x_vec.front(), t_current, 0);
+  const double ft = activation_function.evaluate(&x_vec.front(), t_current, 0);
 
   // ft needs to be in interval [0, 1]
   if (ft < 0.00 || ft > 1.00)

@@ -181,7 +181,7 @@ namespace Mat
 
     Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrad,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrad,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;

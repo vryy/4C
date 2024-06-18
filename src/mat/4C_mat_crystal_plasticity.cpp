@@ -531,7 +531,7 @@ void Mat::CrystalPlasticity::Update()
 /*-------------------------------------------------------------------------------*
  | calculate stress, material stiffness matrix and evolution internal variables  |
  *-------------------------------------------------------------------------------*/
-void Mat::CrystalPlasticity::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::CrystalPlasticity::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -568,7 +568,7 @@ void Mat::CrystalPlasticity::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // TODO!!! USE NEW VOIGHT NOTATION METHOD!!!!
   // !!!!!!
   return;
-}  // Evaluate()
+}  // evaluate()
 
 /*---------------------------------------------------------------------------------*
  | Setup slip directions and slip plane normals                                    |

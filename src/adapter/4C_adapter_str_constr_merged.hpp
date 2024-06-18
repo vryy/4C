@@ -108,7 +108,7 @@ namespace Adapter
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
 
     /// update displacement and evaluate elements
-    void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    void evaluate(Teuchos::RCP<const Epetra_Vector>
             dispstepinc  ///< solution increment between time step n and n+1
         ) override;
 

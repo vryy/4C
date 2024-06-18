@@ -86,11 +86,11 @@ namespace Adapter
         ) override;
 
     /// update state and evaluate elements
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
+    void evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
 
     /// update state and evaluate elements
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter) override;
+    void evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter) override;
 
     /// update at time step end
     void Update() override { field_->Update(); }

@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::Evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
+void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
     const Teuchos::RCP<Epetra_Vector>& systemvector, const Epetra_Map* col_ele_map)
 {
@@ -29,12 +29,12 @@ void Core::FE::UTILS::Evaluate(Core::FE::Discretization& discret, Teuchos::Param
   systemmatrices[0] = systemmatrix;
   systemvectors[0] = systemvector;
 
-  Evaluate(discret, eparams, systemmatrices, systemvectors, col_ele_map);
+  evaluate(discret, eparams, systemmatrices, systemvectors, col_ele_map);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::Evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
+void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
     std::vector<Teuchos::RCP<Core::LinAlg::SparseOperator>>& systemmatrices,
     std::vector<Teuchos::RCP<Epetra_Vector>>& systemvectors, const Epetra_Map* col_ele_map)
 {
@@ -50,12 +50,12 @@ void Core::FE::UTILS::Evaluate(Core::FE::Discretization& discret, Teuchos::Param
 
   Core::FE::AssembleStrategy strategy(0, 0, systemmatrices[0], systemmatrices[1], systemvectors[0],
       systemvectors[1], systemvectors[2]);
-  Evaluate(discret, eparams, strategy, col_ele_map);
+  evaluate(discret, eparams, strategy, col_ele_map);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::Evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
+void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
     Core::FE::AssembleStrategy& strategy, const Epetra_Map* col_ele_map)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate");
@@ -117,7 +117,7 @@ void Core::FE::UTILS::Evaluate(Core::FE::Discretization& discret, Teuchos::Param
     {
       TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate elements");
       // call the element evaluate method
-      int err = actele->Evaluate(eparams, discret, la, strategy.Elematrix1(), strategy.Elematrix2(),
+      int err = actele->evaluate(eparams, discret, la, strategy.Elematrix1(), strategy.Elematrix2(),
           strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
       if (err)
         FOUR_C_THROW(

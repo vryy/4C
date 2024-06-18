@@ -322,7 +322,7 @@ void SSI::SsiMono::evaluate_subproblems()
   evaluate_and_set_temperature_field();
 
   // build system matrix and residual for structure field
-  structure_field()->Evaluate();
+  structure_field()->evaluate();
 
   // build system matrix and residual for scalar transport field
   evaluate_sca_tra();
@@ -1117,7 +1117,7 @@ void SSI::SsiMono::evaluate_sca_tra_manifold()
   ssi_vectors_->ManifoldResidual()->Update(1.0, *ScaTraManifold()->Residual(), 1.0);
 
   // evaluate coupling fluxes
-  manifoldscatraflux_->Evaluate();
+  manifoldscatraflux_->evaluate();
 
   ssi_vectors_->ManifoldResidual()->Update(1.0, *manifoldscatraflux_()->RHSManifold(), 1.0);
   ssi_vectors_->ScatraResidual()->Update(1.0, *manifoldscatraflux_()->RHSScaTra(), 1.0);

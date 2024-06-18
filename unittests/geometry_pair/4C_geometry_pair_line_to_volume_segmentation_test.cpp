@@ -103,7 +103,7 @@ namespace
       {
         for (unsigned int i_volume = 0; i_volume < q_volume_elements.size(); i_volume++)
         {
-          geometry_pairs[counter]->Evaluate(
+          geometry_pairs[counter]->evaluate(
               q_line[i_line], q_volume[i_volume], segments_vector[counter]);
           counter++;
         }

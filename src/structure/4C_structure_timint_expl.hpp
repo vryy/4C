@@ -246,12 +246,12 @@ namespace STR
     }
 
     //!  Evaluate routine for coupled problems with monolithic approach
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc  ///< iterative solution increment
+    void evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc  ///< iterative solution increment
         ) override
     {
       FOUR_C_THROW(
           "All monolithically coupled problems work with implicit time "
-          "integration schemes. Thus, calling Evaluate() in an explicit scheme "
+          "integration schemes. Thus, calling evaluate() in an explicit scheme "
           "is not possible.");
     }
 

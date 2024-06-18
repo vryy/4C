@@ -313,7 +313,7 @@ void FLD::TurbulenceStatisticsTgv::EvaluateResiduals(
   }
 
   // call loop over elements to compute means
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   discret_->ClearState();

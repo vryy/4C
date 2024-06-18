@@ -173,12 +173,12 @@ void Mat::MultiplicativeSplitDefgradElastHyper::Unpack(const std::vector<char>& 
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::Evaluate(
+void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
     const Core::LinAlg::Matrix<3, 3>* const defgrad, const Core::LinAlg::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>* stress,
     Core::LinAlg::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
-  // do all stuff that only has to be done once per Evaluate() call
+  // do all stuff that only has to be done once per evaluate() call
   pre_evaluate(params, gp);
 
   // static variables
@@ -225,7 +225,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::Evaluate(
   // if cmat != nullptr, we are evaluating the structural residual and linearizations, so we need to
   // calculate the stresses and the cmat if you like to evaluate the off-diagonal block of your
   // monolithic system (structural residual w.r.t. dofs of another field), you need to pass nullptr
-  // as the cmat when you call Evaluate() in the element
+  // as the cmat when you call evaluate() in the element
   if (cmat != nullptr)
   {
     // cmat = 2 dS/dC = 2 \frac{\partial S}{\partial C} + 2 \frac{\partial S}{\partial F_{in}^{-1}}

@@ -372,7 +372,7 @@ void FLD::TimIntHDG::SetInitialFlowField(
         elevec1.size(la[0].lm_.size());
       if (elevec2.numRows() != discret_->NumDof(1, ele)) elevec2.size(discret_->NumDof(1, ele));
 
-      ele->Evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
+      ele->evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
 
       // now fill the ele vector into the discretization
       for (unsigned int i = 0; i < la[0].lm_.size(); ++i)
@@ -493,7 +493,7 @@ namespace
       Core::Elements::Element* ele = dis.lColElement(el);
       if (interpolVec.numRows() == 0) interpolVec.resize(ele->num_node() * (2 * ndim + 1) + 1);
 
-      ele->Evaluate(params, dis, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
+      ele->evaluate(params, dis, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
       // sum values on nodes into vectors and record the touch count (build average of values)
       for (int i = 0; i < ele->num_node(); ++i)

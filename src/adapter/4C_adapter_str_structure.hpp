@@ -113,7 +113,7 @@ namespace Adapter
 
   <h3>Monolithic FSI</h3>
 
-  Monolithic FSI is based on Evaluate() of elements. This results in a new
+  Monolithic FSI is based on evaluate() of elements. This results in a new
   RHS() and a new SysMat(). Together with the initial_guess() these form the
   building blocks for a block based Newton's method.
 
@@ -342,12 +342,12 @@ namespace Adapter
     In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
     which is then transformed into an iteration increment
     */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    void evaluate(Teuchos::RCP<const Epetra_Vector>
             disiterinc  ///< displacement increment between Newton iteration i and i+1
         ) override = 0;
 
     /// don't update displacement but evaluate elements (implicit only)
-    virtual void Evaluate() = 0;
+    virtual void evaluate() = 0;
 
     //! Calculate stresses and strains
     virtual void determine_stress_strain() = 0;

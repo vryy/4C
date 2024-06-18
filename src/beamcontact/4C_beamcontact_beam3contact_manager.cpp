@@ -392,7 +392,7 @@ void CONTACT::Beam3cmanager::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  evaluate contact (public)                                 popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::Evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
+void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
     const Epetra_Vector& disrow, Teuchos::ParameterList timeintparams, bool newsti, double time)
 {
   // get out of here if only interested in gmsh output
@@ -1239,7 +1239,7 @@ void CONTACT::Beam3cmanager::evaluate_all_pairs(Teuchos::ParameterList timeintpa
     // evaluate additional contact forces and stiffness
     if (firstisincolmap || secondisincolmap)
     {
-      pairs_[i]->Evaluate(*stiffc_, *fc_, currentpp_, contactpairmap_, timeintparams);
+      pairs_[i]->evaluate(*stiffc_, *fc_, currentpp_, contactpairmap_, timeintparams);
 
       // if active, get minimal gap of contact element pair
       if (pairs_[i]->GetContactFlag() == true)
@@ -1266,7 +1266,7 @@ void CONTACT::Beam3cmanager::evaluate_all_pairs(Teuchos::ParameterList timeintpa
     // evaluate additional contact forces and stiffness
     if (firstisincolmap || secondisincolmap)
     {
-      btsolpairs_[i]->Evaluate(*stiffc_, *fc_, btspp_);
+      btsolpairs_[i]->evaluate(*stiffc_, *fc_, btspp_);
     }
   }
 

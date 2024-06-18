@@ -84,7 +84,7 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_scatra_thermo_dom
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // assemble scatra-thermo matrix block
-  sca_tra_field()->discretization()->Evaluate(eleparams, strategyscatrathermo);
+  sca_tra_field()->discretization()->evaluate(eleparams, strategyscatrathermo);
 
   // remove state vectors from scalar transport discretization
   sca_tra_field()->discretization()->ClearState();
@@ -144,7 +144,7 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_thermo_scatra_dom
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // assemble thermo-scatra matrix block
-  thermo_field()->discretization()->Evaluate(eleparams, strategythermoscatra);
+  thermo_field()->discretization()->evaluate(eleparams, strategythermoscatra);
 
   // finalize thermo-scatra matrix block
   switch (sca_tra_field()->MatrixType())

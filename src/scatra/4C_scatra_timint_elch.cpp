@@ -623,7 +623,7 @@ void ScaTra::ScaTraTimIntElch::prepare_time_loop()
   Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
       "action", ScaTra::Action::check_scatra_element_parameter, eleparams);
 
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -1124,7 +1124,7 @@ ScaTra::ScaTraTimIntElch::evaluate_single_electrode_info_point(
     Core::LinAlg::SerialDenseVector elevector_dummy;
 
     // evaluate electrode kinetics point boundary conditions
-    const int error = element->Evaluate(condparams, *discret_, la, elematrix_dummy, elematrix_dummy,
+    const int error = element->evaluate(condparams, *discret_, la, elematrix_dummy, elematrix_dummy,
         *scalars, elevector_dummy, elevector_dummy);
 
     // safety check
@@ -2230,7 +2230,7 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
       compute_time_derivative();
 
       double targetcurrent =
-          problem_->FunctionById<Core::UTILS::FunctionOfTime>(curvenum - 1).Evaluate(time_);
+          problem_->FunctionById<Core::UTILS::FunctionOfTime>(curvenum - 1).evaluate(time_);
       double timefacrhs = 1.0 / residual_scaling();
 
       double currtangent_anode(0.0);
@@ -2725,7 +2725,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_electrode_boundary_kinetics_point_condit
       Core::LinAlg::SerialDenseVector elevector_dummy;
 
       // evaluate electrode kinetics point boundary conditions
-      const int error = element->Evaluate(condparams, *discret_, la, elematrix, elematrix_dummy,
+      const int error = element->evaluate(condparams, *discret_, la, elematrix, elematrix_dummy,
           elevector, elevector_dummy, elevector_dummy);
 
       // safety check
@@ -3301,7 +3301,7 @@ void ScaTra::ScaTraTimIntElch::reduce_dimension_null_space_blocks(
 double ScaTra::ScaTraTimIntElch::compute_temperature_from_function() const
 {
   return problem_->FunctionById<Core::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
-      .Evaluate(time_);
+      .evaluate(time_);
 }
 
 /*-----------------------------------------------------------------------------*

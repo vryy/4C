@@ -860,7 +860,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
           {
             if (variable_values_->find(node.variable_) == variable_values_->end())
             {
-              FOUR_C_THROW("variable or constant '%s' not given as input in Evaluate()",
+              FOUR_C_THROW("variable or constant '%s' not given as input in evaluate()",
                   node.variable_.c_str());
             }
             else

@@ -323,7 +323,7 @@ void Mat::Growth::EvaluateElastic(const Core::LinAlg::Matrix<3, 3>* defgrd,
     Core::LinAlg::Matrix<6, 6>* cmat, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
 {
-  Matelastic()->Evaluate(defgrd, glstrain, params, stress, cmat, gp, eleGID);
+  Matelastic()->evaluate(defgrd, glstrain, params, stress, cmat, gp, eleGID);
 }
 
 
@@ -445,7 +445,7 @@ Mat::GrowthVolumetric::GrowthVolumetric(Mat::PAR::Growth* params)
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthVolumetric::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::GrowthVolumetric::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -648,7 +648,7 @@ void Mat::GrowthVolumetric::EvaluateGrowth(double* theta, Core::LinAlg::Matrix<6
   double thetaold = ThetaOldAtGp(gp);
 
   Mat::Growth* matgrowth = this;
-  Parameter()->growthlaw_->Evaluate(theta, thetaold, dthetadC, *matgrowth, defgrd, glstrain,
+  Parameter()->growthlaw_->evaluate(theta, thetaold, dthetadC, *matgrowth, defgrd, glstrain,
       refdir_, curdir_, f_g_hist_, growthtrig_const_, params, gp, eleGID);
 }
 
@@ -670,7 +670,7 @@ void Mat::GrowthVolumetric::EvaluateNonLinMass(const Core::LinAlg::Matrix<3, 3>*
     double thetaold = ThetaOld()->at(gp);
 
     Mat::Growth* matgrowth = this;
-    Parameter()->growthlaw_->Evaluate(&theta, thetaold, linmass_disp, *matgrowth, defgrd, glstrain,
+    Parameter()->growthlaw_->evaluate(&theta, thetaold, linmass_disp, *matgrowth, defgrd, glstrain,
         refdir_, curdir_, f_g_hist_, growthtrig_const_, params, gp, eleGID);
 
     const double density_deriv_scale = Parameter()->growthlaw_->DensityDerivScale(theta);
@@ -731,7 +731,7 @@ void Mat::GrowthVolumetric::GetSAndCmatdach(const double theta,
 
   Core::LinAlg::Matrix<6, 1> Sdachvec(true);
   // elastic 2 PK stress and constitutive matrix
-  Matelastic()->Evaluate(&defgrddach, &glstraindachvec, params, &Sdachvec, cmatdach, gp, eleGID);
+  Matelastic()->evaluate(&defgrddach, &glstraindachvec, params, &Sdachvec, cmatdach, gp, eleGID);
 
   // calculate stress
   // 2PK stress S = F_g^-1 Sdach F_g^-T

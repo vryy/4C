@@ -33,7 +33,7 @@ namespace GEOMETRYPAIR
     Core::LinAlg::Matrix<1, element_type::n_nodes_ * element_type::n_val_, scalar_type> N(true);
 
     // Evaluate the shape function values
-    EvaluateShapeFunction<element_type>::Evaluate(N, xi, element_data.shape_function_data_);
+    EvaluateShapeFunction<element_type>::evaluate(N, xi, element_data.shape_function_data_);
 
     // Calculate the field function
     r.Clear();
@@ -126,7 +126,7 @@ namespace GEOMETRYPAIR
 
       // Calculate the normal as a interpolation of nodal normals
       Core::LinAlg::Matrix<1, surface::n_nodes_, typename T::scalar_type> N(true);
-      EvaluateShapeFunction<surface>::Evaluate(N, xi, element_data_surface.shape_function_data_);
+      EvaluateShapeFunction<surface>::evaluate(N, xi, element_data_surface.shape_function_data_);
       normal.Clear();
       for (unsigned int node = 0; node < surface::n_nodes_; node++)
         for (unsigned int dim = 0; dim < surface::spatial_dim_; dim++)

@@ -137,7 +137,7 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
-    aledis->Evaluate(params);
+    aledis->evaluate(params);
   }
   else  // ALE discretization already filled
   {

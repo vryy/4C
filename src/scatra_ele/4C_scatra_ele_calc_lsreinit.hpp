@@ -56,7 +56,7 @@ namespace Discret
           Core::Elements::Element* ele, Core::FE::Discretization& discretization) override;
 
       //! evaluate the element
-      int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      int evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

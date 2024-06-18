@@ -115,7 +115,7 @@ void fluid_ale_drt()
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
-    aledis->Evaluate(params);
+    aledis->evaluate(params);
   }
   else  // filled ale discretization
   {
@@ -170,7 +170,7 @@ void fluid_xfem_drt()
       // setup material in every ALE element
       Teuchos::ParameterList params;
       params.set<std::string>("action", "setup_material");
-      aledis->Evaluate(params);
+      aledis->evaluate(params);
     }
     else  // filled ale discretization
     {
@@ -263,7 +263,7 @@ void fluid_freesurf_drt()
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
-    aledis->Evaluate(params);
+    aledis->evaluate(params);
   }
   else  // filled ale discretization
   {
@@ -472,7 +472,7 @@ void fsi_ale_drt()
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
-    aledis->Evaluate(params);
+    aledis->evaluate(params);
   }
   else  // filled ale discretization (i.e. read from input file)
   {
@@ -827,7 +827,7 @@ void xfsi_drt()
       // setup material in every ALE element
       Teuchos::ParameterList params;
       params.set<std::string>("action", "setup_material");
-      aledis->Evaluate(params);
+      aledis->evaluate(params);
     }
     else  // ALE discretization already filled
     {
@@ -976,7 +976,7 @@ void xfpsi_drt()
       // setup material in every ALE element
       Teuchos::ParameterList params;
       params.set<std::string>("action", "setup_material");
-      aledis->Evaluate(params);
+      aledis->evaluate(params);
     }
     else  // ALE discretization already filled
     {

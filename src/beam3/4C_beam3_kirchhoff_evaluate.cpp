@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) meier 01/16|
  *----------------------------------------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Beam3k::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1,  // stiffness matrix
     Core::LinAlg::SerialDenseMatrix& elemat2,  // mass matrix
@@ -2138,7 +2138,7 @@ int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
       if (functnum > 0)
         functtimefac[i] = Global::Problem::Instance()
                               ->FunctionById<Core::UTILS::FunctionOfTime>(functnum - 1)
-                              .Evaluate(time);
+                              .evaluate(time);
 
       load_vector_neumann(i) *= functtimefac[i];
     }
@@ -2600,7 +2600,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_line_neumann_forces(
         functionfac =
             Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>((*function_numbers)[idof] - 1)
-                .Evaluate(X_ref.data(), time, idof);
+                .evaluate(X_ref.data(), time, idof);
       }
       else
         functionfac = 1.0;
@@ -3760,7 +3760,7 @@ void Discret::ELEMENTS::Beam3k::calc_stiff_contributions_ptc(
 //      matrix is calculated
 //      //correctly or not by means of a numerically approximated stiffness matrix. Uncomment this
 //      code block and copy
-//      //it to the marked place in the method Discret::ELEMENTS::Beam3k::Evaluate() on the top of
+//      //it to the marked place in the method Discret::ELEMENTS::Beam3k::evaluate() on the top of
 //      this file! if(Id() == 0) //limiting the following tests to certain element numbers
 //      {
 //

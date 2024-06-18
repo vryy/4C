@@ -108,7 +108,7 @@ void Adapter::FBIConstraintenforcer::Setup(Teuchos::RCP<Adapter::FSIStructureWra
 
 /*----------------------------------------------------------------------*/
 
-void Adapter::FBIConstraintenforcer::Evaluate()
+void Adapter::FBIConstraintenforcer::evaluate()
 {
   // We use the column vectors here, because currently the search is based on neighboring nodes,
   // but the element pairs are created using the elements needing all information on all their
@@ -137,7 +137,7 @@ void Adapter::FBIConstraintenforcer::Evaluate()
   create_pairs(pairids);
 
   // Create all needed matrix and vector contributions based on the current state
-  bridge_->Evaluate(discretizations_[0], discretizations_[1],
+  bridge_->evaluate(discretizations_[0], discretizations_[1],
       Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(fluid_, true)->Velnp(), structure_->Velnp());
 }
 
@@ -175,7 +175,7 @@ void Adapter::FBIConstraintenforcer::recompute_coupling_without_pair_creation()
   reset_all_pair_states();
 
   // Create all needed matrix and vector contributions based on the current state
-  bridge_->Evaluate(discretizations_[0], discretizations_[1],
+  bridge_->evaluate(discretizations_[0], discretizations_[1],
       Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(fluid_, true)->Velnp(), structure_->Velnp());
 };
 

@@ -202,7 +202,7 @@ namespace GEOMETRYPAIR
      * @param element_data_other (in) Degrees of freedom for the other geometry.
      * @param segments (out) Vector with the segments of this line-to-xxx pair.
      */
-    static void Evaluate(const pair_type* pair,
+    static void evaluate(const pair_type* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other,
         std::vector<LineSegment<scalar_type>>& segments);
@@ -268,7 +268,7 @@ namespace GEOMETRYPAIR
      * @param element_data_other (in) Degrees of freedom for the other geometry.
      * @param segments (out) Vector with the segments of this line to other geometry pair.
      */
-    static void Evaluate(const pair_type* pair,
+    static void evaluate(const pair_type* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other,
         std::vector<LineSegment<scalar_type>>& segments);

@@ -275,7 +275,7 @@ void Mat::Mixture::Update(Core::LinAlg::Matrix<3, 3> const& defgrd, const int gp
 }
 
 // Evaluates the material
-void Mat::Mixture::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::Mixture::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)

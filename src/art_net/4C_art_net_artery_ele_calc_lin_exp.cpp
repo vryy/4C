@@ -66,7 +66,7 @@ Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::Instance(
 
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::Evaluate(Artery* ele,
+int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -1497,7 +1497,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* e
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                       .Evaluate(time);
+                       .evaluate(time);
       }
 
 

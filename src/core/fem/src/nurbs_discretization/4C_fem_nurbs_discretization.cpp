@@ -781,7 +781,7 @@ void Core::FE::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
                 .evaluate_time_derivative(position.values(), time, deg, rr);
 
         functfac = function_manager.FunctionById<Core::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
-                       .Evaluate(position.values(), time, rr);
+                       .evaluate(position.values(), time, rr);
       }
 
       // apply factors to Dirichlet value

@@ -148,7 +148,7 @@ namespace Mat
     void Update() override;
 
     /// Evaluate material
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,      ///< deformation gradient
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,      ///< deformation gradient
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain,  ///< green lagrange strain
         Teuchos::ParameterList& params,                  ///< parameter list for communication
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,  ///< 2nd PK-stress

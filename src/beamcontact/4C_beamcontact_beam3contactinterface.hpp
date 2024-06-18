@@ -179,7 +179,7 @@ namespace CONTACT
     /*!
     \brief Evaluate this contact element pair
     */
-    virtual bool Evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint,
+    virtual bool evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint,
         const double& pp,
         std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
         Teuchos::ParameterList& timeintparams, bool fdcheck = false) = 0;

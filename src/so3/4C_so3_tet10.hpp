@@ -276,7 +276,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(
+      int evaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
           Core::FE::Discretization& discretization,  ///< pointer to discretization for de-assembly

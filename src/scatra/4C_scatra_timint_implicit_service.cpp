@@ -123,7 +123,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::CalcFluxInDomain()
 
   // evaluate flux vector field inside the whole computational domain (e.g., for visualization of
   // particle path lines)
-  discret_->Evaluate(params, Teuchos::null, Teuchos::null, Teuchos::rcp((*flux)(0), false),
+  discret_->evaluate(params, Teuchos::null, Teuchos::null, Teuchos::rcp((*flux)(0), false),
       Teuchos::rcp((*flux)(1), false), Teuchos::rcp((*flux)(2), false));
 
   if (calcflux_domain_lumped_)
@@ -140,7 +140,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::CalcFluxInDomain()
         Teuchos::rcp(new Core::LinAlg::IntSerialDenseVector(NumDofPerNode()));
     dofids->putScalar(1);  // integrate shape functions for all dofs
     params.set("dofids", dofids);
-    discret_->Evaluate(
+    discret_->evaluate(
         params, Teuchos::null, Teuchos::null, integratedshapefcts, Teuchos::null, Teuchos::null);
 
     // insert values into final flux vector for visualization
@@ -163,7 +163,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::CalcFluxInDomain()
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(dofrowmap, 27, false));
 
     // call loop over elements
-    discret_->Evaluate(params, massmatrix, Teuchos::null);
+    discret_->evaluate(params, massmatrix, Teuchos::null);
 
     // finalize global mass matrix
     massmatrix->Complete();
@@ -250,7 +250,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
       {
         // call standard loop over elements
-        discret_->Evaluate(
+        discret_->evaluate(
             eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
       }
 
@@ -620,7 +620,7 @@ void ScaTra::ScaTraTimIntImpl::calc_initial_time_derivative()
   add_time_integration_specific_vectors();
 
   // modify global system of equations as explained above
-  discret_->Evaluate(eleparams, sysmat_, residual_);
+  discret_->evaluate(eleparams, sysmat_, residual_);
 
   // apply condensation to global system of equations if necessary
   strategy_->CondenseMatAndRHS(sysmat_, residual_, true);
@@ -1294,7 +1294,7 @@ void ScaTra::ScaTraTimIntImpl::OutputIntegrReac(const int num)
         Teuchos::rcp(new std::vector<double>(NumScal(), 0.0));
     eleparams.set<Teuchos::RCP<std::vector<double>>>("local reaction integral", myreacnp);
 
-    discret_->Evaluate(eleparams);
+    discret_->evaluate(eleparams);
 
     myreacnp = eleparams.get<Teuchos::RCP<std::vector<double>>>("local reaction integral");
     // global integral of reaction terms
@@ -1376,7 +1376,7 @@ void ScaTra::ScaTraTimIntImpl::av_m3_preparation()
   add_time_integration_specific_vectors();
 
   // call loop over elements
-  discret_->Evaluate(eleparams, sysmat_sd_, residual_);
+  discret_->evaluate(eleparams, sysmat_sd_, residual_);
 
   // finalize the normalized all-scale subgrid-diffusivity matrix
   sysmat_sd_->Complete();
@@ -1628,7 +1628,7 @@ void ScaTra::ScaTraTimIntImpl::recompute_mean_csgs_b()
       ele->LocationVector(*discret_, la, false);
 
       // call the element evaluate method to integrate functions
-      int err = ele->Evaluate(myparams, *discret_, la, emat1, emat2, evec1, evec2, evec2);
+      int err = ele->evaluate(myparams, *discret_, la, emat1, emat2, evec1, evec2, evec2);
       if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", myrank_, ele->Id(), err);
 
       // get contributions of this element and add it up
@@ -1664,7 +1664,7 @@ void ScaTra::ScaTraTimIntImpl::recompute_mean_csgs_b()
         "action", ScaTra::Action::set_mean_Cai, myparams);
     myparams.set<double>("meanCai", meanCai);
     // call standard loop over elements
-    discret_->Evaluate(
+    discret_->evaluate(
         myparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 }
@@ -2408,7 +2408,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_initial_time_derivative(
   // add state vectors according to time integration scheme
   add_time_integration_specific_vectors();
   // modify global system of equations as explained above
-  discret_->Evaluate(eleparams, matrix, rhs);
+  discret_->evaluate(eleparams, matrix, rhs);
 
   // finalize assembly of global mass matrix
   matrix->Complete();

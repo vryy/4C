@@ -209,7 +209,7 @@ void FLD::TimIntLoma::set_element_custom_parameter()
       params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   return;
 }

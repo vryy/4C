@@ -179,7 +179,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<Core::LinAlg::Sparse
         elevector3.size(eledim);
         elematrix1.shape(eledim, eledim);
 
-        int err = curr.second->Evaluate(
+        int err = curr.second->evaluate(
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
         if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -247,21 +247,21 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<Core::LinAlg::Sparse
                   ? (*springstiff)[dof] *
                         Global::Problem::Instance()
                             ->FunctionById<Core::UTILS::FunctionOfTime>((*numfuncstiff)[dof] - 1)
-                            .Evaluate(total_time)
+                            .evaluate(total_time)
                   : (*springstiff)[dof];
           const double dof_viscosity =
               (*numfuncvisco)[dof] != 0
                   ? (*dashpotvisc)[dof] *
                         Global::Problem::Instance()
                             ->FunctionById<Core::UTILS::FunctionOfTime>((*numfuncvisco)[dof] - 1)
-                            .Evaluate(total_time)
+                            .evaluate(total_time)
                   : (*dashpotvisc)[dof];
           const double dof_disploffset =
               (*numfuncdisploffset)[dof] != 0
                   ? (*disploffset)[dof] * Global::Problem::Instance()
                                               ->FunctionById<Core::UTILS::FunctionOfTime>(
                                                   (*numfuncdisploffset)[dof] - 1)
-                                              .Evaluate(total_time)
+                                              .evaluate(total_time)
                   : (*disploffset)[dof];
 
           // displacement related forces and derivatives
@@ -278,7 +278,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<Core::LinAlg::Sparse
             force_disp =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>((*numfuncnonlinstiff)[dof] - 1)
-                    .Evaluate(displ.data(), total_time, 0);
+                    .evaluate(displ.data(), total_time, 0);
 
             force_disp_deriv = (Global::Problem::Instance()
                                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
@@ -805,7 +805,7 @@ void CONSTRAINTS::SpringDashpot::get_area(
 
     eparams.set("action", "calc_struct_area");
     eparams.set("area", 0.0);
-    element->Evaluate(eparams, *(actdisc_), lm, dummat, dummat, dumvec, dumvec, dumvec);
+    element->evaluate(eparams, *(actdisc_), lm, dummat, dummat, dumvec, dumvec, dumvec);
 
     Core::FE::CellType shape = element->Shape();
 

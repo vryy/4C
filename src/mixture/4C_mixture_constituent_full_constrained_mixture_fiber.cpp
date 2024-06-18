@@ -354,7 +354,7 @@ double MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_initial_
   return Global::Problem::Instance()
       ->FunctionById<Core::UTILS::FunctionOfTime>(
           params_->initial_deposition_stretch_timefunc_num_ - 1)
-      .Evaluate(time);
+      .evaluate(time);
 }
 
 double MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_lambdaf(

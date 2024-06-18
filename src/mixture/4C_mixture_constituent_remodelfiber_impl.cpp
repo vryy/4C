@@ -332,7 +332,7 @@ double MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate_deposition_stretch(
 
   return Global::Problem::Instance()
       ->FunctionById<Core::UTILS::FunctionOfTime>(params_->deposition_stretch_timefunc_num_ - 1)
-      .Evaluate(time);
+      .evaluate(time);
 }
 void MIXTURE::MixtureConstituentRemodelFiberImpl::update_homeostatic_values(
     const Teuchos::ParameterList& params, const int eleGID)

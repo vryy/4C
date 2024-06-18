@@ -105,7 +105,7 @@ void ScaTra::TimIntOneStepTheta::Setup()
         "action", ScaTra::Action::micro_scale_initialize, eleparams);
 
     // loop over macro-scale elements
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 }
@@ -132,7 +132,7 @@ void ScaTra::TimIntOneStepTheta::set_element_time_parameter(bool forcedincrement
   eleparams.set<double>("alpha_F", 1.0);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -301,7 +301,7 @@ void ScaTra::TimIntOneStepTheta::Update()
         "action", ScaTra::Action::micro_scale_update, eleparams);
 
     // loop over macro-scale elements
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 }
@@ -369,7 +369,7 @@ void ScaTra::TimIntOneStepTheta::read_restart(
         "action", ScaTra::Action::micro_scale_read_restart, eleparams);
 
     // loop over macro-scale elements
-    discret_->Evaluate(eleparams);
+    discret_->evaluate(eleparams);
   }
 }
 

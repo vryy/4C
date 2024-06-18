@@ -231,7 +231,7 @@ namespace Mat
     void Update() override;
 
     //! evaluate material law
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>*
+    void evaluate(const Core::LinAlg::Matrix<3, 3>*
                       defgrd,  //!< input deformation gradient for multiplicative sp
         const Core::LinAlg::Matrix<6, 1>*
             glstrain,                        //!< input Green-Lagrange strain (redundant with defo

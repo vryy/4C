@@ -254,7 +254,7 @@ double Mat::LinElast1DGrowth::evaluate_elastic_energy(double def_grad, double co
  *----------------------------------------------------------------------*/
 double Mat::LinElast1DGrowth::get_growth_factor_conc_prop(const double conc) const
 {
-  return Core::FE::Polynomial(growth_params_->poly_params_).Evaluate(conc - growth_params_->c0_);
+  return Core::FE::Polynomial(growth_params_->poly_params_).evaluate(conc - growth_params_->c0_);
 }
 
 /*----------------------------------------------------------------------*
@@ -263,7 +263,7 @@ double Mat::LinElast1DGrowth::get_growth_factor_ao_s_prop(
     const double conc, const double def_grad) const
 {
   return Core::FE::Polynomial(growth_params_->poly_params_)
-      .Evaluate(conc * def_grad - growth_params_->c0_);
+      .evaluate(conc * def_grad - growth_params_->c0_);
 }
 
 /*----------------------------------------------------------------------*

@@ -188,7 +188,7 @@ void FLD::TimIntOneStepTheta::set_element_time_parameter()
   eleparams.set<bool>("ost new", params_->get<bool>("ost new"));
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 

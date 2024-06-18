@@ -1073,7 +1073,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
   {
     functfac = Global::Problem::Instance()
                    ->FunctionById<Core::UTILS::FunctionOfTime>(functnum - 1)
-                   .Evaluate(time);
+                   .evaluate(time);
     flowrate = val * functfac;
   }
 

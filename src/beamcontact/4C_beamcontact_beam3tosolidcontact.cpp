@@ -88,7 +88,7 @@ CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Beam3tosoli
  | Evaluate the element (public)                                        |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evaluate(
+bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evaluate(
     Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp)
 {
   const int dim1 = 3 * numnodes * numnodalvalues;

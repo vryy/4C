@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -471,14 +471,14 @@ int Discret::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     case Core::Elements::struct_calc_recover:
-      SoHex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+      SoHex8::evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
       break;
     case Core::Elements::struct_calc_energy:
     {
       if (eastype_ == Discret::ELEMENTS::SoHex8::soh8_easmild)
       {
-        SoHex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+        SoHex8::evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
             elevec2_epetra, elevec3_epetra);
         return 0;
       }
@@ -517,7 +517,7 @@ int Discret::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_mass_volume:
     case Core::Elements::analyse_jacobian_determinant:
     {
-      SoHex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+      SoHex8::evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
       break;
     }
@@ -1021,7 +1021,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
-    SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses if necessary

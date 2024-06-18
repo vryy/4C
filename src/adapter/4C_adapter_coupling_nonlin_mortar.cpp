@@ -865,7 +865,7 @@ void Adapter::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
   interface_->set_element_areas();
 
   // call interface evaluate (d,m,gap...)
-  interface_->Evaluate();
+  interface_->evaluate();
 
   // assemble mortar matrices and lin.
   interface_->AssembleDM(*D_, *M_);
@@ -964,7 +964,7 @@ void Adapter::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
   interface_->set_element_areas();
 
   // call interface evaluate (d,m,gap...)
-  interface_->Evaluate();
+  interface_->evaluate();
 
   // assemble mortar matrices and lin.
   interface_->AssembleDM(*D_, *M_);
@@ -1010,7 +1010,7 @@ void Adapter::CouplingNonLinMortar::EvaluateSliding(const std::string& statename
   interface_->BuildActiveSet(true);
 
   // call interface evaluate (d,m,gap...)
-  interface_->Evaluate();
+  interface_->evaluate();
 
   // assemble mortar matrices and lin.
   interface_->AssembleDM(*D_, *M_);

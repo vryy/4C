@@ -221,7 +221,7 @@ namespace FLD
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) override
+    void evaluate(Teuchos::RCP<const Epetra_Vector> vel) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }

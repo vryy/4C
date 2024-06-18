@@ -81,7 +81,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::setup_calc(
  * Evaluate element                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(
+int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
@@ -230,7 +230,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neu
           // evaluate function at current Gauss point (provide always 3D coordinates!)
           functfac = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                         .Evaluate(coordgpref, time, dof);
+                         .evaluate(coordgpref, time, dof);
         }
         else
           functfac = 1.;

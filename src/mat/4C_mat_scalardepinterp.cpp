@@ -115,7 +115,7 @@ void Mat::ScalarDepInterp::Setup(int numgp, Input::LineDefinition* linedef)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ScalarDepInterp::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -124,14 +124,14 @@ void Mat::ScalarDepInterp::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Core::LinAlg::Matrix<6, 1> stress_lambda_zero = *stress;
   Core::LinAlg::Matrix<6, 6> cmat_zero_conc = *cmat;
 
-  lambda_zero_mat_->Evaluate(
+  lambda_zero_mat_->evaluate(
       defgrd, glstrain, params, &stress_lambda_zero, &cmat_zero_conc, gp, eleGID);
 
   // evaluate elastic material corresponding to infinite concentration
   Core::LinAlg::Matrix<6, 1> stress_lambda_unit = *stress;
   Core::LinAlg::Matrix<6, 6> cmat_infty_conc = *cmat;
 
-  lambda_unit_mat_->Evaluate(
+  lambda_unit_mat_->evaluate(
       defgrd, glstrain, params, &stress_lambda_unit, &cmat_infty_conc, gp, eleGID);
 
   double lambda;

@@ -1121,6 +1121,6 @@ void Mat::InelasticDefgradTimeFunct::pre_evaluate(Teuchos::ParameterList& params
   auto& funct = Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(
       Parameter()->FunctNum() - 1);
   const double time = params.get<double>("total time");
-  funct_value_ = funct.Evaluate(time);
+  funct_value_ = funct.evaluate(time);
 }
 FOUR_C_NAMESPACE_CLOSE

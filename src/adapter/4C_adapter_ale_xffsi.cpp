@@ -39,9 +39,9 @@ Teuchos::RCP<const Core::LinAlg::MapExtractor> Adapter::AleXFFsiWrapper::GetDBCM
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Adapter::AleXFFsiWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
+void Adapter::AleXFFsiWrapper::evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
-  AleFsiWrapper::Evaluate(stepinc, ALE::UTILS::MapExtractor::dbc_set_x_ff);
+  AleFsiWrapper::evaluate(stepinc, ALE::UTILS::MapExtractor::dbc_set_x_ff);
 
   // set dispnp_ of xfem dofs to dispn_
   xff_interface_->InsertXFluidFluidCondVector(
@@ -52,7 +52,7 @@ void Adapter::AleXFFsiWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> stepin
 /*----------------------------------------------------------------------------*/
 int Adapter::AleXFFsiWrapper::Solve()
 {
-  AleFsiWrapper::Evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_x_fsi);
+  AleFsiWrapper::evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_x_fsi);
 
   int err = AleFsiWrapper::Solve();
 

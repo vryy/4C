@@ -50,7 +50,7 @@ void PARTICLEALGORITHM::GravityHandler::get_gravity_acceleration(
   {
     const double fac = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfTime>(gravityrampfctnumber_ - 1)
-                           .Evaluate(time);
+                           .evaluate(time);
 
     for (int dim = 0; dim < 3; ++dim) scaled_gravity[dim] *= fac;
   }

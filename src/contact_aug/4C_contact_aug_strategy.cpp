@@ -653,7 +653,7 @@ void CONTACT::Aug::Strategy::eval_interface(CONTACT::Aug::Interface& interface, 
     case Mortar::eval_force_stiff:
     {
       // evaluate averaged weighted gap
-      interface.Evaluate(rriter, cparams_ptr);
+      interface.evaluate(rriter, cparams_ptr);
 
       // evaluate remaining entities and linearization
       interface.RedEvaluate(cparams_ptr);

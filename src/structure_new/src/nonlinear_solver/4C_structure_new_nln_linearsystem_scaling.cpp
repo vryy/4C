@@ -53,7 +53,7 @@ STR::Nln::LinSystem::StcScaling::StcScaling(
   p.set<int>("stc_scaling", stcscale_);
   p.set("stc_layer", 1);
 
-  discret->Evaluate(p, stcmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret->evaluate(p, stcmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   stcmat_->Complete();
 
@@ -69,7 +69,7 @@ STR::Nln::LinSystem::StcScaling::StcScaling(
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*GState.dof_row_map_view(), 81, true, true));
     tmpstcmat->Zero();
 
-    discret->Evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret->evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     tmpstcmat->Complete();
 
     stcmat_ = MLMultiply(*tmpstcmat, *stcmat_, true, false, true);

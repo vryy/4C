@@ -382,7 +382,7 @@ namespace Immersed
     ///////  so make sure, that each proc owns at least one target element and/or
     ///////  it is also to be assured by external measures, that each proc
     ///////  reenters this routine until the last element on every proc is
-    ///////  evaluated (e.g. dummy call of Evaluate(...)).
+    ///////  evaluated (e.g. dummy call of evaluate(...)).
     ///////
     /////////////////////////////////////////////////////////////////////////////////
 
@@ -458,7 +458,7 @@ namespace Immersed
     Core::Elements::Element::LocationArray targetla(1);
     targetele.LocationVector(*targetdis, targetla, false);
 
-    targetele.Evaluate(params, *targetdis, targetla, dummy1, dummy2, *normal_at_targetpoint,
+    targetele.evaluate(params, *targetdis, targetla, dummy1, dummy2, *normal_at_targetpoint,
         *targetxi_dense, dummy3);
     normal_at_targetpoint->scale(1.0 / (Core::LinAlg::Norm2(*normal_at_targetpoint)));
     normal_vec[0] = (*normal_at_targetpoint)(0);
@@ -760,7 +760,7 @@ namespace Immersed
               // fill locationarray
               Core::Elements::Element::LocationArray sourcela(1);
               sourceele->LocationVector(*sourcedis, sourcela, false);
-              sourceele->Evaluate(
+              sourceele->evaluate(
                   params, *sourcedis, sourcela, dummy1, dummy2, *vectofill, *xi_dense, dummy3);
               matched = 1;
 
@@ -1104,7 +1104,7 @@ namespace Immersed
 
               if (action != "none")
                 // evaluate and perform action handed in to this function
-                sourceele->Evaluate(
+                sourceele->evaluate(
                     params, *sourcedis, la, dummy1, dummy2, *vectofill, *xi_dense, dummy3);
               else
               {

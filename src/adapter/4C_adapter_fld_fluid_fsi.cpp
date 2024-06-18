@@ -459,12 +459,12 @@ void Adapter::FluidFSI::ProjVelToDivZero()
     // Reshape element matrices and vectors and initialize to zero
     elevector1.size(eledim);
 
-    // set action in order to calculate the integrated divergence operator via an Evaluate()-call
+    // set action in order to calculate the integrated divergence operator via an evaluate()-call
     Teuchos::ParameterList params;
     params.set<int>("action", FLD::calc_divop);
 
     // call the element specific evaluate method
-    actele->Evaluate(
+    actele->evaluate(
         params, *discretization(), lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
 
     // assembly

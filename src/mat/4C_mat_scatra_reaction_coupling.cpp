@@ -692,7 +692,7 @@ double Mat::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_term_internal
   // evaluate reaction term
   double bftfac = Global::Problem::Instance()
                       ->FunctionById<Core::UTILS::FunctionOfAnything>(round(couprole[k]) - 1)
-                      .Evaluate(variables_for_parser_evaluation, constants, 0);
+                      .evaluate(variables_for_parser_evaluation, constants, 0);
 
   return scale_reac * bftfac;
 }

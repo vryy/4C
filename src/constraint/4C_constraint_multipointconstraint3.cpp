@@ -161,7 +161,7 @@ void CONSTRAINTS::MPConstraint3::Initialize(
 |(public)                                                        tk 07/08|
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3::Evaluate(Teuchos::ParameterList& params,
+void CONSTRAINTS::MPConstraint3::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -420,7 +420,7 @@ void CONSTRAINTS::MPConstraint3::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
       params.set("ConditionID", eid);
 
       // call the element evaluate method
-      int err = actele->Evaluate(
+      int err = actele->evaluate(
           params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", disc->Comm().MyPID(), eid, err);
 
@@ -461,7 +461,7 @@ void CONSTRAINTS::MPConstraint3::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
       if (curvenum >= 0 && usetime)
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                       .Evaluate(time);
+                       .evaluate(time);
       Teuchos::RCP<Epetra_Vector> timefact =
           params.get<Teuchos::RCP<Epetra_Vector>>("vector curve factors");
       timefact->ReplaceGlobalValues(1, &curvefac, &gindex);
@@ -513,7 +513,7 @@ void CONSTRAINTS::MPConstraint3::initialize_constraint(Teuchos::RCP<Core::FE::Di
     elevector2.size(eledim);
     elevector3.size(1);
     // call the element evaluate method
-    int err = actele->Evaluate(
+    int err = actele->evaluate(
         params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
     if (err)
       FOUR_C_THROW("Proc %d: Element %d returned err=%d", disc->Comm().MyPID(), actele->Id(), err);
@@ -535,7 +535,7 @@ void CONSTRAINTS::MPConstraint3::initialize_constraint(Teuchos::RCP<Core::FE::Di
     if (time < 0.0) usetime = false;
     if (curvenum >= 0 && usetime)
       curvefac =
-          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).Evaluate(
+          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).evaluate(
               time);
 
     // Get ConditionID of current condition if defined and write value in parameterlist

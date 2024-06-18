@@ -92,7 +92,7 @@ namespace Mat
      * @param[in] detF       determinant of deformation gradient of macro dis at current Gauss point
      * @param[in] solve      flag indicating whether micro-scale problem should be solved
      */
-    void Evaluate(const int gp_id, const std::vector<double>& phinp_macro, double& q_micro,
+    void evaluate(const int gp_id, const std::vector<double>& phinp_macro, double& q_micro,
         std::vector<double>& dq_dphi_micro, double detF, const bool solve = true) const;
 
     /*!

@@ -115,7 +115,7 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_parameters(
           eleparams.sublist("REINITIALIZATION").get<std::string>("DEFINITION_ARTDIFFREINIT"));
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   return;
@@ -143,7 +143,7 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_time_parameters()
   eleparams.set<double>("alpha_F", 1.0);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   return;
@@ -429,7 +429,7 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
         }
       }
       // call loop over elements
-      discret_->Evaluate(eleparams, sysmat_, residual_);
+      discret_->evaluate(eleparams, sysmat_, residual_);
       discret_->ClearState();
 
       // finalize the complete matrix
@@ -509,7 +509,7 @@ void ScaTra::LevelSetAlgorithm::correction_reinit()
 
 
   // call loop over elements
-  discret_->Evaluate(eleparams, sysmat_, residual_);
+  discret_->evaluate(eleparams, sysmat_, residual_);
   discret_->ClearState();
 
   // residual_->Print(std::cout);

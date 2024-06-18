@@ -137,7 +137,7 @@ double Mat::Newman::compute_transference_number(const double cint) const
   else
     trans = Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfTime>(trans_nr_curve() - 1)
-                .Evaluate(cint);
+                .evaluate(cint);
 
   return trans;
 }
@@ -174,7 +174,7 @@ double Mat::Newman::ComputeThermFac(const double cint) const
   else
     therm = Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfTime>(therm_fac_curve() - 1)
-                .Evaluate(cint);
+                .evaluate(cint);
 
   return therm;
 }

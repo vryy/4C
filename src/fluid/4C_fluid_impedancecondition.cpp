@@ -355,7 +355,7 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
   {
     pressure = Global::Problem::Instance()
                    ->FunctionById<Core::UTILS::FunctionOfTime>(functnum_ - 1)
-                   .Evaluate(time);
+                   .evaluate(time);
     Q_np_fac = 0.0;
   }
   else

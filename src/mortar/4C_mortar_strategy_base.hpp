@@ -268,7 +268,7 @@ namespace Mortar
         Core::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart = false) const = 0;
-    virtual void Evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    virtual void evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void EvaluateMeshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;

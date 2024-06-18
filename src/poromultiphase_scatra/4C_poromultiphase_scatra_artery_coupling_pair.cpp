@@ -882,7 +882,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distypeArt, Core::FE::CellType distypeCont, int dim>
 double PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::Evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
+    dim>::evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
     Core::LinAlg::SerialDenseVector* forcevec2, Core::LinAlg::SerialDenseMatrix* stiffmat11,
     Core::LinAlg::SerialDenseMatrix* stiffmat12, Core::LinAlg::SerialDenseMatrix* stiffmat21,
     Core::LinAlg::SerialDenseMatrix* stiffmat22, Core::LinAlg::SerialDenseMatrix* D_ele,
@@ -1935,7 +1935,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   set_fluid_values_as_variables(variables, artpressnpAtGP);
 
   // evaluate the diameter at GP by evaluating the function
-  arterydiam_at_gp_ = artdiam_funct_->Evaluate(variables, constants, 0);
+  arterydiam_at_gp_ = artdiam_funct_->evaluate(variables, constants, 0);
 
   // derivatives and linearizations are so far only calculated for coupltype porofluid
   if (coupltype_ == type_porofluid)
@@ -2362,7 +2362,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       variables.push_back(std::pair<std::string, double>("D", arterydiam_at_gp_));
 
       // evaluate the reaction term
-      functval = funct.Evaluate(variables, constants, 0);
+      functval = funct.evaluate(variables, constants, 0);
       // evaluate derivatives
       std::vector<double> curderivs(funct.EvaluateDerivative(variables, constants, 0));
 
@@ -2386,7 +2386,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       set_fluid_values_as_constants(constants, artpressnpAtGP);
 
       // evaluate the reaction term
-      functval = funct.Evaluate(variables, constants, 0);
+      functval = funct.evaluate(variables, constants, 0);
       // evaluate derivatives
       std::vector<double> curderivs(funct.EvaluateDerivative(variables, constants, 0));
 

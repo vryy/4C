@@ -164,7 +164,7 @@ void PoroMultiPhaseScaTra::TumorGrowthLawHeaviside<dim>::CheckOrder(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-double PoroMultiPhaseScaTra::TumorGrowthLawHeaviside<dim>::Evaluate(
+double PoroMultiPhaseScaTra::TumorGrowthLawHeaviside<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
@@ -275,7 +275,7 @@ void PoroMultiPhaseScaTra::NecrosisLawHeaviside<dim>::CheckOrder(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-double PoroMultiPhaseScaTra::NecrosisLawHeaviside<dim>::Evaluate(
+double PoroMultiPhaseScaTra::NecrosisLawHeaviside<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
@@ -410,7 +410,7 @@ void PoroMultiPhaseScaTra::OxygenConsumptionLawHeaviside<dim>::CheckOrder(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-double PoroMultiPhaseScaTra::OxygenConsumptionLawHeaviside<dim>::Evaluate(
+double PoroMultiPhaseScaTra::OxygenConsumptionLawHeaviside<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
@@ -552,7 +552,7 @@ void PoroMultiPhaseScaTra::TumorGrowthLawHeavisideOxy<dim>::CheckOrder(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-double PoroMultiPhaseScaTra::TumorGrowthLawHeavisideOxy<dim>::Evaluate(
+double PoroMultiPhaseScaTra::TumorGrowthLawHeavisideOxy<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
@@ -689,7 +689,7 @@ void PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecro<dim>::CheckOrder(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-double PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecro<dim>::Evaluate(
+double PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecro<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
@@ -831,7 +831,7 @@ void PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>::CheckOrder(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-double PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>::Evaluate(
+double PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
@@ -972,7 +972,7 @@ void PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>::CheckOrder(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-double PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>::Evaluate(
+double PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
@@ -1100,7 +1100,7 @@ void PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>::CheckOrder(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-double PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>::Evaluate(
+double PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
@@ -1281,7 +1281,7 @@ void PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>::CheckOrder(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-double PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>::Evaluate(
+double PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {

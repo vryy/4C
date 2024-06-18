@@ -682,7 +682,7 @@ void PoroElast::MonolithicSplitNoPenetration::read_restart(const int step)
     // call an additional evaluate to get the old D matrix
     SetupSystem();
     // call evaluate to recalculate D matrix
-    Evaluate(zeros_, false);
+    evaluate(zeros_, false);
 
     // copy D matrix from current time step to old D matrix
     k_dn_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(

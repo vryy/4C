@@ -831,7 +831,7 @@ namespace STR
     }
 
     //! Evaluate routine for coupled problems with monolithic approach
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override
+    void evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override
     {
       update_iter_incrementally(disiterinc);
 

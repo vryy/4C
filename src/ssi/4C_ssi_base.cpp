@@ -155,7 +155,7 @@ void SSI::SSIBase::Setup()
       temperature_vector_->PutScalar(
           Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
-              .Evaluate(Time()));
+              .evaluate(Time()));
 
       ssicoupling_->SetTemperatureField(
           *Global::Problem::Instance()->GetDis("structure"), temperature_vector_);
@@ -560,7 +560,7 @@ void SSI::SSIBase::evaluate_and_set_temperature_field()
     const double temperature =
         Global::Problem::Instance()
             ->FunctionById<Core::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
-            .Evaluate(Time());
+            .evaluate(Time());
     temperature_vector_->PutScalar(temperature);
 
     // set temperature vector to structure discretization

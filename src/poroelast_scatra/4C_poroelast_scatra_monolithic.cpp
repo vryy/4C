@@ -223,7 +223,7 @@ void PoroElastScaTra::PoroScatraMono::Solve()
     // 1.) Update(iterinc_),
     // 2.) evaluate_force_stiff_residual(),
     // 3.) prepare_system_for_newton_solve()
-    Evaluate(iterinc_);
+    evaluate(iterinc_);
 
     // check whether we have a sanely filled tangent matrix
     if (not systemmatrix_->Filled())
@@ -242,7 +242,7 @@ void PoroElastScaTra::PoroScatraMono::Solve()
     if ((not Converged()) or combincfres_ == Inpar::PoroElast::bop_or)
     {
       // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
-      // is done in prepare_system_for_newton_solve() within Evaluate(iterinc_)
+      // is done in prepare_system_for_newton_solve() within evaluate(iterinc_)
       linear_solve();
       // cout << "  time for Evaluate linear_solve: " << timer.totalElapsedTime(true) << "\n";
       // timer.reset();
@@ -281,7 +281,7 @@ void PoroElastScaTra::PoroScatraMono::Solve()
 /*----------------------------------------------------------------------*
  | evaluate the single fields                              vuong 01/12   |
  *----------------------------------------------------------------------*/
-void PoroElastScaTra::PoroScatraMono::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
+void PoroElastScaTra::PoroScatraMono::evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroScatraMono::Monolithic::Evaluate");
 
@@ -314,7 +314,7 @@ void PoroElastScaTra::PoroScatraMono::Evaluate(Teuchos::RCP<const Epetra_Vector>
   SetScatraSolution();
 
   // access poro problem to build poro-poro block
-  poro_field()->Evaluate(porostructinc, porofluidinc, iter_ == 1);
+  poro_field()->evaluate(porostructinc, porofluidinc, iter_ == 1);
 
   /// scatra field
 
@@ -1093,7 +1093,7 @@ void PoroElastScaTra::PoroScatraMono::evaluate_od_block_mat_poro()
   // evaluate the fluid-mechanical system matrix on the fluid element
   poro_field()->fluid_field()->discretization()->evaluate_condition(
       fparams, fluidstrategy, "PoroCoupling");
-  // poro_field()->fluid_field()->discretization()->Evaluate( fparams, fluidstrategy );
+  // poro_field()->fluid_field()->discretization()->evaluate( fparams, fluidstrategy );
 
   porofluiddis->ClearState(true);
 
@@ -1129,7 +1129,7 @@ void PoroElastScaTra::PoroScatraMono::evaluate_od_block_mat_poro()
   // evaluate the mechanical-fluid system matrix on the structural element
   poro_field()->structure_field()->discretization()->evaluate_condition(
       sparams, structuralstrategy, "PoroCoupling");
-  // structure_field()->discretization()->Evaluate( sparams, structuralstrategy);
+  // structure_field()->discretization()->evaluate( sparams, structuralstrategy);
   poro_field()->structure_field()->discretization()->ClearState(true);
 
   return;
@@ -1166,7 +1166,7 @@ void PoroElastScaTra::PoroScatraMono::evaluate_od_block_mat_scatra()
   // evaluate the mechanical-fluid system matrix on the structural element
   ScaTraField()->discretization()->evaluate_condition(
       sparams_struct, scatrastrategy_struct, "PoroCoupling");
-  // structure_field()->discretization()->Evaluate( sparams, structuralstrategy);
+  // structure_field()->discretization()->evaluate( sparams, structuralstrategy);
 
   ScaTraField()->discretization()->ClearState();
   // FOUR_C_THROW("stop");
@@ -1199,7 +1199,7 @@ void PoroElastScaTra::PoroScatraMono::evaluate_od_block_mat_scatra()
   // evaluate the mechanical-fluid system matrix on the structural element
   ScaTraField()->discretization()->evaluate_condition(
       sparams_fluid, scatrastrategy_fluid, "PoroCoupling");
-  // structure_field()->discretization()->Evaluate( sparams, structuralstrategy);
+  // structure_field()->discretization()->evaluate( sparams, structuralstrategy);
   ScaTraField()->discretization()->ClearState();
 
   return;
@@ -1267,7 +1267,7 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
       std::cout << "\n******************" << spaltenr + 1 << ". Spalte!!***************"
                 << std::endl;
 
-    Evaluate(iterinc);
+    evaluate(iterinc);
     setup_rhs();
 
     rhs_copy->Update(1.0, *rhs_, 0.0);
@@ -1331,7 +1331,7 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
                 << std::endl;
   }
 
-  Evaluate(iterinc);
+  evaluate(iterinc);
   setup_rhs();
 
   stiff_approx->FillComplete();

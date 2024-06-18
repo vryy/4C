@@ -554,9 +554,9 @@ void CONTACT::PenaltyStrategy::InitializeUzawa(
   // now redo Initialize()
   Initialize();
 
-  // and finally redo Evaluate()
+  // and finally redo evaluate()
   Teuchos::RCP<Epetra_Vector> nullvec = Teuchos::null;
-  Evaluate(kteff, feff, nullvec);
+  evaluate(kteff, feff, nullvec);
 
   // complete stiffness matrix
   kteff->Complete();

@@ -552,7 +552,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
             // solve micro scale
             std::vector<double> dummy(1, 0.);
             Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())
-                ->Evaluate(iquad, std::vector<double>(1, scatravarmanager_->Phinp(0)), dummy[0],
+                ->evaluate(iquad, std::vector<double>(1, scatravarmanager_->Phinp(0)), dummy[0],
                     dummy, detF);
           }
         }
@@ -1636,7 +1636,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
 
           phi_exact = Global::Problem::Instance()
                           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
-                          .Evaluate(position, t, k);
+                          .evaluate(position, t, k);
 
           std::vector<double> gradphi_exact_vec =
               Global::Problem::Instance()

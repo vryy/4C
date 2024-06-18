@@ -47,7 +47,7 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::set_element_time_step_parameter() 
   eleparams.set<double>("time factor", theta_ * dt_);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 

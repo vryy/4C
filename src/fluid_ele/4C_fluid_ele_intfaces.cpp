@@ -593,7 +593,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidIntFa
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                          schott 03/12 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::FluidIntFace::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::FluidIntFace::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,

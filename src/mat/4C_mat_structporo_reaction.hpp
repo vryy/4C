@@ -165,7 +165,7 @@ namespace Mat
     //! @name Evaluation methods
 
     /// evaluate material law
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< (i) deformation gradient
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< (i) deformation gradient
         const Core::LinAlg::Matrix<6, 1>* glstrain,          ///< (i) green lagrange strain
         Teuchos::ParameterList& params,                      ///< (i) parameter list
         Core::LinAlg::Matrix<6, 1>* stress,                  ///< (o) second piola kirchhoff stress

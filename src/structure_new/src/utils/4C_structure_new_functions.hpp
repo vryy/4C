@@ -40,7 +40,7 @@ namespace STR
    public:
     WeaklyCompressibleEtienneFSIStructureFunction(const Mat::PAR::StVenantKirchhoff& fparams);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -54,7 +54,7 @@ namespace STR
    public:
     WeaklyCompressibleEtienneFSIStructureForceFunction(const Mat::PAR::StVenantKirchhoff& fparams);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;

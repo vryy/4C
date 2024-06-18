@@ -304,13 +304,13 @@ namespace CONTACT
      * integration*/
     void eval_force_stiff(CONTACT::ParamsInterface& cparams) override;
 
-    /*! \brief Run at the beginning of the Evaluate() routine
+    /*! \brief Run at the beginning of the evaluate() routine
      *         set force evaluation flag
      *
      */
     void pre_evaluate(CONTACT::ParamsInterface& cparams) override;
 
-    /*! \brief Run in the end of the Evaluate() routine to reset
+    /*! \brief Run in the end of the evaluate() routine to reset
      *         force evaluation flag
      */
     void post_evaluate(CONTACT::ParamsInterface& cparams) override;

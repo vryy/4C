@@ -153,7 +153,7 @@ namespace Discret
           Core::Elements::Element::LocationArray& la);
 
       //! Evaluate the element (using location array)
-      int Evaluate(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+      int evaluate(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

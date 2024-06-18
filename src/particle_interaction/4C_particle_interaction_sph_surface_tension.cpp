@@ -791,7 +791,7 @@ void ParticleInteraction::SPHSurfaceTension::compute_surface_tension_contributio
   if (timerampfct_ > 0)
     timefac = Global::Problem::Instance()
                   ->FunctionById<Core::UTILS::FunctionOfTime>(timerampfct_ - 1)
-                  .Evaluate(time_);
+                  .evaluate(time_);
 
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -842,7 +842,7 @@ void ParticleInteraction::SPHSurfaceTension::compute_temp_grad_driven_contributi
   if (timerampfct_ > 0)
     timefac = Global::Problem::Instance()
                   ->FunctionById<Core::UTILS::FunctionOfTime>(timerampfct_ - 1)
-                  .Evaluate(time_);
+                  .evaluate(time_);
 
   // temperature in transition from linear to constant regime of surface tension coefficient
   const double transitiontemp = surf_ref_temp_ + (alphamin_ - alpha0_) / alpha_t_;

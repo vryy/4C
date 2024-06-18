@@ -185,7 +185,7 @@ void PoroElast::Monolithic::Solve()
     // 1.) Update(iterinc_),
     // 2.) evaluate_force_stiff_residual(),
     // 3.) prepare_system_for_newton_solve()
-    Evaluate(iterinc_, iter_ == 1);
+    evaluate(iterinc_, iter_ == 1);
     // std::cout << "  time for Evaluate : " <<  timer.totalElapsedTime(true) << "\n";
     // timer.reset();
 
@@ -197,7 +197,7 @@ void PoroElast::Monolithic::Solve()
     if ((not Converged()) or combincfres_ == Inpar::PoroElast::bop_or)
     {
       // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
-      // is done in prepare_system_for_newton_solve() within Evaluate(iterinc_)
+      // is done in prepare_system_for_newton_solve() within evaluate(iterinc_)
       linear_solve();
       // std::cout << "  time for Evaluate linear_solve: " << timer.totalElapsedTime(true) << "\n";
       // timer.reset();
@@ -315,7 +315,7 @@ void PoroElast::Monolithic::update_state_incrementally(
   set_struct_solution();
 }
 
-void PoroElast::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc, bool firstiter)
+void PoroElast::Monolithic::evaluate(Teuchos::RCP<const Epetra_Vector> iterinc, bool firstiter)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::Monolithic::Evaluate");
 
@@ -338,7 +338,7 @@ void PoroElast::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc, 
   eval_poro_mortar();
 }
 
-void PoroElast::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> s_iterinc,
+void PoroElast::Monolithic::evaluate(Teuchos::RCP<const Epetra_Vector> s_iterinc,
     Teuchos::RCP<const Epetra_Vector> f_iterinc, bool firstiter)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::Monolithic::Evaluate");
@@ -371,12 +371,12 @@ void PoroElast::Monolithic::EvaluateFields(
   // Monolithic Poroelasticity accesses the linearised structure problem:
   //   evaluate_force_stiff_residual()
   //   prepare_system_for_newton_solve()
-  structure_field()->Evaluate(Teuchos::null);
+  structure_field()->evaluate(Teuchos::null);
 
   // monolithic Poroelasticity accesses the linearised fluid problem
   //   evaluate_rhs_tang_residual() and
   //   prepare_system_for_newton_solve()
-  fluid_field()->Evaluate(Teuchos::null);
+  fluid_field()->evaluate(Teuchos::null);
 }
 
 void PoroElast::Monolithic::EvaluateFields(Teuchos::RCP<const Epetra_Vector> iterinc)
@@ -387,12 +387,12 @@ void PoroElast::Monolithic::EvaluateFields(Teuchos::RCP<const Epetra_Vector> ite
   // Monolithic Poroelasticity accesses the linearised structure problem:
   //   evaluate_force_stiff_residual()
   //   prepare_system_for_newton_solve()
-  structure_field()->Evaluate(Teuchos::null);
+  structure_field()->evaluate(Teuchos::null);
 
   // monolithic Poroelasticity accesses the linearised fluid problem
   //   evaluate_rhs_tang_residual() and
   //   prepare_system_for_newton_solve()
-  fluid_field()->Evaluate(Teuchos::null);
+  fluid_field()->evaluate(Teuchos::null);
 }
 
 void PoroElast::Monolithic::extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
@@ -1032,7 +1032,7 @@ void PoroElast::Monolithic::apply_str_coupl_matrix(Teuchos::RCP<Core::LinAlg::Sp
   // evaluate the mechanical-fluid system matrix on the structural element
   structure_field()->discretization()->evaluate_condition(
       sparams, structuralstrategy, "PoroCoupling");
-  // structure_field()->discretization()->Evaluate( sparams, structuralstrategy);
+  // structure_field()->discretization()->evaluate( sparams, structuralstrategy);
   structure_field()->discretization()->ClearState();
 
   // scale with time integration factor
@@ -1090,7 +1090,7 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
 
   // evaluate the fluid-mechanical system matrix on the fluid element
   fluid_field()->discretization()->evaluate_condition(fparams, fluidstrategy, "PoroCoupling");
-  // fluid_field()->discretization()->Evaluate( fparams, fluidstrategy );
+  // fluid_field()->discretization()->evaluate( fparams, fluidstrategy );
 
   // evaluate coupling terms from partial integration of continuity equation
   if (part_int_cond_)
@@ -1207,7 +1207,7 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
       std::cout << "\n******************" << column_number + 1 << ". Spalte!!***************"
                 << std::endl;
 
-    Evaluate(iterinc, iter_ == 1);
+    evaluate(iterinc, iter_ == 1);
 
     rhs_copy->Update(1.0, *rhs_, 0.0);
 
@@ -1264,7 +1264,7 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
                 << std::endl;
   }
 
-  Evaluate(iterinc, iter_ == 1);
+  evaluate(iterinc, iter_ == 1);
 
   stiff_approx->FillComplete();
 

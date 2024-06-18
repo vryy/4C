@@ -255,7 +255,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force()
                 "number of potential law specified in line charge condition exceeds"
                 " number of defined potential laws!");
 
-          pair_is_active = elepairptr->Evaluate(&(eleforce_centerlineDOFs[0]),
+          pair_is_active = elepairptr->evaluate(&(eleforce_centerlineDOFs[0]),
               &(eleforce_centerlineDOFs[1]), nullptr, nullptr, nullptr, nullptr, currconds,
               beam_potential_params().potential_law_prefactors().at(npotlaw1 - 1),
               beam_potential_params().potential_law_exponents().at(npotlaw1 - 1));
@@ -345,7 +345,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_stiff()
                 " number of defined potential laws!");
 
 
-          pair_is_active = elepairptr->Evaluate(nullptr, nullptr, &(elestiff_centerlineDOFs[0][0]),
+          pair_is_active = elepairptr->evaluate(nullptr, nullptr, &(elestiff_centerlineDOFs[0][0]),
               &(elestiff_centerlineDOFs[0][1]), &(elestiff_centerlineDOFs[1][0]),
               &(elestiff_centerlineDOFs[1][1]), currconds,
               beam_potential_params().potential_law_prefactors().at(npotlaw1 - 1),
@@ -446,7 +446,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force_stiff()
 
 
           pair_is_active =
-              elepairptr->Evaluate(&(eleforce_centerlineDOFs[0]), &(eleforce_centerlineDOFs[1]),
+              elepairptr->evaluate(&(eleforce_centerlineDOFs[0]), &(eleforce_centerlineDOFs[1]),
                   &(elestiff_centerlineDOFs[0][0]), &(elestiff_centerlineDOFs[0][1]),
                   &(elestiff_centerlineDOFs[1][0]), &(elestiff_centerlineDOFs[1][1]), currconds,
                   beam_potential_params().potential_law_prefactors().at(npotlaw1 - 1),

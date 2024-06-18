@@ -615,7 +615,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_vector(Epetra_Vector& f
 }
 
 /*----------------------------------------------------------------------
-* - Called from Evaluate() method in Newton-loop with x=x_sum_
+* - Called from evaluate() method in Newton-loop with x=x_sum_
 *   (increment sum)
 * - Field contributions sx,fx,ax are recovered from x
 ----------------------------------------------------------------------*/

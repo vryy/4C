@@ -2,7 +2,7 @@
 /*! \file
 
 \brief Internal implementation of RedAirway element. Methods implemented here
-       are called by airway_evaluate.cpp by Discret::ELEMENTS::RedAirway::Evaluate()
+       are called by airway_evaluate.cpp by Discret::ELEMENTS::RedAirway::evaluate()
        with the corresponding action.
 
 
@@ -101,7 +101,7 @@ namespace
         if (curvenum >= 0)
           curvefac = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                         .Evaluate(time);
+                         .evaluate(time);
 
         bcVal = (*vals)[0] * curvefac;
 
@@ -115,7 +115,7 @@ namespace
         {
           functionfac = Global::Problem::Instance()
                             ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                            .Evaluate(node->X().data(), time, 0);
+                            .evaluate(node->X().data(), time, 0);
         }
         // get curve2
         int curve2num = -1;
@@ -124,7 +124,7 @@ namespace
         if (curve2num >= 0)
           curve2fac = Global::Problem::Instance()
                           ->FunctionById<Core::UTILS::FunctionOfTime>(curve2num)
-                          .Evaluate(time);
+                          .evaluate(time);
 
         bcVal += functionfac * curve2fac;
 
@@ -577,7 +577,7 @@ Discret::ELEMENTS::RedAirwayImplInterface* Discret::ELEMENTS::RedAirwayImplInter
  | evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::ParameterList& params,
+int Discret::ELEMENTS::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -929,7 +929,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             const double pressure_active =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfTime>(funct_id_switch - 1)
-                    .Evaluate(time);
+                    .evaluate(time);
 
             int funct_id_current = 0;
             if (std::abs(pressure_active - 1.0) < 10e-8)
@@ -955,7 +955,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
 
             BCin = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(funct_id_current - 1)
-                       .Evaluate(time);
+                       .evaluate(time);
           }
           else
           {
@@ -975,7 +975,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
                 if ((curvenum = (*curve)[id]) >= 0)
                   return Global::Problem::Instance()
                       ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                      .Evaluate(time);
+                      .evaluate(time);
                 else
                   return 1.0;
               }
@@ -994,7 +994,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
                     if ((functnum = (*functions)[0]) > 0)
                       return Global::Problem::Instance()
                           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                          .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
+                          .evaluate((ele->Nodes()[i])->X().data(), time, 0);
                     else
                       return 0.0;
                   else
@@ -1115,7 +1115,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           if (curvenum >= 0)
             curvefac = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                           .Evaluate(time);
+                           .evaluate(time);
 
           BCin = (*vals)[phase_number] * curvefac;
 
@@ -1130,7 +1130,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
               double Vn =
                   (*vals)[phase_number] * Global::Problem::Instance()
                                               ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                                              .Evaluate(time - dt);
+                                              .evaluate(time - dt);
               BCin = (Vnp - Vn) / dt;
               Bc = "flow";
             }

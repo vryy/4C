@@ -125,7 +125,7 @@ void CONTACT::Aug::IntegrationWrapper::IntegrateDerivEle3D(Mortar::Element& sele
   {
     Mortar::Element& mele = *(info_pair.first);
     integrator_ = IntegratorGeneric::Create(Dim(), sele.Shape(), mele.Shape(), *cparams_ptr, this);
-    integrator_->Evaluate(sele, mele, *boundary_ele, info_pair.second);
+    integrator_->evaluate(sele, mele, *boundary_ele, info_pair.second);
   }
 
   timer_ptr->stop(GlobalTimeID::IntegrateDerivEle3D);
@@ -264,7 +264,7 @@ void CONTACT::Aug::IntegrationWrapper::IntegrateDerivEle2D(Mortar::Element& sele
       Mortar::Element& mele = *(info_pair.first);
       integrator_ =
           IntegratorGeneric::Create(Dim(), sele.Shape(), mele.Shape(), *cparams_ptr, this);
-      integrator_->Evaluate(sele, mele, false, info_pair.second);
+      integrator_->evaluate(sele, mele, false, info_pair.second);
     }
   }  // boundary_ele check
 
@@ -567,7 +567,7 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evaluate(
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::evaluate(
     Mortar::Element& sele, Mortar::Element& mele, bool boundary_ele,
     const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
 {

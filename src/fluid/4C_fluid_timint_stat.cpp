@@ -227,7 +227,7 @@ void FLD::TimIntStationary::set_element_time_parameter()
   eleparams.set("total time", time_);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   return;
 }

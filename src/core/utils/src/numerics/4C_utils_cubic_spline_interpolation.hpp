@@ -56,7 +56,7 @@ namespace Core::UTILS
      * @param[in] x  generic scalar
      * @return value of function evaluated at @x
      */
-    [[nodiscard]] double Evaluate(double x) const;
+    [[nodiscard]] double evaluate(double x) const;
 
     /*!
      * @brief Evaluate the first derivative of the scalar function

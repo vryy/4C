@@ -233,7 +233,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
 
     Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_static_cast<Mat::So3Material>(Material());
-    so3mat->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    so3mat->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // strain output **********************************************************

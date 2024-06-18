@@ -64,7 +64,7 @@ namespace Core::UTILS
      * @param argument point to evaluate
      * @return value of the polynomial at @argument
      */
-    [[nodiscard]] double Evaluate(const double argument) const override;
+    [[nodiscard]] double evaluate(const double argument) const override;
 
     /**
      * Evaluate the @deriv_order derivative of polynomial.
@@ -104,7 +104,7 @@ namespace Core::UTILS
      */
     CubicSplineFromCSV(const std::string& csv_file);
 
-    [[nodiscard]] double Evaluate(double scalar) const override;
+    [[nodiscard]] double evaluate(double scalar) const override;
 
     [[nodiscard]] double EvaluateDerivative(double scalar, int deriv_order) const override;
 

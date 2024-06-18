@@ -87,7 +87,7 @@ namespace
     for (int i = 0; i < 4; i++) dataSend.erase(dataSend.begin());
     auto plastic = Teuchos::rcp(new Mat::PlasticDruckerPrager());
     plastic->Unpack(dataSend);
-    plastic->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    plastic->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };
 
@@ -109,7 +109,7 @@ namespace
           (1.0 / ((1.0 + 0.25) * (1.0 - (2.0 * 0.25)))) * ((1.0 - (2.0 * 0.25)) / 2.0) * .1;
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };
 
@@ -131,7 +131,7 @@ namespace
                       (1 - ((1.0 / (2 * (1.0 + 0.25))) * Dgamma / (2.2 * sqrt(3) / 2.5))) * 2.2;
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };
 
@@ -149,7 +149,7 @@ namespace
     for (int i = 0; i < 3; ++i) ref_stress(i) = 2.0 - (10. / 15.) * (3. / 5.);
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };
 
@@ -166,7 +166,7 @@ namespace
     Core::LinAlg::Matrix<6, 1, FAD> ref_stress(true);
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1, FAD> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     Core::LinAlg::Matrix<6, 6> ref_cmat(true);
     for (int i = 0; i < 6; i++)
     {
@@ -179,7 +179,7 @@ namespace
     druckprag_->Update();
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 1.0);
     for (int i = 3; i < 6; ++i) input_strain(i) = FAD(6, i, 0.0);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     for (int i = 0; i < 6; i++)
     {
       for (int j = 0; j < 6; j++)
@@ -191,7 +191,7 @@ namespace
     druckprag_->Update();
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 0.2);
     for (int i = 3; i < 6; ++i) input_strain(i) = FAD(6, i, 0.0);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     for (int i = 0; i < 6; i++)
     {
       for (int j = 0; j < 6; j++)
@@ -226,7 +226,7 @@ namespace
     ref_stress(5) = 0.2613249104715;
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };
 
@@ -248,7 +248,7 @@ namespace
           FAD((1.0 / ((1.0 + 0.25) * (1.0 - (2.0 * 0.25)))) * ((1.0 - (2.0 * 0.25)) / 2.0) * .1);
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1, FAD> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     Core::LinAlg::Matrix<6, 6> ref_cmat(true);
     for (int i = 0; i < 6; i++)
     {
@@ -272,7 +272,7 @@ namespace
     Core::LinAlg::Matrix<3, 3> defgrad(true);
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1, FAD> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     Core::LinAlg::Matrix<6, 6> ref_cmat(true);
     for (int i = 0; i < 6; i++)
     {
@@ -294,7 +294,7 @@ namespace
     Core::LinAlg::Matrix<3, 3> defgrad(true);
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1, FAD> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     Core::LinAlg::Matrix<6, 6> ref_cmat(true);
     for (int i = 0; i < 6; i++)
     {
@@ -329,7 +329,7 @@ namespace
     ref_stress(5) = FAD(0.2460641017516);
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1, FAD> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     Core::LinAlg::Matrix<6, 6> ref_cmat(true);
     for (int i = 0; i < 6; i++)
     {

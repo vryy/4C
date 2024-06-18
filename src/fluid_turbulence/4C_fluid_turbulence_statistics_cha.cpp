@@ -1956,7 +1956,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_integral_mean_values_in_planes()
   }
 
   // call loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
@@ -2187,7 +2187,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_loma_integral_mean_values_in_planes(
   discret_->set_state("scalar (n+1,converged)", meanscanp_);
 
   // call loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
@@ -2402,7 +2402,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_scatra_integral_mean_values_in_plane
   discret_->set_state("scalar (n+1,converged)", meanscanp_);
 
   // call loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
@@ -2852,7 +2852,7 @@ void FLD::TurbulenceStatisticsCha::add_model_params_multifractal(
   discret_->set_state("fsvelnp", fsvelnp);
 
   // call loop over elements to compute means
-  discret_->Evaluate(
+  discret_->evaluate(
       paramsele, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   discret_->ClearState();
@@ -3081,7 +3081,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     if (myxwall_ != Teuchos::null) myxwall_->SetXWallParams(eleparams_);
 
     // call loop over elements to compute means
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
     discret_->ClearState();
@@ -3125,7 +3125,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       }
 
       // call loop over elements to compute means
-      scatradiscret_->Evaluate(scatraeleparams_, Teuchos::null, Teuchos::null, Teuchos::null,
+      scatradiscret_->evaluate(scatraeleparams_, Teuchos::null, Teuchos::null, Teuchos::null,
           Teuchos::null, Teuchos::null);
 
       scatradiscret_->ClearState();

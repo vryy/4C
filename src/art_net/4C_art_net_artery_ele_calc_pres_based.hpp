@@ -52,7 +52,7 @@ namespace Discret
       static ArteryEleCalcPresBased<distype>* Instance(
           const int numdofpernode, const std::string& disname);
 
-      int Evaluate(Artery* ele, Teuchos::ParameterList& params,
+      int evaluate(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

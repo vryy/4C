@@ -74,7 +74,7 @@ namespace
   }
 }  // namespace
 
-int Discret::ELEMENTS::Shell7p::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Shell7p::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& dof_index_array,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,

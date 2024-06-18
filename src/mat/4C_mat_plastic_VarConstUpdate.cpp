@@ -196,7 +196,7 @@ void Mat::PlasticElastHyperVCU::Setup(int numgp, Input::LineDefinition* linedef)
 }
 
 // MAIN
-void Mat::PlasticElastHyperVCU::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)  ///< Element GID
@@ -215,7 +215,7 @@ void Mat::PlasticElastHyperVCU::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
   // get 2pk stresses
   Core::LinAlg::Matrix<6, 1> etstr;
   Core::LinAlg::Matrix<6, 6> etcmat;
-  ElastHyper::Evaluate(nullptr, &ee_test, params, &etstr, &etcmat, gp, eleGID);
+  ElastHyper::evaluate(nullptr, &ee_test, params, &etstr, &etcmat, gp, eleGID);
 
   double yf;
   double normZero = 0.0;
@@ -234,7 +234,7 @@ void Mat::PlasticElastHyperVCU::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
     Core::LinAlg::Matrix<6, 6> checkCmat;
     Core::LinAlg::Matrix<3, 3> emptymat;
     PlasticElastHyper::EvaluateElast(defgrd, &emptymat, stress, cmat, gp, eleGID);
-    ElastHyper::Evaluate(defgrd, &ee_test, params, &checkStr, &checkCmat, gp, eleGID);
+    ElastHyper::evaluate(defgrd, &ee_test, params, &checkStr, &checkCmat, gp, eleGID);
 
     // push back
     Core::LinAlg::Matrix<3, 3> checkStrMat;
@@ -309,7 +309,7 @@ void Mat::PlasticElastHyperVCU::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
       Core::LinAlg::Matrix<6, 6> elastCmat;
       Core::LinAlg::Matrix<6, 1> elastStressDummy;
       Core::LinAlg::Matrix<6, 6> elastCmatDummy;
-      ElastHyper::Evaluate(nullptr, &eeOut, params, &elastStress, &elastCmat, gp, eleGID);
+      ElastHyper::evaluate(nullptr, &eeOut, params, &elastStress, &elastCmat, gp, eleGID);
 
       Core::LinAlg::Matrix<6, 6> d2ced2lpVoigt[6];
       ce2nd_deriv(defgrd, last_plastic_defgrd_inverse_[gp], dLp, d2ced2lpVoigt);
@@ -955,7 +955,7 @@ void Mat::PlasticElastHyperVCU::evaluate_rhs(const int gp, const Core::LinAlg::M
 
   Core::LinAlg::Matrix<6, 1> se;
   Core::LinAlg::Matrix<6, 6> dummy;
-  ElastHyper::Evaluate(nullptr, &eeOut, params, &se, &dummy, gp, eleGID);
+  ElastHyper::evaluate(nullptr, &eeOut, params, &se, &dummy, gp, eleGID);
 
   eval_dce_dlp(last_plastic_defgrd_inverse_[gp], &defgrd, dexpOut_mat, cetrial, expOut, dcedlp,
       dFpiDdeltaDp);

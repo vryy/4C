@@ -157,7 +157,7 @@ namespace CONTACT
     are assembles into global force resdiual and global stiffness matrix.
 
     */
-    void Evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
+    void evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
         const Epetra_Vector& disrow, Teuchos::ParameterList timeintparams, bool newsti = false,
         double time = 0.0);
 

@@ -210,7 +210,7 @@ void FLD::TimIntBDF2::set_element_time_parameter()
 
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   return;
 }

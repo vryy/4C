@@ -178,7 +178,7 @@ namespace FLD
 
     /// build linear system matrix and rhs
     /// Monolithic FSI needs to access the linear fluid problem.
-    virtual void Evaluate();
+    virtual void evaluate();
 
     /// Update the solution after convergence of the nonlinear
     /// iteration. Current solution becomes old solution of next timestep.

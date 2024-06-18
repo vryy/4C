@@ -49,7 +49,7 @@ Discret::ELEMENTS::FluidEleCalcLoma<distype>::FluidEleCalcLoma()
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcLoma<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate(Discret::ELEMENTS::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -59,7 +59,7 @@ int Discret::ELEMENTS::FluidEleCalcLoma<distype>::Evaluate(Discret::ELEMENTS::Fl
     Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag)
 {
   if (not offdiag)
-    return my::Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+    return my::evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
         elevec1_epetra, elevec2_epetra, elevec3_epetra, my::intpoints_);
   else
     return evaluate_od(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,

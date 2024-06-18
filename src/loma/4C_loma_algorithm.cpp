@@ -746,7 +746,7 @@ void LowMach::Algorithm::evaluate_loma_od_block_mat_fluid(
       mat_fs, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate off-diagonal matrix block entries for fluid element
-  fluid_field()->discretization()->Evaluate(fparams, fluidstrategy);
+  fluid_field()->discretization()->evaluate(fparams, fluidstrategy);
   fluid_field()->discretization()->ClearState();
 }
 

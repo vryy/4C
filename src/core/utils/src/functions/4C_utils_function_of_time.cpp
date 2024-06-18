@@ -27,7 +27,7 @@ Core::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
   }
 }
 
-double Core::UTILS::SymbolicFunctionOfTime::Evaluate(
+double Core::UTILS::SymbolicFunctionOfTime::evaluate(
     const double time, const std::size_t component) const
 {
   std::map<std::string, ValueType> variable_values;

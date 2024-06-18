@@ -219,7 +219,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::pre_evalu
  |  Evaluate the element (public)                             meier 02/14|
  *----------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Evaluate(
+bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
@@ -5395,7 +5395,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 //
 //  std::cout << "undisturbed configuration: " << std::endl;
 //
-//  this->Evaluate(stiffmatrix_analyt,fint1,pp,contactpairmap,timeintparams,true);
+//  this->evaluate(stiffmatrix_analyt,fint1,pp,contactpairmap,timeintparams,true);
 //
 ////  std::cout << std::setprecision(25) << "fint1: " << std::endl;
 //
@@ -5428,7 +5428,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 //    fint2.PutScalar(0.0);
 //    stiffmatrix_dummy.PutScalar(0.0);
 //
-//    this->Evaluate(stiffmatrix_dummy,fint2,pp,contactpairmap,timeintparams,true);
+//    this->evaluate(stiffmatrix_dummy,fint2,pp,contactpairmap,timeintparams,true);
 //
 ////    std::cout << std::setprecision(25) << "fint2: " << std::endl;
 ////

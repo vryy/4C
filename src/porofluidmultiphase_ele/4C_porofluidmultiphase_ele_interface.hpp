@@ -57,7 +57,7 @@ namespace Discret
         This class does not provide a definition for this function; it
         must be defined in PoroFluidMultiPhaseEleCalc.
        */
-      virtual int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      virtual int evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
           std::vector<Core::LinAlg::SerialDenseVector*>& elevec) = 0;

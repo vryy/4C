@@ -147,7 +147,7 @@ int Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::evaluate_neumann(
     {
       // i is the number we were searching for!!!!
       params.set<int>("face", i);
-      ele->parent_element()->Evaluate(params, discretization, la, elemat1_epetra, dummy_mat2,
+      ele->parent_element()->evaluate(params, discretization, la, elemat1_epetra, dummy_mat2,
           elevec1_epetra, dummy_vec2, dummy_vec3);
       // break;
     }

@@ -151,7 +151,7 @@ void Mat::ThermoStVenantKirchhoff::Unpack(const std::vector<char>& data)
  | calculates stresses using one of the above method to      dano 02/10 |
  | evaluate the elasticity tensor                                       |
  *----------------------------------------------------------------------*/
-void Mat::ThermoStVenantKirchhoff::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -189,22 +189,22 @@ void Mat::ThermoStVenantKirchhoff::StrainEnergy(
   psi += .5 * s.Dot(glstrain);
 }
 
-void Mat::ThermoStVenantKirchhoff::Evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp,
+void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp,
     Core::LinAlg::Matrix<3, 3>& cmat, Core::LinAlg::Matrix<3, 1>& heatflux) const
 {
-  thermo_->Evaluate(gradtemp, cmat, heatflux);
+  thermo_->evaluate(gradtemp, cmat, heatflux);
 }
 
-void Mat::ThermoStVenantKirchhoff::Evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp,
+void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp,
     Core::LinAlg::Matrix<2, 2>& cmat, Core::LinAlg::Matrix<2, 1>& heatflux) const
 {
-  thermo_->Evaluate(gradtemp, cmat, heatflux);
+  thermo_->evaluate(gradtemp, cmat, heatflux);
 }
 
-void Mat::ThermoStVenantKirchhoff::Evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp,
+void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp,
     Core::LinAlg::Matrix<1, 1>& cmat, Core::LinAlg::Matrix<1, 1>& heatflux) const
 {
-  thermo_->Evaluate(gradtemp, cmat, heatflux);
+  thermo_->evaluate(gradtemp, cmat, heatflux);
 }
 
 void Mat::ThermoStVenantKirchhoff::ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const

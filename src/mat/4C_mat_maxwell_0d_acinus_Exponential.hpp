@@ -131,7 +131,7 @@ namespace Mat
     /*!
        \brief
      */
-    void Evaluate(Core::LinAlg::SerialDenseVector& epnp, Core::LinAlg::SerialDenseVector& epn,
+    void evaluate(Core::LinAlg::SerialDenseVector& epnp, Core::LinAlg::SerialDenseVector& epn,
         Core::LinAlg::SerialDenseVector& epnm, Core::LinAlg::SerialDenseMatrix& sysmat,
         Core::LinAlg::SerialDenseVector& rhs, const Discret::ReducedLung::ElemParams& params,
         const double NumOfAcini, const double Vo, double time, double dt) override;

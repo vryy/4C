@@ -148,13 +148,13 @@ namespace Mat
 
     //@}
 
-    void Evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp, Core::LinAlg::Matrix<1, 1>& cmat,
+    void evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp, Core::LinAlg::Matrix<1, 1>& cmat,
         Core::LinAlg::Matrix<1, 1>& heatflux) const override;
 
-    void Evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp, Core::LinAlg::Matrix<2, 2>& cmat,
+    void evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp, Core::LinAlg::Matrix<2, 2>& cmat,
         Core::LinAlg::Matrix<2, 1>& heatflux) const override;
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
+    void evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
         Core::LinAlg::Matrix<3, 1>& heatflux) const override;
 
     void ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const override { dCondDT.Clear(); }

@@ -51,7 +51,7 @@ namespace Adapter
     Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override;
 
     /// evaluate and assemble residual and jacobian matrix
-    void Evaluate(
+    void evaluate(
         Teuchos::RCP<const Epetra_Vector> stepinc  ///< step increment such that \f$ x_{n+1}^{k+1} =
                                                    ///< x_{n}^{converged}+ stepinc \f$
         ) override;

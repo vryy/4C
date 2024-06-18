@@ -97,7 +97,7 @@ void ScaTra::TimIntStationary::set_element_time_parameter(bool forcedincremental
   eleparams.set<double>("alpha_F", 1.0);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 

@@ -761,7 +761,7 @@ ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::MortarCellCalcElchSTITh
  types   fang 01/17 |
  *--------------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
+void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate(
     const Core::FE::Discretization& idiscret,           //!< interface discretization
     Mortar::IntCell& cell,                              //!< mortar integration cell
     Mortar::Element& slaveelement,                      //!< slave-side mortar element
@@ -792,7 +792,7 @@ void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
     // call base class routine
     default:
     {
-      my::Evaluate(idiscret, cell, slaveelement, masterelement, la_slave, la_master, params,
+      my::evaluate(idiscret, cell, slaveelement, masterelement, la_slave, la_master, params,
           cellmatrix1, cellmatrix2, cellmatrix3, cellmatrix4, cellvector1, cellvector2);
 
       break;
@@ -974,7 +974,7 @@ ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
  types   fang 01/17 |
  *--------------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
+void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate(
     const Core::FE::Discretization& idiscret,           //!< interface discretization
     Mortar::IntCell& cell,                              //!< mortar integration cell
     Mortar::Element& slaveelement,                      //!< slave-side mortar element
@@ -1014,7 +1014,7 @@ void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
     // call base class routine
     default:
     {
-      my::Evaluate(idiscret, cell, slaveelement, masterelement, la_slave, la_master, params,
+      my::evaluate(idiscret, cell, slaveelement, masterelement, la_slave, la_master, params,
           cellmatrix1, cellmatrix2, cellmatrix3, cellmatrix4, cellvector1, cellvector2);
 
       break;

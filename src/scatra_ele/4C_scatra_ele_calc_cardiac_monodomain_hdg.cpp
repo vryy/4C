@@ -110,7 +110,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
     Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes =
         Teuchos::rcp(new Core::FE::ShapeValues<distype>(1, false, 2 * hdgele->Degree()));
 
-    shapes->Evaluate(*ele);
+    shapes->evaluate(*ele);
 
     std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, 1>> shapefcns(shapes->nqpoints_);
 
@@ -317,7 +317,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat
         for (int idim = 0; idim < Core::FE::dim<distype>; ++idim)
           mat_gp_coord(idim) = intpoints.IP().qxg[q][idim];
 
-        polySpace_->Evaluate(mat_gp_coord, values_mat_gp_all_[q]);
+        polySpace_->evaluate(mat_gp_coord, values_mat_gp_all_[q]);
       }
     }
   }
@@ -356,7 +356,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat
         for (int idim = 0; idim < Core::FE::dim<distype>; ++idim)
           mat_gp_coord(idim) = quadrature_->Point(q)[idim];
 
-        polySpace_->Evaluate(mat_gp_coord, values_mat_gp_all_[q]);
+        polySpace_->evaluate(mat_gp_coord, values_mat_gp_all_[q]);
       }
     }
   }
@@ -582,8 +582,8 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
   Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes_old = Teuchos::rcp(
       new Core::FE::ShapeValues<distype>(hdgele->DegreeOld(), this->usescompletepoly_, degold));
 
-  shapes->Evaluate(*ele);
-  shapes_old->Evaluate(*ele);
+  shapes->evaluate(*ele);
+  shapes_old->evaluate(*ele);
 
   Core::LinAlg::SerialDenseMatrix massPartOld(shapes->ndofs_, shapes_old->nqpoints_);
   Core::LinAlg::SerialDenseMatrix massPartOldW(shapes->ndofs_, shapes_old->nqpoints_);
@@ -699,7 +699,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
     // gaussian points coordinates
     for (int idim = 0; idim < Core::FE::dim<distype>; ++idim)
       mat_gp_coord(idim) = intpoints_old.IP().qxg[q][idim];
-    polySpace->Evaluate(mat_gp_coord, shape_gp_old[q]);
+    polySpace->evaluate(mat_gp_coord, shape_gp_old[q]);
   }
 
   for (int q = 0; q < intpoints.IP().nquad; ++q)
@@ -709,10 +709,10 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
     // gaussian points coordinates
     for (int idim = 0; idim < Core::FE::dim<distype>; ++idim)
       mat_gp_coord(idim) = intpoints.IP().qxg[q][idim];
-    polySpace->Evaluate(mat_gp_coord, shape_gp[q]);
+    polySpace->evaluate(mat_gp_coord, shape_gp[q]);
   }
 
-  this->shapes_->Evaluate(*ele);
+  this->shapes_->evaluate(*ele);
   // Jacobian determinant
   double jacdet = this->shapes_->xjm.Determinant();
 

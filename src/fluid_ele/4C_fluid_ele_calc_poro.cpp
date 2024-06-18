@@ -127,7 +127,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateService(Discret::ELEME
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate(Discret::ELEMENTS::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -150,7 +150,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(Discret::ELEMENTS::Fl
 
   if (not offdiag)
   {  // evaluate diagonal block (pure fluid block)
-    return Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+    return evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
         elevec1_epetra, elevec2_epetra, elevec3_epetra, Base::intpoints_);
   }
   else
@@ -161,7 +161,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(Discret::ELEMENTS::Fl
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate(Discret::ELEMENTS::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -6364,13 +6364,13 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENT
         {
           const double u_exact_x = Global::Problem::Instance()
                                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
-                                       .Evaluate(position.data(), t, 0);
+                                       .evaluate(position.data(), t, 0);
           const double u_exact_y = Global::Problem::Instance()
                                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
-                                       .Evaluate(position.data(), t, 1);
+                                       .evaluate(position.data(), t, 1);
           const double p_exact = Global::Problem::Instance()
                                      ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
-                                     .Evaluate(position.data(), t, 2);
+                                     .evaluate(position.data(), t, 2);
 
           u(0) = u_exact_x;
           u(1) = u_exact_y;
@@ -6380,16 +6380,16 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENT
         {
           const double u_exact_x = Global::Problem::Instance()
                                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
-                                       .Evaluate(position.data(), t, 0);
+                                       .evaluate(position.data(), t, 0);
           const double u_exact_y = Global::Problem::Instance()
                                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
-                                       .Evaluate(position.data(), t, 1);
+                                       .evaluate(position.data(), t, 1);
           const double u_exact_z = Global::Problem::Instance()
                                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
-                                       .Evaluate(position.data(), t, 2);
+                                       .evaluate(position.data(), t, 2);
           const double p_exact = Global::Problem::Instance()
                                      ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
-                                     .Evaluate(position.data(), t, 3);
+                                     .evaluate(position.data(), t, 3);
 
           u(0) = u_exact_x;
           u(1) = u_exact_y;
@@ -6546,7 +6546,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_mixture_strong_residu
     static Core::LinAlg::Matrix<6, 6> cmat(true);
     stress_vec.Clear();
     cmat.Clear();
-    struct_mat_->Evaluate(nullptr, &glstrain, params, &stress_vec, &cmat, gp, Base::eid_);
+    struct_mat_->evaluate(nullptr, &glstrain, params, &stress_vec, &cmat, gp, Base::eid_);
 
     static Core::LinAlg::Matrix<6, nsd_> E_X(true);
     E_X.Clear();

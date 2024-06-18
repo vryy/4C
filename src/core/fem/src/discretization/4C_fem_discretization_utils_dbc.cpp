@@ -341,7 +341,7 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
           if (funct_num > 0)
             functfac = params.get<const Core::UTILS::FunctionManager*>("function_manager")
                            ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                           .Evaluate(actnode->X().data(), time, onesetj);
+                           .evaluate(actnode->X().data(), time, onesetj);
         }
 
         const double value = (*val)[onesetj] * functfac;

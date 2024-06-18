@@ -146,7 +146,7 @@ void CONSTRAINTS::MPConstraint3Penalty::Initialize(Teuchos::ParameterList& param
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3Penalty::Evaluate(Teuchos::ParameterList& params,
+void CONSTRAINTS::MPConstraint3Penalty::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -397,7 +397,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(
       params.set("ConditionID", eid);
 
       // call the element evaluate method
-      int err = actele->Evaluate(
+      int err = actele->evaluate(
           params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", disc->Comm().MyPID(), eid, err);
 
@@ -411,7 +411,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(
       if (curvenum >= 0 && usetime)
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                       .Evaluate(time);
+                       .evaluate(time);
 
 
       double diff = (curvefac * (*initerror_)[eid] - (*acterror_)[eid]);
@@ -469,7 +469,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<Core::FE::Di
     else
     {
       // call the element evaluate method
-      int err = actele->Evaluate(
+      int err = actele->evaluate(
           params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", disc->Comm().MyPID(), eid, err);
     }

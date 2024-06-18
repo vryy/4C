@@ -130,7 +130,7 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::Evaluate(double gap, CONTACT::Node* cnode)
+double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
 {
   if (gap + params_->GetOffset() > 0.0)
   {

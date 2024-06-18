@@ -49,7 +49,7 @@ namespace Discret
       //!
       //! This class does not provide a definition for this function, it
       //! must be defined in TemperBoundaryImpl.
-      virtual int Evaluate(const Discret::ELEMENTS::ThermoBoundary* ele,
+      virtual int evaluate(const Discret::ELEMENTS::ThermoBoundary* ele,
           Teuchos::ParameterList& params, const Core::FE::Discretization& discretization,
           const Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -123,7 +123,7 @@ namespace Discret
 
 
       //! Evaluate (la required in case of multiple dofsets)
-      int Evaluate(const Discret::ELEMENTS::ThermoBoundary* ele, Teuchos::ParameterList& params,
+      int evaluate(const Discret::ELEMENTS::ThermoBoundary* ele, Teuchos::ParameterList& params,
           const Core::FE::Discretization& discretization,
           const Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,

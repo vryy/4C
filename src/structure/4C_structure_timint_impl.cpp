@@ -747,7 +747,7 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
     Teuchos::ParameterList p;
     p.set("action", "calc_struct_reset_istep");
     // go to elements
-    discret_->Evaluate(
+    discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -909,7 +909,7 @@ void STR::TimIntImpl::apply_force_stiff_internal(const double time, const double
    * without the modifications due to the local condensation procedure.
    */
   if (fintn_str_ != Teuchos::null) fintn_str_->PutScalar(0.);
-  discret_->Evaluate(params, stiff, damp, fint, Teuchos::null, fintn_str_);
+  discret_->evaluate(params, stiff, damp, fint, Teuchos::null, fintn_str_);
   discret_->ClearState();
 
   // *********** time measurement ***********
@@ -961,7 +961,7 @@ void STR::TimIntImpl::apply_force_stiff_internal_and_inertial(const double time,
    * In such cases, fint_str_ contains the right hand side
    * without the modifications due to the local condensation procedure.
    */
-  discret_->Evaluate(params, stiff, mass, fint, finert, fintn_str_);
+  discret_->evaluate(params, stiff, mass, fint, finert, fintn_str_);
   discret_->ClearState();
 
   mass->Complete();
@@ -1099,7 +1099,7 @@ void STR::TimIntImpl::apply_force_stiff_beam_contact(
     // (set boolean flag 'newsti' to true, which activates
     // sclaing of contact stiffness with appropriate scaling
     // factor, e.g. (1.0-alphaf), internally)
-    beamcman_->Evaluate(*system_matrix(), *fresm, *dis, beamcontactparams, true, timen_);
+    beamcman_->evaluate(*system_matrix(), *fresm, *dis, beamcontactparams, true, timen_);
 
     // scaling back
     fresm->Scale(-1.0);
@@ -4260,7 +4260,7 @@ void STR::TimIntImpl::use_block_matrix(
     discret_->set_state(0, "acceleration", (*acc_)(0));
     if (damping_ == Inpar::STR::damp_material) discret_->set_state("velocity", (*vel_)(0));
 
-    discret_->Evaluate(p, stiff_, mass_, fint, finert, Teuchos::null);
+    discret_->evaluate(p, stiff_, mass_, fint, finert, Teuchos::null);
     discret_->ClearState();
   }
 
@@ -4332,7 +4332,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
   p.set<int>("stc_scaling", stcscale_);
   p.set("stc_layer", 1);
 
-  discret_->Evaluate(p, stcmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, stcmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   stcmat_->Complete();
 
@@ -4359,7 +4359,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
     tmpstcmat->Zero();
 
-    discret_->Evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     tmpstcmat->Complete();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS

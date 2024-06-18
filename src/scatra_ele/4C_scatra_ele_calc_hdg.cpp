@@ -133,7 +133,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::InitializeShapes(
  | Evaluate                                              hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Evaluate(Core::Elements::Element* ele,
+int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::evaluate(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
     Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseVector& elevec1,
@@ -146,7 +146,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Evaluate(Core::Elemen
 
   InitializeShapes(ele, discretization.Name());
 
-  shapes_->Evaluate(*ele);
+  shapes_->evaluate(*ele);
 
   read_global_vectors(ele, discretization, la);
   get_material_params(ele);
@@ -207,7 +207,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(
   {
     case ScaTra::Action::update_interior_variables:
     {
-      shapes_->Evaluate(*ele);
+      shapes_->evaluate(*ele);
       read_global_vectors(ele, discretization, la);
 
       return update_interior_variables(hdgele, params, elevec1_epetra);
@@ -216,7 +216,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(
 
     case ScaTra::Action::interpolate_hdg_to_node:
     {
-      shapes_->Evaluate(*ele);
+      shapes_->evaluate(*ele);
       read_global_vectors(ele, discretization, la);
       return NodeBasedValues(ele, discretization, elevec1_epetra);
       break;
@@ -235,7 +235,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(
     {
       if (hdgele->PadaptEle() || !hdgele->MatInit())
       {
-        shapes_->Evaluate(*ele);
+        shapes_->evaluate(*ele);
         element_init(ele);
         read_global_vectors(ele, discretization, la);
         prepare_material_params(ele);
@@ -254,7 +254,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(
     }
     case ScaTra::Action::project_field:
     {
-      shapes_->Evaluate(*ele);
+      shapes_->evaluate(*ele);
       return ProjectField(ele, discretization, params, elevec1_epetra, elevec2_epetra, la);
       break;
     }
@@ -297,14 +297,14 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(
     }
     case ScaTra::Action::calc_padaptivity:
     {
-      shapes_->Evaluate(*ele);
+      shapes_->evaluate(*ele);
       read_global_vectors(ele, discretization, la);
       return CalcPAdaptivity(ele, discretization, params);
       break;
     }
     case ScaTra::Action::calc_error:
     {
-      shapes_->Evaluate(*ele);
+      shapes_->evaluate(*ele);
       read_global_vectors(ele, discretization, la);
       return CalcError(ele, params, elevec1_epetra);
       break;
@@ -338,7 +338,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::NodeBasedValues(
   {
     // evaluate shape polynomials in node
     for (unsigned int idim = 0; idim < nsd_; idim++) shapes_->xsi(idim) = locations(idim, i);
-    shapes_->polySpace_->Evaluate(shapes_->xsi, values);
+    shapes_->polySpace_->evaluate(shapes_->xsi, values);
 
     // compute values for concentrations (and gradients) by summing over all basis functions
     double sum = 0;
@@ -377,7 +377,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::NodeBasedValues(
       for (unsigned int idim = 0; idim < nsd_ - 1; idim++)
         shapesface_->xsi(idim) = locations(idim, i);
 
-      shapesface_->polySpace_->Evaluate(shapesface_->xsi, fvalues);
+      shapesface_->polySpace_->evaluate(shapesface_->xsi, fvalues);
 
       double sum = 0.0;
       for (unsigned int k = 0; k < shapesface_->nfdofs_; ++k)
@@ -430,7 +430,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectDirichField(
     // evaluate function at current Gauss point (provide always 3D coordinates!)
     const double functfac = Global::Problem::Instance()
                                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>((*func)[0] - 1)
-                                .Evaluate(coordgp, time, 0);
+                                .evaluate(coordgp, time, 0);
 
     // Creating the mass matrix and the RHS vector
     for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
@@ -578,7 +578,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::Compute
 
   shapes_ = Teuchos::rcp(
       new Core::FE::ShapeValues<distype>(hdgele->Degree(), usescompletepoly, 2 * ele->Degree()));
-  shapes_->Evaluate(*ele);
+  shapes_->evaluate(*ele);
   compute_interior_matrices(hdgele);
 
   int sumindex = 0;
@@ -787,7 +787,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype,
     // gaussian points coordinates
     for (int idim = 0; idim < Core::FE::dim<distype>; ++idim)
       gp_coord(idim) = intpoints.IP().qxg[q][idim];
-    polySpace->Evaluate(gp_coord, shape_gp[q]);
+    polySpace->evaluate(gp_coord, shape_gp[q]);
   }
 
   double jacdet = shapes_->xjm.Determinant();
@@ -1131,7 +1131,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::Compute
 {
   const int funcno = scatrapara_->EMDSource();
 
-  shapes_->Evaluate(*ele);
+  shapes_->evaluate(*ele);
 
   // Core::LinAlg::SerialDenseVector source(nsd_);
   if (nsd_ != Global::Problem::Instance()
@@ -1155,7 +1155,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::Compute
           source += shapes_->shderxy(j * nsd_ + d, q) *
                     Global::Problem::Instance()
                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcno - 1)
-                        .Evaluate(xyz.A(), time, d);
+                        .evaluate(xyz.A(), time, d);
         elevec1(i) += shapes_->shfunct(i, q) * source * shapes_->jfac(q);
       }
   }
@@ -1334,7 +1334,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::Compute
   shapesface_ = Core::FE::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
 
   shapesface_->EvaluateFace(*ele, face);
-  shapes_->Evaluate(*ele);
+  shapes_->evaluate(*ele);
 
   // integration loop
   for (unsigned int iquad = 0; iquad < shapesface_->nqpoints_; ++iquad)
@@ -1359,7 +1359,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::Compute
         // evaluate function at current Gauss point (provide always 3D coordinates!)
         functfac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                       .Evaluate(coordgpref, time, 0);
+                       .evaluate(coordgpref, time, 0);
       }
       else
         functfac = 1.;
@@ -1630,7 +1630,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(
     const Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
-  shapes_->Evaluate(*ele);
+  shapes_->evaluate(*ele);
 
   Core::LinAlg::SerialDenseMatrix Mmat(shapes_->ndofs_, shapes_->ndofs_);
   Core::LinAlg::SerialDenseMatrix massPart(shapes_->ndofs_, shapes_->nqpoints_);
@@ -1675,11 +1675,11 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(
 
       phi = Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(*start_func - 1)
-                .Evaluate(xyz, 0, 0);
+                .evaluate(xyz, 0, 0);
       for (unsigned int i = 0; i < nsd_; ++i)
         gradphi[i] = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(*start_func - 1)
-                         .Evaluate(xyz, 0, 1 + i);
+                         .evaluate(xyz, 0, 1 + i);
 
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
@@ -1732,7 +1732,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(
       double trphi;
       trphi = Global::Problem::Instance()
                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(*start_func - 1)
-                  .Evaluate(xyz, 0, nsd_ + 1);
+                  .evaluate(xyz, 0, nsd_ + 1);
 
       // now fill the components in the mass matrix and the right hand side
       for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
@@ -1934,7 +1934,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(
       {
         Core::LinAlg::SerialDenseVector tempVec(shapes_old->ndofs_);
         Core::LinAlg::Matrix<nsd_, 1> point(shapes_->nodexyzunit[i]);
-        polySpace_old->Evaluate(point, tempVec);
+        polySpace_old->evaluate(point, tempVec);
         for (unsigned int j = 0; j < nsd_ + 1; j++)
           for (unsigned int k = 0; k < shapes_old->ndofs_; k++)
             tempMat(j * shapes_->ndofs_ + i, j * shapes_old->ndofs_ + k) = tempVec(k);
@@ -1992,7 +1992,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(
           Core::LinAlg::SerialDenseVector tempVec(shapesface_old->nfdofs_);
           Core::LinAlg::Matrix<nsd_ - 1, 1> point(shapesface_->nodexyzunit[i]);
 
-          polySpaceFace_old->Evaluate(point, tempVec);
+          polySpaceFace_old->evaluate(point, tempVec);
           for (unsigned int k = 0; k < shapesface_old->nfdofs_; k++) tempMat1(i, k) = tempVec(k);
         }
 
@@ -2165,7 +2165,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(
   // For the calculation of the error we use a higher integration rule
   Core::FE::ShapeValues<distype> highshapes(
       ele->Degree(), shapes_->usescompletepoly_, (ele->Degree() + 2) * 2);
-  highshapes.Evaluate(*ele);
+  highshapes.evaluate(*ele);
 
   double error_phi = 0.0, error_grad_phi = 0.0;
   double exact_phi = 0.0, exact_grad_phi = 0.0;
@@ -2216,7 +2216,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes.xyzreal(idim, q);
     double funct = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func - 1)
-                       .Evaluate(xsi.A(), time, 0);
+                       .evaluate(xsi.A(), time, 0);
     std::vector<double> deriv = Global::Problem::Instance()
                                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func - 1)
                                     .evaluate_spatial_derivative(xsi.A(), time, 0);

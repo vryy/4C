@@ -1241,8 +1241,8 @@ void CONTACT::Interface::FDCheckNormalDeriv()
   // compute element areas
   set_element_areas();
 
-  // contents of Evaluate()
-  Evaluate();
+  // contents of evaluate()
+  evaluate();
 
   return;
 }
@@ -1730,8 +1730,8 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
   // compute element areas
   set_element_areas();
 
-  // contents of Evaluate()
-  Evaluate();
+  // contents of evaluate()
+  evaluate();
 
   return;
 }
@@ -1815,9 +1815,9 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -1922,9 +1922,9 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -2000,9 +2000,9 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
   set_element_areas();
 
   // *******************************************************************
-  // contents of Evaluate()
+  // contents of evaluate()
   // *******************************************************************
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -2084,9 +2084,9 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -2190,9 +2190,9 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -2267,9 +2267,9 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
   set_element_areas();
 
   // *******************************************************************
-  // contents of Evaluate()
+  // contents of evaluate()
   // *******************************************************************
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -2342,9 +2342,9 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -2440,9 +2440,9 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -2502,7 +2502,7 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -2576,9 +2576,9 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -2674,9 +2674,9 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -2736,7 +2736,7 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -2864,9 +2864,9 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -3016,9 +3016,9 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -3109,7 +3109,7 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -3195,9 +3195,9 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -3350,9 +3350,9 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -3491,7 +3491,7 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -3577,9 +3577,9 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -3732,9 +3732,9 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -3872,7 +3872,7 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -3999,9 +3999,9 @@ void CONTACT::Interface::FDCheckGapDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -4150,9 +4150,9 @@ void CONTACT::Interface::FDCheckGapDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -4241,7 +4241,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -4383,7 +4383,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
     // loop over proc's slave nodes of the interface
     // use standard column map to include processor's ghosted nodes
@@ -4585,7 +4585,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
     // loop over proc's slave nodes of the interface
     // use standard column map to include processor's ghosted nodes
@@ -4758,7 +4758,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   set_element_areas();
 
   // *******************************************************************
-  // contents of Evaluate()
+  // contents of evaluate()
   // *******************************************************************
   // loop over proc's slave nodes of the interface
   // use standard column map to include processor's ghosted nodes
@@ -4954,9 +4954,9 @@ void CONTACT::Interface::FDCheckStickDeriv(
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -5168,9 +5168,9 @@ void CONTACT::Interface::FDCheckStickDeriv(
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -5340,7 +5340,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   return;
 
@@ -5738,9 +5738,9 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -5977,9 +5977,9 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -6180,7 +6180,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   return;
 
@@ -6276,7 +6276,7 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
     set_element_areas();
 
     // Evaluate
-    Evaluate();
+    evaluate();
     bool isincontact, activesetchange = false;
     assemble_reg_normal_forces(isincontact, activesetchange);
 
@@ -6383,7 +6383,7 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
     set_element_areas();
 
     // Evaluate
-    Evaluate();
+    evaluate();
     bool isincontact, activesetchange = false;
     assemble_reg_normal_forces(isincontact, activesetchange);
 
@@ -6463,9 +6463,9 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
   set_element_areas();
 
   // *******************************************************************
-  // contents of Evaluate()
+  // contents of evaluate()
   // *******************************************************************
-  Evaluate();
+  evaluate();
   bool isincontact, activesetchange = false;
   assemble_reg_normal_forces(isincontact, activesetchange);
 
@@ -6647,9 +6647,9 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
     // EvaluateRelMov();
 
     // compute finite difference derivative
@@ -6866,9 +6866,9 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
     // EvaluateRelMov();
 
     // compute finite difference derivative
@@ -7048,7 +7048,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
   // EvaluateRelMov();
 
   return;

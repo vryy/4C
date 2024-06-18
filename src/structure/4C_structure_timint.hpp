@@ -306,10 +306,10 @@ namespace STR
      *
      *  with n and i being time and Newton iteration step
      */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override = 0;
+    void evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override = 0;
 
     /// don't update displacement but evaluate elements (implicit only)
-    void Evaluate() override { FOUR_C_THROW("new structural time integration only"); }
+    void evaluate() override { FOUR_C_THROW("new structural time integration only"); }
 
     /// update at time step end
     void Update() override = 0;

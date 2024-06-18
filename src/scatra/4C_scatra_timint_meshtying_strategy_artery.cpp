@@ -273,7 +273,7 @@ void ScaTra::MeshtyingStrategyArtery::SetupSystem(
       scatratimint_->Phinp(), Teuchos::null, artscatratimint_->Phinp());
 
   // evaluate the 1D-3D coupling
-  arttoscatracoupling_->Evaluate(comb_systemmatrix_, rhs_);
+  arttoscatracoupling_->evaluate(comb_systemmatrix_, rhs_);
 
   // evaluate 1D sub-problem
   artscatratimint_->PrepareLinearSolve();

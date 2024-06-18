@@ -330,7 +330,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::complete_system_matrix_sca_tra()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::ScaTraManifoldScaTraFluxEvaluator::Evaluate()
+void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate()
 {
   // clear matrices and rhs from last evaluation
   systemmatrix_manifold_->Zero();
@@ -736,7 +736,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::pre_evaluate(
       break;
     }
   }
-  scatra_manifold_->ScaTraField()->discretization()->Evaluate(
+  scatra_manifold_->ScaTraField()->discretization()->evaluate(
       eleparams, Teuchos::null, Teuchos::null);
 }
 

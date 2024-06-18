@@ -412,7 +412,7 @@ Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::SymbolicFunctionOfSpaceTime(
 }
 
 template <int dim>
-double Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::Evaluate(
+double Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate(
     const double* x, const double t, const std::size_t component) const
 {
   std::size_t component_mod = FindModifiedComponent(component, expr_);
@@ -485,7 +485,7 @@ std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_time
   const int number_of_arguments = 4;
 
   // add the value at time t
-  res[0] = Evaluate(x, t, component);
+  res[0] = evaluate(x, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -568,7 +568,7 @@ Core::UTILS::SymbolicFunctionOfAnything<dim>::SymbolicFunctionOfAnything(
 
 
 template <int dim>
-double Core::UTILS::SymbolicFunctionOfAnything<dim>::Evaluate(
+double Core::UTILS::SymbolicFunctionOfAnything<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const std::size_t component) const
 {

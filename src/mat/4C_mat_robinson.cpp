@@ -345,7 +345,7 @@ void Mat::Robinson::Update()
  | select Robinson's material, integrate internal variables and return  |
  | stress and material tangent                                          |
  *----------------------------------------------------------------------*/
-void Mat::Robinson::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* strain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -527,7 +527,7 @@ void Mat::Robinson::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // set in parameter list
   params.set<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>("plglstrain", plstrain);
 
-}  // Evaluate()
+}  // evaluate()
 
 
 /*----------------------------------------------------------------------*

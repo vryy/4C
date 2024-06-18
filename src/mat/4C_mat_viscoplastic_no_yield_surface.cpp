@@ -175,7 +175,7 @@ void Mat::ViscoPlasticNoYieldSurface::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoPlasticNoYieldSurface::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ViscoPlasticNoYieldSurface::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* strain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)

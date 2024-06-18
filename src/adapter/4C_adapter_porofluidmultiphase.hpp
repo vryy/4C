@@ -160,7 +160,7 @@ namespace Adapter
     virtual void calculate_phase_velocities() = 0;
 
     //! build linear system tangent matrix, rhs/force residual
-    virtual void Evaluate() = 0;
+    virtual void evaluate() = 0;
 
     // Assemble Off-Diagonal Fluid-Structure Coupling matrix
     virtual void assemble_fluid_struct_coupling_mat(

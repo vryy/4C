@@ -86,7 +86,7 @@ namespace Mat
     itself (for poro P1 elements, for instance), the material evaluates the
     consitutive law itself and its derivatives in the ConstituitiveDerivatives(...)
     methods.
-    All other Evaluate() methods are basically passed through to the underlying
+    All other evaluate() methods are basically passed through to the underlying
     structure material.
 
     The poro material can save the porosity gauss point wise. Therefore it
@@ -282,12 +282,12 @@ namespace Mat
 
     //! @name Evaluation methods
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int EleID) override
     {
-      mat_->Evaluate(defgrd, glstrain, params, stress, cmat, gp, EleID);
+      mat_->evaluate(defgrd, glstrain, params, stress, cmat, gp, EleID);
     }
 
     void StrainEnergy(const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp,

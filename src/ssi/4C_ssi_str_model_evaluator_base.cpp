@@ -57,7 +57,7 @@ void STR::MODELEVALUATOR::BaseSSI::determine_stress_strain()
   // prepare nodal stress vectors
   Epetra_MultiVector nodal_stresses_source(*discret().NodeRowMap(), 6);
 
-  discret().Evaluate(
+  discret().evaluate(
       [&](Core::Elements::Element& ele)
       {
         Core::FE::ExtrapolateGaussPointQuantityToNodes(

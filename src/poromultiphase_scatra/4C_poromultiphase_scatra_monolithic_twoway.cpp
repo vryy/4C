@@ -402,7 +402,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::evaluate(
   SetScatraSolution();
 
   // (3) access poro problem to build poro-poro block
-  poro_field()->Evaluate(porostructinc, porofluidinc, itnum_ == 0);
+  poro_field()->evaluate(porostructinc, porofluidinc, itnum_ == 0);
 
   // (4) set fluid and structure solution on scatra field
   SetPoroSolution();
@@ -627,7 +627,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::apply_scatra_st
         k_sps,                                           // scatra-structure coupling matrix
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-    ScatraAlgo()->ScaTraField()->discretization()->Evaluate(sparams_struct, scatrastrategy_struct);
+    ScatraAlgo()->ScaTraField()->discretization()->evaluate(sparams_struct, scatrastrategy_struct);
   }
 
   // complete
@@ -673,7 +673,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::
       k_spf,                                          // scatra-structure coupling matrix
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-  ScatraAlgo()->ScaTraField()->discretization()->Evaluate(sparams_fluid, scatrastrategy_fluid);
+  ScatraAlgo()->ScaTraField()->discretization()->evaluate(sparams_fluid, scatrastrategy_fluid);
 
   // complete
   k_spf->Complete(poro_field()->fluid_field()->SystemMatrix()->RangeMap(),
@@ -1641,7 +1641,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
       k_asa,                                              // scatra-artery coupling matrix
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-  scatramsht_->ArtScatraField()->discretization()->Evaluate(
+  scatramsht_->ArtScatraField()->discretization()->evaluate(
       sparams_artery, artscatrastrategy_artery);
 
   // complete

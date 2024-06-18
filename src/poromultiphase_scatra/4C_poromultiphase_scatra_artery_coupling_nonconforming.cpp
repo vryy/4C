@@ -172,7 +172,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::get_coupli
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   if (!issetup_) FOUR_C_THROW("Setup() has not been called");
@@ -476,7 +476,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate_c
     const std::vector<double> seglengths = get_ele_segment_lengths(coupl_elepairs_[i]->Ele1GID());
 
     // evaluate
-    const double integrated_diam = coupl_elepairs_[i]->Evaluate(&(eleforce[0]), &(eleforce[1]),
+    const double integrated_diam = coupl_elepairs_[i]->evaluate(&(eleforce[0]), &(eleforce[1]),
         &(elestiff[0][0]), &(elestiff[0][1]), &(elestiff[1][0]), &(elestiff[1][1]), &D_ele, &M_ele,
         &Kappa_ele, seglengths);
 

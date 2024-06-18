@@ -70,7 +70,7 @@ void ScaTra::HeterogeneousReactionStrategy::EvaluateMeshtying()
         scatratimint_->discretization()->GetState(scatratimint_->NdsDisp(), "dispnp"));
   }
 
-  discret_->Evaluate(condparams, scatratimint_->SystemMatrix(), scatratimint_->Residual());
+  discret_->evaluate(condparams, scatratimint_->SystemMatrix(), scatratimint_->Residual());
 
   // now we clear all states.
   // it would be nicer to do this directly before all

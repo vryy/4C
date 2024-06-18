@@ -67,10 +67,10 @@ namespace Discret
 
       <h3>Usability</h3>
 
-      The calculations are done by the Evaluate() method. There are two
+      The calculations are done by the evaluate() method. There are two
       version. The virtual method that is inherited from FluidEleInterface
       (and called from Fluid) and the non-virtual one that does the actual
-      work. The non-virtual Evaluate() method must be callable without an actual
+      work. The non-virtual evaluate() method must be callable without an actual
       Fluid object.
 
       \author u.kue
@@ -292,7 +292,7 @@ namespace Discret
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      int Evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -301,7 +301,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       /// Evaluate the element at specified gauss points
-      int Evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -466,7 +466,7 @@ namespace Discret
         Specific evaluate function without any knowledge about DRT objects. This
         way the element evaluation is independent of the specific mesh storage.
        */
-      virtual int Evaluate(Teuchos::ParameterList& params,
+      virtual int evaluate(Teuchos::ParameterList& params,
           const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
           const Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
           const Core::LinAlg::Matrix<nsd_, nen_>& ebofon,

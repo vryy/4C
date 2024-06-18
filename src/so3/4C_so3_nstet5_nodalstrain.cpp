@@ -718,7 +718,7 @@ void Discret::ELEMENTS::NStet5Type::select_material(const Teuchos::RCP<Core::Mat
       auto* stvk = dynamic_cast<Mat::StVenantKirchhoff*>(mat.get());
       Teuchos::ParameterList params;
       Core::LinAlg::Matrix<3, 3> defgrd(true);
-      stvk->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
+      stvk->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
       density = stvk->Density();
     }
     break;
@@ -727,7 +727,7 @@ void Discret::ELEMENTS::NStet5Type::select_material(const Teuchos::RCP<Core::Mat
     {
       auto* aaa = dynamic_cast<Mat::AAAneohooke*>(mat.get());
       Teuchos::ParameterList params;
-      aaa->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
+      aaa->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
       density = aaa->Density();
     }
     break;
@@ -735,7 +735,7 @@ void Discret::ELEMENTS::NStet5Type::select_material(const Teuchos::RCP<Core::Mat
     {
       auto* hyper = dynamic_cast<Mat::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
-      hyper->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
+      hyper->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
       density = hyper->Density();
       return;
       break;

@@ -1070,7 +1070,7 @@ void STR::TimInt::determine_mass_damp_consist_accel()
     // for structure ale
     if (dismat_ != Teuchos::null) discret_->set_state(0, "material_displacement", (*dismat_)(0));
 
-    discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, fintn_str_);
+    discret_->evaluate(p, stiff_, mass_, fint, Teuchos::null, fintn_str_);
     discret_->ClearState();
   }
 
@@ -1131,7 +1131,7 @@ void STR::TimInt::determine_mass_damp_consist_accel()
       beamcontactparams.set("iter", 0);
       beamcontactparams.set("dt", (*dt_)[0]);
       beamcontactparams.set("numstep", step_);
-      beamcman_->Evaluate(*system_matrix(), *rhs, (*dis_)[0], beamcontactparams, true, timen_);
+      beamcman_->evaluate(*system_matrix(), *rhs, (*dis_)[0], beamcontactparams, true, timen_);
     }
 
     // Contribution to rhs due to inertia forces of inhomogeneous Dirichlet conditions
@@ -1692,7 +1692,7 @@ void STR::TimInt::reset_step()
     Teuchos::ParameterList p;
     p.set("action", "calc_struct_reset_istep");
     // go to elements
-    discret_->Evaluate(
+    discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -1889,7 +1889,7 @@ void STR::TimInt::read_restart_multi_scale()
       Teuchos::ParameterList p;
       // action for elements
       p.set("action", "multi_readrestart");
-      discret_->Evaluate(
+      discret_->evaluate(
           p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
       discret_->ClearState();
       break;
@@ -2350,7 +2350,7 @@ void STR::TimInt::determine_stress_strain()
 
     Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix = Teuchos::null;
     Teuchos::RCP<Epetra_Vector> system_vector = Teuchos::null;
-    Core::FE::UTILS::Evaluate(
+    Core::FE::UTILS::evaluate(
         *discret_, p, system_matrix, system_vector, discret_->ElementRowMap());
     discret_->ClearState();
   }
@@ -2433,7 +2433,7 @@ void STR::TimInt::determine_optional_quantity()
 
     if ((dismatn_ != Teuchos::null)) discret_->set_state(0, "material_displacement", dismatn_);
 
-    discret_->Evaluate(
+    discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -3018,7 +3018,7 @@ void STR::TimInt::apply_force_internal(const double time, const double dt,
 
   if (damping_ == Inpar::STR::damp_material) discret_->set_state("velocity", vel);
   // fintn_->PutScalar(0.0);  // initialise internal force vector
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null, fint, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, Teuchos::null, Teuchos::null, fint, Teuchos::null, Teuchos::null);
 
   discret_->ClearState();
 }

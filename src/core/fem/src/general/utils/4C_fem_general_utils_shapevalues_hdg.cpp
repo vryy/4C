@@ -50,7 +50,7 @@ Core::FE::ShapeValues<distype>::ShapeValues(
     const double* gpcoord = quadrature_->Point(q);
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
 
-    polySpace_->Evaluate(xsi, values);
+    polySpace_->evaluate(xsi, values);
     polySpace_->Evaluate_deriv1(xsi, derivs);
 
     for (unsigned int i = 0; i < ndofs_; ++i)
@@ -77,7 +77,7 @@ Core::FE::ShapeValues<distype>::ShapeValues(
  |  Evaluate element-dependent shape data (public)    kronbichler 05/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Core::FE::ShapeValues<distype>::Evaluate(
+void Core::FE::ShapeValues<distype>::evaluate(
     const Core::Elements::Element& ele, const std::vector<double>& aleDis)
 {
   FOUR_C_ASSERT(ele.Shape() == distype, "Internal error");
@@ -182,7 +182,7 @@ Core::FE::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params
     const unsigned int codim = nsd_ - 1;
     for (unsigned int idim = 0; idim < codim; idim++) xsi(idim) = gpcoord[idim];
 
-    polySpace_->Evaluate(xsi, face_values_);
+    polySpace_->evaluate(xsi, face_values_);
     for (unsigned int i = 0; i < nfdofs_; ++i) shfunctNoPermute(i, q) = face_values_(i);
 
     Core::LinAlg::Matrix<nfn_, 1> myfunct(funct.values() + q * nfn_, true);
@@ -405,7 +405,7 @@ void Core::FE::ShapeValuesFace<distype>::adjust_face_orientation(
               {
                 xsi(0) = point[0];
                 xsi(1) = point[1];
-                polySpace_->Evaluate(xsi, face_values_);
+                polySpace_->evaluate(xsi, face_values_);
                 for (unsigned int i = 0; i < nfdofs_; ++i) shfunct(i, q) = face_values_(i);
               }
             }
@@ -428,7 +428,7 @@ void Core::FE::ShapeValuesFace<distype>::adjust_face_orientation(
               {
                 xsi(0) = point[0];
                 xsi(1) = point[1];
-                polySpace_->Evaluate(xsi, face_values_);
+                polySpace_->evaluate(xsi, face_values_);
                 for (unsigned int i = 0; i < nfdofs_; ++i) shfunct(i, q) = face_values_(i);
               }
             }
@@ -450,7 +450,7 @@ void Core::FE::ShapeValuesFace<distype>::adjust_face_orientation(
               {
                 xsi(0) = point[0];
                 xsi(1) = point[1];
-                polySpace_->Evaluate(xsi, face_values_);
+                polySpace_->evaluate(xsi, face_values_);
                 for (unsigned int i = 0; i < nfdofs_; ++i) shfunct(i, q) = face_values_(i);
               }
             }
@@ -615,7 +615,7 @@ Core::FE::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParams 
   for (int q = 0; q < quadrature->NumPoints(); ++q)
   {
     for (int d = 0; d < nsd; ++d) xsi(d) = faceQPoints(q, d);
-    polySpace->Evaluate(xsi, faceValues);
+    polySpace->evaluate(xsi, faceValues);
     for (int i = 0; i < faceValues.numRows(); ++i)
     {
       container->matrix_(i, q) = faceValues(i);

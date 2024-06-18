@@ -75,7 +75,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(
  | evaluate  routine                                         vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Evaluate(Core::Elements::Element* ele,
+int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la,
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,

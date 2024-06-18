@@ -51,7 +51,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair.
-  this->cast_geometry_pair()->Evaluate(
+  this->cast_geometry_pair()->evaluate(
       this->ele1pos_, this->face_element_->GetFaceElementData(), this->line_to_3D_segments_);
 
   // If there are no intersection segments, no contact terms will be assembled.
@@ -119,9 +119,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
       gap = r_rel.Dot(surface_normal) - beam_cross_section_radius;
 
       // Get the shape function matrices.
-      GEOMETRYPAIR::EvaluateShapeFunction<beam>::Evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<beam>::evaluate(
           N_beam, eta, this->ele1pos_.shape_function_data_);
-      GEOMETRYPAIR::EvaluateShapeFunction<surface>::Evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<surface>::evaluate(
           N_surface, xi, this->face_element_->GetFaceElementData().shape_function_data_);
 
       // Calculate the variation of the gap function multiplied with the surface normal vector.
@@ -192,7 +192,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair.
-  this->cast_geometry_pair()->Evaluate(
+  this->cast_geometry_pair()->evaluate(
       this->ele1pos_, this->face_element_->GetFaceElementData(), this->line_to_3D_segments_);
 
   // If there are no intersection segments, no contact terms will be assembled.

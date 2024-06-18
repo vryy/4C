@@ -122,7 +122,7 @@ void CONSTRAINTS::ConstraintPenalty::Initialize(const double& time)
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintPenalty::Evaluate(Teuchos::ParameterList& params,
+void CONSTRAINTS::ConstraintPenalty::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -218,7 +218,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
       if (curvenum >= 0)
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                       .Evaluate(time);
+                       .evaluate(time);
 
       double diff = (curvefac * (*initerror_)[condID - 1] - (*acterror_)[condID - 1]);
 
@@ -261,7 +261,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
         elevector3.size(1);
 
         // call the element specific evaluate method
-        int err = curr->second->Evaluate(
+        int err = curr->second->evaluate(
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
         if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -350,7 +350,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_error(
         elevector3.size(1);
 
         // call the element specific evaluate method
-        int err = curr->second->Evaluate(
+        int err = curr->second->evaluate(
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
         if (err) FOUR_C_THROW("error while evaluating elements");
 

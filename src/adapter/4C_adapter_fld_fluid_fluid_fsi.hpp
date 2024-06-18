@@ -126,7 +126,7 @@ namespace Adapter
 
     /// evaluate the fluid and update the merged fluid/FSI DOF-map extractor in case of a change in
     /// the DOF-maps
-    void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    void evaluate(Teuchos::RCP<const Epetra_Vector>
             stepinc  ///< solution increment between time step n and n+1
         ) override;
 

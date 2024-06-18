@@ -102,7 +102,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Output() { return; }
 /*----------------------------------------------------------------------*
  | evaluate matrix and rhs                             kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Evaluate() { return; }
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::evaluate() { return; }
 
 /*----------------------------------------------------------------------*
  | extract and update                                  kremheller 04/18 |

@@ -43,7 +43,7 @@ Discret::ELEMENTS::FluidEleCalcHDG<distype>::FluidEleCalcHDG() : usescompletepol
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate(Discret::ELEMENTS::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -53,7 +53,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(Discret::ELEMENTS::Flu
     Core::LinAlg::SerialDenseVector& elevec3_epetra, const Core::FE::GaussIntegration&,
     bool offdiag)
 {
-  return this->Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+  return this->evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra, offdiag);
 }
 
@@ -93,7 +93,7 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(
 
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate(Discret::ELEMENTS::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix&,
@@ -104,7 +104,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(Discret::ELEMENTS::Flu
 
   const bool updateLocally = params.get<bool>("needslocalupdate");
 
-  shapes_->Evaluate(*ele);
+  shapes_->evaluate(*ele);
 
   ebofoaf_.PutScalar(0);
   eprescpgaf_.PutScalar(0);
@@ -323,7 +323,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::compute_error(Discret::ELEMENTS
 {
   InitializeShapes(ele);
 
-  shapes_->Evaluate(*ele);
+  shapes_->evaluate(*ele);
   const double time = local_solver_->fldparatimint_->Time();
 
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "intvelnp");
@@ -408,7 +408,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(Discret::ELEMENTS:
   InitializeShapes(ele);
 
   // Evaluate the element at the gauss points
-  shapes_->Evaluate(*ele);
+  shapes_->evaluate(*ele);
 
   // reshape elevec2 as matrix
   FOUR_C_ASSERT(
@@ -607,7 +607,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(Discret::ELEMENTS:
           if (funct_num > 0)
             u(d) = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                       .Evaluate(xyz.A(), *time, d);
+                       .evaluate(xyz.A(), *time, d);
         }
       }
 
@@ -721,7 +721,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
     // Evaluating the polinomials in the point given by "shapes_->xsi".
     // The polynomials are the internal ones.
     // The result of the evaluation is given in "values".
-    shapes_->polySpace_->Evaluate(shapes_->xsi, values);
+    shapes_->polySpace_->evaluate(shapes_->xsi, values);
 
     // compute values for velocity and pressure by summing over all basis functions
     for (unsigned int d = 0; d <= nsd_; ++d)
@@ -809,7 +809,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
       for (unsigned int idim = 0; idim < nsd_ - 1; idim++)
         shapesface_->xsi(idim) = xsishuffle(idim, i);
       // Actually evaluating shape polynomials in node
-      shapesface_->polySpace_->Evaluate(shapesface_->xsi, fvalues);
+      shapesface_->polySpace_->evaluate(shapesface_->xsi, fvalues);
 
       // compute values for velocity and pressure by summing over all basis functions
       for (unsigned int d = 0; d < nsd_; ++d)
@@ -895,7 +895,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_for_hit(
   {
     // evaluate shape polynomials in node
     for (unsigned int idim = 0; idim < nsd_; idim++) shapes_->xsi(idim) = locations(idim, i);
-    shapes_->polySpace_->Evaluate(shapes_->xsi, values);
+    shapes_->polySpace_->evaluate(shapes_->xsi, values);
 
     // compute values for velocity and pressure by summing over all basis functions
     for (unsigned int d = 0; d < nsd_; ++d)
@@ -969,7 +969,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hi
 #endif
 
   InitializeShapes(ele);
-  shapes_->Evaluate(*ele);
+  shapes_->evaluate(*ele);
 
 
   if (elevec1.numRows() > 0)
@@ -987,7 +987,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hi
       Core::LinAlg::Matrix<nsd_, 1> xsi(false);
       for (unsigned int sdm = 0; sdm < nsd_; sdm++) xsi(sdm) = shapes_->quadrature_->Point(q)[sdm];
 
-      poly.Evaluate(xsi, values);
+      poly.evaluate(xsi, values);
       // compute values for force and coordinates by summing over all basis functions
       for (unsigned int d = 0; d < nsd_; ++d)
       {
@@ -1081,7 +1081,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
   Core::FE::PolynomialSpaceTensor<nsd_, Core::FE::LagrangePolynomial> poly(poly1d);
 
   InitializeShapes(ele);
-  shapes_->Evaluate(*ele);
+  shapes_->evaluate(*ele);
 
 
   if (elevec1.numRows() > 0)
@@ -1099,7 +1099,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
       Core::LinAlg::Matrix<nsd_, 1> xsi(false);
       for (unsigned int sdm = 0; sdm < nsd_; sdm++) xsi(sdm) = shapes_->quadrature_->Point(q)[sdm];
 
-      poly.Evaluate(xsi, values);
+      poly.evaluate(xsi, values);
       // compute values for force and coordinates by summing over all basis functions
       for (unsigned int d = 0; d < nsd_; ++d)
       {
@@ -1175,7 +1175,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
 
       Core::LinAlg::SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
 
-      poly.Evaluate(xsi, values);
+      poly.evaluate(xsi, values);
       // compute values for force and coordinates by summing over all basis functions
       for (unsigned int d = 0; d < nsd_; ++d)
       {
@@ -1289,13 +1289,13 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_all(const int startfu
     {
       FLD::ChannelWeaklyCompressibleFunction* channelfunc =
           new FLD::ChannelWeaklyCompressibleFunction;
-      u(0) = channelfunc->Evaluate(xyz.A(), 0, 0);
-      u(1) = channelfunc->Evaluate(xyz.A(), 0, 1);
-      p = channelfunc->Evaluate(xyz.A(), 0, 2);
-      grad(0, 0) = channelfunc->Evaluate(xyz.A(), 0, 3);
-      grad(0, 1) = channelfunc->Evaluate(xyz.A(), 0, 4);
-      grad(1, 0) = channelfunc->Evaluate(xyz.A(), 0, 5);
-      grad(1, 1) = channelfunc->Evaluate(xyz.A(), 0, 6);
+      u(0) = channelfunc->evaluate(xyz.A(), 0, 0);
+      u(1) = channelfunc->evaluate(xyz.A(), 0, 1);
+      p = channelfunc->evaluate(xyz.A(), 0, 2);
+      grad(0, 0) = channelfunc->evaluate(xyz.A(), 0, 3);
+      grad(0, 1) = channelfunc->evaluate(xyz.A(), 0, 4);
+      grad(1, 0) = channelfunc->evaluate(xyz.A(), 0, 5);
+      grad(1, 1) = channelfunc->evaluate(xyz.A(), 0, 6);
     }
     break;
 
@@ -1305,10 +1305,10 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_all(const int startfu
       for (unsigned int index = 0; index < nsd_; ++index)
         u(index) = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfunc - 1)
-                       .Evaluate(xyz.A(), 0, index);
+                       .evaluate(xyz.A(), 0, index);
       p = Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfunc - 1)
-              .Evaluate(xyz.A(), 0, nsd_);
+              .evaluate(xyz.A(), 0, nsd_);
     }
     break;
 
@@ -1346,7 +1346,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_pressure_average(
 
   InitializeShapes(ele);
 
-  shapes_->Evaluate(*ele);
+  shapes_->evaluate(*ele);
 
   // get time
   const double time = local_solver_->fldparatimint_->Time();
@@ -2518,7 +2518,7 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_correctio
     interiorecorrectionterm[i] =
         Global::Problem::Instance()
             ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(corrtermfuncnum - 1)
-            .Evaluate(x, 0.0, 0);
+            .evaluate(x, 0.0, 0);
   }
 }
 
@@ -2535,7 +2535,7 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeBodyForce(
       interiorebodyforce[d * ndofs_ + i] =
           Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(bodyforcefuncnum - 1)
-              .Evaluate(x, 0.0, d);
+              .evaluate(x, 0.0, d);
   }
 }
 

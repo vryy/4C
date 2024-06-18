@@ -253,7 +253,7 @@ void Adapter::PoroFluidMultiphaseWrapper::calculate_phase_velocities()
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::PoroFluidMultiphaseWrapper::Evaluate() { porofluid_->Evaluate(); }
+void Adapter::PoroFluidMultiphaseWrapper::evaluate() { porofluid_->evaluate(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::PoroFluidMultiphaseWrapper::SystemMatrix()

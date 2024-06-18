@@ -276,7 +276,7 @@ namespace Mat
     void Update() override;
 
     //! evaluate material law
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>*
+    void evaluate(const Core::LinAlg::Matrix<3, 3>*
                       defgrd,  //!< input deformation gradient for multiplicative sp
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>*
             glstrain,                    //!< input Green-Lagrange strain (redundant with defo
@@ -315,7 +315,7 @@ namespace Mat
 
     //! main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!
-    void Evaluate(const Core::LinAlg::Matrix<1, 1>& Ntemp,  //!< temperature of element
+    void evaluate(const Core::LinAlg::Matrix<1, 1>& Ntemp,  //!< temperature of element
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& ctemp,  //!< temperature-dependent material tangent
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
             cmat_T,                                          //!< temperature-dependent mechanical

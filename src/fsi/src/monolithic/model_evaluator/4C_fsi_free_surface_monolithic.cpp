@@ -190,7 +190,7 @@ void FSI::MonolithicMainFS::Timeloop(
     // This initializes the field algorithms and creates the first linear
     // systems. And this is the reason we know the initial linear system is
     // there when we create the NOX::Group.
-    Evaluate(Teuchos::null);
+    evaluate(Teuchos::null);
 
     // Get initial guess.
     // The initial system is there, so we can happily extract the
@@ -248,7 +248,7 @@ void FSI::MonolithicMainFS::Timeloop(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
+void FSI::MonolithicMainFS::evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicMainFS::Evaluate");
 
@@ -269,7 +269,7 @@ void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> step_incr
 
   {
     Teuchos::Time ta("ale", true);
-    ale_field()->Evaluate(ax);
+    ale_field()->evaluate(ax);
     utils()->out() << "ale      : " << ta.totalElapsedTime(true) << " sec\n";
   }
 
@@ -279,7 +279,7 @@ void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> step_incr
 
   {
     Teuchos::Time tf("fluid", true);
-    fluid_field()->Evaluate(fx);
+    fluid_field()->evaluate(fx);
     utils()->out() << "fluid    : " << tf.totalElapsedTime(true) << " sec\n";
   }
 
@@ -373,7 +373,7 @@ bool FSI::MonolithicMainFS::computeF(
     const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicMainFS::computeF");
-  Evaluate(Teuchos::rcp(&x, false));
+  evaluate(Teuchos::rcp(&x, false));
   setup_rhs(F);
   return true;
 }
@@ -411,7 +411,7 @@ FSI::BlockMonolithicFS::BlockMonolithicFS(
 bool FSI::BlockMonolithicFS::computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithicFS::computeJacobian");
-  Evaluate(Teuchos::rcp(&x, false));
+  evaluate(Teuchos::rcp(&x, false));
   Core::LinAlg::BlockSparseMatrixBase& mat =
       Teuchos::dyn_cast<Core::LinAlg::BlockSparseMatrixBase>(Jac);
   setup_system_matrix(mat);

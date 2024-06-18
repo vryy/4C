@@ -51,7 +51,7 @@ namespace Discret
       //! Evaluate the element
       //!  This class does not provide a definition for this function, it
       //!  must be defined in TemperImpl.
-      virtual int Evaluate(const Core::Elements::Element* ele,  //!< current element
+      virtual int evaluate(const Core::Elements::Element* ele,  //!< current element
           Teuchos::ParameterList& params,                  //!< parameter list, containing e.g., dt
           const Core::FE::Discretization& discretization,  //!< current discretisation
           const Core::Elements::Element::LocationArray& la,  //!< location array
@@ -135,7 +135,7 @@ namespace Discret
       static constexpr int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
 
       //! Evaluate for multiple dofsets
-      int Evaluate(const Core::Elements::Element* ele,     //!< current element
+      int evaluate(const Core::Elements::Element* ele,     //!< current element
           Teuchos::ParameterList& params,                  //!< parameter list, containing e.g., dt
           const Core::FE::Discretization& discretization,  //!< current discretisation
           const Core::Elements::Element::LocationArray& la,  //!< location array

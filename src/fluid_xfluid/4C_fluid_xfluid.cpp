@@ -542,7 +542,7 @@ void FLD::XFluid::set_element_time_parameter()
   }
 
   // call standard loop over elements
-  // discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  // discret_->evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   Discret::ELEMENTS::FluidType::Instance().pre_evaluate(*discret_, eleparams, Teuchos::null,
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -912,7 +912,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
           TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 3) standard domain");
 
           // call the element evaluate method
-          int err = impl->Evaluate(ele, *discret_, la[0].lm_, eleparams, mat, strategy.Elematrix1(),
+          int err = impl->evaluate(ele, *discret_, la[0].lm_, eleparams, mat, strategy.Elematrix1(),
               strategy.Elematrix2(), strategy.Elevector1(), strategy.Elevector2(),
               strategy.Elevector3());
 
@@ -1261,7 +1261,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
         TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 3) standard domain");
 
         // call the element evaluate method
-        int err = impl->Evaluate(ele, *discret_, la[0].lm_, eleparams, mat, strategy.Elematrix1(),
+        int err = impl->evaluate(ele, *discret_, la[0].lm_, eleparams, mat, strategy.Elematrix1(),
             strategy.Elematrix2(), strategy.Elevector1(), strategy.Elevector2(),
             strategy.Elevector3());
 
@@ -3010,7 +3010,7 @@ void FLD::XFluid::UpdateByIncrements(
  | cut and set new state-vectors, perform time-integration, apply bcs       |
  | evaluate the fluid at the new interface position            schott 08/14 |
  *--------------------------------------------------------------------------*/
-void FLD::XFluid::Evaluate(
+void FLD::XFluid::evaluate(
     //  Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and
     //  n+1, stepinc has to match the current xfluid dofmaps
 )
@@ -3167,7 +3167,7 @@ void FLD::XFluid::TimeUpdate()
     eleparams.set("dt", dta_);
 
     // call loop over elements to update subgrid scales
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
     if (myrank_ == 0)
@@ -4476,7 +4476,7 @@ void FLD::XFluid::SetInitialFlowField(
 
           double initialval = Global::Problem::Instance()
                                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X().data(), time_, dof % 4);
+                                  .evaluate(lnode->X().data(), time_, dof % 4);
           state_->velnp_->ReplaceGlobalValues(1, &initialval, &gid);
         }
       }

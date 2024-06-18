@@ -972,7 +972,7 @@ void CONTACT::AbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> d
     Comm().Barrier();
     const double t_start4 = Teuchos::Time::wallTime();
     Initialize();          // init lin-matrices
-    Evaluate(kt, f, dis);  // assemble lin. matrices, condensation ...
+    evaluate(kt, f, dis);  // assemble lin. matrices, condensation ...
     EvalConstrRHS();       // evaluate the constraint rhs (saddle-point system only)
 
     Comm().Barrier();
@@ -1024,7 +1024,7 @@ void CONTACT::AbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> d
 
     // apply contact forces and stiffness
     Initialize();          // init lin-matrices
-    Evaluate(kt, f, dis);  // assemble lin. matrices, condensation ...
+    evaluate(kt, f, dis);  // assemble lin. matrices, condensation ...
     EvalConstrRHS();       // evaluate the constraint rhs (saddle-point system only)
 
     // only for debugging:
@@ -1196,20 +1196,20 @@ void CONTACT::AbstractStrategy::InitEvalInterface(
         interfaces()[i]->round_robin_detect_ghosting();
 
         // second step --> evaluate
-        interfaces()[i]->Evaluate(0, step_, iter_);
+        interfaces()[i]->evaluate(0, step_, iter_);
         break;
       }
       case Inpar::Mortar::ExtendGhosting::binning:
       {
         // required master elements are already ghosted (preparestepcontact) !!!
         // call evaluation
-        interfaces()[i]->Evaluate(0, step_, iter_);
+        interfaces()[i]->evaluate(0, step_, iter_);
         break;
       }
       case Inpar::Mortar::ExtendGhosting::redundant_all:
       case Inpar::Mortar::ExtendGhosting::redundant_master:
       {
-        interfaces()[i]->Evaluate(0, step_, iter_);
+        interfaces()[i]->evaluate(0, step_, iter_);
         break;
       }
     }
@@ -1612,7 +1612,7 @@ void CONTACT::AbstractStrategy::EvaluateRelMov()
 /*----------------------------------------------------------------------*
  | call appropriate evaluate for contact evaluation           popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::Evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+void CONTACT::AbstractStrategy::evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
     Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis)
 {
   // treat frictional and frictionless cases differently
@@ -2959,7 +2959,7 @@ void CONTACT::AbstractStrategy::Reset(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
+void CONTACT::AbstractStrategy::evaluate(CONTACT::ParamsInterface& cparams,
     const std::vector<Teuchos::RCP<const Epetra_Vector>>* eval_vec,
     const std::vector<Teuchos::RCP<Epetra_Vector>>* eval_vec_mutable)
 {

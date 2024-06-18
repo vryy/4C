@@ -297,7 +297,7 @@ void Mat::PlasticLinElast::Update()
 /*----------------------------------------------------------------------*
  | evaluate material (public)                                dano 08/11 |
  *----------------------------------------------------------------------*/
-void Mat::PlasticLinElast::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::PlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* linstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -767,7 +767,7 @@ void Mat::PlasticLinElast::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   return;
 
-}  // Evaluate()
+}  // evaluate()
 
 
 /*----------------------------------------------------------------------*

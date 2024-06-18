@@ -405,7 +405,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
     {
       value = Global::Problem::Instance()
                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
-                  .Evaluate(lnode->X().data(), time, 0);
+                  .evaluate(lnode->X().data(), time, 0);
     }
     else
       FOUR_C_THROW("invalid function no. to set level-set field!");

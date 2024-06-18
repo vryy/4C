@@ -180,7 +180,7 @@ void elch_dyn(int restart)
           // setup material in every ALE element
           Teuchos::ParameterList params;
           params.set<std::string>("action", "setup_material");
-          aledis->Evaluate(params);
+          aledis->evaluate(params);
         }
         else
           FOUR_C_THROW("Providing an ALE mesh is not supported for problemtype Electrochemistry.");

@@ -369,7 +369,7 @@ void Mat::ThermoPlasticHyperElast::Update()
 /*----------------------------------------------------------------------*
  | calculate stress and constitutive tensor                  dano 03/13 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ThermoPlasticHyperElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -909,7 +909,7 @@ void Mat::ThermoPlasticHyperElast::Evaluate(const Core::LinAlg::Matrix<3, 3>* de
 
   return;
 
-}  // Evaluate()
+}  // evaluate()
 
 
 /*----------------------------------------------------------------------*
@@ -1092,7 +1092,7 @@ void Mat::ThermoPlasticHyperElast::calculate_current_bebar(
  | calculate temperature-dependent stresses                  dano 09/13 |
  | is called from so3thermo element                                     |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::Evaluate(const Core::LinAlg::Matrix<1, 1>& Ntemp,
+void Mat::ThermoPlasticHyperElast::evaluate(const Core::LinAlg::Matrix<1, 1>& Ntemp,
     Core::LinAlg::Matrix<6, 1>& ctemp, Core::LinAlg::Matrix<6, 6>& cmat_T,
     Core::LinAlg::Matrix<6, 1>& stresstemp, Teuchos::ParameterList& params)
 {

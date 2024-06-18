@@ -294,13 +294,13 @@ void Immersed::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
       strategy->ClearElementStorage(la[row].Size(), la[col].Size());
 
       if (!evaluateonlyboundary)
-        immersedelebase->Evaluate(params, *dis, la[0].lm_, strategy->Elematrix1(),
+        immersedelebase->evaluate(params, *dis, la[0].lm_, strategy->Elematrix1(),
             strategy->Elematrix2(), strategy->Elevector1(), strategy->Elevector2(),
             strategy->Elevector3());
       else
       {
         if (immersedelebase->IsBoundaryImmersed())
-          immersedelebase->Evaluate(params, *dis, la[0].lm_, strategy->Elematrix1(),
+          immersedelebase->evaluate(params, *dis, la[0].lm_, strategy->Elematrix1(),
               strategy->Elematrix2(), strategy->Elevector1(), strategy->Elevector2(),
               strategy->Elevector3());
       }
@@ -356,7 +356,7 @@ void Immersed::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterLis
       Core::Elements::Element::LocationArray la(1);
       immersedelebase->LocationVector(*dis, la, false);
 
-      immersedelebase->Evaluate(
+      immersedelebase->evaluate(
           params, *dis, la[0].lm_, dummymat, dummymat, dummyvec, dummyvec, dummyvec);
     }
   }
@@ -407,12 +407,12 @@ void Immersed::ImmersedBase::evaluate_sca_tra_with_internal_communication(
       strategy->ClearElementStorage(la[row].Size(), la[col].Size());
 
       if (!evaluateonlyboundary)
-        ele->Evaluate(params, *dis, la, strategy->Elematrix1(), strategy->Elematrix2(),
+        ele->evaluate(params, *dis, la, strategy->Elematrix1(), strategy->Elematrix2(),
             strategy->Elevector1(), strategy->Elevector2(), strategy->Elevector3());
       else
       {
         if (immersedelebase->IsBoundaryImmersed())
-          ele->Evaluate(params, *dis, la, strategy->Elematrix1(), strategy->Elematrix2(),
+          ele->evaluate(params, *dis, la, strategy->Elematrix1(), strategy->Elematrix2(),
               strategy->Elevector1(), strategy->Elevector2(), strategy->Elevector3());
       }
 
@@ -479,7 +479,7 @@ void Immersed::ImmersedBase::evaluate_interpolation_condition(
         {
           curvefac = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                         .Evaluate(time);
+                         .evaluate(time);
         }
 
         // Get ConditionID of current condition if defined and write value in parameterlist
@@ -532,7 +532,7 @@ void Immersed::ImmersedBase::evaluate_interpolation_condition(
           strategy.ClearElementStorage(la[row].Size(), la[col].Size());
 
           // call the element specific evaluate method
-          int err = curr->second->Evaluate(params, *evaldis, la[0].lm_, strategy.Elematrix1(),
+          int err = curr->second->evaluate(params, *evaldis, la[0].lm_, strategy.Elematrix1(),
               strategy.Elematrix2(), strategy.Elevector1(), strategy.Elevector2(),
               strategy.Elevector3());
           if (err) FOUR_C_THROW("error while evaluating elements");
@@ -598,7 +598,7 @@ void Immersed::ImmersedBase::evaluate_subset_elements(Teuchos::ParameterList& pa
 
       Core::LinAlg::SerialDenseMatrix dummymatrix;
       Core::LinAlg::SerialDenseVector dummyvector;
-      ele->Evaluate(
+      ele->evaluate(
           params, *dis, la, dummymatrix, dummymatrix, dummyvector, dummyvector, dummyvector);
     }
   }

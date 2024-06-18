@@ -159,7 +159,7 @@ void ALE::Ale::set_initial_displacement(const Inpar::ALE::InitialDisp init, cons
           // evaluate component d of function
           double initialval = Global::Problem::Instance()
                                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X().data(), 0, d);
+                                  .evaluate(lnode->X().data(), 0, d);
 
           int err = dispn_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
@@ -208,7 +208,7 @@ void ALE::Ale::create_system_matrix(Teuchos::RCP<const ALE::UTILS::MapExtractor>
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::Evaluate(
+void ALE::Ale::evaluate(
     Teuchos::RCP<const Epetra_Vector> stepinc, ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
 {
   // We save the current solution here. This will not change the
@@ -354,7 +354,7 @@ void ALE::Ale::evaluate_elements()
 
   discret_->set_state("dispnp", dispnp_);
 
-  discret_->Evaluate(eleparams, sysmat_, residual_);
+  discret_->evaluate(eleparams, sysmat_, residual_);
   discret_->ClearState();
 
   sysmat_->Complete();
@@ -556,7 +556,7 @@ void ALE::Ale::TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
   // Newton loop to deal with possible non-linearities
   while (!converged && iter < maxiter_)
   {
-    Evaluate(Teuchos::null, dbc_type);
+    evaluate(Teuchos::null, dbc_type);
 
     if (Converged(iter))
     {
@@ -814,7 +814,7 @@ bool ALE::Ale::evaluate_element_quality()
       Core::LinAlg::SerialDenseVector elevector2;
       Core::LinAlg::SerialDenseVector elevector3;
 
-      actele->Evaluate(
+      actele->evaluate(
           eleparams, *discret_, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);
 
       eledetjac_->ReplaceMyValue(i, 0, elevector1[0]);
@@ -871,7 +871,7 @@ void ALE::AleLinear::prepare_time_step()
 /*----------------------------------------------------------------------------*/
 void ALE::AleLinear::TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
 {
-  Evaluate(Teuchos::null, dbc_type);
+  evaluate(Teuchos::null, dbc_type);
   Solve();
   UpdateIter();
 

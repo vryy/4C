@@ -157,10 +157,10 @@ namespace POROMULTIPHASE
     };
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx,
+    void evaluate(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx,
         const bool firstcall) override
     {
-      FOUR_C_THROW("Evaluate() only available for monolithic schemes!");
+      FOUR_C_THROW("evaluate() only available for monolithic schemes!");
       return;
     };
 

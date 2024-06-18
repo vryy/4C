@@ -250,7 +250,7 @@ bool Discret::ELEMENTS::FluidHDG::ReadElement(
 /*---------------------------------------------------------------------*
 |  evaluate the element (public)                      kronbichler 05/13|
 *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::FluidHDG::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::FluidHDG::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -274,7 +274,7 @@ int Discret::ELEMENTS::FluidHDG::Evaluate(Teuchos::ParameterList& params,
     case FLD::calc_fluid_systemmat_and_residual:
     {
       return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
-          ->Evaluate(
+          ->evaluate(
               this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
     }
     break;

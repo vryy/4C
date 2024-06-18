@@ -2,7 +2,7 @@
 /*! \file
 
 \brief Internal implementation of RedAcinus element. Methods implemented here
-       are called by acinus_evaluate.cpp by Discret::ELEMENTS::RedAcinus::Evaluate()
+       are called by acinus_evaluate.cpp by Discret::ELEMENTS::RedAcinus::evaluate()
        with the corresponding action.
 
 
@@ -108,7 +108,7 @@ void Sysmat(Discret::ELEMENTS::RedAcinus* ele, Core::LinAlg::SerialDenseVector& 
         Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(ele->Material());
 
     // Evaluate material law for acinus
-    acinus_mat->Evaluate(epnp, epn, epnm, sysmat, rhs, params, NumOfAcini, volAlvDuct, time, dt);
+    acinus_mat->evaluate(epnp, epn, epnm, sysmat, rhs, params, NumOfAcini, volAlvDuct, time, dt);
   }
   else
   {
@@ -122,7 +122,7 @@ void Sysmat(Discret::ELEMENTS::RedAcinus* ele, Core::LinAlg::SerialDenseVector& 
  | evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
+int Discret::ELEMENTS::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -346,7 +346,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           {
             curvefac = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
-                           .Evaluate(time);
+                           .evaluate(time);
             BCin = (*vals)[0] * curvefac;
           }
           else
@@ -367,7 +367,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           {
             functionfac = Global::Problem::Instance()
                               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
+                              .evaluate((ele->Nodes()[i])->X().data(), time, 0);
           }
 
           // Get factor of second CURVE
@@ -377,7 +377,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           if (curve2num >= 0)
             curve2fac = Global::Problem::Instance()
                             ->FunctionById<Core::UTILS::FunctionOfTime>(curve2num)
-                            .Evaluate(time);
+                            .evaluate(time);
 
           // Add first_CURVE + FUNCTION * second_CURVE
           BCin += functionfac * curve2fac;
@@ -488,7 +488,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           {
             curvefac = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[phase_number])
-                           .Evaluate(time);
+                           .evaluate(time);
             BCin = (*vals)[phase_number] * curvefac;
           }
           else
@@ -531,7 +531,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
               {
                 curvefac = Global::Problem::Instance()
                                ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
-                               .Evaluate(time);
+                               .evaluate(time);
               }
 
               // Get parameters for VolumeDependentPleuralPressure condition

@@ -189,7 +189,7 @@ void LUBRICATION::TimIntImpl::set_element_general_parameters() const
   eleparams.set("roughnessdeviation", roughness_deviation_);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   return;
@@ -298,7 +298,7 @@ void LUBRICATION::TimIntImpl::set_height_field_pure_lub(const int nds)
       double heightfuncvalue =
           Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(heightfuncno - 1)
-              .Evaluate(lnode->X().data(), time_, index);
+              .evaluate(lnode->X().data(), time_, index);
 
       // get global and local dof IDs
       const int gid = nodedofs[index];
@@ -341,7 +341,7 @@ void LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
     {
       double velfuncvalue = Global::Problem::Instance()
                                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
-                                .Evaluate(lnode->X().data(), time_, index);
+                                .evaluate(lnode->X().data(), time_, index);
 
       // get global and local dof IDs
       const int gid = nodedofs[index];
@@ -648,7 +648,7 @@ void LUBRICATION::TimIntImpl::assemble_mat_and_rhs()
   add_time_integration_specific_vectors();
 
   // call loop over elements
-  discret_->Evaluate(eleparams, sysmat_, residual_);
+  discret_->evaluate(eleparams, sysmat_, residual_);
   discret_->ClearState();
 
   // add cavitation penalty
@@ -1234,7 +1234,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> LUBRICATION::TimIntImpl::SystemMatrix()
  | build linear system tangent matrix, rhs/force residual   wirtz 01/16 |
  | Monolithic EHL accesses the linearised lubrication problem           |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::Evaluate()
+void LUBRICATION::TimIntImpl::evaluate()
 {
   // put zero pressure value, where no gap is defined
   if (inf_gap_toggle_lub_ != Teuchos::null)

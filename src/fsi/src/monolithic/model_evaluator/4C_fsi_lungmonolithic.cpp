@@ -350,13 +350,13 @@ Teuchos::RCP<Epetra_Vector> FSI::LungMonolithic::struct_to_ale_outflow(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
+void FSI::LungMonolithic::evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   //-----------------------------------------------------------------------------
   // evaluation of all fields
   //-----------------------------------------------------------------------------
 
-  FSI::Monolithic::Evaluate(step_increment);
+  FSI::Monolithic::evaluate(step_increment);
 
   //-----------------------------------------------------------------------------
   // evaluation of lung volume constraints

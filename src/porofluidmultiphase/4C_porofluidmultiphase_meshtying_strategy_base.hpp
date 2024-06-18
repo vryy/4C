@@ -80,7 +80,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void read_restart(const int step) = 0;
 
     //! evaluate mesh tying
-    virtual void Evaluate() = 0;
+    virtual void evaluate() = 0;
 
     //! extract increments and update mesh tying
     virtual Teuchos::RCP<const Epetra_Vector> extract_and_update_iter(

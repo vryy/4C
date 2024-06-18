@@ -27,7 +27,7 @@ void Adapter::AleNOXCorrectionWrapper::prepare_time_step()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Adapter::AleNOXCorrectionWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
+void Adapter::AleNOXCorrectionWrapper::evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   if (stepinc != Teuchos::null)
   {
@@ -47,11 +47,11 @@ void Adapter::AleNOXCorrectionWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector
     }
 
     // do structural update with provided residual displacements - iteration increment
-    AleWrapper::Evaluate(iterinc);
+    AleWrapper::evaluate(iterinc);
   }
   else
   {
-    AleWrapper::Evaluate(Teuchos::null);
+    AleWrapper::evaluate(Teuchos::null);
   }
 
   return;

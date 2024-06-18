@@ -94,7 +94,7 @@ namespace PoroMultiPhaseScaTra
      *
      * @returns integral of diameter of the segment
      */
-    virtual double Evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
+    virtual double evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
         Core::LinAlg::SerialDenseVector* forcevec2, Core::LinAlg::SerialDenseMatrix* stiffmat11,
         Core::LinAlg::SerialDenseMatrix* stiffmat12, Core::LinAlg::SerialDenseMatrix* stiffmat21,
         Core::LinAlg::SerialDenseMatrix* stiffmat22, Core::LinAlg::SerialDenseMatrix* D_ele,
@@ -209,7 +209,7 @@ namespace PoroMultiPhaseScaTra
      *
      * @returns integral of diameter of the segment
      */
-    double Evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
+    double evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
         Core::LinAlg::SerialDenseVector* forcevec2, Core::LinAlg::SerialDenseMatrix* stiffmat11,
         Core::LinAlg::SerialDenseMatrix* stiffmat12, Core::LinAlg::SerialDenseMatrix* stiffmat21,
         Core::LinAlg::SerialDenseMatrix* stiffmat22, Core::LinAlg::SerialDenseMatrix* D_ele,

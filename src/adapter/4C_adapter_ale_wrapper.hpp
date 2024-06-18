@@ -155,23 +155,23 @@ namespace Adapter
     void prepare_time_step() override { ale_->prepare_time_step(); }
 
     //! update displacement and evaluate elements
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc =
+    virtual void evaluate(Teuchos::RCP<const Epetra_Vector> stepinc =
                               Teuchos::null  ///< step increment such that \f$ x_{n+1}^{k+1} =
                                              ///< x_{n}^{converged}+ stepinc \f$
     )
     {
-      Evaluate(stepinc, ALE::UTILS::MapExtractor::dbc_set_std);
+      evaluate(stepinc, ALE::UTILS::MapExtractor::dbc_set_std);
     }
 
     //! update displacement and evaluate elements
-    void Evaluate(
+    void evaluate(
         Teuchos::RCP<const Epetra_Vector> stepinc,  ///< step increment such that \f$ x_{n+1}^{k+1}
                                                     ///< = x_{n}^{converged}+ stepinc \f$
         ALE::UTILS::MapExtractor::AleDBCSetType
             dbc_type  ///< application-specific type of Dirichlet set
         ) override
     {
-      ale_->Evaluate(stepinc, dbc_type);
+      ale_->evaluate(stepinc, dbc_type);
     }
 
     //! update at time step end
@@ -266,10 +266,10 @@ namespace Adapter
     //! Prepare time step
     void prepare_time_step() override;
 
-    /*! \brief Evaluate() routine that can handle NOX step increments
+    /*! \brief evaluate() routine that can handle NOX step increments
      *
      *  We deal with NOX step increments by computing the last iteration increment
-     *  needed for the ALE Evaluate() call.
+     *  needed for the ALE evaluate() call.
      *
      *  The field solver always expects an iteration increment only. And
      *  there are Dirichlet conditions that need to be preserved. So take
@@ -284,7 +284,7 @@ namespace Adapter
      *
      *  \author mayr.mt \date 10/2014
      */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc  ///< step increment
+    void evaluate(Teuchos::RCP<const Epetra_Vector> stepinc  ///< step increment
         ) override;
 
    private:

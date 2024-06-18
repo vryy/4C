@@ -99,7 +99,7 @@ namespace FLD
     void PrepareXFEMSolve() override;
 
     /// Monolithic FSI needs to access the linear fluid problem.
-    void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    void evaluate(Teuchos::RCP<const Epetra_Vector>
             stepinc  ///< solution increment between time step n and n+1
         ) override;
 

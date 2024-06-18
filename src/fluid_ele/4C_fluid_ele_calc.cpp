@@ -203,7 +203,7 @@ Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::FluidEleCalc()
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Discret::ELEMENTS::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -212,13 +212,13 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Discret::ELEMENT
     Core::LinAlg::SerialDenseVector& elevec2_epetra,
     Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag)
 {
-  return Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+  return evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra, intpoints_, offdiag);
 }
 
 
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Discret::ELEMENTS::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -524,7 +524,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Discret::ELEMENT
   eid_ = ele->Id();
 
   // call inner evaluate (does not know about DRT element or discretization object)
-  int result = Evaluate(params, ebofoaf_, eprescpgaf_, ebofon_, eprescpgn_, elemat1, elemat2,
+  int result = evaluate(params, ebofoaf_, eprescpgaf_, ebofon_, eprescpgn_, elemat1, elemat2,
       elevec1, evelaf_, epreaf_, evelam_, epream_, eprenp_, evelnp_, escaaf_, emhist_, eaccam_,
       escadtam_, eveldtam_, epredtam_, escabofoaf_, escabofon_, eveln_, epren_, escaam_, edispnp_,
       egridv_, egridvn_, fsevelaf_, fsescaaf_, evel_hat_, ereynoldsstress_hat_, eporo_,
@@ -543,7 +543,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Discret::ELEMENT
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Teuchos::ParameterList& params,
     const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& ebofon,
@@ -1460,7 +1460,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(Discret::ELEME
             // in some fancy turbulance stuff.
             functionfac = Global::Problem::Instance()
                               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .Evaluate((ele->Nodes()[jnode])->X().data(), time, isd);
+                              .evaluate((ele->Nodes()[jnode])->X().data(), time, isd);
           }
           else
             functionfac = 1.0;
@@ -1488,7 +1488,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(Discret::ELEME
             // in some fancy turbulance stuff.
             functionfac = Global::Problem::Instance()
                               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .Evaluate((ele->Nodes()[jnode])->X().data(), time, isd);
+                              .evaluate((ele->Nodes()[jnode])->X().data(), time, isd);
           }
           else
             functionfac = 1.0;
@@ -1538,7 +1538,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(Discret::ELEME
         if (time >= 0.0)
           functfac = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfTime>(functnum)
-                         .Evaluate(time);
+                         .evaluate(time);
         else
           FOUR_C_THROW("Negative time in bodyforce calculation: time = %f", time);
       }
@@ -1573,7 +1573,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectionTerm(
   {
     ecorrectionterm(i) = Global::Problem::Instance()
                              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                             .Evaluate((ele->Nodes()[i])->X().data(), 0.0, 0);
+                             .evaluate((ele->Nodes()[i])->X().data(), 0.0, 0);
   }
 }
 
@@ -1835,7 +1835,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::set_advective_vel_oseen(
       for (int idim = 0; idim < nsd_; ++idim)
         eadvvel_(idim, jnode) = Global::Problem::Instance()
                                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-                                    .Evaluate(jx, time, idim);
+                                    .evaluate(jx, time, idim);
     }
   }
 }
@@ -6701,15 +6701,15 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
         const double u_exact_x =
             Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                .Evaluate(position, t, 0);
+                .evaluate(position, t, 0);
         const double u_exact_y =
             Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                .Evaluate(position, t, 1);
+                .evaluate(position, t, 1);
         const double p_exact =
             Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                .Evaluate(position, t, 2);
+                .evaluate(position, t, 2);
 
         u(0) = u_exact_x;
         u(1) = u_exact_y;
@@ -6743,19 +6743,19 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
         const double u_exact_x =
             Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                .Evaluate(position, t, 0);
+                .evaluate(position, t, 0);
         const double u_exact_y =
             Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                .Evaluate(position, t, 1);
+                .evaluate(position, t, 1);
         const double u_exact_z =
             Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                .Evaluate(position, t, 2);
+                .evaluate(position, t, 2);
         const double p_exact =
             Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                .Evaluate(position, t, 3);
+                .evaluate(position, t, 3);
 
         u(0) = u_exact_x;
         u(1) = u_exact_y;

@@ -153,11 +153,11 @@ namespace Discret
 
         //!  evaluate shape function, derivatives and transformation w.r.t coupling slave element at
         //!  gaussian point
-        void Evaluate(Core::LinAlg::Matrix<nsd_, 1>& xslave) override;
+        void evaluate(Core::LinAlg::Matrix<nsd_, 1>& xslave) override;
 
         //!  evaluate shape function, derivatives and transformation w.r.t coupling slave element at
         //!  gaussian point
-        void Evaluate(Core::LinAlg::Matrix<nsd_, 1>& xslave,
+        void evaluate(Core::LinAlg::Matrix<nsd_, 1>& xslave,
             Core::LinAlg::Matrix<nsd_, 1>& rst_slave) override;
 
         //! compute interface force

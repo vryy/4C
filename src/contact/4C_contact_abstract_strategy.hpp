@@ -1282,17 +1282,17 @@ namespace CONTACT
      *
      *  \date 03/2016
      *  \author hiermeier */
-    void Evaluate(CONTACT::ParamsInterface& cparams) { Evaluate(cparams, nullptr); }
+    void evaluate(CONTACT::ParamsInterface& cparams) { evaluate(cparams, nullptr); }
 
     /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class
      *
      *  \date 03/2016
      *  \author hiermeier */
 
-    void Evaluate(CONTACT::ParamsInterface& cparams,
+    void evaluate(CONTACT::ParamsInterface& cparams,
         const std::vector<Teuchos::RCP<const Epetra_Vector>>* eval_vec)
     {
-      Evaluate(cparams, eval_vec, nullptr);
+      evaluate(cparams, eval_vec, nullptr);
     }
 
     /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class
@@ -1306,7 +1306,7 @@ namespace CONTACT
      *
      * \date 03/2016
      * \author hiermeier */
-    void Evaluate(CONTACT::ParamsInterface& cparams,
+    void evaluate(CONTACT::ParamsInterface& cparams,
         const std::vector<Teuchos::RCP<const Epetra_Vector>>* eval_vec,
         const std::vector<Teuchos::RCP<Epetra_Vector>>* eval_vec_mutable);
 
@@ -1582,13 +1582,13 @@ namespace CONTACT
     virtual void post_store_dirichlet_status(
         Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps){};
 
-    /*! \brief Run at the beginning of the Evaluate() routine
+    /*! \brief Run at the beginning of the evaluate() routine
      *
      *  \date 03/2016
      *  \author hiermeier */
     virtual void pre_evaluate(CONTACT::ParamsInterface& cparams){};
 
-    /*! \brief Run in the end of the Evaluate() routine
+    /*! \brief Run in the end of the evaluate() routine
      *
      *  \date 03/2016
      *  \author hiermeier */
@@ -1753,7 +1753,7 @@ namespace CONTACT
 
      This is just a tiny control routine, deciding which Evaluate-routine
      of those listed below is to be called (based on input-file information).
-     Note that into ALL derived Evaluate() routines, a REFERENCE to the pointer
+     Note that into ALL derived evaluate() routines, a REFERENCE to the pointer
      on the effective stiffness matrix is handed in. This way, after building the
      new effective stiffness matrix with contact, we can simply let the pointer
      kteff point onto the new object. The same is true for the effective force
@@ -1763,7 +1763,7 @@ namespace CONTACT
      \param feff (in/out): effective residual / force vector (without -> with contact)
 
      */
-    void Evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override;
 
     /*! \brief Evaluate relative movement of contact bodies
@@ -1792,7 +1792,7 @@ namespace CONTACT
 
      This method calls Initialize() on all contact interfaces, which
      resets all kind of nodal quantities like normal vector, weighted
-     gap or Mortar and linearization maps. It then calls Evaluate() on
+     gap or Mortar and linearization maps. It then calls evaluate() on
      all contact interfaces, which does all the geometric contact stuff.
      Concretely, this is an evaluation of all involved quantities at nodal
      level plus the setup of all corresponding linearizations.

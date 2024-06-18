@@ -107,11 +107,11 @@ namespace
   TEST_F(MircoConstitutiveLawForceTest, TestEvaluate)
   {
     // gap < 0
-    EXPECT_ANY_THROW(coconstlaw_->Evaluate(1.0, cnode.get()));
+    EXPECT_ANY_THROW(coconstlaw_->evaluate(1.0, cnode.get()));
     // 0< gap < offset
-    EXPECT_ANY_THROW(coconstlaw_->Evaluate(-0.25, cnode.get()));
+    EXPECT_ANY_THROW(coconstlaw_->evaluate(-0.25, cnode.get()));
     // offset < gap
-    EXPECT_NEAR(coconstlaw_->Evaluate(-12.0, cnode.get()), -0.0005942101230076477, 1.e-10);
+    EXPECT_NEAR(coconstlaw_->evaluate(-12.0, cnode.get()), -0.0005942101230076477, 1.e-10);
   }
 
   //! test member function EvaluateDeriv

@@ -327,7 +327,7 @@ void Mat::SuperElasticSMA::Update()
 /*----------------------------------------------------------------------*
  | calculate stress and constitutive tensor               hemmler 09/16 |
  *----------------------------------------------------------------------*/
-void Mat::SuperElasticSMA::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -1015,7 +1015,7 @@ void Mat::SuperElasticSMA::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   return;
 
-}  // Evaluate()
+}  // evaluate()
 
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)           hemmler 09/16 |

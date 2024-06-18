@@ -3003,7 +3003,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
   for (unsigned int i = 0; i < domainint_funct_.size(); i++)
   {
     // NOLINTNEXTLINE (bugprone-narrowing-conversions)
-    myvec[i] += function(domainint_funct_[i] - 1).Evaluate(variables, constants, 0) * fac;
+    myvec[i] += function(domainint_funct_[i] - 1).evaluate(variables, constants, 0) * fac;
   }
 }
 

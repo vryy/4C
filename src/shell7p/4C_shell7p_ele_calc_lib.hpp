@@ -156,7 +156,7 @@ namespace Discret::ELEMENTS::Shell
     if (dim != 3) FOUR_C_THROW("stop: this currently only works for 3D");
     Discret::ELEMENTS::Shell::Stress<Mat::NUM_STRESS_3D> stress;
 
-    material.Evaluate(
+    material.evaluate(
         &strains.defgrd_, &strains.gl_strain_, params, &stress.pk2_, &stress.cmat_, gp, eleGID);
 
     return stress;

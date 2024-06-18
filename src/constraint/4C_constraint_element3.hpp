@@ -174,7 +174,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params,   ///< ParameterList for communication
+      int evaluate(Teuchos::ParameterList& params,   ///< ParameterList for communication
           Core::FE::Discretization& discretization,  ///< discretization
           std::vector<int>& lm,                      ///< location vector
           Core::LinAlg::SerialDenseMatrix& elemat1,  ///< first matrix to be filled by element

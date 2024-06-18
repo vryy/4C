@@ -69,7 +69,7 @@ namespace CONSTRAINTS
 
     //! Evaluate routine to call from outside. In here the right action is determined and the
     //! #evaluate_monitor routine is called
-    void Evaluate(
+    void evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Epetra_Vector> systemvector1  ///< distributed vector that may be filled by

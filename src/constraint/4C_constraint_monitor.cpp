@@ -68,7 +68,7 @@ CONSTRAINTS::Monitor::MoniType CONSTRAINTS::Monitor::get_moni_type(const std::st
 |(public)                                                        tk 07/08|
 |Evaluate Monitors, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void CONSTRAINTS::Monitor::Evaluate(
+void CONSTRAINTS::Monitor::evaluate(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   switch (montype_)
@@ -137,7 +137,7 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
       elevector3.size(1);
 
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(
+      int err = curr->second->evaluate(
           params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 

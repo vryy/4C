@@ -451,7 +451,7 @@ namespace Mat
 
     /*!
      * @brief pre-evaluation, intended to be used for stuff that has to be done only once per
-     *        Evaluate()
+     *        evaluate()
      *
      * @param[in] params  parameter list as handed in from the element
      * @param[in] gp      Gauss point

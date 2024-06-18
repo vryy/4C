@@ -141,14 +141,14 @@ feel free to write your own tailored Setup() method.
     );
 
     /// Compute mortar matrices by using mortar interface using reference configuration
-    virtual void Evaluate();
+    virtual void evaluate();
 
     /// Compute mortar matrices
-    virtual void Evaluate(Teuchos::RCP<Epetra_Vector> idisp  ///< [in] ??
+    virtual void evaluate(Teuchos::RCP<Epetra_Vector> idisp  ///< [in] ??
     );
 
     /// Compute mortar matrices (case of transferring same dofs on two different meshes)
-    virtual void Evaluate(Teuchos::RCP<Epetra_Vector> idispma,  ///< [in] ??
+    virtual void evaluate(Teuchos::RCP<Epetra_Vector> idispma,  ///< [in] ??
         Teuchos::RCP<Epetra_Vector> idispsl                     ///< [in] ??
     );
 

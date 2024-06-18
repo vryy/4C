@@ -931,7 +931,7 @@ void ScaTra::ScaTraTimIntImpl::set_element_nodeset_parameters() const
   eleparams.set<int>("ndswss", NdsWallShearStress());
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -1011,7 +1011,7 @@ void ScaTra::ScaTraTimIntImpl::set_element_general_parameters(bool calcinitialti
   set_element_specific_sca_tra_parameters(eleparams);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -1054,7 +1054,7 @@ void ScaTra::ScaTraTimIntImpl::set_element_turbulence_parameters(
     eleparams.set<int>("fs subgrid diffusivity", fssgd_);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -1165,7 +1165,7 @@ void ScaTra::ScaTraTimIntImpl::prepare_time_step()
     add_time_integration_specific_vectors();
 
     // loop over macro-scale elements
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 }
@@ -1245,7 +1245,7 @@ void ScaTra::ScaTraTimIntImpl::set_velocity_field()
         for (int index = 0; index < nsd_; ++index)
         {
           double value = problem_->FunctionById<Core::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
-                             .Evaluate(lnode->X().data(), time_, index);
+                             .evaluate(lnode->X().data(), time_, index);
 
           // get global and local dof IDs
           const int gid = nodedofs[index];
@@ -1306,12 +1306,12 @@ void ScaTra::ScaTraTimIntImpl::SetExternalForce()
     {
       const double external_force_value =
           problem_->FunctionById<Core::UTILS::FunctionOfSpaceTime>(external_force_function_id - 1)
-              .Evaluate(current_node->X().data(), time_, spatial_dimension);
+              .evaluate(current_node->X().data(), time_, spatial_dimension);
 
       const double intrinsic_mobility_value =
           problem_
               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(intrinsic_mobility_function_id - 1)
-              .Evaluate(current_node->X().data(), time_, spatial_dimension);
+              .evaluate(current_node->X().data(), time_, spatial_dimension);
       const double force_velocity_value = external_force_value * intrinsic_mobility_value;
 
       const int gid = nodedofs[spatial_dimension];
@@ -1741,7 +1741,7 @@ void ScaTra::ScaTraTimIntImpl::WriteResult()
         "action", ScaTra::Action::micro_scale_output, eleparams);
 
     // loop over macro-scale elements
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
@@ -1787,7 +1787,7 @@ void ScaTra::ScaTraTimIntImpl::SetInitialField(
           // evaluate component k of spatial function
           double initialval =
               problem_->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                  .Evaluate(lnode->X().data(), time_, k);
+                  .evaluate(lnode->X().data(), time_, k);
           int err = phin_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
@@ -2646,9 +2646,9 @@ void ScaTra::ScaTraTimIntImpl::assemble_mat_and_rhs()
 
   // call loop over elements (with or without subgrid-diffusivity(-scaling) vector)
   if (fssgd_ != Inpar::ScaTra::fssugrdiff_no)
-    discret_->Evaluate(eleparams, sysmat_, Teuchos::null, residual_, subgrdiff_, Teuchos::null);
+    discret_->evaluate(eleparams, sysmat_, Teuchos::null, residual_, subgrdiff_, Teuchos::null);
   else
-    discret_->Evaluate(eleparams, sysmat_, residual_);
+    discret_->evaluate(eleparams, sysmat_, residual_);
 
   //----------------------------------------------------------------------
   // apply weak Dirichlet boundary conditions
@@ -2985,7 +2985,7 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_micro_scale_solve()
   add_time_integration_specific_vectors();
 
   // evaluate macro-scale elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -3693,7 +3693,7 @@ void ScaTra::ScaTraTimIntImpl::calc_mean_micro_concentration()
   // evaluate nodal mean concentration of micro discretizations
   Core::FE::AssembleStrategy strategy(NdsMicro(), NdsMicro(), Teuchos::null, Teuchos::null,
       phinp_micro_, Teuchos::null, Teuchos::null);
-  discret_->Evaluate(eleparams, strategy);
+  discret_->evaluate(eleparams, strategy);
 
   // copy states from first dof of MAT_Electrode
   for (int ele_lid = 0; ele_lid < discret_->ElementRowMap()->NumMyElements(); ++ele_lid)
@@ -3845,7 +3845,7 @@ void ScaTra::ScaTraTimIntImpl::set_time_stepping_to_micro_scale()
   eleparams.set<int>("step", step_);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 

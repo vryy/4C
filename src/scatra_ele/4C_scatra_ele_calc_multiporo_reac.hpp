@@ -1019,7 +1019,7 @@ namespace Discret
             Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfAnything>(
                     relative_mobility_funct_id_[current_scalar] - 1)
-                .Evaluate(varfunction_variables, varfunction_constants, 0);
+                .evaluate(varfunction_variables, varfunction_constants, 0);
 
         return relative_mobility;
       }

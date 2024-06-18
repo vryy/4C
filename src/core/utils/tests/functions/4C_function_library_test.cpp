@@ -52,7 +52,7 @@ namespace
     const std::vector<double> solutions = {4.33232, 4.29, 4.25, 4.20152};
 
     for (std::size_t i = 0; i < x_test.size(); ++i)
-      EXPECT_NEAR(cubic_spline_from_csv_->Evaluate(x_test[i]), solutions[i], 1.0e-12);
+      EXPECT_NEAR(cubic_spline_from_csv_->evaluate(x_test[i]), solutions[i], 1.0e-12);
   }
 
   TEST_F(CubicSplineFromCSVTest, TestEvaluateDerivative)

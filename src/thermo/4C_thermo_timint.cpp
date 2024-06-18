@@ -194,7 +194,7 @@ void THR::TimInt::determine_capa_consist_temp_rate()
     discret_->set_state(0, "temperature", (*temp_)(0));
 
     // calculate the capacity matrix onto tang_, instead of buildung 2 matrices
-    discret_->Evaluate(p, Teuchos::null, tang_, fint, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, Teuchos::null, tang_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
 
@@ -298,7 +298,7 @@ void THR::TimInt::reset_step()
     p.set("total time", Time());
     p.set("delta time", Dt());
     // go to elements
-    discret_->Evaluate(
+    discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -512,7 +512,7 @@ void THR::TimInt::output_heatflux_tempgrad(bool& datawritten)
   discret_->set_state(0, "residual temperature", zeros_);
   discret_->set_state(0, "temperature", (*temp_)(0));
 
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
   // Make new step
@@ -736,7 +736,7 @@ void THR::TimInt::apply_force_tang_internal(
   discret_->set_state(0, "residual temperature", tempi);
   discret_->set_state(0, "temperature", temp);
 
-  discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, tang, Teuchos::null, fint, Teuchos::null, Teuchos::null);
 
   // apply contact terms
   if (contact_strategy_nitsche_ != Teuchos::null)
@@ -800,8 +800,8 @@ void THR::TimInt::apply_force_tang_internal(
     if (ratem != Teuchos::null) discret_->set_state(0, "mid-temprate", ratem);
   }
 
-  // call the element Evaluate()
-  discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, fcap);
+  // call the element evaluate()
+  discret_->evaluate(p, tang, Teuchos::null, fint, Teuchos::null, fcap);
 
   // apply contact terms
   if (contact_strategy_nitsche_ != Teuchos::null)
@@ -849,8 +849,8 @@ void THR::TimInt::apply_force_internal(
   discret_->set_state(0, "residual temperature", tempi);
   discret_->set_state(0, "temperature", temp);
 
-  // call the element Evaluate()
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null, fint, Teuchos::null, Teuchos::null);
+  // call the element evaluate()
+  discret_->evaluate(p, Teuchos::null, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
   // apply contact terms
@@ -899,7 +899,7 @@ void THR::TimInt::SetInitialField(const Inpar::THR::InitialField init, const int
           // evaluate component k of spatial function
           double initialval = Global::Problem::Instance()
                                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X().data(), 0.0, k);
+                                  .evaluate(lnode->X().data(), 0.0, k);
           // extract temperature vector at time t_n (temp_ contains various vectors of
           // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
           int err1 = (*temp_)(0)->ReplaceMyValues(1, &initialval, &doflid);

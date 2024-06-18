@@ -268,7 +268,7 @@ void Arteries::ArtNetImplStationary::assemble_mat_and_rhs()
   discret_->set_state(0, "pressurenp", pressurenp_);
 
   // call standard loop over all elements
-  discret_->Evaluate(eleparams, sysmat_, rhs_);
+  discret_->evaluate(eleparams, sysmat_, rhs_);
   discret_->ClearState();
 
   // potential addition of Neumann terms
@@ -566,7 +566,7 @@ void Arteries::ArtNetImplStationary::OutputFlow()
     actele->LocationVector(*discret_, la, false);
     Core::LinAlg::SerialDenseVector flowVec(1);
 
-    actele->Evaluate(p, *discret_, la, dummyMat, dummyMat, flowVec, dummyVec, dummyVec);
+    actele->evaluate(p, *discret_, la, dummyMat, dummyMat, flowVec, dummyVec, dummyVec);
 
     int err = ele_volflow_->ReplaceMyValue(i, 0, flowVec(0));
     if (err != 0) FOUR_C_THROW("ReplaceMyValue failed with error code %d!", err);
@@ -691,7 +691,7 @@ void Arteries::ArtNetImplStationary::SetInitialField(
           // evaluate component k of spatial function
           double initialval = Global::Problem::Instance()
                                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X().data(), time_, k);
+                                  .evaluate(lnode->X().data(), time_, k);
           int err = pressurenp_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }

@@ -3,7 +3,7 @@
 
 \brief Internal implementation of RedInterAcinarDep element. Methods implemented here
        are called by inter_acinar_dep_evaluate.cpp by
-Discret::ELEMENTS::RedInterAcinarDep::Evaluate() with the corresponding action.
+Discret::ELEMENTS::RedInterAcinarDep::evaluate() with the corresponding action.
 
 
 \level 3
@@ -69,7 +69,7 @@ Discret::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
  | Evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep* ele,
+int Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -215,7 +215,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
           {
             curvefac = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
-                           .Evaluate(time);
+                           .evaluate(time);
             BCin = (*vals)[0] * curvefac;
           }
           else
@@ -235,7 +235,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
           {
             functionfac = Global::Problem::Instance()
                               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
+                              .evaluate((ele->Nodes()[i])->X().data(), time, 0);
           }
 
           // Get factor of second CURVE
@@ -245,7 +245,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
           if (curve2num >= 0)
             curve2fac = Global::Problem::Instance()
                             ->FunctionById<Core::UTILS::FunctionOfTime>(curve2num)
-                            .Evaluate(time);
+                            .evaluate(time);
 
           // Add first_CURVE + FUNCTION * second_CURVE
           BCin += functionfac * curve2fac;
@@ -283,7 +283,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
               {
                 curvefac = Global::Problem::Instance()
                                ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
-                               .Evaluate(time);
+                               .evaluate(time);
               }
 
               // Get parameters for VolumeDependentPleuralPressure condition

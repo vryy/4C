@@ -49,7 +49,7 @@ CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::PowerConstitutiveLaw(
 /*----------------------------------------------------------------------*
  |  Evaluate the contact constitutive law|
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::Evaluate(double gap, CONTACT::Node* cnode)
+double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
 {
   if (gap + params_->GetOffset() > 0)
   {

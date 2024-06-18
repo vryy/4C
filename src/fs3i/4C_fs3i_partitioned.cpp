@@ -103,7 +103,7 @@ void FS3I::PartFS3I::Init()
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
-    aledis->Evaluate(params);
+    aledis->evaluate(params);
   }
   else
     FOUR_C_THROW("Providing an ALE mesh is not supported for FS3I problems.");

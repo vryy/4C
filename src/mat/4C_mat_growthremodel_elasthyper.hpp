@@ -207,7 +207,7 @@ namespace Mat
     double Density() const override { return params_->density_; }
 
     /// hyperelastic stress response plus elasticity tensor
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient
         const Core::LinAlg::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
         Teuchos::ParameterList& params,      ///< Container for additional information
         Core::LinAlg::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
@@ -523,7 +523,7 @@ namespace Mat
     /// Fraction of 2D material parameter of elastin
     std::vector<double> mue_frac_;
 
-    /// First call of Evaluate()
+    /// First call of evaluate()
     std::vector<int> setup_;
 
     /// Holder for anisotropic behavior

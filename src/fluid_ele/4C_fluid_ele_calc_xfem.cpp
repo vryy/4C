@@ -104,7 +104,7 @@ namespace Discret
            i != intpoints.end(); ++i)
       {
         const Core::FE::GaussIntegration intpoints_cell = *i;
-        err = my::Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+        err = my::evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
             elevec1_epetra, elevec2_epetra, elevec3_epetra, intpoints_cell, offdiag);
         if (err) return err;
       }
@@ -400,10 +400,10 @@ namespace Discret
 
           if (nsd_ == 3)
           {
-            u(0) = function->Evaluate(position, t, 0);
-            u(1) = function->Evaluate(position, t, 1);
-            u(2) = function->Evaluate(position, t, 2);
-            p = function->Evaluate(position, t, 3);
+            u(0) = function->evaluate(position, t, 0);
+            u(1) = function->evaluate(position, t, 1);
+            u(2) = function->evaluate(position, t, 2);
+            p = function->evaluate(position, t, 3);
           }
           else
             FOUR_C_THROW("case 'kimmoin_stat' is a 3D specific case");
@@ -411,17 +411,17 @@ namespace Discret
 
           if (nsd_ == 3)
           {
-            grad_u(0, 0) = function_grad->Evaluate(position, t, 0);  // u,x
-            grad_u(0, 1) = function_grad->Evaluate(position, t, 1);  // u,y
-            grad_u(0, 2) = function_grad->Evaluate(position, t, 2);  // u,z
+            grad_u(0, 0) = function_grad->evaluate(position, t, 0);  // u,x
+            grad_u(0, 1) = function_grad->evaluate(position, t, 1);  // u,y
+            grad_u(0, 2) = function_grad->evaluate(position, t, 2);  // u,z
 
-            grad_u(1, 0) = function_grad->Evaluate(position, t, 3);  // v,x
-            grad_u(1, 1) = function_grad->Evaluate(position, t, 4);  // v,y
-            grad_u(1, 2) = function_grad->Evaluate(position, t, 5);  // v,z
+            grad_u(1, 0) = function_grad->evaluate(position, t, 3);  // v,x
+            grad_u(1, 1) = function_grad->evaluate(position, t, 4);  // v,y
+            grad_u(1, 2) = function_grad->evaluate(position, t, 5);  // v,z
 
-            grad_u(2, 0) = function_grad->Evaluate(position, t, 6);  // w,x
-            grad_u(2, 1) = function_grad->Evaluate(position, t, 7);  // w,y
-            grad_u(2, 2) = function_grad->Evaluate(position, t, 8);  // w,z
+            grad_u(2, 0) = function_grad->evaluate(position, t, 6);  // w,x
+            grad_u(2, 1) = function_grad->evaluate(position, t, 7);  // w,y
+            grad_u(2, 2) = function_grad->evaluate(position, t, 8);  // w,z
           }
           else
             FOUR_C_THROW("case 'kimmoin_stat' is a 3D specific case");
@@ -539,10 +539,10 @@ namespace Discret
 
           if (nsd_ == 3)
           {
-            u(0) = function->Evaluate(position, t, 0);
-            u(1) = function->Evaluate(position, t, 1);
-            u(2) = function->Evaluate(position, t, 2);
-            p = function->Evaluate(position, t, 3);
+            u(0) = function->evaluate(position, t, 0);
+            u(1) = function->evaluate(position, t, 1);
+            u(2) = function->evaluate(position, t, 2);
+            p = function->evaluate(position, t, 3);
           }
           else
             FOUR_C_THROW("case 'kimmoin_stat' is a 3D specific case");
@@ -550,17 +550,17 @@ namespace Discret
 
           if (nsd_ == 3)
           {
-            grad_u(0, 0) = function_grad->Evaluate(position, t, 0);  // u,x
-            grad_u(0, 1) = function_grad->Evaluate(position, t, 1);  // u,y
-            grad_u(0, 2) = function_grad->Evaluate(position, t, 2);  // u,z
+            grad_u(0, 0) = function_grad->evaluate(position, t, 0);  // u,x
+            grad_u(0, 1) = function_grad->evaluate(position, t, 1);  // u,y
+            grad_u(0, 2) = function_grad->evaluate(position, t, 2);  // u,z
 
-            grad_u(1, 0) = function_grad->Evaluate(position, t, 3);  // v,x
-            grad_u(1, 1) = function_grad->Evaluate(position, t, 4);  // v,y
-            grad_u(1, 2) = function_grad->Evaluate(position, t, 5);  // v,z
+            grad_u(1, 0) = function_grad->evaluate(position, t, 3);  // v,x
+            grad_u(1, 1) = function_grad->evaluate(position, t, 4);  // v,y
+            grad_u(1, 2) = function_grad->evaluate(position, t, 5);  // v,z
 
-            grad_u(2, 0) = function_grad->Evaluate(position, t, 6);  // w,x
-            grad_u(2, 1) = function_grad->Evaluate(position, t, 7);  // w,y
-            grad_u(2, 2) = function_grad->Evaluate(position, t, 8);  // w,z
+            grad_u(2, 0) = function_grad->evaluate(position, t, 6);  // w,x
+            grad_u(2, 1) = function_grad->evaluate(position, t, 7);  // w,y
+            grad_u(2, 2) = function_grad->evaluate(position, t, 8);  // w,z
           }
           else
             FOUR_C_THROW("case 'kimmoin_stat' is a 3D specific case");
@@ -660,15 +660,15 @@ namespace Discret
             const double u_exact_x =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(position, t, 0);
+                    .evaluate(position, t, 0);
             const double u_exact_y =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(position, t, 1);
+                    .evaluate(position, t, 1);
             const double p_exact =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(position, t, 2);
+                    .evaluate(position, t, 2);
 
             u(0) = u_exact_x;
             u(1) = u_exact_y;
@@ -703,19 +703,19 @@ namespace Discret
             const double u_exact_x =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(position, t, 0);
+                    .evaluate(position, t, 0);
             const double u_exact_y =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(position, t, 1);
+                    .evaluate(position, t, 1);
             const double u_exact_z =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(position, t, 2);
+                    .evaluate(position, t, 2);
             const double p_exact =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(position, t, 3);
+                    .evaluate(position, t, 3);
 
             u(0) = u_exact_x;
             u(1) = u_exact_y;
@@ -1103,14 +1103,14 @@ namespace Discret
               si->project_on_side(x_gp_lin, x_side, xi_side);
 
               if (cond_type == Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID)
-                ci->Evaluate(x_side);  // evaluate embedded element's shape functions at gauss-point
+                ci->evaluate(x_side);  // evaluate embedded element's shape functions at gauss-point
                                        // coordinates
             }
             else if (is_ls_coupling_side)
             {
               // TODO: do we need this here?
               //          if(cond_manager->IsCoupling( coup_sid, my::eid_ ))
-              //            ci->Evaluate( x_gp_lin ); // evaluate embedded element's shape functions
+              //            ci->evaluate( x_gp_lin ); // evaluate embedded element's shape functions
               //            at gauss-point coordinates
             }
 
@@ -1880,10 +1880,10 @@ namespace Discret
                                                                        // at gauss-point coordinates
               else
               {
-                ci.at(coup_sid)->Evaluate(
+                ci.at(coup_sid)->evaluate(
                     xi_side);  // evaluate side's shape functions at gauss-point coordinates
                 if (add_conv_stab || my::fldparatimint_->is_new_ost_implementation())
-                  si_nit.at(coup_sid)->Evaluate(
+                  si_nit.at(coup_sid)->evaluate(
                       xi_side);  // evaluate side's shape functions at gauss-point coordinates
               }
             }
@@ -3695,16 +3695,16 @@ namespace Discret
               si->project_on_side(x_gp_lin_, x_side_, xi_side);
 
               if (non_xfluid_coupling)
-                ci->Evaluate(x_side_, rst_slave);  // evaluate embedded element's shape functions at
+                ci->evaluate(x_side_, rst_slave);  // evaluate embedded element's shape functions at
                                                    // gauss-point coordinates
               else
-                ci->Evaluate(xi_side,
+                ci->evaluate(xi_side,
                     rst_slave);  // evaluate side's shape functions at gauss-point coordinates
             }
             else if (is_ls_coupling_side)
             {
               if (cond_manager->IsCoupling(coup_sid, my::eid_))
-                ci->Evaluate(x_gp_lin_, rst_slave);  // evaluate embedded element's shape functions
+                ci->evaluate(x_gp_lin_, rst_slave);  // evaluate embedded element's shape functions
                                                      // at gauss-point coordinates
             }
 

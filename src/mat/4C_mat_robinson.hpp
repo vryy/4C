@@ -190,7 +190,7 @@ namespace Mat
     //! update internal stress variables
     void Update() override;
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
@@ -395,7 +395,7 @@ namespace Mat
     //@{
 
     //! material call to determine stress and constitutive tensor ctemp
-    void Evaluate(
+    void evaluate(
         const Core::LinAlg::Matrix<1, 1>& Ntemp,  //!< scalar-valued temperature of curr. element
         Core::LinAlg::Matrix<6, 1>& ctemp,        //!< temperature dependent material tangent
         Core::LinAlg::Matrix<6, 1>& stresstemp    //!< stress term dependent on temperature

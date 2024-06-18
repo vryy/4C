@@ -213,7 +213,7 @@ Adapter::StructureConstrMerged::block_system_matrix()
 /* build linear system stiffness matrix and rhs/force residual
  *
  * Monolithic FSI accesses the linearised structure problem. */
-void Adapter::StructureConstrMerged::Evaluate(Teuchos::RCP<const Epetra_Vector> dispstepinc)
+void Adapter::StructureConstrMerged::evaluate(Teuchos::RCP<const Epetra_Vector> dispstepinc)
 {
   // 'initialize' structural displacement as null-pointer
   Teuchos::RCP<Epetra_Vector> dispstructstepinc = Teuchos::null;
@@ -228,7 +228,7 @@ void Adapter::StructureConstrMerged::Evaluate(Teuchos::RCP<const Epetra_Vector> 
   }
   // Hand down incremental displacements,
   // structure_ will compute the residual increments on its own
-  structure_->Evaluate(dispstructstepinc);
+  structure_->evaluate(dispstructstepinc);
 }
 
 

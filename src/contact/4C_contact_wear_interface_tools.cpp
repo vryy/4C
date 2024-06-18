@@ -101,9 +101,9 @@ void Wear::WearInterface::FDCheckGapDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -205,9 +205,9 @@ void Wear::WearInterface::FDCheckGapDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -296,7 +296,7 @@ void Wear::WearInterface::FDCheckGapDeriv()
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -358,9 +358,9 @@ void Wear::WearInterface::FDCheckGapDeriv_W()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -408,7 +408,7 @@ void Wear::WearInterface::FDCheckGapDeriv_W()
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -501,9 +501,9 @@ void Wear::WearInterface::FDCheckDerivE_D(Core::LinAlg::SparseMatrix& linedis)
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -630,9 +630,9 @@ void Wear::WearInterface::FDCheckDerivE_D(Core::LinAlg::SparseMatrix& linedis)
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -723,7 +723,7 @@ void Wear::WearInterface::FDCheckDerivE_D(Core::LinAlg::SparseMatrix& linedis)
   }  // loop over procs slave nodes
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -816,9 +816,9 @@ void Wear::WearInterface::fd_check_deriv_e_d_master(Core::LinAlg::SparseMatrix& 
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < mnoderowmap_->NumMyElements(); ++k)
@@ -945,9 +945,9 @@ void Wear::WearInterface::fd_check_deriv_e_d_master(Core::LinAlg::SparseMatrix& 
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < mnoderowmap_->NumMyElements(); ++k)
@@ -1038,7 +1038,7 @@ void Wear::WearInterface::fd_check_deriv_e_d_master(Core::LinAlg::SparseMatrix& 
   }  // loop over procs slave nodes
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -1135,9 +1135,9 @@ void Wear::WearInterface::FDCheckDerivT_D(Core::LinAlg::SparseMatrix& lintdis)
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < slipnodes_->NumMyElements(); ++k)
@@ -1229,7 +1229,7 @@ void Wear::WearInterface::FDCheckDerivT_D(Core::LinAlg::SparseMatrix& lintdis)
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -1326,9 +1326,9 @@ void Wear::WearInterface::fd_check_deriv_t_d_master(Core::LinAlg::SparseMatrix& 
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < slipmasternodes_->NumMyElements(); ++k)
@@ -1420,7 +1420,7 @@ void Wear::WearInterface::fd_check_deriv_t_d_master(Core::LinAlg::SparseMatrix& 
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -1817,9 +1817,9 @@ void Wear::WearInterface::FDCheckSlipDeriv(Core::LinAlg::SparseMatrix& linslipLM
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -2056,9 +2056,9 @@ void Wear::WearInterface::FDCheckSlipDeriv(Core::LinAlg::SparseMatrix& linslipLM
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -2284,9 +2284,9 @@ void Wear::WearInterface::FDCheckSlipDeriv(Core::LinAlg::SparseMatrix& linslipLM
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -2479,7 +2479,7 @@ void Wear::WearInterface::FDCheckSlipDeriv(Core::LinAlg::SparseMatrix& linslipLM
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   return;
 
@@ -2566,9 +2566,9 @@ void Wear::WearInterface::FDCheckMortarTDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -2648,9 +2648,9 @@ void Wear::WearInterface::FDCheckMortarTDeriv()
   set_element_areas();
 
   // *******************************************************************
-  // contents of Evaluate()
+  // contents of evaluate()
   // *******************************************************************
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -2736,9 +2736,9 @@ void Wear::WearInterface::fd_check_mortar_t_master_deriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < mnoderowmap_->NumMyElements(); ++k)
@@ -2850,9 +2850,9 @@ void Wear::WearInterface::fd_check_mortar_t_master_deriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < mnoderowmap_->NumMyElements(); ++k)
@@ -2932,9 +2932,9 @@ void Wear::WearInterface::fd_check_mortar_t_master_deriv()
   set_element_areas();
 
   // *******************************************************************
-  // contents of Evaluate()
+  // contents of evaluate()
   // *******************************************************************
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -3020,9 +3020,9 @@ void Wear::WearInterface::FDCheckMortarEDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -3102,9 +3102,9 @@ void Wear::WearInterface::FDCheckMortarEDeriv()
   set_element_areas();
 
   // *******************************************************************
-  // contents of Evaluate()
+  // contents of evaluate()
   // *******************************************************************
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -3190,9 +3190,9 @@ void Wear::WearInterface::fd_check_mortar_e_master_deriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < mnoderowmap_->NumMyElements(); ++k)
@@ -3305,9 +3305,9 @@ void Wear::WearInterface::fd_check_mortar_e_master_deriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < mnoderowmap_->NumMyElements(); ++k)
@@ -3387,9 +3387,9 @@ void Wear::WearInterface::fd_check_mortar_e_master_deriv()
   set_element_areas();
 
   // *******************************************************************
-  // contents of Evaluate()
+  // contents of evaluate()
   // *******************************************************************
-  Evaluate();
+  evaluate();
 
   return;
 }
@@ -3461,9 +3461,9 @@ void Wear::WearInterface::FDCheckWearDerivLm()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
 
     // compute finite difference derivative
@@ -3527,7 +3527,7 @@ void Wear::WearInterface::FDCheckWearDerivLm()
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   // write the init. wear back into the node
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -3615,9 +3615,9 @@ void Wear::WearInterface::FDCheckWearDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
 
     // compute finite difference derivative
@@ -3715,9 +3715,9 @@ void Wear::WearInterface::FDCheckWearDeriv()
     set_element_areas();
 
     // *******************************************************************
-    // contents of Evaluate()
+    // contents of evaluate()
     // *******************************************************************
-    Evaluate();
+    evaluate();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -3778,7 +3778,7 @@ void Wear::WearInterface::FDCheckWearDeriv()
 
   // back to normal...
   Initialize();
-  Evaluate();
+  evaluate();
 
   // write the init. wear back into the node
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)

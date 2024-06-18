@@ -121,7 +121,7 @@ Discret::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(int numdofper
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
+int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
     const Discret::ELEMENTS::ThermoBoundary* ele, Teuchos::ParameterList& params,
     const Core::FE::Discretization& discretization,
     const Core::Elements::Element::LocationArray& la,
@@ -225,7 +225,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     if (curvenum >= 0)
     {
       curvefac =
-          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).Evaluate(
+          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).evaluate(
               time);
     }
     // multiply heat convection coefficient with the timecurve factor
@@ -239,7 +239,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     {
       surtempcurvefac = Global::Problem::Instance()
                             ->FunctionById<Core::UTILS::FunctionOfTime>(surtempcurvenum)
-                            .Evaluate(time);
+                            .evaluate(time);
     }
     // complete surrounding temperatures T_oo: multiply with the timecurve factor
     surtemp *= surtempcurvefac;
@@ -313,7 +313,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     }  // geo_linear
 
     // initialise the vectors
-    // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
+    // evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
     // the coupling field is not yet known. Pass coupling vectors filled with zeros
     // the size of the vectors is the length of the location vector*nsd_
     std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
@@ -398,7 +398,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     Inpar::STR::KinemType kintype = parentele->kintype_;
 
     // initialise the vectors
-    // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
+    // evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
     // the coupling field is not yet known. Pass coupling vectors filled with zeros
     // the size of the vectors is the length of the location vector*nsd_
     std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
@@ -442,7 +442,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
         {
           curvefac = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                         .Evaluate(time);
+                         .evaluate(time);
         }
         // multiply heat convection coefficient with the timecurve factor
         coeff *= curvefac;
@@ -455,7 +455,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
         {
           surtempcurvefac = Global::Problem::Instance()
                                 ->FunctionById<Core::UTILS::FunctionOfTime>(surtempcurvenum)
-                                .Evaluate(time);
+                                .evaluate(time);
         }
         // complete surrounding temperatures T_oo: multiply with the timecurve factor
         surtemp *= surtempcurvefac;
@@ -578,7 +578,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
         THR::BoundaryActionToString(action).c_str());
 
   return 0;
-}  // Evaluate()
+}  // evaluate()
 
 
 /*----------------------------------------------------------------------*
@@ -641,7 +641,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate_neumann(
             // evaluate function at current gauss point
             functfac = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                           .Evaluate(coordgpref, time, dof);
+                           .evaluate(coordgpref, time, dof);
           }
           else
             functfac = 1.0;

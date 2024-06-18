@@ -291,7 +291,7 @@ namespace Adapter
     /// x^n+1_i+1 = x^n     + stepinc
     ///
     /// with n and i being time and Newton iteration step
-    virtual void Evaluate(
+    virtual void evaluate(
         Teuchos::RCP<const Epetra_Vector> stepinc  ///< increment between time step n and n+1
         ) = 0;
 

@@ -98,7 +98,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Setu
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Evaluate(
+bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22,
@@ -245,14 +245,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   if (function_number != -1)
     q1 *= Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-              .Evaluate(time_);
+              .evaluate(time_);
 
   function_number = linechargeconds_[1]->parameters().Get<int>("funct");
 
   if (function_number != -1)
     q2 *= Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-              .Evaluate(time_);
+              .evaluate(time_);
 
 
   // auxiliary variable
@@ -626,14 +626,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   if (function_number != -1)
     q1 *= Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-              .Evaluate(time_);
+              .evaluate(time_);
 
   function_number = linechargeconds_[1]->parameters().Get<int>("funct");
 
   if (function_number != -1)
     q2 *= Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-              .Evaluate(time_);
+              .evaluate(time_);
 
 
   // Evaluation of the Gamma-Function term:
@@ -1211,14 +1211,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   if (function_number != -1)
     rho1 *= Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-                .Evaluate(time_);
+                .evaluate(time_);
 
   function_number = linechargeconds_[1]->parameters().Get<int>("funct");
 
   if (function_number != -1)
     rho2 *= Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-                .Evaluate(time_);
+                .evaluate(time_);
 
 
   // constant prefactor of the disk-cylinder interaction potential

@@ -233,7 +233,7 @@ namespace FPSI
         Teuchos::RCP<Epetra_CrsMatrix> dst);  ///< destination Matrix (will be filled!)
 
     //! Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void Evaluate(
+    virtual void evaluate(
         Teuchos::RCP<const Epetra_Vector> stepinc);  ///< increment between time step n and n+1
 
     //! setup of newton scheme

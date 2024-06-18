@@ -64,7 +64,7 @@ void Mat::ScatraMicroMacroCoupling::prepare_time_step(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::ScatraMicroMacroCoupling::Evaluate(const int gp_id,
+void Mat::ScatraMicroMacroCoupling::evaluate(const int gp_id,
     const std::vector<double>& phinp_macro, double& q_micro, std::vector<double>& dq_dphi_micro,
     const double detF, const bool solve) const
 {
@@ -72,7 +72,7 @@ void Mat::ScatraMicroMacroCoupling::Evaluate(const int gp_id,
   if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
 
   // evaluate multi-scale scalar transport sub material at macro-scale Gauss point
-  matgp_.at(gp_id)->Evaluate(phinp_macro, q_micro, dq_dphi_micro, detF, solve);
+  matgp_.at(gp_id)->evaluate(phinp_macro, q_micro, dq_dphi_micro, detF, solve);
 }
 
 

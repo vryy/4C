@@ -288,7 +288,7 @@ void ScaTra::ScaTraTimIntElchOST::compute_time_deriv_pot0(const bool init)
       if (functnum >= 0)
       {
         const double functfac =
-            problem_->FunctionById<Core::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
+            problem_->FunctionById<Core::UTILS::FunctionOfTime>(functnum).evaluate(time_);
 
         // adjust potential at metal side accordingly
         pot0np *= functfac;
@@ -857,7 +857,7 @@ void ScaTra::ScaTraTimIntElchGenAlpha::compute_time_deriv_pot0(const bool init)
       if (functnum >= 0)
       {
         const double functfac =
-            problem_->FunctionById<Core::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
+            problem_->FunctionById<Core::UTILS::FunctionOfTime>(functnum).evaluate(time_);
         // adjust potential at metal side accordingly
 
         pot0np *= functfac;

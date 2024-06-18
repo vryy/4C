@@ -1055,7 +1055,7 @@ void FLD::XWall::calc_tau_w(
 
       // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
       // elevector1 has to be nullptr here, because I am assuming a dof-based vector otherwise
-      actele->Evaluate(
+      actele->evaluate(
           params, *xwdiscret_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
 
       // get element location vector for nodes
@@ -1205,7 +1205,7 @@ void FLD::XWall::l2_project_vector(Teuchos::RCP<Epetra_Vector> veln,
         numnode * numdf, numberofrhs);  // we have 3 right hand sides for now: 3 velocity components
 
     // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
-    actele->Evaluate(
+    actele->evaluate(
         params, *xwdiscret_, lm, elematrix1, elematrix2, elevectordummy, elevector2, elevector3);
 
     // get element location vector for enriched dofs

@@ -334,13 +334,13 @@ void Discret::ELEMENTS::ElemagDiffBoundary::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                      berardocco 03/19 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::ElemagDiffBoundary::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::ElemagDiffBoundary::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  Discret::ELEMENTS::ElemagBoundaryImplInterface::Impl(this)->Evaluate(
+  Discret::ELEMENTS::ElemagBoundaryImplInterface::Impl(this)->evaluate(
       this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
   return 0;
 }

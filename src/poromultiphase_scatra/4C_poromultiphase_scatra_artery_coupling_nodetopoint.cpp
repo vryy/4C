@@ -91,14 +91,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::pre_evaluate
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::Evaluate(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::evaluate(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   if (!issetup_) FOUR_C_THROW("Setup() has not been called");
 
 
   // call base class
-  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(sysmat, rhs);
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate(sysmat, rhs);
 }
 
 /*----------------------------------------------------------------------*

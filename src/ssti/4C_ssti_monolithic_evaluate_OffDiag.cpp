@@ -77,7 +77,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
       thermostructuredomain,  // thermo-structure matrix block
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-  thermo_->ScaTraField()->discretization()->Evaluate(eleparams, strategyscatrastructure);
+  thermo_->ScaTraField()->discretization()->evaluate(eleparams, strategyscatrastructure);
 
   thermo_->ScaTraField()->discretization()->ClearState();
 }
@@ -178,7 +178,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_structure_the
       structurethermodomain,  // structure-thermo matrix block
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-  structure_->discretization()->Evaluate(eleparams, strategystructurescatra);
+  structure_->discretization()->evaluate(eleparams, strategystructurescatra);
 
   // need to scale structurethermoblock_ with 'timefac' to getcorrect implementation
   structurethermodomain->Scale(1.0 - structure_->TimIntParam());

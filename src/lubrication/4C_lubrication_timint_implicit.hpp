@@ -180,7 +180,7 @@ namespace LUBRICATION
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic EHL accesses the linearised lubrication problem
-    void Evaluate();
+    void evaluate();
 
     //! non-overlapping DOF map for multiple dofsets
     Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds = 0)

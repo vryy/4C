@@ -120,7 +120,7 @@ namespace Discret::ELEMENTS
     bool ReadElement(const std::string& eletype, const std::string& celltype,
         Input::LineDefinition* linedef) override;
 
-    int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
         Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseVector& elevec2,

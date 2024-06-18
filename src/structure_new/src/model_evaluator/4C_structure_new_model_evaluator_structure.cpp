@@ -896,7 +896,7 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress
         [&](const std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& map_data,
             Epetra_MultiVector& assembled_data)
     {
-      discret_ptr()->Evaluate(
+      discret_ptr()->evaluate(
           [&](Core::Elements::Element& ele)
           {
             if (DoPostprocessingOnElement(ele))
@@ -909,7 +909,7 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress
         [&](const std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& map_data,
             Epetra_MultiVector& assembled_data)
     {
-      discret_ptr()->Evaluate(
+      discret_ptr()->evaluate(
           [&](Core::Elements::Element& ele)
           {
             if (DoPostprocessingOnElement(ele))
@@ -1168,7 +1168,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_internal(Teuchos::ParameterList& p
   // this is about to go, once the old time integration is deleted
   params_interface2_parameter_list(eval_data_ptr(), p);
 
-  discret().Evaluate(p, eval_mat[0], eval_mat[1], eval_vec[0], eval_vec[1], eval_vec[2]);
+  discret().evaluate(p, eval_mat[0], eval_mat[1], eval_vec[0], eval_vec[1], eval_vec[2]);
   discret().ClearState();
 }
 
@@ -1204,7 +1204,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_internal_specified_elements(Teucho
   // this is about to go, once the old time integration is deleted
   params_interface2_parameter_list(eval_data_ptr(), p);
 
-  Core::FE::UTILS::Evaluate(*discret_ptr(), p, *eval_mat, *eval_vec, ele_map_to_be_evaluated);
+  Core::FE::UTILS::evaluate(*discret_ptr(), p, *eval_mat, *eval_vec, ele_map_to_be_evaluated);
 
   discret().ClearState();
 }
@@ -1648,13 +1648,13 @@ bool STR::MODELEVALUATOR::Structure::determine_element_volumes(
     rele->LocationVector(discret(), la, false);
 
     eval_data().set_action_type(Core::Elements::analyse_jacobian_determinant);
-    rele->Evaluate(p, discret(), la, empty_dummy_mat, empty_dummy_mat, ele_vol, empty_dummy_vec,
+    rele->evaluate(p, discret(), la, empty_dummy_mat, empty_dummy_mat, ele_vol, empty_dummy_vec,
         empty_dummy_vec);
 
     if (not eval_data().is_ele_eval_error())
     {
       eval_data().set_action_type(Core::Elements::struct_calc_mass_volume);
-      rele->Evaluate(p, discret(), la, empty_dummy_mat, empty_dummy_mat, ele_vol, empty_dummy_vec,
+      rele->evaluate(p, discret(), la, empty_dummy_mat, empty_dummy_mat, ele_vol, empty_dummy_vec,
           empty_dummy_vec);
     }
 

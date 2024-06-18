@@ -41,7 +41,7 @@ namespace Discret
       RedAirwayImplInterface() {}
       /// Empty destructor
       virtual ~RedAirwayImplInterface() = default;  /// Evaluate the element
-      virtual int Evaluate(RedAirway* ele, Teuchos::ParameterList& params,
+      virtual int evaluate(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -127,7 +127,7 @@ namespace Discret
       /*!
         The evaluate function for the general airway case.
        */
-      int Evaluate(RedAirway* ele, Teuchos::ParameterList& params,
+      int evaluate(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

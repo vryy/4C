@@ -127,7 +127,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::struct_op(
   if (fbi.get<int>("STARTSTEP") < Step())
   {
     constraint_manager_->PrepareFluidSolve();
-    constraint_manager_->Evaluate();
+    constraint_manager_->evaluate();
     if (!(Teuchos::getIntegralValue<Inpar::FBI::BeamToFluidCoupling>(fbi, "COUPLING") ==
             Inpar::FBI::BeamToFluidCoupling::solid))
       Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(MBFluidField(), true)->ResetExternalForces();
@@ -209,7 +209,7 @@ void FSI::DirichletNeumannVel::Timeloop(
           *Global::Problem::Instance()->OutputControlFile(), Time()),
       Teuchos::rcp_dynamic_cast<Adapter::FBIStructureWrapper>(structure_field(), true)->GetIOData(),
       constraint_manager_->GetBridge()->GetParams()->get_visualization_ouput_params_ptr());
-  constraint_manager_->Evaluate();
+  constraint_manager_->evaluate();
   if (get_kinematic_coupling()) struct_to_fluid(Teuchos::null);
 
   FSI::Partitioned::Timeloop(interface);

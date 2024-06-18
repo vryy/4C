@@ -255,7 +255,7 @@ void Mat::MicroMaterialGP::eas_init()
       Core::LinAlg::SerialDenseVector elevector3;
       std::vector<int> lm;
 
-      actele->Evaluate(p, *discret, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
+      actele->evaluate(p, *discret, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
     }
   }
 

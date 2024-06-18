@@ -132,7 +132,7 @@ void Discret::ELEMENTS::NStet5::init_element()
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              gee 03/12|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::NStet5::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -790,7 +790,7 @@ void Discret::ELEMENTS::NStet5::select_material(Core::LinAlg::Matrix<6, 1>& stre
     case Core::Materials::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       auto* stvk = dynamic_cast<Mat::StVenantKirchhoff*>(mat.get());
-      stvk->Evaluate(&glstrain_e, &cmat_e, &stress_e);
+      stvk->evaluate(&glstrain_e, &cmat_e, &stress_e);
       density = stvk->Density();
     }
     break;
@@ -799,7 +799,7 @@ void Discret::ELEMENTS::NStet5::select_material(Core::LinAlg::Matrix<6, 1>& stre
     {
       auto* aaa = dynamic_cast<Mat::AAAneohooke*>(mat.get());
       Teuchos::ParameterList params;
-      aaa->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+      aaa->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
       density = aaa->Density();
     }
     break;
@@ -807,7 +807,7 @@ void Discret::ELEMENTS::NStet5::select_material(Core::LinAlg::Matrix<6, 1>& stre
     {
       auto* hyper = dynamic_cast<Mat::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
-      hyper->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+      hyper->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
       density = hyper->Density();
       return;
       break;

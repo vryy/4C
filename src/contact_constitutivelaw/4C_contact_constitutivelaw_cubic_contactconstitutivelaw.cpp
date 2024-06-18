@@ -46,7 +46,7 @@ CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::CubicConstitutiveLaw(
 /*----------------------------------------------------------------------*
  |  Evaluate Contact Constitutive Law
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::Evaluate(double gap, CONTACT::Node* cnode)
+double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
 {
   if (gap + params_->GetOffset() > 0)
   {

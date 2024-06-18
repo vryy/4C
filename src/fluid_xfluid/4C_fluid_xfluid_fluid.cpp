@@ -216,7 +216,7 @@ void FLD::XFluidFluid::PrepareXFEMSolve()
       embedded_fluid_->Veln(), xff_state_->xffluidveln_);
 }
 
-void FLD::XFluidFluid::Evaluate(
+void FLD::XFluidFluid::evaluate(
     Teuchos::RCP<const Epetra_Vector> stepinc  ///< solution increment between time step n and n+1
 )
 {
@@ -250,7 +250,7 @@ void FLD::XFluidFluid::Evaluate(
 
   // evaluation of background fluid (new cut for full Newton approach)
   XFluid::UpdateByIncrements(stepinc_xfluid);
-  XFluid::Evaluate();
+  XFluid::evaluate();
 
   // update step increment
   stepinc_->Update(1.0, *xff_state_->xffluidvelnp_, -1.0, *xff_state_->xffluidveln_, 0.0);

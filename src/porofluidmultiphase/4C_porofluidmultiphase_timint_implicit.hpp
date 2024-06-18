@@ -162,7 +162,7 @@ namespace POROFLUIDMULTIPHASE
         ) override;
 
     //! build linear system tangent matrix, rhs/force residual
-    void Evaluate() override;
+    void evaluate() override;
 
     //! apply Dirichlet Boundary Condition
     void prepare_system_for_newton_solve();

@@ -58,7 +58,7 @@ using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -1360,7 +1360,7 @@ int Discret::ELEMENTS::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
         const double functfac =
             (functnum > 0) ? Global::Problem::Instance()
                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                 .Evaluate(xrefegp.A(), time, dim)
+                                 .evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
         for (int nodid = 0; nodid < NUMNOD_SOH8; ++nodid)
@@ -2169,7 +2169,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
     params.set<int>("iostress", iostress);
 
     Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_static_cast<Mat::So3Material>(Material());
-    so3mat->Evaluate(&defgrd_mod, &glstrain, params, &stress, &cmat, gp, Id());
+    so3mat->evaluate(&defgrd_mod, &glstrain, params, &stress, &cmat, gp, Id());
 
     // stop if the material evaluation fails
     if (IsParamsInterface() and str_params_interface().is_tolerate_errors())
@@ -3126,7 +3126,7 @@ void Discret::ELEMENTS::SoHex8::evaluate_finite_difference_material_tangent(
     }  // ------------------------------------------------------------------ EAS
 
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat_fd;
-    so3mat->Evaluate(&defgrd_fd_mod, &glstrain_fd, params, &stress_fd, &cmat_fd, gp, Id());
+    so3mat->evaluate(&defgrd_fd_mod, &glstrain_fd, params, &stress_fd, &cmat_fd, gp, Id());
 
     // finite difference approximation of partial derivative
     //

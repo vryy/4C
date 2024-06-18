@@ -146,7 +146,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::ConstrMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
+void FSI::ConstrMonolithic::evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   //-----------------------------------------------------------------------------
   // Increment lagrange multiplier
@@ -160,7 +160,7 @@ void FSI::ConstrMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_incr
   //-----------------------------------------------------------------------------
   // evaluation of all fields; constraints are evaluated by strucuture
   //-----------------------------------------------------------------------------
-  FSI::Monolithic::Evaluate(step_increment);
+  FSI::Monolithic::evaluate(step_increment);
 }
 
 

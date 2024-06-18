@@ -132,7 +132,7 @@ and which have already a virtual representation in the parent class, e.g., here 
 -	Unpack()
 -	Setup()   // -> initialize and allocate internal variables
 -	Update()    // -> update internal variables
--	Evaluate()   // calculate stress and constitutive matrix
+-	evaluate()   // calculate stress and constitutive matrix
 -	VisNames()  // For the names of variables to be visualized (optional; only if extra variables are to be visualized)
 -	VisData()   // For the data of these variables (optional; only if extra variables are to be visualized)
 

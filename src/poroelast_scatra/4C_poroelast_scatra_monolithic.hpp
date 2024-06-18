@@ -87,7 +87,7 @@ namespace PoroElastScaTra
     virtual void setup_system_matrix();
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void Evaluate(
+    virtual void evaluate(
         Teuchos::RCP<const Epetra_Vector> stepinc  //!< increment between time step n and n+1
     );
 

@@ -536,7 +536,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
   double curvefac = 1.0;
   if (curvenum >= 0 and usetime)
     curvefac =
-        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).Evaluate(
+        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).evaluate(
             time);
 
   // (temporarily) switch off any flow-dependent pressure condition in case of zero
@@ -2216,7 +2216,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
           // (important: requires 3D position vector)
           functionfac(idim) = Global::Problem::Instance()
                                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                  .Evaluate(coordgp.A(), time, idim);
+                                  .evaluate(coordgp.A(), time, idim);
         }
         else
           functionfac(idim) = 1.0;
@@ -4906,7 +4906,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
               // evaluate function at current gauss point (important: requires 3D position vector)
               functionfac(dim) = Global::Problem::Instance()
                                      ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                     .Evaluate(coordgp.A(), time, dim);
+                                     .evaluate(coordgp.A(), time, dim);
             }
             else
             {
@@ -5277,7 +5277,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
             // evaluate function at current gauss point (important: requires 3D position vector)
             functionfac(dim) = Global::Problem::Instance()
                                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                   .Evaluate(coordgp.A(), time, dim);
+                                   .evaluate(coordgp.A(), time, dim);
           }
           else
           {

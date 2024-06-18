@@ -125,20 +125,20 @@ void Discret::ELEMENTS::TransportType::pre_evaluate(Core::FE::Discretization& di
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              gjb 01/09|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Transport::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  FOUR_C_THROW("not implemented. Use the Evaluate() method with Location Array instead!");
+  FOUR_C_THROW("not implemented. Use the evaluate() method with Location Array instead!");
   return -1;
 }
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              gjb 01/09|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Transport::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -226,7 +226,7 @@ int Discret::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     {
       return ScaTraFactory::ProvideImpl(
           Shape(), impltype_, numdofpernode, numscal, discretization.Name())
-          ->Evaluate(this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
+          ->evaluate(this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
 

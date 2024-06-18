@@ -99,7 +99,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evaluate(
+bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22,
@@ -256,14 +256,14 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   if (function_number != -1)
     q1 *= Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-              .Evaluate(time_);
+              .evaluate(time_);
 
   function_number = chargeconds_[1]->parameters().Get<int>("funct");
 
   if (function_number != -1)
     q2 *= Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-              .Evaluate(time_);
+              .evaluate(time_);
 
 
   // auxiliary variable

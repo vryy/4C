@@ -79,7 +79,7 @@ Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::ScaTraEleCalcLsReini
  | Action type: Evaluate                                rasthofer 12/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, unsigned probDim>
-int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Evaluate(
+int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,

@@ -72,7 +72,7 @@ namespace Core::FE
      *  \param col_ele_map  (in)  : column element map, which can be a subset of the
      *                              discretization column map ( optional )
      */
-    void Evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
+    void evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& systemvector, const Epetra_Map* col_ele_map = nullptr);
 
@@ -91,7 +91,7 @@ namespace Core::FE
      *  \param col_ele_map  (in)  : column element map, which can be a subset of the
      *                              discretization column map ( optional )
      */
-    void Evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
+    void evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
         std::vector<Teuchos::RCP<Core::LinAlg::SparseOperator>>& systemmatrices,
         std::vector<Teuchos::RCP<Epetra_Vector>>& systemvector,
         const Epetra_Map* col_ele_map = nullptr);
@@ -111,7 +111,7 @@ namespace Core::FE
      *  \param col_ele_map  (in)  : column element map, which can be a subset of the
      *                              discretization column map ( optional )
      */
-    void Evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
+    void evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
         Core::FE::AssembleStrategy& strategy, const Epetra_Map* col_ele_map = nullptr);
 
     /** \brief Evaluate Dirichlet boundary conditions

@@ -70,7 +70,7 @@ void Core::UTILS::CubicSplineInterpolation::build_matrix_and_rhs(
 }
 
 /*----------------------------------------------------------------------*/
-double Core::UTILS::CubicSplineInterpolation::Evaluate(const double x) const
+double Core::UTILS::CubicSplineInterpolation::evaluate(const double x) const
 {
   // safety check
   if (x < x_.front() or x > x_.back())

@@ -45,7 +45,7 @@ Discret::ELEMENTS::FluidEleCalcImmersed<distype>::FluidEleCalcImmersed()
  * Evaluate
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::ELEMENTS::FluidEleCalcImmersed<distype>::evaluate(Discret::ELEMENTS::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -85,12 +85,12 @@ int Discret::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(Discret::ELEMENTS
   // use different integration rule for fluid elements that are cut by the structural boundary
   if (immersedele_->IsBoundaryImmersed())
   {
-    return my::Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+    return my::evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
         elevec1_epetra, elevec2_epetra, elevec3_epetra, intpoints_fluid_bound, offdiag);
   }
   else
   {
-    return my::Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+    return my::evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
         elevec1_epetra, elevec2_epetra, elevec3_epetra, intpoints_std, offdiag);
   }
 }

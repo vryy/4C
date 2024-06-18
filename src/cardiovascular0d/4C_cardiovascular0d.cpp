@@ -241,7 +241,7 @@ void UTILS::Cardiovascular0D::Initialize(Teuchos::ParameterList& params,
 |(public)                                                       mhv 10/13|
 |Evaluate Cardiovascular0D functions, choose the right action based on type    |
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0D::Evaluate(Teuchos::ParameterList& params,
+void UTILS::Cardiovascular0D::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,

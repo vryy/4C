@@ -37,7 +37,7 @@ namespace Mat
   /*! \class GrowthLaw
       \brief GrowthLaw base class
 
-      It provides the interfaces Evaluate(theta,dthetadC,...) to compute
+      It provides the interfaces evaluate(theta,dthetadC,...) to compute
       the growth factor \f$\vartheta\f$ and its derivative
       \f$\frac{\partial \vartheta}{\partial C}\f$ and
       EvaluateNonLinMass(...,linmass_disp,...) to account for the dynamic change
@@ -85,7 +85,7 @@ namespace Mat
      *  \author kehl
      * \date 06/2015
      */
-    virtual void Evaluate(double* theta, const double& thetaold,
+    virtual void evaluate(double* theta, const double& thetaold,
         Core::LinAlg::Matrix<6, 1>* dthetadC, Mat::Growth& matgrowth,
         const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<6, 1>* glstrain,
         const Core::LinAlg::Matrix<3, 1>& refdir,
@@ -229,7 +229,7 @@ namespace Mat
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
+    void evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
         Mat::Growth& matgrowth, const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, const Core::LinAlg::Matrix<3, 1>& refdir,
         const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
@@ -402,7 +402,7 @@ namespace Mat
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
+    void evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
         Mat::Growth& matgrowth, const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, const Core::LinAlg::Matrix<3, 1>& refdir,
         const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
@@ -1170,7 +1170,7 @@ namespace Mat
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
+    void evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
         Mat::Growth& matgrowth, const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, const Core::LinAlg::Matrix<3, 1>& refdir,
         const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
@@ -1255,7 +1255,7 @@ namespace Mat
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
+    void evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
         Mat::Growth& matgrowth, const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, const Core::LinAlg::Matrix<3, 1>& refdir,
         const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
@@ -1339,7 +1339,7 @@ namespace Mat
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
+    void evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
         Mat::Growth& matgrowth, const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, const Core::LinAlg::Matrix<3, 1>& refdir,
         const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
@@ -1465,7 +1465,7 @@ namespace Mat
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
+    void evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
         Mat::Growth& matgrowth, const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, const Core::LinAlg::Matrix<3, 1>& refdir,
         const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,

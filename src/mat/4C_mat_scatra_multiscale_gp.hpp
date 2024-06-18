@@ -63,7 +63,7 @@ namespace Mat
     //!                        Gauss point
     //! \param solve           flag indicating whether micro-scale problem should be
     //!                        solved
-    void Evaluate(const std::vector<double>& phinp_macro, double& q_micro,
+    void evaluate(const std::vector<double>& phinp_macro, double& q_micro,
         std::vector<double>& dq_dphi_micro, double detF, const bool solve = true);
 
     //! evaluate mean concentration on micro scale

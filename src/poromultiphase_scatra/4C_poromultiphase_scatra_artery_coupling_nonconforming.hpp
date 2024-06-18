@@ -45,7 +45,7 @@ namespace PoroMultiPhaseScaTra
 
    protected:
     //! Evaluate the 1D-3D coupling
-    void Evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    void evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs) override;
 
     //! set-up of linear system of equations of coupled problem

@@ -811,7 +811,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::newton()
   ddgpred_->Update(-1.0, *structure_field()->extract_interface_dispn(), 1.0);
 
   /*----------------------------------------------------------------------*/
-  // Initialize the increment vectors, they are updated in Evaluate(...)->extract_field_vectors(...)
+  // Initialize the increment vectors, they are updated in evaluate(...)->extract_field_vectors(...)
   // at every Newton iteration!
 
   // Initialization for 1st Newton call

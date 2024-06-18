@@ -127,7 +127,7 @@ namespace Adapter
     virtual Teuchos::RCP<const Epetra_Map> combined_dbc_map() const = 0;
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> sx,
+    virtual void evaluate(Teuchos::RCP<const Epetra_Vector> sx,
         Teuchos::RCP<const Epetra_Vector> fx, const bool firstcall) = 0;
 
     //! access to monolithic right-hand side vector

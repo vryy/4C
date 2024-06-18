@@ -35,7 +35,7 @@ using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
  | evaluate the element (public)                            seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -98,7 +98,7 @@ int Discret::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& param
       Core::LinAlg::Matrix<numdofperelement_, numdofperelement_> myemat(true);
 
       // initialise the vectors
-      // Evaluate() is called the first time in structure_base_algorithm: at this
+      // evaluate() is called the first time in structure_base_algorithm: at this
       // stage the coupling field is not yet known. Pass coupling vectors filled
       // with zeros
       // the size of the vectors is the length of the location vector/nsd_
@@ -158,7 +158,7 @@ int Discret::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& param
       Core::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
-      // Evaluate() is called the first time in structure_base_algorithm: at this
+      // evaluate() is called the first time in structure_base_algorithm: at this
       // stage the coupling field is not yet known. Pass coupling vectors filled
       // with zeros
       // the size of the vectors is the length of the location vector/nsd_
@@ -220,7 +220,7 @@ int Discret::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& param
       Core::LinAlg::Matrix<numdofperelement_, 1> elevec1(elevec1_epetra.values(), true);
 
       // initialise the vectors
-      // Evaluate() is called the first time in structure_base_algorithm: at this
+      // evaluate() is called the first time in structure_base_algorithm: at this
       // stage the coupling field is not yet known. Pass coupling vectors filled
       // with zeros
       // the size of the vectors is the length of the location vector/nsd_
@@ -307,7 +307,7 @@ int Discret::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& param
       Core::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
-      // Evaluate() is called the first time in structure_base_algorithm: at this
+      // evaluate() is called the first time in structure_base_algorithm: at this
       // stage the coupling field is not yet known. Pass coupling vectors filled
       // with zeros
       // the size of the vectors is the length of the location vector/nsd_
@@ -602,7 +602,7 @@ int Discret::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& param
   }  // action
 
   return 0;
-}  // Evaluate()
+}  // evaluate()
 
 
 
@@ -769,7 +769,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate_neumann(Teuchos::ParameterLis
       const double functfac =
           (functnum > 0) ? Global::Problem::Instance()
                                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                               .Evaluate(xrefegp.A(), time, dim)
+                               .evaluate(xrefegp.A(), time, dim)
                          : 1.0;
       const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
       for (int nodid = 0; nodid < nen_; ++nodid)
@@ -892,7 +892,7 @@ void Discret::ELEMENTS::So3Plast<distype>::nln_stiffmass(
       total_glstrain(4) = rcg()(1, 2);
       total_glstrain(5) = rcg()(2, 0);
 
-      SolidMaterial()->Evaluate(
+      SolidMaterial()->evaluate(
           &defgrd_mod(), &total_glstrain, params, &set_p_k2(), &set_cmat(), gp, Id());
     }
     // material call *********************************************

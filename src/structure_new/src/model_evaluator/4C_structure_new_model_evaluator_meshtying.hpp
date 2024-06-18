@@ -151,10 +151,10 @@ namespace STR
        */
       void Reset(const Epetra_Vector& x) override{};
 
-      //! \brief Perform actions just before the Evaluate() call [derived]
+      //! \brief Perform actions just before the evaluate() call [derived]
       void pre_evaluate() override{};
 
-      //! \brief Perform actions right after the Evaluate() call [derived]
+      //! \brief Perform actions right after the evaluate() call [derived]
       void post_evaluate() override{};
 
       //! @}

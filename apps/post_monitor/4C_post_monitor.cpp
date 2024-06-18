@@ -878,7 +878,7 @@ void StructMonWriter::write_str_result(std::ofstream& outfile, PostField*& field
 
   Epetra_MultiVector nodal_stress(*dis->NodeRowMap(), 6, true);
 
-  dis->Evaluate(
+  dis->evaluate(
       [&](Core::Elements::Element& ele) {
         Core::FE::ExtrapolateGaussPointQuantityToNodes(
             ele, *data->at(ele.Id()), *dis, nodal_stress);
@@ -1547,7 +1547,7 @@ void ThermoMonWriter::write_thr_result(std::ofstream& outfile, PostField*& field
   Teuchos::RCP<Epetra_Vector> heatfluxx = Teuchos::rcp(new Epetra_Vector(*(dis->dof_row_map())));
   Teuchos::RCP<Epetra_Vector> heatfluxy = Teuchos::rcp(new Epetra_Vector(*(dis->dof_row_map())));
   Teuchos::RCP<Epetra_Vector> heatfluxz = Teuchos::rcp(new Epetra_Vector(*(dis->dof_row_map())));
-  dis->Evaluate(p, Teuchos::null, Teuchos::null, heatfluxx, heatfluxy, heatfluxz);
+  dis->evaluate(p, Teuchos::null, Teuchos::null, heatfluxx, heatfluxy, heatfluxz);
 
   const unsigned numdofpernode = 1;
 

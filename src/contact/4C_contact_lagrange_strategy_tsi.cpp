@@ -109,7 +109,7 @@ void CONTACT::LagrangeStrategyTsi::set_state(
 }
 
 
-void CONTACT::LagrangeStrategyTsi::Evaluate(
+void CONTACT::LagrangeStrategyTsi::evaluate(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
     Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<Core::Adapter::Coupling> coupST,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> temp)

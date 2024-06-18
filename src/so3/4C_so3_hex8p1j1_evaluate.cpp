@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8P1J1::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SoHex8P1J1::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -464,7 +464,7 @@ void Discret::ELEMENTS::SoHex8P1J1::force_stiff_mass(const std::vector<int>& lm,
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
-    SolidMaterial()->Evaluate(&mod_defgrd, &mod_glstrain, params, &stress, &cmat, gp, Id());
+    SolidMaterial()->evaluate(&mod_defgrd, &mod_glstrain, params, &stress, &cmat, gp, Id());
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 

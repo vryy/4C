@@ -131,7 +131,7 @@ void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
                 (function_number > 0)
                     ? Global::Problem::Instance()
                           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(function_number - 1)
-                          .Evaluate(gauss_point_reference_coordinates.A(), total_time, dim)
+                          .evaluate(gauss_point_reference_coordinates.A(), total_time, dim)
                     : 1.0;
 
             const double value_times_integration_factor =

@@ -210,7 +210,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
     discret_->set_state("residual displacement", zeros_);
     discret_->set_state("displacement", dis_);
 
-    discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
 
@@ -260,7 +260,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->Evaluate(
+  discret_->evaluate(
       par, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
@@ -327,7 +327,7 @@ void MultiScale::MicroStatic::PredictConstDis(Core::LinAlg::Matrix<3, 3>* defgrd
     discret_->set_state("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
 
     // complete stiffness matrix
@@ -408,7 +408,7 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
     discret_->set_state("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
 
@@ -471,7 +471,7 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
     Teuchos::ParameterList p;
     p.set("action", "calc_struct_reset_istep");
     // go to elements
-    discret_->Evaluate(
+    discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -494,7 +494,7 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
     discret_->set_state("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
 
@@ -585,7 +585,7 @@ void MultiScale::MicroStatic::FullNewton()
       discret_->set_state("displacement", disn_);
       fintn_->PutScalar(0.0);  // initialise internal force vector
 
-      discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
+      discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
       discret_->ClearState();
     }
 
@@ -650,7 +650,7 @@ void MultiScale::MicroStatic::prepare_output()
     discret_->ClearState();
     discret_->set_state("residual displacement", zeros_);
     discret_->set_state("displacement", disn_);
-    discret_->Evaluate(
+    discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -911,7 +911,7 @@ void MultiScale::MicroStatic::SetEASData()
       Core::LinAlg::SerialDenseVector elevector3;
       std::vector<int> lm;
 
-      actele->Evaluate(
+      actele->evaluate(
           p, *discret_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
     }
   }

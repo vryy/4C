@@ -49,7 +49,7 @@ Mat::GrowthLawDyn::GrowthLawDyn() : GrowthLaw() {}
 Mat::GrowthLawDyn::GrowthLawDyn(Core::Mat::PAR::Parameter* params) : GrowthLaw(params) {}
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
+void Mat::GrowthLawDyn::evaluate(double* thetainit, const double& thetaold,
     Core::LinAlg::Matrix<6, 1>* dthetadC, Mat::Growth& matgrowth,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<6, 1>* glstrain,
     const Core::LinAlg::Matrix<3, 1>& refdir, const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
@@ -1081,7 +1081,7 @@ Mat::GrowthLawAC::GrowthLawAC(Mat::PAR::GrowthLawAC* params) : GrowthLawStatic(p
 
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthLawAC::Evaluate(double* theta, const double& thetaold,
+void Mat::GrowthLawAC::evaluate(double* theta, const double& thetaold,
     Core::LinAlg::Matrix<6, 1>* dthetadC, Mat::Growth& matgrowth,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<6, 1>* glstrain,
     const Core::LinAlg::Matrix<3, 1>& refdir, const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
@@ -1194,7 +1194,7 @@ Mat::GrowthLawACRadial::GrowthLawACRadial(Mat::PAR::GrowthLawAC* params) : Growt
 
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthLawACRadial::Evaluate(double* theta, const double& thetaold,
+void Mat::GrowthLawACRadial::evaluate(double* theta, const double& thetaold,
     Core::LinAlg::Matrix<6, 1>* dthetadC, Mat::Growth& matgrowth,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<6, 1>* glstrain,
     const Core::LinAlg::Matrix<3, 1>& refdir, const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
@@ -1318,7 +1318,7 @@ Mat::GrowthLawACRadialRefConc::GrowthLawACRadialRefConc(Mat::PAR::GrowthLawAC* p
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthLawACRadialRefConc::Evaluate(double* theta, const double& thetaold,
+void Mat::GrowthLawACRadialRefConc::evaluate(double* theta, const double& thetaold,
     Core::LinAlg::Matrix<6, 1>* dthetadC, Mat::Growth& matgrowth,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<6, 1>* glstrain,
     const Core::LinAlg::Matrix<3, 1>& refdir, const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
@@ -1421,7 +1421,7 @@ Mat::GrowthLawConst::GrowthLawConst() : GrowthLawStatic(nullptr) {}
 Mat::GrowthLawConst::GrowthLawConst(Mat::PAR::GrowthLawConst* params) : GrowthLawStatic(params) {}
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthLawConst::Evaluate(double* theta, const double& thetaold,
+void Mat::GrowthLawConst::evaluate(double* theta, const double& thetaold,
     Core::LinAlg::Matrix<6, 1>* dthetadC, Mat::Growth& matgrowth,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<6, 1>* glstrain,
     const Core::LinAlg::Matrix<3, 1>& refdir, const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,

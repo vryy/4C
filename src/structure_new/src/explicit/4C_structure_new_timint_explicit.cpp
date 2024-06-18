@@ -89,7 +89,7 @@ void STR::TimeInt::Explicit::update_state_incrementally(
   check_init_setup();
   FOUR_C_THROW(
       "All monolithically coupled problems work with implicit time "
-      "integration schemes. Thus, calling Evaluate() in an explicit scheme "
+      "integration schemes. Thus, calling evaluate() in an explicit scheme "
       "is not possible.");
 }
 
@@ -99,18 +99,18 @@ void STR::TimeInt::Explicit::determine_stress_strain() { expl_int().determine_st
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Explicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void STR::TimeInt::Explicit::evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   check_init_setup();
   FOUR_C_THROW(
       "All monolithically coupled problems work with implicit time "
-      "integration schemes. Thus, calling Evaluate() in an explicit scheme "
+      "integration schemes. Thus, calling evaluate() in an explicit scheme "
       "is not possible.");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Explicit::Evaluate()
+void STR::TimeInt::Explicit::evaluate()
 {
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();

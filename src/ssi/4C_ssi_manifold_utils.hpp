@@ -174,7 +174,7 @@ namespace SSI
     bool DoOutput() const { return do_output_; }
 
     //! Evaluate everything including coupling
-    void Evaluate();
+    void evaluate();
 
     //! Evaluate inflow into manifold field from coupling with scatra field
     void evaluate_sca_tra_manifold_inflow();

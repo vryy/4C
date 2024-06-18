@@ -150,7 +150,7 @@ namespace Discret
       //!  to fill these matrices or vectors.
       //!
       //!  \return 0 if successful, negative otherwise
-      int Evaluate(
+      int evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
@@ -165,7 +165,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra   //!< vector to be filled by element
           ) override
       {
-        return Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::Evaluate(params,
+        return Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::evaluate(params,
             discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra, elevec2_epetra,
             elevec3_epetra);
       }

@@ -85,7 +85,7 @@ void Arteries::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<Core::FE::Discretiz
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[1])
-                       .Evaluate(time);
+                       .evaluate(time);
         Rf = vals[1] * curvefac;
       }
       // else the BC is totally forced
@@ -111,7 +111,7 @@ void Arteries::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<Core::FE::Discretiz
     if (curve[0] >= 0)
     {
       curvefac =
-          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curve[0]).Evaluate(
+          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curve[0]).evaluate(
               time);
       BCin = vals[0] * curvefac;
     }
@@ -555,7 +555,7 @@ void Arteries::UTILS::SolveReflectiveTerminal(Teuchos::RCP<Core::FE::Discretizat
   {
     double time = params.get<double>("total time");
     curvefac =
-        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curve[0]).Evaluate(
+        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curve[0]).evaluate(
             time);
     Rf = vals[0] * curvefac;
   }
@@ -666,7 +666,7 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[0])
-                       .Evaluate(time);
+                       .evaluate(time);
         R = vals[1] * curvefac;
       }
       else
@@ -684,7 +684,7 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[0])
-                       .Evaluate(time);
+                       .evaluate(time);
         Pout = vals[0] * curvefac;
       }
       else
@@ -741,7 +741,7 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[0])
-                       .Evaluate(time);
+                       .evaluate(time);
         //        Pout = vals[0]*curvefac;
       }
       else
@@ -753,7 +753,7 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[1])
-                       .Evaluate(time);
+                       .evaluate(time);
         R = vals[1] * curvefac;
       }
       else
@@ -765,7 +765,7 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[2])
-                       .Evaluate(time);
+                       .evaluate(time);
         C = vals[2] * curvefac;
       }
       else
@@ -801,11 +801,11 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[0])
-                       .Evaluate(time);
+                       .evaluate(time);
         //        Pout = vals[0]*curvefac;
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[0])
-                       .Evaluate(time - dt);
+                       .evaluate(time - dt);
       }
       else
       {
@@ -821,7 +821,7 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
           t = time - dt;
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[0])
-                       .Evaluate(t);
+                       .evaluate(t);
         Poutnm = vals[0] * curvefac;
       }
       else
@@ -833,7 +833,7 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[1])
-                       .Evaluate(time);
+                       .evaluate(time);
         R1 = vals[1] * curvefac;
       }
       else
@@ -845,7 +845,7 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[2])
-                       .Evaluate(time);
+                       .evaluate(time);
         C = vals[2] * curvefac;
       }
       else
@@ -857,7 +857,7 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[3])
-                       .Evaluate(time);
+                       .evaluate(time);
         R2 = vals[3] * curvefac;
       }
       else
@@ -937,7 +937,7 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[0])
-                       .Evaluate(time);
+                       .evaluate(time);
         //        Pout = vals[0]*curvefac;
       }
       else
@@ -949,7 +949,7 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[1])
-                       .Evaluate(time);
+                       .evaluate(time);
         R1 = vals[1] * curvefac;
       }
       else
@@ -961,7 +961,7 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[2])
-                       .Evaluate(time);
+                       .evaluate(time);
         C = vals[2] * curvefac;
       }
       else
@@ -973,7 +973,7 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[3])
-                       .Evaluate(time);
+                       .evaluate(time);
         R2 = vals[3] * curvefac;
       }
       else
@@ -985,7 +985,7 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curve[4])
-                       .Evaluate(time);
+                       .evaluate(time);
         L = vals[4] * curvefac;
       }
       else

@@ -45,7 +45,7 @@ namespace Core::UTILS
     /**
      * Evaluate the function for the given @p time and @p component.
      */
-    [[nodiscard]] virtual double Evaluate(double time, std::size_t component = 0) const = 0;
+    [[nodiscard]] virtual double evaluate(double time, std::size_t component = 0) const = 0;
 
     /**
      * Evaluate the derivative of the function for the given @p time and @p component.
@@ -71,7 +71,7 @@ namespace Core::UTILS
     SymbolicFunctionOfTime(const std::vector<std::string>& expressions,
         std::vector<Teuchos::RCP<FunctionVariable>> variables);
 
-    [[nodiscard]] double Evaluate(double time, std::size_t component = 0) const override;
+    [[nodiscard]] double evaluate(double time, std::size_t component = 0) const override;
 
     [[nodiscard]] double EvaluateDerivative(double time, std::size_t component = 0) const override;
 

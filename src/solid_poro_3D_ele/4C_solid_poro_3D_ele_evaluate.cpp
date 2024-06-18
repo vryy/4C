@@ -16,7 +16,7 @@ evaluate(...), evaluate_neumann(...), etc.
 FOUR_C_NAMESPACE_OPEN
 
 
-int Discret::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SolidPoro::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,

@@ -619,7 +619,7 @@ might become invalid after a redistribution of the discretization.
 
     Note: If the element has only ghost nodes, the element will not be allowed
           to assemble in any global vectors or matrixes, and, hence, can be
-          skiped during Evaluate(). The only reason why it is ghosted on this
+          skiped during evaluate(). The only reason why it is ghosted on this
           proc is to provide access to its data. This might be necessary for volumetric
           coupling of non conforming meshes.
 
@@ -1055,7 +1055,7 @@ might become invalid after a redistribution of the discretization.
                                 given in params
     \return 0 if successful, negative otherwise
     */
-    virtual int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    virtual int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
         Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3);
@@ -1086,7 +1086,7 @@ might become invalid after a redistribution of the discretization.
                                 given in params
     \return 0 if successful, negative otherwise
     */
-    virtual int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    virtual int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
         Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3);

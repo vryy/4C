@@ -41,7 +41,7 @@ namespace Discret
       RedAcinusImplInterface() {}
       /// Empty destructor
       virtual ~RedAcinusImplInterface() = default;  /// Evaluate the element
-      virtual int Evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
+      virtual int evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -121,7 +121,7 @@ namespace Discret
       /*!
         The evaluate function for the general acinus case.
       */
-      int Evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
+      int evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

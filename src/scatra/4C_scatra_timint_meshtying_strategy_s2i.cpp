@@ -1513,7 +1513,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_cell(const Core::FE::Discreti
   // evaluate single mortar integration cell
   ScaTra::MortarCellFactory::mortar_cell_calc(
       impltype, slaveelement, masterelement, couplingtype_, lmside_, idiscret.Name())
-      ->Evaluate(idiscret, cell, slaveelement, masterelement, la_slave, la_master, params,
+      ->evaluate(idiscret, cell, slaveelement, masterelement, la_slave, la_master, params,
           cellmatrix1, cellmatrix2, cellmatrix3, cellmatrix4, cellvector1, cellvector2);
 }
 
@@ -2966,7 +2966,7 @@ void ScaTra::MeshtyingStrategyS2I::set_condition_specific_sca_tra_parameters(
   write_s2_i_kinetics_specific_sca_tra_parameters_to_parameter_list(s2icondition, conditionparams);
 
   // call standard loop over elements
-  scatratimint_->discretization()->Evaluate(
+  scatratimint_->discretization()->evaluate(
       conditionparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -4140,7 +4140,7 @@ ScaTra::MortarCellCalc<distypeS, distypeM>* ScaTra::MortarCellCalc<distypeS, dis
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalc<distypeS, distypeM>::Evaluate(const Core::FE::Discretization& idiscret,
+void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate(const Core::FE::Discretization& idiscret,
     Mortar::IntCell& cell, Mortar::Element& slaveelement, Mortar::Element& masterelement,
     Core::Elements::Element::LocationArray& la_slave,
     Core::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,

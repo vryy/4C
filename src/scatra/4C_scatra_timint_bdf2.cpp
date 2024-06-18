@@ -118,7 +118,7 @@ void ScaTra::TimIntBDF2::set_element_time_parameter(bool forcedincrementalsolver
     eleparams.set<double>("time derivative factor", 3.0 / (2.0 * dta_));
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 

@@ -1002,7 +1002,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
             functfac =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                    .Evaluate((ele->Nodes()[jnode])->X().data(), scatraparatimint_->Time(), isd);
+                    .evaluate((ele->Nodes()[jnode])->X().data(), scatraparatimint_->Time(), isd);
           }
           else
             FOUR_C_THROW("Negative time value in body force calculation: time = %f",

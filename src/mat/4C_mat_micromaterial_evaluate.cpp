@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
 // corresponding prototype in src/filter_common/filter_evaluation.cpp is adapted, too!!
 
 // evaluate for master procs
-void Mat::MicroMaterial::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -161,7 +161,7 @@ double Mat::MicroMaterial::Density() const { return density_; }
 
 
 // evaluate for supporting procs
-void Mat::MicroMaterial::Evaluate(Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::MicroMaterial::evaluate(Core::LinAlg::Matrix<3, 3>* defgrd,
     Core::LinAlg::Matrix<6, 6>* cmat, Core::LinAlg::Matrix<6, 1>* stress, const int gp,
     const int ele_ID, const int microdisnum, double V0, bool eleowner)
 {

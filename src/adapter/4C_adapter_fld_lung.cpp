@@ -186,7 +186,7 @@ void Adapter::FluidLung::InitializeVolCon(
       elevector3.size(1);
 
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(params, *discretization(), lm, elematrix1, elematrix2,
+      int err = curr->second->evaluate(params, *discretization(), lm, elematrix1, elematrix2,
           elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -283,7 +283,7 @@ void Adapter::FluidLung::EvaluateVolCon(
 
       //---------------------------------------------------------------------
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(params, *discretization(), lm, elematrix1, elematrix2,
+      int err = curr->second->evaluate(params, *discretization(), lm, elematrix1, elematrix2,
           elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 

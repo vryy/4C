@@ -268,7 +268,7 @@ void CONTACT::MtAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
   set_state(Mortar::state_new_displacement, *dis);
 
   // apply meshtying forces and stiffness
-  Evaluate(kt, f, dis);
+  evaluate(kt, f, dis);
 
   // output interface forces
   InterfaceForces();
@@ -317,7 +317,7 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
     interface_[i]->Initialize();
 
     // evaluate interfaces
-    interface_[i]->Evaluate();
+    interface_[i]->evaluate();
   }
 
   //********************************************************************
@@ -587,7 +587,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
 /*----------------------------------------------------------------------*
  | call appropriate evaluate for contact evaluation           popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::Evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+void CONTACT::MtAbstractStrategy::evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
     Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis)
 {
   // trivial (no choice as for contact)

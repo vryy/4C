@@ -72,7 +72,7 @@ void wear_dyn_drt(int restart)
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
-    aledis->Evaluate(params);
+    aledis->evaluate(params);
   }
   else  // filled ale discretization
   {

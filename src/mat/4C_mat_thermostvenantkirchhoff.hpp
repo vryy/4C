@@ -158,7 +158,7 @@ namespace Mat
     }
 
     //! evaluates stresses for 3d
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  //!< deformation gradient
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  //!< deformation gradient
         const Core::LinAlg::Matrix<6, 1>* glstrain,          //!< Green-Lagrange strain
         Teuchos::ParameterList& params,                      //!< parameter list
         Core::LinAlg::Matrix<6, 1>* stress,                  //!< stress
@@ -192,13 +192,13 @@ namespace Mat
     //! Return quick accessible material parameter data
     Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
+    void evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
         Core::LinAlg::Matrix<3, 1>& heatflux) const override;
 
-    void Evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp, Core::LinAlg::Matrix<2, 2>& cmat,
+    void evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp, Core::LinAlg::Matrix<2, 2>& cmat,
         Core::LinAlg::Matrix<2, 1>& heatflux) const override;
 
-    void Evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp, Core::LinAlg::Matrix<1, 1>& cmat,
+    void evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp, Core::LinAlg::Matrix<1, 1>& cmat,
         Core::LinAlg::Matrix<1, 1>& heatflux) const override;
 
     void ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const override;

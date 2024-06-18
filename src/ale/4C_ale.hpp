@@ -144,7 +144,7 @@ namespace ALE
      *  Update in case of monolithic coupling is done by passing stepinc, Teuchos::null is assumed
      * for non monolithic case.
      */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc =
+    void evaluate(Teuchos::RCP<const Epetra_Vector> stepinc =
                       Teuchos::null,  ///< step increment such that \f$ x_{n+1}^{k+1} =
                                       ///< x_{n}^{converged}+ stepinc \f$
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
@@ -393,7 +393,7 @@ namespace ALE
     /*! \brief residual vector
      *
      *  This is the "mechanical" residual \f$res = - f_{int}\f$ as it comes
-     *  from the discret_->Evaluate() call.
+     *  from the discret_->evaluate() call.
      *
      *  \author mayr.mt \date 10/2014
      */
@@ -404,7 +404,7 @@ namespace ALE
      *  Use this as the right hand side for a Newton algorithm. It should equal
      *  the negative residual: #rhs_ = - #residual_
      *
-     *  We update this variable only right after the discret_->Evaluate() call.
+     *  We update this variable only right after the discret_->evaluate() call.
      *
      *  \warning DO NOT TOUCH THIS VARIBALE AT OTHER PLACES!!!
      *

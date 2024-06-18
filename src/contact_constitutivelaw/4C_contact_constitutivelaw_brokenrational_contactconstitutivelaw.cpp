@@ -46,7 +46,7 @@ CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::BrokenRationalConstitut
 /*----------------------------------------------------------------------*
  |  Evaluate the contact constitutive law|
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::Evaluate(
+double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate(
     double gap, CONTACT::Node* cnode)
 {
   if (gap + params_->GetOffset() > 0)

@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public)                          fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -500,7 +500,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
     if (functnum > 0)
       functfacs[i] = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfTime>(functnum - 1)
-                         .Evaluate(time);
+                         .evaluate(time);
   }
 
   // determine current pressure

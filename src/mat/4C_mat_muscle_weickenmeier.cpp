@@ -219,7 +219,7 @@ void Mat::MuscleWeickenmeier::Update(Core::LinAlg::Matrix<3, 3> const& defgrd, i
   lambda_m_old_ = Mat::UTILS::Muscle::FiberStretch(C, M);
 }
 
-void Mat::MuscleWeickenmeier::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::MuscleWeickenmeier::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)

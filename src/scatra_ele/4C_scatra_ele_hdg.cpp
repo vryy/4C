@@ -421,7 +421,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ScaTraHDG::CreateFaceEl
 /*---------------------------------------------------------------------*
 |  evaluate the element (public)                         hoermann 09/15|
 *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::ScaTraHDG::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -464,7 +464,7 @@ int Discret::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
     {
       return Discret::ELEMENTS::ScaTraFactory::ProvideImplHDG(
           Shape(), ImplType(), numdofpernode, numscal, discretization.Name())
-          ->Evaluate(this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
+          ->evaluate(this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
     }
     break;
 
@@ -656,7 +656,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ScaTraHDGB
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                        hoermann 09/15 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::ScaTraHDGBoundary::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::ScaTraHDGBoundary::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -1042,7 +1042,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ScaTraHDGI
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                        hoermann 09/15 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::ScaTraHDGIntFace::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::ScaTraHDGIntFace::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,

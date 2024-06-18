@@ -1119,7 +1119,7 @@ namespace CONTACT
             Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
         /// perform the FD evaluate calls
-        void Evaluate(const Teuchos::RCP<Core::LinAlg::SparseMatrix>& derivMatrixPtr,
+        void evaluate(const Teuchos::RCP<Core::LinAlg::SparseMatrix>& derivMatrixPtr,
             Teuchos::RCP<Epetra_Vector>& rhsVector, CONTACT::ParamsInterface& cparams);
 
        private:

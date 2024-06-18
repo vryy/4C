@@ -89,7 +89,7 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structu
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // assemble scatra-structure matrix block
-  sca_tra_field()->discretization()->Evaluate(eleparams, strategyscatrastructure);
+  sca_tra_field()->discretization()->evaluate(eleparams, strategyscatrastructure);
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -127,7 +127,7 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // assemble scatra-structure matrix block
-  scatra_manifold_->discretization()->Evaluate(eleparams, strategyscatrastructure);
+  scatra_manifold_->discretization()->evaluate(eleparams, strategyscatrastructure);
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -217,7 +217,7 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_structure_scat
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // assemble structure-scatra matrix block
-  structure_->discretization()->Evaluate(eleparams, strategystructurescatra);
+  structure_->discretization()->evaluate(eleparams, strategystructurescatra);
 
   // need to scale structurescatrablock_ with 'timefac' (e.g. with theta for OST-scheme) to get
   // correct implementation

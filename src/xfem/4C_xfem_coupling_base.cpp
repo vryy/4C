@@ -577,7 +577,7 @@ void XFEM::CouplingBase::evaluate_function(std::vector<double>& final_values, co
     {
       functionfac = Global::Problem::Instance()
                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                        .Evaluate(x, time, dof % numdof);
+                        .evaluate(x, time, dof % numdof);
     }
 
     // uniformly distributed noise
@@ -634,7 +634,7 @@ void XFEM::CouplingBase::evaluate_scalar_function(double& final_values, const do
     {
       functionfac = Global::Problem::Instance()
                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                        .Evaluate(x, time, dof % numdof);
+                        .evaluate(x, time, dof % numdof);
     }
 
     // uniformly distributed noise

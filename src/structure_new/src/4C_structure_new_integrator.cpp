@@ -134,7 +134,7 @@ void STR::Integrator::set_initial_displacement(
           const double initialval =
               Global::Problem::Instance()
                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                  .Evaluate(lnode->X().data(), global_state().get_time_n(), d);
+                  .evaluate(lnode->X().data(), global_state().get_time_n(), d);
 
           const int err = global_state().get_dis_n()->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) FOUR_C_THROW("dof not on proc");

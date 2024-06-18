@@ -144,33 +144,33 @@ namespace PoroElast
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void Evaluate(
+    void evaluate(
         Teuchos::RCP<const Epetra_Vector> iterinc  //!< increment between iteration i and i+1
         ) override
     {
-      FOUR_C_THROW("Evaluate() only available for monolithic schemes!");
+      FOUR_C_THROW("evaluate() only available for monolithic schemes!");
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void Evaluate(
+    virtual void evaluate(
         Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx)
     {
-      FOUR_C_THROW("Evaluate(sx,fx) only available for monolithic schemes!");
+      FOUR_C_THROW("evaluate(sx,fx) only available for monolithic schemes!");
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void Evaluate(
+    void evaluate(
         Teuchos::RCP<const Epetra_Vector> iterinc,  //!< increment between iteration i and i+1
         bool firstiter) override
     {
-      FOUR_C_THROW("Evaluate() only available for monolithic schemes!");
+      FOUR_C_THROW("evaluate() only available for monolithic schemes!");
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void Evaluate(
+    virtual void evaluate(
         Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx, bool firstiter)
     {
-      FOUR_C_THROW("Evaluate(sx,fx) only available for monolithic schemes!");
+      FOUR_C_THROW("evaluate(sx,fx) only available for monolithic schemes!");
     }
 
     //! solve time step (depending on algorithm)
