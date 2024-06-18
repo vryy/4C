@@ -44,10 +44,10 @@ namespace
       contactnormal_->Init();
 
       // setup normal contact handler
-      contactnormal_->Setup(dens_max_);
+      contactnormal_->setup(dens_max_);
     }
 
-    // note: the public functions Init() and Setup() of class DEMContactNormalLinearSpring are
+    // note: the public functions Init() and setup() of class DEMContactNormalLinearSpring are
     // called in the constructor and thus implicitly tested by all following unittests
   };
 
@@ -139,10 +139,10 @@ namespace
       contactnormal_ezero_->Init();
 
       // setup normal contact handler
-      contactnormal_->Setup(dens_max_);
-      contactnormal_ezero_->Setup(dens_max_);
+      contactnormal_->setup(dens_max_);
+      contactnormal_ezero_->setup(dens_max_);
     }
-    // note: the public functions Init() and Setup() of class DEMContactNormalLinearSpringDamp are
+    // note: the public functions Init() and setup() of class DEMContactNormalLinearSpringDamp are
     // called in the constructor and thus implicitly tested by all following unittests
   };
 
@@ -227,11 +227,11 @@ namespace
       contactnormal_->Init();
 
       // setup normal contact handler
-      contactnormal_->Setup(dens_max_);
+      contactnormal_->setup(dens_max_);
     }
 
-    // note: the public functions Init() and Setup() of class DEMContactNormalHertz are called in
-    // Setup() and thus implicitly tested by all following unittests
+    // note: the public functions Init() and setup() of class DEMContactNormalHertz are called in
+    // setup() and thus implicitly tested by all following unittests
   };
 
   TEST_F(DEMContactNormalHertzTest, get_normal_contact_stiffness)
@@ -314,10 +314,10 @@ namespace
       contactnormal_->Init();
 
       // setup normal contact handler
-      contactnormal_->Setup(dens_max_);
+      contactnormal_->setup(dens_max_);
     }
-    // note: the public functions Init() and Setup() of class DEMContactNormalLeeHerrmann are called
-    // in Setup() and thus implicitly tested by all following unittests
+    // note: the public functions Init() and setup() of class DEMContactNormalLeeHerrmann are called
+    // in setup() and thus implicitly tested by all following unittests
   };
 
   TEST_F(DEMContactNormalLeeHerrmannTest, get_normal_contact_stiffness)
@@ -387,9 +387,9 @@ namespace
       contactnormal_->Init();
 
       // setup normal contact handler
-      contactnormal_->Setup(dens_max_);
+      contactnormal_->setup(dens_max_);
     }
-    // note: the public functions Init() and Setup() of class DEMContactNormalKuwabaraKono are
+    // note: the public functions Init() and setup() of class DEMContactNormalKuwabaraKono are
     // called in the constructor and thus implicitly tested by all following unittests
   };
 
@@ -459,10 +459,10 @@ namespace
       contactnormal_->Init();
 
       // setup normal contact handler
-      contactnormal_->Setup(dens_max_);
+      contactnormal_->setup(dens_max_);
     }
-    // note: the public functions Init() and Setup() of class DEMContactNormalTsuji are called in
-    // Setup() and thus implicitly tested by all following unittests
+    // note: the public functions Init() and setup() of class DEMContactNormalTsuji are called in
+    // setup() and thus implicitly tested by all following unittests
   };
 
   TEST_F(DEMContactNormalTsujiTest, get_normal_contact_stiffness)

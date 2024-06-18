@@ -50,7 +50,7 @@ void BEAMINTERACTION::BeamInteractionParams::Init()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamInteractionParams::Setup()
+void BEAMINTERACTION::BeamInteractionParams::setup()
 {
   check_init();
 

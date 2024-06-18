@@ -57,7 +57,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::Init(int id,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkPinJointed::Setup(const int matnum)
+void BEAMINTERACTION::BeamLinkPinJointed::setup(const int matnum)
 {
   check_init();
 

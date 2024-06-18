@@ -47,7 +47,7 @@ namespace ParticleInteraction
     void Init();
 
     //! setup evaporation induced recoil pressure handler
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     //! compute evaporation induced recoil pressure contribution

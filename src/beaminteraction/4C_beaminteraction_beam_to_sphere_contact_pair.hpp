@@ -65,7 +65,7 @@ namespace BEAMINTERACTION
 
 
     //! Setup
-    void Setup() override;
+    void setup() override;
 
     //@}
 

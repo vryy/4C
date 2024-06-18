@@ -117,10 +117,10 @@ void LowMach::Algorithm::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LowMach::Algorithm::Setup()
+void LowMach::Algorithm::setup()
 {
-  // call Setup() in base class
-  Adapter::ScaTraFluidCouplingAlgorithm::Setup();
+  // call setup() in base class
+  Adapter::ScaTraFluidCouplingAlgorithm::setup();
 
   const Teuchos::ParameterList& fluiddyn = Global::Problem::Instance()->FluidDynamicParams();
 
@@ -165,7 +165,7 @@ void LowMach::Algorithm::Setup()
     Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(dofrowmaps);
 
     // full loma block dofrowmap
-    lomablockdofrowmap_.Setup(*fullmap, dofrowmaps);
+    lomablockdofrowmap_.setup(*fullmap, dofrowmaps);
 
     // get solver number used for LOMA solver
     const int linsolvernumber = probdyn_.get<int>("LINEAR_SOLVER");

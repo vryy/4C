@@ -59,7 +59,7 @@ void ScaTra::ScaTraTimIntLoma::Init()
 /*----------------------------------------------------------------------*
  | setup algorithm                                          rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntLoma::Setup()
+void ScaTra::ScaTraTimIntLoma::setup()
 {
   SetupSplitter();
   return;

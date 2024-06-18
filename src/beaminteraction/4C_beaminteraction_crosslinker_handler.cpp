@@ -37,7 +37,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::Init(
   myrank_ = myrank;
 }
 
-void BEAMINTERACTION::BeamCrosslinkerHandler::Setup()
+void BEAMINTERACTION::BeamCrosslinkerHandler::setup()
 {
   // so far nothing to do
 }

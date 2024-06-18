@@ -205,7 +205,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::read_element(
   MixtureConstituentElastHyperBase::read_element(numgp, linedef);
 
   // Setup summands
-  for (const auto& summand : potsum_membrane_) summand->Setup(numgp, linedef);
+  for (const auto& summand : potsum_membrane_) summand->setup(numgp, linedef);
 
   current_reference_growth_.resize(numgp, 1.0);
   mue_frac_.resize(numgp, 1.0);

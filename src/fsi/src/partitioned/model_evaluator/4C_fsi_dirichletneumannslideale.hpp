@@ -66,7 +66,7 @@ namespace FSI
 
    public:
     /// setup this object
-    void Setup() override;
+    void setup() override;
 
     /**
      *  \brief Perform remeshing to account for mesh sliding at the interface

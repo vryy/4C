@@ -50,7 +50,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Init()
 /**
  *
  */
-void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
+void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::setup(
     const Core::IO::VisualizationParameters& visualization_params,
     Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr)
@@ -184,7 +184,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::check_init_setup() const
 {
-  if (!isinit_ or !issetup_) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (!isinit_ or !issetup_) FOUR_C_THROW("Call Init() and setup() first!");
 }
 
 /**

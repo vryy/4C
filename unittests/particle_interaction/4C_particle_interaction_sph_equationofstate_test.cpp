@@ -37,10 +37,10 @@ namespace
       equationofstate_special_->Init();
 
       // setup equation of state handler
-      equationofstate_->Setup();
-      equationofstate_special_->Setup();
+      equationofstate_->setup();
+      equationofstate_special_->setup();
     }
-    // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called
+    // note: the public functions Init() and setup() of class SPHEquationOfStateGenTait are called
     // in SetUp() and thus implicitly tested by all following unittests
   };
 
@@ -92,9 +92,9 @@ namespace
       equationofstate_->Init();
 
       // setup equation of state handler
-      equationofstate_->Setup();
+      equationofstate_->setup();
     }
-    // note: the public functions Init() and Setup() of class SPHEquationOfStateIdealGas are called
+    // note: the public functions Init() and setup() of class SPHEquationOfStateIdealGas are called
     // in SetUp() and thus implicitly tested by all following unittests
   };
 

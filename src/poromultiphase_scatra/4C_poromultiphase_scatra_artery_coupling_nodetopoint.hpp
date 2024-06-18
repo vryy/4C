@@ -42,7 +42,7 @@ namespace PoroMultiPhaseScaTra
         Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art) override;
 
     //! setup the strategy
-    void Setup() override;
+    void setup() override;
 
     //! apply mesh movement (on artery elements)
     void ApplyMeshMovement() override;

@@ -39,7 +39,7 @@ namespace Discret
       void Init(const Teuchos::ParameterList& IO_fluid_paramslist);
 
       /// setup new class variables
-      void Setup();
+      void setup();
 
       /// whether to write velocity
       bool OutputVelocityState() const
@@ -104,7 +104,7 @@ namespace Discret
       /// get the setup indicator status
       const bool& is_setup() const { return issetup_; };
 
-      /// Check if Init() and Setup() have been called, yet.
+      /// Check if Init() and setup() have been called, yet.
       void check_init_setup() const;
 
 

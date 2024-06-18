@@ -39,7 +39,7 @@ void ParticleInteraction::DEMContactNormalBase::Init()
         "stiffness, but neither both nor none of them!");
 }
 
-void ParticleInteraction::DEMContactNormalBase::Setup(const double& dens_max)
+void ParticleInteraction::DEMContactNormalBase::setup(const double& dens_max)
 {
   // nothing to do
 }
@@ -51,10 +51,10 @@ ParticleInteraction::DEMContactNormalLinearSpring::DEMContactNormalLinearSpring(
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactNormalLinearSpring::Setup(const double& dens_max)
+void ParticleInteraction::DEMContactNormalLinearSpring::setup(const double& dens_max)
 {
   // call base class setup
-  DEMContactNormalBase::Setup(dens_max);
+  DEMContactNormalBase::setup(dens_max);
 
   // calculate normal stiffness from relative penetration and other input parameters
   if (c_ > 0.0)
@@ -97,10 +97,10 @@ void ParticleInteraction::DEMContactNormalLinearSpringDamp::Init()
     FOUR_C_THROW("invalid input parameter COEFF_RESTITUTION for this kind of contact law!");
 }
 
-void ParticleInteraction::DEMContactNormalLinearSpringDamp::Setup(const double& dens_max)
+void ParticleInteraction::DEMContactNormalLinearSpringDamp::setup(const double& dens_max)
 {
   // call base class setup
-  DEMContactNormalLinearSpring::Setup(dens_max);
+  DEMContactNormalLinearSpring::setup(dens_max);
 
   // determine normal contact damping factor
   if (e_ > 0.0)
@@ -141,10 +141,10 @@ ParticleInteraction::DEMContactNormalNonlinearBase::DEMContactNormalNonlinearBas
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactNormalNonlinearBase::Setup(const double& dens_max)
+void ParticleInteraction::DEMContactNormalNonlinearBase::setup(const double& dens_max)
 {
   // call base class setup
-  DEMContactNormalBase::Setup(dens_max);
+  DEMContactNormalBase::setup(dens_max);
 
   // calculate normal stiffness from relative penetration and other input parameters if necessary
   if (c_ > 0.0)

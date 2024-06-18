@@ -68,7 +68,7 @@ namespace FLD
     }
 
     /// prepare the class for this element
-    void Setup(Core::Elements::Element* ele)
+    void setup(Core::Elements::Element* ele)
     {
       // clean everything
       rotangle_ = 0.0;
@@ -183,7 +183,7 @@ namespace FLD
         /*
         K_rot = Q* K * Q^T
         b_rot = Q * b
-        with Q as defined in the Setup() function
+        with Q as defined in the setup() function
          */
         if (elemat1.IsInitialized())  // do not try to access an uninitialized matrix!
         {
@@ -223,7 +223,7 @@ namespace FLD
         /*
         K_rot = Q* K * Q^T
         b_rot = Q * b
-        with Q as defined in the Setup() function
+        with Q as defined in the setup() function
          */
         if (elemat1.IsInitialized())  // do not try to access an uninitialized matrix!
         {

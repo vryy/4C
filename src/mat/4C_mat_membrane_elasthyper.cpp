@@ -107,15 +107,15 @@ void Mat::MembraneElastHyper::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |                                                       sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::MembraneElastHyper::setup(int numgp, Input::LineDefinition* linedef)
 {
   // call setup of base class
-  Mat::ElastHyper::Setup(numgp, linedef);
+  Mat::ElastHyper::setup(numgp, linedef);
 
   GetFiberVecs(fibervecs_);
 
   return;
-}  // Mat::MembraneElastHyper::Setup()
+}  // Mat::MembraneElastHyper::setup()
 
 /*----------------------------------------------------------------------*
  | hyperelastic stress response plus elasticity tensor   sfuchs 08/2017 |

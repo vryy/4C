@@ -64,7 +64,7 @@ namespace BEAMINTERACTION
         Core::Elements::Element const* element1, Core::Elements::Element const* element2);
 
     //! Setup
-    virtual void Setup();
+    virtual void setup();
 
     //! return appropriate derived (templated) class (acts as a simple factory)
     static Teuchos::RCP<BeamPotentialPair> Create(
@@ -188,7 +188,7 @@ namespace BEAMINTERACTION
     //! indicates if the Init() function has been called
     bool isinit_;
 
-    //! indicates if the Setup() function has been called
+    //! indicates if the setup() function has been called
     bool issetup_;
 
    private:

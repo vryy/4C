@@ -446,7 +446,7 @@ bool Discret::ELEMENTS::SoSh8Plast::ReadElement(
   SetMaterial(0, Mat::Factory(material));
 
   Teuchos::RCP<Mat::So3Material> so3mat = SolidMaterial();
-  so3mat->Setup(numgpt_, linedef);
+  so3mat->setup(numgpt_, linedef);
   so3mat->ValidKinematics(Inpar::STR::KinemType::nonlinearTotLag);
   if (have_plastic_spin())
     plspintype_ = plspin;

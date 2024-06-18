@@ -65,7 +65,7 @@ namespace FSI
 
 
     /// setup this object
-    virtual void Setup();
+    virtual void setup();
 
     /// access to structure field
     const Teuchos::RCP<Adapter::FSIStructureWrapper>& structure_field() { return structure_; }

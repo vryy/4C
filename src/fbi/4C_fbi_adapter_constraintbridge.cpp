@@ -29,13 +29,13 @@ Adapter::FBIConstraintBridge::FBIConstraintBridge()
       geometry_evaluation_data_(Teuchos::null){};
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
+void Adapter::FBIConstraintBridge::setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
     Teuchos::RCP<Core::LinAlg::SparseOperator> fluidmatrix, bool fluidmeshtying)
 {
   // Create the beaminteraction data container and set the parameters
   beam_interaction_params_ = Teuchos::rcp(new FBI::BeamToFluidMeshtyingParams());
   beam_interaction_params_->Init();
-  beam_interaction_params_->Setup();
+  beam_interaction_params_->setup();
 
   const Teuchos::ParameterList& geometry_parameter_list =
       Global::Problem::Instance()->FBIParams().sublist("BEAM TO FLUID MESHTYING");
@@ -73,7 +73,7 @@ void Adapter::FBIConstraintBridge::CreatePair(
   // based)
   newinteractionpair->CreateGeometryPair(elements[0], elements[1], GetGeometryData());
   newinteractionpair->Init(GetParams(), elements);
-  newinteractionpair->Setup();
+  newinteractionpair->setup();
 
   // hand in the current position and velocities of the participating elements
   ResetPair(beam_centerline_dofvec, fluid_nodal_dofvec, newinteractionpair);

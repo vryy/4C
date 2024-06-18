@@ -62,12 +62,12 @@ void ScaTra::TimIntLomaGenAlpha::Init()
 /*----------------------------------------------------------------------*
  |  setup time integration                                  rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntLomaGenAlpha::Setup()
+void ScaTra::TimIntLomaGenAlpha::setup()
 {
   // call Init()-functions of base classes
   // note: this order is important
-  TimIntGenAlpha::Setup();
-  ScaTraTimIntLoma::Setup();
+  TimIntGenAlpha::setup();
+  ScaTraTimIntLoma::setup();
 
   return;
 }

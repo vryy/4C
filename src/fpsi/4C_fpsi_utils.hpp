@@ -109,7 +109,7 @@ namespace FPSI
       };
 
       /// setup the whole thing
-      void Setup(
+      void setup(
           const Core::FE::Discretization& dis, bool withpressure = false, bool overlapping = false);
 
       /*!
@@ -123,7 +123,7 @@ namespace FPSI
        * \author kruse
        * \date 05/2014
        */
-      void Setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
+      void setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
           const FPSI::UTILS::MapExtractor& extractor);
 
       /// get all element gids those nodes are touched by any condition

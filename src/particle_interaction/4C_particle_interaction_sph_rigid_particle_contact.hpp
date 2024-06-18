@@ -60,7 +60,7 @@ namespace ParticleInteraction
     virtual void Init();
 
     //! setup rigid particle contact handler
-    virtual void Setup(
+    virtual void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
         const std::shared_ptr<ParticleInteraction::InteractionWriter> particleinteractionwriter,
@@ -106,7 +106,7 @@ namespace ParticleInteraction
     explicit SPHRigidParticleContactElastic(const Teuchos::ParameterList& params);
 
     //! setup rigid particle contact handler
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
         const std::shared_ptr<ParticleInteraction::InteractionWriter> particleinteractionwriter,

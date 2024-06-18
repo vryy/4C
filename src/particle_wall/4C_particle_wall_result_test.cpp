@@ -30,7 +30,7 @@ void PARTICLEWALL::WallResultTest::Init()
   // nothing to do
 }
 
-void PARTICLEWALL::WallResultTest::Setup(
+void PARTICLEWALL::WallResultTest::setup(
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {
   // set interface to particle wall handler

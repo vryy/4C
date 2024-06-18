@@ -83,12 +83,12 @@ void BEAMINTERACTION::BeamLinkTruss::Init(int id, const std::vector<std::pair<in
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::Setup(const int matnum)
+void BEAMINTERACTION::BeamLinkTruss::setup(const int matnum)
 {
   check_init();
 
   // call setup of base class first
-  BeamLinkPinJointed::Setup(matnum);
+  BeamLinkPinJointed::setup(matnum);
 
   /* the idea is to use a truss element as auxiliary object that provides us with a
    * response force depending on the position of the two material points on the

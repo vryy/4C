@@ -58,7 +58,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void Setup();
+    void setup();
 
     /*!
      * \brief get gravity acceleration

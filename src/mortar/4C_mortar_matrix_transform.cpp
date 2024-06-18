@@ -80,7 +80,7 @@ void Mortar::MatrixRowColTransformer::set_master_map_pairs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Mortar::MatrixRowColTransformer::Setup()
+void Mortar::MatrixRowColTransformer::setup()
 {
   throw_if_not_init();
 

@@ -67,7 +67,7 @@ and fluid mesh tying algorithms (i.e. to couple non-matching
 Eulerian fluid meshes). All the hard work is actually done by
 the Mortar::Interface class (thus we use the mortar method).
 
-The major part of this code is the Setup() method that gets the
+The major part of this code is the setup() method that gets the
 non-matching interface meshes on input, initializes the mortar
 interface and computes the so-called coupling matrices \f$D\f$ and \f$M\f$.
 
@@ -78,8 +78,8 @@ calling MasterToSlave(), and dual variables are projected from
 slave to master side via \f$M^T D^{-T}\f$ when calling SlaveToMaster().
 
 Whenever you want to add a new problem class, check whether you
-can re-use one of the already existing Setup() methods. If not,
-feel free to write your own tailored Setup() method.
+can re-use one of the already existing setup() methods. If not,
+feel free to write your own tailored setup() method.
 */
   class CouplingMortar : public Core::Adapter::CouplingBase
   {
@@ -96,7 +96,7 @@ feel free to write your own tailored Setup() method.
      * meshtying
      *  - ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra meshtying
      */
-    void Setup(const Teuchos::RCP<Core::FE::Discretization>& masterdis,  ///< master discretization
+    void setup(const Teuchos::RCP<Core::FE::Discretization>& masterdis,  ///< master discretization
         const Teuchos::RCP<Core::FE::Discretization>& slavedis,          ///< slave discretization
         const Teuchos::RCP<Core::FE::Discretization>& aledis,            ///< ALE discretization
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
@@ -328,7 +328,7 @@ feel free to write your own tailored Setup() method.
     /// check init and setup call
     virtual void check_setup() const
     {
-      if (!is_setup()) FOUR_C_THROW("Call Setup() first!");
+      if (!is_setup()) FOUR_C_THROW("Call setup() first!");
     }
 
    private:

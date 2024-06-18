@@ -161,7 +161,7 @@ namespace STR
           discretization do not forget to also redistribute the cloned
           discretization.
           All objects relying on the parallel distribution are supposed to
-          the constructed in \ref Setup().
+          the constructed in \ref setup().
 
     \warning none
     \return bool
@@ -173,14 +173,14 @@ namespace STR
 
     /*! \brief Setup all class internal objects and members
 
-     Setup() is not supposed to have any input arguments !
+     setup() is not supposed to have any input arguments !
 
      Must only be called after Init().
 
      Construct all objects depending on the parallel distribution and
      relying on valid maps like, e.g. the state vectors, system matrices, etc.
 
-     Call all Setup() routines on previously initialized internal objects and members.
+     Call all setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
           Otherwise, e.g. vectors may have wrong maps.
@@ -189,7 +189,7 @@ namespace STR
     \return void
     \date 08/16
     \author rauch  */
-    void Setup() override;
+    void setup() override;
 
     //! create fields, based on dofrowmap, whose previous time step values are unimportant
     virtual void CreateFields();
@@ -1250,16 +1250,16 @@ namespace STR
     int lastwrittenresultsstep_;
 
    protected:
-    //! returns true if Setup() was called and is still valid
+    //! returns true if setup() was called and is still valid
     bool is_setup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
     bool is_init() const { return isinit_; };
 
-    //! check if \ref Setup() was called
+    //! check if \ref setup() was called
     void check_is_setup()
     {
-      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("setup() was not called.");
     };
 
     //! check if \ref Init() was called

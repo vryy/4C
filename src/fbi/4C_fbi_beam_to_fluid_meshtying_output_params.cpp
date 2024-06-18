@@ -23,7 +23,7 @@ FBI::BeamToFluidMeshtyingVtkOutputParams::BeamToFluidMeshtyingVtkOutputParams()
   // empty constructor
 }
 /*----------------------------------------------------------------------------------------------------*/
-void FBI::BeamToFluidMeshtyingVtkOutputParams::Setup()
+void FBI::BeamToFluidMeshtyingVtkOutputParams::setup()
 {
   check_init();
 

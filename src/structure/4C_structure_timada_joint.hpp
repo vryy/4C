@@ -122,12 +122,12 @@ namespace STR
       }
 
       // setup
-      sta_->Setup();
+      sta_->setup();
 
       // Actually, we would like to call Merge() and ResizeMStep() now and in the
       // past we have done this right here. However, this requires that both Init()
-      // and Setup() have already been called on both(!) the marching time integrator
-      // and the auxiliary time integrator. Since Setup() has not yet been called
+      // and setup() have already been called on both(!) the marching time integrator
+      // and the auxiliary time integrator. Since setup() has not yet been called
       // for the marching time integrator, we must postpone Merge() and ResizeMStep()
       // to a later point. They can now be found in the new Init() function below,
       // which is called at the beginning of Integrate(). [popp 01/2017]
@@ -144,7 +144,7 @@ namespace STR
 
     /*! Finalize the class initialization
      * Merge() and ResizeMStep() need to be called after(!) both Init()
-     * and Setup() have been called on both the marching time integrator
+     * and setup() have been called on both the marching time integrator
      * and the auxiliary time integrator (popp 01/2017).
      */
     void Init(Teuchos::RCP<TimInt>& sti) override

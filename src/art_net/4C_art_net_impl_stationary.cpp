@@ -148,11 +148,11 @@ void Arteries::ArtNetImplStationary::Init(const Teuchos::ParameterList& globalti
     // scatra time integrator is initialized inside.
     scatra_->Init();
 
-    // only now we must call Setup() on the scatra time integrator.
+    // only now we must call setup() on the scatra time integrator.
     // all objects relying on the parallel distribution are
     // created and pointers are set.
-    // calls Setup() on the scatra time integrator inside.
-    scatra_->ScaTraField()->Setup();
+    // calls setup() on the scatra time integrator inside.
+    scatra_->ScaTraField()->setup();
   }
 }
 

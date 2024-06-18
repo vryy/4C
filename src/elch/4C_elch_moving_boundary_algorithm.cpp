@@ -61,10 +61,10 @@ void ElCh::MovingBoundaryAlgorithm::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ElCh::MovingBoundaryAlgorithm::Setup()
+void ElCh::MovingBoundaryAlgorithm::setup()
 {
   // call init in base class
-  Adapter::ScaTraFluidAleCouplingAlgorithm::Setup();
+  Adapter::ScaTraFluidAleCouplingAlgorithm::setup();
 
   // set pointers
   idispn_ = fluid_field()->extract_interface_veln();

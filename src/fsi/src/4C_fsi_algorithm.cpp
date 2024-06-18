@@ -43,7 +43,7 @@ FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Algorithm::Setup()
+void FSI::Algorithm::setup()
 {
   // access the structural discretization
   Teuchos::RCP<Core::FE::Discretization> structdis =
@@ -75,7 +75,7 @@ void FSI::Algorithm::Setup()
     adapterbase_ptr_ = Adapter::build_structure_algorithm(sdyn);
     adapterbase_ptr_->Init(fsidyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     adapterbase_ptr_->register_model_evaluator("Partitioned Coupling Model", fsi_model_ptr);
-    adapterbase_ptr_->Setup();
+    adapterbase_ptr_->setup();
     structure_ = Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(
         adapterbase_ptr_->structure_field());
 
@@ -101,7 +101,7 @@ void FSI::Algorithm::Setup()
             const_cast<Teuchos::ParameterList&>(sdyn), structdis));
     structure_ =
         Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(structure->structure_field());
-    structure_->Setup();
+    structure_->setup();
 
     if (structure_ == Teuchos::null)
       FOUR_C_THROW("cast from Adapter::Structure to Adapter::FSIStructureWrapper failed");

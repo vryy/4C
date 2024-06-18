@@ -22,12 +22,12 @@ approach for Fluid-beam interaction.
 
 FOUR_C_NAMESPACE_OPEN
 
-void Adapter::FBIConstraintBridgePenalty::Setup(const Epetra_Map* beam_map,
+void Adapter::FBIConstraintBridgePenalty::setup(const Epetra_Map* beam_map,
     const Epetra_Map* fluid_map, Teuchos::RCP<Core::LinAlg::SparseOperator> fluidmatrix,
     bool fluidmeshtying)
 {
   // Initialize all necessary vectors and matrices
-  FBIConstraintBridge::Setup(beam_map, fluid_map, fluidmatrix, fluidmeshtying);
+  FBIConstraintBridge::setup(beam_map, fluid_map, fluidmatrix, fluidmeshtying);
   fs_ = Teuchos::rcp(new Epetra_FEVector(*beam_map));
   ff_ = Teuchos::rcp(new Epetra_FEVector(*fluid_map));
   cff_ = fluidmatrix;

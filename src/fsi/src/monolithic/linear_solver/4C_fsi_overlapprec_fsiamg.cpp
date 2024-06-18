@@ -105,10 +105,10 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
 
   // build AMG hierarchies
-  structuresolver_->Setup(structInnerOp.EpetraMatrix());
-  fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(), fsidofmapex, fluid_.discretization(), irownodes,
+  structuresolver_->setup(structInnerOp.EpetraMatrix());
+  fluidsolver_->setup(fluidInnerOp.EpetraMatrix(), fsidofmapex, fluid_.discretization(), irownodes,
       structuresplit_);
-  if (constalesolver_ == Teuchos::null) alesolver_->Setup(aleInnerOp.EpetraMatrix());
+  if (constalesolver_ == Teuchos::null) alesolver_->setup(aleInnerOp.EpetraMatrix());
 
   // get the ml_MultiLevelPreconditioner class from within struct/fluid/ale solver
   Teuchos::RCP<Epetra_Operator> sprec = structuresolver_->EpetraOperator();
@@ -503,7 +503,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     // setup direct solver/ILU prec and do a dummy solve to create factorization/preconditioner
     const Core::LinAlg::SparseMatrix& Matrix00 =
         (hybridPrec_ == nullptr) ? Matrix(0, 0) : hybridPrec_->Matrix(0, 0);
-    structuresolver_->Setup(Matrix00.EpetraMatrix());
+    structuresolver_->setup(Matrix00.EpetraMatrix());
     Teuchos::RCP<Epetra_Vector> b = Teuchos::rcp(new Epetra_Vector(Matrix00.RangeMap(), true));
     Teuchos::RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(Matrix00.DomainMap(), true));
     structuresolver_->Solve(Matrix00.EpetraMatrix(), x, b, true, true);
@@ -573,7 +573,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
     const Core::LinAlg::SparseMatrix& Matrix11 =
         (hybridPrec_ == nullptr) ? Matrix(1, 1) : hybridPrec_->Matrix(1, 1);
-    fluidsolver_->Setup(
+    fluidsolver_->setup(
         Matrix11.EpetraMatrix(), fsidofmapex, fluid_.discretization(), irownodes, structuresplit_);
     Teuchos::RCP<Epetra_Vector> b = Teuchos::rcp(new Epetra_Vector(Matrix11.RangeMap(), true));
     Teuchos::RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(Matrix11.DomainMap(), true));
@@ -621,7 +621,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     // setup direct solver/ILU prec and do a dummy solve to create factorization/preconditioner
     const Core::LinAlg::SparseMatrix& Matrix22 =
         (hybridPrec_ == nullptr) ? Matrix(2, 2) : hybridPrec_->Matrix(2, 2);
-    alesolver_->Setup(Matrix22.EpetraMatrix());
+    alesolver_->setup(Matrix22.EpetraMatrix());
     Teuchos::RCP<Epetra_Vector> b = Teuchos::rcp(new Epetra_Vector(Matrix22.RangeMap(), true));
     Teuchos::RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(Matrix22.DomainMap(), true));
     alesolver_->Solve(Matrix22.EpetraMatrix(), x, b, true, true);

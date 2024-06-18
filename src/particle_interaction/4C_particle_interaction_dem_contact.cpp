@@ -61,7 +61,7 @@ void ParticleInteraction::DEMContact::Init()
   init_rolling_contact_handler();
 }
 
-void ParticleInteraction::DEMContact::Setup(
+void ParticleInteraction::DEMContact::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
     const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
@@ -97,13 +97,13 @@ void ParticleInteraction::DEMContact::Setup(
   const double maxdensity = get_max_density_of_all_materials();
 
   // setup normal contact handler
-  contactnormal_->Setup(maxdensity);
+  contactnormal_->setup(maxdensity);
 
   // setup tangential contact handler
-  if (contacttangential_) contacttangential_->Setup(contactnormal_->get_normal_contact_stiffness());
+  if (contacttangential_) contacttangential_->setup(contactnormal_->get_normal_contact_stiffness());
 
   // setup rolling contact handler
-  if (contactrolling_) contactrolling_->Setup(contactnormal_->get_normal_contact_stiffness());
+  if (contactrolling_) contactrolling_->setup(contactnormal_->get_normal_contact_stiffness());
 
   // safety check
   if (contacttangential_)

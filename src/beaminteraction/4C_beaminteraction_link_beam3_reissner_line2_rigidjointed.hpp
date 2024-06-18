@@ -77,7 +77,7 @@ namespace BEAMINTERACTION
 
 
     //! Setup [derived]
-    void Setup(int matnum) override;
+    void setup(int matnum) override;
 
     /*!
     \brief Return unique ParObject id [derived]

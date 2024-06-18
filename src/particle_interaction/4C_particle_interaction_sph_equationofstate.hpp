@@ -38,7 +38,7 @@ namespace ParticleInteraction
     virtual void Init();
 
     //! setup equation of state handler
-    virtual void Setup();
+    virtual void setup();
 
     //! determine the pressure
     virtual double DensityToPressure(const double& density, const double& density0) const = 0;

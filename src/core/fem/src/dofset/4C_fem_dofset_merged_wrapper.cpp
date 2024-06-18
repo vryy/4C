@@ -84,7 +84,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   // initialize search tree
   auto tree = Core::COUPLING::NodeMatchingOctree();
   tree.Init(*sourcedis_, masternodes, 150);
-  tree.Setup();
+  tree.setup();
 
   // match master and slave nodes using octtree
   // master id -> slave id, distance
@@ -142,7 +142,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
 
   // initialize search tree
   tree.Init(*sourcedis_, masternodes, 150);
-  tree.Setup();
+  tree.setup();
 
   // match master and slave nodes using octtree
   // master id -> slave id, distance

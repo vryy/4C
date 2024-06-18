@@ -170,7 +170,7 @@ namespace Mat
     double Density() const override { return params_->density_; }
 
     /// setup
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// Standard SO3 evaluate (not meant to be used)
     void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient

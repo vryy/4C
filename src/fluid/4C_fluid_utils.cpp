@@ -597,7 +597,7 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const Core::FE::Discretization& flu
   presdofset.clear();
   Teuchos::RCP<Epetra_Map> presrowmap = Teuchos::rcp(
       new Epetra_Map(-1, presdofmapvec.size(), presdofmapvec.data(), 0, alefluiddis.Comm()));
-  extractor.Setup(*fullmap, presrowmap, velrowmap);
+  extractor.setup(*fullmap, presrowmap, velrowmap);
 }
 
 

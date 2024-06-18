@@ -108,7 +108,7 @@ Mat::BeamPlasticMaterial<T>::BeamPlasticMaterial(
  *-----------------------------------------------------------------------------------------------*/
 
 template <typename T>
-void Mat::BeamPlasticMaterial<T>::Setup(int numgp_force, int numgp_moment)
+void Mat::BeamPlasticMaterial<T>::setup(int numgp_force, int numgp_moment)
 {
   c_n_eff_.resize(numgp_force);
   c_m_eff_.resize(numgp_moment);
@@ -203,7 +203,7 @@ void Mat::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
 
   this->extract_from_pack(position, data, numgp_force_);
   this->extract_from_pack(position, data, numgp_moment_);
-  this->Setup(numgp_force_, numgp_moment_);
+  this->setup(numgp_force_, numgp_moment_);
   this->extract_from_pack(position, data, gammaplastaccum_);
   this->extract_from_pack(position, data, gammaplastconv_);
   this->extract_from_pack(position, data, kappaplastaccum_);

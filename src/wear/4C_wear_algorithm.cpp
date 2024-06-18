@@ -58,7 +58,7 @@ Wear::Algorithm::Algorithm(const Epetra_Comm& comm)
           Global::Problem::Instance()->GetDis("structure")));
   structure_ =
       Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(structure->structure_field());
-  structure_->Setup();
+  structure_->setup();
 
   if (structure_ == Teuchos::null)
     FOUR_C_THROW("cast from Adapter::Structure to Adapter::FSIStructureWrapper failed");

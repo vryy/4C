@@ -35,7 +35,7 @@ void PARTICLEALGORITHM::GravityHandler::Init(const std::vector<double>& gravity)
         static_cast<int>(gravity_.size()));
 }
 
-void PARTICLEALGORITHM::GravityHandler::Setup()
+void PARTICLEALGORITHM::GravityHandler::setup()
 {
   // nothing to do
 }

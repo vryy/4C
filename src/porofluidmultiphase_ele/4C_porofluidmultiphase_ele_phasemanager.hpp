@@ -64,7 +64,7 @@ namespace Discret
       (in contrast to variable manager, which manages the 'generic' primary variables. Note that
       these two manager classes are closely related).
 
-      The idea is, that there are the methods Setup(...) and EvaluateGPState(..), which
+      The idea is, that there are the methods setup(...) and EvaluateGPState(..), which
       need to be called before evaluation.
       All other methods are (more or less) constant access methods.
 
@@ -100,7 +100,7 @@ namespace Discret
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        virtual void Setup(const Core::Elements::Element* ele, const int matnum = 0) = 0;
+        virtual void setup(const Core::Elements::Element* ele, const int matnum = 0) = 0;
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -120,7 +120,7 @@ namespace Discret
         //! check if EvaluateGPState() was called
         virtual void CheckIsEvaluated() const = 0;
 
-        //! check if Setup() was called
+        //! check if setup() was called
         virtual void check_is_setup() const = 0;
 
         //! @name Access methods
@@ -361,7 +361,7 @@ namespace Discret
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void Setup(const Core::Elements::Element* ele, const int matnum = 0) override;
+        void setup(const Core::Elements::Element* ele, const int matnum = 0) override;
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -455,7 +455,7 @@ namespace Discret
         //! check if EvaluateGPState() was called
         void check_is_setup() const override
         {
-          if (not issetup_) FOUR_C_THROW("Setup() was not called!");
+          if (not issetup_) FOUR_C_THROW("setup() was not called!");
         }
 
         //! get porosity
@@ -852,15 +852,15 @@ namespace Discret
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void Setup(const Core::Elements::Element* ele, const int matnum = 0) override
+        void setup(const Core::Elements::Element* ele, const int matnum = 0) override
         {
-          phasemanager_->Setup(ele, matnum);
+          phasemanager_->setup(ele, matnum);
         };
 
         //! check if EvaluateGPState() was called
         void CheckIsEvaluated() const override { phasemanager_->CheckIsEvaluated(); };
 
-        //! check if Setup() was called
+        //! check if setup() was called
         void check_is_setup() const override { phasemanager_->check_is_setup(); };
 
         //! @name Access methods
@@ -1401,7 +1401,7 @@ namespace Discret
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void Setup(const Core::Elements::Element* ele, const int matnum = 0) override;
+        void setup(const Core::Elements::Element* ele, const int matnum = 0) override;
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -1490,7 +1490,7 @@ namespace Discret
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void Setup(const Core::Elements::Element* ele, const int matnum = 0) override;
+        void setup(const Core::Elements::Element* ele, const int matnum = 0) override;
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -1592,7 +1592,7 @@ namespace Discret
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void Setup(const Core::Elements::Element* ele, const int matnum = 0) override;
+        void setup(const Core::Elements::Element* ele, const int matnum = 0) override;
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a

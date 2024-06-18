@@ -59,7 +59,7 @@ STR::MODELEVALUATOR::Structure::Structure()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::Setup()
+void STR::MODELEVALUATOR::Structure::setup()
 {
   FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
 

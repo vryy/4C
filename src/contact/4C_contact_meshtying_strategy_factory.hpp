@@ -48,7 +48,7 @@ namespace Mortar
       FactoryMT() = default;
 
       //! derived
-      void Setup() override;
+      void setup() override;
 
       /*! \brief Read and check meshtying/contact input parameters
        *

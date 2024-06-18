@@ -119,7 +119,7 @@ namespace Mat
        * @param numgp Number of Gauss points
        * @param linedef Input line of the element
        */
-      virtual void Setup(int numgp, Input::LineDefinition* linedef){};
+      virtual void setup(int numgp, Input::LineDefinition* linedef){};
 
       //! Dummy routine for setup of patient-specific materials
       virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID){};

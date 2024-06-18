@@ -213,7 +213,7 @@ void Mat::ScatraMultiScaleGP::Init()
         microdis, solver, sdyn_micro, extraparams, Teuchos::null, microdisnum_));
     microdisnum_microtimint_map_[microdisnum_]->Init();
     microdisnum_microtimint_map_[microdisnum_]->set_number_of_dof_set_velocity(1);
-    microdisnum_microtimint_map_[microdisnum_]->Setup();
+    microdisnum_microtimint_map_[microdisnum_]->setup();
 
     // set initial velocity field
     microdisnum_microtimint_map_[microdisnum_]->set_velocity_field();

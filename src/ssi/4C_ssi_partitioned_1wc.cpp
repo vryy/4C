@@ -27,7 +27,7 @@ SSI::SSIPart1WC::SSIPart1WC(const Epetra_Comm& comm, const Teuchos::ParameterLis
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call he setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
@@ -184,7 +184,7 @@ SSI::SSIPart1WCSolidToScatra::SSIPart1WCSolidToScatra(
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call he setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
@@ -256,7 +256,7 @@ SSI::SSIPart1WCScatraToSolid::SSIPart1WCScatraToSolid(
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call he setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*

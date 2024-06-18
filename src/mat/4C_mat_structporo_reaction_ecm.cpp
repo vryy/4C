@@ -71,9 +71,9 @@ Mat::StructPoroReactionECM::StructPoroReactionECM(Mat::PAR::StructPoroReactionEC
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::StructPoroReactionECM::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::StructPoroReactionECM::setup(int numgp, Input::LineDefinition* linedef)
 {
-  StructPoroReaction::Setup(numgp, linedef);
+  StructPoroReaction::setup(numgp, linedef);
   refporosity_old_ = params_->init_porosity_;
 
   double dpsidphiref = 0.0;

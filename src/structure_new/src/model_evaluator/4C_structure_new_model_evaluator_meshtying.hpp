@@ -63,7 +63,7 @@ namespace STR
           const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset) override;
 
       //! setup class variables [derived]
-      void Setup() override;
+      void setup() override;
 
       //! @name Functions which are derived from the base generic class
       //!@{

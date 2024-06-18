@@ -34,7 +34,7 @@ void ParticleInteraction::InteractionWriter::Init()
   // nothing to do
 }
 
-void ParticleInteraction::InteractionWriter::Setup()
+void ParticleInteraction::InteractionWriter::setup()
 {
   // nothing to do
 }

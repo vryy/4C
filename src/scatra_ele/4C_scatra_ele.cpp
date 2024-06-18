@@ -541,7 +541,7 @@ void Discret::ELEMENTS::Transport::SetMaterial(int matnum, Core::Elements::Eleme
     // vector)
     std::vector<Core::LinAlg::Matrix<3, 1>> fibervecs(0);
     somat->GetFiberVecs(fibervecs);
-    actmat->Setup(fibervecs[0]);
+    actmat->setup(fibervecs[0]);
   }
 }
 

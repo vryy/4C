@@ -58,7 +58,7 @@ namespace PoroMultiPhaseScaTra
         Teuchos::RCP<const Epetra_Map> dbcmap_art_with_collapsed);
 
     //! setup the strategy
-    void Setup() override;
+    void setup() override;
 
     //! evaluate additional linearization of (integrated) element diameter dependent terms
     //! (Hagen-Poiseuille)
@@ -86,7 +86,7 @@ namespace PoroMultiPhaseScaTra
     //! have the managers been set?
     bool porofluidmanagersset_;
 
-    //! has Setup() been called
+    //! has setup() been called
     bool issetup_;
 
     //! is it a pure fluid problem

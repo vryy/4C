@@ -113,7 +113,7 @@ namespace STR
           const Teuchos::RCP<const BaseDataSDyn> datasdyn);
 
       /// setup of the new class variables
-      virtual void Setup();
+      virtual void setup();
 
       /// read initial field conditions
       void set_initial_fields();
@@ -269,7 +269,7 @@ namespace STR
       inline void check_init_setup() const
       {
         FOUR_C_ASSERT(
-            is_init() and is_setup(), "Call STR::BaseDataGlobalState::Init() and Setup() first!");
+            is_init() and is_setup(), "Call STR::BaseDataGlobalState::Init() and setup() first!");
       }
 
       inline void check_init() const
@@ -928,7 +928,7 @@ namespace STR
       /// flag indicating if Init() has been called
       bool isinit_;
 
-      /// flag indicating if Setup() has been called
+      /// flag indicating if setup() has been called
       bool issetup_;
 
       /// read only access

@@ -169,7 +169,7 @@ namespace Mat
      * @param numgp Number of Gauss-points
      * @param linedef Line definition of the element
      */
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /*!
      * \brief Post setup routine that will be called before the first Evaluate call

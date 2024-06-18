@@ -53,7 +53,7 @@ void BEAMINTERACTION::BeamPotentialPair::Init(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamPotentialPair::Setup()
+void BEAMINTERACTION::BeamPotentialPair::setup()
 {
   check_init();
 
@@ -199,7 +199,7 @@ void BEAMINTERACTION::BeamPotentialPair::check_init() const
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialPair::check_init_setup() const
 {
-  if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*

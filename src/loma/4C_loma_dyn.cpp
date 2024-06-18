@@ -99,11 +99,11 @@ void loma_dyn(int restart)
       // now we can call Init() on base algo
       scatraonly->Init();
 
-      // only now we must call Setup() on the scatra time integrator.
+      // only now we must call setup() on the scatra time integrator.
       // all objects relying on the parallel distribution are
       // created and pointers are set.
-      // calls Setup() on the time integrator inside
-      scatraonly->Setup();
+      // calls setup() on the time integrator inside
+      scatraonly->setup();
 
       // read restart information
       if (restart) (scatraonly->ScaTraField())->read_restart(restart);
@@ -175,7 +175,7 @@ void loma_dyn(int restart)
 
       loma->Init();
 
-      loma->Setup();
+      loma->setup();
 
       // read restart information
       // in case a inflow generation in the inflow section has been performed, there are not any

@@ -57,7 +57,7 @@ namespace ParticleInteraction
     void Init();
 
     //! setup virtual wall particle handler
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
         const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,

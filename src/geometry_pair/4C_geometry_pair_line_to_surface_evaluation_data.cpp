@@ -41,14 +41,14 @@ void GEOMETRYPAIR::LineToSurfaceEvaluationData::Clear()
 /**
  *
  */
-void GEOMETRYPAIR::LineToSurfaceEvaluationData::Setup(
+void GEOMETRYPAIR::LineToSurfaceEvaluationData::setup(
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   face_elements_ = face_elements;
 
   for (const auto& face_element_iterator : face_elements_)
-    face_element_iterator.second->Setup(discret, face_elements_);
+    face_element_iterator.second->setup(discret, face_elements_);
 
   // The averaged reference normals have to be calculated after each face element is set up.
   for (const auto& face_element_iterator : face_elements_)

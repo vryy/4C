@@ -63,7 +63,7 @@ FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
   if (output_fluid)
   {
     runtime_output_params_.Init(*fluid_runtime_output_list);
-    runtime_output_params_.Setup();
+    runtime_output_params_.setup();
 
     // TODO This does not work for restarted simulations as the time_ is not yet correctly set.
     // However, this is called before the restart is read and someone with knowledge on the module

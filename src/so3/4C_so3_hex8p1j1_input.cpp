@@ -25,7 +25,7 @@ bool Discret::ELEMENTS::SoHex8P1J1::ReadElement(
   SetMaterial(0, Mat::Factory(material));
 
   // set up of materials with GP data (e.g., history variables)
-  SolidMaterial()->Setup(NUMGPT_SOH8, linedef);
+  SolidMaterial()->setup(NUMGPT_SOH8, linedef);
 
   // temporary variable for read-in
   std::string buffer;

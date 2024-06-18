@@ -54,7 +54,7 @@ namespace ParticleRigidBody
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void Setup();
+    void setup();
 
     /*!
      * \brief allocate stored states

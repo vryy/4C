@@ -58,7 +58,7 @@ ALE::Meshtying::Meshtying(Teuchos::RCP<Core::FE::Discretization> dis, Core::LinA
 /*-------------------------------------------------------*/
 /*  Setup mesh-tying problem                 wirtz 01/16 */
 /*-------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshtying::Setup(
+Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshtying::setup(
     std::vector<int> coupleddof, Teuchos::RCP<Epetra_Vector>& dispnp)
 {
   // time measurement
@@ -93,7 +93,7 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshtying::Setup(
 
   Core::LinAlg::MultiMapExtractor extractor;
 
-  extractor.Setup(*dofrowmap_, alemaps);
+  extractor.setup(*dofrowmap_, alemaps);
 
   // check, if extractor maps are valid
   extractor.check_for_valid_map_extractor();
@@ -148,7 +148,7 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshtying::MshtSplit()
 
   Core::LinAlg::MultiMapExtractor extractor;
 
-  extractor.Setup(*dofrowmap_, alemaps);
+  extractor.setup(*dofrowmap_, alemaps);
 
   // check, if extractor maps are valid
   extractor.check_for_valid_map_extractor();
@@ -317,7 +317,7 @@ void ALE::Meshtying::MshtSplit(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysma
 
     Core::LinAlg::MultiMapExtractor extractor;
 
-    extractor.Setup(*dofrowmap_, alemaps);
+    extractor.setup(*dofrowmap_, alemaps);
 
     // check, if extractor maps are valid
     extractor.check_for_valid_map_extractor();
@@ -406,7 +406,7 @@ void ALE::Meshtying::AdapterMortar(std::vector<int> coupleddof)
       Global::Problem::Instance()->spatial_approximation_type()));
 
   // Setup of meshtying adapter
-  adaptermeshtying_->Setup(discret_, discret_, Teuchos::null, coupleddof, "Mortar",
+  adaptermeshtying_->setup(discret_, discret_, Teuchos::null, coupleddof, "Mortar",
       discret_->Comm(), Global::Problem::Instance()->FunctionManager(), true);
 }
 

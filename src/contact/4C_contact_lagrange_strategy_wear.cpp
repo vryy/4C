@@ -95,10 +95,10 @@ Wear::LagrangeStrategyWear::LagrangeStrategyWear(
 /*----------------------------------------------------------------------*
  | setup this strategy object                               seitz 11/16 |
  *----------------------------------------------------------------------*/
-void Wear::LagrangeStrategyWear::Setup(bool redistributed, bool init)
+void Wear::LagrangeStrategyWear::setup(bool redistributed, bool init)
 {
   // base class setup
-  AbstractStrategy::Setup(redistributed, init);
+  AbstractStrategy::setup(redistributed, init);
 
   // wear specific setup
   setup_wear(redistributed, init);
@@ -4685,7 +4685,7 @@ bool Wear::LagrangeStrategyWear::RedistributeContact(
   }
 
   // re-setup strategy with redistributed=TRUE, init=FALSE
-  Setup(true, false);
+  setup(true, false);
   setup_wear(true, false);
 
   // time measurement

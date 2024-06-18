@@ -53,7 +53,7 @@ namespace FSI
 
    public:
     /// setup this object
-    void Setup() override;
+    void setup() override;
 
    protected:
     /** \brief interface fluid operator

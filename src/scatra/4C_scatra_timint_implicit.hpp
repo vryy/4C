@@ -160,7 +160,7 @@ namespace ScaTra
           discretization do not forget to also redistribute the cloned
           discretization.
           All objects relying on the parallel distribution are supposed to
-          the constructed in \ref Setup().
+          the constructed in \ref setup().
 
     \warning none
     \return void
@@ -170,14 +170,14 @@ namespace ScaTra
 
     /*! \brief Setup all class internal objects and members
 
-     Setup() is not supposed to have any input arguments !
+     setup() is not supposed to have any input arguments !
 
      Must only be called after Init().
 
      Construct all objects depending on the parallel distribution and
      relying on valid maps like, e.g. the state vectors, system matrices, etc.
 
-     Call all Setup() routines on previously initialized internal objects and members.
+     Call all setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
           Otherwise, e.g. vectors may have wrong maps.
@@ -186,7 +186,7 @@ namespace ScaTra
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Setup();
+    virtual void setup();
 
     //! Initialization of turbulence models
     void InitTurbulenceModel(const Epetra_Map* dofrowmap, const Epetra_Map* noderowmap);
@@ -1055,13 +1055,13 @@ namespace ScaTra
 
     /*--- query and output ---------------------------------------------------*/
 
-    //! returns true if \ref Setup() was called and is still valid
+    //! returns true if \ref setup() was called and is still valid
     bool is_setup() const { return issetup_; };
 
     //! returns true if \ ref Init() was called and is still valid
     bool is_init() const { return isinit_; };
 
-    //! check if \ref Setup() was called
+    //! check if \ref setup() was called
     void check_is_setup() const;
 
     //! check if \ref Init() was called
@@ -1656,7 +1656,7 @@ namespace ScaTra
     virtual ~ScalarHandler() = default;
 
     //! set up scalar handler
-    virtual void Setup(const ScaTraTimIntImpl* const scatratimint);
+    virtual void setup(const ScaTraTimIntImpl* const scatratimint);
 
     /*========================================================================*/
     //! @name Access and Query methods
@@ -1686,7 +1686,7 @@ namespace ScaTra
     /*========================================================================*/
     //! @name general framework
     /*========================================================================*/
-    //! check if \ref Setup() was called
+    //! check if \ref setup() was called
     void check_is_setup() const;
 
     /*========================================================================*/
@@ -1702,7 +1702,7 @@ namespace ScaTra
     /*========================================================================*/
     //! @name Internal variables
     /*========================================================================*/
-    //! flag indicating \ref Setup() call
+    //! flag indicating \ref setup() call
     bool issetup_;
   };
 

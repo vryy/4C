@@ -123,7 +123,7 @@ void STR::MonitorDbc::create_reaction_force_condition(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::Setup()
+void STR::MonitorDbc::setup()
 {
   throw_if_not_init();
 

@@ -76,7 +76,7 @@ namespace BEAMINTERACTION
         std::vector<Core::Elements::Element const*> elements);
 
     //! Setup
-    virtual void Setup();
+    virtual void setup();
 
     //@}
 
@@ -405,7 +405,7 @@ namespace BEAMINTERACTION
     //! indicates if the Init() function has been called
     bool isinit_;
 
-    //! indicates if the Setup() function has been called
+    //! indicates if the setup() function has been called
     bool issetup_;
 
     //! pointer to the geometry pair

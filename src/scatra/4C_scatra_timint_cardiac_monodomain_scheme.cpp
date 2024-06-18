@@ -39,13 +39,13 @@ ScaTra::TimIntCardiacMonodomainOST::TimIntCardiacMonodomainOST(
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainOST::Setup()
+void ScaTra::TimIntCardiacMonodomainOST::setup()
 {
-  // call Setup()-functions of base classes
+  // call setup()-functions of base classes
   // note: this order is important
-  TimIntOneStepTheta::Setup();
+  TimIntOneStepTheta::setup();
 
-  TimIntCardiacMonodomain::Setup();
+  TimIntCardiacMonodomain::setup();
 
   return;
 }
@@ -136,13 +136,13 @@ ScaTra::TimIntCardiacMonodomainBDF2::TimIntCardiacMonodomainBDF2(
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainBDF2::Setup()
+void ScaTra::TimIntCardiacMonodomainBDF2::setup()
 {
-  // call Setup()-functions of base classes
+  // call setup()-functions of base classes
   // note: this order is important
-  TimIntBDF2::Setup();
+  TimIntBDF2::setup();
 
-  TimIntCardiacMonodomain::Setup();
+  TimIntCardiacMonodomain::setup();
 
   return;
 }
@@ -222,13 +222,13 @@ ScaTra::TimIntCardiacMonodomainGenAlpha::TimIntCardiacMonodomainGenAlpha(
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainGenAlpha::Setup()
+void ScaTra::TimIntCardiacMonodomainGenAlpha::setup()
 {
   // call Init()-functions of base classes
   // note: this order is important
-  TimIntGenAlpha::Setup();
+  TimIntGenAlpha::setup();
 
-  TimIntCardiacMonodomain::Setup();
+  TimIntCardiacMonodomain::setup();
 
   return;
 }

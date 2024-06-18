@@ -333,7 +333,7 @@ void Mat::ConstraintMixture::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Setup                                         (public)         12/10|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ConstraintMixture::setup(int numgp, Input::LineDefinition* linedef)
 {
   if (params_->integration_ != "Implicit" && params_->integration_ != "Explicit")
     FOUR_C_THROW("unknown option for integration");
@@ -518,7 +518,7 @@ void Mat::ConstraintMixture::ResetAll(const int numgp)
   if (params_->degoption_ == "ExpVar") expvar = true;
   for (int idpast = 0; idpast < numpast; idpast++)
   {
-    history_->at(idpast).Setup(numgp, massprodbasal_, expvar);
+    history_->at(idpast).setup(numgp, massprodbasal_, expvar);
     history_->at(idpast).set_time(dt - (numpast - 1 - idpast) * dt, dt);
   }
 }
@@ -576,7 +576,7 @@ void Mat::ConstraintMixture::Update()
 
     // append new collagen
     ConstraintMixtureHistory newhis;
-    newhis.Setup(numgp, massprodbasal_, expvar);
+    newhis.setup(numgp, massprodbasal_, expvar);
     // it is very important to set time and dt to 0.0
     // this makes it clear that this step was created in update and has no reliable content
     // they are not known here either
@@ -711,7 +711,7 @@ void Mat::ConstraintMixture::Update()
     {
       // special case of first time step
       ConstraintMixtureHistory newhis;
-      newhis.Setup(numgp, massprodbasal_, expvar);
+      newhis.setup(numgp, massprodbasal_, expvar);
       newhis.set_time(0.0, 0.0);
       history_->push_back(newhis);
     }

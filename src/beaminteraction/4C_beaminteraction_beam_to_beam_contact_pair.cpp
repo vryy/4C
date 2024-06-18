@@ -60,12 +60,12 @@ BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::BeamToBeamCont
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
+void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::setup()
 {
   check_init();
 
   // call setup of base class first
-  BeamContactPair::Setup();
+  BeamContactPair::setup();
 
 
   for (unsigned int i = 0; i < 3 * numnodes * numnodalvalues; i++)

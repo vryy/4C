@@ -64,14 +64,14 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Crosslinking()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Setup()
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup()
 {
   check_init();
 
   // construct, init and setup data container for crosslinking
   crosslinking_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::CrosslinkingParams());
   crosslinking_params_ptr_->Init(GState());
-  crosslinking_params_ptr_->Setup();
+  crosslinking_params_ptr_->setup();
 
   // set binding spot positions on filament elements according input file specifications
   set_filament_types();
@@ -539,7 +539,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_
   Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> linker_init_box =
       Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
   linker_init_box->Init(
-      crosslinking_params_ptr_->linker_initialization_box(), dummy);  // no Setup() call needed here
+      crosslinking_params_ptr_->linker_initialization_box(), dummy);  // no setup() call needed here
 
   // loop over bspotpairs and make decision
   newlinker.reserve(global_bspot_linker.size());
@@ -707,7 +707,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::add_crosslinker_to_bin_di
   Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> linker_init_box =
       Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
   linker_init_box->Init(
-      crosslinking_params_ptr_->linker_initialization_box(), dummy);  // no Setup() call needed here
+      crosslinking_params_ptr_->linker_initialization_box(), dummy);  // no setup() call needed here
 
   // loop over all linker types that should be added to simulation volume
   // (only proc 0 is doing this (as the number of crosslinker is manageable)
@@ -3141,7 +3141,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
     // finally initialize and setup object
     linkelepairptr->Init(iter.first, newdoublebond_i.eleids, newdoublebond_i.bspotposs,
         newdoublebond_i.bspottriads, cl_node->GetMaterial()->LinkerType(), GState().get_time_np());
-    linkelepairptr->Setup(cl_node->GetMaterial()->beam_elast_hyper_mat_num());
+    linkelepairptr->setup(cl_node->GetMaterial()->beam_elast_hyper_mat_num());
 
     // add to my double bonds
     doublebondcl_[linkelepairptr->Id()] = linkelepairptr;

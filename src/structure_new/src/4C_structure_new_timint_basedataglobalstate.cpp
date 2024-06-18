@@ -111,7 +111,7 @@ STR::TimeInt::BaseDataGlobalState& STR::TimeInt::BaseDataGlobalState::operator=(
 void STR::TimeInt::BaseDataGlobalState::Init(const Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::ParameterList& sdynparams, const Teuchos::RCP<const BaseDataSDyn> datasdyn)
 {
-  // We have to call Setup() after Init()
+  // We have to call setup() after Init()
   issetup_ = false;
 
   // ----------------------------------------------------------
@@ -153,7 +153,7 @@ void STR::TimeInt::BaseDataGlobalState::Init(const Teuchos::RCP<Core::FE::Discre
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataGlobalState::Setup()
+void STR::TimeInt::BaseDataGlobalState::setup()
 {
   // safety check
   check_init();
@@ -437,7 +437,7 @@ void STR::TimeInt::BaseDataGlobalState::setup_multi_map_extractor()
     int bid = ci->second;
     maps_vec[bid] = model_maps_.at(mt);
   }
-  blockextractor_.Setup(*gproblem_map_ptr_, maps_vec);
+  blockextractor_.setup(*gproblem_map_ptr_, maps_vec);
 }
 
 /*----------------------------------------------------------------------------*
@@ -567,7 +567,7 @@ void STR::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
   maps[0] = additdofmap;
   maps[1] = rotvecdofmap;
 
-  multimapext.Setup(*dof_row_map_view(), maps);
+  multimapext.setup(*dof_row_map_view(), maps);
 }
 
 /*----------------------------------------------------------------------------*

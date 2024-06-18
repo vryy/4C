@@ -65,7 +65,7 @@ namespace FS3I
     void Init() override;
 
     /// setup this class
-    void Setup() override;
+    void setup() override;
 
     /// Read restart
     void read_restart() override;

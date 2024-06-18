@@ -173,7 +173,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_maps()
   fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full Poromultiphase-elasticity-blockmap
-  blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+  blockrowdofmap_->setup(*fullmap_, vecSpaces);
 
   return;
 }
@@ -1336,13 +1336,13 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::setup_maps()
   fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full Poromultiphase-elasticity-blockmap
-  blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+  blockrowdofmap_->setup(*fullmap_, vecSpaces);
 
   // full map of artery and poromulti DOFs
   fullmap_artporo_ = Core::LinAlg::MultiMapExtractor::MergeMaps({vecSpaces[1], vecSpaces[2]});
 
   // full artery-poromulti-blockmap
-  blockrowdofmap_artporo_->Setup(*fullmap_artporo_, {vecSpaces[1], vecSpaces[2]});
+  blockrowdofmap_artporo_->setup(*fullmap_artporo_, {vecSpaces[1], vecSpaces[2]});
 
   return;
 }

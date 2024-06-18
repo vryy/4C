@@ -210,7 +210,7 @@ void FPSI::MonolithicPlain::set_dof_row_maps(
   fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
 
   // full FPSI-blockmap
-  blockrowdofmap_.Setup(*fullmap_, maps);
+  blockrowdofmap_.setup(*fullmap_, maps);
 }
 
 

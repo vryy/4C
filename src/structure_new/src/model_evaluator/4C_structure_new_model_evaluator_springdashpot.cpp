@@ -41,7 +41,7 @@ STR::MODELEVALUATOR::SpringDashpot::SpringDashpot()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::Setup()
+void STR::MODELEVALUATOR::SpringDashpot::setup()
 {
   FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
 

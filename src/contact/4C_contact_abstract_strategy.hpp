@@ -748,7 +748,7 @@ namespace CONTACT
      when called for the first time (in the constructor) this
      method is given the input parameter init=TRUE to account
      for initialization of the active set. */
-    virtual void Setup(bool redistributed, bool init);
+    virtual void setup(bool redistributed, bool init);
 
 
     //! return the current solution type
@@ -1594,7 +1594,7 @@ namespace CONTACT
      *  \author hiermeier */
     virtual void post_evaluate(CONTACT::ParamsInterface& cparams){};
 
-    /*! \brief Run in the end of the Setup() routine
+    /*! \brief Run in the end of the setup() routine
      *
      *  Can be used to redistribute member variables of derived classes, if necessary.
      *

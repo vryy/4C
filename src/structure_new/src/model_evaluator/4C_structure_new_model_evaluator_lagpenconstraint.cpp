@@ -42,19 +42,19 @@ STR::MODELEVALUATOR::LagPenConstraint::LagPenConstraint()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::Setup()
+void STR::MODELEVALUATOR::LagPenConstraint::setup()
 {
   check_init();
 
   // build the NOX::Nln::CONSTRAINT::Interface::Required object
   noxinterface_ptr_ = Teuchos::rcp(new LAGPENCONSTRAINT::NoxInterface);
   noxinterface_ptr_->Init(global_state_ptr());
-  noxinterface_ptr_->Setup();
+  noxinterface_ptr_->setup();
 
   // build the NOX::Nln::CONSTRAINT::Interface::Preconditioner object
   noxinterface_prec_ptr_ = Teuchos::rcp(new LAGPENCONSTRAINT::NoxInterfacePrec());
   noxinterface_prec_ptr_->Init(global_state_ptr());
-  noxinterface_prec_ptr_->Setup();
+  noxinterface_prec_ptr_->setup();
 
   Teuchos::RCP<Core::FE::Discretization> dis = discret_ptr();
 
@@ -72,7 +72,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::Setup()
   // initialize constraint manager
   constrman_ = Teuchos::rcp(new CONSTRAINTS::ConstrManager());
   constrman_->Init(dis, Global::Problem::Instance()->structural_dynamic_params());
-  constrman_->Setup(disnp_ptr_, Global::Problem::Instance()->structural_dynamic_params());
+  constrman_->setup(disnp_ptr_, Global::Problem::Instance()->structural_dynamic_params());
 
   // set flag
   issetup_ = true;

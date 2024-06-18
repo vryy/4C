@@ -28,7 +28,7 @@ Core::LinearSolver::SimplePreconditioner::SimplePreconditioner(Teuchos::Paramete
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::SimplePreconditioner::Setup(
+void Core::LinearSolver::SimplePreconditioner::setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   if (create)
@@ -258,7 +258,7 @@ Core::LinearSolver::BGSPreconditioner::BGSPreconditioner(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::BGSPreconditioner::Setup(
+void Core::LinearSolver::BGSPreconditioner::setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   if (create)

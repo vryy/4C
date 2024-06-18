@@ -321,11 +321,11 @@ namespace Mat
     //! @name Handling of Gauss point data. Here, the poro material just calls the underlying
     //! material
 
-    void Setup(int numgp, Input::LineDefinition* linedef) override
+    void setup(int numgp, Input::LineDefinition* linedef) override
     {
       // setup the underlying material
       // Note: poro material itself is setup when calling poro_setup()
-      mat_->Setup(numgp, linedef);
+      mat_->setup(numgp, linedef);
     }
 
     void Update() override { mat_->Update(); }

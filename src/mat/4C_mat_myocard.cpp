@@ -252,17 +252,17 @@ void Mat::Myocard::unpack_material(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Setup conductivity tensor                                cbert 02/13 |
  *----------------------------------------------------------------------*/
-void Mat::Myocard::Setup(const Core::LinAlg::Matrix<3, 1>& fiber1)
+void Mat::Myocard::setup(const Core::LinAlg::Matrix<3, 1>& fiber1)
 {
   setup_diffusion_tensor(fiber1);
 }
 
-void Mat::Myocard::Setup(const Core::LinAlg::Matrix<2, 1>& fiber1)
+void Mat::Myocard::setup(const Core::LinAlg::Matrix<2, 1>& fiber1)
 {
   setup_diffusion_tensor(fiber1);
 }
 
-void Mat::Myocard::Setup(Input::LineDefinition* linedef)
+void Mat::Myocard::setup(Input::LineDefinition* linedef)
 {
   std::vector<double> fiber1(3);
   if (linedef->has_named("FIBER1"))

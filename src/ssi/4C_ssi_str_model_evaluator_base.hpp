@@ -87,7 +87,7 @@ namespace STR::MODELEVALUATOR
     {
     }
 
-    void Setup() override;
+    void setup() override;
 
     [[nodiscard]] Inpar::STR::ModelType Type() const override
     {

@@ -58,12 +58,12 @@ void ScaTra::LevelSetTimIntOneStepTheta::Init()
 /*----------------------------------------------------------------------*
  |  setup time integration                                  rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::Setup()
+void ScaTra::LevelSetTimIntOneStepTheta::setup()
 {
   // call Init()-functions of base classes
   // note: this order is important
-  TimIntOneStepTheta::Setup();
-  LevelSetAlgorithm::Setup();
+  TimIntOneStepTheta::setup();
+  LevelSetAlgorithm::setup();
 
   return;
 }

@@ -50,7 +50,7 @@ namespace STR
     };
 
     /// setup the whole thing
-    void Setup(
+    void setup(
         const Core::FE::Discretization& dis, const Epetra_Map& fullmap, bool overlapping = false);
 
     /// get all element gids those nodes are touched by any condition

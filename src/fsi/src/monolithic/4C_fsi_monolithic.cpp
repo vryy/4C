@@ -108,7 +108,7 @@ void FSI::MonolithicBase::create_structure_time_integrator(
           timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
   structure_ =
       Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(structure->structure_field());
-  structure_->Setup();
+  structure_->setup();
 
   if (structure_ == Teuchos::null)
     FOUR_C_THROW(
@@ -889,7 +889,7 @@ void FSI::Monolithic::evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 void FSI::Monolithic::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
-  blockrowdofmap_.Setup(*fullmap, maps);
+  blockrowdofmap_.setup(*fullmap, maps);
 }
 
 /*----------------------------------------------------------------------------*/

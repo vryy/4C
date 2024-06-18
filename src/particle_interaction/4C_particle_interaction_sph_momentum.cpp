@@ -71,7 +71,7 @@ void ParticleInteraction::SPHMomentum::Init()
   boundarytypes_ = {PARTICLEENGINE::BoundaryPhase, PARTICLEENGINE::RigidPhase};
 }
 
-void ParticleInteraction::SPHMomentum::Setup(
+void ParticleInteraction::SPHMomentum::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
     const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
@@ -112,10 +112,10 @@ void ParticleInteraction::SPHMomentum::Setup(
   virtualwallparticle_ = virtualwallparticle;
 
   // setup momentum formulation handler
-  momentumformulation_->Setup();
+  momentumformulation_->setup();
 
   // setup artificial viscosity handler
-  artificialviscosity_->Setup();
+  artificialviscosity_->setup();
 
   // update with actual fluid particle types
   const auto allfluidtypes = allfluidtypes_;

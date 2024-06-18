@@ -62,7 +62,7 @@ void FLD::TimIntRedModels::Init()
 
   // evaluate the map of the womersley bcs
   vol_flow_rates_bc_extractor_ = Teuchos::rcp(new FLD::UTILS::VolumetricFlowMapExtractor());
-  vol_flow_rates_bc_extractor_->Setup(*discret_);
+  vol_flow_rates_bc_extractor_->setup(*discret_);
   vol_surf_flow_bc_maps_ =
       Teuchos::rcp(new Epetra_Map(*(vol_flow_rates_bc_extractor_->VolumetricSurfaceFlowCondMap())));
 

@@ -104,7 +104,7 @@ namespace SSI
           discretization do not forget to also redistribute the cloned
           discretization.
           All objects relying on the parallel distribution are supposed to
-          the constructed in \ref Setup().
+          the constructed in \ref setup().
 
     \warning none
     \return void
@@ -116,14 +116,14 @@ namespace SSI
 
     /*! \brief Setup all class internal objects and members
 
-     Setup() is not supposed to have any input arguments !
+     setup() is not supposed to have any input arguments !
 
      Must only be called after Init().
 
      Construct all objects depending on the parallel distribution and
      relying on valid maps like, e.g. the state vectors, system matrices, etc.
 
-     Call all Setup() routines on previously initialized internal objects and members.
+     Call all setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
           Otherwise, e.g. vectors may have wrong maps.
@@ -132,9 +132,9 @@ namespace SSI
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Setup();
+    virtual void setup();
 
-    //! returns true if Setup() was called and is still valid
+    //! returns true if setup() was called and is still valid
     bool is_setup() const { return issetup_; };
 
     /*!
@@ -272,10 +272,10 @@ namespace SSI
     //! get bool indicating if old structural time integration is used
     bool use_old_structure_time_int() const { return use_old_structure_; }
 
-    //! check if \ref Setup() was called
+    //! check if \ref setup() was called
     void check_is_setup() const
     {
-      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("setup() was not called.");
     }
 
     //! check if \ref Init() was called

@@ -38,7 +38,7 @@ namespace STR
       Cardiovascular0D();
 
 
-      void Setup() override;
+      void setup() override;
 
       //! derived
       Inpar::STR::ModelType Type() const override { return Inpar::STR::model_cardiovascular0d; }

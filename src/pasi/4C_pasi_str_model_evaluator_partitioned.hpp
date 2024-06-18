@@ -42,7 +42,7 @@ namespace STR
       PartitionedPASI();
 
       //! setup class variables [derived]
-      void Setup() override;
+      void setup() override;
 
       //! get pointer to force vector at time level n+1 (full structural map)
       //! interface part is inserted in Adapter::PASIStructureWrapper

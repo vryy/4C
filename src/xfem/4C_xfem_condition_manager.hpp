@@ -699,7 +699,7 @@ namespace XFEM
     void Init();
 
     //! setup the coupling object
-    void Setup();
+    void setup();
 
     /// get the indicator state
     inline const bool& is_init() const { return isinit_; };
@@ -707,10 +707,10 @@ namespace XFEM
     /// get the indicator state
     inline const bool& is_setup() const { return issetup_; };
 
-    /// Check if Init() and Setup() have been called, yet.
+    /// Check if Init() and setup() have been called, yet.
     inline void check_init_setup() const
     {
-      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
     }
 
     /// Check if Init() has been called

@@ -38,7 +38,7 @@ namespace ParticleInteraction
     virtual void Init();
 
     //! setup density correction handler
-    virtual void Setup();
+    virtual void setup();
 
     //! density boundary condition is needed
     virtual bool ComputeDensityBC() const = 0;

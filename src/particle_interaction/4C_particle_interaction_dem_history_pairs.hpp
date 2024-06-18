@@ -74,7 +74,7 @@ namespace ParticleInteraction
     void Init();
 
     //! setup history pair handler
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     //! write restart of history pair handler

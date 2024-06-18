@@ -64,7 +64,7 @@ void PoroElast::MonolithicSplitNoPenetration::SetupSystem()
     std::vector<int> coupleddof(ndim + 1, 1);
     coupleddof[ndim] = 0;
 
-    mortar_adapter_->Setup(structure_field()->discretization(), fluid_field()->discretization(),
+    mortar_adapter_->setup(structure_field()->discretization(), fluid_field()->discretization(),
         coupleddof, "FSICoupling");
   }
 
@@ -82,7 +82,7 @@ void PoroElast::MonolithicSplitNoPenetration::SetupSystem()
     // full Poroelasticity-map
     fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
     // full Poroelasticity-blockmap
-    blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+    blockrowdofmap_->setup(*fullmap_, vecSpaces);
   }
 
   // Switch fluid to interface split block matrix

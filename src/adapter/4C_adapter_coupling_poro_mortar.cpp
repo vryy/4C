@@ -359,7 +359,7 @@ void Adapter::CouplingPoroMortar::create_strategy(Teuchos::RCP<Core::FE::Discret
       new CONTACT::LagrangeStrategyPoro(data_ptr, masterdis->dof_row_map(), masterdis->NodeRowMap(),
           input, interfaces, dim, comm_, alphaf, numcoupleddof, poroslave, poromaster));
 
-  porolagstrategy_->Setup(false, true);
+  porolagstrategy_->setup(false, true);
   porolagstrategy_->PoroMtInitialize();
 
   firstinit_ = true;

@@ -255,10 +255,10 @@ void CONTACT::Aug::Strategy::post_setup(bool redistributed, bool init)
   data().SetVectorMapsValid(false);
 
   // setup the potential class with the current maps
-  data().Potential().Setup();
+  data().Potential().setup();
 
   // setup the row column transformer object
-  if (ParRedist()) data().matrix_row_col_transformer().Setup();
+  if (ParRedist()) data().matrix_row_col_transformer().setup();
 
   return;
 }

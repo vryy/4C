@@ -54,7 +54,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Setup member variables.
      */
-    void Setup();
+    void setup();
 
     /**
      * \brief Returns the isinit_ flag.
@@ -71,7 +71,7 @@ namespace BEAMINTERACTION
      */
     inline void check_init_setup() const
     {
-      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
     }
 
     /**

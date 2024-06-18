@@ -126,7 +126,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs) = 0;
 
     //! setup the strategy
-    virtual void Setup() = 0;
+    virtual void setup() = 0;
 
     //! apply the mesh movement
     virtual void ApplyMeshMovement() const = 0;

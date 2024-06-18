@@ -86,7 +86,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
     output_params_ptr_ = Teuchos::rcp<BeamToSolidVolumeMeshtyingVisualizationOutputParams>(
         new BeamToSolidVolumeMeshtyingVisualizationOutputParams());
     output_params_ptr_->Init();
-    output_params_ptr_->Setup();
+    output_params_ptr_->setup();
   }
 
   // Sanity checks.

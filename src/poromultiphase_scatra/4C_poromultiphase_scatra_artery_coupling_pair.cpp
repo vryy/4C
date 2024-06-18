@@ -470,7 +470,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
           multiphasemat->NumMat(), multiphasemat->NumFluidPhases());
 
   // setup phasemanager
-  phasemanager_->Setup(element2_, nds_porofluid_);
+  phasemanager_->setup(element2_, nds_porofluid_);
 
   // create variablemanager
   variablemanager_ = Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<numdim_,

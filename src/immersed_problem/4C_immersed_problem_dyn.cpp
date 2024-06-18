@@ -101,7 +101,7 @@ void immersed_problem_drt()
           Core::Rebalance::GhostDiscretizationOnAllProcs(problem->GetDis("structure"));
 
           // setup algo
-          algo->Setup();
+          algo->setup();
 
           // PARTITIONED FSI ALGORITHM
 

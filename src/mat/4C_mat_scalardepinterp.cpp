@@ -78,7 +78,7 @@ Mat::ScalarDepInterp::ScalarDepInterp(Mat::PAR::ScalarDepInterp* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ScalarDepInterp::setup(int numgp, Input::LineDefinition* linedef)
 {
   if (isinit_)
     FOUR_C_THROW("This function should just be called, if the material is jet not initialized.");
@@ -86,12 +86,12 @@ void Mat::ScalarDepInterp::Setup(int numgp, Input::LineDefinition* linedef)
   // Setup of elastic material for zero concentration
   lambda_zero_mat_ =
       Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->id_lambda_zero_));
-  lambda_zero_mat_->Setup(numgp, linedef);
+  lambda_zero_mat_->setup(numgp, linedef);
 
   // Setup of elastic material for zero concentration
   lambda_unit_mat_ =
       Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->id_lambda_unit_));
-  lambda_unit_mat_->Setup(numgp, linedef);
+  lambda_unit_mat_->setup(numgp, linedef);
 
   // Some safety check
   const double density1 = lambda_zero_mat_->Density();

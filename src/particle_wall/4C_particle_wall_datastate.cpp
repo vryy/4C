@@ -56,7 +56,7 @@ void PARTICLEWALL::WallDataState::Init(
   }
 }
 
-void PARTICLEWALL::WallDataState::Setup()
+void PARTICLEWALL::WallDataState::setup()
 {
   // nothing to do
 }

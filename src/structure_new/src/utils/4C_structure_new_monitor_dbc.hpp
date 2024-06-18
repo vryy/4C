@@ -74,7 +74,7 @@ namespace STR
         STR::Dbc& dbc);
 
     /// setup new class members
-    void Setup();
+    void setup();
 
     /// monitor the tensile test results and write them to a text file
     void Execute(Core::IO::DiscretizationWriter& writer);
@@ -134,7 +134,7 @@ namespace STR
 
     inline void throw_if_not_init() const { FOUR_C_ASSERT(isinit_, "Call Init() first!"); }
 
-    inline void throw_if_not_setup() const { FOUR_C_ASSERT(issetup_, "Call Setup() first!"); }
+    inline void throw_if_not_setup() const { FOUR_C_ASSERT(issetup_, "Call setup() first!"); }
 
    private:
     Core::FE::Discretization* discret_ptr_ = nullptr;

@@ -191,7 +191,7 @@ bool Discret::ELEMENTS::SolidPoro::ReadElement(
 
   // setup solid material
   std::visit(
-      [&](auto& solid) { solid->Setup(StructPoroMaterial(), linedef); }, solid_calc_variant_);
+      [&](auto& solid) { solid->setup(StructPoroMaterial(), linedef); }, solid_calc_variant_);
 
   // setup poro material
   std::visit([&](auto& solidporo) { solidporo->poro_setup(StructPoroMaterial(), linedef); },

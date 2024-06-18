@@ -64,7 +64,7 @@ void ParticleInteraction::MaterialHandler::Init()
   }
 }
 
-void ParticleInteraction::MaterialHandler::Setup()
+void ParticleInteraction::MaterialHandler::setup()
 {
   // nothing to do
 }

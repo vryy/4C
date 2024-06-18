@@ -68,7 +68,7 @@ void LAGPENCONSTRAINT::NoxInterfacePrec::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void LAGPENCONSTRAINT::NoxInterface::Setup()
+void LAGPENCONSTRAINT::NoxInterface::setup()
 {
   check_init();
 
@@ -77,7 +77,7 @@ void LAGPENCONSTRAINT::NoxInterface::Setup()
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void LAGPENCONSTRAINT::NoxInterfacePrec::Setup()
+void LAGPENCONSTRAINT::NoxInterfacePrec::setup()
 {
   check_init();
 

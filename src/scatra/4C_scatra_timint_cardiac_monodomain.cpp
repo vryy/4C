@@ -47,7 +47,7 @@ ScaTra::TimIntCardiacMonodomain::TimIntCardiacMonodomain(Teuchos::RCP<Core::FE::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomain::Setup()
+void ScaTra::TimIntCardiacMonodomain::setup()
 {
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

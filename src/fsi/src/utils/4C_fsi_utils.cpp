@@ -300,7 +300,7 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> 
 
   // this setup only initialize two sets of identical mortar elements (master and slave)
   // -> projection matrix is a unity matrix
-  coupff_->Setup(fluiddis, fluiddis, Teuchos::null, coupleddof, "FSICoupling", fluiddis->Comm(),
+  coupff_->setup(fluiddis, fluiddis, Teuchos::null, coupleddof, "FSICoupling", fluiddis->Comm(),
       Global::Problem::Instance()->FunctionManager(), false, true);
 }
 

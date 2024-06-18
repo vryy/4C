@@ -302,7 +302,7 @@ void Mat::CrystalPlasticity::Unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialize / allocate internal variables (public)                   |
  *---------------------------------------------------------------------*/
-void Mat::CrystalPlasticity::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::CrystalPlasticity::setup(int numgp, Input::LineDefinition* linedef)
 {
   // import material / model parameters and calculate derived values
 
@@ -485,7 +485,7 @@ void Mat::CrystalPlasticity::Setup(int numgp, Input::LineDefinition* linedef)
 
   isinit_ = true;
   return;
-}  // Setup()
+}  // setup()
 
 
 /*----------------------------------------------------------------------*

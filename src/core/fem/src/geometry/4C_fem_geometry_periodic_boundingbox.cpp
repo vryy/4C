@@ -139,7 +139,7 @@ void Core::Geo::MeshFree::BoundingBox::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::Setup(const Teuchos::ParameterList& io_params,
+void Core::Geo::MeshFree::BoundingBox::setup(const Teuchos::ParameterList& io_params,
     Teuchos::RCP<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
     const int n_dim, const Core::IO::OutputControl& output_control)
 {

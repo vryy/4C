@@ -327,7 +327,7 @@ void Mat::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialise / allocate internal variables (public)                   |
  *---------------------------------------------------------------------*/
-void Mat::PlasticNlnLogNeoHooke::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::PlasticNlnLogNeoHooke::setup(int numgp, Input::LineDefinition* linedef)
 {
   // Extract the function for hardening only once because this is expensive.
   const int functionID_hardening =
@@ -358,7 +358,7 @@ void Mat::PlasticNlnLogNeoHooke::Setup(int numgp, Input::LineDefinition* linedef
   }
 
   isinit_ = true;
-}  // Setup()
+}  // setup()
 
 
 /*----------------------------------------------------------------------*

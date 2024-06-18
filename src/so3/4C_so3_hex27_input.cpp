@@ -24,7 +24,7 @@ bool Discret::ELEMENTS::SoHex27::ReadElement(
 
   Teuchos::RCP<Core::Mat::Material> mat = Material();
 
-  SolidMaterial()->Setup(NUMGPT_SOH27, linedef);
+  SolidMaterial()->setup(NUMGPT_SOH27, linedef);
 
   std::string buffer;
   linedef->extract_string("KINEM", buffer);

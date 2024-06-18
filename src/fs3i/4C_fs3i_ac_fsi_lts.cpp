@@ -825,7 +825,7 @@ std::vector<Teuchos::RCP<Core::LinAlg::MapExtractor>> FS3I::ACFSI::BuildMapExtra
     otherdofmapvec.clear();
 
     Teuchos::RCP<Core::LinAlg::MapExtractor> getjdof = Teuchos::rcp(new Core::LinAlg::MapExtractor);
-    getjdof->Setup(*dis->dof_row_map(), conddofmap, otherdofmap);
+    getjdof->setup(*dis->dof_row_map(), conddofmap, otherdofmap);
     extractjthscalar.push_back(getjdof);
   }
 

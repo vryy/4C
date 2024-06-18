@@ -36,7 +36,7 @@ void ParticleInteraction::SPHRecoilPressureEvaporation::Init()
   // nothing to do
 }
 
-void ParticleInteraction::SPHRecoilPressureEvaporation::Setup(
+void ParticleInteraction::SPHRecoilPressureEvaporation::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine

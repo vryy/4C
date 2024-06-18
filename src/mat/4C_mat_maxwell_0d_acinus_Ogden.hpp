@@ -136,7 +136,7 @@ namespace Mat
     /*!
       \brief
     */
-    void Setup(Input::LineDefinition* linedef) override;
+    void setup(Input::LineDefinition* linedef) override;
 
     /*!
        \brief

@@ -31,9 +31,9 @@ namespace
       artificialviscosity_->Init();
 
       // setup artificial viscosity handler
-      artificialviscosity_->Setup();
+      artificialviscosity_->setup();
     }
-    // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called
+    // note: the public functions Init() and setup() of class SPHEquationOfStateGenTait are called
     // in SetUp() and thus implicitly tested by all following unittests
   };
 

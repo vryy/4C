@@ -69,7 +69,7 @@ namespace BEAMINTERACTION
      * options.
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
      */
-    void Setup(Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
+    void setup(Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
         Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
             output_params_ptr);
 

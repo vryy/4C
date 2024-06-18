@@ -103,7 +103,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
         1, "temperature", volcoupl_->apply_vector_mapping12(ThermoField()->Tempnp()));
 
   // setup structural time integrator with initial temperature
-  structure_->Setup();
+  structure_->setup();
   structure_field()->discretization()->ClearState(true);
 
   blockrowdofmap_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor);
@@ -1142,7 +1142,7 @@ void TSI::Monolithic::set_dof_row_maps()
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full TSI-blockmap
-  extractor()->Setup(*fullmap, vecSpaces);
+  extractor()->setup(*fullmap, vecSpaces);
 }  // set_dof_row_maps()
 
 

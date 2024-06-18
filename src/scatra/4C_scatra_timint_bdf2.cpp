@@ -41,10 +41,10 @@ ScaTra::TimIntBDF2::TimIntBDF2(Teuchos::RCP<Core::FE::Discretization> actdis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntBDF2::Setup()
+void ScaTra::TimIntBDF2::setup()
 {
   // initialize base class
-  ScaTraTimIntImpl::Setup();
+  ScaTraTimIntImpl::setup();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

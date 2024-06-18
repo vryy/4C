@@ -47,7 +47,7 @@ STR::MODELEVALUATOR::BrownianDyn::BrownianDyn()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::Setup()
+void STR::MODELEVALUATOR::BrownianDyn::setup()
 {
   check_init();
 

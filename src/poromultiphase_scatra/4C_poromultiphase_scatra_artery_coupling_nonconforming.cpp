@@ -104,7 +104,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
   fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
   /// dof row map of coupled problem splitted in (field) blocks
   globalex_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
-  globalex_->Setup(*fullmap_, maps);
+  globalex_->setup(*fullmap_, maps);
 
   FEmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       *fullmap_, 81, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
@@ -117,7 +117,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup()
 {
   // get the coupling method
   auto arterycoupl =
@@ -175,7 +175,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::get_coupli
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
-  if (!issetup_) FOUR_C_THROW("Setup() has not been called");
+  if (!issetup_) FOUR_C_THROW("setup() has not been called");
 
   if (!porofluidmanagersset_)
   {

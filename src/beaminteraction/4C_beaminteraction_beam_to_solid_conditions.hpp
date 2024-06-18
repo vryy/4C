@@ -211,7 +211,7 @@ namespace BEAMINTERACTION
      *
      * @param discret (in) discretization.
      */
-    void Setup(const Teuchos::RCP<const Core::FE::Discretization>& discret) override;
+    void setup(const Teuchos::RCP<const Core::FE::Discretization>& discret) override;
 
     /**
      * \brief Set the displacement state (derived).

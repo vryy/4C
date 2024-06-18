@@ -60,13 +60,13 @@ void PaSI::PartitionedAlgo::Init()
   set_is_init(true);
 }
 
-void PaSI::PartitionedAlgo::Setup()
+void PaSI::PartitionedAlgo::setup()
 {
   // check correct initialization
   check_is_init();
 
   // setup particle algorithm
-  particlealgorithm_->Setup();
+  particlealgorithm_->setup();
 
   // write initial output
   structurefield_->Output();
@@ -292,8 +292,8 @@ void PaSI::PartitionedAlgo::build_structure_model_evaluator()
 
     struct_adapterbase_ptr_->register_model_evaluator("Partitioned Coupling Model", pasi_model_ptr);
 
-    // call Setup() on structure base algorithm (wrapper is created inside)
-    struct_adapterbase_ptr_->Setup();
+    // call setup() on structure base algorithm (wrapper is created inside)
+    struct_adapterbase_ptr_->setup();
 
     // get wrapper and cast it to specific type
     structurefield_ = Teuchos::rcp_dynamic_cast<Adapter::PASIStructureWrapper>(

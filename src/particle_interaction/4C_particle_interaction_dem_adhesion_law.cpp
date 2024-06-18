@@ -39,7 +39,7 @@ void ParticleInteraction::DEMAdhesionLawBase::Init()
   // nothing to do
 }
 
-void ParticleInteraction::DEMAdhesionLawBase::Setup(const double& k_normal)
+void ParticleInteraction::DEMAdhesionLawBase::setup(const double& k_normal)
 {
   // set inverse normal contact stiffness
   inv_k_normal_ = 1.0 / k_normal;

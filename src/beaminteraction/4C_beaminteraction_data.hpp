@@ -55,7 +55,7 @@ namespace BEAMINTERACTION
     void Init();
 
     //! setup member variables
-    void Setup();
+    void setup();
 
     //! returns the isinit_ flag
     inline const bool& is_init() const { return isinit_; };
@@ -66,7 +66,7 @@ namespace BEAMINTERACTION
     //! Checks the init and setup status
     inline void check_init_setup() const
     {
-      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
     }
 
     //! Checks the init status

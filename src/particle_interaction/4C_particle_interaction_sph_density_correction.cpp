@@ -28,7 +28,7 @@ void ParticleInteraction::SPHDensityCorrectionBase::Init()
   // nothing to do
 }
 
-void ParticleInteraction::SPHDensityCorrectionBase::Setup()
+void ParticleInteraction::SPHDensityCorrectionBase::setup()
 {
   // nothing to do
 }

@@ -40,6 +40,6 @@ void Adapter::FluidFSIMsht::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Adapter::FluidFSIMsht::setup_fsi_interface() { fsiinterface_->Setup(*dis_); }
+void Adapter::FluidFSIMsht::setup_fsi_interface() { fsiinterface_->setup(*dis_); }
 
 FOUR_C_NAMESPACE_CLOSE

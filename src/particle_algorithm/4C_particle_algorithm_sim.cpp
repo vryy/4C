@@ -46,7 +46,7 @@ void particle_drt()
   if (restart) particlealgorithm->read_restart(restart);
 
   // setup particle algorithm
-  particlealgorithm->Setup();
+  particlealgorithm->setup();
 
   // solve particle problem
   particlealgorithm->Timeloop();

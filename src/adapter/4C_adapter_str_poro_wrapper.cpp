@@ -46,9 +46,9 @@ Adapter::StructurePoroWrapper::StructurePoroWrapper(
 }
 
 /// setup
-void Adapter::StructurePoroWrapper::Setup()
+void Adapter::StructurePoroWrapper::setup()
 {
-  structure_->Setup();
+  structure_->setup();
   if (type_ == FieldWrapper::type_PoroField)
   {
     poro_->SetupSystem();

@@ -70,11 +70,11 @@ void Adapter::CouplingEhlMortar::read_mortar_condition(
   input.set<int>("PROBTYPE", Inpar::CONTACT::ehl);
 }
 
-void Adapter::CouplingEhlMortar::Setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
+void Adapter::CouplingEhlMortar::setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
     Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
     const std::string& couplingcond)
 {
-  Adapter::CouplingNonLinMortar::Setup(masterdis, slavedis, coupleddof, couplingcond);
+  Adapter::CouplingNonLinMortar::setup(masterdis, slavedis, coupleddof, couplingcond);
   z_ = Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowDofs(), true));
   fscn_ = Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowDofs(), true));
 

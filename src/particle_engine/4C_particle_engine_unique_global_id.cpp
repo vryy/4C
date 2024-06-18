@@ -34,7 +34,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::Init()
   // nothing to do
 }
 
-void PARTICLEENGINE::UniqueGlobalIdHandler::Setup()
+void PARTICLEENGINE::UniqueGlobalIdHandler::setup()
 {
   // nothing to do
 }

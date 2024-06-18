@@ -38,7 +38,7 @@ namespace ScaTra
     void Init() override;
 
     /// setup time integration scheme
-    void Setup() override;
+    void setup() override;
 
     /// predict thermodynamic pressure and time derivative for low-Mach-number flow
     void predict_therm_pressure() override;

@@ -2152,7 +2152,7 @@ void FLD::FluidImplicitTimeInt::setup_krylov_space_projection(Core::Conditions::
   kspsplitter_ = Teuchos::rcp(new FLD::UTILS::KSPMapExtractor());
   // create map of nodes involved in Krylov projection
 
-  kspsplitter_->Setup(*discret_);
+  kspsplitter_->setup(*discret_);
 
   // get from dat-file definition how weights are to be computed
   const auto* weighttype = &kspcond->parameters().Get<std::string>("weight vector definition");

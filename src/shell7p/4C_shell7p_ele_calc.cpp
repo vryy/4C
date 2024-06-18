@@ -36,7 +36,7 @@ Discret::ELEMENTS::Shell7pEleCalc<distype>::Shell7pEleCalc()
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalc<distype>::Setup(Core::Elements::Element& ele,
+void Discret::ELEMENTS::Shell7pEleCalc<distype>::setup(Core::Elements::Element& ele,
     Mat::So3Material& solid_material, Input::LineDefinition* linedef,
     const STR::ELEMENTS::ShellLockingTypes& locking_types,
     const STR::ELEMENTS::ShellData& shell_data)
@@ -45,7 +45,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::Setup(Core::Elements::Element& 
   // initialize current thickness at all gp
   cur_thickness_.resize(intpoints_midsurface_.NumPoints(), shell_data_.thickness);
   //  set up of materials with GP data (e.g., history variables)
-  solid_material.Setup(intpoints_midsurface_.NumPoints(), linedef);
+  solid_material.setup(intpoints_midsurface_.NumPoints(), linedef);
 }
 
 template <Core::FE::CellType distype>

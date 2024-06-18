@@ -70,7 +70,7 @@ namespace Adapter
         Teuchos::RCP<STR::TimeInt::Base> ti_strategy);
 
     /// setup of the adaptive time integration
-    void Setup() override;
+    void setup() override;
 
     /// read restart information for given time step
     void read_restart(int step) override;

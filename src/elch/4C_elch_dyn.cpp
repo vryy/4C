@@ -102,11 +102,11 @@ void elch_dyn(int restart)
       // finalize discretization
       scatradis->fill_complete(true, true, true);
 
-      // only now we must call Setup() on the base algorithm.
+      // only now we must call setup() on the base algorithm.
       // all objects relying on the parallel distribution are
       // created and pointers are set.
-      // calls Setup() on time integrator inside.
-      scatraonly->Setup();
+      // calls setup() on time integrator inside.
+      scatraonly->setup();
 
       // read the restart information, set vectors and variables
       if (restart) scatraonly->ScaTraField()->read_restart(restart);
@@ -218,8 +218,8 @@ void elch_dyn(int restart)
         fluiddis->fill_complete();
         aledis->fill_complete();
 
-        // now we can call Setup() on the scatra time integrator
-        elch->Setup();
+        // now we can call setup() on the scatra time integrator
+        elch->setup();
 
         // read the restart information, set vectors and variables
         if (restart) elch->read_restart(restart);
@@ -263,8 +263,8 @@ void elch_dyn(int restart)
         fluiddis->fill_complete();
         aledis->fill_complete();
 
-        // discretizations are done, now we can call Setup() on the algorithm
-        elch->Setup();
+        // discretizations are done, now we can call setup() on the algorithm
+        elch->setup();
 
         // read the restart information, set vectors and variables
         if (restart) elch->read_restart(restart);

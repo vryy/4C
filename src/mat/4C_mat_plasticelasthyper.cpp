@@ -336,7 +336,7 @@ void Mat::PlasticElastHyper::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::PlasticElastHyper::setup(int numgp, Input::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
@@ -345,7 +345,7 @@ void Mat::PlasticElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
   // Setup summands
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
-    potsum_[p]->Setup(numgp, linedef);
+    potsum_[p]->setup(numgp, linedef);
   }
 
   // find out which formulations are used

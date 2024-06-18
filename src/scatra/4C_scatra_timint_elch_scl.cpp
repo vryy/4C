@@ -63,11 +63,11 @@ ScaTra::ScaTraTimIntElchSCL::ScaTraTimIntElchSCL(Teuchos::RCP<Core::FE::Discreti
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElchSCL::Setup()
+void ScaTra::ScaTraTimIntElchSCL::setup()
 {
   TEUCHOS_FUNC_TIME_MONITOR("SCL: setup");
 
-  ScaTra::ScaTraTimIntElch::Setup();
+  ScaTra::ScaTraTimIntElch::setup();
 
   auto* problem = Global::Problem::Instance();
 
@@ -110,7 +110,7 @@ void ScaTra::ScaTraTimIntElchSCL::Setup()
 
   MicroScaTraField()->set_velocity_field();
 
-  micro_timint_->Setup();
+  micro_timint_->setup();
 
   // setup coupling between macro and micro field
   setup_coupling();

@@ -56,7 +56,7 @@ namespace Discret
      public:
       Shell7pEleCalcEas();
 
-      void Setup(Core::Elements::Element& ele, Mat::So3Material& solid_material,
+      void setup(Core::Elements::Element& ele, Mat::So3Material& solid_material,
           Input::LineDefinition* linedef, const STR::ELEMENTS::ShellLockingTypes& locking_types,
           const STR::ELEMENTS::ShellData& shell_data) override;
 

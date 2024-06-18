@@ -145,9 +145,9 @@ void FS3I::ACFSI::Init()
 /*----------------------------------------------------------------------*
  | Setup                                                    rauch 09/16 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::Setup()
+void FS3I::ACFSI::setup()
 {
-  FS3I::PartFS3I::Setup();
+  FS3I::PartFS3I::setup();
 
   meanmanager_ = Teuchos::rcp(new FS3I::MeanManager(*fsi_->fluid_field()->dof_row_map(0),
       *scatravec_[0]->ScaTraField()->dof_row_map(), *fsi_->fluid_field()->PressureRowMap()));

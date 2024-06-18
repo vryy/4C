@@ -307,7 +307,7 @@ namespace Mat
     }
 
     /// setup
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /*!
      * Post setup routine that is executed after the input. This class will forward the call to all

@@ -37,7 +37,7 @@ namespace ScaTra
 
     void Init() override;
 
-    void Setup() override;
+    void setup() override;
 
     void Update() override;
 
@@ -81,7 +81,7 @@ namespace ScaTra
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
-    void Setup() override;
+    void setup() override;
 
     void Update() override;
 
@@ -110,7 +110,7 @@ namespace ScaTra
 
     void Init() override;
 
-    void Setup() override;
+    void setup() override;
 
     void Update() override;
 
@@ -144,7 +144,7 @@ namespace ScaTra
 
     void Init() override;
 
-    void Setup() override;
+    void setup() override;
 
     void Update() override;
 
@@ -176,7 +176,7 @@ namespace ScaTra
 
     void Init() override;
 
-    void Setup() override;
+    void setup() override;
 
     void Update() override;
 

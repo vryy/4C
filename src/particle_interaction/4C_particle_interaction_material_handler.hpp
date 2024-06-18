@@ -42,7 +42,7 @@ namespace ParticleInteraction
     void Init();
 
     //! setup particle material handler
-    void Setup();
+    void setup();
 
     //! return pointer to particle material parameter
     inline const Mat::PAR::ParticleMaterialBase* get_ptr_to_particle_mat_parameter(

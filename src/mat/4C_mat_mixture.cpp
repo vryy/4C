@@ -220,9 +220,9 @@ void Mat::Mixture::Unpack(const std::vector<char>& data)
 }
 
 // Read element and create arrays for the quantities at the Gauss points
-void Mat::Mixture::Setup(const int numgp, Input::LineDefinition* linedef)
+void Mat::Mixture::setup(const int numgp, Input::LineDefinition* linedef)
 {
-  So3Material::Setup(numgp, linedef);
+  So3Material::setup(numgp, linedef);
 
   // resize preevaluation flag
   is_pre_evaluated_.resize(numgp, false);

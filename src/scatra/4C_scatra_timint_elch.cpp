@@ -124,7 +124,7 @@ void ScaTra::ScaTraTimIntElch::SetupSplitter()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElch::Setup()
+void ScaTra::ScaTraTimIntElch::setup()
 {
   // set up concentration-potential splitter
   SetupSplitter();
@@ -3124,10 +3124,10 @@ ScaTra::ScalarHandlerElch::ScalarHandlerElch() : numscal_() {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScalarHandlerElch::Setup(const ScaTraTimIntImpl* const scatratimint)
+void ScaTra::ScalarHandlerElch::setup(const ScaTraTimIntImpl* const scatratimint)
 {
   // call base class
-  ScalarHandler::Setup(scatratimint);
+  ScalarHandler::setup(scatratimint);
 
   // cast to electrochemistry time integrator
   const auto* const elchtimint = dynamic_cast<const ScaTraTimIntElch* const>(scatratimint);

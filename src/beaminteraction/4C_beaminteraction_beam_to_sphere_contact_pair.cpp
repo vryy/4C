@@ -39,12 +39,12 @@ BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::BeamToSphere
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Setup()
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::setup()
 {
   check_init();
 
   // call setup of base class first
-  BeamContactPair::Setup();
+  BeamContactPair::setup();
 
 
   ele1pos_.Clear();

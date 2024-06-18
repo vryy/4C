@@ -44,7 +44,7 @@ void BEAMINTERACTION::BeamToSphereContactParams::Init()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToSphereContactParams::Setup()
+void BEAMINTERACTION::BeamToSphereContactParams::setup()
 {
   check_init();
 

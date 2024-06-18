@@ -36,7 +36,7 @@ Mortar::STRATEGY::Factory::Factory()
  *----------------------------------------------------------------------*/
 void Mortar::STRATEGY::Factory::Init(Teuchos::RCP<Core::FE::Discretization> dis)
 {
-  // call Setup() after Init()
+  // call setup() after Init()
   issetup_ = false;
 
   discret_ptr_ = dis;
@@ -46,7 +46,7 @@ void Mortar::STRATEGY::Factory::Init(Teuchos::RCP<Core::FE::Discretization> dis)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::STRATEGY::Factory::Setup()
+void Mortar::STRATEGY::Factory::setup()
 {
   check_init();
 
@@ -65,7 +65,7 @@ void Mortar::STRATEGY::Factory::Setup()
  *----------------------------------------------------------------------------*/
 void Mortar::STRATEGY::Factory::check_init_setup() const
 {
-  if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -129,7 +129,7 @@ const int& Mortar::STRATEGY::Factory::dim() const
 {
   if (dim_ == -1)
     FOUR_C_THROW(
-        "Call the STR::MODELEVEALUATOR::Setup() routine first to "
+        "Call the STR::MODELEVEALUATOR::setup() routine first to "
         "set the problem dimension variable!");
   return dim_;
 }

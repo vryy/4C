@@ -72,7 +72,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::check_init_setup() const
 {
-  if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*

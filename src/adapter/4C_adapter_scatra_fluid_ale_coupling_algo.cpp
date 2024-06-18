@@ -50,10 +50,10 @@ void Adapter::ScaTraFluidAleCouplingAlgorithm::Init()
 /*----------------------------------------------------------------------*
 | Init                                                      rauch 08/16 |
 *----------------------------------------------------------------------*/
-void Adapter::ScaTraFluidAleCouplingAlgorithm::Setup()
+void Adapter::ScaTraFluidAleCouplingAlgorithm::setup()
 {
-  // call Setup() in base class
-  Adapter::ScaTraFluidCouplingAlgorithm::Setup();
+  // call setup() in base class
+  Adapter::ScaTraFluidCouplingAlgorithm::setup();
 
   const int ndim = Global::Problem::Instance()->NDim();
 

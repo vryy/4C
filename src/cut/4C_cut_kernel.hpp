@@ -1031,7 +1031,7 @@ namespace Core::Geo::Cut::Kernel
      *
      *  \param xyze (in) : global nodal coordinates
      *  \param px   (in) : global position vector of the searched parameter space point */
-    void Setup(const Core::LinAlg::Matrix<probDim, numNodesElement, floatType>& xyze,
+    void setup(const Core::LinAlg::Matrix<probDim, numNodesElement, floatType>& xyze,
         const Core::LinAlg::Matrix<probDim, 1, floatType>& px)
     {
       // std::cout << "Entering setup for the position strategy" << std::endl;
@@ -1467,7 +1467,7 @@ namespace Core::Geo::Cut::Kernel
         Core::CLN::ConvDoubleCLN(xyze, clnxyze_, prec);
         Core::CLN::ConvDoubleCLN(px, clnpx_, prec);
 
-        this->Setup(clnxyze_, clnpx_);
+        this->setup(clnxyze_, clnpx_);
         conv = this->Solve();
 
         // safety check of precision loss
@@ -1680,7 +1680,7 @@ namespace Core::Geo::Cut::Kernel
         const Core::LinAlg::Matrix<probDim, 1>& px)
     {
       bool conv;
-      this->Setup(xyze, px);
+      this->setup(xyze, px);
       conv = this->Solve();
 #ifdef CUT_CLN_CALC
       if (computeCln)  // this is not used up to now!
@@ -1883,7 +1883,7 @@ namespace Core::Geo::Cut::Kernel
      *
      *  \param xyze_side (in) : global coordinates of the considered side
      *  \param px        (in) : global coordinates of the considered point */
-    void Setup(const Core::LinAlg::Matrix<probDim, numNodesSide, floatType>& xyze_side,
+    void setup(const Core::LinAlg::Matrix<probDim, numNodesSide, floatType>& xyze_side,
         const Core::LinAlg::Matrix<probDim, 1, floatType>& px, bool zeroarea)
     {
       zeroarea_ = zeroarea;
@@ -2547,7 +2547,7 @@ namespace Core::Geo::Cut::Kernel
         Core::CLN::ConvDoubleCLN(px, clnpx_, prec);
         //  no need to convert, we don't actually compute anything
         // clndistance_ = cln::cl_float(distance, cln::float_format(prec));
-        this->Setup(clnxyze_side_, clnpx_, false);
+        this->setup(clnxyze_side_, clnpx_, false);
 
         conv = this->Solve();
 
@@ -2958,7 +2958,7 @@ namespace Core::Geo::Cut::Kernel
     {
       // now we are doing basic iteration on double precision
       bool conv;
-      this->Setup(xyze_side, px, false);
+      this->setup(xyze_side, px, false);
       conv = this->Solve();
 
       if (not signeddistance)
@@ -3363,7 +3363,7 @@ namespace Core::Geo::Cut::Kernel
     {
     }
 
-    void Setup(const Core::LinAlg::Matrix<probDim, numNodesSide, floatType>& xyze_side,
+    void setup(const Core::LinAlg::Matrix<probDim, numNodesSide, floatType>& xyze_side,
         const Core::LinAlg::Matrix<probDim, numNodesEdge, floatType>& xyze_edge)
     {
       xyze_side_ = &xyze_side;
@@ -3372,7 +3372,7 @@ namespace Core::Geo::Cut::Kernel
       if (debug)
       {
         std::cout << "\n\n === ComputeIntersection ===\n";
-        std::cout << "--- Setup()\n";
+        std::cout << "--- setup()\n";
         std::cout << "  Edge = " << Core::FE::CellTypeToString(edgeType) << "\n";
         std::cout << "  Side = " << Core::FE::CellTypeToString(sideType) << "\n";
         std::cout << "  xyze_side = " << std::setprecision(15) << xyze_side;
@@ -3975,7 +3975,7 @@ namespace Core::Geo::Cut::Kernel
 #endif
         Core::CLN::ConvDoubleCLN(xyze_side, clnxyze_side_, prec);
         Core::CLN::ConvDoubleCLN(xyze_edge, clnxyze_edge_, prec);
-        this->Setup(clnxyze_side_, clnxyze_edge_);
+        this->setup(clnxyze_side_, clnxyze_edge_);
 
         conv = this->Solve();
 
@@ -4352,7 +4352,7 @@ namespace Core::Geo::Cut::Kernel
         const Core::LinAlg::Matrix<probDim, numNodesEdge>& xyze_edge)
     {
       bool conv;
-      this->Setup(xyze_side, xyze_edge);
+      this->setup(xyze_side, xyze_edge);
       conv = this->Solve();
       bool got_topology_info = get_topology_information();
 

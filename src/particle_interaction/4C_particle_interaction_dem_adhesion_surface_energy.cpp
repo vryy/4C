@@ -31,7 +31,7 @@ void ParticleInteraction::DEMAdhesionSurfaceEnergyBase::Init()
   // nothing to do
 }
 
-void ParticleInteraction::DEMAdhesionSurfaceEnergyBase::Setup()
+void ParticleInteraction::DEMAdhesionSurfaceEnergyBase::setup()
 {
   // safety check
   if (not(params_dem_.get<double>("ADHESION_SURFACE_ENERGY") > 0.0))
@@ -54,10 +54,10 @@ ParticleInteraction::DEMAdhesionSurfaceEnergyDistributionBase::
   // empty constructor
 }
 
-void ParticleInteraction::DEMAdhesionSurfaceEnergyDistributionBase::Setup()
+void ParticleInteraction::DEMAdhesionSurfaceEnergyDistributionBase::setup()
 {
   // call base class setup
-  DEMAdhesionSurfaceEnergyBase::Setup();
+  DEMAdhesionSurfaceEnergyBase::setup();
 
   // safety checks
   if (variance_ < 0.0) FOUR_C_THROW("negative variance for adhesion surface energy distribution!");

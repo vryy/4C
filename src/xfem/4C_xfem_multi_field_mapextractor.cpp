@@ -371,7 +371,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::Setup()
+void XFEM::MultiFieldMapExtractor::setup()
 {
   check_init();
 
@@ -451,7 +451,7 @@ void XFEM::MultiFieldMapExtractor::build_slave_node_map_extractors()
             my_non_interface_row_node_gids.data(), 0, comm()));
 
     // setup node map extractor
-    slave_map_extractors_[dis_count++][map_nodes]->Setup(*((*cit_dis)->NodeRowMap()), partial_maps);
+    slave_map_extractors_[dis_count++][map_nodes]->setup(*((*cit_dis)->NodeRowMap()), partial_maps);
   }
 }
 
@@ -510,7 +510,7 @@ void XFEM::MultiFieldMapExtractor::build_slave_dof_map_extractors()
             my_sl_non_interface_dofs.data(), 0, comm()));
 
     // setup dof map extractor
-    slave_map_extractors_[dis_count++][map_dofs]->Setup(*((*cit_dis)->dof_row_map()), partial_maps);
+    slave_map_extractors_[dis_count++][map_dofs]->setup(*((*cit_dis)->dof_row_map()), partial_maps);
 
     // clear the vectors for a new round
     my_sl_interface_dofs.clear();
@@ -625,7 +625,7 @@ void XFEM::MultiFieldMapExtractor::build_master_node_map_extractor()
     fullmap = Core::LinAlg::MergeMap(*fullmap, *partial_maps[i], false);
 
   // setup map extractor
-  master_map_extractor_[map_nodes]->Setup(*fullmap, partial_maps);
+  master_map_extractor_[map_nodes]->setup(*fullmap, partial_maps);
 }
 
 /*----------------------------------------------------------------------------*
@@ -685,7 +685,7 @@ void XFEM::MultiFieldMapExtractor::build_master_dof_map_extractor()
   }
 
   // setup map extractor
-  master_map_extractor_[map_dofs]->Setup(*fullmap, partial_maps);
+  master_map_extractor_[map_dofs]->setup(*fullmap, partial_maps);
 }
 
 /*----------------------------------------------------------------------------*
@@ -735,7 +735,7 @@ void XFEM::MultiFieldMapExtractor::build_element_map_extractor()
     ++d;
   }
   // setup the element multi map extractor
-  element_map_extractor_->Setup(*fullmap, partial_maps);
+  element_map_extractor_->setup(*fullmap, partial_maps);
 }
 
 /*----------------------------------------------------------------------------*

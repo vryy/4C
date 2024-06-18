@@ -92,7 +92,7 @@ void Core::Adapter::MortarVolCoupl::Init(int spatial_dimension,
 /*----------------------------------------------------------------------*
  |  setup                                                    rauch 08/16|
  *----------------------------------------------------------------------*/
-void Core::Adapter::MortarVolCoupl::Setup(const Teuchos::ParameterList& params)
+void Core::Adapter::MortarVolCoupl::setup(const Teuchos::ParameterList& params)
 {
   check_init();
 

@@ -136,7 +136,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
   Teuchos::RCP<Epetra_Map> emptymap =
       Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, structure_field()->discretization()->Comm()));
   Teuchos::RCP<Core::LinAlg::MapExtractor> extractor;
-  extractor->Setup(*conman_->GetConstraintMap(), emptymap, conman_->GetConstraintMap());
+  extractor->setup(*conman_->GetConstraintMap(), emptymap, conman_->GetConstraintMap());
   conman_->use_block_matrix(extractor, structure_field()->Interface());
   scon_t_ =
       Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(

@@ -30,10 +30,10 @@ FSI::DirichletNeumann::DirichletNeumann(const Epetra_Comm& comm)
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::DirichletNeumann::Setup()
+void FSI::DirichletNeumann::setup()
 {
   /// call setup of base class
-  FSI::Partitioned::Setup();
+  FSI::Partitioned::setup();
 }
 
 /*----------------------------------------------------------------------*/

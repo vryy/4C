@@ -73,7 +73,7 @@ namespace CONTACT
       virtual ~Potential() = default;
 
       /// setup the potential class
-      void Setup();
+      void setup();
 
       /// set active and inactive Lagrange multiplier state vectors
       void set_active_inactive_state();

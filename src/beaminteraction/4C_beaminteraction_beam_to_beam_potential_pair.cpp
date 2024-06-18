@@ -52,19 +52,19 @@ BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::BeamToBea
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Setup()
+void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::setup()
 {
   check_init();
 
   // call setup of base class first
-  BeamPotentialPair::Setup();
+  BeamPotentialPair::setup();
 
 
   ele1pos_.Clear();
   ele2pos_.Clear();
 
   /* take care of how to assign the role of master and slave (only applicable to
-   * "SingleLengthSpecific" approach). Immediately before this Setup(), the element with smaller GID
+   * "SingleLengthSpecific" approach). Immediately before this setup(), the element with smaller GID
    * has been assigned as element1_, i.e., slave. */
   if (Params()->ChoiceMasterSlave() ==
       Inpar::BEAMPOTENTIAL::MasterSlaveChoice::higher_eleGID_is_slave)

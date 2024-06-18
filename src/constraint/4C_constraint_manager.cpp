@@ -104,7 +104,7 @@ void CONSTRAINTS::ConstrManager::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstrManager::Setup(
+void CONSTRAINTS::ConstrManager::setup(
     Teuchos::RCP<const Epetra_Vector> disp, Teuchos::ParameterList params)
 {
   check_is_init();
@@ -432,7 +432,7 @@ void CONSTRAINTS::ConstrManager::compute_monitor_values(Teuchos::RCP<const Epetr
         Core::LinAlg::MergeMap(*actdisc_->dof_row_map(), *constrmap_, false);
 
     Core::LinAlg::MapExtractor conmerger;
-    conmerger.Setup(*largemap, Teuchos::rcp(actdisc_->dof_row_map(), false), constrmap_);
+    conmerger.setup(*largemap, Teuchos::rcp(actdisc_->dof_row_map(), false), constrmap_);
     actdisc_->set_state("displacement", conmerger.ExtractCondVector(disp));
   }
   else

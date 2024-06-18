@@ -69,7 +69,7 @@ namespace Discret
        * @param shell_data (in) : Shell data (thickness, number of ANS, SDC)
        * @param linedef (in) : Input line of the corresponding element
        */
-      virtual void Setup(Core::Elements::Element& ele, Mat::So3Material& solid_material,
+      virtual void setup(Core::Elements::Element& ele, Mat::So3Material& solid_material,
           Input::LineDefinition* linedef, const STR::ELEMENTS::ShellLockingTypes& locking_types,
           const STR::ELEMENTS::ShellData& shell_data) = 0;
 

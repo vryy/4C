@@ -199,7 +199,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_maps()
   fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full Poromultiphase-elasticity-blockmap
-  blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+  blockrowdofmap_->setup(*fullmap_, vecSpaces);
 
   // check global map extractor
   blockrowdofmap_->check_for_valid_map_extractor();
@@ -1395,7 +1395,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
   fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full Poromultiphasescatra block map coupled with artery network
-  blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+  blockrowdofmap_->setup(*fullmap_, vecSpaces);
 
   // check global map extractor
   blockrowdofmap_->check_for_valid_map_extractor();
@@ -1405,7 +1405,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
       {vecSpaces[struct_offset_], vecSpaces[struct_offset_ + 2]});
 
   // full porofluid-artery blockmap
-  blockrowdofmap_artporo_->Setup(
+  blockrowdofmap_artporo_->setup(
       *fullmap_artporo_, {vecSpaces[struct_offset_], vecSpaces[struct_offset_ + 2]});
 
   // full artery-arteryscatra map
@@ -1413,7 +1413,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
       {vecSpaces[struct_offset_ + 1], vecSpaces[struct_offset_ + 3]});
 
   // full artery-arteryscatra blockmap
-  blockrowdofmap_artscatra_->Setup(
+  blockrowdofmap_artscatra_->setup(
       *fullmap_artscatra_, {vecSpaces[struct_offset_ + 1], vecSpaces[struct_offset_ + 3]});
 }
 

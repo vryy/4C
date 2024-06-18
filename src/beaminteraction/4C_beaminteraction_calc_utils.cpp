@@ -1209,7 +1209,7 @@ namespace BEAMINTERACTION
             Teuchos::rcp(new Epetra_Map(-1, mapvec.size(), mapvec.data(), 0, discret->Comm()));
       }
 
-      eletypeextractor->Setup(*discret()->ElementRowMap(), maps);
+      eletypeextractor->setup(*discret()->ElementRowMap(), maps);
     }
 
     /*----------------------------------------------------------------------------*

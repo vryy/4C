@@ -22,7 +22,7 @@ bool Discret::ELEMENTS::SoPyramid5fbar::ReadElement(
   SetMaterial(0, Mat::Factory(material));
 
   // set up of materials with GP data (e.g., history variables)
-  SolidMaterial()->Setup(NUMGPT_SOP5, linedef);
+  SolidMaterial()->setup(NUMGPT_SOP5, linedef);
 
   // temporary variable for read-in
   std::string buffer;

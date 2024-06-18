@@ -36,12 +36,12 @@ ScaTra::TimIntCardiacMonodomainHDG::TimIntCardiacMonodomainHDG(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainHDG::Setup()
+void ScaTra::TimIntCardiacMonodomainHDG::setup()
 {
   // call Init()-functions of base classes
   // note: this order is important
-  TimIntHDG::Setup();
-  TimIntCardiacMonodomain::Setup();
+  TimIntHDG::setup();
+  TimIntCardiacMonodomain::setup();
 
   // Activation time at time n+1
   activation_time_interpol_.reset(new Epetra_Vector(*discret_->NodeRowMap()));

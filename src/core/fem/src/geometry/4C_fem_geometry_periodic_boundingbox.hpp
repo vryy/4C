@@ -55,7 +55,7 @@ namespace Core::Geo
       void Init(Core::LinAlg::Matrix<3, 2> const& box, std::vector<bool> const& pbconoff);
 
       /// setup bounding box object, setup call is needed in case of box dirichlet
-      void Setup(const Teuchos::ParameterList& io_params,
+      void setup(const Teuchos::ParameterList& io_params,
           Teuchos::RCP<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
           int n_dim, const Core::IO::OutputControl& output_control);
 
@@ -234,7 +234,7 @@ namespace Core::Geo
       //! Check the init and setup state
       inline void throw_if_not_init_or_setup() const
       {
-        if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+        if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
       }
 
      private:
@@ -273,7 +273,7 @@ namespace Core::Geo
       //! indicates if the Init() function has been called
       bool isinit_;
 
-      //! indicates if the Setup() function has been called
+      //! indicates if the setup() function has been called
       bool issetup_;
 
      private:

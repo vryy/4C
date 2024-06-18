@@ -39,7 +39,7 @@ namespace STR
      public:
       TangDis();
       //! setup class specific stuff
-      void Setup() override;
+      void setup() override;
 
       //! do the class specific predictor step
       void Compute(::NOX::Abstract::Group& grp) override;

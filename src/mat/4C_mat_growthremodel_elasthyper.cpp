@@ -406,7 +406,7 @@ void Mat::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::GrowthRemodelElastHyper::setup(int numgp, Input::LineDefinition* linedef)
 {
   // read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
@@ -429,18 +429,18 @@ void Mat::GrowthRemodelElastHyper::Setup(int numgp, Input::LineDefinition* lined
 
   // Setup summands
   // remodelfiber
-  for (auto& p : potsumrf_) p->Setup(numgp, params_->density_, linedef);
+  for (auto& p : potsumrf_) p->setup(numgp, params_->density_, linedef);
 
   // 2D elastin matrix
-  for (auto& p : potsumelmem_) p->Setup(numgp, linedef);
+  for (auto& p : potsumelmem_) p->setup(numgp, linedef);
 
   if (params_->membrane_ != 1)
   {
     // 3D elastin matrix
-    for (auto& p : potsumeliso_) p->Setup(numgp, linedef);
+    for (auto& p : potsumeliso_) p->setup(numgp, linedef);
 
     // volpenalty
-    potsumelpenalty_->Setup(numgp, linedef);
+    potsumelpenalty_->setup(numgp, linedef);
   }
 
   // Setup circumferential, radial and axial structural tensor

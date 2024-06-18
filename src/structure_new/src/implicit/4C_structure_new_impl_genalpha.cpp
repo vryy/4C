@@ -50,11 +50,11 @@ STR::IMPLICIT::GenAlpha::GenAlpha()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::Setup()
+void STR::IMPLICIT::GenAlpha::setup()
 {
   check_init();
-  // Call the Setup() of the abstract base class first.
-  Generic::Setup();
+  // Call the setup() of the abstract base class first.
+  Generic::setup();
 
   const STR::TimeInt::GenAlphaDataSDyn& genalpha_sdyn =
       dynamic_cast<const STR::TimeInt::GenAlphaDataSDyn&>(tim_int().get_data_sdyn());

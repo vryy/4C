@@ -64,10 +64,10 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Partitioned::Setup()
+void FSI::Partitioned::setup()
 {
   // call setup of base class
-  FSI::Algorithm::Setup();
+  FSI::Algorithm::setup();
 
   const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   set_default_parameters(fsidyn, noxparameterlist_);
@@ -134,7 +134,7 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
     std::vector<int> coupleddof(Global::Problem::Instance()->NDim(), 1);
 
     matchingnodes_ = false;
-    coupsfm_->Setup(structure_field()->discretization(), MBFluidField()->discretization(),
+    coupsfm_->setup(structure_field()->discretization(), MBFluidField()->discretization(),
         (Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(MBFluidField()))
             ->ale_field()
             ->write_access_discretization(),

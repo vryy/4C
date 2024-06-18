@@ -88,11 +88,11 @@ void levelset_dyn(int restart)
   // time integrator is initialized inside.
   scatrabase->Init();
 
-  // only now we must call Setup() on the base algo.
+  // only now we must call setup() on the base algo.
   // all objects relying on the parallel distribution are
   // created and pointers are set.
-  // calls Setup() in time integrator inside.
-  scatrabase->Setup();
+  // calls setup() in time integrator inside.
+  scatrabase->setup();
 
   // get pointer to time integrator
   Teuchos::RCP<ScaTra::ScaTraTimIntImpl> levelsetalgo = scatrabase->ScaTraField();

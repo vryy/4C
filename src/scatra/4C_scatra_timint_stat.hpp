@@ -41,7 +41,7 @@ namespace ScaTra
     ///  compute scalar time derivate parameters of the input voltage
     void compute_time_deriv_pot0(const bool init) override { return; };
 
-    void Setup() override;
+    void setup() override;
 
     /// Update the solution after convergence of the nonlinear iteration.
     /// Current solution becomes old solution of next timestep.

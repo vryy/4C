@@ -113,7 +113,7 @@ namespace BEAMINTERACTION
      *
      * @param discret Pointer to the discretization.
      */
-    void Setup();
+    void setup();
 
     /**
      * \brief Calculate the maps for the beam and solid dofs. The calculated maps are used in

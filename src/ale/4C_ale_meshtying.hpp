@@ -77,7 +77,7 @@ namespace ALE
     virtual ~Meshtying() = default;
 
     //! Set up mesh-tying framework
-    virtual Teuchos::RCP<Core::LinAlg::SparseOperator> Setup(
+    virtual Teuchos::RCP<Core::LinAlg::SparseOperator> setup(
         std::vector<int> coupleddof, Teuchos::RCP<Epetra_Vector>& dispnp);
 
     //! Use the split of the ale mesh tying for the sysmat

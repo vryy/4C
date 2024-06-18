@@ -136,7 +136,7 @@ BEAMINTERACTION::BeamToSolidCondition::create_indirect_assembly_manager(
     }
 
     // Setup the mortar manager.
-    mortar_manager->Setup();
+    mortar_manager->setup();
     mortar_manager->SetLocalMaps(condition_contact_pairs_);
 
     // Create the indirect assembly manager with the mortar manager
@@ -397,11 +397,11 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::BuildIdSets(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
+void BEAMINTERACTION::BeamToSolidConditionSurface::setup(
     const Teuchos::RCP<const Core::FE::Discretization>& discret)
 {
   // Call the parent method.
-  BeamToSolidCondition::Setup(discret);
+  BeamToSolidCondition::setup(discret);
 
   // Cast the geometry evaluation data to the correct type.
   auto line_to_surface_evaluation_data =
@@ -504,7 +504,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
   }
 
   // Setup the geometry data for the surface patch.
-  line_to_surface_evaluation_data->Setup(discret, face_elements_needed);
+  line_to_surface_evaluation_data->setup(discret, face_elements_needed);
 }
 
 /**

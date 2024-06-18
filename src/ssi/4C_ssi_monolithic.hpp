@@ -100,7 +100,7 @@ namespace SSI
 
     void read_restart(int restart) override;
 
-    void Setup() override;
+    void setup() override;
 
     void SetupSystem() override;
 

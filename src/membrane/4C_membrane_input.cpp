@@ -28,7 +28,7 @@ bool Discret::ELEMENTS::Membrane<distype>::ReadElement(
   SetMaterial(0, Mat::Factory(material));
 
   // set up of materials with GP data (e.g., history variables)
-  SolidMaterial()->Setup(intpoints_.nquad, linedef);
+  SolidMaterial()->setup(intpoints_.nquad, linedef);
 
 
   // read element thickness

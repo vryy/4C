@@ -285,7 +285,7 @@ void Adapter::FluidFSI::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> grid
  *----------------------------------------------------------------------*/
 void Adapter::FluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master)
 {
-  meshmap_->Setup(*dis_->dof_row_map(nds_master), mm,
+  meshmap_->setup(*dis_->dof_row_map(nds_master), mm,
       Core::LinAlg::SplitMap(*dis_->dof_row_map(nds_master), *mm));
 }
 
@@ -823,7 +823,7 @@ std::string Adapter::FluidFSI::GetTimAdaMethodName() const
  *----------------------------------------------------------------------*/
 void Adapter::FluidFSI::setup_interface(const int nds_master)
 {
-  interface_->Setup(*dis_, false, false, nds_master);
+  interface_->setup(*dis_, false, false, nds_master);
 }
 
 /*----------------------------------------------------------------------*

@@ -91,9 +91,9 @@ void ParticleInteraction::SPHEquationOfStateBundle::Init(
   }
 }
 
-void ParticleInteraction::SPHEquationOfStateBundle::Setup()
+void ParticleInteraction::SPHEquationOfStateBundle::setup()
 {
-  for (PARTICLEENGINE::TypeEnum type_i : storedtypes_) phasetypetoequationofstate_[type_i]->Setup();
+  for (PARTICLEENGINE::TypeEnum type_i : storedtypes_) phasetypetoequationofstate_[type_i]->setup();
 }
 
 FOUR_C_NAMESPACE_CLOSE

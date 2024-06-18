@@ -26,7 +26,7 @@ SSI::SSIPart::SSIPart(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*/
@@ -54,10 +54,10 @@ void SSI::SSIPart::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIPart::Setup()
+void SSI::SSIPart::setup()
 {
   // call setup of base class
-  SSI::SSIBase::Setup();
+  SSI::SSIBase::setup();
 
   if (SSIInterfaceContact() and !IsRestart())
   {

@@ -43,7 +43,7 @@ void Mat::Elastic::CoupAnisoNeoHooke::UnpackSummand(
   extract_from_pack(position, data, structural_tensor_);
 }
 
-void Mat::Elastic::CoupAnisoNeoHooke::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::Elastic::CoupAnisoNeoHooke::setup(int numgp, Input::LineDefinition* linedef)
 {
   // warning message
   std::cout << "Material does not respect a stress free reference state" << std::endl;

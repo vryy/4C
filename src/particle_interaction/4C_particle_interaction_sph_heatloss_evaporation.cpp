@@ -46,7 +46,7 @@ void ParticleInteraction::SPHHeatLossEvaporation::Init()
     FOUR_C_THROW("surface tension evaluation needed for evaporation induced heat loss!");
 }
 
-void ParticleInteraction::SPHHeatLossEvaporation::Setup(
+void ParticleInteraction::SPHHeatLossEvaporation::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial)
 {

@@ -45,7 +45,7 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::Init()
     typessubjectedtotemperaturebc_.insert(typeIt.first);
 }
 
-void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::Setup(
+void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine

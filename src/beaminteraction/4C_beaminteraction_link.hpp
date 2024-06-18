@@ -85,7 +85,7 @@ namespace BEAMINTERACTION
         Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset);
 
     //! Setup
-    virtual void Setup(const int matnum);
+    virtual void setup(const int matnum);
 
     /*!
     \brief Return unique ParObject id
@@ -219,7 +219,7 @@ namespace BEAMINTERACTION
     //! Check the init and setup state
     inline void check_init_setup() const
     {
-      if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
     }
 
 
@@ -230,7 +230,7 @@ namespace BEAMINTERACTION
     //! indicates if the Init() function has been called
     bool isinit_;
 
-    //! indicates if the Setup() function has been called
+    //! indicates if the setup() function has been called
     bool issetup_;
 
    private:

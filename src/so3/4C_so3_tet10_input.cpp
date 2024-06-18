@@ -21,7 +21,7 @@ bool Discret::ELEMENTS::SoTet10::ReadElement(
   linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
-  SolidMaterial()->Setup(NUMGPT_SOTET10, linedef);
+  SolidMaterial()->setup(NUMGPT_SOTET10, linedef);
 
   std::string buffer;
   linedef->extract_string("KINEM", buffer);

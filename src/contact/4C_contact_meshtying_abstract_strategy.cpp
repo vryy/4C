@@ -440,7 +440,7 @@ void CONTACT::MtAbstractStrategy::restrict_meshtying_zone()
   }
 
   // Step 5: re-setup internal dof row map (non-interface dofs)
-  // (this one has been re-computed in Setup() above, but is possibly
+  // (this one has been re-computed in setup() above, but is possibly
   // incorrect due to parallel redistribution of the interfaces)
   // --> recompute based on splitting with slave and master dof row maps
   // before parallel redistribution!

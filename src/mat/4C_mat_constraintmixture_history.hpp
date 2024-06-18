@@ -54,7 +54,7 @@ namespace Mat
     //@}
 
     /// Setup
-    void Setup(int ngp, const double massprodbasal, bool expvar);
+    void setup(int ngp, const double massprodbasal, bool expvar);
 
    private:
     /// @name Access to History

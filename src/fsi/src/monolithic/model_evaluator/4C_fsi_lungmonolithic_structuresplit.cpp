@@ -241,7 +241,7 @@ void FSI::LungMonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
   Teuchos::RCP<Epetra_Map> emptymap =
       Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, structure_field()->discretization()->Comm()));
   Core::LinAlg::MapExtractor extractor_temp;
-  extractor_temp.Setup(*ConstrMap_, emptymap, ConstrMap_);
+  extractor_temp.setup(*ConstrMap_, emptymap, ConstrMap_);
 
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> constrstructblocks =
       AddStructConstrMatrix_->Matrix(1, 0).Split<Core::LinAlg::DefaultBlockMatrixStrategy>(

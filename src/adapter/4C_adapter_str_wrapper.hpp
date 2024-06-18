@@ -37,14 +37,14 @@ namespace Adapter
 
     /*! \brief Setup all class internal objects and members
 
-     Setup() is not supposed to have any input arguments !
+     setup() is not supposed to have any input arguments !
 
      Must only be called after Init().
 
      Construct all objects depending on the parallel distribution and
      relying on valid maps like, e.g. the state vectors, system matrices, etc.
 
-     Call all Setup() routines on previously initialized internal objects and members.
+     Call all setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
           Otherwise, e.g. vectors may have wrong maps.
@@ -53,7 +53,7 @@ namespace Adapter
     \return void
     \date 08/16
     \author rauch  */
-    void Setup() override { structure_->Setup(); };
+    void setup() override { structure_->setup(); };
 
     //@}
 

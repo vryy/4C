@@ -85,7 +85,7 @@ namespace BEAMINTERACTION
         Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset) override;
 
     //! Setup
-    void Setup(const int matnum) override;
+    void setup(const int matnum) override;
 
     /*!
     \brief Return unique ParObject id

@@ -48,7 +48,7 @@ int Core::COUPLING::MatchingOctree::Init(const Core::FE::Discretization& actdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::COUPLING::MatchingOctree::Setup()
+int Core::COUPLING::MatchingOctree::setup()
 {
   check_is_init();
 
@@ -807,7 +807,7 @@ Core::COUPLING::NodeMatchingOctree::create_octree_element(
   newtreeelement->Init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
 
-  newtreeelement->Setup();
+  newtreeelement->setup();
 
   return newtreeelement;
 }  // NodeMatchingOctree::create_octree_element
@@ -934,7 +934,7 @@ Core::COUPLING::ElementMatchingOctree::create_octree_element(
   newtreeelement->Init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
 
-  newtreeelement->Setup();
+  newtreeelement->setup();
 
   return newtreeelement;
 }  // ElementMatchingOctree::create_octree_element
@@ -968,7 +968,7 @@ Core::COUPLING::OctreeNodalElement::create_octree_element(
   newtreeelement->Init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
 
-  newtreeelement->Setup();
+  newtreeelement->setup();
 
   return newtreeelement;
 }  // OctreeNodalElement::create_octree_element
@@ -1007,7 +1007,7 @@ Core::COUPLING::OctreeElementElement::create_octree_element(
   newtreeelement->Init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
 
-  newtreeelement->Setup();
+  newtreeelement->setup();
 
   return newtreeelement;
 }  // OctreeElementElement::create_octree_element
@@ -1046,7 +1046,7 @@ int Core::COUPLING::OctreeElement::Init(const Core::FE::Discretization& actdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::COUPLING::OctreeElement::Setup()
+int Core::COUPLING::OctreeElement::setup()
 {
   check_is_init();
 

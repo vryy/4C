@@ -67,7 +67,7 @@ namespace CONTACT
      when called for the first time (in the constructor) this
      method is given the input parameter init=TRUE to account
      for initialization of the active set. */
-    void Setup(bool redistributed, bool init) override;
+    void setup(bool redistributed, bool init) override;
 
     /*!
     /brief Activate the No Penetration Condition for the active contact surface!

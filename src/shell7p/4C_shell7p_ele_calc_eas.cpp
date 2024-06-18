@@ -106,7 +106,7 @@ Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Shell7pEleCalcEas()
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Setup(Core::Elements::Element& ele,
+void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::setup(Core::Elements::Element& ele,
     Mat::So3Material& solid_material, Input::LineDefinition* linedef,
     const STR::ELEMENTS::ShellLockingTypes& locking_types,
     const STR::ELEMENTS::ShellData& shell_data)
@@ -122,7 +122,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Setup(Core::Elements::Elemen
   eas_iteration_data_.transL_.shape(locking_types_.total, Shell::DETAIL::numdofperelement<distype>);
 
   //  set up of materials with GP data (e.g., history variables)
-  solid_material.Setup(intpoints_midsurface_.NumPoints(), linedef);
+  solid_material.setup(intpoints_midsurface_.NumPoints(), linedef);
 }
 
 template <Core::FE::CellType distype>

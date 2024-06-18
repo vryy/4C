@@ -144,7 +144,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::SetNearbyElePairs(
 /*-------------------------------------------------------------------------*
  | setup the strategy                                     kremheller 03/19 |
  *------------------------------------------------------------------------ */
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Setup() { return; }
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::setup() { return; }
 
 /*----------------------------------------------------------------------*
  | apply mesh movement                                 kremheller 06/18 |

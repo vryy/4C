@@ -172,7 +172,7 @@ int CONTACT::Aug::NodeDataContainer::approximate_m_entries(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::NodeDataContainer::Setup()
+void CONTACT::Aug::NodeDataContainer::setup()
 {
   if (mentries_ == -1) FOUR_C_THROW("mentries_ must be initialized!");
 
@@ -526,7 +526,7 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
   {
     augdata_ = Teuchos::rcp(new CONTACT::Aug::NodeDataContainer(*this));
     augdata_->Unpack(position, data);
-    augdata_->Setup();
+    augdata_->setup();
   }
   else
     augdata_ = Teuchos::null;
@@ -774,7 +774,7 @@ void CONTACT::Node::initialize_aug_data_container(
     augdata_ = Teuchos::rcp(
         new CONTACT::Aug::NodeDataContainer(*this, slMaElementAreaRatio, isTriangleOnMaster));
 
-    augdata_->Setup();
+    augdata_->setup();
   }
 }
 

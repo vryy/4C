@@ -93,7 +93,7 @@ Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
     elastic_summand->register_anisotropy_extensions(*anisotropy_);
   }
 
-  inelastic_->Setup(params);
+  inelastic_->setup(params);
 }
 
 /*--------------------------------------------------------------------*
@@ -167,7 +167,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::Unpack(const std::vector<char>& 
     }
 
     // inelastic deformation gradient factors
-    inelastic_->Setup(params_);
+    inelastic_->setup(params_);
   }
 }
 
@@ -716,7 +716,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::Setup(
+void Mat::MultiplicativeSplitDefgradElastHyper::setup(
     const int numgp, Input::LineDefinition* linedef)
 {
   // Read anisotropy
@@ -724,7 +724,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::Setup(
   anisotropy_->read_anisotropy_from_element(linedef);
 
   // elastic materials
-  for (const auto& summand : potsumel_) summand->Setup(numgp, linedef);
+  for (const auto& summand : potsumel_) summand->setup(numgp, linedef);
 }
 
 /*--------------------------------------------------------------------*
@@ -838,7 +838,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::SetConcentrationGP(const double 
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::InelasticFactorsHandler::Setup(Mat::PAR::MultiplicativeSplitDefgradElastHyper* params)
+void Mat::InelasticFactorsHandler::setup(Mat::PAR::MultiplicativeSplitDefgradElastHyper* params)
 {
   facdefgradin_.clear();
   i_finj_.clear();

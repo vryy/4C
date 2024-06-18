@@ -118,7 +118,7 @@ Airway::RedAirwayTissue::RedAirwayTissue(
       Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
           sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
   structure_ = Teuchos::rcp_dynamic_cast<Adapter::StructureRedAirway>(structure->structure_field());
-  structure_->Setup();
+  structure_->setup();
 
   SetupRedAirways();
   const Teuchos::ParameterList& rawdyn =

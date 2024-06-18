@@ -43,7 +43,7 @@ namespace SSI
           discretization do not forget to also redistribute the cloned
           discretization.
           All objects relying on the parallel distribution are supposed to
-          the constructed in \ref Setup().
+          the constructed in \ref setup().
 
     \warning none
     \return int
@@ -55,14 +55,14 @@ namespace SSI
 
     /*! \brief Setup all class internal objects and members
 
-     Setup() is not supposed to have any input arguments !
+     setup() is not supposed to have any input arguments !
 
      Must only be called after Init().
 
      Construct all objects depending on the parallel distribution and
      relying on valid maps like, e.g. the state vectors, system matrices, etc.
 
-     Call all Setup() routines on previously initialized internal objects and members.
+     Call all setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
           Otherwise, e.g. vectors may have wrong maps.
@@ -71,7 +71,7 @@ namespace SSI
     \return void
     \date 08/16
     \author rauch  */
-    void Setup() override;
+    void setup() override;
 
     //! full time loop
     void Timeloop() override;
@@ -185,14 +185,14 @@ namespace SSI
     /*!
     \brief Setup all class internal objects and members
 
-    Setup() is not supposed to have any input arguments !
+    setup() is not supposed to have any input arguments !
 
     Must only be called after Init().
 
     Construct all objects depending on the parallel distribution and
     relying on valid maps like, e.g. the state vectors, system matrices, etc.
 
-    Call all Setup() routines on previously initialized internal objects and members.
+    Call all setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
           Otherwise, e.g. vectors may have wrong maps.
@@ -202,7 +202,7 @@ namespace SSI
     \date 01/18
     \author fang
     */
-    void Setup() override;
+    void setup() override;
 
    protected:
     //! Calculate relaxation parameter via Aitken
@@ -262,14 +262,14 @@ namespace SSI
     /*!
     \brief Setup all class internal objects and members
 
-    Setup() is not supposed to have any input arguments !
+    setup() is not supposed to have any input arguments !
 
     Must only be called after Init().
 
     Construct all objects depending on the parallel distribution and
     relying on valid maps like, e.g. the state vectors, system matrices, etc.
 
-    Call all Setup() routines on previously initialized internal objects and members.
+    Call all setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
           Otherwise, e.g. vectors may have wrong maps.
@@ -279,7 +279,7 @@ namespace SSI
     \date 01/18
     \author fang
     */
-    void Setup() override;
+    void setup() override;
 
    protected:
     //! Calculate relaxation parameter via Aitken

@@ -95,7 +95,7 @@ void Adapter::StructureBaseAlgorithmNew::Init(const Teuchos::ParameterList& prbd
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Adapter::StructureBaseAlgorithmNew::Setup()
+void Adapter::StructureBaseAlgorithmNew::setup()
 {
   if (not is_init()) FOUR_C_THROW("You have to call Init() first!");
 
@@ -132,7 +132,7 @@ void Adapter::StructureBaseAlgorithmNew::register_model_evaluator(
   // safety checks
   if (not is_init())
     FOUR_C_THROW("Init(...) must be called before register_model_evaluator(...) !");
-  if (is_setup()) FOUR_C_THROW("register_model_evaluator(...) must be called before Setup() !");
+  if (is_setup()) FOUR_C_THROW("register_model_evaluator(...) must be called before setup() !");
 
   // set RCP ptr to model evaluator in problem dynamic parameter list
   const_cast<Teuchos::ParameterList&>(*prbdyn_).set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
@@ -250,7 +250,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio = Teuchos::rcp(new STR::TimeInt::BaseDataIO());
   dataio->Init(*ioflags, *sdyn_, *xparams, output);
-  dataio->Setup();
+  dataio->setup();
 
   // ---------------------------------------------------------------------------
   // initialize/setup the structural dynamics data
@@ -258,7 +258,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn = STR::TimeInt::build_data_sdyn(*sdyn_);
   datasdyn->Init(actdis_, *sdyn_, *xparams, modeltypes, eletechs, linsolvers);
-  datasdyn->Setup();
+  datasdyn->setup();
 
   // ---------------------------------------------------------------------------
   // initialize/setup the global state data container
@@ -766,7 +766,7 @@ void Adapter::StructureBaseAlgorithmNew::set_global_state(
 {
   dataglobalstate = STR::TimeInt::build_data_global_state();
   dataglobalstate->Init(actdis_, *sdyn_, datasdyn);
-  dataglobalstate->Setup();
+  dataglobalstate->setup();
 }
 
 
@@ -784,7 +784,7 @@ void Adapter::StructureBaseAlgorithmNew::set_time_integration_strategy(
   /* In the restart case, we Setup the structural time integration after the
    * discretization has been redistributed. See STR::TimeInt::Base::read_restart()
    * for more information.                                     hiermeier 05/16*/
-  if (not restart) ti_strategy->Setup();
+  if (not restart) ti_strategy->setup();
 }
 
 

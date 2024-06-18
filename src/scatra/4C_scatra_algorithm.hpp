@@ -38,7 +38,7 @@ namespace ScaTra
     );
 
 
-    void Setup() override;
+    void setup() override;
 
     void Init() override;
 

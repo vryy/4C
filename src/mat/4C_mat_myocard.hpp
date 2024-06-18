@@ -155,9 +155,9 @@ namespace Mat
 
     /// material call from Discret::ELEMENTS::Transport::ReadElement function
     /// to setup conductivity tensor for each element
-    void Setup(const Core::LinAlg::Matrix<3, 1>& fiber1);
-    void Setup(const Core::LinAlg::Matrix<2, 1>& fiber1);
-    void Setup(Input::LineDefinition* linedef);
+    void setup(const Core::LinAlg::Matrix<3, 1>& fiber1);
+    void setup(const Core::LinAlg::Matrix<2, 1>& fiber1);
+    void setup(Input::LineDefinition* linedef);
 
     void setup_diffusion_tensor(const std::vector<double>& fiber1);
     void setup_diffusion_tensor(const Core::LinAlg::Matrix<3, 1>& fiber1);

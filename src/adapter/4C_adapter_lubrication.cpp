@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::LubricationBaseAlgorithm::Setup(
+void Adapter::LubricationBaseAlgorithm::setup(
     const Teuchos::ParameterList& prbdyn,          ///< parameter list for global problem
     const Teuchos::ParameterList& lubricationdyn,  ///< parameter list for Lubrication subproblem
     const Teuchos::ParameterList& solverparams,    ///< parameter list for Lubrication solver

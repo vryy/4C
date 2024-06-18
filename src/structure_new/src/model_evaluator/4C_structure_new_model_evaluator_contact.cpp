@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::Setup()
+void STR::MODELEVALUATOR::Contact::setup()
 {
   check_init();
   eval_contact_ptr_ = eval_data().ContactPtr();
@@ -43,7 +43,7 @@ void STR::MODELEVALUATOR::Contact::Setup()
   // ---------------------------------------------------------------------
   CONTACT::STRATEGY::Factory factory;
   factory.Init(global_state_ptr()->get_discret());
-  factory.Setup();
+  factory.setup();
 
   // check the problem dimension
   factory.CheckDimension();

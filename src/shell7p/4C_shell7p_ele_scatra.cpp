@@ -396,7 +396,7 @@ bool Discret::ELEMENTS::Shell7pScatra::ReadElement(
   SetMaterial(0, Mat::Factory(STR::UTILS::Shell::ReadElement::ReadAndSetElementMaterial(linedef)));
 
   // setup shell calculation interface
-  shell_interface_->Setup(*this, *SolidMaterial(), linedef, locking_types, shell_data);
+  shell_interface_->setup(*this, *SolidMaterial(), linedef, locking_types, shell_data);
   if (!material_post_setup_)
   {
     shell_interface_->material_post_setup(*this, *SolidMaterial());

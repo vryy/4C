@@ -55,7 +55,7 @@ namespace ScaTra
     void Init() override;
 
     /// setup level-set algorithm
-    void Setup() override;
+    void setup() override;
 
     /// time loop
     void TimeLoop() override;

@@ -327,7 +327,7 @@ namespace Wear
     method is given the input parameter init=TRUE to account
     for initialization of the active set.
       */
-    void Setup(bool redistributed, bool init) override;
+    void setup(bool redistributed, bool init) override;
 
     /*!
     \brief Setup this strategy object (maps, vectors, etc.)

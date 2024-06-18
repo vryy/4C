@@ -144,7 +144,7 @@ void scatra_dyn(int restart)
       // time integrator is initialized inside
       scatraonly->Init();
 
-      // redistribution between Init(...) and Setup()
+      // redistribution between Init(...) and setup()
       // redistribute scatra elements in case of heterogeneous reactions
       if (scatradis->GetCondition("ScatraHeteroReactionSlave") != nullptr)
       {
@@ -165,8 +165,8 @@ void scatra_dyn(int restart)
       // assign degrees of freedom and rebuild geometries
       scatradis->fill_complete(true, false, true);
 
-      // now we must call Setup()
-      scatraonly->Setup();
+      // now we must call setup()
+      scatraonly->setup();
 
       // read the restart information, set vectors and variables
       if (restart) scatraonly->ScaTraField()->read_restart(restart);
@@ -280,7 +280,7 @@ void scatra_dyn(int restart)
       // init algo (init fluid time integrator and scatra time integrator inside)
       algo->Init();
 
-      // redistribution between Init(...) and Setup()
+      // redistribution between Init(...) and setup()
       // redistribute scatra elements if the scatra discretization is not empty
       if (fieldcoupling == Inpar::ScaTra::coupling_volmortar)
       {
@@ -306,7 +306,7 @@ void scatra_dyn(int restart)
 
       // setup algo
       //(setup fluid time integrator and scatra time integrator inside)
-      algo->Setup();
+      algo->setup();
 
       // read restart information
       // in case a inflow generation in the inflow section has been performed, there are not any

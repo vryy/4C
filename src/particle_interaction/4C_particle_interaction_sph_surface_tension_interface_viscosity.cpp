@@ -62,7 +62,7 @@ void ParticleInteraction::SPHInterfaceViscosity::Init()
   }
 }
 
-void ParticleInteraction::SPHInterfaceViscosity::Setup(
+void ParticleInteraction::SPHInterfaceViscosity::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
     const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
@@ -85,7 +85,7 @@ void ParticleInteraction::SPHInterfaceViscosity::Setup(
   neighborpairs_ = neighborpairs;
 
   // setup artificial viscosity handler
-  artificialviscosity_->Setup();
+  artificialviscosity_->setup();
 
   // safety check
   for (const auto& type_i : fluidtypes_)

@@ -196,7 +196,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Init(const int id,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::Setup(const int matnum)
+void BEAMINTERACTION::BeamLinkRigidJointed::setup(const int matnum)
 {
   check_init();
 

@@ -65,19 +65,19 @@ void Adapter::ScaTraFluidCouplingAlgorithm::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::ScaTraFluidCouplingAlgorithm::Setup()
+void Adapter::ScaTraFluidCouplingAlgorithm::setup()
 {
   check_is_init();
 
   // initialize scatra time integration scheme
-  Adapter::ScaTraBaseAlgorithm::Setup();
+  Adapter::ScaTraBaseAlgorithm::setup();
 
   // initialize fluid time integration scheme
   fluid_field()->Init();
 
   // setup coupling adapter
   if (not volcoupl_fluidscatra_.is_null())
-    volcoupl_fluidscatra_->Setup(Global::Problem::Instance()->VolmortarParams());
+    volcoupl_fluidscatra_->setup(Global::Problem::Instance()->VolmortarParams());
 
   // set also initial field
   SetInitialFlowField(Global::Problem::Instance()->FluidDynamicParams());

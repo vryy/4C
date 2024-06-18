@@ -261,10 +261,10 @@ void SSTI::SSTIMono::prepare_time_step()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSTI::SSTIMono::Setup()
+void SSTI::SSTIMono::setup()
 {
   // call base class routine
-  SSTIAlgorithm::Setup();
+  SSTIAlgorithm::setup();
 
   // safety checks
   if (ScaTraField()->NumScal() != 1)

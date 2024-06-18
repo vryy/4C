@@ -22,7 +22,7 @@ bool Discret::ELEMENTS::SoWeg6::ReadElement(
   linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
-  SolidMaterial()->Setup(NUMGPT_WEG6, linedef);
+  SolidMaterial()->setup(NUMGPT_WEG6, linedef);
 
   std::string buffer;
   linedef->extract_string("KINEM", buffer);

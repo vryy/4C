@@ -105,7 +105,7 @@ namespace FSI
     explicit Partitioned(const Epetra_Comm& comm);
 
     /// setup this object
-    void Setup() override;
+    void setup() override;
 
     /*! \brief Outer level FSI time loop
      *

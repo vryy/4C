@@ -55,7 +55,7 @@ namespace ScaTra
     void Init() override;
 
     //! initialize algorithm
-    void Setup() override;
+    void setup() override;
 
     /*========================================================================*/
     //! @name Preconditioning
@@ -443,7 +443,7 @@ namespace ScaTra
     ScalarHandlerElch();
 
     //! initialize time integration
-    void Setup(const ScaTraTimIntImpl* scatratimint) override;
+    void setup(const ScaTraTimIntImpl* scatratimint) override;
 
     /*========================================================================*/
     //! @name Access and Query methods

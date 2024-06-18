@@ -61,7 +61,7 @@ void STR::TimeInt::NoxInterface::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::NoxInterface::Setup()
+void STR::TimeInt::NoxInterface::setup()
 {
   check_init();
 
@@ -78,7 +78,7 @@ void STR::TimeInt::NoxInterface::check_init() const
  *----------------------------------------------------------------------------*/
 void STR::TimeInt::NoxInterface::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*

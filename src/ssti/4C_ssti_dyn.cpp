@@ -35,7 +35,7 @@ void ssti_drt()
   ssti->Init(comm, problem->SSTIControlParams(), problem->scalar_transport_dynamic_params(),
       problem->SSTIControlParams().sublist("THERMO"), problem->structural_dynamic_params());
 
-  ssti->Setup();
+  ssti->setup();
 
   const int restart = problem->Restart();
   if (restart) ssti->read_restart(restart);

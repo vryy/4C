@@ -388,7 +388,7 @@ void Mat::MuscleGiantesio::Unpack(const std::vector<char>& data)
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
-void Mat::MuscleGiantesio::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::MuscleGiantesio::setup(int numgp, Input::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);

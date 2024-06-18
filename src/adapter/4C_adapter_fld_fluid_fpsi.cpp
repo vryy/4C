@@ -34,7 +34,7 @@ void Adapter::FluidFPSI::Init()
   // call base class init
   FluidFSI::Init();
 
-  fpsiinterface_->Setup(*dis_, true, true);  // Always Create overlapping FPSI Interface
+  fpsiinterface_->setup(*dis_, true, true);  // Always Create overlapping FPSI Interface
 
   return;
 }
@@ -47,7 +47,7 @@ void Adapter::FluidFPSI::setup_interface(const int nds_master)
   // check nds_master
   if (nds_master != 0) FOUR_C_THROW("nds_master is supposed to be 0 here");
 
-  interface_->Setup(*dis_, false, true);  // create overlapping maps for fpsi problem
+  interface_->setup(*dis_, false, true);  // create overlapping maps for fpsi problem
 }
 
 /*----------------------------------------------------------------------*

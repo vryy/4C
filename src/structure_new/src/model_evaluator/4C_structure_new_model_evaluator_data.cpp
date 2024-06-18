@@ -219,7 +219,7 @@ void STR::MODELEVALUATOR::Data::Init(const Teuchos::RCP<const STR::TimeInt::Base
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::Setup()
+void STR::MODELEVALUATOR::Data::setup()
 {
   check_init();
 
@@ -234,14 +234,14 @@ void STR::MODELEVALUATOR::Data::Setup()
       {
         contact_data_ptr_ = Teuchos::rcp(new ContactData());
         contact_data_ptr_->Init(Teuchos::rcp(this, false));
-        contact_data_ptr_->Setup();
+        contact_data_ptr_->setup();
         break;
       }
       case Inpar::STR::model_browniandyn:
       {
         browniandyn_data_ptr_ = Teuchos::rcp(new BrownianDynData());
         browniandyn_data_ptr_->Init(Teuchos::rcp(this, false));
-        browniandyn_data_ptr_->Setup();
+        browniandyn_data_ptr_->setup();
         break;
       }
       default:
@@ -258,7 +258,7 @@ void STR::MODELEVALUATOR::Data::Setup()
   {
     beam_data_ptr_ = Teuchos::rcp(new BeamData());
     beam_data_ptr_->Init();
-    beam_data_ptr_->Setup();
+    beam_data_ptr_->setup();
   }
 
   issetup_ = true;

@@ -43,7 +43,7 @@ BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::BeamToBeamPointCouplingPair(
  *
  */
 template <typename beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::Setup()
+void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::setup()
 {
   // This pair only works for Simo Reissner beam elements.
   const auto check_simo_reissner_beam = [](auto element)

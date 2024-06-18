@@ -34,7 +34,7 @@ namespace STR
       Generic() = default;
 
       //! Setup (has to be implemented by the derived classes)
-      void Setup() override;
+      void setup() override;
 
       //! Apply the right hand side only (derived)
       bool apply_force(const Epetra_Vector& x, Epetra_Vector& f) override;

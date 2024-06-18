@@ -61,7 +61,7 @@ double STR::calculate_vector_norm(const enum Inpar::STR::VectorNorm norm,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::MapExtractor::Setup(
+void STR::MapExtractor::setup(
     const Core::FE::Discretization& dis, const Epetra_Map& fullmap, bool overlapping)
 {
   const int ndim = Global::Problem::Instance()->NDim();

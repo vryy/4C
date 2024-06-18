@@ -42,7 +42,7 @@ namespace ParticleInteraction
     virtual void Init();
 
     //! setup kernel handler
-    virtual void Setup();
+    virtual void setup();
 
     //! get kernel space dimension
     virtual void kernel_space_dimension(int& dim) const final;

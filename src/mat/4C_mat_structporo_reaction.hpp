@@ -153,7 +153,7 @@ namespace Mat
     }
 
     /// Initialize internal variables
-    void Setup(int numgp,  ///< number of Gauss points
+    void setup(int numgp,  ///< number of Gauss points
         Input::LineDefinition* linedef) override;
 
     /// Return quick accessible material parameter data

@@ -42,7 +42,7 @@ void STR::Nln::SOLVER::Generic::Init(const Teuchos::RCP<STR::TimeInt::BaseDataGl
     const Teuchos::RCP<STR::Integrator>& integrator,
     const Teuchos::RCP<const STR::TimeInt::Base>& timint)
 {
-  // We have to call Setup() after Init()
+  // We have to call setup() after Init()
   issetup_ = false;
 
   // initialize internal variables

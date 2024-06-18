@@ -30,10 +30,10 @@ FSI::DirichletNeumannDisp::DirichletNeumannDisp(const Epetra_Comm& comm) : Diric
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::DirichletNeumannDisp::Setup()
+void FSI::DirichletNeumannDisp::setup()
 {
   // call setup of base class
-  FSI::DirichletNeumann::Setup();
+  FSI::DirichletNeumann::setup();
   const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   set_kinematic_coupling(

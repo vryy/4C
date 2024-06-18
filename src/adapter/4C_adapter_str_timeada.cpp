@@ -65,10 +65,10 @@ Teuchos::RCP<Adapter::Structure> Adapter::StructureTimeAda::Create(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::StructureTimeAda::Setup()
+void Adapter::StructureTimeAda::setup()
 {
   // call the wrapper setup
-  StructureWrapper::Setup();
+  StructureWrapper::setup();
 
   // self setup
   setup_time_ada();

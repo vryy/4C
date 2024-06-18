@@ -117,7 +117,7 @@ void ssi_drt()
     // 3.1.4 Setup the coupled problem
     // now as we redistributed our discretizations we can construct all
     // objects relying on the parallel distribution
-    ssi->Setup();
+    ssi->setup();
 
     // 3.2- Read restart if needed. (discretization called inside)
     if (ssi->IsRestart()) ssi->read_restart(problem->Restart());

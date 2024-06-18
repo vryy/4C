@@ -313,7 +313,7 @@ void ScaTra::ScaTraTimIntImpl::Init()
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntImpl::Setup()
+void ScaTra::ScaTraTimIntImpl::setup()
 {
   // we have to call Init() first
   check_is_init();
@@ -331,7 +331,7 @@ void ScaTra::ScaTraTimIntImpl::Setup()
   if (scalarhandler_ == Teuchos::null)
     FOUR_C_THROW("Make sure you construct the scalarhandler_ in initialization.");
   else
-    scalarhandler_->Setup(this);
+    scalarhandler_->setup(this);
 
   // setup splitter (needed to solve initialization problems before setup_meshtying())
   SetupSplitter();
@@ -656,7 +656,7 @@ void ScaTra::ScaTraTimIntImpl::Setup()
 
   // we have successfully set up this class
   set_is_setup(true);
-}  // ScaTraTimIntImpl::Setup()
+}  // ScaTraTimIntImpl::setup()
 
 
 /*----------------------------------------------------------------------*
@@ -3483,7 +3483,7 @@ void ScaTra::ScaTraTimIntImpl::check_is_init() const
  *-----------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::check_is_setup() const
 {
-  if (not is_setup()) FOUR_C_THROW("ScaTraTimIntImpl is not set up. Call Setup() first.");
+  if (not is_setup()) FOUR_C_THROW("ScaTraTimIntImpl is not set up. Call setup() first.");
 }
 
 /*-----------------------------------------------------------------------------*

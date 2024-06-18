@@ -162,7 +162,7 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the
   // setup to all classes in the inheritance hierarchy. This way, this class may also override
-  // a method that is called during Setup() in a base class.
+  // a method that is called during setup() in a base class.
 
   if (sdynparams.get<int>("OUTPUT_STEP_OFFSET") != 0)
   {
@@ -222,7 +222,7 @@ void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Setup this class                                                                 rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimInt::Setup()
+void STR::TimInt::setup()
 {
   // we have to call Init() before
   check_is_init();
@@ -236,7 +236,7 @@ void STR::TimInt::Setup()
   SetInitialFields();
 
   // setup constraint manager
-  conman_->Setup((*dis_)(0), sdynparams_);
+  conman_->setup((*dis_)(0), sdynparams_);
 
   // model order reduction
   mor_ = Teuchos::rcp(new ModelOrderRed::ProperOrthogonalDecomposition(discret_));

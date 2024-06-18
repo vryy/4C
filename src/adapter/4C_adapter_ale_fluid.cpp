@@ -24,7 +24,7 @@ Adapter::AleFluidWrapper::AleFluidWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(al
 {
   // create the FSI interface
   interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
-  interface_->Setup(*discretization());
+  interface_->setup(*discretization());
   // extend dirichlet map by the dof
   if (interface_->FSICondRelevant())
     SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_part_fsi, interface_);

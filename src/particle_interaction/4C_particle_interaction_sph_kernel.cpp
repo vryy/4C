@@ -30,7 +30,7 @@ void ParticleInteraction::SPHKernelBase::Init()
   // nothing to do
 }
 
-void ParticleInteraction::SPHKernelBase::Setup()
+void ParticleInteraction::SPHKernelBase::setup()
 {
   // nothing to do
 }

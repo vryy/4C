@@ -200,7 +200,7 @@ namespace Mat
         ) override;
 
     /// setup
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// Return quick accessible material parameter data
     Core::Mat::PAR::Parameter* Parameter() const override { return params_; }

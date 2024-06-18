@@ -58,7 +58,7 @@ ScaTra::TimIntHDG::TimIntHDG(const Teuchos::RCP<Core::FE::Discretization> &actdi
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntHDG::Setup()
+void ScaTra::TimIntHDG::setup()
 {
   hdgdis_ = dynamic_cast<Core::FE::DiscretizationHDG *>(discret_.get());
   if (hdgdis_ == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
@@ -129,7 +129,7 @@ void ScaTra::TimIntHDG::Setup()
 
   // call Init()-functions of base classes
   // note: this order is important
-  ScaTra::TimIntGenAlpha::Setup();
+  ScaTra::TimIntGenAlpha::setup();
 
   // create vector for concentration at nodes for output
   interpolatedPhinp_ = Core::LinAlg::CreateVector(*discret_->NodeRowMap(), true);

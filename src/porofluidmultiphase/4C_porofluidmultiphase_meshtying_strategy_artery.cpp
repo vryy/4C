@@ -377,9 +377,9 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::SetNearbyElePairs(
 /*-------------------------------------------------------------------------*
  | setup the strategy                                     kremheller 03/19 |
  *------------------------------------------------------------------------ */
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Setup()
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::setup()
 {
-  arttoporofluidcoupling_->Setup();
+  arttoporofluidcoupling_->setup();
   return;
 }
 

@@ -35,7 +35,7 @@ namespace STR
       //! constructor
       Explicit();
 
-      void Setup() override;
+      void setup() override;
 
       int Integrate() override;
 

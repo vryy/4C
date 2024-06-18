@@ -43,7 +43,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Init(
       LastIterDensity, LastIterTemperature});
 }
 
-void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(bool write_ghosted_particles)
+void PARTICLEENGINE::ParticleRuntimeVtpWriter::setup(bool write_ghosted_particles)
 {
   // determine size of vector indexed by particle types
   const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;

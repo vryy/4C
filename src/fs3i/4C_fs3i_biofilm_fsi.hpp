@@ -50,7 +50,7 @@ namespace FS3I
 
     void Init() override;
 
-    void Setup() override;
+    void setup() override;
 
     void Timeloop() override;
 

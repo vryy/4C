@@ -93,7 +93,7 @@ namespace Adapter
      *\param[in] structure wrapper for the structure solver
      *\param[in] fluid moving boundary wrapper for the fluid solver
      */
-    virtual void Setup(Teuchos::RCP<Adapter::FSIStructureWrapper> structure,
+    virtual void setup(Teuchos::RCP<Adapter::FSIStructureWrapper> structure,
         Teuchos::RCP<Adapter::FluidMovingBoundary> fluid);
 
     /** \brief Hand the binning strategy used for the distribution of the fluid mesh

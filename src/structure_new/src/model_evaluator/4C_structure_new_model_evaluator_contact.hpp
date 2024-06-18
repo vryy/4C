@@ -41,7 +41,7 @@ namespace STR
     {
      public:
       //! setup class variables [derived]
-      void Setup() override;
+      void setup() override;
 
       //! @name Functions which are derived from the base generic class
       //!@{

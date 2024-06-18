@@ -1490,7 +1490,7 @@ namespace Discret
                 numfluidphases);
 
         // access from outside to the phasemanager: scatra-discretization has fluid-dis on dofset 2
-        phasemanager_->Setup(ele, ndsscatra_porofluid_);
+        phasemanager_->setup(ele, ndsscatra_porofluid_);
 
         // create variablemanager
         variablemanager_ = Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<NSD,

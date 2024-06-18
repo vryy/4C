@@ -293,7 +293,7 @@ void FSI::MonolithicMainFS::set_dof_row_maps(
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
-  blockrowdofmap_.Setup(*fullmap, maps);
+  blockrowdofmap_.setup(*fullmap, maps);
 }
 
 
@@ -1079,14 +1079,14 @@ void FSI::BlockPreconditioningMatrixFS::SetupPreconditioner()
 #ifdef BLOCKMATRIXMERGE
   // this is really evil :)
   sparse_ = Merge();
-  fluidsolver_->Setup(sparse_->EpetraMatrix());
+  fluidsolver_->setup(sparse_->EpetraMatrix());
 
 #else
   const Core::LinAlg::SparseMatrix& fluidInnerOp = Matrix(0, 0);
   const Core::LinAlg::SparseMatrix& aleInnerOp = Matrix(1, 1);
 
-  fluidsolver_->Setup(fluidInnerOp.EpetraMatrix());
-  if (constalesolver_ == Teuchos::null) alesolver_->Setup(aleInnerOp.EpetraMatrix());
+  fluidsolver_->setup(fluidInnerOp.EpetraMatrix());
+  if (constalesolver_ == Teuchos::null) alesolver_->setup(aleInnerOp.EpetraMatrix());
 #endif
 }
 
@@ -1146,7 +1146,7 @@ void FSI::OverlappingBlockMatrixFS::SetupPreconditioner()
 
   // this is really evil :)
   sparse_ = Merge();
-  fluidsolver_->Setup(sparse_->EpetraMatrix());
+  fluidsolver_->setup(sparse_->EpetraMatrix());
 
 #else
   const Core::LinAlg::SparseMatrix& fluidInnerOp = Matrix(0, 0);
@@ -1155,9 +1155,9 @@ void FSI::OverlappingBlockMatrixFS::SetupPreconditioner()
   Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex = Teuchos::null;
   Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
 
-  fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(), fsidofmapex, fluid_.discretization(), irownodes,
+  fluidsolver_->setup(fluidInnerOp.EpetraMatrix(), fsidofmapex, fluid_.discretization(), irownodes,
       structuresplit_);
-  if (constalesolver_ == Teuchos::null) alesolver_->Setup(aleInnerOp.EpetraMatrix());
+  if (constalesolver_ == Teuchos::null) alesolver_->setup(aleInnerOp.EpetraMatrix());
 #endif
 }
 

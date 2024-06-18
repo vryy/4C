@@ -53,10 +53,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::STRATEGY::Factory::Setup()
+void CONTACT::STRATEGY::Factory::setup()
 {
   check_init();
-  Mortar::STRATEGY::Factory::Setup();
+  Mortar::STRATEGY::Factory::setup();
 
   set_is_setup();
 }
@@ -1813,7 +1813,7 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrateg
   }
 
   // setup the stategy object
-  strategy_ptr->Setup(false, true);
+  strategy_ptr->setup(false, true);
 
   if (comm_ptr->MyPID() == 0) std::cout << "done!" << std::endl;
 

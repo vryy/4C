@@ -80,7 +80,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::SetupCalc(
   }  // Nurbs specific stuff
 
   // rotationally symmetric periodic bc's: do setup for current element
-  rotsymmpbc_->Setup(ele);
+  rotsymmpbc_->setup(ele);
 
   return 0;
 }

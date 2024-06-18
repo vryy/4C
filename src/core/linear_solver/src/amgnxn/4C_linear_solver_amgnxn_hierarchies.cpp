@@ -612,7 +612,7 @@ int Core::LinearSolver::AMGNxN::MonolithicHierarchy::GetNumLevels() { return num
 
 void Core::LinearSolver::AMGNxN::MonolithicHierarchy::setup()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::MonolithicHierarchy::Setup()");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::MonolithicHierarchy::setup()");
 
   // ====================================================
   // Create block transfer operators

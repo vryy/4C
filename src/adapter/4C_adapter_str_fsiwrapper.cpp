@@ -39,9 +39,9 @@ Adapter::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
   interface_ = Teuchos::rcp(new STR::MapExtractor);
 
   if (Global::Problem::Instance()->GetProblemType() != Core::ProblemType::fpsi)
-    interface_->Setup(*discretization(), *discretization()->dof_row_map());
+    interface_->setup(*discretization(), *discretization()->dof_row_map());
   else
-    interface_->Setup(*discretization(), *discretization()->dof_row_map(),
+    interface_->setup(*discretization(), *discretization()->dof_row_map(),
         true);  // create overlapping maps for fpsi problem
 
   const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
@@ -56,7 +56,7 @@ Adapter::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
 void Adapter::FSIStructureWrapper::RebuildInterface()
 {
   interface_ = Teuchos::rcp(new STR::MapExtractor);
-  interface_->Setup(*discretization(), *discretization()->dof_row_map());
+  interface_->setup(*discretization(), *discretization()->dof_row_map());
 }
 
 /*----------------------------------------------------------------------*/

@@ -64,7 +64,7 @@ namespace STR
           const Teuchos::RCP<STR::Integrator>& int_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
           const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
 
-      virtual void Setup();
+      virtual void setup();
 
       //!@{
       /*! compute the right hand side entries

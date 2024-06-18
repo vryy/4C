@@ -637,7 +637,7 @@ void FPSI::Utils::SetupInterfaceMap(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::UTILS::MapExtractor::Setup(
+void FPSI::UTILS::MapExtractor::setup(
     const Core::FE::Discretization& dis, bool withpressure, bool overlapping)
 {
   const int ndim = Global::Problem::Instance()->NDim();
@@ -652,7 +652,7 @@ void FPSI::UTILS::MapExtractor::Setup(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::UTILS::MapExtractor::Setup(
+void FPSI::UTILS::MapExtractor::setup(
     Teuchos::RCP<const Epetra_Map>& additionalothermap, const FPSI::UTILS::MapExtractor& extractor)
 {
   // build the new othermap
@@ -678,7 +678,7 @@ void FPSI::UTILS::MapExtractor::Setup(
   // merge
   Teuchos::RCP<const Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
 
-  Core::LinAlg::MultiMapExtractor::Setup(*fullmap, maps);
+  Core::LinAlg::MultiMapExtractor::setup(*fullmap, maps);
 }
 
 /*----------------------------------------------------------------------*/

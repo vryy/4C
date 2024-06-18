@@ -74,7 +74,7 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
         "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
         binning_params);
     volcoupl_->Redistribute(binning_params, Global::Problem::Instance()->OutputControlFile());
-    volcoupl_->Setup(Global::Problem::Instance()->VolmortarParams());
+    volcoupl_->setup(Global::Problem::Instance()->VolmortarParams());
   }
 
   // access structural dynamic params list which will be possibly modified while creating the time
@@ -90,14 +90,14 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
             timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
     structure_ =
         Teuchos::rcp_dynamic_cast<Adapter::FPSIStructureWrapper>(structure->structure_field());
-    structure_->Setup();
+    structure_->setup();
   }
   else
   {
     Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr =
         Adapter::build_structure_algorithm(sdyn);
     adapterbase_ptr->Init(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
-    adapterbase_ptr->Setup();
+    adapterbase_ptr->setup();
     structure_ = Teuchos::rcp_dynamic_cast<Adapter::FPSIStructureWrapper>(
         adapterbase_ptr->structure_field());
   }
@@ -240,7 +240,7 @@ void PoroElast::PoroBase::read_restart(const int step)
 {
   if (step)
   {
-    if (not oldstructimint_) structure_->Setup();
+    if (not oldstructimint_) structure_->setup();
 
     // apply current velocity and pressures to structure
     set_fluid_solution();
@@ -594,7 +594,7 @@ void PoroElast::NoPenetrationConditionHandle::Clear(PoroElast::Coupltype couplty
   }
 }
 
-void PoroElast::NoPenetrationConditionHandle::Setup(
+void PoroElast::NoPenetrationConditionHandle::setup(
     Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid)
 {
   if (has_cond_)

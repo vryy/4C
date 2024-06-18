@@ -41,7 +41,7 @@ namespace STR
       //! constructor
       BeamInteractionOld();
 
-      void Setup() override;
+      void setup() override;
 
       //! derived
       Inpar::STR::ModelType Type() const override { return Inpar::STR::model_beam_interaction_old; }

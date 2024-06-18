@@ -44,9 +44,9 @@ namespace
       contacttangential_->Init();
 
       // setup tangential contact handler
-      contacttangential_->Setup(k_normal_);
+      contacttangential_->setup(k_normal_);
     }
-    // note: the public functions Init() and Setup() of class DEMContactTangentialLinearSpringDamp
+    // note: the public functions Init() and setup() of class DEMContactTangentialLinearSpringDamp
     // are called in the constructor and thus implicitly tested by all following unittests
   };
 

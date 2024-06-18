@@ -59,7 +59,7 @@ void BEAMINTERACTION::BeamContactPair::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactPair::Setup()
+void BEAMINTERACTION::BeamContactPair::setup()
 {
   check_init();
 
@@ -181,7 +181,7 @@ void BEAMINTERACTION::BeamContactPair::check_init() const
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactPair::check_init_setup() const
 {
-  if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -43,7 +43,7 @@ namespace STR
       void Init(const Teuchos::ParameterList& IO_vtp_structure_paramslist);
 
       /// setup new class variables
-      void Setup();
+      void setup();
 
       /// whether to write owner at visualization point
       bool output_owner() const
@@ -94,7 +94,7 @@ namespace STR
       /// get the setup indicator status
       const bool& is_setup() const { return issetup_; };
 
-      /// Check if Init() and Setup() have been called, yet.
+      /// Check if Init() and setup() have been called, yet.
       void check_init_setup() const;
 
 

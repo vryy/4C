@@ -67,7 +67,7 @@ void STR::Integrator::Init(const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::Setup()
+void STR::Integrator::setup()
 {
   check_init();
   // ---------------------------------------------------------------------------
@@ -75,7 +75,7 @@ void STR::Integrator::Setup()
   // ---------------------------------------------------------------------------
   eval_data_ptr_ = Teuchos::rcp(new STR::MODELEVALUATOR::Data());
   eval_data_ptr_->Init(timint_ptr_);
-  eval_data_ptr_->Setup();
+  eval_data_ptr_->setup();
 
   // ---------------------------------------------------------------------------
   // build model evaluator
@@ -83,16 +83,16 @@ void STR::Integrator::Setup()
   modelevaluator_ptr_ = Teuchos::rcp(new STR::ModelEvaluator());
   modelevaluator_ptr_->Init(
       eval_data_ptr_, sdyn_ptr_, gstate_ptr_, io_ptr_, Teuchos::rcp(this, false), timint_ptr_);
-  modelevaluator_ptr_->Setup();
+  modelevaluator_ptr_->setup();
 
   // ---------------------------------------------------------------------------
   // build monitor for a tensile test
   // ---------------------------------------------------------------------------
   monitor_dbc_ptr_ = Teuchos::rcp(new STR::MonitorDbc);
   monitor_dbc_ptr_->Init(io_ptr_, *gstate_ptr_->get_discret(), *gstate_ptr_, *dbc_ptr_);
-  monitor_dbc_ptr_->Setup();
+  monitor_dbc_ptr_->setup();
 
-  mt_energy_.Setup();
+  mt_energy_.setup();
 
   // the issetup_ flag is not set here!!!
 }
@@ -159,7 +159,7 @@ void STR::Integrator::check_init() const { FOUR_C_ASSERT(is_init(), "Call Init()
  *----------------------------------------------------------------------------*/
 void STR::Integrator::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -801,7 +801,7 @@ void STR::Integrator::MidTimeEnergy::CopyNpToN()
  *----------------------------------------------------------------------------*/
 bool STR::Integrator::MidTimeEnergy::is_correctly_configured() const
 {
-  FOUR_C_ASSERT(issetup_, "Call Setup() first.");
+  FOUR_C_ASSERT(issetup_, "Call setup() first.");
 
   if (avg_type_ == Inpar::STR::midavg_vague)
   {
@@ -819,7 +819,7 @@ bool STR::Integrator::MidTimeEnergy::store_energy_n() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::MidTimeEnergy::Setup()
+void STR::Integrator::MidTimeEnergy::setup()
 {
   avg_type_ = integrator_.s_dyn().get_mid_time_energy_type();
   issetup_ = true;

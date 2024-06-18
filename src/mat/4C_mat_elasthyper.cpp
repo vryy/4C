@@ -245,7 +245,7 @@ void Mat::ElastHyper::SetupAAA(Teuchos::ParameterList& params, const int eleGID)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ElastHyper::setup(int numgp, Input::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
@@ -254,7 +254,7 @@ void Mat::ElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
   // Setup summands
   for (auto& p : potsum_)
   {
-    p->Setup(numgp, linedef);
+    p->setup(numgp, linedef);
   }
   summandProperties_.Clear();
   ElastHyperProperties(potsum_, summandProperties_);

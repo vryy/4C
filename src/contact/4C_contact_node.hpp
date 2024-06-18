@@ -425,7 +425,7 @@ namespace CONTACT
 
       virtual ~NodeDataContainer() = default;
 
-      void Setup();
+      void setup();
 
       /*! \brief Pack this class so that it can be communicated
        *

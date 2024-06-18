@@ -47,7 +47,7 @@ void Mat::Elastic::IsoAnisoExpo::UnpackSummand(
   extract_from_pack(position, data, structural_tensor_);
 }
 
-void Mat::Elastic::IsoAnisoExpo::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::Elastic::IsoAnisoExpo::setup(int numgp, Input::LineDefinition* linedef)
 {
   if (params_->init_ == 0)
   {

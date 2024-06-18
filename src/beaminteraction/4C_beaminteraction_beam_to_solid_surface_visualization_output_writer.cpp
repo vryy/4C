@@ -61,7 +61,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Init()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Setup(
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
     Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
         output_params_ptr)
@@ -391,7 +391,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
  */
 void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::check_init_setup() const
 {
-  if (!isinit_ or !issetup_) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (!isinit_ or !issetup_) FOUR_C_THROW("Call Init() and setup() first!");
 }
 
 /**

@@ -46,7 +46,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerInd
           beam_contact_params_ptr, discretization1->dof_row_map()->MaxAllGID()));
 
   // Setup the mortar manager.
-  mortar_manager_->Setup();
+  mortar_manager_->setup();
   mortar_manager_->SetLocalMaps(assembly_contact_elepairs_);
 }
 

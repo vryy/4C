@@ -39,7 +39,7 @@ void XFEM::XFieldState::Init(const Teuchos::RCP<XFEM::ConditionManager>& conditi
     const Teuchos::RCP<Core::FE::Discretization>& xfielddiscret,
     const Teuchos::RCP<Core::FE::Discretization>& fielddiscret)
 {
-  // Ensure, that the Setup() routines are called afterwards.
+  // Ensure, that the setup() routines are called afterwards.
   issetup_ = false;
 
   condition_manager_ = condition_manager;

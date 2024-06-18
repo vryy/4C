@@ -56,7 +56,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    void Setup() override;
+    void setup() override;
 
     /// time loop of coupled problem
     void Timeloop() override = 0;

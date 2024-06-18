@@ -35,7 +35,7 @@ namespace FS3I
     void Init() override;
 
     //! setup this class
-    void Setup() override;
+    void setup() override;
 
     /// timeloop of coupled problem
     void Timeloop() override;

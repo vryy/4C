@@ -30,7 +30,7 @@ STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI()
   // empty constructor
 }
 
-void STR::MODELEVALUATOR::PartitionedPASI::Setup()
+void STR::MODELEVALUATOR::PartitionedPASI::setup()
 {
   // pasi interface force at t_{n+1}
   interface_force_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));

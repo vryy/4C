@@ -72,7 +72,7 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
@@ -107,13 +107,13 @@ void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIBase::Setup()
+void SSI::SSIBase::setup()
 {
   // check initialization
   check_is_init();
 
   // set up helper class for field coupling
-  ssicoupling_->Setup();
+  ssicoupling_->setup();
 
   // in case of an ssi  multi scale formulation we need to set the displacement here
   auto dummy_vec = Teuchos::rcp(
@@ -121,8 +121,8 @@ void SSI::SSIBase::Setup()
   ssicoupling_->set_mesh_disp(ScaTraBaseAlgorithm(), dummy_vec);
 
   // set up scalar transport field
-  ScaTraField()->Setup();
-  if (is_sca_tra_manifold()) ScaTraManifold()->Setup();
+  ScaTraField()->setup();
+  if (is_sca_tra_manifold()) ScaTraManifold()->setup();
 
   // only relevant for new structural time integration
   // only if adapter base has not already been set up outside
@@ -162,7 +162,7 @@ void SSI::SSIBase::Setup()
     }
 
     // set up structural base algorithm
-    struct_adapterbase_ptr_->Setup();
+    struct_adapterbase_ptr_->setup();
 
     // get wrapper and cast it to specific type
     // do not do so, in case the wrapper has already been set from outside
@@ -180,7 +180,7 @@ void SSI::SSIBase::Setup()
 
   // for old structural time integration
   else if (use_old_structure_)
-    structure_->Setup();
+    structure_->setup();
 
   if (is_s2_i_kinetics_with_pseudo_contact())
   {

@@ -32,7 +32,7 @@ namespace ScaTra
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     //! setup
-    void Setup() override;
+    void setup() override;
 
     //! set theta_ to its value, dependent on integration method for GenAlpha and BDF2
     virtual void SetTheta();

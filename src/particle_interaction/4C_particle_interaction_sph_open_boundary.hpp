@@ -57,7 +57,7 @@ namespace ParticleInteraction
     virtual void Init();
 
     //! setup open boundary handler
-    virtual void Setup(
+    virtual void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
         const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
@@ -124,7 +124,7 @@ namespace ParticleInteraction
     void Init() override;
 
     //! setup open boundary handler
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
         const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
@@ -148,7 +148,7 @@ namespace ParticleInteraction
     void Init() override;
 
     //! setup open boundary handler
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
         const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,

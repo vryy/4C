@@ -62,7 +62,7 @@ namespace Adapter
     StructureConstrMerged(Teuchos::RCP<Structure> stru);
 
     /// setup this object
-    void Setup() override;
+    void setup() override;
 
     /// initial guess of Newton's method
     Teuchos::RCP<const Epetra_Vector> initial_guess() override;
@@ -173,7 +173,7 @@ namespace Adapter
 
     //@}
 
-    /// flag indicating if Setup() was called
+    /// flag indicating if setup() was called
     bool issetup_;
 
   };  // class StructureConstrained

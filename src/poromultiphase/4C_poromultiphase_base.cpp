@@ -55,7 +55,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
   Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase =
       Adapter::build_structure_algorithm(structparams);
   adapterbase->Init(globaltimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
-  adapterbase->Setup();
+  adapterbase->setup();
   structure_ = adapterbase->structure_field();
 
   // initialize zero vector for convenience

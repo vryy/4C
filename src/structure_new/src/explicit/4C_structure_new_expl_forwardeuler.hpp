@@ -32,7 +32,7 @@ namespace STR
       ForwardEuler();
 
       //! Setup class variables (derived)
-      void Setup() override;
+      void setup() override;
 
       //! Post setup operation (compute initial equilibrium state) (derived)
       void post_setup() override;

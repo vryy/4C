@@ -46,7 +46,7 @@ STR::ModelEvaluator::ModelEvaluator()
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -76,7 +76,7 @@ void STR::ModelEvaluator::Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& ev
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::Setup()
+void STR::ModelEvaluator::setup()
 {
   check_init();
 
@@ -90,7 +90,7 @@ void STR::ModelEvaluator::Setup()
   for (me_iter = me_map_ptr_->begin(); me_iter != me_map_ptr_->end(); ++me_iter)
   {
     me_iter->second->Init(eval_data_ptr_, gstate_ptr_, gio_ptr_, int_ptr_, timint_ptr_, dof_offset);
-    me_iter->second->Setup();
+    me_iter->second->setup();
     // setup the block information for saddle point problems
     dof_offset = gstate_ptr_->setup_block_information(*(me_iter->second), me_iter->first);
   }

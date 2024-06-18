@@ -89,7 +89,7 @@ void FLD::TimIntStationaryHDG::Init()
   otherdofset.clear();
   Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
       new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->Comm()));
-  velpressplitter_->Setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
+  velpressplitter_->setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
 
   // call Init()-functions of base classes
   // note: this order is important

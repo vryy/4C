@@ -139,7 +139,7 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::Setup()
+void SSTI::SSTIAlgorithm::setup()
 {
   // get the global problem
   Global::Problem* problem = Global::Problem::Instance();
@@ -148,8 +148,8 @@ void SSTI::SSTIAlgorithm::Setup()
   check_is_init();
 
   // set up scatra and thermo problem
-  scatra_->ScaTraField()->Setup();
-  thermo_->ScaTraField()->Setup();
+  scatra_->ScaTraField()->setup();
+  thermo_->ScaTraField()->setup();
 
   // pass initial scalar field to structural discretization to correctly compute initial
   // accelerations
@@ -157,7 +157,7 @@ void SSTI::SSTIAlgorithm::Setup()
   problem->GetDis("structure")->set_state(2, "tempfield", thermo_->ScaTraField()->Phinp());
 
   // set up structural base algorithm
-  struct_adapterbase_ptr_->Setup();
+  struct_adapterbase_ptr_->setup();
 
   // get wrapper and cast it to specific type
   if (structure_ == Teuchos::null)

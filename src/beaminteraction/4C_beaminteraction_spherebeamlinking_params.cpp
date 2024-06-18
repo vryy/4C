@@ -259,7 +259,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TimeInt::BaseDataGlobal
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SphereBeamLinkingParams::Setup()
+void BEAMINTERACTION::SphereBeamLinkingParams::setup()
 {
   check_init();
 

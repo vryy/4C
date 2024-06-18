@@ -28,10 +28,10 @@ namespace
       densitycorrection_->Init();
 
       // setup density correction handler
-      densitycorrection_->Setup();
+      densitycorrection_->setup();
     }
-    // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called
-    // in Setup() and thus implicitly tested by all following unittests
+    // note: the public functions Init() and setup() of class SPHEquationOfStateGenTait are called
+    // in setup() and thus implicitly tested by all following unittests
   };
 
   TEST_F(SPHDensityCorrectionInteriorTest, ComputeDensityBC)
@@ -78,9 +78,9 @@ namespace
       densitycorrection_->Init();
 
       // setup density correction handler
-      densitycorrection_->Setup();
+      densitycorrection_->setup();
     }
-    // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called
+    // note: the public functions Init() and setup() of class SPHEquationOfStateGenTait are called
     // in SetUp() and thus implicitly tested by all following unittests
   };
 
@@ -127,9 +127,9 @@ namespace
       densitycorrection_->Init();
 
       // setup density correction handler
-      densitycorrection_->Setup();
+      densitycorrection_->setup();
     }
-    // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called
+    // note: the public functions Init() and setup() of class SPHEquationOfStateGenTait are called
     // in SetUp() and thus implicitly tested by all following unittests
   };
   TEST_F(SPHDensityCorrectionRandlesTest, ComputeDensityBC)

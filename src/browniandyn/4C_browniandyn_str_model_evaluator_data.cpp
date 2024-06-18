@@ -112,7 +112,7 @@ void STR::MODELEVALUATOR::BrownianDynData::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDynData::Setup()
+void STR::MODELEVALUATOR::BrownianDynData::setup()
 {
   check_init();
 

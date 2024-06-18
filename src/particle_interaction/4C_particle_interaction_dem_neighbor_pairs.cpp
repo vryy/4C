@@ -36,7 +36,7 @@ void ParticleInteraction::DEMNeighborPairs::Init()
   // nothing to do
 }
 
-void ParticleInteraction::DEMNeighborPairs::Setup(
+void ParticleInteraction::DEMNeighborPairs::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {

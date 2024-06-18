@@ -63,7 +63,7 @@ void FSI::ConstrOverlappingBlockMatrix::SetupPreconditioner()
   // point problem!)
 
   sparse_ = Merge();
-  fluidsolver_->Setup(sparse_->EpetraMatrix());
+  fluidsolver_->setup(sparse_->EpetraMatrix());
 
 #else
 
@@ -74,10 +74,10 @@ void FSI::ConstrOverlappingBlockMatrix::SetupPreconditioner()
   Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex = Teuchos::null;
   Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
 
-  structuresolver_->Setup(structInnerOp.EpetraMatrix());
-  fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(), fsidofmapex, fluid_.discretization(), irownodes,
+  structuresolver_->setup(structInnerOp.EpetraMatrix());
+  fluidsolver_->setup(fluidInnerOp.EpetraMatrix(), fsidofmapex, fluid_.discretization(), irownodes,
       structuresplit_);
-  if (constalesolver_ == Teuchos::null) alesolver_->Setup(aleInnerOp.EpetraMatrix());
+  if (constalesolver_ == Teuchos::null) alesolver_->setup(aleInnerOp.EpetraMatrix());
 
 #endif
 }

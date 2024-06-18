@@ -3018,7 +3018,7 @@ void ScaTra::OutputScalarsStrategyDomainAndCondition::evaluate_integrals(
 /*----------------------------------------------------------------------*
  |  set up handler class                                   vuong   04/16|
  *----------------------------------------------------------------------*/
-void ScaTra::ScalarHandler::Setup(const ScaTraTimIntImpl* const scatratimint)
+void ScaTra::ScalarHandler::setup(const ScaTraTimIntImpl* const scatratimint)
 {
   // save reference to discretization for convenience
   const Teuchos::RCP<Core::FE::Discretization>& discret = scatratimint->discretization();
@@ -3145,7 +3145,7 @@ int ScaTra::ScalarHandler::NumDofPerNode() const
  *-----------------------------------------------------------------------------*/
 void ScaTra::ScalarHandler::check_is_setup() const
 {
-  if (not issetup_) FOUR_C_THROW("ScalarHanlder is not set up. Call Setup() first.");
+  if (not issetup_) FOUR_C_THROW("ScalarHanlder is not set up. Call setup() first.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

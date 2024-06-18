@@ -389,7 +389,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
 void FSI::MonolithicNoNOX::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
-  blockrowdofmap_.Setup(*fullmap, maps);
+  blockrowdofmap_.setup(*fullmap, maps);
 }
 
 /*----------------------------------------------------------------------*/

@@ -270,7 +270,7 @@ namespace Mat
     //! @name Evaluation methods
 
     //! initialise internal stress variables
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     //! update internal stress variables
     void Update() override;

@@ -108,7 +108,7 @@ namespace PoroMultiPhaseScaTra
     virtual void Init() = 0;
 
     //! setup the strategy
-    virtual void Setup() = 0;
+    virtual void setup() = 0;
 
     //! apply mesh movement (on artery elements)
     virtual void ApplyMeshMovement() = 0;

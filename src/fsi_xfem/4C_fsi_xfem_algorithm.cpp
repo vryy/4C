@@ -120,7 +120,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
   fluid_->Init(false);
 
   // Do setup of the fields here
-  structureporo_->Setup();
+  structureporo_->setup();
   return;
 }
 
@@ -129,10 +129,10 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
 /*----------------------------------------------------------------------*
  | setup (public)                                            ager 12/16 |
  *----------------------------------------------------------------------*/
-void FSI::AlgorithmXFEM::Setup()
+void FSI::AlgorithmXFEM::setup()
 {
   // Do setup of the fields here
-  // structureporo_->Setup();
+  // structureporo_->setup();
 }
 
 /*----------------------------------------------------------------------*

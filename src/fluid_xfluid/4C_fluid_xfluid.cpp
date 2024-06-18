@@ -201,7 +201,7 @@ void FLD::XFluid::Init(bool createinitialstate)
   condition_manager_->Init();
 
   // build the whole object which then can be used
-  condition_manager_->Setup();
+  condition_manager_->setup();
 
 
   // -------------------------------------------------------------------
@@ -2789,7 +2789,7 @@ void FLD::XFluid::setup_krylov_space_projection(Core::Conditions::Condition* ksp
   kspsplitter_ = Teuchos::rcp(new FLD::UTILS::KSPMapExtractor());
   // create map of nodes involved in Krylov projection
 
-  kspsplitter_->Setup(*discret_);
+  kspsplitter_->setup(*discret_);
 
   // get from dat-file definition how weights are to be computed
   const std::string* weighttype =

@@ -38,7 +38,7 @@ STR::MODELEVALUATOR::BeamInteractionOld::BeamInteractionOld()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::Setup()
+void STR::MODELEVALUATOR::BeamInteractionOld::setup()
 {
   if (not is_init()) FOUR_C_THROW("Init() has not been called, yet!");
 

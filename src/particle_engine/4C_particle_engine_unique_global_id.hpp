@@ -76,7 +76,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 11/2019
      */
-    void Setup();
+    void setup();
 
     /*!
      * \brief write restart of unique global identifier handler

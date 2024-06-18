@@ -28,7 +28,7 @@ bool Discret::ELEMENTS::NStet5::ReadElement(
   if (Material()->MaterialType() == Core::Materials::m_elasthyper)
   {
     Mat::ElastHyper* elahy = dynamic_cast<Mat::ElastHyper*>(Material().get());
-    elahy->Setup(0, linedef);
+    elahy->setup(0, linedef);
   }
 
   std::string buffer;

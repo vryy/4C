@@ -49,7 +49,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
   scatra_->Init();
   scatra_->ScaTraField()->set_number_of_dof_set_velocity(1);
   scatra_->ScaTraField()->set_number_of_dof_set_thermo(2);
-  scatra_->Setup();
+  scatra_->setup();
 
   // modify field parameters for thermo field
   modify_field_parameters_for_thermo_field();
@@ -60,7 +60,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
   thermo_->Init();
   thermo_->ScaTraField()->set_number_of_dof_set_velocity(1);
   thermo_->ScaTraField()->set_number_of_dof_set_sca_tra(2);
-  thermo_->Setup();
+  thermo_->setup();
 
   // check maps from scatra and thermo discretizations
   if (scatra_->ScaTraField()->discretization()->dof_row_map()->NumGlobalElements() == 0)

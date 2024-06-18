@@ -25,7 +25,7 @@ Adapter::AleXFFsiWrapper::AleXFFsiWrapper(Teuchos::RCP<Ale> ale) : AleFsiWrapper
 {
   // create the FSI interface
   xff_interface_ = Teuchos::rcp(new ALE::UTILS::XFluidFluidMapExtractor);
-  xff_interface_->Setup(*discretization());
+  xff_interface_->setup(*discretization());
   SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_x_ff, Interface(), xff_interface_);
   SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_x_fsi, Interface());
 }

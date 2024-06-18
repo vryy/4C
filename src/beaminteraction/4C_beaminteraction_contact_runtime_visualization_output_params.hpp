@@ -33,7 +33,7 @@ namespace BEAMINTERACTION
     void Init();
 
     //! setup member variables
-    void Setup();
+    void setup();
 
     /**
      * \brief Return the container holding the general output parameters

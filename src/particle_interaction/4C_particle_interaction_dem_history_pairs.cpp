@@ -32,7 +32,7 @@ void ParticleInteraction::DEMHistoryPairs::Init()
   // nothing to do
 }
 
-void ParticleInteraction::DEMHistoryPairs::Setup(
+void ParticleInteraction::DEMHistoryPairs::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine

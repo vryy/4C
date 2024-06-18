@@ -36,7 +36,7 @@ void ParticleInteraction::ParticleInteractionBase::Init()
   init_particle_interaction_writer();
 }
 
-void ParticleInteraction::ParticleInteractionBase::Setup(
+void ParticleInteraction::ParticleInteractionBase::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {
@@ -50,10 +50,10 @@ void ParticleInteraction::ParticleInteractionBase::Setup(
   particlewallinterface_ = particlewallinterface;
 
   // setup particle material handler
-  particlematerial_->Setup();
+  particlematerial_->setup();
 
   // setup particle interaction writer
-  particleinteractionwriter_->Setup();
+  particleinteractionwriter_->setup();
 
   // init vector
   gravity_.resize(3, 0.0);

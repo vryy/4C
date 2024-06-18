@@ -54,7 +54,7 @@ namespace Adapter
 
 
     /// setup
-    void Setup() override;
+    void setup() override;
 
     /// init
     void Init() override;

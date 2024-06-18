@@ -83,7 +83,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
         binning_params);
     volcoupl_->Redistribute(binning_params, Global::Problem::Instance()->OutputControlFile());
     // setup projection matrices
-    volcoupl_->Setup(Global::Problem::Instance()->VolmortarParams());
+    volcoupl_->setup(Global::Problem::Instance()->VolmortarParams());
   }
 
   if (Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(
@@ -117,14 +117,14 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
             1, "temperature", volcoupl_->apply_vector_mapping12(ThermoField()->Tempnp()));
     }
 
-    adapterbase_ptr->Setup();
+    adapterbase_ptr->setup();
     structure_ =
         Teuchos::rcp_dynamic_cast<Adapter::StructureWrapper>(adapterbase_ptr->structure_field());
 
     if (restart &&
         Core::UTILS::IntegralValue<Inpar::TSI::SolutionSchemeOverFields>(
             Global::Problem::Instance()->TSIDynamicParams(), "COUPALGO") == Inpar::TSI::Monolithic)
-      structure_->Setup();
+      structure_->setup();
 
     structure_field()->discretization()->ClearState(true);
   }
@@ -485,7 +485,7 @@ void TSI::Algorithm::prepare_contact_strategy()
     // ---------------------------------------------------------------------
     CONTACT::STRATEGY::Factory factory;
     factory.Init(structure_field()->discretization());
-    factory.Setup();
+    factory.setup();
 
     // check the problem dimension
     factory.CheckDimension();

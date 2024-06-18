@@ -75,14 +75,14 @@ void FBI::BeamToFluidMeshtyingParams::Init()
   output_params_ = Teuchos::rcp<FBI::BeamToFluidMeshtyingVtkOutputParams>(
       new FBI::BeamToFluidMeshtyingVtkOutputParams());
   output_params_->Init();
-  output_params_->Setup();
+  output_params_->setup();
 }
 
 
 /**
  *
  */
-void FBI::BeamToFluidMeshtyingParams::Setup()
+void FBI::BeamToFluidMeshtyingParams::setup()
 {
   check_init();
 

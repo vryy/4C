@@ -56,14 +56,14 @@ BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::SphereBeamLinking()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Setup()
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::setup()
 {
   check_init();
 
   // construct, init and setup data container for crosslinking
   spherebeamlinking_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::SphereBeamLinkingParams());
   spherebeamlinking_params_ptr_->Init(GState());
-  spherebeamlinking_params_ptr_->Setup();
+  spherebeamlinking_params_ptr_->setup();
 
   random_number_sphere_beam_linking_step_ = -1;
 
@@ -980,7 +980,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_spher
       linkelepairptr->Init(id, eleids, pos, dummy_triad,
           spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(), GState().get_time_np());
       // material id
-      linkelepairptr->Setup(
+      linkelepairptr->setup(
           spherebeamlinking_params_ptr_->GetLinkerMaterial()->beam_elast_hyper_mat_num());
 
       // set on status on element level

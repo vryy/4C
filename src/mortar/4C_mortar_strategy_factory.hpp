@@ -69,7 +69,7 @@ namespace Mortar
        * \note Since this is an abstract class, the setup flag stays false. It has to be set by
        * the Setup routing of the derived class.
        */
-      virtual void Setup();
+      virtual void setup();
 
       /*! \brief print strategy banner
        *
@@ -102,10 +102,10 @@ namespace Mortar
       //! Returns true, if Init() has been called
       inline const bool& is_init() const { return isinit_; };
 
-      //! Returns true, if Setup() has been called
+      //! Returns true, if setup() has been called
       inline const bool& is_setup() const { return issetup_; };
 
-      //! Checks, if Init() and Setup() have been called
+      //! Checks, if Init() and setup() have been called
       void check_init_setup() const;
 
       //! Checks if Init() has been called

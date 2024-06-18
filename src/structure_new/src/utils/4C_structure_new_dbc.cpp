@@ -61,7 +61,7 @@ void STR::Dbc::Init(const Teuchos::RCP<Core::FE::Discretization>& discret_ptr,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::Setup()
+void STR::Dbc::setup()
 {
   check_init();
   // ---------------------------------------------------------------------------
@@ -132,7 +132,7 @@ void STR::Dbc::check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!
  *----------------------------------------------------------------------------*/
 void STR::Dbc::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*

@@ -37,7 +37,7 @@ namespace ScaTra
     void Init() override;
 
     /// setup time-integration scheme
-    void Setup() override;
+    void setup() override;
 
     /// read restart data
     void read_restart(

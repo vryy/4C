@@ -184,7 +184,7 @@ namespace Mat
     }
 
     //! initialise internal stress variables
-    void Setup(const int numgp,  //!< number of Gauss points
+    void setup(const int numgp,  //!< number of Gauss points
         Input::LineDefinition* linedef) override;
 
     //! update internal stress variables

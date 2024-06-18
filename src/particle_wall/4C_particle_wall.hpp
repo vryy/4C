@@ -108,7 +108,7 @@ namespace PARTICLEWALL
      * \param[in] particlestatestotypes particle types and corresponding particle states
      * \param[in] restart_time          restart time of the simulation
      */
-    virtual void Setup(
+    virtual void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         double restart_time);
 
@@ -256,7 +256,7 @@ namespace PARTICLEWALL
      *
      * \author Sebastian Fuchs \date 11/2018
      *
-     * \note this has to be called during Setup() as it requires the restart to be read already
+     * \note this has to be called during setup() as it requires the restart to be read already
      *
      * \param[in] restart_time   restart time of the simulation
      */

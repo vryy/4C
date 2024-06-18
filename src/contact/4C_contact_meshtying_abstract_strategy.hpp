@@ -171,7 +171,7 @@ namespace CONTACT
 
     Here, we call each interface to perform redistribution for each interface individually. Since
     this changes maps and interface discretizations, we have to fill_complete() all interface
-    discretizations and re-setup the strategy object afterwards by calling Setup(bool).
+    discretizations and re-setup the strategy object afterwards by calling setup(bool).
 
     If parallel redistribution is disabled in the input file or if this is a serial computation,
     i.e. only one MPI rank, then we just print the current parallel distribution to the screen, but

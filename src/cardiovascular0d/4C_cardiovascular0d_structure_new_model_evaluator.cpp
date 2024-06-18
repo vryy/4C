@@ -42,7 +42,7 @@ STR::MODELEVALUATOR::Cardiovascular0D::Cardiovascular0D()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
+void STR::MODELEVALUATOR::Cardiovascular0D::setup()
 {
   check_init();
 

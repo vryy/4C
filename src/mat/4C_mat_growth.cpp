@@ -267,7 +267,7 @@ void Mat::Growth::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::Growth::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::Growth::setup(int numgp, Input::LineDefinition* linedef)
 {
   if (isinit_)
     FOUR_C_THROW("This function should just be called if the material is not yet initialized.");
@@ -282,7 +282,7 @@ void Mat::Growth::Setup(int numgp, Input::LineDefinition* linedef)
 
   // Setup of elastic material
   matelastic_ = Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->idmatelastic_));
-  matelastic_->Setup(numgp, linedef);
+  matelastic_->setup(numgp, linedef);
 
   isinit_ = true;
 }
@@ -941,7 +941,7 @@ void Mat::GrowthVolumetric::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthVolumetric::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::GrowthVolumetric::setup(int numgp, Input::LineDefinition* linedef)
 {
   tr_mandel_e_ = Teuchos::rcp(new std::vector<double>(numgp));
   lambda_fib_e_ = Teuchos::rcp(new std::vector<double>(numgp));
@@ -1028,7 +1028,7 @@ void Mat::GrowthVolumetric::Setup(int numgp, Input::LineDefinition* linedef)
   }
 
   // setup base class
-  Growth::Setup(numgp, linedef);
+  Growth::setup(numgp, linedef);
 }
 
 

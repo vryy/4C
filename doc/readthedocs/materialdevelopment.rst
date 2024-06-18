@@ -130,7 +130,7 @@ and which have already a virtual representation in the parent class, e.g., here 
 -	UniqueParObject()
 -	Pack()
 -	Unpack()
--	Setup()   // -> initialize and allocate internal variables
+-	setup()   // -> initialize and allocate internal variables
 -	Update()    // -> update internal variables
 -	evaluate()   // calculate stress and constitutive matrix
 -	VisNames()  // For the names of variables to be visualized (optional; only if extra variables are to be visualized)

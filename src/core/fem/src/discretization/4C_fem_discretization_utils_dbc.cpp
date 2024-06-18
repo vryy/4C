@@ -591,7 +591,7 @@ void Core::FE::UTILS::Dbc::build_dbc_map_extractor(const Core::FE::Discretizatio
   Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements,
       discret.dof_row_map()->IndexBase(), discret.dof_row_map()->Comm()));
   // build the map extractor of Dirichlet-conditioned and free DOFs
-  dbcmapextractor->Setup(*(discret.dof_row_map()), dbcmap);
+  dbcmapextractor->setup(*(discret.dof_row_map()), dbcmap);
 }
 
 FOUR_C_NAMESPACE_CLOSE

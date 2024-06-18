@@ -28,7 +28,7 @@ void PARTICLEENGINE::ParticleContainer::Init()
   // nothing to do
 }
 
-void PARTICLEENGINE::ParticleContainer::Setup(
+void PARTICLEENGINE::ParticleContainer::setup(
     int containersize, const std::set<ParticleState>& stateset)
 {
   // set size of particle container (at least one)

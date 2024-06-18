@@ -518,7 +518,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::setup_calc(Core::Ele
   phasemanager_ = Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::CreatePhaseManager(
       *para_, nsd_, ele->Material()->MaterialType(), action, totalnumdofpernode_, numfluidphases_);
   // setup the manager
-  phasemanager_->Setup(ele);
+  phasemanager_->setup(ele);
 
   // rebuild the phase manager
   variablemanager_ = Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd_,

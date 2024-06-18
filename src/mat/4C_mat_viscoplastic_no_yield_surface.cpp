@@ -149,7 +149,7 @@ void Mat::ViscoPlasticNoYieldSurface::Unpack(const std::vector<char>& data)
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
-void Mat::ViscoPlasticNoYieldSurface::Setup(const int numgp, Input::LineDefinition* linedef)
+void Mat::ViscoPlasticNoYieldSurface::setup(const int numgp, Input::LineDefinition* linedef)
 {
   // read initial flow resistance from line definition
   last_flowres_isotropic_.resize(numgp, params_->InitFlowRes());

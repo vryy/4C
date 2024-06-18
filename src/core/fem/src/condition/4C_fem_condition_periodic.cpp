@@ -634,7 +634,7 @@ void Core::Conditions::PeriodicBoundaryConditions::create_node_coupling_for_sing
   auto nodematchingoctree = Core::COUPLING::NodeMatchingOctree();
 
   nodematchingoctree.Init(*discret_, masternodeids, maxnodeperleaf, tol);
-  nodematchingoctree.Setup();
+  nodematchingoctree.setup();
   // time measurement --- this causes the TimeMonitor tm2 to stop here
   tm2_ref_ = Teuchos::null;
 

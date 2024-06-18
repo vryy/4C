@@ -31,7 +31,7 @@ namespace STR
       OneStepTheta();
 
       //! Setup the class variables
-      void Setup() override;
+      void setup() override;
 
       //! (derived)
       void post_setup() override;
@@ -195,12 +195,12 @@ namespace STR
 
       /** \brief Access the time integration coefficient \f$\theta\f$
        *
-       * If Init() and Setup() have already been called, #theta_ is already set correctly,
+       * If Init() and setup() have already been called, #theta_ is already set correctly,
        * so we can just return it.
        *
        * However, we sometimes need the value of \f$\theta\f$
        * before this time integration scheme has been properly setup. Then, i.e. if Init()
-       * and Setup() haven't been called yet, we read the value of \f$\theta\f$ from
+       * and setup() haven't been called yet, we read the value of \f$\theta\f$ from
        * a data container.
        *
        * @return Time integration coefficient \f$\theta\f$ for time instance \f$t_{n+1}\f$

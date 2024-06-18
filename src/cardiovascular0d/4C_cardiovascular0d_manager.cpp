@@ -1015,7 +1015,7 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     std::vector<Teuchos::RCP<const Epetra_Map>> myMaps_R;
     myMaps_R.push_back(standrowmap_R);
     myMaps_R.push_back(cardvasc0drowmap_R);
-    mapext_R.Setup(*mergedmap_R, myMaps_R);
+    mapext_R.setup(*mergedmap_R, myMaps_R);
 
     // initialize BlockMatrix and Epetra_Vectors
     blockmat =

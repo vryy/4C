@@ -42,7 +42,7 @@ void ParticleInteraction::SPHOpenBoundaryBase::Init()
   // nothing to do
 }
 
-void ParticleInteraction::SPHOpenBoundaryBase::Setup(
+void ParticleInteraction::SPHOpenBoundaryBase::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
     const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
@@ -253,7 +253,7 @@ void ParticleInteraction::SPHOpenBoundaryDirichlet::Init()
   openboundaryphase_ = PARTICLEENGINE::DirichletPhase;
 }
 
-void ParticleInteraction::SPHOpenBoundaryDirichlet::Setup(
+void ParticleInteraction::SPHOpenBoundaryDirichlet::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
     const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
@@ -261,7 +261,7 @@ void ParticleInteraction::SPHOpenBoundaryDirichlet::Setup(
     const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // call base class setup
-  SPHOpenBoundaryBase::Setup(
+  SPHOpenBoundaryBase::setup(
       particleengineinterface, kernel, particlematerial, equationofstatebundle, neighborpairs);
 
   // setup states of ghosted particles to refresh
@@ -454,7 +454,7 @@ void ParticleInteraction::SPHOpenBoundaryNeumann::Init()
   openboundaryphase_ = PARTICLEENGINE::NeumannPhase;
 }
 
-void ParticleInteraction::SPHOpenBoundaryNeumann::Setup(
+void ParticleInteraction::SPHOpenBoundaryNeumann::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
     const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
@@ -462,7 +462,7 @@ void ParticleInteraction::SPHOpenBoundaryNeumann::Setup(
     const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // call base class setup
-  SPHOpenBoundaryBase::Setup(
+  SPHOpenBoundaryBase::setup(
       particleengineinterface, kernel, particlematerial, equationofstatebundle, neighborpairs);
 
   // setup states of ghosted particles to refresh

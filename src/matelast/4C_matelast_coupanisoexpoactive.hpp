@@ -123,7 +123,7 @@ namespace Mat
       //@}
 
       /// Setup of active summand
-      void Setup(int numgp, Input::LineDefinition* linedef) override;
+      void setup(int numgp, Input::LineDefinition* linedef) override;
 
       void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 

@@ -376,7 +376,7 @@ void PoroElastScaTra::PoroScatraMono::SetupSystem()
     std::vector<Teuchos::RCP<const Epetra_Map>> scatravecSpaces;
     const Epetra_Map* dofrowmapscatra = (ScaTraField()->discretization())->dof_row_map(0);
     scatravecSpaces.push_back(Teuchos::rcp(dofrowmapscatra, false));
-    scatrarowdofmap_.Setup(*dofrowmapscatra, scatravecSpaces);
+    scatrarowdofmap_.setup(*dofrowmapscatra, scatravecSpaces);
   }
 
   k_pss_ = Teuchos::rcp(
@@ -1042,7 +1042,7 @@ void PoroElastScaTra::PoroScatraMono::set_dof_row_maps(
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
 
   // full monolithic-blockmap
-  blockrowdofmap_->Setup(*fullmap, maps);
+  blockrowdofmap_->setup(*fullmap, maps);
 }
 
 

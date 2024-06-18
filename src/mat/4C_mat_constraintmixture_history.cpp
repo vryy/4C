@@ -139,7 +139,7 @@ void Mat::ConstraintMixtureHistory::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  History: Setup                                (public)         03/11|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixtureHistory::Setup(const int ngp, const double massprodbasal, bool expvar)
+void Mat::ConstraintMixtureHistory::setup(const int ngp, const double massprodbasal, bool expvar)
 {
   dt_ = 0.0;
   depositiontime_ = 0.0;

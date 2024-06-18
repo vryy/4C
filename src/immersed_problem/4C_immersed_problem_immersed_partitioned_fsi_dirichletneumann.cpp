@@ -88,13 +88,13 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::read_restart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Immersed::ImmersedPartitionedFSIDirichletNeumann::Setup()
+void Immersed::ImmersedPartitionedFSIDirichletNeumann::setup()
 {
   // make sure Init(...) was called first
   check_is_init();
 
   // call setup of base class
-  FSI::PartitionedImmersed::Setup();
+  FSI::PartitionedImmersed::setup();
 
   // get pointer to global problem
   globalproblem_ = Global::Problem::Instance();

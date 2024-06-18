@@ -34,10 +34,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Mortar::STRATEGY::FactoryMT::Setup()
+void Mortar::STRATEGY::FactoryMT::setup()
 {
   check_init();
-  Mortar::STRATEGY::Factory::Setup();
+  Mortar::STRATEGY::Factory::setup();
 
   set_is_setup();
 

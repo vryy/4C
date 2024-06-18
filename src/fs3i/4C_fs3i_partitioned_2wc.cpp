@@ -55,10 +55,10 @@ void FS3I::PartFS3I2Wc::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I2Wc::Setup()
+void FS3I::PartFS3I2Wc::setup()
 {
-  // call Setup() in base class
-  FS3I::PartFS3I::Setup();
+  // call setup() in base class
+  FS3I::PartFS3I::setup();
 
   return;
 }

@@ -621,7 +621,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
     FOUR_C_THROW("Unrecognized contact strategy");
   }
 
-  dynamic_cast<CONTACT::AbstractStrategy&>(*strategy_).Setup(false, true);
+  dynamic_cast<CONTACT::AbstractStrategy&>(*strategy_).setup(false, true);
 
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
   //**********************************************************************

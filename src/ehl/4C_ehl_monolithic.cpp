@@ -643,7 +643,7 @@ void EHL::Monolithic::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epet
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
 
   // full EHL-blockmap
-  extractor()->Setup(*fullmap, maps);
+  extractor()->setup(*fullmap, maps);
 }  // set_dof_row_maps()
 
 

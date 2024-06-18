@@ -33,7 +33,7 @@ Core::LinearSolver::MLPreconditioner::MLPreconditioner(Teuchos::ParameterList& m
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::MLPreconditioner::Setup(
+void Core::LinearSolver::MLPreconditioner::setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   if (create)

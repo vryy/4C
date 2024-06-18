@@ -90,7 +90,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Init(
   initialparticles.clear();
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
+void PARTICLEALGORITHM::ParticleAlgorithm::setup()
 {
   // generate initial particles
   if (not isrestarted_) generate_initial_particles();
@@ -102,25 +102,25 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   determine_particle_states_of_particle_types();
 
   // setup particle engine
-  particleengine_->Setup(particlestatestotypes_);
+  particleengine_->setup(particlestatestotypes_);
 
   // setup wall handler
-  if (particlewall_) particlewall_->Setup(particleengine_, Time());
+  if (particlewall_) particlewall_->setup(particleengine_, Time());
 
   // setup rigid body handler
-  if (particlerigidbody_) particlerigidbody_->Setup(particleengine_);
+  if (particlerigidbody_) particlerigidbody_->setup(particleengine_);
 
   // setup particle time integration
-  particletimint_->Setup(particleengine_, particlerigidbody_);
+  particletimint_->setup(particleengine_, particlerigidbody_);
 
   // setup particle interaction handler
-  if (particleinteraction_) particleinteraction_->Setup(particleengine_, particlewall_);
+  if (particleinteraction_) particleinteraction_->setup(particleengine_, particlewall_);
 
   // setup gravity handler
-  if (particlegravity_) particlegravity_->Setup();
+  if (particlegravity_) particlegravity_->setup();
 
   // setup viscous damping handler
-  if (viscousdamping_) viscousdamping_->Setup(particleengine_);
+  if (viscousdamping_) viscousdamping_->setup(particleengine_);
 
   // setup initial particles
   setup_initial_particles();
@@ -345,7 +345,7 @@ PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
     particleresulttest->Init();
 
     // setup particle result test
-    particleresulttest->Setup(particleengine_);
+    particleresulttest->setup(particleengine_);
 
     allresulttests.push_back(particleresulttest);
   }
@@ -359,7 +359,7 @@ PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
     wallresulttest->Init();
 
     // setup wall result test
-    wallresulttest->Setup(particlewall_);
+    wallresulttest->setup(particlewall_);
 
     allresulttests.push_back(wallresulttest);
   }
@@ -372,7 +372,7 @@ PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
     rigidbodyresulttest->Init();
 
     // setup rigid body result test
-    rigidbodyresulttest->Setup(particlerigidbody_);
+    rigidbodyresulttest->setup(particlerigidbody_);
 
     allresulttests.push_back(rigidbodyresulttest);
   }
@@ -920,7 +920,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::set_initial_conditions()
   initialfield->Init();
 
   // setup particle initial field handler
-  initialfield->Setup(particleengine_);
+  initialfield->setup(particleengine_);
 
   // set initial fields
   initialfield->SetInitialFields();

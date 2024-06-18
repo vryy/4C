@@ -56,7 +56,7 @@ Adapter::FBIConstraintenforcer::FBIConstraintenforcer(
 
 /*----------------------------------------------------------------------*/
 
-void Adapter::FBIConstraintenforcer::Setup(Teuchos::RCP<Adapter::FSIStructureWrapper> structure,
+void Adapter::FBIConstraintenforcer::setup(Teuchos::RCP<Adapter::FSIStructureWrapper> structure,
     Teuchos::RCP<Adapter::FluidMovingBoundary> fluid)
 {
   fluid_ = fluid;
@@ -90,7 +90,7 @@ void Adapter::FBIConstraintenforcer::Setup(Teuchos::RCP<Adapter::FSIStructureWra
             Core::LinAlg::SparseMatrix::FE_MATRIX));  // todo Is there a better estimator?
   }
 
-  bridge_->Setup(structure_->discretization()->dof_row_map(),
+  bridge_->setup(structure_->discretization()->dof_row_map(),
       fluid_->discretization()->dof_row_map(), fluidmatrix, meshtying);
   if (structure_->discretization()->Comm().NumProc() > 1)
   {
@@ -101,7 +101,7 @@ void Adapter::FBIConstraintenforcer::Setup(Teuchos::RCP<Adapter::FSIStructureWra
         ->setup_multi_map_extractor();
   }
 
-  geometrycoupler_->Setup(
+  geometrycoupler_->setup(
       discretizations_, Core::Rebalance::GetColVersionOfRowVector(
                             structure_->discretization(), structure_->Dispnp()));
 }

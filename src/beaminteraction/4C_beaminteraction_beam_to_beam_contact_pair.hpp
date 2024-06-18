@@ -62,7 +62,7 @@ namespace BEAMINTERACTION
 
 
     //! Setup
-    void Setup() override;
+    void setup() override;
     //@}
 
     //! @name Derived methods from base class

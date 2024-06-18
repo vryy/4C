@@ -45,7 +45,7 @@ void PARTICLEALGORITHM::TimInt::Init()
   init_temperature_boundary_condition();
 }
 
-void PARTICLEALGORITHM::TimInt::Setup(
+void PARTICLEALGORITHM::TimInt::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface> particlerigidbodyinterface)
 {
@@ -56,10 +56,10 @@ void PARTICLEALGORITHM::TimInt::Setup(
   particlerigidbodyinterface_ = particlerigidbodyinterface;
 
   // setup dirichlet boundary condition handler
-  if (dirichletboundarycondition_) dirichletboundarycondition_->Setup(particleengineinterface_);
+  if (dirichletboundarycondition_) dirichletboundarycondition_->setup(particleengineinterface_);
 
   // setup temperature boundary condition handler
-  if (temperatureboundarycondition_) temperatureboundarycondition_->Setup(particleengineinterface_);
+  if (temperatureboundarycondition_) temperatureboundarycondition_->setup(particleengineinterface_);
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
@@ -241,12 +241,12 @@ PARTICLEALGORITHM::TimIntSemiImplicitEuler::TimIntSemiImplicitEuler(
   // empty constructor
 }
 
-void PARTICLEALGORITHM::TimIntSemiImplicitEuler::Setup(
+void PARTICLEALGORITHM::TimIntSemiImplicitEuler::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface> particlerigidbodyinterface)
 {
   // call base class setup
-  PARTICLEALGORITHM::TimInt::Setup(particleengineinterface, particlerigidbodyinterface);
+  PARTICLEALGORITHM::TimInt::setup(particleengineinterface, particlerigidbodyinterface);
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =

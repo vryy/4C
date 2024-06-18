@@ -36,7 +36,7 @@ namespace CONTACT
     /** \brief Setup important new member variables
      *
      *  Supposed to be overloaded by derived classes. */
-    virtual void Setup();
+    virtual void setup();
 
     /// @name Supported basic interface functions
     /// @{
@@ -98,10 +98,10 @@ namespace CONTACT
       if (not is_init()) FOUR_C_THROW("Call Init() first!");
     };
 
-    /// Check if Init() and Setup() have been called, yet.
+    /// Check if Init() and setup() have been called, yet.
     inline void check_init_setup() const
     {
-      if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
     };
 
     /// Access the underlying strategy
@@ -115,7 +115,7 @@ namespace CONTACT
     /// flag indicating if Init() has been called
     bool isinit_;
 
-    /// flag indicating if Setup() has been called
+    /// flag indicating if setup() has been called
     bool issetup_;
 
    private:

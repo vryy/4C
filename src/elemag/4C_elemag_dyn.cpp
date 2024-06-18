@@ -318,7 +318,7 @@ void electromagnetics_drt()
 
             scatraalgo->Init();
             scatraalgo->set_number_of_dof_set_velocity(1);
-            scatraalgo->Setup();
+            scatraalgo->setup();
             scatraalgo->set_velocity_field();
             scatraalgo->TimeLoop();
 

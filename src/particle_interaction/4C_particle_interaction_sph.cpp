@@ -99,66 +99,66 @@ void ParticleInteraction::ParticleInteractionSPH::Init()
     FOUR_C_THROW("surface tension formulation with wall interaction not implemented!");
 }
 
-void ParticleInteraction::ParticleInteractionSPH::Setup(
+void ParticleInteraction::ParticleInteractionSPH::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {
   // call base class setup
-  ParticleInteractionBase::Setup(particleengineinterface, particlewallinterface);
+  ParticleInteractionBase::setup(particleengineinterface, particlewallinterface);
 
   // setup kernel handler
-  kernel_->Setup();
+  kernel_->setup();
 
   // setup equation of state bundle
-  equationofstatebundle_->Setup();
+  equationofstatebundle_->setup();
 
   // setup neighbor pair handler
-  neighborpairs_->Setup(particleengineinterface, particlewallinterface, kernel_);
+  neighborpairs_->setup(particleengineinterface, particlewallinterface, kernel_);
 
   // setup density handler
-  density_->Setup(particleengineinterface, particlewallinterface, kernel_, particlematerial_,
+  density_->setup(particleengineinterface, particlewallinterface, kernel_, particlematerial_,
       equationofstatebundle_, neighborpairs_, virtualwallparticle_);
 
   // setup pressure handler
-  pressure_->Setup(particleengineinterface, particlematerial_, equationofstatebundle_);
+  pressure_->setup(particleengineinterface, particlematerial_, equationofstatebundle_);
 
   // setup temperature handler
-  if (temperature_) temperature_->Setup(particleengineinterface, particlematerial_, neighborpairs_);
+  if (temperature_) temperature_->setup(particleengineinterface, particlematerial_, neighborpairs_);
 
   // setup momentum handler
-  momentum_->Setup(particleengineinterface, particlewallinterface, kernel_, particlematerial_,
+  momentum_->setup(particleengineinterface, particlewallinterface, kernel_, particlematerial_,
       particleinteractionwriter_, equationofstatebundle_, neighborpairs_, virtualwallparticle_);
 
   // setup surface tension handler
   if (surfacetension_)
-    surfacetension_->Setup(particleengineinterface, kernel_, particlematerial_,
+    surfacetension_->setup(particleengineinterface, kernel_, particlematerial_,
         equationofstatebundle_, neighborpairs_);
 
   // setup boundary particle handler
-  if (boundaryparticle_) boundaryparticle_->Setup(particleengineinterface, neighborpairs_);
+  if (boundaryparticle_) boundaryparticle_->setup(particleengineinterface, neighborpairs_);
 
   // setup dirichlet open boundary handler
   if (dirichletopenboundary_)
-    dirichletopenboundary_->Setup(particleengineinterface, kernel_, particlematerial_,
+    dirichletopenboundary_->setup(particleengineinterface, kernel_, particlematerial_,
         equationofstatebundle_, neighborpairs_);
 
   // setup neumann open boundary handler
   if (neumannopenboundary_)
-    neumannopenboundary_->Setup(particleengineinterface, kernel_, particlematerial_,
+    neumannopenboundary_->setup(particleengineinterface, kernel_, particlematerial_,
         equationofstatebundle_, neighborpairs_);
 
   // setup virtual wall particle handler
   if (virtualwallparticle_)
-    virtualwallparticle_->Setup(
+    virtualwallparticle_->setup(
         particleengineinterface, particlewallinterface, kernel_, neighborpairs_);
 
   // setup phase change handler
   if (phasechange_)
-    phasechange_->Setup(particleengineinterface, particlematerial_, equationofstatebundle_);
+    phasechange_->setup(particleengineinterface, particlematerial_, equationofstatebundle_);
 
   // setup rigid particle contact handler
   if (rigidparticlecontact_)
-    rigidparticlecontact_->Setup(
+    rigidparticlecontact_->setup(
         particleengineinterface, particlewallinterface, particleinteractionwriter_, neighborpairs_);
 
   // short screen output

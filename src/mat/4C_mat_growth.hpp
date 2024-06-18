@@ -133,7 +133,7 @@ namespace Mat
     Teuchos::RCP<Core::Mat::Material> Clone() const override = 0;
 
     /// Setup
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// Update
     void Update() override;
@@ -367,7 +367,7 @@ namespace Mat
     }
 
     /// Setup
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// Update
     void Update() override;

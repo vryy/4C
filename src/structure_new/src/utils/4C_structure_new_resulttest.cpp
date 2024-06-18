@@ -177,7 +177,7 @@ void STR::ResultTest::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ResultTest::Setup()
+void STR::ResultTest::setup()
 {
   check_init();
   // currently unused

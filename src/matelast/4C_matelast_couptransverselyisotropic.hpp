@@ -145,7 +145,7 @@ namespace Mat
       }
 
       /// Setup of summand
-      void Setup(int numgp, Input::LineDefinition* linedef) override;
+      void setup(int numgp, Input::LineDefinition* linedef) override;
 
       /*!
        * \brief add strain energy [derived]

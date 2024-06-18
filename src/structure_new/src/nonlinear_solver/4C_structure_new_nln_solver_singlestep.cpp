@@ -23,16 +23,16 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::SingleStep::Setup()
+void STR::Nln::SOLVER::SingleStep::setup()
 {
   check_init();
 
   // setup the nox parameter list for a full Newton solution method
   set_single_step_params();
 
-  // Call the Setup() function of the base class
+  // Call the setup() function of the base class
   // Note, that the issetup_ flag is also updated during this call.
-  Nox::Setup();
+  Nox::setup();
 
   FOUR_C_ASSERT(is_setup(), "issetup_ should be \"true\" at this point!");
 }

@@ -47,7 +47,7 @@ namespace STR
     class Implicit : public ImplicitBase
     {
      public:
-      void Setup() override;
+      void setup() override;
 
       int Integrate() override;
 

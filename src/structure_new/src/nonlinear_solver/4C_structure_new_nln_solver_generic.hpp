@@ -65,7 +65,7 @@ namespace STR
             const Teuchos::RCP<const STR::TimeInt::Base>& timint);
 
         //! Setup the nonlinear solver configuration
-        virtual void Setup() = 0;
+        virtual void setup() = 0;
 
         /*! \brief Reset internal storage before the nonlinear solution starts
          *
@@ -81,7 +81,7 @@ namespace STR
 
         /*! returns the nox group for external and internal use
          *
-         *  The nox group has to be initialized in one of the derived Setup() routines beforehand.
+         *  The nox group has to be initialized in one of the derived setup() routines beforehand.
          */
         ::NOX::Abstract::Group& SolutionGroup();
         const ::NOX::Abstract::Group& get_solution_group() const;
@@ -93,13 +93,13 @@ namespace STR
         //! Returns true if Init() has been called
         inline const bool& is_init() const { return isinit_; };
 
-        //! Returns true if Setup() has been called
+        //! Returns true if setup() has been called
         inline const bool& is_setup() const { return issetup_; };
 
-        //! Check if Init() and Setup() have been called
+        //! Check if Init() and setup() have been called
         void check_init_setup() const
         {
-          FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+          FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
         }
 
         //! Check if Init() has been called
@@ -189,7 +189,7 @@ namespace STR
 
         /*! returns the nox group (pointer) (only for internal use)
          *
-         *  The nox group has to be initialized in one of the derived Setup() routines. */
+         *  The nox group has to be initialized in one of the derived setup() routines. */
         ::NOX::Abstract::Group& group();
         Teuchos::RCP<::NOX::Abstract::Group>& group_ptr();
 

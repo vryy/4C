@@ -120,7 +120,7 @@ void Core::Conditions::MultiConditionSelector::SetupExtractor(const Core::FE::Di
 
   // MultiMapExtractor setup
 
-  extractor.Setup(fullmap, maps);
+  extractor.setup(fullmap, maps);
 }
 
 

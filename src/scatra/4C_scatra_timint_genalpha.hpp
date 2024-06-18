@@ -28,7 +28,7 @@ namespace ScaTra
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
-    void Setup() override;
+    void setup() override;
 
     void print_time_step_info() override
     {

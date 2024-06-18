@@ -30,7 +30,7 @@ namespace ScaTra
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     /// Setup time integration scheme
-    void Setup() override;
+    void setup() override;
 
     /// compute values at intermediate time steps (required for generalized-alpha)
     void compute_intermediate_values() override{};

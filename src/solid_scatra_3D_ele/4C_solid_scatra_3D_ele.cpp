@@ -163,7 +163,7 @@ bool Discret::ELEMENTS::SolidScatra::ReadElement(
       create_solid_scatra_calculation_interface(celltype_, properties_.solid);
 
   // setup solid material
-  std::visit([&](auto& solid_scatra) { solid_scatra->Setup(SolidMaterial(), linedef); },
+  std::visit([&](auto& solid_scatra) { solid_scatra->setup(SolidMaterial(), linedef); },
       solid_scatra_calc_variant_);
 
   return true;

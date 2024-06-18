@@ -41,7 +41,7 @@ STR::TimIntAB2::TimIntAB2(const Teuchos::ParameterList& timeparams,
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
   return;
 }
 
@@ -68,10 +68,10 @@ void STR::TimIntAB2::Init(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Setup this class                                                                 rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntAB2::Setup()
+void STR::TimIntAB2::setup()
 {
-  // call Setup() in base class
-  STR::TimIntExpl::Setup();
+  // call setup() in base class
+  STR::TimIntExpl::setup();
 
 
   // determine mass, damping and initial accelerations

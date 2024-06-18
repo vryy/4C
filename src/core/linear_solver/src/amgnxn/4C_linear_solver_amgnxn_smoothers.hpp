@@ -161,7 +161,7 @@ namespace Core::LinearSolver::AMGNxN
     {
     }
 
-    void Setup(BlockedMatrix matrix);
+    void setup(BlockedMatrix matrix);
 
     void Solve(
         const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const override;
@@ -252,7 +252,7 @@ namespace Core::LinearSolver::AMGNxN
     void Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
         bool InitialGuessIsZero = false) const override;
 
-    void Setup();
+    void setup();
 
    protected:
     Teuchos::RCP<Core::LinAlg::SparseMatrix> A_;
@@ -280,7 +280,7 @@ namespace Core::LinearSolver::AMGNxN
    private:
     Teuchos::ParameterList fine_smoother_list_;
     Teuchos::RCP<VcycleSingle> v_;
-    void Setup();
+    void setup();
   };
 
   class IfpackWrapper : public SingleFieldSmoother
@@ -303,7 +303,7 @@ namespace Core::LinearSolver::AMGNxN
   {
    public:
     DirectSolverWrapper();
-    void Setup(Teuchos::RCP<Core::LinAlg::SparseMatrix> matrix,
+    void setup(Teuchos::RCP<Core::LinAlg::SparseMatrix> matrix,
         Teuchos::RCP<Teuchos::ParameterList> params);
 
     void Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,

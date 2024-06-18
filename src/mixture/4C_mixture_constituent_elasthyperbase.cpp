@@ -172,7 +172,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::read_element(
   MixtureConstituent::read_element(numgp, linedef);
 
   // Setup summands
-  for (const auto& summand : potsum_) summand->Setup(numgp, linedef);
+  for (const auto& summand : potsum_) summand->setup(numgp, linedef);
 
   // find out which formulations are used
   Mat::ElastHyperProperties(potsum_, summand_properties_);

@@ -123,7 +123,7 @@ void STR::Predict::Generic::check_init() const { FOUR_C_ASSERT(is_init(), "Call 
  *----------------------------------------------------------------------------*/
 void STR::Predict::Generic::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*

@@ -69,7 +69,7 @@ namespace Adapter
     virtual void Init();
 
     /// setup this class
-    virtual void Setup();
+    virtual void setup();
 
     /// access to the scalar transport field solver
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ScaTraField() { return scatra_; }
@@ -89,13 +89,13 @@ namespace Adapter
     bool isinit_;
 
    protected:
-    //! returns true if Setup() was called and is still valid
+    //! returns true if setup() was called and is still valid
     bool is_setup() const { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
     bool is_init() const { return isinit_; };
 
-    //! check if \ref Setup() was called
+    //! check if \ref setup() was called
     void check_is_setup() const;
 
     //! check if \ref Init() was called

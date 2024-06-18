@@ -45,10 +45,10 @@ void ScaTra::TimIntOneStepTheta::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntOneStepTheta::Setup()
+void ScaTra::TimIntOneStepTheta::setup()
 {
   // setup base class
-  ScaTraTimIntImpl::Setup();
+  ScaTraTimIntImpl::setup();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

@@ -39,9 +39,9 @@ void FS3I::PartFS3I1Wc::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I1Wc::Setup()
+void FS3I::PartFS3I1Wc::setup()
 {
-  FS3I::PartFS3I::Setup();
+  FS3I::PartFS3I::setup();
   return;
 }
 

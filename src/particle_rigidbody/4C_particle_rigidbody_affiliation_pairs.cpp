@@ -32,7 +32,7 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::Init()
   // nothing to do
 }
 
-void ParticleRigidBody::RigidBodyAffiliationPairs::Setup(
+void ParticleRigidBody::RigidBodyAffiliationPairs::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine

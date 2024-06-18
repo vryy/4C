@@ -32,11 +32,11 @@ STR::TimeInt::Explicit::Explicit() : STR::TimeInt::Base()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Explicit::Setup()
+void STR::TimeInt::Explicit::setup()
 {
   // safety check
   check_init();
-  STR::TimeInt::Base::Setup();
+  STR::TimeInt::Base::setup();
   // ---------------------------------------------------------------------------
   // cast the base class integrator
   // ---------------------------------------------------------------------------
@@ -48,7 +48,7 @@ void STR::TimeInt::Explicit::Setup()
       Teuchos::rcp(new STR::TimeInt::NoxInterface);
   noxinterface_ptr->Init(
       data_global_state_ptr(), explint_ptr_, dbc_ptr(), Teuchos::rcp(this, false));
-  noxinterface_ptr->Setup();
+  noxinterface_ptr->setup();
   // ---------------------------------------------------------------------------
   // build non-linear solver
   // ---------------------------------------------------------------------------
@@ -63,7 +63,7 @@ void STR::TimeInt::Explicit::Setup()
   nlnsolver_ptr_ = STR::Nln::SOLVER::build_nln_solver(nlnSolverType);
   nlnsolver_ptr_->Init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, explint_ptr_,
       Teuchos::rcp(this, false));
-  nlnsolver_ptr_->Setup();
+  nlnsolver_ptr_->setup();
   // set setup flag
   issetup_ = true;
 }

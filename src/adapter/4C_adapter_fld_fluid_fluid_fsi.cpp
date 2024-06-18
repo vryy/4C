@@ -282,7 +282,7 @@ void Adapter::FluidFluidFSI::setup_interface(const int nds_master)
   Teuchos::RCP<const Epetra_Map> xfluidmap =
       xfluidfluid_->x_fluid_fluid_map_extractor()->XFluidMap();
   // do the setup
-  mergedfluidinterface_->Setup(xfluidmap, *FluidFSI::Interface());
+  mergedfluidinterface_->setup(xfluidmap, *FluidFSI::Interface());
 
   return;
 }

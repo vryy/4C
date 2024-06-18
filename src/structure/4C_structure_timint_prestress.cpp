@@ -33,13 +33,13 @@ STR::TimIntPrestress::TimIntPrestress(const Teuchos::ParameterList& timeparams,
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
   return;
 }
 
-void STR::TimIntPrestress::Setup()
+void STR::TimIntPrestress::setup()
 {
-  STR::TimIntStatics::Setup();
+  STR::TimIntStatics::setup();
   // Check for compatible prestressing algorithms
   const auto pre_stress = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
       Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");

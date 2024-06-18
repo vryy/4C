@@ -54,7 +54,7 @@ namespace GEOMETRYPAIR
      * \param discret (in) Pointer to the discretization.
      * \param face_elements (in) Map to all face elements in this condition on this rank.
      */
-    void Setup(const Teuchos::RCP<const Core::FE::Discretization>& discret,
+    void setup(const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements);
 
     /**

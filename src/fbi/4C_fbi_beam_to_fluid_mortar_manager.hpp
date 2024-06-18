@@ -109,7 +109,7 @@ namespace BEAMINTERACTION
      * Lagrange multiplier DOF.
      *
      */
-    void Setup();
+    void setup();
 
     /**
      * \brief Calculate the maps for the beam and fluid dofs. The calculated maps are used in

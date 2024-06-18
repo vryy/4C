@@ -217,7 +217,7 @@ namespace Mat
 
 
     /// setup
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /*!
      * \brief Post setup routine called before the first Evaluate call

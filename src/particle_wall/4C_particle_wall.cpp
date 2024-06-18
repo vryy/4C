@@ -66,7 +66,7 @@ void PARTICLEWALL::WallHandlerBase::Init(
   init_wall_data_state();
 }
 
-void PARTICLEWALL::WallHandlerBase::Setup(
+void PARTICLEWALL::WallHandlerBase::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const double restart_time)
 {
@@ -80,7 +80,7 @@ void PARTICLEWALL::WallHandlerBase::Setup(
   create_wall_discretization_runtime_vtu_writer(restart_time);
 
   // setup wall data state container
-  walldatastate_->Setup();
+  walldatastate_->setup();
 }
 
 void PARTICLEWALL::WallHandlerBase::write_restart(const int step, const double time) const

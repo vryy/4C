@@ -94,7 +94,7 @@ namespace STR
         const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
 
     //! Setup (has to be implemented by the derived classes)
-    virtual void Setup();
+    virtual void setup();
 
     //! Post setup operation (compute initial equilibrium state), should be run directly after the
     //! setup routine has been finished
@@ -399,7 +399,7 @@ namespace STR
     //! indicates if the Init() function has been called
     bool isinit_;
 
-    //! indicates if the Setup() function has been called
+    //! indicates if the setup() function has been called
     bool issetup_;
 
     //! Mid-time energy container
@@ -409,7 +409,7 @@ namespace STR
       MidTimeEnergy(const Integrator& integrator);
 
       /// setup
-      void Setup();
+      void setup();
 
       /// can this container be used?
       bool is_correctly_configured() const;

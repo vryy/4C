@@ -150,7 +150,7 @@ void Mat::Maxwell0dAcinusDoubleExponential::Unpack(const std::vector<char>& data
  | E1_01, E1_LIN1, E1_EXP1, TAU1 and                                    |
  | E1_02, E1_LIN2, E1_EXP2, TAU2 to material                roth 10/2014|
  *----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusDoubleExponential::Setup(Input::LineDefinition* linedef)
+void Mat::Maxwell0dAcinusDoubleExponential::setup(Input::LineDefinition* linedef)
 {
   linedef->extract_double("E1_01", e1_01_);
   linedef->extract_double("E1_LIN1", e1_lin1_);

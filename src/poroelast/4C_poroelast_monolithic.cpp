@@ -433,7 +433,7 @@ void PoroElast::Monolithic::SetupSystem()
     // full Poroelasticity-map
     fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
     // full Poroelasticity-blockmap
-    blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+    blockrowdofmap_->setup(*fullmap_, vecSpaces);
   }
   // -------------------------------------------------------------
 
@@ -453,7 +453,7 @@ void PoroElast::Monolithic::SetupSystem()
           //*(fluid_field()->dof_row_map()),
           81, true, true));
 
-  nopen_handle_->Setup(dof_row_map(), (fluid_field()->discretization()->dof_row_map(0)));
+  nopen_handle_->setup(dof_row_map(), (fluid_field()->discretization()->dof_row_map(0)));
 
   SetupEquilibration();
 }  // SetupSystem()

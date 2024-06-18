@@ -56,7 +56,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::Init()
   }
 }
 
-void PARTICLEALGORITHM::InitialFieldHandler::Setup(
+void PARTICLEALGORITHM::InitialFieldHandler::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine

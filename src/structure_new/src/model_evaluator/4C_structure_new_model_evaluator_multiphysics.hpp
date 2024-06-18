@@ -85,7 +85,7 @@ namespace STR
           const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset) override;
 
       //! setup class variables
-      void Setup() override;
+      void setup() override;
 
       //! set the active model type wrapped in this class.
       //! only active model type is evaluated.

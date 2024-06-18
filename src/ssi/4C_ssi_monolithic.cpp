@@ -638,10 +638,10 @@ void SSI::SsiMono::prepare_time_step()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SsiMono::Setup()
+void SSI::SsiMono::setup()
 {
   // call base class routine
-  SSIBase::Setup();
+  SSIBase::setup();
 
   // safety checks
   if (ScaTraField()->NumScal() != 1)

@@ -48,7 +48,7 @@ namespace Adapter
     /**
      * \brief Initializes all members of the class     *
      */
-    void Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
+    void setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
         Teuchos::RCP<Core::LinAlg::SparseOperator> fluidmatrix, bool fluidmeshtying) override;
 
     /**

@@ -61,7 +61,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Setup the beam coupling pair.
      */
-    void Setup() override;
+    void setup() override;
 
     /**
      * \brief Things that need to be done in a separate loop before the actual evaluation loop over

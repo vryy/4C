@@ -84,7 +84,7 @@ void BEAMINTERACTION::BeamLink::Init(const int id, const std::vector<std::pair<i
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::Setup(const int matnum)
+void BEAMINTERACTION::BeamLink::setup(const int matnum)
 {
   check_init();
 

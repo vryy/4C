@@ -59,7 +59,7 @@ namespace PaSI
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    void Setup() override;
+    void setup() override;
 
     /*!
      * \brief read restart information for given time step

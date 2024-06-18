@@ -60,7 +60,7 @@ namespace ParticleRigidBody
      *
      * \param[in] particlerigidbodyinterface interface to rigid body handler
      */
-    void Setup(const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface>
+    void setup(const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface>
             particlerigidbodyinterface);
 
     /*!

@@ -34,7 +34,7 @@ namespace ALE
         const UTILS::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
 
     //! Set up mesh sliding framework
-    Teuchos::RCP<Core::LinAlg::SparseOperator> Setup(
+    Teuchos::RCP<Core::LinAlg::SparseOperator> setup(
         std::vector<int> coupleddof, Teuchos::RCP<Epetra_Vector>& dispnp) override;
 
    private:

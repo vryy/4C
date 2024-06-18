@@ -82,7 +82,7 @@ namespace STR
               linsolvers);
 
       /// setup new class variables
-      virtual void Setup();
+      virtual void setup();
 
      protected:
       /// get the indicator state
@@ -97,10 +97,10 @@ namespace STR
         FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
       }
 
-      /// Check if Init() and Setup() have been called, yet.
+      /// Check if Init() and setup() have been called, yet.
       inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
       }
 
      public:
@@ -1014,7 +1014,7 @@ namespace STR
       GenAlphaDataSDyn();
 
       //! Setup function [derived]
-      void Setup() override;
+      void setup() override;
 
      public:
       //! @name Read-only accessors
@@ -1097,7 +1097,7 @@ namespace STR
       OneStepThetaDataSDyn();
 
       //! Setup function [derived]
-      void Setup() override;
+      void setup() override;
 
      public:
       //! @name Read-only accessors
@@ -1130,7 +1130,7 @@ namespace STR
       ExplEulerDataSDyn();
 
       //! Setup function [derived]
-      void Setup() override;
+      void setup() override;
 
      public:
       //! @name Read-only accessors

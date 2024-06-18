@@ -36,7 +36,7 @@ STR::MODELEVALUATOR::PartitionedFSI::PartitionedFSI()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedFSI::Setup()
+void STR::MODELEVALUATOR::PartitionedFSI::setup()
 {
   // fsi interface force at t_{n+1}
   interface_force_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));

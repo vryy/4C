@@ -31,7 +31,7 @@ void PARTICLEALGORITHM::ViscousDampingHandler::Init()
   // nothing to do
 }
 
-void PARTICLEALGORITHM::ViscousDampingHandler::Setup(
+void PARTICLEALGORITHM::ViscousDampingHandler::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine

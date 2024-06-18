@@ -75,14 +75,14 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
 {
   check_init();
 
   // build a new data container to manage beam interaction parameters
   beam_interaction_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionParams());
   beam_interaction_params_ptr_->Init();
-  beam_interaction_params_ptr_->Setup();
+  beam_interaction_params_ptr_->setup();
 
   // build a new data container to manage geometric search parameters
   geometric_search_params_ptr_ = Teuchos::rcp(new Core::GeometricSearch::GeometricSearchParams(
@@ -166,7 +166,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
                       Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
                       *Global::Problem::Instance()->OutputControlFile(), GState().get_time_n())));
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->Init();
-      beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->Setup(
+      beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->setup(
           GInOutput().get_runtime_output_params(),
           beam_contact_params_ptr_->beam_to_solid_volume_meshtying_params()
               ->get_visualization_output_params_ptr());
@@ -197,7 +197,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
                       Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
                       *Global::Problem::Instance()->OutputControlFile(), GState().get_time_n())));
       beam_to_solid_surface_visualization_output_writer_ptr_->Init();
-      beam_to_solid_surface_visualization_output_writer_ptr_->Setup(
+      beam_to_solid_surface_visualization_output_writer_ptr_->setup(
           GInOutput().get_runtime_output_params(),
           beam_contact_params_ptr_->beam_to_solid_surface_meshtying_params()
               ->get_visualization_output_params_ptr());
@@ -993,7 +993,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
       if (newbeaminteractionpair != Teuchos::null)
       {
         newbeaminteractionpair->Init(beam_contact_params_ptr_, ele_ptrs);
-        newbeaminteractionpair->Setup();
+        newbeaminteractionpair->setup();
 
         // add to list of current contact pairs
         contact_elepairs_.push_back(newbeaminteractionpair);
@@ -1002,7 +1002,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
   }
 
   // Setup the geometry evaluation data.
-  beam_interaction_conditions_ptr_->Setup(DiscretPtr());
+  beam_interaction_conditions_ptr_->setup(DiscretPtr());
 
   // Get the pairs that can be assembled directly.
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_pairs_direct;

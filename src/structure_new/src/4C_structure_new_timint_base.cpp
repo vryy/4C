@@ -65,7 +65,7 @@ void STR::TimeInt::Base::Init(const Teuchos::RCP<STR::TimeInt::BaseDataIO> datai
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> dataglobalstate)
 {
   // ---------------------------------------------------------------------------
-  // We need to call Setup() after Init()
+  // We need to call setup() after Init()
   // ---------------------------------------------------------------------------
   issetup_ = false;
 
@@ -84,7 +84,7 @@ void STR::TimeInt::Base::Init(const Teuchos::RCP<STR::TimeInt::BaseDataIO> datai
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Base::Setup()
+void STR::TimeInt::Base::setup()
 {
   check_init();
 
@@ -98,7 +98,7 @@ void STR::TimeInt::Base::Setup()
    * (most times adding a "const" should fix the problem).          hiermeier */
   Teuchos::RCP<Core::FE::Discretization> discret_ptr = data_global_state().get_discret();
   dbc_ptr_->Init(discret_ptr, data_global_state().get_freact_np(), Teuchos::rcp(this, false));
-  dbc_ptr_->Setup();
+  dbc_ptr_->setup();
 
   // ---------------------------------------------------------------------------
   // Create the explicit/implicit integrator
@@ -106,7 +106,7 @@ void STR::TimeInt::Base::Setup()
   int_ptr_ = STR::build_integrator(data_sdyn());
   int_ptr_->Init(data_s_dyn_ptr(), data_global_state_ptr(), data_io_ptr(), dbc_ptr_,
       Teuchos::rcp(this, false));
-  int_ptr_->Setup();
+  int_ptr_->setup();
   int_ptr_->post_setup();
   // Initialize and Setup the input/output writer for every Newton iteration
   dataio_->init_setup_every_iteration_writer(this, data_sdyn().get_nox_params());
@@ -390,7 +390,7 @@ Teuchos::RCP<Core::UTILS::ResultTest> STR::TimeInt::Base::CreateFieldTest()
   check_init_setup();
   Teuchos::RCP<STR::ResultTest> resulttest = Teuchos::rcp(new STR::ResultTest());
   resulttest->Init(get_data_global_state(), integrator().eval_data());
-  resulttest->Setup();
+  resulttest->setup();
 
   return resulttest;
 }
@@ -924,18 +924,18 @@ void STR::TimeInt::Base::read_restart(const int stepn)
   // ---------------------------------------------------------------------------
   // The order is important at this point!
   // (0) read element and node data --> new discretization
-  // (1) Setup() the model evaluator and time integrator
+  // (1) setup() the model evaluator and time integrator
   // (2) read and possibly overwrite the general dynamic state
   // (3) read specific time integrator and model evaluator data
   // ---------------------------------------------------------------------------
   // (0) read element and node data
   ioreader.read_history_data(stepn);
 
-  // (1) Setup() the model evaluator and time integrator
+  // (1) setup() the model evaluator and time integrator
   /* Since we call a redistribution on the structural discretization, we have to
    * setup the structural time integration strategy at this point and not as
    * usually during the adapter call.                         hiermeier 05/16 */
-  Setup();
+  setup();
 
   // (2) read (or overwrite) the general dynamic state
   Teuchos::RCP<Epetra_Vector>& velnp = dataglobalstate_->get_vel_np();

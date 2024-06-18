@@ -76,7 +76,7 @@ void FS3I::FS3IBase::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::Setup()
+void FS3I::FS3IBase::setup()
 {
   check_is_init();
 
@@ -806,7 +806,7 @@ void FS3I::FS3IBase::extract_scatra_field_vectors(Teuchos::RCP<const Epetra_Vect
 /*----------------------------------------------------------------------*/
 void FS3I::FS3IBase::check_is_setup()
 {
-  if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
+  if (not is_setup()) FOUR_C_THROW("setup() was not called.");
 };
 
 /*----------------------------------------------------------------------*/

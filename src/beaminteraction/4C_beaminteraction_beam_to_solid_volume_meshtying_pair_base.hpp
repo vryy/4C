@@ -68,7 +68,7 @@ namespace BEAMINTERACTION
      * base class, since the beam-to-surface (which derive from the base class) need a different
      * handling of the solid DOF.
      */
-    void Setup() override;
+    void setup() override;
 
     /**
      * \brief Things that need to be done in a separate loop before the actual evaluation loop over

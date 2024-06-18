@@ -47,12 +47,12 @@ void ScaTra::ScaTraTimIntElchOST::Init()
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElchOST::Setup()
+void ScaTra::ScaTraTimIntElchOST::setup()
 {
-  // call Setup()-functions of base classes
+  // call setup()-functions of base classes
   // note: this order is important
-  TimIntOneStepTheta::Setup();
-  ScaTraTimIntElch::Setup();
+  TimIntOneStepTheta::setup();
+  ScaTraTimIntElch::setup();
 }
 
 /*--------------------------------------------------------------------------*
@@ -364,12 +364,12 @@ void ScaTra::ScaTraTimIntElchBDF2::Init()
 /*----------------------------------------------------------------------*
  |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElchBDF2::Setup()
+void ScaTra::ScaTraTimIntElchBDF2::setup()
 {
-  // call Setup()-functions of base classes
+  // call setup()-functions of base classes
   // note: this order is important
-  TimIntBDF2::Setup();
-  ScaTraTimIntElch::Setup();
+  TimIntBDF2::setup();
+  ScaTraTimIntElch::setup();
 }
 
 
@@ -639,12 +639,12 @@ void ScaTra::ScaTraTimIntElchGenAlpha::Init()
 /*----------------------------------------------------------------------*
  |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElchGenAlpha::Setup()
+void ScaTra::ScaTraTimIntElchGenAlpha::setup()
 {
-  // call Setup()-functions of base classes
+  // call setup()-functions of base classes
   // note: this order is important
-  TimIntGenAlpha::Setup();
-  ScaTraTimIntElch::Setup();
+  TimIntGenAlpha::setup();
+  ScaTraTimIntElch::setup();
 }
 
 
@@ -907,12 +907,12 @@ void ScaTra::ScaTraTimIntElchStationary::Init()
 /*----------------------------------------------------------------------*
  |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElchStationary::Setup()
+void ScaTra::ScaTraTimIntElchStationary::setup()
 {
-  // call Setup()-functions of base classes
+  // call setup()-functions of base classes
   // note: this order is important
-  TimIntStationary::Setup();
-  ScaTraTimIntElch::Setup();
+  TimIntStationary::setup();
+  ScaTraTimIntElch::setup();
 }
 
 
@@ -1079,12 +1079,12 @@ void ScaTra::ScaTraTimIntElchSCLOST::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElchSCLOST::Setup()
+void ScaTra::ScaTraTimIntElchSCLOST::setup()
 {
-  // call Setup()-functions of base classes
+  // call setup()-functions of base classes
   // note: this order is important
-  TimIntOneStepTheta::Setup();
-  ScaTraTimIntElchSCL::Setup();
+  TimIntOneStepTheta::setup();
+  ScaTraTimIntElchSCL::setup();
 }
 
 /*--------------------------------------------------------------------------*

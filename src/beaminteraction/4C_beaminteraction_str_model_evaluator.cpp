@@ -74,7 +74,7 @@ STR::MODELEVALUATOR::BeamInteraction::BeamInteraction()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::Setup()
+void STR::MODELEVALUATOR::BeamInteraction::setup()
 {
   check_init();
 
@@ -94,7 +94,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
 
   beaminteraction_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionParams());
   beaminteraction_params_ptr_->Init();
-  beaminteraction_params_ptr_->Setup();
+  beaminteraction_params_ptr_->setup();
 
   // print logo
   Logo();
@@ -122,7 +122,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // init data container
   ia_state_ptr_ = Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteractionDataState());
   ia_state_ptr_->Init();
-  ia_state_ptr_->Setup(ia_discret_);
+  ia_state_ptr_->setup(ia_discret_);
 
   ia_state_ptr_->GetDisNp() = Teuchos::rcp(new Epetra_Vector(*global_state_ptr()->get_dis_np()));
   BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->GetDisNp(),
@@ -164,7 +164,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   {
     beam_crosslinker_handler_ = Teuchos::rcp(new BEAMINTERACTION::BeamCrosslinkerHandler());
     beam_crosslinker_handler_->Init(global_state().get_my_rank(), binstrategy_);
-    beam_crosslinker_handler_->Setup();
+    beam_crosslinker_handler_->setup();
   }
 
   // some screen output for binning
@@ -322,7 +322,7 @@ void STR::MODELEVALUATOR::BeamInteraction::init_and_setup_sub_model_evaluators()
         ia_state_ptr_, beam_crosslinker_handler_, binstrategy_,
         tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(),
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::UTILS::MapExtractor>(eletypeextractor_, true));
-    (*sme_iter)->Setup();
+    (*sme_iter)->setup();
   }
 
   // submodels build their pointer to other submodel objects to enable submodel dependencies

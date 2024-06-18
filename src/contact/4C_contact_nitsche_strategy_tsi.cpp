@@ -99,9 +99,9 @@ void CONTACT::NitscheStrategyTsi::SetParentState(
     CONTACT::NitscheStrategy::SetParentState(statename, vec);
 }
 
-void CONTACT::NitscheStrategyTsi::Setup(bool redistributed, bool init)
+void CONTACT::NitscheStrategyTsi::setup(bool redistributed, bool init)
 {
-  CONTACT::NitscheStrategy::Setup(redistributed, init);
+  CONTACT::NitscheStrategy::setup(redistributed, init);
 
   curr_state_temp_ = Teuchos::null;
 }

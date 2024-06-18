@@ -47,7 +47,7 @@ namespace Mat
      * \brief Initialize and setup element specific variables
      *
      */
-    virtual void Setup(int numgp_force, int numgp_moment) = 0;
+    virtual void setup(int numgp_force, int numgp_moment) = 0;
 
     /** \brief get the radius of a circular cross-section that is ONLY to be used for evaluation of
      *         any kinds of beam interactions (contact, potentials, viscous drag forces ...)

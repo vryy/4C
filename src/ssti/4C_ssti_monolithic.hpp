@@ -87,7 +87,7 @@ namespace SSTI
     void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& sstitimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams,
         const Teuchos::ParameterList& structparams) override;
-    void Setup() override;
+    void setup() override;
     void SetupSystem() override;
     //@}
 

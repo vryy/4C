@@ -47,7 +47,7 @@ namespace CONTACT
 
       void Init(const Strategy* const strategy, CONTACT::Aug::DataContainer& data);
 
-      void Setup();
+      void setup();
 
       void Redistribute();
 
@@ -71,7 +71,7 @@ namespace CONTACT
       inline void check_init_setup() const
       {
         check_init();
-        if (not issetup_) FOUR_C_THROW("Call Setup() first!");
+        if (not issetup_) FOUR_C_THROW("Call setup() first!");
       }
 
       Teuchos::RCP<Epetra_Vector> get_structure_gradient(

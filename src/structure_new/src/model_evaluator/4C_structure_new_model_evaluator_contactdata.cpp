@@ -43,7 +43,7 @@ void STR::MODELEVALUATOR::ContactData::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::ContactData::Setup()
+void STR::MODELEVALUATOR::ContactData::setup()
 {
   check_init();
 

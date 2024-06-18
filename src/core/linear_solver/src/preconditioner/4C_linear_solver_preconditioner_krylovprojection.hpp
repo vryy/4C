@@ -34,7 +34,7 @@ namespace Core::LinearSolver
     KrylovProjectionPreconditioner(Teuchos::RCP<PreconditionerTypeBase> preconditioner,
         Teuchos::RCP<Core::LinAlg::KrylovProjector> projector);
 
-    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
     /// linear operator used for preconditioning

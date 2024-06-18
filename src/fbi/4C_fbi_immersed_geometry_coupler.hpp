@@ -70,7 +70,7 @@ namespace FBI
      * \param[in] discretizations vector containing the structure and fluid discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    virtual void Setup(std::vector<Teuchos::RCP<Core::FE::Discretization>>&,
+    virtual void setup(std::vector<Teuchos::RCP<Core::FE::Discretization>>&,
         Teuchos::RCP<const Epetra_Vector> structure_displacement);
 
     /**

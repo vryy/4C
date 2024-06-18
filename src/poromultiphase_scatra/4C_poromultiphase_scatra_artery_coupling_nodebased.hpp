@@ -96,7 +96,7 @@ namespace PoroMultiPhaseScaTra
     void Init() override;
 
     //! setup the strategy
-    void Setup() override;
+    void setup() override;
 
     //! apply mesh movement (on artery elements)
     void ApplyMeshMovement() override;

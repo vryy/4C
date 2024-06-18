@@ -44,7 +44,7 @@ namespace Adapter
         Teuchos::RCP<Field> field, FieldWrapper::Fieldtype type, bool NOXCorrection = false);
 
     /// setup
-    void Setup();
+    void setup();
 
     /// communication object at the interface
     virtual Teuchos::RCP<const STR::MapExtractor> Interface() const

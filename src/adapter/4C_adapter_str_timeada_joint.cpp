@@ -68,7 +68,7 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   //
   Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio = Teuchos::rcp(new STR::TimeInt::BaseDataIO());
   dataio->Init(*ioflags, adyn, *xparams, output);
-  dataio->Setup();
+  dataio->setup();
 
   ///// setup datasdyn
   Teuchos::RCP<std::set<enum Inpar::STR::ModelType>> modeltypes =
@@ -83,17 +83,17 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   //
   Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn = STR::TimeInt::build_data_sdyn(adyn);
   datasdyn->Init(stm_->discretization(), adyn, *xparams, modeltypes, eletechs, linsolvers);
-  datasdyn->Setup();
+  datasdyn->setup();
 
   // setup global state
   Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> dataglobalstate =
       STR::TimeInt::build_data_global_state();
   dataglobalstate->Init(stm_->discretization(), adyn, datasdyn);
-  dataglobalstate->Setup();
+  dataglobalstate->setup();
 
   // setup auxiliary integrator
   sta_->Init(dataio, datasdyn, dataglobalstate);
-  sta_->Setup();
+  sta_->setup();
 
   // setup wrapper
   sta_wrapper_ = Teuchos::rcp(new Adapter::StructureTimeLoop(sta_));

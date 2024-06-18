@@ -59,10 +59,10 @@ void PaSI::PasiPartTwoWayCoup::Init()
     FOUR_C_THROW("no convergence tolerance for partitioned iterations set!");
 }
 
-void PaSI::PasiPartTwoWayCoup::Setup()
+void PaSI::PasiPartTwoWayCoup::setup()
 {
   // call base class setup
-  PaSI::PartitionedAlgo::Setup();
+  PaSI::PartitionedAlgo::setup();
 
   // safety check
   {

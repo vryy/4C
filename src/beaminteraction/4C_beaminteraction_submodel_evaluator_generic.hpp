@@ -101,16 +101,16 @@ namespace BEAMINTERACTION
           Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> const& eletypeextractor);
 
       //! setup class variables
-      virtual void Setup() = 0;
+      virtual void setup() = 0;
 
      protected:
       //! Returns true, if Init() has been called
       inline const bool& is_init() const { return isinit_; };
 
-      //! Returns true, if Setup() has been called
+      //! Returns true, if setup() has been called
       inline const bool& is_setup() const { return issetup_; };
 
-      //! Checks, if Init() and Setup() have been called
+      //! Checks, if Init() and setup() have been called
       virtual void check_init_setup() const;
 
       virtual void check_init() const;

@@ -231,7 +231,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Discret::ELEMENT
   // TEUCHOS_FUNC_TIME_MONITOR( "FLD::FluidEleCalc::Evaluate" );
 
   // rotationally symmetric periodic bc's: do setup for current element
-  rotsymmpbc_->Setup(ele);
+  rotsymmpbc_->setup(ele);
 
   // construct views
   Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_> elemat1(elemat1_epetra, true);

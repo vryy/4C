@@ -67,7 +67,7 @@ namespace ScaTra
 
     void read_restart_problem_specific(int step, Core::IO::DiscretizationReader& reader) override;
 
-    void Setup() override;
+    void setup() override;
 
     void TestResults() override;
 

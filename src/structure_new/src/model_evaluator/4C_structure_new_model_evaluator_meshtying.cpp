@@ -61,14 +61,14 @@ void STR::MODELEVALUATOR::Meshtying::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::Setup()
+void STR::MODELEVALUATOR::Meshtying::setup()
 {
   check_init();
 
   // create the meshtying factory
   Mortar::STRATEGY::FactoryMT factory;
   factory.Init(global_state_ptr()->get_discret());
-  factory.Setup();
+  factory.setup();
 
   // check the problem dimension
   factory.CheckDimension();
@@ -113,7 +113,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   strategy_ptr_->MortarCoupling(integrator().get_dbc().GetZerosPtr());
 
   strategy_ptr_->nox_interface_ptr()->Init(global_state_ptr());
-  strategy_ptr_->nox_interface_ptr()->Setup();
+  strategy_ptr_->nox_interface_ptr()->setup();
 
   if (!global_state().get_restart_step())
   {

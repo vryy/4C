@@ -97,7 +97,7 @@ void XFEM::CouplingBase::Init()
   // TODO: correct handling of init and setup flags for derived classes
 
   // ---------------------------------------------------------------------------
-  // We need to call Setup() after Init()
+  // We need to call setup() after Init()
   // ---------------------------------------------------------------------------
   issetup_ = false;
 
@@ -146,7 +146,7 @@ void XFEM::CouplingBase::Init()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::CouplingBase::Setup()
+void XFEM::CouplingBase::setup()
 {
   check_init();
 

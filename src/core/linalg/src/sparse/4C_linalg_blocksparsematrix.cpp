@@ -451,7 +451,7 @@ void Core::LinAlg::BlockSparseMatrixBase::get_partial_extractor(
     full_map = MergeMap(full_map, full_extractor.Map(id), false);
   }
 
-  partial_extractor.Setup(*full_map, p_block_maps);
+  partial_extractor.setup(*full_map, p_block_maps);
 }
 
 /*----------------------------------------------------------------------*

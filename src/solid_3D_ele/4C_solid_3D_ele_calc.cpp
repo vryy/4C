@@ -343,10 +343,10 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::update_prest
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Setup(
+void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::setup(
     Mat::So3Material& solid_material, Input::LineDefinition* linedef)
 {
-  solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);
+  solid_material.setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>

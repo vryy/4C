@@ -38,7 +38,7 @@ namespace ParticleInteraction
     virtual void Init();
 
     //! setup momentum formulation handler
-    virtual void Setup();
+    virtual void setup();
 
     //! evaluate specific coefficient
     virtual void SpecificCoefficient(const double* dens_i, const double* dens_j,

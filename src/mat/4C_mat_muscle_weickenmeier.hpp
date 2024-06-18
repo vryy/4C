@@ -177,7 +177,7 @@ namespace Mat
 
     void Unpack(const std::vector<char>& data) override;
 
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     bool UsesExtendedUpdate() override { return true; };
 

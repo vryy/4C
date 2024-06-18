@@ -42,7 +42,7 @@ void CONTACT::MtNoxInterface::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::MtNoxInterface::Setup()
+void CONTACT::MtNoxInterface::setup()
 {
   check_init();
 

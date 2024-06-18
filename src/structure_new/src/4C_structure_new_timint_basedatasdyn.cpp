@@ -117,7 +117,7 @@ void STR::TimeInt::BaseDataSDyn::Init(const Teuchos::RCP<Core::FE::Discretizatio
     const Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
         linsolvers)
 {
-  // We have to call Setup() after Init()
+  // We have to call setup() after Init()
   issetup_ = false;
 
   // ---------------------------------------------------------------------------
@@ -310,7 +310,7 @@ void STR::TimeInt::BaseDataSDyn::Init(const Teuchos::RCP<Core::FE::Discretizatio
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataSDyn::Setup()
+void STR::TimeInt::BaseDataSDyn::setup()
 {
   check_init();
 
@@ -330,7 +330,7 @@ void STR::TimeInt::BaseDataSDyn::Setup()
             Global::Problem::Instance()->DoesExistDis("boundingbox")
                 ? Global::Problem::Instance()->GetDis("boundingbox")
                 : Teuchos::null;
-        periodic_boundingbox_->Setup(Global::Problem::Instance()->IOParams(), boundingbox_dis,
+        periodic_boundingbox_->setup(Global::Problem::Instance()->IOParams(), boundingbox_dis,
             *Global::Problem::Instance()->GetCommunicators()->GlobalComm(),
             Global::Problem::Instance()->NDim(), *Global::Problem::Instance()->OutputControlFile());
         break;
@@ -725,12 +725,12 @@ STR::TimeInt::GenAlphaDataSDyn::GenAlphaDataSDyn()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::GenAlphaDataSDyn::Setup()
+void STR::TimeInt::GenAlphaDataSDyn::setup()
 {
   check_init();
 
   // call base class setup
-  STR::TimeInt::BaseDataSDyn::Setup();
+  STR::TimeInt::BaseDataSDyn::setup();
 
   midavg_ = Core::UTILS::IntegralValue<Inpar::STR::MidAverageEnum>(
       get_sdyn_params().sublist("GENALPHA"), "GENAVG");
@@ -752,12 +752,12 @@ STR::TimeInt::OneStepThetaDataSDyn::OneStepThetaDataSDyn() : theta_(-1.0)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::OneStepThetaDataSDyn::Setup()
+void STR::TimeInt::OneStepThetaDataSDyn::setup()
 {
   check_init();
 
   // call base class setup
-  STR::TimeInt::BaseDataSDyn::Setup();
+  STR::TimeInt::BaseDataSDyn::setup();
 
   theta_ = get_sdyn_params().sublist("ONESTEPTHETA").get<double>("THETA");
 
@@ -773,12 +773,12 @@ STR::TimeInt::ExplEulerDataSDyn::ExplEulerDataSDyn() : modexpleuler_(true)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::ExplEulerDataSDyn::Setup()
+void STR::TimeInt::ExplEulerDataSDyn::setup()
 {
   check_init();
 
   // call base class setup
-  STR::TimeInt::BaseDataSDyn::Setup();
+  STR::TimeInt::BaseDataSDyn::setup();
 
   modexpleuler_ =
       (Core::UTILS::IntegralValue<int>(

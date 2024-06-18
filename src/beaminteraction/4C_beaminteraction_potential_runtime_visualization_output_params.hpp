@@ -35,7 +35,7 @@ namespace BEAMINTERACTION
     void Init(const Teuchos::ParameterList& beam_contact_visualization_output_paramslist);
 
     //! setup member variables
-    void Setup();
+    void setup();
 
     /**
      * \brief Return the container holding the general output parameters

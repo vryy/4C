@@ -26,16 +26,16 @@ STR::Nln::SOLVER::FullNewton::FullNewton() : Nox()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::FullNewton::Setup()
+void STR::Nln::SOLVER::FullNewton::setup()
 {
   check_init();
 
   // setup the nox parameter list for a full Newton solution method
   set_full_newton_params();
 
-  // Call the Setup() function of the base class
+  // Call the setup() function of the base class
   // Note, that the issetup_ flag is also updated during this call.
-  Nox::Setup();
+  Nox::setup();
 
   FOUR_C_ASSERT(is_setup(), "issetup_ should be \"true\" at this point!");
 }

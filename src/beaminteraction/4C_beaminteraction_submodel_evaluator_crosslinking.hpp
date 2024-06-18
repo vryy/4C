@@ -75,7 +75,7 @@ namespace BEAMINTERACTION
       Crosslinking();
 
       //! setup class variables
-      void Setup() override;
+      void setup() override;
 
       //! derive
       bool post_partition_problem() override;

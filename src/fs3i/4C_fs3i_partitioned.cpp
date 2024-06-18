@@ -311,16 +311,16 @@ void FS3I::PartFS3I::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I::Setup()
+void FS3I::PartFS3I::setup()
 {
   // call setup in base class
-  FS3I::FS3IBase::Setup();
+  FS3I::FS3IBase::setup();
 
   // setup structure scatra
-  structscatra_->Setup();
+  structscatra_->setup();
 
   // setup fluid scatra
-  fluidscatra_->Setup();
+  fluidscatra_->setup();
 
   //---------------------------------------------------------------------
   // check existence of scatra coupling conditions for both
@@ -386,7 +386,7 @@ Teuchos::RCP<Core::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_ob
       binning_params);
   volume_coupling_object->Redistribute(
       binning_params, Global::Problem::Instance()->OutputControlFile());
-  volume_coupling_object->Setup(Global::Problem::Instance()->VolmortarParams());
+  volume_coupling_object->setup(Global::Problem::Instance()->VolmortarParams());
 
   return volume_coupling_object;
 }
@@ -509,7 +509,7 @@ void FS3I::PartFS3I::SetupSystem()
     maps.push_back(scatrafieldexvec_[1]->FullMap());
   }
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
-  scatraglobalex_->Setup(*fullmap, maps);
+  scatraglobalex_->setup(*fullmap, maps);
 
   // create coupling vectors and matrices (only needed for finite surface permeabilities)
   if (!infperm_)

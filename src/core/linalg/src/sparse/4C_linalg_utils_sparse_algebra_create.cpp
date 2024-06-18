@@ -124,7 +124,7 @@ void Core::LinAlg::CreateMapExtractorFromDiscretization(
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
   maps[0] = otherdofmap;
   maps[1] = conddofmap;
-  extractor.Setup(*dis.dof_row_map(), maps);
+  extractor.setup(*dis.dof_row_map(), maps);
 }
 
 /*----------------------------------------------------------------------*
@@ -171,7 +171,7 @@ void Core::LinAlg::CreateMapExtractorFromDiscretization(const Core::FE::Discreti
       Teuchos::rcp(new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis.Comm()));
   otherdofmapvec.clear();
 
-  extractor.Setup(*dofset.dof_row_map(), conddofmap, otherdofmap);
+  extractor.setup(*dofset.dof_row_map(), conddofmap, otherdofmap);
 }
 
 /*----------------------------------------------------------------------*
@@ -229,7 +229,7 @@ void Core::LinAlg::CreateMapExtractorFromDiscretization(const Core::FE::Discreti
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
   maps[0] = otherdofmap;
   maps[1] = conddofmap;
-  extractor.Setup(*dis.dof_row_map(), maps);
+  extractor.setup(*dis.dof_row_map(), maps);
 }
 
 FOUR_C_NAMESPACE_CLOSE

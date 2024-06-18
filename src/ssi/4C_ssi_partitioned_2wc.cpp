@@ -32,7 +32,7 @@ SSI::SSIPart2WC::SSIPart2WC(const Epetra_Comm& comm, const Teuchos::ParameterLis
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
@@ -99,10 +99,10 @@ void SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
 /*----------------------------------------------------------------------*
  | Setup this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WC::Setup()
+void SSI::SSIPart2WC::setup()
 {
   // call setup in base class
-  SSI::SSIPart::Setup();
+  SSI::SSIPart::setup();
 
   // construct increment vectors
   scaincnp_ = Core::LinAlg::CreateVector(*ScaTraField()->discretization()->dof_row_map(0), true);
@@ -458,7 +458,7 @@ SSI::SSIPart2WCSolidToScatraRelax::SSIPart2WCSolidToScatraRelax(
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
@@ -583,16 +583,16 @@ SSI::SSIPart2WCSolidToScatraRelaxAitken::SSIPart2WCSolidToScatraRelaxAitken(
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call he setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
  | Setup this class                                          fang 01/18 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WCSolidToScatraRelaxAitken::Setup()
+void SSI::SSIPart2WCSolidToScatraRelaxAitken::setup()
 {
   // call setup of base class
-  SSI::SSIPart2WC::Setup();
+  SSI::SSIPart2WC::setup();
 
   // setup old scatra increment vector
   dispincnpold_ = Core::LinAlg::CreateVector(*structure_field()->dof_row_map(0), true);
@@ -684,7 +684,7 @@ SSI::SSIPart2WCScatraToSolidRelax::SSIPart2WCScatraToSolidRelax(
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
@@ -801,16 +801,16 @@ SSI::SSIPart2WCScatraToSolidRelaxAitken::SSIPart2WCScatraToSolidRelaxAitken(
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
  | Setup this class                                          fang 01/18 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WCScatraToSolidRelaxAitken::Setup()
+void SSI::SSIPart2WCScatraToSolidRelaxAitken::setup()
 {
   // call setup of base class
-  SSI::SSIPart2WC::Setup();
+  SSI::SSIPart2WC::setup();
 
   // setup old scatra increment vector
   scaincnpold_ = Core::LinAlg::CreateVector(*ScaTraField()->discretization()->dof_row_map(), true);

@@ -52,7 +52,7 @@ namespace STR
         PseudoTransient();
 
         //! derived from the base class
-        void Setup() override;
+        void setup() override;
 
        protected:
         //! Insert PTC configuration into NOX parameter list

@@ -31,7 +31,7 @@ namespace STR
       Statics();
 
       //! Setup the class variables
-      void Setup() override;
+      void setup() override;
 
       //! (derived)
       void post_setup() override;

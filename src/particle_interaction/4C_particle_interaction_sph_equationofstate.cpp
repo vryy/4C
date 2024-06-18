@@ -27,7 +27,7 @@ void ParticleInteraction::SPHEquationOfStateBase::Init()
   // nothing to do
 }
 
-void ParticleInteraction::SPHEquationOfStateBase::Setup()
+void ParticleInteraction::SPHEquationOfStateBase::setup()
 {
   // nothing to do
 }

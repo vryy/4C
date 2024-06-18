@@ -343,7 +343,7 @@ namespace PoroElast
     void Clear(PoroElast::Coupltype coupltype = PoroElast::undefined);
 
     //! setup coupling matrixes and vecors
-    void Setup(Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid);
+    void setup(Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid);
 
     //! return constraint matrix, that fits to coupling type
     Teuchos::RCP<Core::LinAlg::SparseMatrix> ConstraintMatrix(PoroElast::Coupltype coupltype);

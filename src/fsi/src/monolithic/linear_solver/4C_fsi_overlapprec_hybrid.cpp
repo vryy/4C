@@ -220,7 +220,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   // Teuchos::RCP<Ifpack_LocalFilter> localmat = Teuchos::rcp(new Ifpack_LocalFilter(A));
 
   Teuchos::RCP<Epetra_MultiVector> x = Teuchos::rcp(new Epetra_MultiVector(rowmap, 1));
-  ifpackprec_->Setup(true, A.getRawPtr(), x.getRawPtr(), x.getRawPtr());
+  ifpackprec_->setup(true, A.getRawPtr(), x.getRawPtr(), x.getRawPtr());
 
   comm.Barrier();
   if (comm.MyPID() == 0)
@@ -293,7 +293,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   //  testprec = Teuchos::rcp(new
   //  Core::LinAlg::SOLVER::IFPACKPreconditioner(&outfile,ifpacklist,azlist));
   //  Teuchos::RCP<Epetra_MultiVector> xtest = Teuchos::rcp(new Epetra_MultiVector(*testmap,1));
-  //  testprec->Setup(true, testmat.getRawPtr(), x.getRawPtr(), x.getRawPtr());
+  //  testprec->setup(true, testmat.getRawPtr(), x.getRawPtr(), x.getRawPtr());
   //
   //
   //  Core::LinAlg::PrintMatrixInMatlabFormat("testmat.dat",*testmat);

@@ -30,7 +30,7 @@ void STR::MODELEVALUATOR::BeamData::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamData::Setup()
+void STR::MODELEVALUATOR::BeamData::setup()
 {
   check_init();
 

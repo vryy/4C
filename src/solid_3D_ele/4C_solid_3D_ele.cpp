@@ -244,7 +244,7 @@ bool Discret::ELEMENTS::Solid::ReadElement(
 
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
   std::visit(
-      [&](auto& interface) { interface->Setup(*SolidMaterial(), linedef); }, solid_calc_variant_);
+      [&](auto& interface) { interface->setup(*SolidMaterial(), linedef); }, solid_calc_variant_);
   return true;
 }
 

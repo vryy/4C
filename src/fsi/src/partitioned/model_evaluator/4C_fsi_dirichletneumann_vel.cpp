@@ -46,10 +46,10 @@ FSI::DirichletNeumannVel::DirichletNeumannVel(const Epetra_Comm& comm)
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::DirichletNeumannVel::Setup()
+void FSI::DirichletNeumannVel::setup()
 {
   // call setup of base class
-  FSI::DirichletNeumann::Setup();
+  FSI::DirichletNeumann::setup();
   const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   if (Core::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp)
@@ -198,12 +198,12 @@ void FSI::DirichletNeumannVel::output()
 void FSI::DirichletNeumannVel::Timeloop(
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
 {
-  constraint_manager_->Setup(structure_field(), MBFluidField());
+  constraint_manager_->setup(structure_field(), MBFluidField());
   if (get_kinematic_coupling()) constraint_manager_->PrepareFluidSolve();
   visualization_output_writer_ =
       Teuchos::rcp(new BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter());
   visualization_output_writer_->Init();
-  visualization_output_writer_->Setup(
+  visualization_output_writer_->setup(
       Core::IO::VisualizationParametersFactory(
           Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
           *Global::Problem::Instance()->OutputControlFile(), Time()),

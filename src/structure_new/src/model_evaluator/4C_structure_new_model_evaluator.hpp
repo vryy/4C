@@ -107,7 +107,7 @@ namespace STR
         const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
 
     //! setup
-    void Setup();
+    void setup();
 
     //! setup the MultiMapExtractor in the global state
     void setup_multi_map_extractor();
@@ -507,7 +507,7 @@ namespace STR
     //! Flag to indicate whether Init() has been called
     bool isinit_;
 
-    //! Flag to indicate whether Setup() has been called
+    //! Flag to indicate whether setup() has been called
     bool issetup_;
 
     Teuchos::RCP<STR::ModelEvaluator::Map> me_map_ptr_;

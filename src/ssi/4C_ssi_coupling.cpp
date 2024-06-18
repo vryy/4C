@@ -91,7 +91,7 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolume::Setup()
+void SSI::SSICouplingMatchingVolume::setup()
 {
   check_is_init();
 
@@ -242,13 +242,13 @@ void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingBoundary::Setup()
+void SSI::SSICouplingNonMatchingBoundary::setup()
 {
   check_is_init();
 
   std::vector<int> coupleddof(problem_dimension_, 1);
   // Setup of meshtying adapter
-  adaptermeshtying_->Setup(structdis_, scatradis_, Teuchos::null, coupleddof, "SSICoupling",
+  adaptermeshtying_->setup(structdis_, scatradis_, Teuchos::null, coupleddof, "SSICoupling",
       structdis_->Comm(), Global::Problem::Instance()->FunctionManager(), false, false, 0, 1);
 
   // extractor for coupled surface of structure discretization with surface scatra
@@ -360,7 +360,7 @@ void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
   volcoupl_structurescatra_->Init(ndim, structdis, scatradis);
 
   // parallel redistribution is performed in the global control
-  // algorithm. We redistribute between Init(...) and Setup().
+  // algorithm. We redistribute between Init(...) and setup().
   // volcoupl_structurescatra_->Redistribute();
 
   set_is_init(true);
@@ -368,12 +368,12 @@ void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingVolume::Setup()
+void SSI::SSICouplingNonMatchingVolume::setup()
 {
   check_is_init();
 
   // setup projection matrices (use default material strategy)
-  volcoupl_structurescatra_->Setup(Global::Problem::Instance()->VolmortarParams());
+  volcoupl_structurescatra_->setup(Global::Problem::Instance()->VolmortarParams());
 
   set_is_setup(true);
 }
@@ -570,7 +570,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolumeAndBoundary::Setup()
+void SSI::SSICouplingMatchingVolumeAndBoundary::setup()
 {
   check_is_init();
 

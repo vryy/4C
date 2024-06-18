@@ -217,7 +217,7 @@ CONTACT::AbstractStrategy::AbstractStrategy(
   // build the NOX::Nln::CONSTRAINT::Interface::Required object
   noxinterface_ptr_ = Teuchos::rcp(new CONTACT::NoxInterface);
   noxinterface_ptr_->Init(Teuchos::rcp(this, false));
-  noxinterface_ptr_->Setup();
+  noxinterface_ptr_->setup();
 
   return;
 }
@@ -438,7 +438,7 @@ bool CONTACT::AbstractStrategy::redistribute_with_safe_ghosting(
         perform_rebalancing, enforce_ghosting_update, maxdof_, ivel_[i]);
 
   // Re-setup strategy to update internal map objects
-  if (perform_rebalancing) Setup(true, false);
+  if (perform_rebalancing) setup(true, false);
 
   // time measurement
   Comm().Barrier();
@@ -499,7 +499,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact_old(
   }
 
   // re-setup strategy with redistributed=TRUE, init=FALSE
-  Setup(true, false);
+  setup(true, false);
 
   // time measurement
   Comm().Barrier();
@@ -515,7 +515,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact_old(
 /*----------------------------------------------------------------------*
  | setup this strategy object                                popp 08/10 |
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
+void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
 {
   if (init)
   {

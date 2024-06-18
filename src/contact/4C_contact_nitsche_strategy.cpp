@@ -365,7 +365,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::GetMatrixBloc
   return Teuchos::null;
 }
 
-void CONTACT::NitscheStrategy::Setup(bool redistributed, bool init)
+void CONTACT::NitscheStrategy::setup(bool redistributed, bool init)
 {
   // we need to init the isselfcontact_ flag here, as we do not want to call the AbstractStrategy
   if (init)

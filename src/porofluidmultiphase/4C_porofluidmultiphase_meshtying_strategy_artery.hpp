@@ -91,7 +91,7 @@ namespace POROFLUIDMULTIPHASE
     void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     //! setup the strategy
-    void Setup() override;
+    void setup() override;
 
     //! apply the mesh movement
     void ApplyMeshMovement() const override;

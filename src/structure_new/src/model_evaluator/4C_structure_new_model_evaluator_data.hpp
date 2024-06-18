@@ -95,7 +95,7 @@ namespace STR
       void Init(const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
 
       //! setup member variables
-      void Setup();
+      void setup();
 
       //! @name Derived STR::ELEMENTS::ParamsInterface accessors
       //!@{
@@ -762,7 +762,7 @@ namespace STR
       //! Checks the init and setup status
       inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
       }
 
       //! Checks the init status
@@ -830,7 +830,7 @@ namespace STR
       //! indicator if the Init() routine has been called, yet.
       bool isinit_;
 
-      //! indicator if the Setup() routine has been called, yet.
+      //! indicator if the setup() routine has been called, yet.
       bool issetup_;
 
       /*! \brief Indicator for the norm type maps
@@ -1006,7 +1006,7 @@ namespace STR
       void Init();
 
       //! setup member variables
-      void Setup();
+      void setup();
 
       //! @name Derived STR::ELEMENTS::BeamParamsInterface accessors
       //!@{
@@ -1061,7 +1061,7 @@ namespace STR
       //! Checks the init and setup status
       inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
       }
 
       //! Checks the init status
@@ -1112,7 +1112,7 @@ namespace STR
       void Init(const Teuchos::RCP<const STR::MODELEVALUATOR::Data>& str_data_ptr);
 
       //! setup member variables
-      void Setup();
+      void setup();
 
       //! returns the mortar/contact action type
       [[nodiscard]] inline enum Mortar::ActionType get_action_type() const override
@@ -1265,7 +1265,7 @@ namespace STR
       //! Checks the init and setup status
       inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
       }
 
       //! Checks the init status
@@ -1331,7 +1331,7 @@ namespace STR
       void Init(Teuchos::RCP<const STR::MODELEVALUATOR::Data> const& str_data_ptr);
 
       //! setup member variables
-      void Setup();
+      void setup();
 
       //! Structural dynamic data
       inline STR::TimeInt::BaseDataSDyn const& sdyn() const
@@ -1424,7 +1424,7 @@ namespace STR
       //! Checks the init and setup status
       inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
       }
 
       //! Checks the init status

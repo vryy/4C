@@ -51,7 +51,7 @@ void Discret::ELEMENTS::Wall1::w1_call_matgeononl(
     Teuchos::RCP<const Mat::StructPoro> actmat =
         Teuchos::rcp_static_cast<const Mat::StructPoro>(material);
     // setup is done in so3_poro
-    // actmat->Setup(NUMGPT_SOH8);
+    // actmat->setup(NUMGPT_SOH8);
     material = actmat->GetMaterial();
   }
 

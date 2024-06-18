@@ -30,7 +30,7 @@ void ParticleInteraction::SPHMomentumFormulationBase::Init()
   // nothing to do
 }
 
-void ParticleInteraction::SPHMomentumFormulationBase::Setup()
+void ParticleInteraction::SPHMomentumFormulationBase::setup()
 {
   // nothing to do
 }

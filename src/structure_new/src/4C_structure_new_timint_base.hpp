@@ -67,7 +67,7 @@ namespace STR
           const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> dataglobalstate);
 
       /// setup of the new class variables
-      void Setup() override;
+      void setup() override;
 
       /// tests if there are more time steps to do
       [[nodiscard]] bool not_finished() const override;
@@ -732,10 +732,10 @@ namespace STR
 
       ///@}
      protected:
-      /// Check if Init() and Setup() have been called, yet.
+      /// Check if Init() and setup() have been called, yet.
       inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
       }
 
       /// Check if Init() has been called
@@ -876,7 +876,7 @@ namespace STR
       /// flag indicating if Init() has been called
       bool isinit_;
 
-      /// flag indicating if Setup() has been called
+      /// flag indicating if setup() has been called
       bool issetup_;
 
       /// flag indicating that the simulation is currently restarting

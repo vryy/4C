@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::Setup(
+void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::setup(
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
@@ -127,12 +127,12 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::evaluate_face_norm
  *
  */
 template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::Setup(
+void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::setup(
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Call setup of the base class.
-  base_class::Setup(discret, face_elements);
+  base_class::setup(discret, face_elements);
 
   // Initialize class variables.
   connected_faces_.clear();
@@ -413,7 +413,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::average_nodal
  *
  */
 template <typename surface, typename scalar_type, typename volume>
-void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volume>::Setup(
+void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volume>::setup(
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {

@@ -62,7 +62,7 @@ void Core::IO::EveryIterationWriter::Init(const Core::IO::DiscretizationWriter* 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::IO::EveryIterationWriter::Setup()
+void Core::IO::EveryIterationWriter::setup()
 {
   throw_if_not_initialized(__LINE__);
 

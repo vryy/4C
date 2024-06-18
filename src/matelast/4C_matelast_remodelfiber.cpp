@@ -142,7 +142,7 @@ void Mat::Elastic::RemodelFiber::register_anisotropy_extensions(Anisotropy& anis
   }
 }
 
-void Mat::Elastic::RemodelFiber::Setup(int numgp, double rho_tot, Input::LineDefinition* linedef)
+void Mat::Elastic::RemodelFiber::setup(int numgp, double rho_tot, Input::LineDefinition* linedef)
 {
   // setup fiber and inelastic history variable
   cauchystress_.resize(potsumfiber_.size());
@@ -163,7 +163,7 @@ void Mat::Elastic::RemodelFiber::Setup(int numgp, double rho_tot, Input::LineDef
     potsumfiber_[k]->G = params_->G_;
     cauchystress_[k].resize(numgp, 1.0);
 
-    potsumfiber_[k]->fiber->Setup(numgp, linedef);
+    potsumfiber_[k]->fiber->setup(numgp, linedef);
   }
 
 

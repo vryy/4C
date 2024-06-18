@@ -177,7 +177,7 @@ void FPSI::FpsiCoupling::setup_interface_coupling()
     Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
     // full Poroelasticity-blockmap
     poro_extractor_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
-    poro_extractor_->Setup(*fullmap, vecSpaces);
+    poro_extractor_->setup(*fullmap, vecSpaces);
   }
 
   // porous fluid to fluid

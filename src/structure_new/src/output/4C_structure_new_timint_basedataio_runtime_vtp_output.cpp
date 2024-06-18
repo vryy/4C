@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 void STR::TimeInt::ParamsRuntimeVtpOutput::Init(
     const Teuchos::ParameterList& IO_vtp_structure_paramslist)
 {
-  // We have to call Setup() after Init()
+  // We have to call setup() after Init()
   issetup_ = false;
 
   output_interval_steps_ = IO_vtp_structure_paramslist.get<int>("INTERVAL_STEPS");
@@ -50,7 +50,7 @@ void STR::TimeInt::ParamsRuntimeVtpOutput::Init(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TimeInt::ParamsRuntimeVtpOutput::Setup()
+void STR::TimeInt::ParamsRuntimeVtpOutput::setup()
 {
   FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
 
@@ -63,7 +63,7 @@ void STR::TimeInt::ParamsRuntimeVtpOutput::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void STR::TimeInt::ParamsRuntimeVtpOutput::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

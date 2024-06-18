@@ -45,7 +45,7 @@ namespace BEAMINTERACTION
      *
      * This method sets the beam reference positions for this pair.
      */
-    void Setup() override;
+    void setup() override;
 
     /**
      * \brief Evaluate this contact element pair.

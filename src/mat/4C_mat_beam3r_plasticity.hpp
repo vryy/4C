@@ -135,7 +135,7 @@ namespace Mat
      * \brief Initialize and setup element specific variables
      *
      */
-    void Setup(int numgp_force, int numgp_moment) override;
+    void setup(int numgp_force, int numgp_moment) override;
 
     //! @name Packing and Unpacking
     //@{

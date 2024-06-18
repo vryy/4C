@@ -64,7 +64,7 @@ namespace PARTICLEALGORITHM
      *
      * \param[in] particleengineinterface interface to particle engine
      */
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     /*!

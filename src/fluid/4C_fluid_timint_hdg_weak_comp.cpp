@@ -82,7 +82,7 @@ void FLD::TimIntHDGWeakComp::Init()
       Teuchos::rcp(new Epetra_Map(-1, dofmapvec_w.size(), dofmapvec_w.data(), 0, hdgdis->Comm()));
 
   // build density/momentum (actually velocity/pressure) splitter
-  velpressplitter_->Setup(*hdgdis->dof_row_map(), dofmap_r, dofmap_w);
+  velpressplitter_->setup(*hdgdis->dof_row_map(), dofmap_r, dofmap_w);
 
   // implement ost and bdf2 through gen-alpha facilities
   if (timealgo_ == Inpar::FLUID::timeint_bdf2)

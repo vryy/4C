@@ -76,7 +76,7 @@ bool Discret::ELEMENTS::Beam3r::ReadElement(
   Core::FE::IntegrationPoints1D gausspoints_force(MyGaussRule(res_elastic_force));
   Core::FE::IntegrationPoints1D gausspoints_moment(MyGaussRule(res_elastic_moment));
 
-  get_beam_material().Setup(gausspoints_force.NumPoints(), gausspoints_moment.NumPoints());
+  get_beam_material().setup(gausspoints_force.NumPoints(), gausspoints_moment.NumPoints());
 
   return true;
 }

@@ -47,7 +47,7 @@ namespace STR
       //! constructor
       BrownianDyn();
 
-      void Setup() override;
+      void setup() override;
 
       //! @name Derived public STR::MODELEVALUATOR::Generic methods
       //! @{

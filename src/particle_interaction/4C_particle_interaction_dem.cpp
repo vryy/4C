@@ -59,26 +59,26 @@ void ParticleInteraction::ParticleInteractionDEM::Init()
   init_adhesion_handler();
 }
 
-void ParticleInteraction::ParticleInteractionDEM::Setup(
+void ParticleInteraction::ParticleInteractionDEM::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {
   // call base class setup
-  ParticleInteractionBase::Setup(particleengineinterface, particlewallinterface);
+  ParticleInteractionBase::setup(particleengineinterface, particlewallinterface);
 
   // setup neighbor pair handler
-  neighborpairs_->Setup(particleengineinterface, particlewallinterface);
+  neighborpairs_->setup(particleengineinterface, particlewallinterface);
 
   // setup history pair handler
-  historypairs_->Setup(particleengineinterface);
+  historypairs_->setup(particleengineinterface);
 
   // setup contact handler
-  contact_->Setup(particleengineinterface, particlewallinterface, particlematerial_,
+  contact_->setup(particleengineinterface, particlewallinterface, particlematerial_,
       particleinteractionwriter_, neighborpairs_, historypairs_);
 
   // setup adhesion handler
   if (adhesion_)
-    adhesion_->Setup(particleengineinterface, particlewallinterface, particleinteractionwriter_,
+    adhesion_->setup(particleengineinterface, particlewallinterface, particleinteractionwriter_,
         neighborpairs_, historypairs_, contact_->get_normal_contact_stiffness());
 
   // setup particle interaction writer

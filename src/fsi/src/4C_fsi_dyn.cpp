@@ -390,7 +390,7 @@ void fsi_immersed_drt()
   if (method == Inpar::FSI::DirichletNeumann)
   {
     fsi = FSI::DirichletNeumannFactory::CreateAlgorithm(comm, fsidyn);
-    Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->Setup();
+    Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->setup();
   }
   else
     FOUR_C_THROW("unsupported partitioned FSI scheme");
@@ -747,7 +747,7 @@ void fsi_ale_drt()
         case Inpar::FSI::DirichletNeumannSlideale:
         case Inpar::FSI::DirichletNeumannVolCoupl:
           fsi = FSI::DirichletNeumannFactory::CreateAlgorithm(comm, fsidyn);
-          Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->Setup();
+          Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->setup();
           break;
         default:
           FOUR_C_THROW("unsupported partitioned FSI scheme");
@@ -900,7 +900,7 @@ void xfsi_drt()
       {
         case Inpar::FSI::DirichletNeumann:
           fsi = FSI::DirichletNeumannFactory::CreateAlgorithm(comm, fsidyn);
-          Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->Setup();
+          Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->setup();
           break;
         default:
           FOUR_C_THROW("only Dirichlet-Neumann partitioned schemes with XFEM");

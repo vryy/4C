@@ -99,7 +99,7 @@ namespace
 
     // Setup all face elements and get the patch information.
     for (auto& face_element_map_iterator : face_elements_map)
-      face_element_map_iterator.second->Setup(discret_, face_elements_map);
+      face_element_map_iterator.second->setup(discret_, face_elements_map);
 
     {
       // Check if the GID are correct.

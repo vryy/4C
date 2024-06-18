@@ -175,7 +175,7 @@ void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
 
     params_runtime_visualization_output_btb_potential_->Init(
         beam_potential_params_list.sublist("RUNTIME VTK OUTPUT"));
-    params_runtime_visualization_output_btb_potential_->Setup();
+    params_runtime_visualization_output_btb_potential_->setup();
   }
 
   /****************************************************************************/
@@ -210,7 +210,7 @@ void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamPotentialParams::Setup()
+void BEAMINTERACTION::BeamPotentialParams::setup()
 {
   throw_error_if_not_init();
 
@@ -223,7 +223,7 @@ void BEAMINTERACTION::BeamPotentialParams::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialParams::throw_error_if_not_init_and_setup() const
 {
-  if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*

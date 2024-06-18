@@ -62,7 +62,7 @@ void ParticleInteraction::SPHBarrierForce::Init()
   }
 }
 
-void ParticleInteraction::SPHBarrierForce::Setup(
+void ParticleInteraction::SPHBarrierForce::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {

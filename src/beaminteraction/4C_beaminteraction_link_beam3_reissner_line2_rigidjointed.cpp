@@ -76,12 +76,12 @@ Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLine2Rigi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Setup(int matnum)
+void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::setup(int matnum)
 {
   check_init();
 
   // call setup of base class first
-  BeamLinkRigidJointed::Setup(matnum);
+  BeamLinkRigidJointed::setup(matnum);
 
   /* the idea is to use a beam element as auxiliary object that provides us with a
    * response force (and moment) depending on the position and orientation of the

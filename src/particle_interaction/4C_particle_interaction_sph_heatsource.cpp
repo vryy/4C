@@ -37,7 +37,7 @@ void ParticleInteraction::SPHHeatSourceBase::Init()
   // nothing to do
 }
 
-void ParticleInteraction::SPHHeatSourceBase::Setup(
+void ParticleInteraction::SPHHeatSourceBase::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
     const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)

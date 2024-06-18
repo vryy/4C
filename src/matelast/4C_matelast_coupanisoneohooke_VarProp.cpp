@@ -50,7 +50,7 @@ void Mat::Elastic::CoupAnisoNeoHookeVarProp::UnpackSummand(
   extract_from_pack(position, data, structural_tensor_);
 }
 
-void Mat::Elastic::CoupAnisoNeoHookeVarProp::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::Elastic::CoupAnisoNeoHookeVarProp::setup(int numgp, Input::LineDefinition* linedef)
 {
   // path if fibers aren't given in .dat file
   if (params_->init_ == 0)

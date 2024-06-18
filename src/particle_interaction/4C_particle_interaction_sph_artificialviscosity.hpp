@@ -35,7 +35,7 @@ namespace ParticleInteraction
     void Init();
 
     //! setup artificial viscosity handler
-    void Setup();
+    void setup();
 
     //! evaluate artificial viscosity
     void ArtificialViscosity(const double* vel_i, const double* vel_j, const double* mass_i,

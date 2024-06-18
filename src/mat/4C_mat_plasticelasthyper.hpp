@@ -394,7 +394,7 @@ namespace Mat
         const int eleGID, const double temp);
 
     /// setup material data
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /*!
      * \brief Post setup routine, will be called after the complete inout is already befire the

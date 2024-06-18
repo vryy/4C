@@ -54,7 +54,7 @@ namespace Adapter
     LubricationBaseAlgorithm(){};
 
     /// setup
-    void Setup(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
+    void setup(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
         const Teuchos::ParameterList&
             lubricationdyn,                          ///< parameter list for Lubrication subproblem
         const Teuchos::ParameterList& solverparams,  ///< parameter list for Lubrication solver

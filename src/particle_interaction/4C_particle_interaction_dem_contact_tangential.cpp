@@ -31,7 +31,7 @@ void ParticleInteraction::DEMContactTangentialBase::Init()
   // nothing to do
 }
 
-void ParticleInteraction::DEMContactTangentialBase::Setup(const double& k_normal)
+void ParticleInteraction::DEMContactTangentialBase::setup(const double& k_normal)
 {
   // nothing to do
 }
@@ -66,10 +66,10 @@ void ParticleInteraction::DEMContactTangentialLinearSpringDamp::Init()
     FOUR_C_THROW("invalid input parameter FRICT_COEFF_TANG for this kind of contact law!");
 }
 
-void ParticleInteraction::DEMContactTangentialLinearSpringDamp::Setup(const double& k_normal)
+void ParticleInteraction::DEMContactTangentialLinearSpringDamp::setup(const double& k_normal)
 {
   // call base class setup
-  DEMContactTangentialBase::Setup(k_normal);
+  DEMContactTangentialBase::setup(k_normal);
 
   // tangential to normal stiffness ratio
   const double kappa = (1.0 - nue_) / (1.0 - 0.5 * nue_);

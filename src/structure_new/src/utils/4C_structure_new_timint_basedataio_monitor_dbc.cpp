@@ -35,7 +35,7 @@ STR::TimeInt::ParamsMonitorDBC::ParamsMonitorDBC()
 void STR::TimeInt::ParamsMonitorDBC::Init(
     const Teuchos::ParameterList& IO_monitor_dbc_structure_paramslist)
 {
-  // We have to call Setup() after Init()
+  // We have to call setup() after Init()
   issetup_ = false;
 
   // output intervall in steps
@@ -59,7 +59,7 @@ void STR::TimeInt::ParamsMonitorDBC::Init(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TimeInt::ParamsMonitorDBC::Setup()
+void STR::TimeInt::ParamsMonitorDBC::setup()
 {
   FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
 
@@ -72,7 +72,7 @@ void STR::TimeInt::ParamsMonitorDBC::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void STR::TimeInt::ParamsMonitorDBC::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

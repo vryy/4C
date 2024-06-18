@@ -61,7 +61,7 @@ namespace Immersed
     \return void
     \date 08/16
     \author rauch  */
-    void Setup() override;
+    void setup() override;
 
     /// initialize search tree for structure discretization
     void setup_structural_discretization();

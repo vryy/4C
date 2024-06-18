@@ -100,7 +100,7 @@ void ParticleInteraction::SPHSurfaceTension::Init()
   }
 }
 
-void ParticleInteraction::SPHSurfaceTension::Setup(
+void ParticleInteraction::SPHSurfaceTension::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
     const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
@@ -124,14 +124,14 @@ void ParticleInteraction::SPHSurfaceTension::Setup(
 
   // setup interface viscosity handler
   if (interfaceviscosity_)
-    interfaceviscosity_->Setup(
+    interfaceviscosity_->setup(
         particleengineinterface, kernel, particlematerial, equationofstatebundle, neighborpairs);
 
   // setup evaporation induced recoil pressure handler
-  if (recoilpressureevaporation_) recoilpressureevaporation_->Setup(particleengineinterface);
+  if (recoilpressureevaporation_) recoilpressureevaporation_->setup(particleengineinterface);
 
   // setup barrier force handler
-  if (barrierforce_) barrierforce_->Setup(particleengineinterface, neighborpairs);
+  if (barrierforce_) barrierforce_->setup(particleengineinterface, neighborpairs);
 
   // safety check
   for (const auto& type_i : fluidtypes_)

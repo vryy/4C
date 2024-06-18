@@ -64,7 +64,7 @@ Adapter::CouplingNonLinMortar::CouplingNonLinMortar(int spatial_dimension,
 /*----------------------------------------------------------------------*
  |  initialize nonlinear mortar framework                    farah 10/14|
  *----------------------------------------------------------------------*/
-void Adapter::CouplingNonLinMortar::Setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
+void Adapter::CouplingNonLinMortar::setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
     Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
     const std::string& couplingcond)
 {

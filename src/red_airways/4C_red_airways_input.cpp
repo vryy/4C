@@ -134,11 +134,11 @@ bool Discret::ELEMENTS::RedAcinus::ReadElement(
     acinus_params_.volume_init = acinusVol;
     acinus_params_.generation = generation;
 
-    // Setup material, calls overloaded function Setup(linedef) for each Maxwell_0d_acinus material
+    // Setup material, calls overloaded function setup(linedef) for each Maxwell_0d_acinus material
     Teuchos::RCP<Core::Mat::Material> mat = Material();
     Teuchos::RCP<Mat::Maxwell0dAcinus> acinus_mat =
         Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(Material());
-    acinus_mat->Setup(linedef);
+    acinus_mat->setup(linedef);
   }
   else
   {

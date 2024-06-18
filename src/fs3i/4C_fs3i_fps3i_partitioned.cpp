@@ -316,16 +316,16 @@ void FS3I::PartFPS3I::Init()
 /*----------------------------------------------------------------------*
  |  Setup                                                   rauch 09/16 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I::Setup()
+void FS3I::PartFPS3I::setup()
 {
-  FS3I::FS3IBase::Setup();
+  FS3I::FS3IBase::setup();
 
-  // only now we must call Setup() on the scatra base algo.
+  // only now we must call setup() on the scatra base algo.
   // all objects relying on the parallel distribution are
   // created and pointers are set.
-  // calls Setup() on time integrator inside.
-  fluidscatra_->Setup();
-  structscatra_->Setup();
+  // calls setup() on time integrator inside.
+  fluidscatra_->setup();
+  structscatra_->setup();
 
   //---------------------------------------------------------------------
   // check existence of scatra coupling conditions for both
@@ -471,7 +471,7 @@ void FS3I::PartFPS3I::SetupSystem()
     maps.push_back(scatrafieldexvec_[1]->FullMap());
   }
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
-  scatraglobalex_->Setup(*fullmap, maps);
+  scatraglobalex_->setup(*fullmap, maps);
 
   // create coupling vectors and matrices (only needed for finite surface permeabilities)
   if (not infperm_)

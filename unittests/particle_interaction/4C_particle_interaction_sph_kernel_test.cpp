@@ -55,12 +55,12 @@ namespace
       kernel_3D_->Init();
 
       // setup kernel handler
-      kernel_1D_->Setup();
-      kernel_2D_->Setup();
-      kernel_3D_->Setup();
+      kernel_1D_->setup();
+      kernel_2D_->setup();
+      kernel_3D_->setup();
     }
-    // note: the public functions Init() and Setup() of class SPHKernelCubicSpline are called in
-    // Setup() and thus implicitly tested by all following unittests
+    // note: the public functions Init() and setup() of class SPHKernelCubicSpline are called in
+    // setup() and thus implicitly tested by all following unittests
   };
 
   TEST_F(SPHKernelCubicSplineTest, kernel_space_dimension)
@@ -323,12 +323,12 @@ namespace
       kernel_3D_->Init();
 
       // setup kernel handler
-      kernel_1D_->Setup();
-      kernel_2D_->Setup();
-      kernel_3D_->Setup();
+      kernel_1D_->setup();
+      kernel_2D_->setup();
+      kernel_3D_->setup();
     }
-    // note: the public functions Init() and Setup() of class SPHKernelQuinticSpline are called in
-    // Setup() and thus implicitly tested by all following unittests
+    // note: the public functions Init() and setup() of class SPHKernelQuinticSpline are called in
+    // setup() and thus implicitly tested by all following unittests
   };
 
   TEST_F(SPHKernelQuinticSplineTest, kernel_space_dimension)

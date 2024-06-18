@@ -75,7 +75,7 @@ namespace Adapter
     \brief initialize routine
 
     */
-    void Setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
+    void setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
         Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond) override;
 

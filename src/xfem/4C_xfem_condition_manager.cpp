@@ -309,7 +309,7 @@ void XFEM::ConditionManager::Init()
 }
 
 
-void XFEM::ConditionManager::Setup()
+void XFEM::ConditionManager::setup()
 {
   check_init();
 
@@ -319,14 +319,14 @@ void XFEM::ConditionManager::Setup()
   // loop all mesh coupling objects
   for (int mc = 0; mc < (int)mesh_coupl_.size(); mc++)
   {
-    mesh_coupl_[mc]->Setup();
+    mesh_coupl_[mc]->setup();
   }
 
   //--------------------------------------------------------
   // loop all levelset coupling objects
   for (int lc = 0; lc < (int)levelset_coupl_.size(); lc++)
   {
-    levelset_coupl_[lc]->Setup();
+    levelset_coupl_[lc]->setup();
   }
 
   create();

@@ -67,7 +67,7 @@ namespace
   TEST_F(DruckerPragerTest, TestPackUnpack)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1> input_strain;
     for (int i = 0; i < 6; ++i) input_strain(i) = .1;
     Teuchos::ParameterList paras;
@@ -95,7 +95,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluate)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1> input_strain;
     for (int i = 0; i < 6; ++i) input_strain(i) = .1;
     Teuchos::ParameterList paras;
@@ -117,7 +117,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateReturnToCone)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1> input_strain;
     for (int i = 0; i < 3; ++i) input_strain(i) = 0.0;
     for (int i = 3; i < 6; ++i) input_strain(i) = 2.2;
@@ -139,7 +139,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateReturnToApex)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1> input_strain;
     for (int i = 0; i < 3; ++i) input_strain(i) = 1.0;
     for (int i = 3; i < 6; ++i) input_strain(i) = 0.0;
@@ -157,7 +157,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateHistory)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1, FAD> input_strain;
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 0.1);
     for (int i = 3; i < 6; ++i) input_strain(i) = FAD(6, i, 0.1);
@@ -207,7 +207,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateRandomStrain)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1> input_strain;
     input_strain(0) = 1.1;
     input_strain(1) = 2.0;
@@ -234,7 +234,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateCmat)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1, FAD> input_strain;
     for (int i = 0; i < 6; ++i) input_strain(i) = FAD(6, i, .1 * i);
     Teuchos::ParameterList paras;
@@ -264,7 +264,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateReturnToConeCmat)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1, FAD> input_strain;
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 0.1 * i);
     for (int i = 3; i < 6; ++i) input_strain(i) = FAD(6, i, 2.2 * i);
@@ -286,7 +286,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateReturnToApexCmat)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1, FAD> input_strain;
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 1.0);
     for (int i = 3; i < 6; ++i) input_strain(i) = FAD(6, i, 0.0);
@@ -310,7 +310,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateRandomStrainCmat)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1, FAD> input_strain;
     input_strain(0) = FAD(6, 0, 1.1);
     input_strain(1) = FAD(6, 1, 2.0);

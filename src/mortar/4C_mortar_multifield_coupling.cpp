@@ -33,7 +33,7 @@ void Mortar::MultiFieldCoupling::PushBackCoupling(const Teuchos::RCP<Core::FE::D
           Global::Problem::Instance()->contact_dynamic_params(),
           Global::Problem::Instance()->spatial_approximation_type()));
 
-  adaptermeshtying->Setup(dis, dis, Teuchos::null, dofs_to_couple, "MortarMulti", dis->Comm(),
+  adaptermeshtying->setup(dis, dis, Teuchos::null, dofs_to_couple, "MortarMulti", dis->Comm(),
       Global::Problem::Instance()->FunctionManager(), false, false, nodeset, nodeset);
 
   adaptermeshtying->evaluate();

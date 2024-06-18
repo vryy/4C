@@ -44,7 +44,7 @@ Core::Adapter::CouplingMortar::CouplingMortar(int spatial_dimension,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Adapter::CouplingMortar::Setup(const Teuchos::RCP<Core::FE::Discretization>& masterdis,
+void Core::Adapter::CouplingMortar::setup(const Teuchos::RCP<Core::FE::Discretization>& masterdis,
     const Teuchos::RCP<Core::FE::Discretization>& slavedis,
     const Teuchos::RCP<Core::FE::Discretization>& aledis, const std::vector<int>& coupleddof,
     const std::string& couplingcond, const Epetra_Comm& comm,

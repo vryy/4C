@@ -63,7 +63,7 @@ namespace STR
           const Teuchos::RCP<Teuchos::ParameterList>& noxparams_ptr);
 
       //! setup of the specific predictor
-      virtual void Setup() = 0;
+      virtual void setup() = 0;
 
       //! Get the predictor type enum
       const Inpar::STR::PredEnum& get_type() const { return type_; };
@@ -122,7 +122,7 @@ namespace STR
       //! indicates if the Init() function has been called
       bool isinit_;
 
-      //! indicates if the Setup() function has been called
+      //! indicates if the setup() function has been called
       bool issetup_;
 
      private:

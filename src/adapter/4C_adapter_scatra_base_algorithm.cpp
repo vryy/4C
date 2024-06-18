@@ -522,12 +522,12 @@ void Adapter::ScaTraBaseAlgorithm::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::ScaTraBaseAlgorithm::Setup()
+void Adapter::ScaTraBaseAlgorithm::setup()
 {
   check_is_init();
 
   // setup the time integrator
-  scatra_->Setup();
+  scatra_->setup();
 
   // get the parameter list
   auto scatradyn = scatra_->ScatraParameterList();
@@ -596,7 +596,7 @@ Teuchos::RCP<Core::UTILS::ResultTest> Adapter::ScaTraBaseAlgorithm::create_sca_t
 /*----------------------------------------------------------------------*/
 void Adapter::ScaTraBaseAlgorithm::check_is_setup() const
 {
-  if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
+  if (not is_setup()) FOUR_C_THROW("setup() was not called.");
 }
 
 /*----------------------------------------------------------------------*/

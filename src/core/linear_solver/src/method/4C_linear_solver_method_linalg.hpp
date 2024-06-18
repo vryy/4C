@@ -106,7 +106,7 @@ namespace Core::LinAlg
     \brief Set-up of stuff common to all constructors
 
     */
-    void Setup();
+    void setup();
 
     //! @name Solve and ApplyInverse methods
 
@@ -120,7 +120,7 @@ namespace Core::LinAlg
                                to matrix kernel.
     \param params  (in)    : parameters for the solver. See documentation of SolverParams
     */
-    void Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
+    void setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
         Teuchos::RCP<Epetra_MultiVector> b, const SolverParams& params);
 
     /// solve linear system after setup has been done

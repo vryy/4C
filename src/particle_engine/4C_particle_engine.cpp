@@ -66,7 +66,7 @@ void PARTICLEENGINE::ParticleEngine::Init()
   init_particle_vtp_writer();
 }
 
-void PARTICLEENGINE::ParticleEngine::Setup(
+void PARTICLEENGINE::ParticleEngine::setup(
     const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes)
 {
   // setup binning strategy
@@ -1034,7 +1034,7 @@ void PARTICLEENGINE::ParticleEngine::setup_particle_container_bundle(
     const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes) const
 {
   // setup particle container bundle
-  particlecontainerbundle_->Setup(particlestatestotypes);
+  particlecontainerbundle_->setup(particlestatestotypes);
 }
 
 void PARTICLEENGINE::ParticleEngine::init_particle_unique_global_id_handler()
@@ -1048,7 +1048,7 @@ void PARTICLEENGINE::ParticleEngine::init_particle_unique_global_id_handler()
 void PARTICLEENGINE::ParticleEngine::setup_particle_unique_global_id_handler() const
 {
   // setup unique global identifier handler
-  particleuniqueglobalidhandler_->Setup();
+  particleuniqueglobalidhandler_->setup();
 }
 
 void PARTICLEENGINE::ParticleEngine::setup_data_storage(
@@ -1079,7 +1079,7 @@ void PARTICLEENGINE::ParticleEngine::setup_particle_vtp_writer() const
       Core::UTILS::IntegralValue<int>(params_, "WRITE_GHOSTED_PARTICLES");
 
   // setup particle runtime vtp writer
-  particlevtpwriter_->Setup(write_ghosted_particles);
+  particlevtpwriter_->setup(write_ghosted_particles);
 }
 
 void PARTICLEENGINE::ParticleEngine::setup_type_weights()

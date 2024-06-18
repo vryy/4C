@@ -71,7 +71,7 @@ namespace SSTI
     virtual void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& sstitimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams,
         const Teuchos::ParameterList& structparams) = 0;
-    virtual void Setup();
+    virtual void setup();
     virtual void SetupSystem() = 0;
     //@}
 

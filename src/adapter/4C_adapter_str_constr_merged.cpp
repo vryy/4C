@@ -37,10 +37,10 @@ Adapter::StructureConstrMerged::StructureConstrMerged(Teuchos::RCP<Structure> st
 
 /*----------------------------------------------------------------------*/
 /* */
-void Adapter::StructureConstrMerged::Setup()
+void Adapter::StructureConstrMerged::setup()
 {
   // call setup on time integrator
-  StructureWrapper::Setup();
+  StructureWrapper::setup();
 
   // make sure
   if (structure_ == Teuchos::null)
@@ -52,12 +52,12 @@ void Adapter::StructureConstrMerged::Setup()
 
   // set up interface between merged and single maps
   conmerger_ = Teuchos::rcp(new Core::LinAlg::MapExtractor);
-  conmerger_->Setup(*dofrowmap_, structure_->dof_row_map(),
+  conmerger_->setup(*dofrowmap_, structure_->dof_row_map(),
       structure_->get_constraint_manager()->GetConstraintMap());
 
   // setup fsi-Interface
   interface_ = Teuchos::rcp(new STR::MapExtractor);
-  interface_->Setup(*discretization(), *dofrowmap_);
+  interface_->setup(*discretization(), *dofrowmap_);
 
   issetup_ = true;
 }
@@ -67,7 +67,7 @@ void Adapter::StructureConstrMerged::Setup()
 /* */
 Teuchos::RCP<const Epetra_Vector> Adapter::StructureConstrMerged::initial_guess()
 {
-  if (not issetup_) FOUR_C_THROW("Call Setup() first!");
+  if (not issetup_) FOUR_C_THROW("Call setup() first!");
 
   // get initial guesses from structure and constraintmanager
   Teuchos::RCP<const Epetra_Vector> strucGuess = structure_->initial_guess();

@@ -33,13 +33,13 @@ CONSTRAINTS::ConstraintSolver::ConstraintSolver(Teuchos::RCP<Core::FE::Discretiz
       dirichtoggle_(Teuchos::null),
       dbcmaps_(dbcmaps)
 {
-  Setup(discr, solver, dbcmaps, params);
+  setup(discr, solver, dbcmaps, params);
 }
 
 /*----------------------------------------------------------------------*
  |  set-up (public)                                             tk 11/07|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintSolver::Setup(Teuchos::RCP<Core::FE::Discretization> discr,
+void CONSTRAINTS::ConstraintSolver::setup(Teuchos::RCP<Core::FE::Discretization> discr,
     Core::LinAlg::Solver& solver, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
     Teuchos::ParameterList params)
 {

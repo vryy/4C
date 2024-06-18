@@ -86,7 +86,7 @@ void FLD::TimIntHDG::Init()
   otherdofset.clear();
   Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
       new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->Comm()));
-  velpressplitter_->Setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
+  velpressplitter_->setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
 
   // implement ost and bdf2 through gen-alpha facilities
   if (timealgo_ == Inpar::FLUID::timeint_bdf2)

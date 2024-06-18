@@ -146,7 +146,7 @@ FSI::LungMonolithic::LungMonolithic(
   Teuchos::RCP<Epetra_Map> emptymap =
       Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, fluid_field()->discretization()->Comm()));
   Core::LinAlg::MapExtractor constrextractor;
-  constrextractor.Setup(*ConstrMap_, emptymap, ConstrMap_);
+  constrextractor.setup(*ConstrMap_, emptymap, ConstrMap_);
   AleConstrMatrix_ =
       Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           constrextractor, *fluid_field()->Interface(), 108, false, true));

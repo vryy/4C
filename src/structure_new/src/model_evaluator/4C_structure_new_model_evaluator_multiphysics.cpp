@@ -37,7 +37,7 @@ void STR::MODELEVALUATOR::Multiphysics::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Multiphysics::Setup()
+void STR::MODELEVALUATOR::Multiphysics::setup()
 {
   check_init();
   issetup_ = true;

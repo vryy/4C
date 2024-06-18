@@ -40,7 +40,7 @@ namespace ParticleInteraction
     virtual void Init();
 
     //! setup adhesion surface energy handler
-    virtual void Setup();
+    virtual void setup();
 
     //! calculate adhesion surface energy
     virtual void adhesion_surface_energy(
@@ -72,7 +72,7 @@ namespace ParticleInteraction
     explicit DEMAdhesionSurfaceEnergyDistributionBase(const Teuchos::ParameterList& params);
 
     //! setup adhesion surface energy handler
-    void Setup() override;
+    void setup() override;
 
     //! get adhesion surface energy
     void adhesion_surface_energy(

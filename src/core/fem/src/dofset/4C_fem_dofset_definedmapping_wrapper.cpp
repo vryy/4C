@@ -98,7 +98,7 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
     // initialize search tree for search
     Core::COUPLING::NodeMatchingOctree nodematchingtree;
     nodematchingtree.Init(dis, targetnodes, 150, 1e-08);
-    nodematchingtree.Setup();
+    nodematchingtree.setup();
 
     // map that will be filled with coupled nodes for this condition
     // mapping: target node gid to (source node gid, distance)

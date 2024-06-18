@@ -74,7 +74,7 @@ namespace STR
         const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
 
     //! Setup class variables
-    virtual void Setup();
+    virtual void setup();
 
     /*! \brief Apply the DBC to system of equations
      *

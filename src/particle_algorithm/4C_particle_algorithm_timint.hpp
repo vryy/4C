@@ -85,7 +85,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 07/2018
      */
-    virtual void Setup(
+    virtual void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface>
             particlerigidbodyinterface);
@@ -209,7 +209,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 07/2018
      */
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface>
             particlerigidbodyinterface) override;

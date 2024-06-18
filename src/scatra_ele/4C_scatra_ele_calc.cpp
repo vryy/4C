@@ -117,7 +117,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
   ele_ = ele;
 
   // rotationally symmetric periodic bc's: do setup for current element
-  rotsymmpbc_->Setup(ele);
+  rotsymmpbc_->setup(ele);
 
   Teuchos::RCP<Core::Mat::Material> material = ele->Material();
   if (material->MaterialType() == Core::Materials::m_matlist or

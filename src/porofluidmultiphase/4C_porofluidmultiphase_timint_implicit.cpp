@@ -302,7 +302,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   // set the nearby ele pairs
   strategy_->SetNearbyElePairs(nearbyelepairs);
   // setup the strategy
-  strategy_->Setup();
+  strategy_->setup();
 
   // -------------------------------------------------------------------
   // create a solver

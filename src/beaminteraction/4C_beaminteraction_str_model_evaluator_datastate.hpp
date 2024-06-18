@@ -66,7 +66,7 @@ namespace STR
       void Init();
 
       /// setup of the new class variables
-      void Setup(Teuchos::RCP<const Core::FE::Discretization> const& ia_discret);
+      void setup(Teuchos::RCP<const Core::FE::Discretization> const& ia_discret);
 
      protected:
       inline const bool& is_init() const { return isinit_; };
@@ -75,7 +75,7 @@ namespace STR
 
       inline void check_init_setup() const
       {
-        if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+        if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
       }
 
       inline void check_init() const
@@ -299,7 +299,7 @@ namespace STR
       /// flag indicating if Init() has been called
       bool isinit_;
 
-      /// flag indicating if Setup() has been called
+      /// flag indicating if setup() has been called
       bool issetup_;
       ///@}
 

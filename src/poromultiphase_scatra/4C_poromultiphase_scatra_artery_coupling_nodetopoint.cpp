@@ -41,10 +41,10 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::Setup()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::setup()
 {
   // call base class
-  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Setup();
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup();
 
 
   // preevaluate coupling pairs
@@ -94,7 +94,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::pre_evaluate
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::evaluate(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
-  if (!issetup_) FOUR_C_THROW("Setup() has not been called");
+  if (!issetup_) FOUR_C_THROW("setup() has not been called");
 
 
   // call base class

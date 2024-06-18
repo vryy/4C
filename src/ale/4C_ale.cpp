@@ -185,7 +185,7 @@ void ALE::Ale::create_system_matrix(Teuchos::RCP<const ALE::UTILS::MapExtractor>
   if (msht_ != Inpar::ALE::no_meshtying)
   {
     std::vector<int> coupleddof(Global::Problem::Instance()->NDim(), 1);
-    sysmat_ = meshtying_->Setup(coupleddof, dispnp_);
+    sysmat_ = meshtying_->setup(coupleddof, dispnp_);
     meshtying_->DirichletOnMaster(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
 
     if (interface != Teuchos::null)

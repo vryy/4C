@@ -108,7 +108,7 @@ namespace Discret
      public:
       SolidEleCalcEas();
 
-      void Setup(Mat::So3Material& solid_material, Input::LineDefinition* linedef);
+      void setup(Mat::So3Material& solid_material, Input::LineDefinition* linedef);
 
       void Pack(Core::Communication::PackBuffer& data) const;
 

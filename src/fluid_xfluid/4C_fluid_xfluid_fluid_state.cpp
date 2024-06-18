@@ -38,7 +38,7 @@ FLD::XFluidFluidState::XFluidFluidState(
       xffluidvelpressplitter_(Teuchos::rcp(new Core::LinAlg::MapExtractor())),
       embfluiddofrowmap_(embfluiddofrowmap)
 {
-  xffluidsplitter_->Setup(*xffluiddofrowmap_, xfluiddofrowmap, embfluiddofrowmap);
+  xffluidsplitter_->setup(*xffluiddofrowmap_, xfluiddofrowmap, embfluiddofrowmap);
   init_system_matrix();
   init_state_vectors();
 }
@@ -130,7 +130,7 @@ void FLD::XFluidFluidState::SetupMapExtractors(
 {
   // create merged dirichlet map extractor
   XFluidState::SetupMapExtractors(xfluiddiscret, time);
-  xffluidsplitter_->Setup(*xffluiddofrowmap_, embfluiddofrowmap_, XFluidState::xfluiddofrowmap_);
+  xffluidsplitter_->setup(*xffluiddofrowmap_, embfluiddofrowmap_, XFluidState::xfluiddofrowmap_);
 
   FLD::UTILS::SetupFluidFluidVelPresSplit(*xfluiddiscret, Global::Problem::Instance()->NDim(),
       *embfluiddiscret, *xffluidvelpressplitter_, xffluiddofrowmap_);

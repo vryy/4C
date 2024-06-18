@@ -81,9 +81,9 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
       Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
   structure_ = Teuchos::rcp_dynamic_cast<Adapter::Structure>(structure->structure_field());
-  structure_->Setup();
+  structure_->setup();
   lubrication_ = Teuchos::rcp(new Adapter::LubricationBaseAlgorithm());
-  lubrication_->Setup(*lubricationtimeparams, lubricationparams,
+  lubrication_->setup(*lubricationtimeparams, lubricationparams,
       problem->SolverParams(linsolvernumber), lubrication_disname, isale);
   mortaradapter_->store_dirichlet_status(structure_field()->GetDBCMapExtractor());
 
@@ -612,7 +612,7 @@ void EHL::Base::setup_field_coupling(
       Global::Problem::Instance()->mortar_coupling_params(),
       Global::Problem::Instance()->contact_dynamic_params(),
       Global::Problem::Instance()->spatial_approximation_type()));
-  mortaradapter_->Setup(structdis, structdis, coupleddof, "EHLCoupling");
+  mortaradapter_->setup(structdis, structdis, coupleddof, "EHLCoupling");
 
   if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
           mortaradapter_->Interface()->interface_params(), "STRATEGY") !=

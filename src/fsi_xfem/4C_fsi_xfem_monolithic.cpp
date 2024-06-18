@@ -697,8 +697,8 @@ void FSI::MonolithicXFEM::set_dof_row_maps(const std::vector<Teuchos::RCP<const 
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps_mergedporo)
 {
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
-  blockrowdofmap_.Setup(*fullmap, maps);
-  blockrowdofmap_mergedporo_.Setup(*fullmap, maps_mergedporo);
+  blockrowdofmap_.setup(*fullmap, maps);
+  blockrowdofmap_mergedporo_.setup(*fullmap, maps_mergedporo);
 }
 
 

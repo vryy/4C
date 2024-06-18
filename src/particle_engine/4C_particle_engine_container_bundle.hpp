@@ -64,7 +64,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestatestotypes particle types and corresponding states
      */
-    void Setup(const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes);
+    void setup(const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes);
 
     /*!
      * \brief get particle types of stored containers

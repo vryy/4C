@@ -52,7 +52,7 @@ namespace BEAMINTERACTION
       SphereBeamLinking();
 
       //! setup class variables
-      void Setup() override;
+      void setup() override;
 
       //! derived
       void post_setup() override;

@@ -29,11 +29,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FBIPenaltyConstraintenforcer::Setup(
+void Adapter::FBIPenaltyConstraintenforcer::setup(
     Teuchos::RCP<Adapter::FSIStructureWrapper> structure,
     Teuchos::RCP<Adapter::FluidMovingBoundary> fluid)
 {
-  Adapter::FBIConstraintenforcer::Setup(structure, fluid);
+  Adapter::FBIConstraintenforcer::setup(structure, fluid);
   std::ofstream log;
   if ((get_discretizations()[1]->Comm().MyPID() == 0) &&
       (bridge()

@@ -50,12 +50,12 @@ BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::BeamToSphe
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup()
+void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::setup()
 {
   check_init();
 
   // call setup of base class first
-  BeamPotentialPair::Setup();
+  BeamPotentialPair::setup();
 
 
   ele1pos_.Clear();

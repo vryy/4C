@@ -118,7 +118,7 @@ namespace Mat
     int NumInelasticDefGrad() const { return static_cast<int>(facdefgradin_.size()); }
 
     /// Assigns the different inelastic factors to different sources
-    void Setup(Mat::PAR::MultiplicativeSplitDefgradElastHyper* params);
+    void setup(Mat::PAR::MultiplicativeSplitDefgradElastHyper* params);
 
    private:
     /// vector that holds pairs of inelastic contribution and respective source
@@ -199,7 +199,7 @@ namespace Mat
     void evaluate_linearization_od(const Core::LinAlg::Matrix<3, 3>& defgrd, double concentration,
         Core::LinAlg::Matrix<9, 1>* d_F_dx) override;
 
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     void Update() override;
 

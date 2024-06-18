@@ -74,7 +74,7 @@ namespace STR
       //! constructor
       BeamInteraction();
 
-      void Setup() override;
+      void setup() override;
 
       virtual void post_setup();
 

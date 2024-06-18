@@ -373,7 +373,7 @@ namespace Mat
     //-----------------------------------------------------------------------------
 
     //! setup and initialize internal and variables
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     //! set up the slip/twinning directions and slip/twinning plane normals for the given lattice
     //! type

@@ -25,7 +25,7 @@ namespace FSI
     explicit PartitionedImmersed(const Epetra_Comm& comm);
 
     //! setup this object
-    void Setup() override;
+    void setup() override;
 
     //! overrides method of base class.
     void setup_coupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm) override;

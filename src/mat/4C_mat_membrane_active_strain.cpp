@@ -210,7 +210,7 @@ void Mat::MembraneActiveStrain::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::MembraneActiveStrain::setup(int numgp, Input::LineDefinition* linedef)
 {
   // setup fibervectors
   setup_fiber_vectors(numgp, linedef);
@@ -218,7 +218,7 @@ void Mat::MembraneActiveStrain::Setup(int numgp, Input::LineDefinition* linedef)
   // setup of passive material
   matpassive_ =
       Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->matid_passive_), true);
-  matpassive_->Setup(numgp, linedef);
+  matpassive_->setup(numgp, linedef);
 
   // setup internal variables
   voltage_ = Teuchos::rcp(new std::vector<double>);
@@ -235,7 +235,7 @@ void Mat::MembraneActiveStrain::Setup(int numgp, Input::LineDefinition* linedef)
 
   isinit_ = true;
   return;
-}  // Mat::MembraneActiveStrain::Setup()
+}  // Mat::MembraneActiveStrain::setup()
 
 /*----------------------------------------------------------------------*
  | active strain and hyperelastic stress response plus elasticity tensor|

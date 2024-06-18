@@ -83,7 +83,7 @@ bool Discret::ELEMENTS::Transport::ReadElement(
   if (Material()->MaterialType() == Core::Materials::m_myocard)
   {
     Teuchos::RCP<Mat::Myocard> myocard = Teuchos::rcp_dynamic_cast<Mat::Myocard>(Material());
-    myocard->Setup(linedef);
+    myocard->setup(linedef);
   }
 
   return true;

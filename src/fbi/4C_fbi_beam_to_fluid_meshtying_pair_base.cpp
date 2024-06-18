@@ -43,11 +43,11 @@ BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::BeamToFluidMeshtying
 /*------------------------------------------------------------------------------------------------*/
 
 template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::Setup()
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::setup()
 {
   this->check_init();
 
-  BeamToSolidVolumeMeshtyingPairBase<beam, fluid>::Setup();
+  BeamToSolidVolumeMeshtyingPairBase<beam, fluid>::setup();
 
   // Initialize the element data containers
   ele1vel_ = GEOMETRYPAIR::InitializeElementData<beam, scalar_type>::Initialize(this->Element1());

@@ -40,7 +40,7 @@ namespace ParticleInteraction
     virtual void Init();
 
     //! setup adhesion law handler
-    virtual void Setup(const double& k_normal);
+    virtual void setup(const double& k_normal);
 
     //! calculate adhesion force
     virtual void AdhesionForce(const double& gap, const double& surfaceenergy, const double& r_eff,

@@ -30,7 +30,7 @@ void ParticleInteraction::SPHArtificialViscosity::Init()
   // nothing to do
 }
 
-void ParticleInteraction::SPHArtificialViscosity::Setup()
+void ParticleInteraction::SPHArtificialViscosity::setup()
 {
   // nothing to do
 }

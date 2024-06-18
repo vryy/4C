@@ -51,7 +51,7 @@ namespace ParticleInteraction
     void Init();
 
     //! setup pressure handler
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
         const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle);

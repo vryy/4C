@@ -103,10 +103,10 @@ void ScaTra::TimIntStationary::set_element_time_parameter(bool forcedincremental
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntStationary::Setup()
+void ScaTra::TimIntStationary::setup()
 {
   // setup base class
-  ScaTraTimIntImpl::Setup();
+  ScaTraTimIntImpl::setup();
 
   set_element_nodeset_parameters();
 }

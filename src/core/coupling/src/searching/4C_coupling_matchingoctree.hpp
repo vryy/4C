@@ -92,7 +92,7 @@ namespace Core::COUPLING
         const int maxnodeperleaf = 150, const double tol = 1e-08);
 
     //! setup this class
-    virtual int Setup();
+    virtual int setup();
 
    protected:
     //! @name Methods to create processor local node matching
@@ -250,16 +250,16 @@ namespace Core::COUPLING
     bool isinit_;
 
    protected:
-    //! returns true if Setup() was called and is still valid
+    //! returns true if setup() was called and is still valid
     bool is_setup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
     bool is_init() { return isinit_; };
 
-    //! check if \ref Setup() was called
+    //! check if \ref setup() was called
     void check_is_setup()
     {
-      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("setup() was not called.");
     };
 
     //! check if \ref Init() was called
@@ -411,7 +411,7 @@ namespace Core::COUPLING
         const int maxnodeperleaf, const double tol);
 
     //! setup this class
-    virtual int Setup();
+    virtual int setup();
 
     /*! \brief Find closest point in leaf
 
@@ -518,16 +518,16 @@ namespace Core::COUPLING
     bool isinit_;
 
    protected:
-    //! returns true if Setup() was called and is still valid
+    //! returns true if setup() was called and is still valid
     bool is_setup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
     bool is_init() { return isinit_; };
 
-    //! check if \ref Setup() was called
+    //! check if \ref setup() was called
     void check_is_setup()
     {
-      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("setup() was not called.");
     };
 
     //! check if \ref Init() was called

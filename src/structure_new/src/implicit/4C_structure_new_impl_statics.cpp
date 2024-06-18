@@ -36,12 +36,12 @@ STR::IMPLICIT::Statics::Statics()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::Setup()
+void STR::IMPLICIT::Statics::setup()
 {
   check_init();
 
-  // Call the Setup() of the abstract base class first.
-  Generic::Setup();
+  // Call the setup() of the abstract base class first.
+  Generic::setup();
 
   // check for valid parameter combinations:
   if (eval_data().get_damping_type() != Inpar::STR::damp_none)

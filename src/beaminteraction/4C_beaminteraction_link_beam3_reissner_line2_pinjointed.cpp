@@ -205,12 +205,12 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Init(int id,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Setup(const int matnum)
+void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::setup(const int matnum)
 {
   check_init();
 
   // call setup of base class first
-  BeamLinkPinJointed::Setup(matnum);
+  BeamLinkPinJointed::setup(matnum);
 
   /* the idea is to use a beam element as auxiliary object that provides us with a
    * response force (and moment) depending on the position and orientation of the

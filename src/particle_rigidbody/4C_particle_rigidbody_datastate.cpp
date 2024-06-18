@@ -20,7 +20,7 @@ void ParticleRigidBody::RigidBodyDataState::Init()
   // nothing to do
 }
 
-void ParticleRigidBody::RigidBodyDataState::Setup()
+void ParticleRigidBody::RigidBodyDataState::setup()
 {
   // nothing to do
 }

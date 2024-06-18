@@ -38,12 +38,12 @@ BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
  *
  */
 template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam, solid>::Setup()
+void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam, solid>::setup()
 {
   check_init();
 
   // Call setup of base class first.
-  BeamContactPair::Setup();
+  BeamContactPair::setup();
 
   // Get the beam element data container
   ele1posref_ = GEOMETRYPAIR::InitializeElementData<beam, double>::Initialize(Element1());

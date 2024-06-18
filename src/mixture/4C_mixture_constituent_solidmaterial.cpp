@@ -134,7 +134,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::read_element(
     int numgp, Input::LineDefinition* linedef)
 {
   MixtureConstituent::read_element(numgp, linedef);
-  material_->Setup(numgp, linedef);
+  material_->setup(numgp, linedef);
 }
 
 void MIXTURE::MixtureConstituentSolidMaterial::update(Core::LinAlg::Matrix<3, 3> const& defgrd,

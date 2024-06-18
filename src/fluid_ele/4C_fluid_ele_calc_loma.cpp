@@ -81,7 +81,7 @@ int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Discret::ELEMENTS:
     Core::LinAlg::SerialDenseVector& elevec3_epetra, const Core::FE::GaussIntegration& intpoints)
 {
   // rotationally symmetric periodic bc's: do setup for current element
-  my::rotsymmpbc_->Setup(ele);
+  my::rotsymmpbc_->setup(ele);
 
   // construct view
   Core::LinAlg::Matrix<(nsd_ + 1) * nen_, nen_> elemat1(elemat1_epetra, true);

@@ -54,7 +54,7 @@ namespace XFEM
         const Teuchos::RCP<Core::FE::Discretization>& fielddiscret);
 
     /// setup the stored state objects
-    virtual void Setup() = 0;
+    virtual void setup() = 0;
 
     /// destroy the stored objects
     virtual bool Destroy() = 0;
@@ -139,7 +139,7 @@ namespace XFEM
     //! check the initialization and setup indicators
     inline void check_init_setup() const
     {
-      if (not issetup_ or not isinit_) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (not issetup_ or not isinit_) FOUR_C_THROW("Call Init() and setup() first!");
     }
 
    protected:

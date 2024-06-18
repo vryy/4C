@@ -69,7 +69,7 @@ namespace FS3I
     void Init() override;
 
     //! setup this class
-    void Setup() override;
+    void setup() override;
 
     //! time loop to be defined in inherited classes (structure depends on
     //! considered coupling, i.e. one-way or two-way)

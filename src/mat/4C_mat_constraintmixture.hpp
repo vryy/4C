@@ -246,7 +246,7 @@ namespace Mat
     }
 
     /// Setup
-    void Setup(int numgp,               ///< number of Gauss points
+    void setup(int numgp,               ///< number of Gauss points
         Input::LineDefinition* linedef  ///< definition of element line
         ) override;
 

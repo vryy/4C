@@ -56,20 +56,20 @@ void ParticleRigidBody::RigidBodyHandler::Init()
   init_affiliation_pair_handler();
 }
 
-void ParticleRigidBody::RigidBodyHandler::Setup(
+void ParticleRigidBody::RigidBodyHandler::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
 
   // setup unique global identifier handler
-  rigidbodyuniqueglobalidhandler_->Setup();
+  rigidbodyuniqueglobalidhandler_->setup();
 
   // setup rigid body data state container
-  rigidbodydatastate_->Setup();
+  rigidbodydatastate_->setup();
 
   // setup affiliation pair handler
-  affiliationpairs_->Setup(particleengineinterface);
+  affiliationpairs_->setup(particleengineinterface);
 
   // safety check
   {

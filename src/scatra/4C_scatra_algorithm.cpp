@@ -39,10 +39,10 @@ ScaTra::ScaTraAlgorithm::ScaTraAlgorithm(const Epetra_Comm& comm,  ///< communic
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ScaTra::ScaTraAlgorithm::Setup()
+void ScaTra::ScaTraAlgorithm::setup()
 {
   // call setup in base class
-  Adapter::ScaTraFluidCouplingAlgorithm::Setup();
+  Adapter::ScaTraFluidCouplingAlgorithm::setup();
 
   // create vectors
   velincnp_ = Teuchos::rcp(

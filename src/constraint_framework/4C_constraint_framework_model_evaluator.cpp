@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::Setup()
+void STR::MODELEVALUATOR::Constraints::setup()
 {
   check_init();
 

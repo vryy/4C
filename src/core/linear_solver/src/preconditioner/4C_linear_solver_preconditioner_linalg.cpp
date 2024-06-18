@@ -39,7 +39,7 @@ Core::LinAlg::Preconditioner::Preconditioner(Teuchos::RCP<Solver> solver)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
+void Core::LinAlg::Preconditioner::setup(Teuchos::RCP<Epetra_Operator> matrix,
     Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex,
     Teuchos::RCP<Core::FE::Discretization> fdis, Teuchos::RCP<Epetra_Map> inodes,
     bool structuresplit)

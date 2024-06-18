@@ -82,10 +82,10 @@ void ScaTra::LevelSetAlgorithm::Init()
 /*----------------------------------------------------------------------*
  | setup algorithm                                          rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::Setup()
+void ScaTra::LevelSetAlgorithm::setup()
 {
   // todo #initsetupissue
-  // DO NOT CALL Setup() IN ScaTraTimIntImpl
+  // DO NOT CALL setup() IN ScaTraTimIntImpl
   // issue with writeflux and probably scalarhandler_
   // this should not be
 

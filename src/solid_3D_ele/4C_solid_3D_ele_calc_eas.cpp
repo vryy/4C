@@ -961,10 +961,10 @@ double Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::calculate_internal
 }
 
 template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Setup(
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::setup(
     Mat::So3Material& solid_material, Input::LineDefinition* linedef)
 {
-  solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);
+  solid_material.setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }
 
 template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>

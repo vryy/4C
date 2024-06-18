@@ -37,7 +37,7 @@ namespace ScaTra
 
 
     //! setup time integration scheme
-    void Setup() override;
+    void setup() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
@@ -72,7 +72,7 @@ namespace ScaTra
 
 
     //! setup time integration scheme
-    void Setup() override;
+    void setup() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
@@ -104,7 +104,7 @@ namespace ScaTra
 
 
     //! Setup time integration scheme
-    void Setup() override;
+    void setup() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.

@@ -61,7 +61,7 @@ namespace Adapter
     /// @name General methods
     ///@{
     /// Setup the structure integrator
-    void Setup() override = 0;
+    void setup() override = 0;
     ///@}
 
     /// @name Vector access
@@ -550,7 +550,7 @@ namespace Adapter
         Teuchos::RCP<Core::FE::Discretization> actdis);
 
     /// setup
-    virtual void Setup();
+    virtual void setup();
 
     /** \brief Register an externally created model evaluator.
      *
@@ -611,8 +611,8 @@ namespace Adapter
      *
      *  </ol>
      *
-     *  \remark Please keep in mind, that the prescribed Generic::Init() and Generic::Setup()
-     *  methods will be called automatically in the STR::ModelEvaluator::Setup() routine. If
+     *  \remark Please keep in mind, that the prescribed Generic::Init() and Generic::setup()
+     *  methods will be called automatically in the STR::ModelEvaluator::setup() routine. If
      *  you need a different Init() method, just define a second Init() function with different
      *  input variables in your concrete class implementation and call it somewhere in your code
      *  (see upper example code).

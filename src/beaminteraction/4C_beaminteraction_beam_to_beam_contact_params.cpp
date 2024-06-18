@@ -217,7 +217,7 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamContactParams::Setup()
+void BEAMINTERACTION::BeamToBeamContactParams::setup()
 {
   check_init();
 

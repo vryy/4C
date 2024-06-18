@@ -60,7 +60,7 @@ void CONTACT::Aug::LagrangeMultiplierFunction::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::LagrangeMultiplierFunction::Setup()
+void CONTACT::Aug::LagrangeMultiplierFunction::setup()
 {
   check_init();
 

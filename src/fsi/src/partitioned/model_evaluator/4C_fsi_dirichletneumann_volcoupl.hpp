@@ -46,7 +46,7 @@ namespace FSI
 
    public:
     /// setup this object
-    void Setup() override;
+    void setup() override;
 
    protected:
     /// setup
@@ -101,7 +101,7 @@ namespace FSI
     /// destructor
     virtual ~InterfaceCorrector() = default;
 
-    virtual void Setup(Teuchos::RCP<Adapter::FluidAle> fluidale);
+    virtual void setup(Teuchos::RCP<Adapter::FluidAle> fluidale);
 
     void set_interface_displacements(
         Teuchos::RCP<Epetra_Vector>& idisp_struct, Core::Adapter::Coupling& icoupfs);
@@ -129,7 +129,7 @@ namespace FSI
     /// destructor
     virtual ~VolCorrector() = default;
 
-    virtual void Setup(const int dim, Teuchos::RCP<Adapter::FluidAle> fluidale);
+    virtual void setup(const int dim, Teuchos::RCP<Adapter::FluidAle> fluidale);
 
     virtual void correct_vol_displacements(Teuchos::RCP<Adapter::FluidAle> fluidale,
         Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> idisp_fluid,

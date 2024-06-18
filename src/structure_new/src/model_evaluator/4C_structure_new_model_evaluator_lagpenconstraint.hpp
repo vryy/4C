@@ -43,7 +43,7 @@ namespace STR
       LagPenConstraint();
 
 
-      void Setup() override;
+      void setup() override;
 
       //! derived
       Inpar::STR::ModelType Type() const override { return Inpar::STR::model_lag_pen_constraint; }
