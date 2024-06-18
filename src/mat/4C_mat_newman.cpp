@@ -58,7 +58,7 @@ Mat::NewmanType Mat::NewmanType::instance_;
 Core::Communication::ParObject* Mat::NewmanType::Create(const std::vector<char>& data)
 {
   Mat::Newman* newman = new Mat::Newman();
-  newman->Unpack(data);
+  newman->unpack(data);
   return newman;
 }
 
@@ -75,7 +75,7 @@ Mat::Newman::Newman(Mat::PAR::Newman* params) : params_(params) { return; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Newman::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Newman::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -94,7 +94,7 @@ void Mat::Newman::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Newman::Unpack(const std::vector<char>& data)
+void Mat::Newman::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

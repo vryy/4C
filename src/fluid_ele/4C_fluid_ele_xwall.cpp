@@ -35,7 +35,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidXWallType::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::FluidXWall* object = new Discret::ELEMENTS::FluidXWall(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 

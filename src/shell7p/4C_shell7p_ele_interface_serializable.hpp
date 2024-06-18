@@ -31,7 +31,7 @@ namespace Discret::ELEMENTS::Shell
      *
      * @param data (out) : the buffer to pack into.
      */
-    virtual void Pack(Core::Communication::PackBuffer& data) const = 0;
+    virtual void pack(Core::Communication::PackBuffer& data) const = 0;
 
     /*!
      * @brief Unpack the state of an object from a char vector starting from the position
@@ -39,7 +39,7 @@ namespace Discret::ELEMENTS::Shell
      * @param position (in/out) : position where to unpack the data
      * @param data     (in)     : data to be unpacked.
      */
-    virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data) = 0;
+    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data) = 0;
   };
 }  // namespace Discret::ELEMENTS::Shell
 

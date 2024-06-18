@@ -28,7 +28,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8ScatraType::Create(
 {
   auto* object =
       new Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -104,7 +104,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8fbarScatraType::Create(
   auto* object =
       new Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>(
           -1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -179,7 +179,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex27ScatraType::Create(
   auto* object =
       new Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>(
           -1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -256,7 +256,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet4ScatraType::Create(
 {
   auto* object =
       new Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -333,7 +333,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet10ScatraType::Create(
   auto* object =
       new Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>(
           -1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -411,7 +411,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoWeg6ScatraType::Create(
   auto* object =
       new Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoWeg6, Core::FE::CellType::wedge6>(
           -1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 

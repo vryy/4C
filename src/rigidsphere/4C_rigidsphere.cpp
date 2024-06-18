@@ -43,7 +43,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::RigidsphereType::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Rigidsphere* object = new Discret::ELEMENTS::Rigidsphere(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return (object);
 }
 
@@ -163,7 +163,7 @@ Core::FE::CellType Discret::ELEMENTS::Rigidsphere::Shape() const
  |  Pack data                                                  (public) |
  |                                                           meier 05/12/
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Rigidsphere::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Rigidsphere::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -171,14 +171,14 @@ void Discret::ELEMENTS::Rigidsphere::Pack(Core::Communication::PackBuffer& data)
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
 
   // add all class variables
   add_to_pack(data, radius_);
   add_to_pack(data, rho_);
 
   add_to_pack(data, static_cast<int>(mybondstobeams_.size()));
-  for (auto const& iter : mybondstobeams_) iter.second->Pack(data);
+  for (auto const& iter : mybondstobeams_) iter.second->pack(data);
 
   return;
 }
@@ -187,7 +187,7 @@ void Discret::ELEMENTS::Rigidsphere::Pack(Core::Communication::PackBuffer& data)
  |  Unpack data                                                (public) |
  |                                                           meier 05/12|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Rigidsphere::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Rigidsphere::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -196,7 +196,7 @@ void Discret::ELEMENTS::Rigidsphere::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
 
 
   // extract all class variables

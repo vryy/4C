@@ -44,7 +44,7 @@ Mat::SutherlandType Mat::SutherlandType::instance_;
 Core::Communication::ParObject* Mat::SutherlandType::Create(const std::vector<char>& data)
 {
   Mat::Sutherland* sutherland = new Mat::Sutherland();
-  sutherland->Unpack(data);
+  sutherland->unpack(data);
   return sutherland;
 }
 
@@ -61,7 +61,7 @@ Mat::Sutherland::Sutherland(Mat::PAR::Sutherland* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Sutherland::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Sutherland::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -77,7 +77,7 @@ void Mat::Sutherland::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Sutherland::Unpack(const std::vector<char>& data)
+void Mat::Sutherland::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

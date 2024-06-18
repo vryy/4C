@@ -729,7 +729,7 @@ void Core::FE::Nurbs::Knotvector::FinishKnots(const int smallest_gid_in_dis)
  |  Pack data                                                  (public) |
  |                                                          gammi 05/08 |
  *----------------------------------------------------------------------*/
-void Core::FE::Nurbs::Knotvector::Pack(Core::Communication::PackBuffer& data) const
+void Core::FE::Nurbs::Knotvector::pack(Core::Communication::PackBuffer& data) const
 {
   // we don't need the PackBuffer for the knotvector (at the moment)
   // Core::Communication::PackBuffer::SizeMarker sm( data );
@@ -791,7 +791,7 @@ void Core::FE::Nurbs::Knotvector::Pack(Core::Communication::PackBuffer& data) co
  |  Unpack Knotvectors data                                    (public) |
  |                                                          gammi 05/08 |
  *----------------------------------------------------------------------*/
-void Core::FE::Nurbs::Knotvector::Unpack(const std::vector<char>& data)
+void Core::FE::Nurbs::Knotvector::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

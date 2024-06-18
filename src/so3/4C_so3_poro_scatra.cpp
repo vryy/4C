@@ -50,7 +50,7 @@ Core::Elements::Element* Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::Clo
  |  Pack data (public)                                    schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::Pack(
+void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::pack(
     Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
@@ -62,7 +62,7 @@ void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::Pack(
   so3_ele::add_to_pack(data, impltype_);
 
   // add base class Element
-  my::Pack(data);
+  my::pack(data);
 
   return;
 }
@@ -71,7 +71,7 @@ void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::Pack(
  |  Unpack data (public)                                  schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -83,7 +83,7 @@ void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::Unpack(const std::vecto
   // extract base class Element
   std::vector<char> basedata(0);
   my::extract_from_pack(position, data, basedata);
-  my::Unpack(basedata);
+  my::unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

@@ -21,7 +21,7 @@ Core::Communication::ParObject* PARTICLEENGINE::ParticleObjectType::Create(
     const std::vector<char>& data)
 {
   ParticleObject* my_particleobject = new ParticleObject();
-  my_particleobject->Unpack(data);
+  my_particleobject->unpack(data);
   return my_particleobject;
 }
 
@@ -38,7 +38,7 @@ PARTICLEENGINE::ParticleObject::ParticleObject(
   // empty constructor
 }
 
-void PARTICLEENGINE::ParticleObject::Pack(Core::Communication::PackBuffer& data) const
+void PARTICLEENGINE::ParticleObject::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -64,7 +64,7 @@ void PARTICLEENGINE::ParticleObject::Pack(Core::Communication::PackBuffer& data)
   add_to_pack(data, index_);
 }
 
-void PARTICLEENGINE::ParticleObject::Unpack(const std::vector<char>& data)
+void PARTICLEENGINE::ParticleObject::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

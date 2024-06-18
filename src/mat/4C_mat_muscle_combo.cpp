@@ -142,7 +142,7 @@ Mat::MuscleComboType Mat::MuscleComboType::instance_;
 Core::Communication::ParObject* Mat::MuscleComboType::Create(const std::vector<char>& data)
 {
   auto* muscle_combo = new Mat::MuscleCombo();
-  muscle_combo->Unpack(data);
+  muscle_combo->unpack(data);
   return muscle_combo;
 }
 
@@ -178,7 +178,7 @@ Mat::MuscleCombo::MuscleCombo(Mat::PAR::MuscleCombo* params)
   // cannot set activation_function here, because function manager did not yet read functions
 }
 
-void Mat::MuscleCombo::Pack(Core::Communication::PackBuffer& data) const
+void Mat::MuscleCombo::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -194,7 +194,7 @@ void Mat::MuscleCombo::Pack(Core::Communication::PackBuffer& data) const
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::MuscleCombo::Unpack(const std::vector<char>& data)
+void Mat::MuscleCombo::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

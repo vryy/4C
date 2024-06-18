@@ -142,7 +142,7 @@ Mat::SuperElasticSMAType Mat::SuperElasticSMAType::instance_;
 Core::Communication::ParObject* Mat::SuperElasticSMAType::Create(const std::vector<char>& data)
 {
   Mat::SuperElasticSMA* superelast = new Mat::SuperElasticSMA();
-  superelast->Unpack(data);
+  superelast->unpack(data);
   return superelast;
 }
 
@@ -162,7 +162,7 @@ Mat::SuperElasticSMA::SuperElasticSMA(Mat::PAR::SuperElasticSMA* params) : param
 /*----------------------------------------------------------------------*
  | pack (public)                                          hemmler 09/16 |
  *----------------------------------------------------------------------*/
-void Mat::SuperElasticSMA::Pack(Core::Communication::PackBuffer& data) const
+void Mat::SuperElasticSMA::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -199,13 +199,13 @@ void Mat::SuperElasticSMA::Pack(Core::Communication::PackBuffer& data) const
   }
 
   return;
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack (public)                                        hemmler 09/16 |
  *----------------------------------------------------------------------*/
-void Mat::SuperElasticSMA::Unpack(const std::vector<char>& data)
+void Mat::SuperElasticSMA::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   strainenergy_ = 0.0;
@@ -266,7 +266,7 @@ void Mat::SuperElasticSMA::Unpack(const std::vector<char>& data)
 
   return;
 
-}  // Unpack()
+}  // unpack()
 
 
 /*---------------------------------------------------------------------*

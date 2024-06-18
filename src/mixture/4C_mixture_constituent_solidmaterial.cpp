@@ -76,7 +76,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::pack_constituent(
   Core::Communication::ParObject::add_to_pack(data, matid);
 
   // pack data of the solid material
-  material_->Pack(data);
+  material_->pack(data);
 }
 
 void MIXTURE::MixtureConstituentSolidMaterial::unpack_constituent(
@@ -124,7 +124,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::unpack_constituent(
     // extract_from_pack extracts a sub_vec of size sm from data and updates the position vector
     std::vector<char> sub_vec;
     Core::Communication::ParObject::extract_from_pack(position, data, sub_vec);
-    material_->Unpack(sub_vec);
+    material_->unpack(sub_vec);
   }
 }
 

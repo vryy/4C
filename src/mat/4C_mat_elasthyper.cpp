@@ -58,7 +58,7 @@ Mat::ElastHyperType Mat::ElastHyperType::instance_;
 Core::Communication::ParObject* Mat::ElastHyperType::Create(const std::vector<char>& data)
 {
   auto* elhy = new Mat::ElastHyper();
-  elhy->Unpack(data);
+  elhy->unpack(data);
 
   return elhy;
 }
@@ -95,7 +95,7 @@ Mat::ElastHyper::ElastHyper(Mat::PAR::ElastHyper* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -106,7 +106,7 @@ void Mat::ElastHyper::Pack(Core::Communication::PackBuffer& data) const
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   add_to_pack(data, matid);
-  summandProperties_.Pack(data);
+  summandProperties_.pack(data);
 
   anisotropy_.pack_anisotropy(data);
 
@@ -123,7 +123,7 @@ void Mat::ElastHyper::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::Unpack(const std::vector<char>& data)
+void Mat::ElastHyper::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   params_ = nullptr;
@@ -151,7 +151,7 @@ void Mat::ElastHyper::Unpack(const std::vector<char>& data)
     }
   }
 
-  summandProperties_.Unpack(position, data);
+  summandProperties_.unpack(position, data);
 
   // Pack anisotropy
   anisotropy_.unpack_anisotropy(data, position);

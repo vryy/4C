@@ -39,7 +39,7 @@ Discret::ELEMENTS::Beam3rType& Discret::ELEMENTS::Beam3rType::Instance() { retur
 Core::Communication::ParObject* Discret::ELEMENTS::Beam3rType::Create(const std::vector<char>& data)
 {
   Discret::ELEMENTS::Beam3r* object = new Discret::ELEMENTS::Beam3r(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -424,7 +424,7 @@ Core::FE::CellType Discret::ELEMENTS::Beam3r::Shape() const
  |  Pack data                                                  (public) |
  |                                                           cyron 01/08/
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3r::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Beam3r::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -432,7 +432,7 @@ void Discret::ELEMENTS::Beam3r::Pack(Core::Communication::PackBuffer& data) cons
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Beam3Base::Pack(data);
+  Beam3Base::pack(data);
 
   // add all class variables of beam3r element
   add_to_pack(data, use_fad_);
@@ -476,7 +476,7 @@ void Discret::ELEMENTS::Beam3r::Pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                           cyron 01/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Beam3r::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -485,7 +485,7 @@ void Discret::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Beam3Base::Unpack(basedata);
+  Beam3Base::unpack(basedata);
 
   // extract all class variables of beam3r element
   use_fad_ = extract_int(position, data);

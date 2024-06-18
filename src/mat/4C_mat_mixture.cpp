@@ -56,7 +56,7 @@ Mat::MixtureType Mat::MixtureType::instance_;
 Core::Communication::ParObject* Mat::MixtureType::Create(const std::vector<char>& data)
 {
   auto* mix_elhy = new Mat::Mixture();
-  mix_elhy->Unpack(data);
+  mix_elhy->unpack(data);
 
   return mix_elhy;
 }
@@ -94,7 +94,7 @@ Mat::Mixture::Mixture(Mat::PAR::Mixture* params)
 }
 
 // Pack data
-void Mat::Mixture::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Mixture::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -136,7 +136,7 @@ void Mat::Mixture::Pack(Core::Communication::PackBuffer& data) const
 }
 
 // Unpack data
-void Mat::Mixture::Unpack(const std::vector<char>& data)
+void Mat::Mixture::unpack(const std::vector<char>& data)
 {
   params_ = nullptr;
   constituents_->clear();

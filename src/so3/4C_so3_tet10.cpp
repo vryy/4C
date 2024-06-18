@@ -41,7 +41,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet10Type::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoTet10(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -183,7 +183,7 @@ Core::FE::CellType Discret::ELEMENTS::SoTet10::Shape() const { return Core::FE::
  |  Pack data                                                  (public) |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet10::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoTet10::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -191,7 +191,7 @@ void Discret::ELEMENTS::SoTet10::Pack(Core::Communication::PackBuffer& data) con
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  SoBase::Pack(data);
+  SoBase::pack(data);
   // detJ_
   add_to_pack(data, detJ_);
   add_to_pack(data, detJ_mass_);
@@ -222,7 +222,7 @@ void Discret::ELEMENTS::SoTet10::Pack(Core::Communication::PackBuffer& data) con
  |  Unpack data                                                (public) |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet10::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoTet10::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -231,7 +231,7 @@ void Discret::ELEMENTS::SoTet10::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  SoBase::Unpack(basedata);
+  SoBase::unpack(basedata);
 
   // detJ_
   extract_from_pack(position, data, detJ_);
@@ -257,7 +257,7 @@ void Discret::ELEMENTS::SoTet10::Unpack(const std::vector<char>& data)
     extract_from_pack(position, data, tmpprestress);
     if (prestress_ == Teuchos::null)
       prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOTET10, NUMGPT_SOTET10));
-    prestress_->Unpack(tmpprestress);
+    prestress_->unpack(tmpprestress);
   }
 
   if (position != data.size())

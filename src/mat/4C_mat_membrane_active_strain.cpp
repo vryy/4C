@@ -54,7 +54,7 @@ Mat::MembraneActiveStrainType Mat::MembraneActiveStrainType::instance_;
 Core::Communication::ParObject* Mat::MembraneActiveStrainType::Create(const std::vector<char>& data)
 {
   Mat::MembraneActiveStrain* membrane_activestrain = new Mat::MembraneActiveStrain();
-  membrane_activestrain->Unpack(data);
+  membrane_activestrain->unpack(data);
 
   return membrane_activestrain;
 }  // Mat::Membrane_ActiveStrainType::Create
@@ -90,7 +90,7 @@ Mat::MembraneActiveStrain::MembraneActiveStrain(Mat::PAR::MembraneActiveStrain* 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::Pack(Core::Communication::PackBuffer& data) const
+void Mat::MembraneActiveStrain::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -109,7 +109,7 @@ void Mat::MembraneActiveStrain::Pack(Core::Communication::PackBuffer& data) cons
   // data of passive elastic material
   if (matpassive_ != Teuchos::null)
   {
-    matpassive_->Pack(data);
+    matpassive_->pack(data);
   }
 
   // pack internal variables
@@ -134,12 +134,12 @@ void Mat::MembraneActiveStrain::Pack(Core::Communication::PackBuffer& data) cons
   }
 
   return;
-}  // Mat::MembraneActiveStrain::Pack()
+}  // Mat::MembraneActiveStrain::pack()
 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::Unpack(const std::vector<char>& data)
+void Mat::MembraneActiveStrain::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -205,7 +205,7 @@ void Mat::MembraneActiveStrain::Unpack(const std::vector<char>& data)
     activation_->at(gp) = activation_gp;
   }
   return;
-}  // Mat::MembraneActiveStrain::Unpack()
+}  // Mat::MembraneActiveStrain::unpack()
 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |

@@ -44,7 +44,7 @@ Core::Communication::ParObject* Mat::WeaklyCompressibleFluidType::Create(
     const std::vector<char>& data)
 {
   Mat::WeaklyCompressibleFluid* fluid = new Mat::WeaklyCompressibleFluid();
-  fluid->Unpack(data);
+  fluid->unpack(data);
   return fluid;
 }
 
@@ -64,7 +64,7 @@ Mat::WeaklyCompressibleFluid::WeaklyCompressibleFluid(Mat::PAR::WeaklyCompressib
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::WeaklyCompressibleFluid::Pack(Core::Communication::PackBuffer& data) const
+void Mat::WeaklyCompressibleFluid::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -81,7 +81,7 @@ void Mat::WeaklyCompressibleFluid::Pack(Core::Communication::PackBuffer& data) c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::WeaklyCompressibleFluid::Unpack(const std::vector<char>& data)
+void Mat::WeaklyCompressibleFluid::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

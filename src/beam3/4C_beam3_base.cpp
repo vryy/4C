@@ -51,7 +51,7 @@ Discret::ELEMENTS::Beam3Base::Beam3Base(const Discret::ELEMENTS::Beam3Base& old)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Beam3Base::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -59,7 +59,7 @@ void Discret::ELEMENTS::Beam3Base::Pack(Core::Communication::PackBuffer& data) c
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
 
   // bspotposxi_
   add_to_pack(data, bspotposxi_);
@@ -72,7 +72,7 @@ void Discret::ELEMENTS::Beam3Base::Pack(Core::Communication::PackBuffer& data) c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Beam3Base::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -81,7 +81,7 @@ void Discret::ELEMENTS::Beam3Base::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
 
   // bspotposxi_
   extract_from_pack(position, data, bspotposxi_);

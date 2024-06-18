@@ -72,7 +72,7 @@ Mat::Cnst1dArtType Mat::Cnst1dArtType::instance_;
 Core::Communication::ParObject* Mat::Cnst1dArtType::Create(const std::vector<char>& data)
 {
   Mat::Cnst1dArt* cnst_art = new Mat::Cnst1dArt();
-  cnst_art->Unpack(data);
+  cnst_art->unpack(data);
   return cnst_art;
 }
 
@@ -95,7 +95,7 @@ Mat::Cnst1dArt::Cnst1dArt(Mat::PAR::Cnst1dArt* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Cnst1dArt::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Cnst1dArt::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -115,7 +115,7 @@ void Mat::Cnst1dArt::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Cnst1dArt::Unpack(const std::vector<char>& data)
+void Mat::Cnst1dArt::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

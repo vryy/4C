@@ -255,7 +255,7 @@ int Core::Elements::Element::AddMaterial(Teuchos::RCP<Core::Mat::Material> mat)
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::Pack(Core::Communication::PackBuffer& data) const
+void Core::Elements::Element::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -272,7 +272,7 @@ void Core::Elements::Element::Pack(Core::Communication::PackBuffer& data) const
   if (mat_[0] != Teuchos::null)
   {
     // pack only first material
-    mat_[0]->Pack(data);
+    mat_[0]->pack(data);
   }
   else
   {
@@ -288,7 +288,7 @@ void Core::Elements::Element::Pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::Unpack(const std::vector<char>& data)
+void Core::Elements::Element::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -1127,7 +1127,7 @@ Core::Elements::FaceElement::FaceElement(const Core::Elements::FaceElement& old)
  |  Pack data                                                  (public) |
  |                                                           ager 06/15 |
  *----------------------------------------------------------------------*/
-void Core::Elements::FaceElement::Pack(Core::Communication::PackBuffer& data) const
+void Core::Elements::FaceElement::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -1135,7 +1135,7 @@ void Core::Elements::FaceElement::Pack(Core::Communication::PackBuffer& data) co
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Discret::Elememt
-  Core::Elements::Element::Pack(data);
+  Core::Elements::Element::pack(data);
   // add lface_master_
   add_to_pack(data, lface_master_);
   // Pack Parent Id, used to set parent_master_ after parallel communication!
@@ -1149,7 +1149,7 @@ void Core::Elements::FaceElement::Pack(Core::Communication::PackBuffer& data) co
  |  Unpack data                                                (public) |
  |                                                           ager 06/15 |
  *----------------------------------------------------------------------*/
-void Core::Elements::FaceElement::Unpack(const std::vector<char>& data)
+void Core::Elements::FaceElement::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -1158,7 +1158,7 @@ void Core::Elements::FaceElement::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Core::Elements::Element::Unpack(basedata);
+  Core::Elements::Element::unpack(basedata);
 
   // lface_master_
   lface_master_ = extract_int(position, data);

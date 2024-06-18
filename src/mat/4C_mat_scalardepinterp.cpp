@@ -49,7 +49,7 @@ Mat::ScalarDepInterpType Mat::ScalarDepInterpType::instance_;
 Core::Communication::ParObject* Mat::ScalarDepInterpType::Create(const std::vector<char>& data)
 {
   Mat::ScalarDepInterp* ScalarDepInterp = new Mat::ScalarDepInterp();
-  ScalarDepInterp->Unpack(data);
+  ScalarDepInterp->unpack(data);
   return ScalarDepInterp;
 }
 
@@ -195,7 +195,7 @@ void Mat::ScalarDepInterp::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ScalarDepInterp::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -223,8 +223,8 @@ void Mat::ScalarDepInterp::Pack(Core::Communication::PackBuffer& data) const
   // Pack data of both elastic materials
   if (lambda_zero_mat_ != Teuchos::null and lambda_unit_mat_ != Teuchos::null)
   {
-    lambda_zero_mat_->Pack(data);
-    lambda_unit_mat_->Pack(data);
+    lambda_zero_mat_->pack(data);
+    lambda_unit_mat_->pack(data);
   }
 
   return;
@@ -233,7 +233,7 @@ void Mat::ScalarDepInterp::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::Unpack(const std::vector<char>& data)
+void Mat::ScalarDepInterp::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;

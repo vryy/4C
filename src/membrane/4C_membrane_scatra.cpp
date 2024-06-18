@@ -52,7 +52,7 @@ Core::Elements::Element* Discret::ELEMENTS::MembraneScatra<distype>::Clone() con
  |                                                         sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::MembraneScatra<distype>::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::MembraneScatra<distype>::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -64,7 +64,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::Pack(Core::Communication::PackB
   Core::Communication::ParObject::add_to_pack(data, impltype_);
 
   // add base class Element
-  Membrane<distype>::Pack(data);
+  Membrane<distype>::pack(data);
 
   return;
 }
@@ -74,7 +74,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::Pack(Core::Communication::PackB
  |                                                         sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::MembraneScatra<distype>::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::MembraneScatra<distype>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -87,7 +87,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::Unpack(const std::vector<char>&
   // extract base class Element
   std::vector<char> basedata(0);
   Core::Communication::ParObject::extract_from_pack(position, data, basedata);
-  Membrane<distype>::Unpack(basedata);
+  Membrane<distype>::unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

@@ -173,9 +173,9 @@ namespace Mat
       return MuscleWeickenmeierType::Instance().UniqueParObjectId();
     }
 
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     void setup(int numgp, Input::LineDefinition* linedef) override;
 

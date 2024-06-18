@@ -627,7 +627,7 @@ Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::SolidEleCalcEas()
 }
 
 template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Pack(
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::pack(
     Core::Communication::PackBuffer& data) const
 {
   constexpr int num_dof_per_element = Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>;
@@ -645,7 +645,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Pack(
 };
 
 template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Unpack(
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   Core::Communication::ParObject::extract_from_pack(position, data, eas_iteration_data_.alpha_inc_);
@@ -1021,12 +1021,12 @@ template class Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
 static_assert(
     Discret::ELEMENTS::IsPackable<Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
         STR::ELEMENTS::EasType::eastype_h8_9>*>,
-    "EAS needs to implement the method Pack(Core::Communication::PackBuffer&) to be able to store "
+    "EAS needs to implement the method pack(Core::Communication::PackBuffer&) to be able to store "
     "history "
     "data!");
 static_assert(
     Discret::ELEMENTS::IsUnpackable<Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
         STR::ELEMENTS::EasType::eastype_h8_9>*>,
-    "EAS needs to implement the method Unpack(std::size_t, std::vector<char>&) to be able to store "
+    "EAS needs to implement the method unpack(std::size_t, std::vector<char>&) to be able to store "
     "history data!");
 FOUR_C_NAMESPACE_CLOSE

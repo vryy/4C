@@ -342,7 +342,7 @@ void ParticleInteraction::DEMHistoryPairs::unpack_history_pairs(const std::vecto
 
     // unpack history pair data
     historypairtype historypair = historypairtype();
-    historypair.Unpack(position, buffer);
+    historypair.unpack(position, buffer);
 
     // add history pair data
     historydata[globalid_i][globalid_j] = std::make_pair(true, historypair);
@@ -361,7 +361,7 @@ void ParticleInteraction::DEMHistoryPairs::add_history_pair_to_buffer(std::vecto
   data.add_to_pack(globalid_j);
 
   // pack history pair data
-  historypair.Pack(data);
+  historypair.pack(data);
 
   // append packed history pair to buffer
   buffer.insert(buffer.end(), data().begin(), data().end());

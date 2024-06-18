@@ -179,7 +179,7 @@ Mat::CrystalPlasticityType Mat::CrystalPlasticityType::instance_;
 Core::Communication::ParObject* Mat::CrystalPlasticityType::Create(const std::vector<char>& data)
 {
   Mat::CrystalPlasticity* cp = new Mat::CrystalPlasticity();
-  cp->Unpack(data);
+  cp->unpack(data);
   return cp;
 }
 
@@ -196,7 +196,7 @@ Mat::CrystalPlasticity::CrystalPlasticity(Mat::PAR::CrystalPlasticity* params) :
 /*----------------------------------------------------------------------*
  | pack (public)                                                        |
  *----------------------------------------------------------------------*/
-void Mat::CrystalPlasticity::Pack(Core::Communication::PackBuffer& data) const
+void Mat::CrystalPlasticity::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -231,12 +231,12 @@ void Mat::CrystalPlasticity::Pack(Core::Communication::PackBuffer& data) const
     add_to_pack(data, (*gamma_last_)[var]);
     add_to_pack(data, (*defect_densities_last_)[var]);
   }
-}  // Pack()
+}  // pack()
 
 /*----------------------------------------------------------------------*
  | unpack (public)                                                      |
  *----------------------------------------------------------------------*/
-void Mat::CrystalPlasticity::Unpack(const std::vector<char>& data)
+void Mat::CrystalPlasticity::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

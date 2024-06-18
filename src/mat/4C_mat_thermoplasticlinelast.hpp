@@ -143,7 +143,7 @@ namespace Mat
     //!  The first information to be stored in data has to be the
     //!  unique parobject id delivered by UniqueParObjectId() which will then
     //!  identify the exact class on the receiving processor.
-    void Pack(Core::Communication::PackBuffer&
+    void pack(Core::Communication::PackBuffer&
             data  //!<  data (i/o): char vector to store class information
     ) const override;
 
@@ -154,7 +154,7 @@ namespace Mat
     //!  The first entry in data has to be an integer which is the unique
     //!  parobject id defined at the top of this file and delivered by
     //!  UniqueParObjectId().
-    void Unpack(const std::vector<char>&
+    void unpack(const std::vector<char>&
             data  //!< (i) : vector storing all data to be unpacked into this instance.
         ) override;
 

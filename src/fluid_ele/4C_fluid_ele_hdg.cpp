@@ -32,7 +32,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidHDGType::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::FluidHDG* object = new Discret::ELEMENTS::FluidHDG(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -178,7 +178,7 @@ Core::Elements::Element* Discret::ELEMENTS::FluidHDG::Clone() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                kronbichler 05/13 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDG::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::FluidHDG::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -187,7 +187,7 @@ void Discret::ELEMENTS::FluidHDG::Pack(Core::Communication::PackBuffer& data) co
   add_to_pack(data, type);
 
   // add base class Element
-  Fluid::Pack(data);
+  Fluid::pack(data);
 
   int degree = degree_;
   add_to_pack(data, degree);
@@ -200,7 +200,7 @@ void Discret::ELEMENTS::FluidHDG::Pack(Core::Communication::PackBuffer& data) co
 /*----------------------------------------------------------------------*
  |  Unpack data (public)                              kronbichler 05/13 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDG::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidHDG::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -209,7 +209,7 @@ void Discret::ELEMENTS::FluidHDG::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   Fluid::extract_from_pack(position, data, basedata);
-  Fluid::Unpack(basedata);
+  Fluid::unpack(basedata);
 
   int val = 0;
   extract_from_pack(position, data, val);

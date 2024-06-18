@@ -71,7 +71,7 @@ Core::Communication::ParObject* Mat::FluidPoroMultiPhaseReactionsType::Create(
 {
   Mat::FluidPoroMultiPhaseReactions* FluidPoroMultiPhaseReactions =
       new Mat::FluidPoroMultiPhaseReactions();
-  FluidPoroMultiPhaseReactions->Unpack(data);
+  FluidPoroMultiPhaseReactions->unpack(data);
   return FluidPoroMultiPhaseReactions;
 }
 
@@ -130,7 +130,7 @@ void Mat::FluidPoroMultiPhaseReactions::clear()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroMultiPhaseReactions::Pack(Core::Communication::PackBuffer& data) const
+void Mat::FluidPoroMultiPhaseReactions::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -145,13 +145,13 @@ void Mat::FluidPoroMultiPhaseReactions::Pack(Core::Communication::PackBuffer& da
   add_to_pack(data, matid);
 
   // Pack base class material
-  Mat::FluidPoroMultiPhase::Pack(data);
+  Mat::FluidPoroMultiPhase::pack(data);
 }
 
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroMultiPhaseReactions::Unpack(const std::vector<char>& data)
+void Mat::FluidPoroMultiPhaseReactions::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   clear();
@@ -184,7 +184,7 @@ void Mat::FluidPoroMultiPhaseReactions::Unpack(const std::vector<char>& data)
   // extract base class material
   std::vector<char> basedata(0);
   Mat::FluidPoroMultiPhase::extract_from_pack(position, data, basedata);
-  Mat::FluidPoroMultiPhase::Unpack(basedata);
+  Mat::FluidPoroMultiPhase::unpack(basedata);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case

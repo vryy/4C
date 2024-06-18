@@ -59,7 +59,7 @@ namespace MIXTURE
 
     /*!
      * @brief Unpack all internal data that was previously packed by
-     * #Pack(Core::Communication::PackBuffer&)
+     * #pack(Core::Communication::PackBuffer&)
      *
      * @param position (in/out) : Position, where to start reading
      * @param data (in) : Vector of chars to extract data from

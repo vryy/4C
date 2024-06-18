@@ -146,7 +146,7 @@ namespace Mat
     //!  unique parobject id delivered by UniqueParObjectId() which will then
     //!  identify the exact class on the receiving processor.
     //!
-    void Pack(
+    void pack(
         Core::Communication::PackBuffer& data  //!< (i/o): char vector to store class information
     ) const override;
 
@@ -158,7 +158,7 @@ namespace Mat
     //!  parobject id defined at the top of this file and delivered by
     //!  UniqueParObjectId().
     //!
-    void Unpack(const std::vector<char>&
+    void unpack(const std::vector<char>&
             data  //!< (i) vector storing all data to be unpacked into this instance
         ) override;
 

@@ -74,7 +74,7 @@ Core::Elements::Element* Discret::ELEMENTS::So3Scatra<so3_ele, distype>::Clone()
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::Pack(
+void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::pack(
     Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
@@ -101,7 +101,7 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::Pack(
 
 
   // add base class Element
-  so3_ele::Pack(data);
+  so3_ele::pack(data);
 }
 
 /*----------------------------------------------------------------------*
@@ -109,7 +109,7 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::Pack(
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -137,7 +137,7 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::Unpack(const std::vector<ch
   std::vector<char> basedata(0);
   so3_ele::extract_from_pack(position, data, basedata);
 
-  so3_ele::Unpack(basedata);
+  so3_ele::unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

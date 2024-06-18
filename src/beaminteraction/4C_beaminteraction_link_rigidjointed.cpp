@@ -205,7 +205,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::Pack(Core::Communication::PackBuffer& data) const
+void BEAMINTERACTION::BeamLinkRigidJointed::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -213,7 +213,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Pack(Core::Communication::PackBuffer
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  BeamLink::Pack(data);
+  BeamLink::pack(data);
 
   // bspottriad1_
   add_to_pack(data, bspottriad1_);
@@ -229,7 +229,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Pack(Core::Communication::PackBuffer
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::Unpack(const std::vector<char>& data)
+void BEAMINTERACTION::BeamLinkRigidJointed::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -238,7 +238,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Unpack(const std::vector<char>& data
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  BeamLink::Unpack(basedata);
+  BeamLink::unpack(basedata);
 
   // bspottriad1_
   extract_from_pack(position, data, bspottriad1_);

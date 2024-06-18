@@ -131,21 +131,21 @@ namespace Discret::MeshFree
     /*!
      * \brief Pack this class so it can be communicated
      *
-     * \ref Pack and \ref Unpack are used to communicate this meshfree multibin
+     * \ref pack and \ref unpack are used to communicate this meshfree multibin
      *
      *///                                                  (public) ghamm 04/13
     /*------------------------------------------------------------------------*/
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*------------------------------------------------------------------------*/
     /*!
      * \brief Unpack data from a char vector into this class
      *
-     * \ref Pack and \ref Unpack are used to communicate this meshfree multibin
+     * \ref pack and \ref unpack are used to communicate this meshfree multibin
      *
      *///                                                  (public) ghamm 04/13
     /*------------------------------------------------------------------------*/
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     // return meshfree bin type instance
     Core::Elements::ElementType& ElementType() const override

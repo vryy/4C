@@ -55,7 +55,7 @@ Mat::AAAneohookeType Mat::AAAneohookeType::instance_;
 Core::Communication::ParObject* Mat::AAAneohookeType::Create(const std::vector<char>& data)
 {
   Mat::AAAneohooke* aaa = new Mat::AAAneohooke();
-  aaa->Unpack(data);
+  aaa->unpack(data);
   return aaa;
 }
 
@@ -73,7 +73,7 @@ Mat::AAAneohooke::AAAneohooke(Mat::PAR::AAAneohooke* params) : params_(params) {
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void Mat::AAAneohooke::Pack(Core::Communication::PackBuffer& data) const
+void Mat::AAAneohooke::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -90,7 +90,7 @@ void Mat::AAAneohooke::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void Mat::AAAneohooke::Unpack(const std::vector<char>& data)
+void Mat::AAAneohooke::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

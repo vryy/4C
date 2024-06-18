@@ -24,7 +24,7 @@ Core::Communication::ParObject* Mortar::NodeType::Create(const std::vector<char>
   std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
   auto* node = new Mortar::Node(0, x, 0, dofs, false);
-  node->Unpack(data);
+  node->unpack(data);
   return node;
 }
 
@@ -48,7 +48,7 @@ Mortar::NodeDataContainer::NodeDataContainer()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::NodeDataContainer::Pack(Core::Communication::PackBuffer& data) const
+void Mortar::NodeDataContainer::pack(Core::Communication::PackBuffer& data) const
 {
   // add n_
   Core::Communication::ParObject::add_to_pack(data, n_, 3 * sizeof(double));
@@ -68,7 +68,7 @@ void Mortar::NodeDataContainer::Pack(Core::Communication::PackBuffer& data) cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::NodeDataContainer::Unpack(
+void Mortar::NodeDataContainer::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // n_
@@ -175,7 +175,7 @@ void Mortar::Node::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Node::Pack(Core::Communication::PackBuffer& data) const
+void Mortar::Node::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -183,7 +183,7 @@ void Mortar::Node::Pack(Core::Communication::PackBuffer& data) const
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Core::Nodes::Node
-  Core::Nodes::Node::Pack(data);
+  Core::Nodes::Node::pack(data);
   // add isslave_
   add_to_pack(data, isslave_);
   // add istiedslave_
@@ -218,13 +218,13 @@ void Mortar::Node::Pack(Core::Communication::PackBuffer& data) const
   // add data_
   bool hasdata = (modata_ != Teuchos::null);
   add_to_pack(data, hasdata);
-  if (hasdata) modata_->Pack(data);
+  if (hasdata) modata_->pack(data);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Node::Unpack(const std::vector<char>& data)
+void Mortar::Node::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -233,7 +233,7 @@ void Mortar::Node::Unpack(const std::vector<char>& data)
   // extract base class Core::Nodes::Node
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Core::Nodes::Node::Unpack(basedata);
+  Core::Nodes::Node::unpack(basedata);
   // isslave_
   isslave_ = extract_int(position, data);
   // istiedslave_
@@ -270,7 +270,7 @@ void Mortar::Node::Unpack(const std::vector<char>& data)
   if (hasdata)
   {
     modata_ = Teuchos::rcp(new Mortar::NodeDataContainer());
-    modata_->Unpack(position, data);
+    modata_->unpack(position, data);
   }
   else
   {

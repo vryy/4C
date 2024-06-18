@@ -93,7 +93,7 @@ void BEAMINTERACTION::BeamLink::setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::Pack(Core::Communication::PackBuffer& data) const
+void BEAMINTERACTION::BeamLink::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -125,7 +125,7 @@ void BEAMINTERACTION::BeamLink::Pack(Core::Communication::PackBuffer& data) cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
+void BEAMINTERACTION::BeamLink::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

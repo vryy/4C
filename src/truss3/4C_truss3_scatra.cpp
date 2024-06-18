@@ -34,7 +34,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Truss3ScatraType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Truss3Scatra(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -104,7 +104,7 @@ Core::Elements::Element* Discret::ELEMENTS::Truss3Scatra::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3Scatra::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Truss3Scatra::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -112,13 +112,13 @@ void Discret::ELEMENTS::Truss3Scatra::Pack(Core::Communication::PackBuffer& data
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Truss3::Pack(data);
+  Truss3::pack(data);
   add_to_pack(data, impltype_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3Scatra::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Truss3Scatra::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -127,7 +127,7 @@ void Discret::ELEMENTS::Truss3Scatra::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Truss3::Unpack(basedata);
+  Truss3::unpack(basedata);
 
   extract_from_pack(position, data, impltype_);
 

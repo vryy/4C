@@ -38,9 +38,9 @@ namespace Discret::ELEMENTS
    public:
     SolidScatraEleCalc();
 
-    void Pack(Core::Communication::PackBuffer& data) const;
+    void pack(Core::Communication::PackBuffer& data) const;
 
-    void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
     void setup(Mat::So3Material& solid_material, Input::LineDefinition* linedef);
 

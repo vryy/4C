@@ -76,7 +76,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::pack_constituent(
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   Core::Communication::ParObject::add_to_pack(data, matid);
-  summand_properties_.Pack(data);
+  summand_properties_.pack(data);
 
   Core::Communication::ParObject::add_to_pack(data, prestretch_);
 
@@ -124,7 +124,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
     }
   }
 
-  summand_properties_.Unpack(position, data);
+  summand_properties_.unpack(position, data);
 
   Core::Communication::ParObject::extract_from_pack(position, data, prestretch_);
 

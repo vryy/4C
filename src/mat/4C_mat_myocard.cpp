@@ -56,7 +56,7 @@ Mat::MyocardType Mat::MyocardType::instance_;
 Core::Communication::ParObject* Mat::MyocardType::Create(const std::vector<char>& data)
 {
   Mat::Myocard* myocard = new Mat::Myocard();
-  myocard->Unpack(data);
+  myocard->unpack(data);
   return myocard;
 }
 
@@ -90,7 +90,7 @@ Mat::Myocard::Myocard(Mat::PAR::Myocard* params)
 /*----------------------------------------------------------------------*
  |  Pack                                           (public)  cbert 09/12 |
  *----------------------------------------------------------------------*/
-void Mat::Myocard::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Myocard::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -127,7 +127,7 @@ void Mat::Myocard::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                         (public)  cbert 09/12 |
  *----------------------------------------------------------------------*/
-void Mat::Myocard::Unpack(const std::vector<char>& data)
+void Mat::Myocard::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

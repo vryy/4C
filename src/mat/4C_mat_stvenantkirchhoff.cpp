@@ -40,7 +40,7 @@ Mat::StVenantKirchhoffType Mat::StVenantKirchhoffType::instance_;
 Core::Communication::ParObject* Mat::StVenantKirchhoffType::Create(const std::vector<char>& data)
 {
   auto* stvenantk = new Mat::StVenantKirchhoff();
-  stvenantk->Unpack(data);
+  stvenantk->unpack(data);
   return stvenantk;
 }
 
@@ -60,7 +60,7 @@ Mat::StVenantKirchhoff::StVenantKirchhoff(Mat::PAR::StVenantKirchhoff* params) :
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Mat::StVenantKirchhoff::Pack(Core::Communication::PackBuffer& data) const
+void Mat::StVenantKirchhoff::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -78,7 +78,7 @@ void Mat::StVenantKirchhoff::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Mat::StVenantKirchhoff::Unpack(const std::vector<char>& data)
+void Mat::StVenantKirchhoff::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

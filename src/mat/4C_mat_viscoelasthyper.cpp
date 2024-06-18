@@ -54,7 +54,7 @@ Mat::ViscoElastHyperType Mat::ViscoElastHyperType::instance_;
 Core::Communication::ParObject* Mat::ViscoElastHyperType::Create(const std::vector<char>& data)
 {
   Mat::ViscoElastHyper* elhy = new Mat::ViscoElastHyper();
-  elhy->Unpack(data);
+  elhy->unpack(data);
 
   return elhy;
 }
@@ -108,7 +108,7 @@ Mat::ViscoElastHyper::ViscoElastHyper(Mat::PAR::ViscoElastHyper* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ViscoElastHyper::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -119,7 +119,7 @@ void Mat::ViscoElastHyper::Pack(Core::Communication::PackBuffer& data) const
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   add_to_pack(data, matid);
-  summandProperties_.Pack(data);
+  summandProperties_.pack(data);
   add_to_pack(data, isovisco_);
   add_to_pack(data, viscogenmax_);
   add_to_pack(data, viscogeneralizedgenmax_);
@@ -184,7 +184,7 @@ void Mat::ViscoElastHyper::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ViscoElastHyper::Unpack(const std::vector<char>& data)
+void Mat::ViscoElastHyper::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   params_ = nullptr;
@@ -218,7 +218,7 @@ void Mat::ViscoElastHyper::Unpack(const std::vector<char>& data)
     }
   }
 
-  summandProperties_.Unpack(position, data);
+  summandProperties_.unpack(position, data);
   isovisco_ = (bool)extract_int(position, data);
   viscogenmax_ = (bool)extract_int(position, data);
   viscogeneralizedgenmax_ = (bool)extract_int(position, data);

@@ -32,7 +32,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidHDGWeakCompType::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::FluidHDGWeakComp* object = new Discret::ELEMENTS::FluidHDGWeakComp(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -133,7 +133,7 @@ Core::Elements::Element* Discret::ELEMENTS::FluidHDGWeakComp::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDGWeakComp::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::FluidHDGWeakComp::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -142,7 +142,7 @@ void Discret::ELEMENTS::FluidHDGWeakComp::Pack(Core::Communication::PackBuffer& 
   add_to_pack(data, type);
 
   // add base class Element
-  Fluid::Pack(data);
+  Fluid::pack(data);
 
   int degree = degree_;
   add_to_pack(data, degree);
@@ -154,7 +154,7 @@ void Discret::ELEMENTS::FluidHDGWeakComp::Pack(Core::Communication::PackBuffer& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDGWeakComp::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidHDGWeakComp::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -163,7 +163,7 @@ void Discret::ELEMENTS::FluidHDGWeakComp::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   Fluid::extract_from_pack(position, data, basedata);
-  Fluid::Unpack(basedata);
+  Fluid::unpack(basedata);
 
   int val = 0;
   extract_from_pack(position, data, val);

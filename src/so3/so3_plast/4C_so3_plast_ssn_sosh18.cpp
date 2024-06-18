@@ -39,7 +39,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoSh18PlastType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoSh18Plast(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -141,7 +141,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoSh18Plast::Clone() const
 /*----------------------------------------------------------------------*
  | pack data (public)                                       seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh18Plast::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoSh18Plast::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -150,10 +150,10 @@ void Discret::ELEMENTS::SoSh18Plast::Pack(Core::Communication::PackBuffer& data)
   add_to_pack(data, type);
 
   // add base class So3Plast Element
-  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::Pack(data);
+  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::pack(data);
 
   // add base class So3_sh18
-  Discret::ELEMENTS::SoSh18::Pack(data);
+  Discret::ELEMENTS::SoSh18::pack(data);
 
   return;
 }
@@ -161,7 +161,7 @@ void Discret::ELEMENTS::SoSh18Plast::Pack(Core::Communication::PackBuffer& data)
 /*----------------------------------------------------------------------*
  | unpack data (public)                                     seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh18Plast::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoSh18Plast::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -170,9 +170,9 @@ void Discret::ELEMENTS::SoSh18Plast::Unpack(const std::vector<char>& data)
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::Unpack(basedata);
+  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::unpack(basedata);
   extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::SoSh18::Unpack(basedata);
+  Discret::ELEMENTS::SoSh18::unpack(basedata);
 
   SyncEAS();
 

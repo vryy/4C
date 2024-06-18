@@ -28,9 +28,9 @@ namespace Mat
    public:
     int UniqueParObjectId() const override = 0;
 
-    void Pack(Core::Communication::PackBuffer& data) const override = 0;
+    void pack(Core::Communication::PackBuffer& data) const override = 0;
 
-    void Unpack(const std::vector<char>& data) override = 0;
+    void unpack(const std::vector<char>& data) override = 0;
 
     //! @name Evaluation methods
     /*!

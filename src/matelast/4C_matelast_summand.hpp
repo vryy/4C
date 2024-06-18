@@ -79,9 +79,9 @@ namespace Mat
 
       int UniqueParObjectId() const override;
 
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      void pack(Core::Communication::PackBuffer& data) const override;
 
-      void Unpack(const std::vector<char>& data) override;
+      void unpack(const std::vector<char>& data) override;
 
       virtual void PackSummand(Core::Communication::PackBuffer& data) const { return; };
 

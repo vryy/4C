@@ -113,9 +113,9 @@ namespace Discret::ELEMENTS
 
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     [[nodiscard]] Core::FE::CellType Shape() const override { return celltype_; };
 

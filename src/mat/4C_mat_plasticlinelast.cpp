@@ -70,7 +70,7 @@ Mat::PlasticLinElastType Mat::PlasticLinElastType::instance_;
 Core::Communication::ParObject* Mat::PlasticLinElastType::Create(const std::vector<char>& data)
 {
   Mat::PlasticLinElast* plastic = new Mat::PlasticLinElast();
-  plastic->Unpack(data);
+  plastic->unpack(data);
   return plastic;
 }
 
@@ -90,7 +90,7 @@ Mat::PlasticLinElast::PlasticLinElast(Mat::PAR::PlasticLinElast* params) : param
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 04/11 |
  *----------------------------------------------------------------------*/
-void Mat::PlasticLinElast::Pack(Core::Communication::PackBuffer& data) const
+void Mat::PlasticLinElast::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -129,13 +129,13 @@ void Mat::PlasticLinElast::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, plastic_step_);
 
   return;
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack (public)                                           dano 04/11 |
  *----------------------------------------------------------------------*/
-void Mat::PlasticLinElast::Unpack(const std::vector<char>& data)
+void Mat::PlasticLinElast::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -210,7 +210,7 @@ void Mat::PlasticLinElast::Unpack(const std::vector<char>& data)
 
   return;
 
-}  // Unpack()
+}  // unpack()
 
 
 /*---------------------------------------------------------------------*

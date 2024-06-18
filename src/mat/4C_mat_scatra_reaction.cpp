@@ -249,7 +249,7 @@ Mat::PAR::ReactionCoupling Mat::PAR::ScatraReactionMat::set_coupling_type(
 Core::Communication::ParObject* Mat::ScatraReactionMatType::Create(const std::vector<char>& data)
 {
   Mat::ScatraReactionMat* scatra_reaction_mat = new Mat::ScatraReactionMat();
-  scatra_reaction_mat->Unpack(data);
+  scatra_reaction_mat->unpack(data);
   return scatra_reaction_mat;
 }
 
@@ -266,7 +266,7 @@ Mat::ScatraReactionMat::ScatraReactionMat(Mat::PAR::ScatraReactionMat* params) :
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraReactionMat::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ScatraReactionMat::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -283,7 +283,7 @@ void Mat::ScatraReactionMat::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraReactionMat::Unpack(const std::vector<char>& data)
+void Mat::ScatraReactionMat::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

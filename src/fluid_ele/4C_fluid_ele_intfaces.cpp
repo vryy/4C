@@ -94,7 +94,7 @@ Core::FE::CellType Discret::ELEMENTS::FluidIntFace::Shape() const
  |  Pack data                                                  (public) |
  |                                                         schott 03/12 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidIntFace::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::FluidIntFace::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this FluidIntFace element does not support communication");
   return;
@@ -104,7 +104,7 @@ void Discret::ELEMENTS::FluidIntFace::Pack(Core::Communication::PackBuffer& data
  |  Unpack data                                                (public) |
  |                                                         schott 03/12 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidIntFace::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidIntFace::unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this FluidIntFace element does not support communication");
   return;

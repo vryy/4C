@@ -39,7 +39,7 @@ Mat::ScatraMultiScaleType Mat::ScatraMultiScaleType::instance_;
 Core::Communication::ParObject* Mat::ScatraMultiScaleType::Create(const std::vector<char>& data)
 {
   Mat::ScatraMultiScale* ScatraMatMultiScale = new Mat::ScatraMultiScale();
-  ScatraMatMultiScale->Unpack(data);
+  ScatraMatMultiScale->unpack(data);
   return ScatraMatMultiScale;
 }
 
@@ -60,7 +60,7 @@ Mat::ScatraMultiScale::ScatraMultiScale(Mat::PAR::ScatraMultiScale* params)
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::ScatraMultiScale::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ScatraMultiScale::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -73,7 +73,7 @@ void Mat::ScatraMultiScale::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, matid);
 
   // pack base class material
-  ScatraMat::Pack(data);
+  ScatraMat::pack(data);
 
   return;
 }
@@ -81,7 +81,7 @@ void Mat::ScatraMultiScale::Pack(Core::Communication::PackBuffer& data) const
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::ScatraMultiScale::Unpack(const std::vector<char>& data)
+void Mat::ScatraMultiScale::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -107,7 +107,7 @@ void Mat::ScatraMultiScale::Unpack(const std::vector<char>& data)
   // extract base class material
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  ScatraMat::Unpack(basedata);
+  ScatraMat::unpack(basedata);
 
   // final safety check
   if (position != data.size())

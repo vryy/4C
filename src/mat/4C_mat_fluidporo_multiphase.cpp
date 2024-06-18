@@ -187,7 +187,7 @@ Mat::FluidPoroMultiPhaseType Mat::FluidPoroMultiPhaseType::instance_;
 Core::Communication::ParObject* Mat::FluidPoroMultiPhaseType::Create(const std::vector<char>& data)
 {
   Mat::FluidPoroMultiPhase* FluidPoroMultiPhase = new Mat::FluidPoroMultiPhase();
-  FluidPoroMultiPhase->Unpack(data);
+  FluidPoroMultiPhase->unpack(data);
   return FluidPoroMultiPhase;
 }
 
@@ -244,7 +244,7 @@ void Mat::FluidPoroMultiPhase::Initialize()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroMultiPhase::Pack(Core::Communication::PackBuffer& data) const
+void Mat::FluidPoroMultiPhase::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -259,13 +259,13 @@ void Mat::FluidPoroMultiPhase::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, matid);
 
   // Pack base class material
-  Mat::MatList::Pack(data);
+  Mat::MatList::pack(data);
 }
 
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroMultiPhase::Unpack(const std::vector<char>& data)
+void Mat::FluidPoroMultiPhase::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   clear();
@@ -298,7 +298,7 @@ void Mat::FluidPoroMultiPhase::Unpack(const std::vector<char>& data)
   // extract base class material
   std::vector<char> basedata(0);
   Mat::MatList::extract_from_pack(position, data, basedata);
-  Mat::MatList::Unpack(basedata);
+  Mat::MatList::unpack(basedata);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case

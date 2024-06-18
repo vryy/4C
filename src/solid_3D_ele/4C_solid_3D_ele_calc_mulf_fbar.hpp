@@ -234,7 +234,7 @@ namespace Discret::ELEMENTS
           integration_factor, linearization.cauchygreen, stress, stiffness_matrix);
     }
 
-    static void Pack(
+    static void pack(
         const MulfHistoryData<celltype>& history_data, Core::Communication::PackBuffer& data)
     {
       Core::Communication::ParObject::add_to_pack(data, history_data.inverse_jacobian);
@@ -242,7 +242,7 @@ namespace Discret::ELEMENTS
       Core::Communication::ParObject::add_to_pack(data, history_data.is_setup);
     }
 
-    static void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data,
+    static void unpack(std::vector<char>::size_type& position, const std::vector<char>& data,
         MulfHistoryData<celltype>& history_data)
     {
       Core::Communication::ParObject::extract_from_pack(

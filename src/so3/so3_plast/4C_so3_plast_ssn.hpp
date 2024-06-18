@@ -124,12 +124,12 @@ namespace Discret
       bool HaveEAS() const override { return (eastype_ != soh8p_easnone); };
 
       //! Pack this class so it can be communicated
-      //! Pack and \ref Unpack are used to communicate this element
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      //! Pack and \ref unpack are used to communicate this element
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       //! Unpack data from a char vector into this class
-      //! Pack and \ref Unpack are used to communicate this element
-      void Unpack(const std::vector<char>& data) override;
+      //! Pack and \ref unpack are used to communicate this element
+      void unpack(const std::vector<char>& data) override;
 
       //! Get number of degrees of freedom of a certain node in case of multiple
       //! dofsets (implements pure virtual Core::Elements::Element)

@@ -125,7 +125,7 @@ namespace Mat
     //!  identify the exact class on the receiving processor.
     //!
     //!  \param data (in/out): char vector to store class information
-    void Pack(Core::Communication::PackBuffer&
+    void pack(Core::Communication::PackBuffer&
             data  //!<  data (i/o): char vector to store class information
     ) const override;
 
@@ -139,7 +139,7 @@ namespace Mat
     //!
     //!  \param data (in) : vector storing all data to be unpacked into this
     //!  instance.
-    void Unpack(const std::vector<char>&
+    void unpack(const std::vector<char>&
             data  //!< (i) : vector storing all data to be unpacked into this instance.
         ) override;
 

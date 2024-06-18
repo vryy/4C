@@ -106,7 +106,7 @@ Mat::FluidPoroSinglePhaseType Mat::FluidPoroSinglePhaseType::instance_;
 Core::Communication::ParObject* Mat::FluidPoroSinglePhaseType::Create(const std::vector<char>& data)
 {
   Mat::FluidPoroSinglePhase* fluid_poro = new Mat::FluidPoroSinglePhase();
-  fluid_poro->Unpack(data);
+  fluid_poro->unpack(data);
   return fluid_poro;
 }
 
@@ -126,7 +126,7 @@ Mat::FluidPoroSinglePhase::FluidPoroSinglePhase(Mat::PAR::FluidPoroSinglePhase* 
 /*----------------------------------------------------------------------*
  * pack material for commuication                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSinglePhase::Pack(Core::Communication::PackBuffer& data) const
+void Mat::FluidPoroSinglePhase::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -143,7 +143,7 @@ void Mat::FluidPoroSinglePhase::Pack(Core::Communication::PackBuffer& data) cons
 /*----------------------------------------------------------------------*
  * unpack material                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSinglePhase::Unpack(const std::vector<char>& data)
+void Mat::FluidPoroSinglePhase::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -333,7 +333,7 @@ Core::Communication::ParObject* Mat::FluidPoroSingleVolFracType::Create(
     const std::vector<char>& data)
 {
   Mat::FluidPoroSingleVolFrac* fluid_poro = new Mat::FluidPoroSingleVolFrac();
-  fluid_poro->Unpack(data);
+  fluid_poro->unpack(data);
   return fluid_poro;
 }
 
@@ -353,7 +353,7 @@ Mat::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(Mat::PAR::FluidPoroSingleVol
 /*----------------------------------------------------------------------*
  * pack material for commuication                      kremheller 10/17 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSingleVolFrac::Pack(Core::Communication::PackBuffer& data) const
+void Mat::FluidPoroSingleVolFrac::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -370,7 +370,7 @@ void Mat::FluidPoroSingleVolFrac::Pack(Core::Communication::PackBuffer& data) co
 /*----------------------------------------------------------------------*
  * unpack material                                      kremheller 10/17 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSingleVolFrac::Unpack(const std::vector<char>& data)
+void Mat::FluidPoroSingleVolFrac::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -461,7 +461,7 @@ Core::Communication::ParObject* Mat::FluidPoroVolFracPressureType::Create(
     const std::vector<char>& data)
 {
   Mat::FluidPoroVolFracPressure* fluid_poro = new Mat::FluidPoroVolFracPressure();
-  fluid_poro->Unpack(data);
+  fluid_poro->unpack(data);
   return fluid_poro;
 }
 
@@ -481,7 +481,7 @@ Mat::FluidPoroVolFracPressure::FluidPoroVolFracPressure(Mat::PAR::FluidPoroVolFr
 /*----------------------------------------------------------------------*
  * pack material for commuication                      kremheller 02/18 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroVolFracPressure::Pack(Core::Communication::PackBuffer& data) const
+void Mat::FluidPoroVolFracPressure::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -498,7 +498,7 @@ void Mat::FluidPoroVolFracPressure::Pack(Core::Communication::PackBuffer& data) 
 /*----------------------------------------------------------------------*
  * unpack material                                      kremheller 02/18 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroVolFracPressure::Unpack(const std::vector<char>& data)
+void Mat::FluidPoroVolFracPressure::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

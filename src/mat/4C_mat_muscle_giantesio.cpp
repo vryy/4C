@@ -293,7 +293,7 @@ Mat::MuscleGiantesioType Mat::MuscleGiantesioType::instance_;
 Core::Communication::ParObject* Mat::MuscleGiantesioType::Create(const std::vector<char>& data)
 {
   auto* muscle_giantesio = new Mat::MuscleGiantesio();
-  muscle_giantesio->Unpack(data);
+  muscle_giantesio->unpack(data);
   return muscle_giantesio;
 }
 
@@ -332,7 +332,7 @@ Mat::MuscleGiantesio::MuscleGiantesio(Mat::PAR::MuscleGiantesio* params)
       Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-void Mat::MuscleGiantesio::Pack(Core::Communication::PackBuffer& data) const
+void Mat::MuscleGiantesio::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -351,7 +351,7 @@ void Mat::MuscleGiantesio::Pack(Core::Communication::PackBuffer& data) const
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::MuscleGiantesio::Unpack(const std::vector<char>& data)
+void Mat::MuscleGiantesio::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

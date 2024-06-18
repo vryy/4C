@@ -158,7 +158,7 @@ Mat::Growth::Growth(Mat::PAR::Growth* params)
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::Growth::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Growth::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -192,12 +192,12 @@ void Mat::Growth::Pack(Core::Communication::PackBuffer& data) const
   // Pack data of elastic material
   if (matelastic_ != Teuchos::null)
   {
-    matelastic_->Pack(data);
+    matelastic_->pack(data);
   }
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::Growth::Unpack(const std::vector<char>& data)
+void Mat::Growth::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -412,7 +412,7 @@ Mat::GrowthVolumetricType Mat::GrowthVolumetricType::instance_;
 Core::Communication::ParObject* Mat::GrowthVolumetricType::Create(const std::vector<char>& data)
 {
   auto* grow = new Mat::GrowthVolumetric();
-  grow->Unpack(data);
+  grow->unpack(data);
   return grow;
 }
 
@@ -758,7 +758,7 @@ void Mat::GrowthVolumetric::GetSAndCmatdach(const double theta,
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthVolumetric::Pack(Core::Communication::PackBuffer& data) const
+void Mat::GrowthVolumetric::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -823,11 +823,11 @@ void Mat::GrowthVolumetric::Pack(Core::Communication::PackBuffer& data) const
   }
 
   // Pack base class material
-  Growth::Pack(data);
+  Growth::pack(data);
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthVolumetric::Unpack(const std::vector<char>& data)
+void Mat::GrowthVolumetric::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -934,7 +934,7 @@ void Mat::GrowthVolumetric::Unpack(const std::vector<char>& data)
   // extract base class material
   std::vector<char> basedata(0);
   Growth::extract_from_pack(position, data, basedata);
-  Growth::Unpack(basedata);
+  Growth::unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);

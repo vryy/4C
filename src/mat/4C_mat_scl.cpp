@@ -61,7 +61,7 @@ Mat::SclType Mat::SclType::instance_;
 Core::Communication::ParObject* Mat::SclType::Create(const std::vector<char>& data)
 {
   auto* scl = new Mat::Scl();
-  scl->Unpack(data);
+  scl->unpack(data);
   return scl;
 }
 
@@ -75,7 +75,7 @@ Mat::Scl::Scl(Mat::PAR::Scl* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Scl::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Scl::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -91,7 +91,7 @@ void Mat::Scl::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Scl::Unpack(const std::vector<char>& data)
+void Mat::Scl::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

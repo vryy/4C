@@ -111,7 +111,7 @@ Core::FE::CellType Discret::ELEMENTS::RedAirBloodScatra::Shape() const
  |  Pack data                                                  (public) |
  |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedAirBloodScatra::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::RedAirBloodScatra::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -120,7 +120,7 @@ void Discret::ELEMENTS::RedAirBloodScatra::Pack(Core::Communication::PackBuffer&
   add_to_pack(data, type);
 
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
 
 
   std::map<std::string, double>::const_iterator it;
@@ -142,7 +142,7 @@ void Discret::ELEMENTS::RedAirBloodScatra::Pack(Core::Communication::PackBuffer&
  |  Unpack data                                                (public) |
  |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedAirBloodScatra::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::RedAirBloodScatra::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -151,7 +151,7 @@ void Discret::ELEMENTS::RedAirBloodScatra::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
 
   std::map<std::string, double> it;
   int n = 0;

@@ -66,7 +66,7 @@ Core::Communication::ParObject* Mat::ViscoPlasticNoYieldSurfaceType::Create(
     const std::vector<char>& data)
 {
   auto* visco_plastic_no_yield_surface = new Mat::ViscoPlasticNoYieldSurface();
-  visco_plastic_no_yield_surface->Unpack(data);
+  visco_plastic_no_yield_surface->unpack(data);
   return visco_plastic_no_yield_surface;
 }
 
@@ -89,7 +89,7 @@ Mat::ViscoPlasticNoYieldSurface::ViscoPlasticNoYieldSurface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoPlasticNoYieldSurface::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ViscoPlasticNoYieldSurface::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -110,7 +110,7 @@ void Mat::ViscoPlasticNoYieldSurface::Pack(Core::Communication::PackBuffer& data
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoPlasticNoYieldSurface::Unpack(const std::vector<char>& data)
+void Mat::ViscoPlasticNoYieldSurface::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

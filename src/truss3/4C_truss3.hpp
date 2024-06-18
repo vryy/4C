@@ -176,7 +176,7 @@ namespace Discret
 
       int NumLine() const override { return 1; }
 
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override;
 
@@ -201,7 +201,7 @@ namespace Discret
 
       int UniqueParObjectId() const override { return Truss3Type::Instance().UniqueParObjectId(); }
 
-      void Unpack(const std::vector<char>& data) override;
+      void unpack(const std::vector<char>& data) override;
 
       //! coordinates of nodes in reference configuration
       const Core::LinAlg::Matrix<6, 1>& X() const { return x_; }

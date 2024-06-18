@@ -35,7 +35,7 @@ Discret::ELEMENTS::SoWeg6Type& Discret::ELEMENTS::SoWeg6Type::Instance() { retur
 Core::Communication::ParObject* Discret::ELEMENTS::SoWeg6Type::Create(const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoWeg6(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -162,7 +162,7 @@ Core::FE::CellType Discret::ELEMENTS::SoWeg6::Shape() const { return Core::FE::C
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoWeg6::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoWeg6::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -170,7 +170,7 @@ void Discret::ELEMENTS::SoWeg6::Pack(Core::Communication::PackBuffer& data) cons
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  SoBase::Pack(data);
+  SoBase::pack(data);
 
   // Pack prestress
   add_to_pack(data, static_cast<int>(pstype_));
@@ -197,7 +197,7 @@ void Discret::ELEMENTS::SoWeg6::Pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoWeg6::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoWeg6::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -206,7 +206,7 @@ void Discret::ELEMENTS::SoWeg6::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  SoBase::Unpack(basedata);
+  SoBase::unpack(basedata);
   // prestress_
   pstype_ = static_cast<Inpar::STR::PreStress>(extract_int(position, data));
   extract_from_pack(position, data, pstime_);
@@ -217,7 +217,7 @@ void Discret::ELEMENTS::SoWeg6::Unpack(const std::vector<char>& data)
     extract_from_pack(position, data, tmpprestress);
     if (prestress_ == Teuchos::null)
       prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_WEG6, NUMGPT_WEG6));
-    prestress_->Unpack(tmpprestress);
+    prestress_->unpack(tmpprestress);
   }
 
   // detJ_

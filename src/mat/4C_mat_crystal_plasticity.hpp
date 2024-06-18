@@ -315,10 +315,10 @@ namespace Mat
     }
 
     //! Pack this class so it can be communicated
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     //! Unpack data from a char vector into this class
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //-----------------------------------------------------------------------------
     /** @}                                                                       */

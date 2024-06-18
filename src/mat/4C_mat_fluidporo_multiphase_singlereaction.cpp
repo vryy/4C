@@ -369,7 +369,7 @@ Core::Communication::ParObject* Mat::FluidPoroSingleReactionType::Create(
     const std::vector<char>& data)
 {
   Mat::FluidPoroSingleReaction* fluid_poro = new Mat::FluidPoroSingleReaction();
-  fluid_poro->Unpack(data);
+  fluid_poro->unpack(data);
   return fluid_poro;
 }
 
@@ -389,7 +389,7 @@ Mat::FluidPoroSingleReaction::FluidPoroSingleReaction(Mat::PAR::FluidPoroSingleR
 /*----------------------------------------------------------------------*
  * pack material for commuication                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSingleReaction::Pack(Core::Communication::PackBuffer& data) const
+void Mat::FluidPoroSingleReaction::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -406,7 +406,7 @@ void Mat::FluidPoroSingleReaction::Pack(Core::Communication::PackBuffer& data) c
 /*----------------------------------------------------------------------*
  * unpack material                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSingleReaction::Unpack(const std::vector<char>& data)
+void Mat::FluidPoroSingleReaction::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

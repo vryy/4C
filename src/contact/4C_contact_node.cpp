@@ -25,7 +25,7 @@ Core::Communication::ParObject* CONTACT::NodeType::Create(const std::vector<char
   std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
   auto* node = new CONTACT::Node(0, x, 0, dofs, false, false);
-  node->Unpack(data);
+  node->unpack(data);
   return node;
 }
 
@@ -61,7 +61,7 @@ CONTACT::NodeDataContainer::NodeDataContainer()
  |  Pack data                                                  (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::NodeDataContainer::Pack(Core::Communication::PackBuffer& data) const
+void CONTACT::NodeDataContainer::pack(Core::Communication::PackBuffer& data) const
 {
   // add txi_
   Core::Communication::ParObject::add_to_pack(data, txi_, 3 * sizeof(double));
@@ -86,7 +86,7 @@ void CONTACT::NodeDataContainer::Pack(Core::Communication::PackBuffer& data) con
  |  Unpack data                                                (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::NodeDataContainer::Unpack(
+void CONTACT::NodeDataContainer::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // txi_
@@ -197,7 +197,7 @@ void CONTACT::Aug::NodeDataContainer::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::NodeDataContainer::Pack(Core::Communication::PackBuffer& data) const
+void CONTACT::Aug::NodeDataContainer::pack(Core::Communication::PackBuffer& data) const
 {
   // add maxNumMasterElements
   Core::Communication::ParObject::add_to_pack(data, mentries_);
@@ -216,7 +216,7 @@ void CONTACT::Aug::NodeDataContainer::Pack(Core::Communication::PackBuffer& data
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::NodeDataContainer::Unpack(
+void CONTACT::Aug::NodeDataContainer::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // maxNumMasterElements
@@ -282,7 +282,7 @@ CONTACT::NodePoroDataContainer::NodePoroDataContainer()
  |  Pack data                                                  (public) |
  |                                                            ager 08/14|
  *----------------------------------------------------------------------*/
-void CONTACT::NodePoroDataContainer::Pack(Core::Communication::PackBuffer& data) const
+void CONTACT::NodePoroDataContainer::pack(Core::Communication::PackBuffer& data) const
 {
   // add fvel
   Core::Communication::ParObject::add_to_pack(data, fvel_, 3 * sizeof(double));
@@ -301,7 +301,7 @@ void CONTACT::NodePoroDataContainer::Pack(Core::Communication::PackBuffer& data)
  |  Unpack data                                                (public) |
  |                                                            ager 08/14|
  *----------------------------------------------------------------------*/
-void CONTACT::NodePoroDataContainer::Unpack(
+void CONTACT::NodePoroDataContainer::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // fvel
@@ -330,7 +330,7 @@ CONTACT::NodeTSIDataContainer::NodeTSIDataContainer(double t_ref, double t_dam)
  |  Pack data                                                  (public) |
  |                                                           seitz 08/15|
  *----------------------------------------------------------------------*/
-void CONTACT::NodeTSIDataContainer::Pack(Core::Communication::PackBuffer& data) const
+void CONTACT::NodeTSIDataContainer::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::ParObject::add_to_pack(data, temp_master_);
   Core::Communication::ParObject::add_to_pack(data, t_ref_);
@@ -344,7 +344,7 @@ void CONTACT::NodeTSIDataContainer::Pack(Core::Communication::PackBuffer& data) 
  |  Unpack data                                                (public) |
  |                                                           seitz 08/15|
  *----------------------------------------------------------------------*/
-void CONTACT::NodeTSIDataContainer::Unpack(
+void CONTACT::NodeTSIDataContainer::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   Core::Communication::ParObject::extract_from_pack(position, data, temp_master_);
@@ -441,7 +441,7 @@ void CONTACT::Node::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::Pack(Core::Communication::PackBuffer& data) const
+void CONTACT::Node::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -450,7 +450,7 @@ void CONTACT::Node::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, type);
 
   // add base class Mortar::Node
-  Mortar::Node::Pack(data);
+  Mortar::Node::pack(data);
 
   // add active_
   add_to_pack(data, active_);
@@ -463,22 +463,22 @@ void CONTACT::Node::Pack(Core::Communication::PackBuffer& data) const
   // add data_
   bool hasdata = (codata_ != Teuchos::null);
   add_to_pack(data, hasdata);
-  if (hasdata) codata_->Pack(data);
+  if (hasdata) codata_->pack(data);
 
   // add augdata_
   bool hasdataaug = (augdata_ != Teuchos::null);
   add_to_pack(data, hasdataaug);
-  if (hasdataaug) augdata_->Pack(data);
+  if (hasdataaug) augdata_->pack(data);
 
   // add porodata_
   bool hasdataporo = (coporodata_ != Teuchos::null);
   add_to_pack(data, hasdataporo);
-  if (hasdataporo) coporodata_->Pack(data);
+  if (hasdataporo) coporodata_->pack(data);
 
   // add tsidata
   bool hasTSIdata = (cTSIdata_ != Teuchos::null);
   add_to_pack(data, (int)hasTSIdata);
-  if (hasTSIdata) cTSIdata_->Pack(data);
+  if (hasTSIdata) cTSIdata_->pack(data);
 
   return;
 }
@@ -488,7 +488,7 @@ void CONTACT::Node::Pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::Unpack(const std::vector<char>& data)
+void CONTACT::Node::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -497,7 +497,7 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
   // extract base class Mortar::Node
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Mortar::Node::Unpack(basedata);
+  Mortar::Node::unpack(basedata);
 
   // active_
   active_ = extract_int(position, data);
@@ -513,7 +513,7 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
   if (hasdata)
   {
     codata_ = Teuchos::rcp(new CONTACT::NodeDataContainer());
-    codata_->Unpack(position, data);
+    codata_->unpack(position, data);
   }
   else
   {
@@ -525,7 +525,7 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
   if (hasdataaug)
   {
     augdata_ = Teuchos::rcp(new CONTACT::Aug::NodeDataContainer(*this));
-    augdata_->Unpack(position, data);
+    augdata_->unpack(position, data);
     augdata_->setup();
   }
   else
@@ -536,7 +536,7 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
   if (hasdataporo)
   {
     coporodata_ = Teuchos::rcp(new CONTACT::NodePoroDataContainer());
-    coporodata_->Unpack(position, data);
+    coporodata_->unpack(position, data);
   }
   else
   {
@@ -548,7 +548,7 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
   if (hasTSIdata)
   {
     cTSIdata_ = Teuchos::rcp(new CONTACT::NodeTSIDataContainer());
-    cTSIdata_->Unpack(position, data);
+    cTSIdata_->unpack(position, data);
   }
   else
     cTSIdata_ = Teuchos::null;

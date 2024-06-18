@@ -205,7 +205,7 @@ Core::Communication::ParObject* Mat::PlasticNlnLogNeoHookeType::Create(
     const std::vector<char>& data)
 {
   Mat::PlasticNlnLogNeoHooke* plasticneo = new Mat::PlasticNlnLogNeoHooke();
-  plasticneo->Unpack(data);
+  plasticneo->unpack(data);
   return plasticneo;
 }
 
@@ -228,7 +228,7 @@ Mat::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(Mat::PAR::PlasticNlnLogNeoHook
 /*----------------------------------------------------------------------*
  | pack (public)                                                        |
  *----------------------------------------------------------------------*/
-void Mat::PlasticNlnLogNeoHooke::Pack(Core::Communication::PackBuffer& data) const
+void Mat::PlasticNlnLogNeoHooke::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -262,13 +262,13 @@ void Mat::PlasticNlnLogNeoHooke::Pack(Core::Communication::PackBuffer& data) con
   }
 
   return;
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack (public)                                                      |
  *----------------------------------------------------------------------*/
-void Mat::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
+void Mat::PlasticNlnLogNeoHooke::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -321,7 +321,7 @@ void Mat::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
 
   return;
 
-}  // Unpack()
+}  // unpack()
 
 
 /*---------------------------------------------------------------------*

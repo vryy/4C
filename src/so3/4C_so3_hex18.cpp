@@ -32,7 +32,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex18Type::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoHex18(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -137,7 +137,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoHex18::Clone() const
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex18::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoHex18::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -145,7 +145,7 @@ void Discret::ELEMENTS::SoHex18::Pack(Core::Communication::PackBuffer& data) con
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  SoBase::Pack(data);
+  SoBase::pack(data);
 
   // detJ_
   add_to_pack(data, detJ_);
@@ -161,7 +161,7 @@ void Discret::ELEMENTS::SoHex18::Pack(Core::Communication::PackBuffer& data) con
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex18::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoHex18::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -170,7 +170,7 @@ void Discret::ELEMENTS::SoHex18::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  SoBase::Unpack(basedata);
+  SoBase::unpack(basedata);
 
   // detJ_
   extract_from_pack(position, data, detJ_);

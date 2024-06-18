@@ -41,7 +41,7 @@ Mat::ModPowerLawType Mat::ModPowerLawType::instance_;
 Core::Communication::ParObject* Mat::ModPowerLawType::Create(const std::vector<char>& data)
 {
   Mat::ModPowerLaw* powLaw = new Mat::ModPowerLaw();
-  powLaw->Unpack(data);
+  powLaw->unpack(data);
   return powLaw;
 }
 
@@ -57,7 +57,7 @@ Mat::ModPowerLaw::ModPowerLaw(Mat::PAR::ModPowerLaw* params) : params_(params) {
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ModPowerLaw::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ModPowerLaw::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -74,7 +74,7 @@ void Mat::ModPowerLaw::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ModPowerLaw::Unpack(const std::vector<char>& data)
+void Mat::ModPowerLaw::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

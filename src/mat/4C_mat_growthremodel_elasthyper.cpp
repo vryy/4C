@@ -113,7 +113,7 @@ Core::Communication::ParObject* Mat::GrowthRemodelElastHyperType::Create(
     const std::vector<char>& data)
 {
   Mat::GrowthRemodelElastHyper* gr_elhy = new Mat::GrowthRemodelElastHyper();
-  gr_elhy->Unpack(data);
+  gr_elhy->unpack(data);
 
   return gr_elhy;
 }
@@ -212,7 +212,7 @@ Mat::GrowthRemodelElastHyper::GrowthRemodelElastHyper(Mat::PAR::GrowthRemodelEla
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::Pack(Core::Communication::PackBuffer& data) const
+void Mat::GrowthRemodelElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -267,7 +267,7 @@ void Mat::GrowthRemodelElastHyper::Pack(Core::Communication::PackBuffer& data) c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
+void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   params_ = nullptr;

@@ -33,7 +33,7 @@ Core::Communication::ParObject* Mat::BeamElastHyperMaterialType<T>::Create(
     const std::vector<char>& data)
 {
   Core::Mat::Material* matobject = new Mat::BeamElastHyperMaterial<T>();
-  matobject->Unpack(data);
+  matobject->unpack(data);
   return matobject;
 }
 
@@ -95,7 +95,7 @@ void Mat::BeamElastHyperMaterial<T>::compute_constitutive_parameter(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void Mat::BeamElastHyperMaterial<T>::Pack(Core::Communication::PackBuffer& data) const
+void Mat::BeamElastHyperMaterial<T>::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -112,7 +112,7 @@ void Mat::BeamElastHyperMaterial<T>::Pack(Core::Communication::PackBuffer& data)
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void Mat::BeamElastHyperMaterial<T>::Unpack(const std::vector<char>& data)
+void Mat::BeamElastHyperMaterial<T>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

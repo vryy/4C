@@ -51,7 +51,7 @@ Mat::PlasticDruckerPragerType Mat::PlasticDruckerPragerType::instance_;
 Core::Communication::ParObject* Mat::PlasticDruckerPragerType::Create(const std::vector<char>& data)
 {
   Mat::PlasticDruckerPrager* plastic = new Mat::PlasticDruckerPrager();
-  plastic->Unpack(data);
+  plastic->unpack(data);
   return plastic;
 }
 
@@ -62,7 +62,7 @@ Mat::PlasticDruckerPrager::PlasticDruckerPrager(Mat::PAR::PlasticDruckerPrager* 
 {
 }
 
-void Mat::PlasticDruckerPrager::Pack(Core::Communication::PackBuffer& data) const
+void Mat::PlasticDruckerPrager::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
   int type = UniqueParObjectId();
@@ -79,7 +79,7 @@ void Mat::PlasticDruckerPrager::Pack(Core::Communication::PackBuffer& data) cons
   }
 }
 
-void Mat::PlasticDruckerPrager::Unpack(const std::vector<char>& data)
+void Mat::PlasticDruckerPrager::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;

@@ -53,7 +53,7 @@ Mat::ScatraMatType Mat::ScatraMatType::instance_;
 Core::Communication::ParObject* Mat::ScatraMatType::Create(const std::vector<char>& data)
 {
   Mat::ScatraMat* scatra_mat = new Mat::ScatraMat();
-  scatra_mat->Unpack(data);
+  scatra_mat->unpack(data);
   return scatra_mat;
 }
 
@@ -70,7 +70,7 @@ Mat::ScatraMat::ScatraMat(Mat::PAR::ScatraMat* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraMat::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ScatraMat::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -87,7 +87,7 @@ void Mat::ScatraMat::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraMat::Unpack(const std::vector<char>& data)
+void Mat::ScatraMat::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

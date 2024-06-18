@@ -81,12 +81,12 @@ namespace
           (1.0 / ((1.0 + 0.25) * (1.0 - (2.0 * 0.25)))) * ((1.0 - (2.0 * 0.25)) / 2.0) * .1;
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1> result_stress(true);
-    druckprag_->Pack(data);
+    druckprag_->pack(data);
     std::vector<char> dataSend;
     swap(dataSend, data());
     for (int i = 0; i < 4; i++) dataSend.erase(dataSend.begin());
     auto plastic = Teuchos::rcp(new Mat::PlasticDruckerPrager());
-    plastic->Unpack(dataSend);
+    plastic->unpack(dataSend);
     plastic->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };

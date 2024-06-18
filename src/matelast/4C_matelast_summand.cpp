@@ -331,9 +331,9 @@ void Mat::Elastic::Summand::AddShearMod(bool& haveshearmod, double& shearmod) co
 
 int Mat::Elastic::Summand::UniqueParObjectId() const { return -1; }
 
-void Mat::Elastic::Summand::Pack(Core::Communication::PackBuffer& data) const { return; }
+void Mat::Elastic::Summand::pack(Core::Communication::PackBuffer& data) const { return; }
 
-void Mat::Elastic::Summand::Unpack(const std::vector<char>& data) { return; };
+void Mat::Elastic::Summand::unpack(const std::vector<char>& data) { return; };
 
 
 // Function which reads in the given fiber value due to the FIBER1 nomenclature

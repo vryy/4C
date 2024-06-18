@@ -144,12 +144,12 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(Core::Communication::PackBuffer& data) const;
+      void pack(Core::Communication::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
       */
-      void Unpack(std::vector<char> const& data);
+      void unpack(std::vector<char> const& data);
 
       //! @}
 
@@ -290,12 +290,12 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(Core::Communication::PackBuffer& data) const;
+      void pack(Core::Communication::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
       */
-      void Unpack(std::vector<char> const& data);
+      void unpack(std::vector<char> const& data);
 
       //! @}
 
@@ -363,12 +363,12 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(Core::Communication::PackBuffer& data) const;
+      void pack(Core::Communication::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
       */
-      void Unpack(std::vector<char> const& data);
+      void unpack(std::vector<char> const& data);
 
       //! @}
 
@@ -431,12 +431,12 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(Core::Communication::PackBuffer& data) const;
+      void pack(Core::Communication::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
       */
-      void Unpack(std::vector<char> const& data);
+      void unpack(std::vector<char> const& data);
 
       //! @}
 
@@ -530,7 +530,7 @@ namespace BEAMINTERACTION
     T* CreateDataContainer(std::vector<char> const& data)
     {
       T* new_container = new T();
-      new_container->Unpack(data);
+      new_container->unpack(data);
       return new_container;
     };
 

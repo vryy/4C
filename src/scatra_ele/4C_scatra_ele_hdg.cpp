@@ -54,7 +54,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::ScaTraHDGType::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::ScaTraHDG* object = new Discret::ELEMENTS::ScaTraHDG(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -194,7 +194,7 @@ Core::Elements::Element* Discret::ELEMENTS::ScaTraHDG::Clone() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                   hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraHDG::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::ScaTraHDG::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -203,7 +203,7 @@ void Discret::ELEMENTS::ScaTraHDG::Pack(Core::Communication::PackBuffer& data) c
   add_to_pack(data, type);
 
   // add base class Element
-  Transport::Pack(data);
+  Transport::pack(data);
 
   int degree = degree_;
   add_to_pack(data, degree);
@@ -218,7 +218,7 @@ void Discret::ELEMENTS::ScaTraHDG::Pack(Core::Communication::PackBuffer& data) c
 /*----------------------------------------------------------------------*
  |  Unpack data (public)                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraHDG::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ScaTraHDG::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -227,7 +227,7 @@ void Discret::ELEMENTS::ScaTraHDG::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   Transport::extract_from_pack(position, data, basedata);
-  Transport::Unpack(basedata);
+  Transport::unpack(basedata);
 
   int val = 0;
   extract_from_pack(position, data, val);
@@ -251,7 +251,7 @@ void Discret::ELEMENTS::ScaTraHDG::pack_material(Core::Communication::PackBuffer
   if (Material() != Teuchos::null)
   {
     // pack only first material
-    Material()->Pack(data);
+    Material()->pack(data);
   }
   else
     FOUR_C_THROW("No material defined to pack!");
@@ -581,7 +581,7 @@ Core::FE::CellType Discret::ELEMENTS::ScaTraHDGBoundary::Shape() const
  |  Pack data                                                  (public) |
  |                                                        hoermann 09/15|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraHDGBoundary::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::ScaTraHDGBoundary::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -589,7 +589,7 @@ void Discret::ELEMENTS::ScaTraHDGBoundary::Pack(Core::Communication::PackBuffer&
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
 
   // Discretisation type
   // add_to_pack(data,distype_);
@@ -602,7 +602,7 @@ void Discret::ELEMENTS::ScaTraHDGBoundary::Pack(Core::Communication::PackBuffer&
  |  Unpack data                                                (public) |
  |                                                        hoermann 09/15|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraHDGBoundary::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ScaTraHDGBoundary::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -611,7 +611,7 @@ void Discret::ELEMENTS::ScaTraHDGBoundary::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
 
   // distype
   // distype_ = static_cast<Core::FE::CellType>( extract_int(position,data) );
@@ -796,7 +796,7 @@ Core::FE::CellType Discret::ELEMENTS::ScaTraHDGIntFace::Shape() const
  |  Pack data                                                  (public) |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraHDGIntFace::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::ScaTraHDGIntFace::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this ScaTraHDGIntFace element does not support communication");
   return;
@@ -806,7 +806,7 @@ void Discret::ELEMENTS::ScaTraHDGIntFace::Pack(Core::Communication::PackBuffer& 
  |  Unpack data                                                (public) |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraHDGIntFace::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ScaTraHDGIntFace::unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this ScaTraHDGIntFace element does not support communication");
   return;

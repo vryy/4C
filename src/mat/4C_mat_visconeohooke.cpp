@@ -48,7 +48,7 @@ Mat::ViscoNeoHookeType Mat::ViscoNeoHookeType::instance_;
 Core::Communication::ParObject* Mat::ViscoNeoHookeType::Create(const std::vector<char>& data)
 {
   Mat::ViscoNeoHooke* visco = new Mat::ViscoNeoHooke();
-  visco->Unpack(data);
+  visco->unpack(data);
   return visco;
 }
 
@@ -75,7 +75,7 @@ Mat::ViscoNeoHooke::ViscoNeoHooke(Mat::PAR::ViscoNeoHooke* params) : params_(par
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoNeoHooke::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ViscoNeoHooke::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -111,7 +111,7 @@ void Mat::ViscoNeoHooke::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoNeoHooke::Unpack(const std::vector<char>& data)
+void Mat::ViscoNeoHooke::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;

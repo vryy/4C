@@ -197,13 +197,13 @@ namespace Discret
       int UniqueParObjectId() const override { return ThermoType::Instance().UniqueParObjectId(); }
 
       //! \brief Pack this class so it can be communicated
-      //! \ref Pack and \ref Unpack are used to communicate this element
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      //! \ref pack and \ref unpack are used to communicate this element
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       //! \brief Unpack data from a char vector into this class
       //!
-      //! \ref Pack and \ref Unpack are used to communicate this element
-      void Unpack(const std::vector<char>& data) override;
+      //! \ref pack and \ref unpack are used to communicate this element
+      void unpack(const std::vector<char>& data) override;
 
 
       //@}
@@ -479,13 +479,13 @@ namespace Discret
 
       //! \brief Pack this class so it can be communicated
       //!
-      //! \ref Pack and \ref Unpack are used to communicate this element
-      virtual void Pack(std::vector<char>& data) const;
+      //! \ref pack and \ref unpack are used to communicate this element
+      virtual void pack(std::vector<char>& data) const;
 
       //! \brief Unpack data from a char vector into this class
       //!
-      //! \ref Pack and \ref Unpack are used to communicate this element
-      void Unpack(const std::vector<char>& data) override;
+      //! \ref pack and \ref unpack are used to communicate this element
+      void unpack(const std::vector<char>& data) override;
 
 
       //@}

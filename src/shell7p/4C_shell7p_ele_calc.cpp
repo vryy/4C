@@ -49,7 +49,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::setup(Core::Elements::Element& 
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalc<distype>::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Shell7pEleCalc<distype>::pack(Core::Communication::PackBuffer& data) const
 {
   Discret::ELEMENTS::Shell7p::add_to_pack(data, shell_data_.sdc);
   Discret::ELEMENTS::Shell7p::add_to_pack(data, shell_data_.thickness);
@@ -58,7 +58,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::Pack(Core::Communication::PackB
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalc<distype>::Unpack(
+void Discret::ELEMENTS::Shell7pEleCalc<distype>::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   Core::Communication::ParObject::extract_from_pack(position, data, shell_data_.sdc);

@@ -26,7 +26,7 @@ Core::Communication::ParObject* Discret::MeshFree::MeshfreeMultiBinType::Create(
     const std::vector<char>& data)
 {
   auto object = new Discret::MeshFree::MeshfreeMultiBin(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -88,7 +88,7 @@ void Discret::MeshFree::MeshfreeMultiBin::remove_all_associated_eles() { associa
 /*--------------------------------------------------------------------------*
  | Pack data                                           (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
-void Discret::MeshFree::MeshfreeMultiBin::Pack(Core::Communication::PackBuffer& data) const
+void Discret::MeshFree::MeshfreeMultiBin::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -96,13 +96,13 @@ void Discret::MeshFree::MeshfreeMultiBin::Pack(Core::Communication::PackBuffer& 
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Core::Elements::Element
-  Core::Elements::Element::Pack(data);
+  Core::Elements::Element::pack(data);
 }
 
 /*--------------------------------------------------------------------------*
  | Unpack data                                         (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
-void Discret::MeshFree::MeshfreeMultiBin::Unpack(const std::vector<char>& data)
+void Discret::MeshFree::MeshfreeMultiBin::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -111,7 +111,7 @@ void Discret::MeshFree::MeshfreeMultiBin::Unpack(const std::vector<char>& data)
   // extract base class Core::Elements::Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Core::Elements::Element::Unpack(basedata);
+  Core::Elements::Element::unpack(basedata);
 }
 
 FOUR_C_NAMESPACE_CLOSE

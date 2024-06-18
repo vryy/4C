@@ -1130,7 +1130,7 @@ void MultiScale::stop_np_multiscale()
 }
 
 
-void MultiScale::MicroStaticParObject::Pack(Core::Communication::PackBuffer& data) const
+void MultiScale::MicroStaticParObject::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -1146,7 +1146,7 @@ void MultiScale::MicroStaticParObject::Pack(Core::Communication::PackBuffer& dat
   add_to_pack(data, micro_data->cmat_);
 }
 
-void MultiScale::MicroStaticParObject::Unpack(const std::vector<char>& data)
+void MultiScale::MicroStaticParObject::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -1172,7 +1172,7 @@ Core::Communication::ParObject* MultiScale::MicroStaticParObjectType::Create(
     const std::vector<char>& data)
 {
   auto* micro = new MultiScale::MicroStaticParObject();
-  micro->Unpack(data);
+  micro->unpack(data);
   return micro;
 }
 

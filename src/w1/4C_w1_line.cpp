@@ -108,7 +108,7 @@ Core::FE::CellType Discret::ELEMENTS::Wall1Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Line::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Wall1Line::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Wall1Line element does not support communication");
 
@@ -119,7 +119,7 @@ void Discret::ELEMENTS::Wall1Line::Pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Line::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Wall1Line::unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this line element does not support communication");
   return;

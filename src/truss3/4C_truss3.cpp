@@ -25,7 +25,7 @@ Discret::ELEMENTS::Truss3Type& Discret::ELEMENTS::Truss3Type::Instance() { retur
 Core::Communication::ParObject* Discret::ELEMENTS::Truss3Type::Create(const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Truss3(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -139,7 +139,7 @@ Core::FE::CellType Discret::ELEMENTS::Truss3::Shape() const { return Core::FE::C
  |  Pack data                                                  (public) |
  |                                                           cyron 08/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Truss3::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -147,7 +147,7 @@ void Discret::ELEMENTS::Truss3::Pack(Core::Communication::PackBuffer& data) cons
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
   add_to_pack(data, isinit_);
   add_to_pack<6, 1>(data, x_);
   add_to_pack<1, 3>(data, diff_disp_ref_);
@@ -165,7 +165,7 @@ void Discret::ELEMENTS::Truss3::Pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                           cyron 08/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Truss3::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -174,7 +174,7 @@ void Discret::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
   isinit_ = extract_int(position, data);
   extract_from_pack<6, 1>(position, data, x_);
   extract_from_pack<1, 3>(position, data, diff_disp_ref_);

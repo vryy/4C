@@ -44,7 +44,7 @@ Mat::NewtonianFluidType Mat::NewtonianFluidType::instance_;
 Core::Communication::ParObject* Mat::NewtonianFluidType::Create(const std::vector<char>& data)
 {
   Mat::NewtonianFluid* fluid = new Mat::NewtonianFluid();
-  fluid->Unpack(data);
+  fluid->unpack(data);
   return fluid;
 }
 
@@ -60,7 +60,7 @@ Mat::NewtonianFluid::NewtonianFluid(Mat::PAR::NewtonianFluid* params) : params_(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::NewtonianFluid::Pack(Core::Communication::PackBuffer& data) const
+void Mat::NewtonianFluid::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -77,7 +77,7 @@ void Mat::NewtonianFluid::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::NewtonianFluid::Unpack(const std::vector<char>& data)
+void Mat::NewtonianFluid::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

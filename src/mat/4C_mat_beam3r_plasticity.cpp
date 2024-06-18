@@ -85,7 +85,7 @@ Core::Communication::ParObject* Mat::BeamElastPlasticMaterialType<T>::Create(
 {
   // create material from packed data
   Mat::BeamPlasticMaterial<T>* matobject = new Mat::BeamPlasticMaterial<T>();
-  matobject->Unpack(data);
+  matobject->unpack(data);
   return matobject;
 }
 
@@ -164,7 +164,7 @@ void Mat::BeamPlasticMaterial<T>::setup(int numgp_force, int numgp_moment)
  *-----------------------------------------------------------------------------------------------*/
 // Pack data
 template <typename T>
-void Mat::BeamPlasticMaterial<T>::Pack(Core::Communication::PackBuffer& data) const
+void Mat::BeamPlasticMaterial<T>::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -192,7 +192,7 @@ void Mat::BeamPlasticMaterial<T>::Pack(Core::Communication::PackBuffer& data) co
  *-----------------------------------------------------------------------------------------------*/
 // Unpack data
 template <typename T>
-void Mat::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
+void Mat::BeamPlasticMaterial<T>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

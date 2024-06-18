@@ -25,7 +25,7 @@ Core::Communication::ParObject* Core::Nodes::NodeType::Create(const std::vector<
 {
   std::vector<double> dummycoord(3, 999.0);
   auto* object = new Core::Nodes::Node(-1, dummycoord, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -86,7 +86,7 @@ void Core::Nodes::Node::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Nodes::Node::Pack(Core::Communication::PackBuffer& data) const
+void Core::Nodes::Node::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -106,7 +106,7 @@ void Core::Nodes::Node::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Nodes::Node::Unpack(const std::vector<char>& data)
+void Core::Nodes::Node::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

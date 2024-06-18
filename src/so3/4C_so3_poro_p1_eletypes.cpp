@@ -30,7 +30,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8PoroP1Type::Create(
 {
   auto* object =
       new Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -114,7 +114,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet4PoroP1Type::Create(
 {
   auto* object =
       new Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 

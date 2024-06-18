@@ -99,7 +99,7 @@ Mat::ConstraintMixtureType Mat::ConstraintMixtureType::instance_;
 Core::Communication::ParObject* Mat::ConstraintMixtureType::Create(const std::vector<char>& data)
 {
   Mat::ConstraintMixture* comix = new Mat::ConstraintMixture();
-  comix->Unpack(data);
+  comix->unpack(data);
   return comix;
 }
 
@@ -117,7 +117,7 @@ Mat::ConstraintMixture::ConstraintMixture(Mat::PAR::ConstraintMixture* params) :
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         12/10|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ConstraintMixture::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -167,7 +167,7 @@ void Mat::ConstraintMixture::Pack(Core::Communication::PackBuffer& data) const
     add_to_pack(data, minindex);
     int sizehistory = history_->size();
     add_to_pack(data, sizehistory);
-    for (int idpast = 0; idpast < sizehistory; idpast++) history_->at(idpast).Pack(data);
+    for (int idpast = 0; idpast < sizehistory; idpast++) history_->at(idpast).pack(data);
   }
 
   return;
@@ -177,7 +177,7 @@ void Mat::ConstraintMixture::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)         12/10|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::Unpack(const std::vector<char>& data)
+void Mat::ConstraintMixture::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -272,7 +272,7 @@ void Mat::ConstraintMixture::Unpack(const std::vector<char>& data)
   {
     std::vector<char> datahistory;
     extract_from_pack(position, data, datahistory);
-    history_->at(idpast).Unpack(datahistory);
+    history_->at(idpast).unpack(datahistory);
   }
 
   if (position != data.size())

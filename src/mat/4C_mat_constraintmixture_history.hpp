@@ -49,8 +49,8 @@ namespace Mat
     {
       return ConstraintMixtureHistoryType::Instance().UniqueParObjectId();
     }
-    void Pack(Core::Communication::PackBuffer& data) const override;
-    void Unpack(const std::vector<char>& data) override;
+    void pack(Core::Communication::PackBuffer& data) const override;
+    void unpack(const std::vector<char>& data) override;
     //@}
 
     /// Setup

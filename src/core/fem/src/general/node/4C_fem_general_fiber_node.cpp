@@ -24,7 +24,7 @@ Core::Communication::ParObject* Core::Nodes::FiberNodeType::Create(const std::ve
   std::vector<std::array<double, 3>> fibers;
   std::map<AngleType, double> angles;
   auto* object = new FiberNode(-1, dummy_coords, coordinateSystemDirections, fibers, angles, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -54,7 +54,7 @@ Core::Nodes::FiberNode* Core::Nodes::FiberNode::Clone() const
   Pack and Unpack are used to communicate this fiber node
 
 */
-void Core::Nodes::FiberNode::Pack(Core::Communication::PackBuffer& data) const
+void Core::Nodes::FiberNode::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -62,7 +62,7 @@ void Core::Nodes::FiberNode::Pack(Core::Communication::PackBuffer& data) const
   int type = UniqueParObjectId();
   Core::Nodes::Node::add_to_pack(data, type);
   // add base class of fiber node
-  Core::Nodes::Node::Pack(data);
+  Core::Nodes::Node::pack(data);
 
   // Add fiber data
   Core::Communication::ParObject::add_to_pack(data, fibers_);
@@ -75,7 +75,7 @@ void Core::Nodes::FiberNode::Pack(Core::Communication::PackBuffer& data) const
 
   Pack and Unpack are used to communicate this fiber node
 */
-void Core::Nodes::FiberNode::Unpack(const std::vector<char>& data)
+void Core::Nodes::FiberNode::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -84,7 +84,7 @@ void Core::Nodes::FiberNode::Unpack(const std::vector<char>& data)
   // extract base class Node
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Core::Nodes::Node::Unpack(basedata);
+  Core::Nodes::Node::unpack(basedata);
 
   // extract fiber data
   Core::Communication::ParObject::extract_from_pack(position, data, fibers_);

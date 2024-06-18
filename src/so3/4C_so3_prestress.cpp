@@ -54,7 +54,7 @@ Discret::ELEMENTS::PreStress::PreStress(const Discret::ELEMENTS::PreStress& old)
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PreStress::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::PreStress::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -82,7 +82,7 @@ void Discret::ELEMENTS::PreStress::Pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PreStress::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::PreStress::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

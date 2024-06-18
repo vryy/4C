@@ -245,7 +245,7 @@ Mat::ElectrodeType Mat::ElectrodeType::instance_;
 Core::Communication::ParObject* Mat::ElectrodeType::Create(const std::vector<char>& data)
 {
   auto* electrode = new Mat::Electrode();
-  electrode->Unpack(data);
+  electrode->unpack(data);
   return electrode;
 }
 
@@ -255,7 +255,7 @@ Mat::Electrode::Electrode(Mat::PAR::Electrode* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::Electrode::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Electrode::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -270,7 +270,7 @@ void Mat::Electrode::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::Electrode::Unpack(const std::vector<char>& data)
+void Mat::Electrode::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

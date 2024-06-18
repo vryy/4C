@@ -73,7 +73,7 @@ Mat::LubricationMatType Mat::LubricationMatType::instance_;
 Core::Communication::ParObject* Mat::LubricationMatType::Create(const std::vector<char>& data)
 {
   Mat::LubricationMat* lubrication_mat = new Mat::LubricationMat();
-  lubrication_mat->Unpack(data);
+  lubrication_mat->unpack(data);
   return lubrication_mat;
 }
 
@@ -90,7 +90,7 @@ Mat::LubricationMat::LubricationMat(Mat::PAR::LubricationMat* params) : params_(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::LubricationMat::Pack(Core::Communication::PackBuffer& data) const
+void Mat::LubricationMat::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -107,7 +107,7 @@ void Mat::LubricationMat::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::LubricationMat::Unpack(const std::vector<char>& data)
+void Mat::LubricationMat::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

@@ -57,7 +57,7 @@ Core::Communication::ParObject* Mat::Maxwell0dAcinusDoubleExponentialType::Creat
 {
   Mat::Maxwell0dAcinusDoubleExponential* mxwll_0d_acin =
       new Mat::Maxwell0dAcinusDoubleExponential();
-  mxwll_0d_acin->Unpack(data);
+  mxwll_0d_acin->unpack(data);
   return mxwll_0d_acin;
 }
 
@@ -78,7 +78,7 @@ Mat::Maxwell0dAcinusDoubleExponential::Maxwell0dAcinusDoubleExponential(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusDoubleExponential::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Maxwell0dAcinusDoubleExponential::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -105,7 +105,7 @@ void Mat::Maxwell0dAcinusDoubleExponential::Pack(Core::Communication::PackBuffer
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusDoubleExponential::Unpack(const std::vector<char>& data)
+void Mat::Maxwell0dAcinusDoubleExponential::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

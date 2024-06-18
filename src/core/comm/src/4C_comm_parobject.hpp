@@ -67,7 +67,7 @@ namespace Core::Communication
    \endcode
    Here is how this data can be unpacked again:<br>
    \code
-   Fool::Unpack(const vector< char > &data)
+   Fool::unpack(const vector< char > &data)
    {
    std::vector<char>::size_type position = 0;                      // used to mark current reading
    position in data int tmp; extract_from_pack(position,data,tmp);    // unpack the unique id if
@@ -173,7 +173,7 @@ namespace Core::Communication
      *
      * \param[in,out] data char vector to store class information
      */
-    virtual void Pack(PackBuffer& data) const = 0;
+    virtual void pack(PackBuffer& data) const = 0;
 
     /*!
      * \brief Unpack data from a char vector into this class
@@ -184,7 +184,7 @@ namespace Core::Communication
      *
      * \param[in] data vector storing all data to be unpacked into this instance.
      */
-    virtual void Unpack(const std::vector<char>& data) = 0;
+    virtual void unpack(const std::vector<char>& data) = 0;
 
     //@}
 

@@ -61,7 +61,7 @@ namespace CONTACT
      class exists.
 
      */
-    virtual void Pack(Core::Communication::PackBuffer& data) const;
+    virtual void pack(Core::Communication::PackBuffer& data) const;
 
     /*!
      \brief Unpack data from a vector into this class
@@ -71,7 +71,7 @@ namespace CONTACT
      class exists.
 
      */
-    virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
     //@}
 
@@ -270,8 +270,8 @@ namespace CONTACT
 
     //! @name Access methods
 
-    virtual void Pack(Core::Communication::PackBuffer& data) const;
-    virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    virtual void pack(Core::Communication::PackBuffer& data) const;
+    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
     /*!
      \brief Return the weighted wear per node (length 1)
@@ -427,18 +427,18 @@ namespace CONTACT
     /*!
      \brief Pack this class so it can be communicated
 
-     \ref Pack and \ref Unpack are used to communicate this node
+     \ref pack and \ref unpack are used to communicate this node
 
      */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
 
-     \ref Pack and \ref Unpack are used to communicate this node
+     \ref pack and \ref unpack are used to communicate this node
 
      */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 

@@ -33,7 +33,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet4avType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoTet4av(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -143,7 +143,7 @@ Core::FE::CellType Discret::ELEMENTS::SoTet4av::Shape() const { return Core::FE:
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet4av::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoTet4av::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -151,7 +151,7 @@ void Discret::ELEMENTS::SoTet4av::Pack(Core::Communication::PackBuffer& data) co
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  SoBase::Pack(data);
+  SoBase::pack(data);
 
   return;
 }
@@ -161,7 +161,7 @@ void Discret::ELEMENTS::SoTet4av::Pack(Core::Communication::PackBuffer& data) co
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet4av::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoTet4av::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -170,7 +170,7 @@ void Discret::ELEMENTS::SoTet4av::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  SoBase::Unpack(basedata);
+  SoBase::unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

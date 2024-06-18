@@ -23,7 +23,7 @@ namespace Discret::ELEMENTS
 {
   /*!
    * @brief A type trait to check whether the type T supports the
-   * Pack(Core::Communication::PackBuffer&) method.
+   * pack(Core::Communication::PackBuffer&) method.
    *
    * @note T does not necessarily need to derive from some interface class
    * @{
@@ -32,13 +32,13 @@ namespace Discret::ELEMENTS
   constexpr bool IsPackable = false;
 
   template <typename T>
-  constexpr bool IsPackable<T, std::void_t<decltype(std::declval<const T>()->Pack(
+  constexpr bool IsPackable<T, std::void_t<decltype(std::declval<const T>()->pack(
                                    std::declval<Core::Communication::PackBuffer&>()))>> = true;
   ///@}
 
   /*!
    * @brief A type trait to check whether the type T supports the
-   * Unpack(std::vector<char>::size_type&, const std::vector<char>&) method.
+   * unpack(std::vector<char>::size_type&, const std::vector<char>&) method.
    *
    * @note T does not necessarily need to derive from some interface class
    * @{
@@ -48,7 +48,7 @@ namespace Discret::ELEMENTS
 
   template <typename T>
   constexpr bool IsUnpackable<T,
-      std::void_t<decltype(std::declval<T>()->Unpack(std::declval<std::vector<char>::size_type&>(),
+      std::void_t<decltype(std::declval<T>()->unpack(std::declval<std::vector<char>::size_type&>(),
           std::declval<const std::vector<char>&>()))>> = true;
   ///@}
 
@@ -59,7 +59,7 @@ namespace Discret::ELEMENTS
      * @brief This struct should be used to serialize an item within a sum type (e.g.
      *std::variant).
      *
-     * The Pack(Core::Communication::PackBuffer&) is called for those types that provide the method.
+     * The pack(Core::Communication::PackBuffer&) is called for those types that provide the method.
      *Nothing is done for types that don't provide a Pack-method.
      *
      * @note If you have a type that needs to be serialized during execution, you could verify that
@@ -73,7 +73,7 @@ namespace Discret::ELEMENTS
       template <typename T, std::enable_if_t<IsPackable<T>, bool> = true>
       void operator()(const T& packable)
       {
-        packable->Pack(data);
+        packable->pack(data);
       }
 
       template <typename T, std::enable_if_t<!IsPackable<T>, bool> = true>
@@ -89,7 +89,7 @@ namespace Discret::ELEMENTS
      * @brief This struct should be used to deserialize an item within a sum type (e.g.
      * std::variant).
      *
-     * Unpack(std::size_t&, const std::vector<char>&) is called for those types that provide the
+     * unpack(std::size_t&, const std::vector<char>&) is called for those types that provide the
      * method. Nothing is done for types that don't provide a Unpack-method.
      *
      * @note If you have a type that needs to be serialized during execution, you could verify that
@@ -103,7 +103,7 @@ namespace Discret::ELEMENTS
       template <typename T, std::enable_if_t<IsUnpackable<T&>, bool> = true>
       void operator()(T& unpackable)
       {
-        unpackable->Unpack(position, data);
+        unpackable->unpack(position, data);
       }
 
       template <typename T, std::enable_if_t<!IsUnpackable<T&>, bool> = true>
@@ -125,7 +125,7 @@ namespace Discret::ELEMENTS
    * @param data (in/out) : the data to pack the variant to
    */
   template <typename VariantType>
-  void Pack(const VariantType& variant, Core::Communication::PackBuffer& data)
+  void pack(const VariantType& variant, Core::Communication::PackBuffer& data)
   {
     std::visit(Details::PackAction(data), variant);
   }
@@ -140,7 +140,7 @@ namespace Discret::ELEMENTS
    * @param data (in) : data to unpack from
    */
   template <typename VariantType>
-  void Unpack(
+  void unpack(
       VariantType& variant, std::vector<char>::size_type& position, const std::vector<char>& data)
   {
     std::visit(Details::UnpackAction(position, data), variant);

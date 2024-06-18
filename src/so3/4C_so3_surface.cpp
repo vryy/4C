@@ -27,7 +27,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::StructuralSurfaceType::Create
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::StructuralSurface(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -113,7 +113,7 @@ Core::FE::CellType Discret::ELEMENTS::StructuralSurface::Shape() const { return 
  |  Pack data                                                  (public) |
  |                                                             gee 04/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralSurface::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::StructuralSurface::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -121,7 +121,7 @@ void Discret::ELEMENTS::StructuralSurface::Pack(Core::Communication::PackBuffer&
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Core::Elements::FaceElement
-  Core::Elements::FaceElement::Pack(data);
+  Core::Elements::FaceElement::pack(data);
   // add distype_
   add_to_pack(data, (int)distype_);
   // add numdofpernode_
@@ -135,7 +135,7 @@ void Discret::ELEMENTS::StructuralSurface::Pack(Core::Communication::PackBuffer&
  |  Unpack data                                                (public) |
  |                                                             gee 04/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralSurface::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::StructuralSurface::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -144,7 +144,7 @@ void Discret::ELEMENTS::StructuralSurface::Unpack(const std::vector<char>& data)
   // extract base class Core::Elements::FaceElement
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Core::Elements::FaceElement::Unpack(basedata);
+  Core::Elements::FaceElement::unpack(basedata);
 
   // distype_
   distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));

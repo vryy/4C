@@ -43,7 +43,7 @@ Discret::ELEMENTS::Beam3kType& Discret::ELEMENTS::Beam3kType::Instance() { retur
 Core::Communication::ParObject* Discret::ELEMENTS::Beam3kType::Create(const std::vector<char>& data)
 {
   Discret::ELEMENTS::Beam3k* object = new Discret::ELEMENTS::Beam3k(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -325,7 +325,7 @@ Core::FE::CellType Discret::ELEMENTS::Beam3k::Shape() const
  |  Pack data                                                  (public) |
  |                                                           meier 05/12/
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3k::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Beam3k::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -333,7 +333,7 @@ void Discret::ELEMENTS::Beam3k::Pack(Core::Communication::PackBuffer& data) cons
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Beam3Base::Pack(data);
+  Beam3Base::pack(data);
 
   // add all class variables
   add_to_pack(data, use_fad_);
@@ -384,7 +384,7 @@ void Discret::ELEMENTS::Beam3k::Pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                           meier 05/12|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Beam3k::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -393,7 +393,7 @@ void Discret::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Beam3Base::Unpack(basedata);
+  Beam3Base::unpack(basedata);
 
   // extract all class variables of beam3k element
   use_fad_ = extract_int(position, data);

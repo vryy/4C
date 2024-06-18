@@ -107,7 +107,7 @@ Mat::MuscleWeickenmeierType Mat::MuscleWeickenmeierType::instance_;
 Core::Communication::ParObject* Mat::MuscleWeickenmeierType::Create(const std::vector<char>& data)
 {
   auto* muscle_weickenmeier = new Mat::MuscleWeickenmeier();
-  muscle_weickenmeier->Unpack(data);
+  muscle_weickenmeier->unpack(data);
   return muscle_weickenmeier;
 }
 
@@ -143,7 +143,7 @@ Mat::MuscleWeickenmeier::MuscleWeickenmeier(Mat::PAR::MuscleWeickenmeier* params
       Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-void Mat::MuscleWeickenmeier::Pack(Core::Communication::PackBuffer& data) const
+void Mat::MuscleWeickenmeier::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -161,7 +161,7 @@ void Mat::MuscleWeickenmeier::Pack(Core::Communication::PackBuffer& data) const
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::MuscleWeickenmeier::Unpack(const std::vector<char>& data)
+void Mat::MuscleWeickenmeier::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

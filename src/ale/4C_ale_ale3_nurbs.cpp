@@ -28,7 +28,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Nurbs::Ale3NurbsType::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Nurbs::Ale3Nurbs* object = new Discret::ELEMENTS::Nurbs::Ale3Nurbs(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 

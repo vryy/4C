@@ -62,7 +62,7 @@ Core::Communication::ParObject* Mat::ThermoStVenantKirchhoffType::Create(
     const std::vector<char>& data)
 {
   auto* thrstvenantk = new Mat::ThermoStVenantKirchhoff();
-  thrstvenantk->Unpack(data);
+  thrstvenantk->unpack(data);
   return thrstvenantk;
 }
 
@@ -99,7 +99,7 @@ void Mat::ThermoStVenantKirchhoff::create_thermo_material_if_set()
 /*----------------------------------------------------------------------*
  |  Pack (public)                                            dano 02/10 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoStVenantKirchhoff::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ThermoStVenantKirchhoff::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -111,13 +111,13 @@ void Mat::ThermoStVenantKirchhoff::Pack(Core::Communication::PackBuffer& data) c
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   add_to_pack(data, matid);
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  |  Unpack (public)                                          dano 02/10 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoStVenantKirchhoff::Unpack(const std::vector<char>& data)
+void Mat::ThermoStVenantKirchhoff::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -144,7 +144,7 @@ void Mat::ThermoStVenantKirchhoff::Unpack(const std::vector<char>& data)
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
-}  // Unpack()
+}  // unpack()
 
 
 /*----------------------------------------------------------------------*

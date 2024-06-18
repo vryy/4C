@@ -1723,7 +1723,7 @@ void PARTICLEENGINE::ParticleEngine::communicate_particles(
     for (const auto& iter : particlestosend[torank])
     {
       Core::Communication::PackBuffer data;
-      iter->Pack(data);
+      iter->pack(data);
       sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
     }
   }

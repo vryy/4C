@@ -36,7 +36,7 @@ Core::Communication::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedTy
 {
   BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed* my_beam3rline2 =
       new BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed();
-  my_beam3rline2->Unpack(data);
+  my_beam3rline2->unpack(data);
   return my_beam3rline2;
 }
 
@@ -262,7 +262,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Pack(
+void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::pack(
     Core::Communication::PackBuffer& data) const
 {
   check_init_setup();
@@ -273,17 +273,17 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Pack(
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class
-  BeamLinkPinJointed::Pack(data);
+  BeamLinkPinJointed::pack(data);
 
   // pack linker element
-  if (linkele_ != Teuchos::null) linkele_->Pack(data);
+  if (linkele_ != Teuchos::null) linkele_->pack(data);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Unpack(const std::vector<char>& data)
+void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -292,7 +292,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Unpack(const std::vector<ch
   // extract base class
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  BeamLinkPinJointed::Unpack(basedata);
+  BeamLinkPinJointed::unpack(basedata);
 
   // Unpack data of sub material (these lines are copied from element.cpp)
   std::vector<char> dataele;

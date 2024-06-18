@@ -62,7 +62,7 @@ Mat::ScatraChemotaxisMatType Mat::ScatraChemotaxisMatType::instance_;
 Core::Communication::ParObject* Mat::ScatraChemotaxisMatType::Create(const std::vector<char>& data)
 {
   Mat::ScatraChemotaxisMat* scatra_chemotaxis_mat = new Mat::ScatraChemotaxisMat();
-  scatra_chemotaxis_mat->Unpack(data);
+  scatra_chemotaxis_mat->unpack(data);
   return scatra_chemotaxis_mat;
 }
 
@@ -82,7 +82,7 @@ Mat::ScatraChemotaxisMat::ScatraChemotaxisMat(Mat::PAR::ScatraChemotaxisMat* par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraChemotaxisMat::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ScatraChemotaxisMat::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -99,7 +99,7 @@ void Mat::ScatraChemotaxisMat::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraChemotaxisMat::Unpack(const std::vector<char>& data)
+void Mat::ScatraChemotaxisMat::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

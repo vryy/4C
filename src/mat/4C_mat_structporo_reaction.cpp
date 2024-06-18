@@ -36,7 +36,7 @@ Mat::StructPoroReactionType Mat::StructPoroReactionType::instance_;
 Core::Communication::ParObject* Mat::StructPoroReactionType::Create(const std::vector<char>& data)
 {
   Mat::StructPoroReaction* struct_poro = new Mat::StructPoroReaction();
-  struct_poro->Unpack(data);
+  struct_poro->unpack(data);
   return struct_poro;
 }
 
@@ -68,7 +68,7 @@ void Mat::StructPoroReaction::setup(int numgp, Input::LineDefinition* linedef)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::StructPoroReaction::Pack(Core::Communication::PackBuffer& data) const
+void Mat::StructPoroReaction::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -85,12 +85,12 @@ void Mat::StructPoroReaction::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, refporosity_);
 
   // add base class material
-  StructPoro::Pack(data);
+  StructPoro::pack(data);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::StructPoroReaction::Unpack(const std::vector<char>& data)
+void Mat::StructPoroReaction::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -119,7 +119,7 @@ void Mat::StructPoroReaction::Unpack(const std::vector<char>& data)
   // extract base class material
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  StructPoro::Unpack(basedata);
+  StructPoro::unpack(basedata);
 }
 
 /*----------------------------------------------------------------------*/

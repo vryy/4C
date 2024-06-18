@@ -216,18 +216,18 @@ namespace Core::Elements
     /*!
     \brief Pack this class so it can be communicated
 
-    \ref Pack and \ref Unpack are used to communicate this element
+    \ref pack and \ref unpack are used to communicate this element
 
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
 
-    \ref Pack and \ref Unpack are used to communicate this element
+    \ref pack and \ref unpack are used to communicate this element
 
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     /// return ElementType instance
     virtual Core::Elements::ElementType& ElementType() const = 0;
@@ -1322,18 +1322,18 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief Pack this class so it can be communicated
 
-    \ref Pack and \ref Unpack are used to communicate this face element
+    \ref pack and \ref unpack are used to communicate this face element
 
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
 
-    \ref Pack and \ref Unpack are used to communicate this face element
+    \ref pack and \ref unpack are used to communicate this face element
 
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     /*!
     \brief Returns whether the given element actually is a face element with degrees of freedom

@@ -42,7 +42,7 @@ Mat::LinElast1DType Mat::LinElast1DType::instance_;
 Core::Communication::ParObject* Mat::LinElast1DType::Create(const std::vector<char>& data)
 {
   auto* stvenantk = new Mat::LinElast1D(nullptr);
-  stvenantk->Unpack(data);
+  stvenantk->unpack(data);
   return stvenantk;
 }
 
@@ -52,7 +52,7 @@ Mat::LinElast1D::LinElast1D(Mat::PAR::LinElast1D* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::LinElast1D::Pack(Core::Communication::PackBuffer& data) const
+void Mat::LinElast1D::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -68,7 +68,7 @@ void Mat::LinElast1D::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::LinElast1D::Unpack(const std::vector<char>& data)
+void Mat::LinElast1D::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -126,7 +126,7 @@ Mat::LinElast1DGrowthType Mat::LinElast1DGrowthType::instance_;
 Core::Communication::ParObject* Mat::LinElast1DGrowthType::Create(const std::vector<char>& data)
 {
   auto* stvk_growth = new Mat::LinElast1DGrowth(nullptr);
-  stvk_growth->Unpack(data);
+  stvk_growth->unpack(data);
   return stvk_growth;
 }
 
@@ -139,14 +139,14 @@ Mat::LinElast1DGrowth::LinElast1DGrowth(Mat::PAR::LinElast1DGrowth* params)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::LinElast1DGrowth::Pack(Core::Communication::PackBuffer& data) const
+void Mat::LinElast1DGrowth::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   add_to_pack(data, type);
-  Mat::LinElast1D::Pack(data);
+  Mat::LinElast1D::pack(data);
 
   // matid
   int matid = -1;
@@ -157,7 +157,7 @@ void Mat::LinElast1DGrowth::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::LinElast1DGrowth::Unpack(const std::vector<char>& data)
+void Mat::LinElast1DGrowth::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -166,7 +166,7 @@ void Mat::LinElast1DGrowth::Unpack(const std::vector<char>& data)
   // extract base class
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Mat::LinElast1D::Unpack(basedata);
+  Mat::LinElast1D::unpack(basedata);
 
   // matid and recover params_
   int matid;

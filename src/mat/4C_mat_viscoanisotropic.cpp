@@ -58,7 +58,7 @@ Mat::ViscoAnisotropicType Mat::ViscoAnisotropicType::instance_;
 Core::Communication::ParObject* Mat::ViscoAnisotropicType::Create(const std::vector<char>& data)
 {
   Mat::ViscoAnisotropic* visco = new Mat::ViscoAnisotropic();
-  visco->Unpack(data);
+  visco->unpack(data);
   return visco;
 }
 
@@ -78,7 +78,7 @@ Mat::ViscoAnisotropic::ViscoAnisotropic(Mat::PAR::ViscoAnisotropic* params) : pa
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoAnisotropic::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ViscoAnisotropic::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -125,7 +125,7 @@ void Mat::ViscoAnisotropic::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoAnisotropic::Unpack(const std::vector<char>& data)
+void Mat::ViscoAnisotropic::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;

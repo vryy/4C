@@ -56,7 +56,7 @@ Mat::PlasticElastHyperVCUType Mat::PlasticElastHyperVCUType::instance_;
 Core::Communication::ParObject* Mat::PlasticElastHyperVCUType::Create(const std::vector<char>& data)
 {
   Mat::PlasticElastHyperVCU* elhy = new Mat::PlasticElastHyperVCU();
-  elhy->Unpack(data);
+  elhy->unpack(data);
 
   return elhy;
 }
@@ -85,7 +85,7 @@ Mat::PlasticElastHyperVCU::PlasticElastHyperVCU(Mat::PAR::PlasticElastHyperVCU* 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyperVCU::Pack(Core::Communication::PackBuffer& data) const
+void Mat::PlasticElastHyperVCU::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -96,7 +96,7 @@ void Mat::PlasticElastHyperVCU::Pack(Core::Communication::PackBuffer& data) cons
   int matid = -1;
   if (MatParams() != nullptr) matid = MatParams()->Id();  // in case we are in post-process mode
   add_to_pack(data, matid);
-  summandProperties_.Pack(data);
+  summandProperties_.pack(data);
 
   if (MatParams() != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -117,7 +117,7 @@ void Mat::PlasticElastHyperVCU::Pack(Core::Communication::PackBuffer& data) cons
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyperVCU::Unpack(const std::vector<char>& data)
+void Mat::PlasticElastHyperVCU::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   params_ = nullptr;
@@ -145,7 +145,7 @@ void Mat::PlasticElastHyperVCU::Unpack(const std::vector<char>& data)
     }
   }
 
-  summandProperties_.Unpack(position, data);
+  summandProperties_.unpack(position, data);
 
   if (MatParams() != nullptr)  // summands are not accessible in postprocessing mode
   {

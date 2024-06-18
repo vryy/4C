@@ -44,7 +44,7 @@ Mat::CarreauYasudaType Mat::CarreauYasudaType::instance_;
 Core::Communication::ParObject* Mat::CarreauYasudaType::Create(const std::vector<char>& data)
 {
   Mat::CarreauYasuda* carYas = new Mat::CarreauYasuda();
-  carYas->Unpack(data);
+  carYas->unpack(data);
   return carYas;
 }
 
@@ -60,7 +60,7 @@ Mat::CarreauYasuda::CarreauYasuda(Mat::PAR::CarreauYasuda* params) : params_(par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::CarreauYasuda::Pack(Core::Communication::PackBuffer& data) const
+void Mat::CarreauYasuda::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -76,7 +76,7 @@ void Mat::CarreauYasuda::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::CarreauYasuda::Unpack(const std::vector<char>& data)
+void Mat::CarreauYasuda::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

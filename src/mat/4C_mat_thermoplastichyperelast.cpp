@@ -78,7 +78,7 @@ Core::Communication::ParObject* Mat::ThermoPlasticHyperElastType::Create(
     const std::vector<char>& data)
 {
   Mat::ThermoPlasticHyperElast* thrplhyper = new Mat::ThermoPlasticHyperElast();
-  thrplhyper->Unpack(data);
+  thrplhyper->unpack(data);
   return thrplhyper;
 }
 
@@ -101,7 +101,7 @@ Mat::ThermoPlasticHyperElast::ThermoPlasticHyperElast(Mat::PAR::ThermoPlasticHyp
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 03/13 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ThermoPlasticHyperElast::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -148,13 +148,13 @@ void Mat::ThermoPlasticHyperElast::Pack(Core::Communication::PackBuffer& data) c
   add_to_pack(data, plastic_step_);
 
   return;
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack (public)                                           dano 03/13 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
+void Mat::ThermoPlasticHyperElast::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;

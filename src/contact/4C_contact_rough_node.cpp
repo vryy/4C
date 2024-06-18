@@ -29,7 +29,7 @@ Core::Communication::ParObject* CONTACT::RoughNodeType::Create(const std::vector
   std::vector<int> dofs(0);
 
   CONTACT::RoughNode* node = new CONTACT::RoughNode(0, x, 0, dofs, false, false, 0, 0, 0, 0, 0, 0);
-  node->Unpack(data);
+  node->unpack(data);
 
   return node;
 }
@@ -85,7 +85,7 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void CONTACT::RoughNode::Pack(Core::Communication::PackBuffer& data) const
+void CONTACT::RoughNode::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -94,7 +94,7 @@ void CONTACT::RoughNode::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, type);
 
   // add base class Mortar::Node
-  CONTACT::Node::Pack(data);
+  CONTACT::Node::pack(data);
 
   add_to_pack(data, hurstexponentfunction_);
   add_to_pack(data, initialtopologystddeviationfunction_);
@@ -114,7 +114,7 @@ void CONTACT::RoughNode::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void CONTACT::RoughNode::Unpack(const std::vector<char>& data)
+void CONTACT::RoughNode::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -123,7 +123,7 @@ void CONTACT::RoughNode::Unpack(const std::vector<char>& data)
   // extract base class CONTACT::Node
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  CONTACT::Node::Unpack(basedata);
+  CONTACT::Node::unpack(basedata);
 
   hurstexponentfunction_ = extract_int(position, data);
   initialtopologystddeviationfunction_ = extract_int(position, data);

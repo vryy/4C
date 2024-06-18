@@ -63,7 +63,7 @@ Mat::MatListReactionsType Mat::MatListReactionsType::instance_;
 Core::Communication::ParObject* Mat::MatListReactionsType::Create(const std::vector<char>& data)
 {
   Mat::MatListReactions* MatListReactions = new Mat::MatListReactions();
-  MatListReactions->Unpack(data);
+  MatListReactions->unpack(data);
   return MatListReactions;
 }
 
@@ -139,7 +139,7 @@ void Mat::MatListReactions::clear()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 11/14 |
  *----------------------------------------------------------------------*/
-void Mat::MatListReactions::Pack(Core::Communication::PackBuffer& data) const
+void Mat::MatListReactions::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -154,7 +154,7 @@ void Mat::MatListReactions::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, matid);
 
   // Pack base class material
-  Mat::MatList::Pack(data);
+  Mat::MatList::pack(data);
 
   if (paramsreac_ != nullptr)
   {
@@ -163,7 +163,7 @@ void Mat::MatListReactions::Pack(Core::Communication::PackBuffer& data) const
       std::vector<int>::const_iterator m;
       for (m = paramsreac_->ReacIds()->begin(); m != paramsreac_->ReacIds()->end(); m++)
       {
-        (material_map_read()->find(*m))->second->Pack(data);
+        (material_map_read()->find(*m))->second->pack(data);
       }
     }
   }
@@ -172,7 +172,7 @@ void Mat::MatListReactions::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 11/14 |
  *----------------------------------------------------------------------*/
-void Mat::MatListReactions::Unpack(const std::vector<char>& data)
+void Mat::MatListReactions::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   clear();
@@ -205,7 +205,7 @@ void Mat::MatListReactions::Unpack(const std::vector<char>& data)
   // extract base class material
   std::vector<char> basedata(0);
   Mat::MatList::extract_from_pack(position, data, basedata);
-  Mat::MatList::Unpack(basedata);
+  Mat::MatList::unpack(basedata);
 
   if (paramsreac_ != nullptr)  // paramsreac_ are not accessible in postprocessing mode
   {
@@ -227,7 +227,7 @@ void Mat::MatListReactions::Unpack(const std::vector<char>& data)
       {
         std::vector<char> pbtest;
         extract_from_pack(position, data, pbtest);
-        (material_map_write()->find(*m))->second->Unpack(pbtest);
+        (material_map_write()->find(*m))->second->unpack(pbtest);
       }
     }
     // in the postprocessing mode, we do not unpack everything we have packed

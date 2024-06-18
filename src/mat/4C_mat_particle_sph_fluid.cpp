@@ -56,7 +56,7 @@ Core::Communication::ParObject* Mat::ParticleMaterialSPHFluidType::Create(
     const std::vector<char>& data)
 {
   Mat::ParticleMaterialSPHFluid* particlematsph = new Mat::ParticleMaterialSPHFluid();
-  particlematsph->Unpack(data);
+  particlematsph->unpack(data);
   return particlematsph;
 }
 
@@ -80,7 +80,7 @@ Mat::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(Mat::PAR::ParticleMateri
 /*---------------------------------------------------------------------------*
  | pack                                                       sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-void Mat::ParticleMaterialSPHFluid::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ParticleMaterialSPHFluid::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -97,7 +97,7 @@ void Mat::ParticleMaterialSPHFluid::Pack(Core::Communication::PackBuffer& data) 
 /*---------------------------------------------------------------------------*
  | unpack                                                     sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-void Mat::ParticleMaterialSPHFluid::Unpack(const std::vector<char>& data)
+void Mat::ParticleMaterialSPHFluid::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

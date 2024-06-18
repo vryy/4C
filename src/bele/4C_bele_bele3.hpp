@@ -117,8 +117,8 @@ namespace Discret
       std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
       std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
       int UniqueParObjectId() const override { return Bele3Type::Instance().UniqueParObjectId(); }
-      void Pack(Core::Communication::PackBuffer& data) const override;
-      void Unpack(const std::vector<char>& data) override;
+      void pack(Core::Communication::PackBuffer& data) const override;
+      void unpack(const std::vector<char>& data) override;
 
 
       //@}
@@ -323,8 +323,8 @@ namespace Discret
       {
         return Bele3LineType::Instance().UniqueParObjectId();
       }
-      void Pack(Core::Communication::PackBuffer& data) const override;
-      void Unpack(const std::vector<char>& data) override;
+      void pack(Core::Communication::PackBuffer& data) const override;
+      void unpack(const std::vector<char>& data) override;
 
 
       //@}

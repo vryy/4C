@@ -102,12 +102,12 @@ namespace Discret
       int UniqueParObjectId() const override;
 
       //! Pack this class so it can be communicated
-      //! Pack and \ref Unpack are used to communicate this element
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      //! Pack and \ref unpack are used to communicate this element
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       //! Unpack data from a char vector into this class
-      //! Pack and \ref Unpack are used to communicate this element
-      void Unpack(const std::vector<char>& data) override;
+      //! Pack and \ref unpack are used to communicate this element
+      void unpack(const std::vector<char>& data) override;
 
       //@}
 

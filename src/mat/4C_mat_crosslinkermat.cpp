@@ -62,7 +62,7 @@ Mat::CrosslinkerMatType Mat::CrosslinkerMatType::instance_;
 Core::Communication::ParObject* Mat::CrosslinkerMatType::Create(const std::vector<char>& data)
 {
   Mat::CrosslinkerMat* linkermat = new Mat::CrosslinkerMat();
-  linkermat->Unpack(data);
+  linkermat->unpack(data);
   return linkermat;
 }
 
@@ -82,7 +82,7 @@ Mat::CrosslinkerMat::CrosslinkerMat(Mat::PAR::CrosslinkerMat* params) : params_(
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Mat::CrosslinkerMat::Pack(Core::Communication::PackBuffer& data) const
+void Mat::CrosslinkerMat::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -100,7 +100,7 @@ void Mat::CrosslinkerMat::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Mat::CrosslinkerMat::Unpack(const std::vector<char>& data)
+void Mat::CrosslinkerMat::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

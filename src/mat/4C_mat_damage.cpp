@@ -84,7 +84,7 @@ Mat::DamageType Mat::DamageType::instance_;
 Core::Communication::ParObject* Mat::DamageType::Create(const std::vector<char>& data)
 {
   Mat::Damage* plastic = new Mat::Damage();
-  plastic->Unpack(data);
+  plastic->unpack(data);
   return plastic;
 }
 
@@ -104,7 +104,7 @@ Mat::Damage::Damage(Mat::PAR::Damage* params) : params_(params), plastic_step_(f
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 04/11 |
  *----------------------------------------------------------------------*/
-void Mat::Damage::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Damage::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -145,13 +145,13 @@ void Mat::Damage::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, plastic_step_);
 
   return;
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack (public)                                           dano 04/11 |
  *----------------------------------------------------------------------*/
-void Mat::Damage::Unpack(const std::vector<char>& data)
+void Mat::Damage::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -246,7 +246,7 @@ void Mat::Damage::Unpack(const std::vector<char>& data)
 
   return;
 
-}  // Unpack()
+}  // unpack()
 
 
 /*---------------------------------------------------------------------*

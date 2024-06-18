@@ -34,7 +34,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Beam3ebType::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Beam3eb* object = new Discret::ELEMENTS::Beam3eb(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -344,7 +344,7 @@ Core::FE::CellType Discret::ELEMENTS::Beam3eb::Shape() const { return Core::FE::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3eb::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Beam3eb::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -352,7 +352,7 @@ void Discret::ELEMENTS::Beam3eb::Pack(Core::Communication::PackBuffer& data) con
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Beam3Base::Pack(data);
+  Beam3Base::pack(data);
 
   // add all class variables
   add_to_pack(data, jacobi_);
@@ -374,7 +374,7 @@ void Discret::ELEMENTS::Beam3eb::Pack(Core::Communication::PackBuffer& data) con
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Beam3eb::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -383,7 +383,7 @@ void Discret::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Beam3Base::Unpack(basedata);
+  Beam3Base::unpack(basedata);
 
   // extract all class variables of beam3 element
   extract_from_pack(position, data, jacobi_);

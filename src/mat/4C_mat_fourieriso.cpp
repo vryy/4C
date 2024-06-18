@@ -43,7 +43,7 @@ Mat::FourierIsoType Mat::FourierIsoType::instance_;
 Core::Communication::ParObject* Mat::FourierIsoType::Create(const std::vector<char>& data)
 {
   Mat::FourierIso* fourieriso = new Mat::FourierIso();
-  fourieriso->Unpack(data);
+  fourieriso->unpack(data);
   return fourieriso;
 }
 
@@ -61,7 +61,7 @@ Mat::FourierIso::FourierIso(Mat::PAR::FourierIso* params) : params_(params) {}
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-void Mat::FourierIso::Pack(Core::Communication::PackBuffer& data) const
+void Mat::FourierIso::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -78,7 +78,7 @@ void Mat::FourierIso::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-void Mat::FourierIso::Unpack(const std::vector<char>& data)
+void Mat::FourierIso::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

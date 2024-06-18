@@ -32,7 +32,7 @@ Discret::ELEMENTS::ThermoType& Discret::ELEMENTS::ThermoType::Instance() { retur
 Core::Communication::ParObject* Discret::ELEMENTS::ThermoType::Create(const std::vector<char>& data)
 {
   Discret::ELEMENTS::Thermo* object = new Discret::ELEMENTS::Thermo(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }  // Create()
 
@@ -217,7 +217,7 @@ Core::FE::CellType Discret::ELEMENTS::Thermo::Shape() const { return distype_; }
 /*----------------------------------------------------------------------*
  | pack data (public)                                        dano 09/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Thermo::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Thermo::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -225,20 +225,20 @@ void Discret::ELEMENTS::Thermo::Pack(Core::Communication::PackBuffer& data) cons
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
   // kintype
   add_to_pack(data, kintype_);
   // distype
   add_to_pack(data, distype_);
 
   return;
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack data (public)                                      dano 09/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Thermo::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -247,7 +247,7 @@ void Discret::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
   // kintype_
   kintype_ = static_cast<Inpar::STR::KinemType>(extract_int(position, data));
   // distype
@@ -257,7 +257,7 @@ void Discret::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
-}  // Unpack()
+}  // unpack()
 
 
 
@@ -403,22 +403,22 @@ Core::FE::CellType Discret::ELEMENTS::ThermoBoundary::Shape() const
 /*----------------------------------------------------------------------*
  | pack data (public)                                        dano 09/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ThermoBoundary::Pack(std::vector<char>& data) const
+void Discret::ELEMENTS::ThermoBoundary::pack(std::vector<char>& data) const
 {
   FOUR_C_THROW("This ThermoBoundary element does not support communication");
 
   return;
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack data (public)                                      dano 09/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ThermoBoundary::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ThermoBoundary::unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("This ThermoBoundary element does not support communication");
   return;
-}  // Unpack()
+}  // unpack()
 
 
 

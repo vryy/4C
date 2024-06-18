@@ -109,7 +109,7 @@ Mat::RobinsonType Mat::RobinsonType::instance_;
 Core::Communication::ParObject* Mat::RobinsonType::Create(const std::vector<char>& data)
 {
   Mat::Robinson* robinson = new Mat::Robinson();
-  robinson->Unpack(data);
+  robinson->unpack(data);
   return robinson;
 }
 
@@ -129,7 +129,7 @@ Mat::Robinson::Robinson(Mat::PAR::Robinson* params) : plastic_step(false), param
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 11/11 |
  *----------------------------------------------------------------------*/
-void Mat::Robinson::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Robinson::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -169,13 +169,13 @@ void Mat::Robinson::Pack(Core::Communication::PackBuffer& data) const
 
   return;
 
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack (public)                                           dano 11/11 |
  *----------------------------------------------------------------------*/
-void Mat::Robinson::Unpack(const std::vector<char>& data)
+void Mat::Robinson::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -250,7 +250,7 @@ void Mat::Robinson::Unpack(const std::vector<char>& data)
 
   return;
 
-}  // Unpack()
+}  // unpack()
 
 
 /*---------------------------------------------------------------------*

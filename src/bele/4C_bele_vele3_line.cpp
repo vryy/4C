@@ -79,7 +79,7 @@ Core::FE::CellType Discret::ELEMENTS::Vele3Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3Line::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Vele3Line::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Vele3Line element does not support communication");
 
@@ -91,7 +91,7 @@ void Discret::ELEMENTS::Vele3Line::Pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3Line::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Vele3Line::unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this Vele3Line element does not support communication");
   return;

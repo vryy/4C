@@ -60,7 +60,7 @@ Core::Communication::ParObject* Mat::MultiplicativeSplitDefgradElastHyperType::C
     const std::vector<char>& data)
 {
   auto* splitdefgrad_elhy = new Mat::MultiplicativeSplitDefgradElastHyper();
-  splitdefgrad_elhy->Unpack(data);
+  splitdefgrad_elhy->unpack(data);
 
   return splitdefgrad_elhy;
 }
@@ -98,7 +98,7 @@ Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::Pack(Core::Communication::PackBuffer& data) const
+void Mat::MultiplicativeSplitDefgradElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -121,7 +121,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::Pack(Core::Communication::PackBu
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::Unpack(const std::vector<char>& data)
+void Mat::MultiplicativeSplitDefgradElastHyper::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   params_ = nullptr;

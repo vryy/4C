@@ -92,8 +92,8 @@ namespace Mat
     {
       return PlasticDruckerPragerType::Instance().UniqueParObjectId();
     }
-    void Pack(Core::Communication::PackBuffer& data) const override;
-    void Unpack(const std::vector<char>& data) override;
+    void pack(Core::Communication::PackBuffer& data) const override;
+    void unpack(const std::vector<char>& data) override;
     Core::Materials::MaterialType MaterialType() const override
     {
       return Core::Materials::m_pldruckprag;

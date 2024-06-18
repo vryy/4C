@@ -94,7 +94,7 @@ void PARTICLEENGINE::ParticleContainerBundle::get_packed_particle_objects_of_all
 
       // pack data for writing
       Core::Communication::PackBuffer data;
-      particleobject->Pack(data);
+      particleobject->pack(data);
       particlebuffer->insert(particlebuffer->end(), data().begin(), data().end());
     }
   }

@@ -288,7 +288,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::So3Plast<d
  | pack data (public)                                       seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::So3Plast<distype>::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -297,7 +297,7 @@ void Discret::ELEMENTS::So3Plast<distype>::Pack(Core::Communication::PackBuffer&
   add_to_pack(data, type);
 
   // add base class Element
-  SoBase::Pack(data);
+  SoBase::pack(data);
 
   // Gauss points and weights
   const auto size2 = (int)xsi_.size();
@@ -350,14 +350,14 @@ void Discret::ELEMENTS::So3Plast<distype>::Pack(Core::Communication::PackBuffer&
   }
 
   return;
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack data (public)                                     seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::So3Plast<distype>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -366,7 +366,7 @@ void Discret::ELEMENTS::So3Plast<distype>::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  SoBase::Unpack(basedata);
+  SoBase::unpack(basedata);
 
   // Gauss points and weights
   int size2 = extract_int(position, data);
@@ -473,7 +473,7 @@ void Discret::ELEMENTS::So3Plast<distype>::Unpack(const std::vector<char>& data)
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 
-}  // Unpack()
+}  // unpack()
 
 
 /*----------------------------------------------------------------------*

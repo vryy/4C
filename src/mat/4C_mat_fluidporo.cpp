@@ -713,7 +713,7 @@ Mat::FluidPoroType Mat::FluidPoroType::instance_;
 Core::Communication::ParObject* Mat::FluidPoroType::Create(const std::vector<char>& data)
 {
   auto* fluid_poro = new Mat::FluidPoro();
-  fluid_poro->Unpack(data);
+  fluid_poro->unpack(data);
   return fluid_poro;
 }
 
@@ -724,7 +724,7 @@ Mat::FluidPoro::FluidPoro(Mat::PAR::FluidPoro* params) : params_(params)
   anisotropy_strategy_ = Mat::FLUIDPORO::CreateAnisotropyStrategy(params);
 }
 
-void Mat::FluidPoro::Pack(Core::Communication::PackBuffer& data) const
+void Mat::FluidPoro::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -738,7 +738,7 @@ void Mat::FluidPoro::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, matid);
 }
 
-void Mat::FluidPoro::Unpack(const std::vector<char>& data)
+void Mat::FluidPoro::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
