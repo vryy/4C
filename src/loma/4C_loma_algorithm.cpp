@@ -332,7 +332,7 @@ void LowMach::Algorithm::initial_calculations()
       Teuchos::null, ScaTraField()->discretization());
 
   // write initial fields
-  // Output();
+  // output();
 
   return;
 }

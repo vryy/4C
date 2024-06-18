@@ -86,6 +86,6 @@ void FSI::FluidAleAlgorithm::update() { MBFluidField()->update(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::output() { MBFluidField()->Output(); }
+void FSI::FluidAleAlgorithm::output() { MBFluidField()->output(); }
 
 FOUR_C_NAMESPACE_CLOSE

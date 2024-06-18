@@ -198,7 +198,7 @@ namespace Adapter
     }
     void update() override { return fluid_->update(); }
     void StatisticsAndOutput() override { return fluid_->StatisticsAndOutput(); }
-    void Output() override { return fluid_->Output(); }
+    void output() override { return fluid_->output(); }
     void StatisticsOutput() override
     {
       FOUR_C_THROW("not implemented!");

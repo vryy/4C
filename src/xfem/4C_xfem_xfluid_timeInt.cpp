@@ -2247,7 +2247,7 @@ void XFEM::XFluidTimeInt::send_data(Core::Communication::PackBuffer& dataSend, i
 // -------------------------------------------------------------------
 // timint output for reconstruction methods
 // -------------------------------------------------------------------
-void XFEM::XFluidTimeInt::Output()
+void XFEM::XFluidTimeInt::output()
 {
   int step_diff = 500;
 

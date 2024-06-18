@@ -139,7 +139,7 @@ namespace XFEM
     Teuchos::RCP<std::map<int, int>> GetPermutationMap() { return permutation_map_; };
 
     /// timint output for reconstruction methods
-    void Output();
+    void output();
 
    private:
     /// transfer standard and ghost dofs to new map as far as possible and mark dofs for

@@ -83,7 +83,7 @@ void CONSTRAINTS::SpringDashpotManager::ResetPrestress(Teuchos::RCP<Epetra_Vecto
   return;
 }
 
-void CONSTRAINTS::SpringDashpotManager::Output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
+void CONSTRAINTS::SpringDashpotManager::output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
     Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp)
 {
   // row maps for export
@@ -121,7 +121,7 @@ void CONSTRAINTS::SpringDashpotManager::Output(Teuchos::RCP<Core::IO::Discretiza
 }
 
 void CONSTRAINTS::SpringDashpotManager::output_restart(
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output,
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output_restart,
     Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp)
 {
   // row maps for export
@@ -144,12 +144,12 @@ void CONSTRAINTS::SpringDashpotManager::output_restart(
   }
 
   // write vector to output for restart
-  output->write_vector("springoffsetprestr", springoffsetprestr);
+  output_restart->write_vector("springoffsetprestr", springoffsetprestr);
   // write vector to output for restart
-  output->write_vector("springoffsetprestr_old", springoffsetprestr_old);
+  output_restart->write_vector("springoffsetprestr_old", springoffsetprestr_old);
 
   // normal output as well
-  Output(output, discret, disp);
+  output(output_restart, discret, disp);
 
   return;
 }

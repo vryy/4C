@@ -513,8 +513,8 @@ namespace STR
       void prepare_output(bool force_prepare_timestep) override;
 
       /// output results (implicit and explicit)
-      virtual void Output() { Output(false); }
-      void Output(bool forced_writerestart) override;
+      virtual void output() { output(false); }
+      void output(bool forced_writerestart) override;
 
       /// Write Gmsh output for structural field
       void write_gmsh_struc_output_step() override;

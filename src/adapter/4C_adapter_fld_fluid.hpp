@@ -313,7 +313,7 @@ namespace Adapter
     virtual void StatisticsAndOutput() = 0;
 
     /// output results
-    virtual void Output() = 0;
+    virtual void output() = 0;
 
     /// output statistics
     virtual void StatisticsOutput() = 0;

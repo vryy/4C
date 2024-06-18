@@ -83,7 +83,7 @@ namespace XFEM
 
     virtual bool apply_complementary_operator();
 
-    virtual void Output(
+    virtual void output(
         const int step, const double time, const bool write_restart_data, const int lsc_idx = 0);
 
     void GmshOutput(const std::string& filename_base, const int step, const int gmsh_step_diff,

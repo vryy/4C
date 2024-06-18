@@ -346,7 +346,7 @@ void XFEM::XfpCouplingManager::Update(double scaling)
 /*----------------------------------------------------------------------*/
 /* Write Output                                             ager 06/2016 |
  *-----------------------------------------------------------------------*/
-void XFEM::XfpCouplingManager::Output(Core::IO::DiscretizationWriter& writer)
+void XFEM::XfpCouplingManager::output(Core::IO::DiscretizationWriter& writer)
 {
   //--------------------------------
   // output for Lagrange multiplier field (ie forces onto the structure, Robin-type forces

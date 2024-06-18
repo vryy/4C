@@ -268,7 +268,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
       // loop over all Gauss points
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
         // create output on micro scale
-        newmanmultiscale->Output(iquad);
+        newmanmultiscale->output(iquad);
 
       break;
     }

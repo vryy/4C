@@ -137,7 +137,7 @@ void dyn_nlnstructural_drt()
     {
       constexpr bool force_prepare = true;
       structadapter->prepare_output(force_prepare);
-      structadapter->Output();
+      structadapter->output();
       structadapter->PostOutput();
     }
   }
@@ -150,7 +150,7 @@ void dyn_nlnstructural_drt()
     constexpr bool forceWriteRestart = true;
     constexpr bool force_prepare = true;
     structadapter->prepare_output(force_prepare);
-    structadapter->Output(forceWriteRestart);
+    structadapter->output(forceWriteRestart);
     structadapter->PostOutput();
   }
 

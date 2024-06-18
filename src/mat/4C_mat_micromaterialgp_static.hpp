@@ -65,7 +65,7 @@ namespace Mat
     /// Calculate stresses and strains on the micro-scale
     void prepare_output();
 
-    void Output();
+    void output();
 
     /// Create and initialize "empty" EAS history map
     void eas_init();

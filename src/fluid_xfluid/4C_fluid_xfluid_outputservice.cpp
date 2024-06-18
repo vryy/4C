@@ -57,7 +57,7 @@ void FLD::XFluidOutputService::prepare_output()
   outvec_fluid_ = Core::LinAlg::CreateVector(*dofset_out_->dof_row_map(), true);
 }
 
-void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_data,
+void FLD::XFluidOutputService::output(int step, double time, bool write_restart_data,
     Teuchos::RCP<const FLD::XFluidState> state, Teuchos::RCP<Epetra_Vector> dispnp,
     Teuchos::RCP<Epetra_Vector> gridvnp)
 {
@@ -246,7 +246,7 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
   //-----------------------------------------------------------
   // write paraview output for cutter discretization
   //-----------------------------------------------------------
-  cond_manager_->Output(step, time, write_restart_data);
+  cond_manager_->output(step, time, write_restart_data);
 }
 
 FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(Teuchos::ParameterList& params_xfem,

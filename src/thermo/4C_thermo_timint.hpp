@@ -212,7 +212,7 @@ namespace THR
     void OutputStep(bool forced_writerestart);
 
     //! output
-    void Output(bool forced_writerestart = false) override { OutputStep(forced_writerestart); }
+    void output(bool forced_writerestart = false) override { OutputStep(forced_writerestart); }
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07

@@ -57,7 +57,7 @@ int Adapter::StructureTimeLoop::Integrate()
       post_update();
 
       // write output
-      Output();
+      output();
       PostOutput();
 
       // print info about finished time step

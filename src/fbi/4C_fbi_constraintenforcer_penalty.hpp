@@ -68,7 +68,7 @@ namespace Adapter
         Teuchos::RCP<Adapter::FluidMovingBoundary> fluid) override;
 
     /// Handle fbi specific output
-    void Output(double time, int step) override;
+    void output(double time, int step) override;
 
    protected:
     /** \brief You will have to use the Adapter::ConstraintEnforcerFactory

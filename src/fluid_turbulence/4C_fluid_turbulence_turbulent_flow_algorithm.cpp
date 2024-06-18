@@ -110,7 +110,7 @@ void FLD::TurbulentFlowAlgorithm::TimeLoop()
     // update time integration with given velocity field
     fluidalgo_->fluid_field()->update();
     // write output
-    fluidalgo_->fluid_field()->Output();
+    fluidalgo_->fluid_field()->output();
   }
 
   if (fluiddis_->Comm().MyPID() == 0)

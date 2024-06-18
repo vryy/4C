@@ -587,7 +587,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
           // create output on micro scale
-          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())->Output(iquad);
+          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())->output(iquad);
       }
 
       break;

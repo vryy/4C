@@ -168,7 +168,7 @@ namespace XFEM
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);
 
    private:
-    void Output(const int step, const double time, const bool write_restart_data) override;
+    void output(const int step, const double time, const bool write_restart_data) override;
 
    protected:
     //! Initializes configurationmap

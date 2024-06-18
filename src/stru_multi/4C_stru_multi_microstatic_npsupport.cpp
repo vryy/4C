@@ -124,7 +124,7 @@ void MultiScale::np_support_drt()
       case 3:
       {
         // dummy material is used to output the micro material
-        dummymaterials[eleID]->Output();
+        dummymaterials[eleID]->output();
         break;
       }
       case 4:

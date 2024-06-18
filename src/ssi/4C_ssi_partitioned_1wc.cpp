@@ -59,7 +59,7 @@ void SSI::SSIPart1WC::do_struct_step()
   // update all single field solvers
   structure_field()->update();
   // write output to files
-  structure_field()->Output();
+  structure_field()->output();
   // write output to screen
   structure_field()->print_step();
   // clean up

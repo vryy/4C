@@ -191,7 +191,7 @@ void Adapter::PoroFluidMultiphaseWrapper::prepare_time_step() { porofluid_->prep
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::PoroFluidMultiphaseWrapper::Output() { porofluid_->Output(); }
+void Adapter::PoroFluidMultiphaseWrapper::output() { porofluid_->output(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

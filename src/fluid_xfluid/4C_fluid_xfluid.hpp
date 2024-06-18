@@ -198,7 +198,7 @@ namespace FLD
     Teuchos::RCP<std::map<int, int>> GetPermutationMap() { return permutation_map_; }
 
     /// update configuration and output to file/screen
-    void Output() override;
+    void output() override;
 
     /// set an initial flow field
     void SetInitialFlowField(

@@ -239,7 +239,7 @@ namespace FLD
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
-    void Output() override
+    void output() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }

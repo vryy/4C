@@ -471,7 +471,7 @@ void STR::TimeInt::Base::prepare_output(bool force_prepare_timestep)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Base::Output(bool forced_writerestart)
+void STR::TimeInt::Base::output(bool forced_writerestart)
 {
   check_init_setup();
   output_step(forced_writerestart);

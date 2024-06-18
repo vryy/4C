@@ -119,7 +119,7 @@ namespace Adapter
     void prepare_time_step() override;
 
     //! output solution and restart data to file
-    void Output() override;
+    void output() override;
 
     //! update the solution after convergence of the nonlinear iteration.
     void update() override;

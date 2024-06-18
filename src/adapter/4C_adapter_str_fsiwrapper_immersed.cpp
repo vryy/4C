@@ -232,14 +232,14 @@ Teuchos::RCP<Epetra_Vector> Adapter::FSIStructureWrapperImmersed::predict_full_i
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FSIStructureWrapperImmersed::Output(
+void Adapter::FSIStructureWrapperImmersed::output(
     bool forced_writerestart, const int step, const double time)
 {
   // always write velocity and displacement for extra output
   bool writevelacc_ = true;
 
   // write standard output if no arguments are provided (default -1)
-  if (step == -1 and time == -1.0) structure_->Output(forced_writerestart);
+  if (step == -1 and time == -1.0) structure_->output(forced_writerestart);
   // write extra output for specified step and time
   else
   {

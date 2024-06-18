@@ -129,7 +129,7 @@ namespace MultiScale
     \brief Write output and (possibly) restart
 
     */
-    void Output(Teuchos::RCP<Core::IO::DiscretizationWriter> output, const double time,
+    void output(Teuchos::RCP<Core::IO::DiscretizationWriter> output, const double time,
         const int istep, const double dt);
 
     /*!

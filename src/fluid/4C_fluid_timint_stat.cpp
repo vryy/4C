@@ -150,7 +150,7 @@ void FLD::TimIntStationary::solve_stationary_problem()
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    Output();
+    output();
 
   }  // end of time loop
 

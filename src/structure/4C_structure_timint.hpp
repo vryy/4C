@@ -324,7 +324,7 @@ namespace STR
         ) override = 0;
 
     /// output results
-    void Output(bool forced_writerestart = false) override = 0;
+    void output(bool forced_writerestart = false) override = 0;
 
     //! Update configuration after time step
     //!

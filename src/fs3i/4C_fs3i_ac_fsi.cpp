@@ -962,11 +962,11 @@ void FS3I::ACFSI::FsiOutput()
   //     * Discretizations.
 
   // structure output
-  fsi_->structure_field()->Output();
+  fsi_->structure_field()->output();
   if (coupling == fsi_iter_monolithicstructuresplit) fsi_->OutputLambda();
 
   // fluid output
-  fsi_->fluid_field()->Output();
+  fsi_->fluid_field()->output();
   if (coupling == fsi_iter_monolithicfluidsplit) fsi_->OutputLambda();
 
   if ((step_ % upresults == 0) or (uprestart != 0 && step_ % uprestart == 0) or
@@ -991,7 +991,7 @@ void FS3I::ACFSI::FsiOutput()
   }
 
   // ale output
-  fsi_->ale_field()->Output();
+  fsi_->ale_field()->output();
 }
 
 /*----------------------------------------------------------------------*

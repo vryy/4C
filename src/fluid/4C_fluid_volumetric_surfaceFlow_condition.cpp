@@ -109,7 +109,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::Output(Core::IO::DiscretizationWriter& output)
+void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::output(Core::IO::DiscretizationWriter& output)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
@@ -2087,7 +2087,7 @@ void FLD::UTILS::TotalTractionCorrector::update_residual(Teuchos::RCP<Epetra_Vec
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::TotalTractionCorrector::Output(Core::IO::DiscretizationWriter& output)
+void FLD::UTILS::TotalTractionCorrector::output(Core::IO::DiscretizationWriter& output)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 

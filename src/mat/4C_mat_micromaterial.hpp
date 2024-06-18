@@ -160,7 +160,7 @@ namespace Mat
     void prepare_output();
 
     /// Write output on micro-scale
-    void Output();
+    void output();
 
     // Update state vectors
     void update() override;

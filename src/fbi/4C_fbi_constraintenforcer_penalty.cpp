@@ -101,7 +101,7 @@ Adapter::FBIPenaltyConstraintenforcer::assemble_structure_coupling_residual() co
 void Adapter::FBIPenaltyConstraintenforcer::PrepareFluidSolve() { bridge()->PrepareFluidSolve(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FBIPenaltyConstraintenforcer::Output(double time, int step)
+void Adapter::FBIPenaltyConstraintenforcer::output(double time, int step)
 {
   print_violation(time, step);
 }

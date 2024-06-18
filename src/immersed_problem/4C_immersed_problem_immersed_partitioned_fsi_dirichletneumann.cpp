@@ -328,7 +328,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::fsi_op(
     structure_field()->prepare_output(force_prepare);
 
     Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapperImmersed>(structure_field())
-        ->Output(false, (Step() * 100) + (iter - 1), Time() - Dt() * ((100 - iter) / 100.0));
+        ->output(false, (Step() * 100) + (iter - 1), Time() - Dt() * ((100 - iter) / 100.0));
   }
 
   // perform n steps max; then set converged

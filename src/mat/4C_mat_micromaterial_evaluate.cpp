@@ -229,7 +229,7 @@ void Mat::MicroMaterial::prepare_output()
 
 
 // output for all procs
-void Mat::MicroMaterial::Output()
+void Mat::MicroMaterial::output()
 {
   // get sub communicator including the supporting procs
   Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
@@ -245,7 +245,7 @@ void Mat::MicroMaterial::Output()
   for (it = matgp_.begin(); it != matgp_.end(); ++it)
   {
     Teuchos::RCP<MicroMaterialGP> actmicromatgp = (*it).second;
-    actmicromatgp->Output();
+    actmicromatgp->output();
   }
 }
 

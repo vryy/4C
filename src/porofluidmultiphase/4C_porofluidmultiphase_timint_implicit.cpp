@@ -376,7 +376,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::prepare_time_loop()
   if (step_ == 0)
   {
     // write out initial state
-    Output();
+    output();
 
     // compute error for problems with analytical solution (initial field!)
     evaluate_error_compared_to_analytical_sol();
@@ -499,7 +499,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::TimeLoop()
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    Output();
+    output();
 
   }  // while
 
@@ -574,7 +574,7 @@ inline void POROFLUIDMULTIPHASE::TimIntImpl::print_time_step_info()
 /*----------------------------------------------------------------------*
  | output of solution vector to BINIO                       vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::Output()
+void POROFLUIDMULTIPHASE::TimIntImpl::output()
 {
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE:    + output of solution");
@@ -583,7 +583,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Output()
   if (do_output())
   {
     // do the same for the strategy
-    strategy_->Output();
+    strategy_->output();
 
     // step number and time (only after that data output is possible)
     output_->new_step(step_, time_);

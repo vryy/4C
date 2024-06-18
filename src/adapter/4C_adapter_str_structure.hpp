@@ -92,7 +92,7 @@ namespace Adapter
   field. There are different ways to use this adapter.
 
   In all cases you need to tell the structural algorithm about your time
-  step. Therefore prepare_time_step(), update() and Output() must be called at
+  step. Therefore prepare_time_step(), update() and output() must be called at
   the appropriate position in the FSI algorithm.
 
   <h3>Dirichlet-Neumann coupled FSI</h3>
@@ -379,7 +379,7 @@ namespace Adapter
         Teuchos::RCP<std::vector<char>> nodedata) = 0;
 
     /// output results
-    void Output(bool forced_writerestart = false) override = 0;
+    void output(bool forced_writerestart = false) override = 0;
 
     /// output results to screen
     virtual void print_step() = 0;

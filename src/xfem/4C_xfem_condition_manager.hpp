@@ -635,7 +635,7 @@ namespace XFEM
 
     void gmsh_output_discretization(std::ostream& gmshfilecontent);
 
-    void Output(const int step, const double time, const bool write_restart_data);
+    void output(const int step, const double time, const bool write_restart_data);
 
     /// compute lift and drag values by integrating the true residuals
     void LiftDrag(const int step, const double time);

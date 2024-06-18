@@ -286,7 +286,7 @@ int Adapter::StructureTimeAda::Integrate()
     stepsize_ = stpsiznew;
 
     // write output
-    Output();
+    output();
     PostOutput();
 
     // print info about finished time step
@@ -314,7 +314,7 @@ int Adapter::StructureTimeAda::Integrate()
   }
 
   // force write output
-  Output(true);
+  output(true);
 
   // that's it say what went wrong
   return convergencestatus;
@@ -364,12 +364,12 @@ void Adapter::StructureTimeAda::size_for_output()
 
 /*----------------------------------------------------------------------*/
 /* Output action */
-void Adapter::StructureTimeAda::Output(bool forced_writerestart)
+void Adapter::StructureTimeAda::output(bool forced_writerestart)
 {
   STR::TimeInt::BaseDataIO& dataio = stm_->data_io();
   Teuchos::RCP<Core::IO::DiscretizationWriter> output_ptr = dataio.get_output_ptr();
 
-  StructureWrapper::Output(forced_writerestart);
+  StructureWrapper::output(forced_writerestart);
   output_ptr->write_double("next_delta_time", stepsize_);
 }
 
@@ -560,7 +560,7 @@ Inpar::STR::ConvergenceStatus Adapter::StructureTimeAda::PerformErrorAction(
   {
     case Inpar::STR::divcont_stop:
       // write output
-      Output();
+      output();
 
       // error and stop the simulation
       FOUR_C_THROW("Nonlinear solver did not converge! ");

@@ -527,7 +527,7 @@ namespace
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                  kronbichler 05/14|
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDG::Output()
+void FLD::TimIntHDG::output()
 {
   // output of solution, currently only small subset of functionality
   if (step_ % upres_ == 0)

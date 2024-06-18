@@ -258,7 +258,7 @@ Inpar::STR::ConvergenceStatus STR::TimeInt::Implicit::PerformErrorAction(
     case Inpar::STR::divcont_stop:
     {
       // write restart output of last converged step before stopping
-      Output(true);
+      output(true);
 
       // we should not get here, FOUR_C_THROW for safety
       FOUR_C_THROW("Nonlinear solver did not converge! ");

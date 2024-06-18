@@ -613,10 +613,10 @@ bool FLD::XFluidFluid::x_timint_do_increment_step_transfer(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluidFluid::Output()
+void FLD::XFluidFluid::output()
 {
-  XFluid::Output();
-  embedded_fluid_->Output();
+  XFluid::output();
+  embedded_fluid_->output();
 }
 
 /*----------------------------------------------------------------------*/

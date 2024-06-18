@@ -51,7 +51,7 @@ void PoroElast::Partitioned::update_and_output()
 
   update();
 
-  Output();
+  output();
 }
 
 void PoroElast::Partitioned::Solve()

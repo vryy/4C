@@ -1728,7 +1728,7 @@ void ScaTra::ScaTraTimIntImpl::WriteResult()
   }
 
   // generate output associated with meshtying strategy
-  strategy_->Output();
+  strategy_->output();
 
   // generate output on micro scale if necessary
   if (macro_scale_)

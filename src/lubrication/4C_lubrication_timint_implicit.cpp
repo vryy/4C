@@ -211,7 +211,7 @@ void LUBRICATION::TimIntImpl::prepare_time_loop()
   if (step_ == 0)
   {
     // write out initial state
-    Output();
+    output();
 
     // compute error for problems with analytical solution (initial field!)
     evaluate_error_compared_to_analytical_sol();
@@ -402,7 +402,7 @@ void LUBRICATION::TimIntImpl::TimeLoop()
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    Output();
+    output();
 
   }  // while
 
@@ -468,7 +468,7 @@ inline void LUBRICATION::TimIntImpl::print_time_step_info()
 /*----------------------------------------------------------------------*
  | output of solution vector to BINIO                       wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::Output(const int num)
+void LUBRICATION::TimIntImpl::output(const int num)
 {
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:    + output of solution");

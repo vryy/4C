@@ -97,7 +97,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::read_restart(const int step) { r
 /*----------------------------------------------------------------------*
  | output of solution vector to BINIO                  kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Output() { return; }
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::output() { return; }
 
 /*----------------------------------------------------------------------*
  | evaluate matrix and rhs                             kremheller 04/18 |

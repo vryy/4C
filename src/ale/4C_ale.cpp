@@ -422,7 +422,7 @@ int ALE::Ale::Integrate()
     prepare_time_step();
     TimeStep();
     update();
-    Output();
+    output();
   }
 
   return 0;
@@ -430,7 +430,7 @@ int ALE::Ale::Integrate()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::Output()
+void ALE::Ale::output()
 {
   /*  We need ALE output only in case of pure ALE problems. If fluid is present,
    *  the fluid field writes its own displacement field as output.

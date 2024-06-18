@@ -789,7 +789,7 @@ void FSI::LungMonolithic::output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  structure_field()->Output();
+  structure_field()->output();
 
   // additional output of volume constraint related forces
   //   Adapter::StructureLung& structfield =
@@ -812,13 +812,13 @@ void FSI::LungMonolithic::output()
     structfield->WriteVolConRestart(OldFlowRatesRed, OldVolsRed, LagrMultVecOldRed);
   }
 
-  fluid_field()->Output();
+  fluid_field()->output();
 
   // additional output of volume constraint related forces
   //   Adapter::FluidLung& fluidfield = dynamic_cast<Adapter::FluidLung&>(fluid_field());
   //   fluidfield->OutputForces(AddFluidRHS_);
 
-  ale_field()->Output();
+  ale_field()->output();
 
   // output of volumes for visualization (e.g. gnuplot)
 

@@ -129,7 +129,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     structure_field()->discretization()->ClearState(true);
   }
 
-  // initialise displacement field needed for Output()
+  // initialise displacement field needed for output()
   // (get noderowmap of discretisation for creating this multivector)
   // TODO: why nds 0 and not 1????
   dispnp_ = Teuchos::rcp(
@@ -205,7 +205,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
   // output for thermofield:
   //========================
   apply_struct_coupling_state(structure_field()->Dispnp(), structure_field()->Velnp());
-  ThermoField()->Output(forced_writerestart);
+  ThermoField()->output(forced_writerestart);
 
   // communicate the deformation to the thermal field,
   // current displacements are contained in Dispn()
@@ -272,7 +272,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
   // output for structurefield:
   //===========================
   apply_thermo_coupling_state(ThermoField()->Tempnp());
-  structure_field()->Output(forced_writerestart);
+  structure_field()->output(forced_writerestart);
 
   // mapped temperatures for structure field
   if ((upres != 0 and (Step() % upres == 0)) or ((uprestart != 0) and (Step() % uprestart == 0)) or
@@ -309,7 +309,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
   // reset states
   structure_field()->discretization()->ClearState(true);
   ThermoField()->discretization()->ClearState(true);
-}  // Output()
+}  // output()
 
 
 /*----------------------------------------------------------------------*

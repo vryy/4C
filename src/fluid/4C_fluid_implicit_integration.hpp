@@ -531,7 +531,7 @@ namespace FLD
     \brief update configuration and output to file/screen
 
     */
-    void Output() override;
+    void output() override;
 
     /*
      * \brief Write fluid runtime output

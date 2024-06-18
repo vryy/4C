@@ -172,8 +172,8 @@ void FSI::Algorithm::output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  structure_field()->Output();
-  MBFluidField()->Output();
+  structure_field()->output();
+  MBFluidField()->output();
 }
 
 

@@ -111,7 +111,7 @@ namespace Arteries
     \brief update configuration and output to file/screen
 
     */
-    void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
+    void output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
 
     /*!
     \brief Test results

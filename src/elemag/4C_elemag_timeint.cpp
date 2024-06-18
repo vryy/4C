@@ -215,7 +215,7 @@ void EleMag::ElemagTimeInt::Integrate()
     // The output to file only once in a while
     if (step_ % upres_ == 0)
     {
-      Output();
+      output();
       // Output to screen
       OutputToScreen();
     }
@@ -338,7 +338,7 @@ void EleMag::ElemagTimeInt::SetInitialField(const Inpar::EleMag::InitialField in
   }  // switch(init)
 
   // Output of the initial condition
-  Output();
+  output();
   if (!myrank_)
   {
     std::cout << "Initial condition projected." << std::endl;
@@ -427,7 +427,7 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
   }
   discret_->Comm().Barrier();  // other procs please wait for the one, who did all the work
 
-  Output();
+  output();
 
   return;
 }  // set_initial_electric_field
@@ -628,7 +628,7 @@ void EleMag::ElemagTimeInt::InitializeAlgorithm()
     // The output to file only once in a while
     if (step_ % upres_ == 0)
     {
-      Output();
+      output();
       // Output to screen
       OutputToScreen();
     }
@@ -955,7 +955,7 @@ namespace
 /*----------------------------------------------------------------------*
  |  Output (public)                                    berardocco 03/18 |
  *----------------------------------------------------------------------*/
-void EleMag::ElemagTimeInt::Output()
+void EleMag::ElemagTimeInt::output()
 {
   TEUCHOS_FUNC_TIME_MONITOR("EleMag::ElemagTimeInt::Output");
   // Preparing the vectors that are going to be written in the output file

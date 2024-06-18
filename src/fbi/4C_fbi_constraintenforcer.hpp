@@ -157,7 +157,7 @@ namespace Adapter
     Teuchos::RCP<const Adapter::FBIConstraintBridge> GetBridge() const { return bridge_; };
 
     /// Handle fbi specific output
-    virtual void Output(double time, int step) = 0;
+    virtual void output(double time, int step) = 0;
 
    protected:
     /** \brief You will have to use the Adapter::ConstraintEnforcerFactory

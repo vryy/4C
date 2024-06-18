@@ -350,9 +350,9 @@ namespace Adapter
     }
 
     /// output results
-    void Output(bool forced_writerestart = false) override
+    void output(bool forced_writerestart = false) override
     {
-      structure_->Output(forced_writerestart);
+      structure_->output(forced_writerestart);
     }
 
     /// Write Gmsh output for structural field

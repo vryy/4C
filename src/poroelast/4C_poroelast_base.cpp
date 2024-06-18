@@ -406,14 +406,14 @@ void PoroElast::PoroBase::TimeLoop()
   }
 }
 
-void PoroElast::PoroBase::Output(bool forced_writerestart)
+void PoroElast::PoroBase::output(bool forced_writerestart)
 {
   // Note: The order is important here! In here control file entries are
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
   fluid_field()->StatisticsAndOutput();
-  structure_field()->Output(forced_writerestart);
+  structure_field()->output(forced_writerestart);
 }
 
 void PoroElast::PoroBase::setup_coupling()

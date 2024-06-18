@@ -199,7 +199,7 @@ namespace PoroElast
     void prepare_output(bool force_prepare_timestep) override;
 
     //! output
-    void Output(bool forced_writerestart = false) override;
+    void output(bool forced_writerestart = false) override;
 
     //!@}
 

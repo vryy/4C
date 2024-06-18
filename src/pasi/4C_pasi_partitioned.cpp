@@ -69,7 +69,7 @@ void PaSI::PartitionedAlgo::setup()
   particlealgorithm_->setup();
 
   // write initial output
-  structurefield_->Output();
+  structurefield_->output();
 
   // set setup flag
   set_is_setup(true);
@@ -222,7 +222,7 @@ void PaSI::PartitionedAlgo::struct_output()
   structurefield_->update();
 
   // write output
-  structurefield_->Output();
+  structurefield_->output();
 }
 
 void PaSI::PartitionedAlgo::particle_output()

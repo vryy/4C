@@ -79,7 +79,7 @@ namespace Adapter
   field. There are different ways to use this adapter.
 
   In all cases you need to tell the thermal algorithm about your time
-  step. Therefore prepare_time_step(), update() and Output() must be called at
+  step. Therefore prepare_time_step(), update() and output() must be called at
   the appropriate position in the TSI algorithm.
 
   <h3>Dirichlet-Neumann coupled TSI</h3>
@@ -210,7 +210,7 @@ namespace Adapter
     virtual void prepare_output() = 0;
 
     /// output results
-    virtual void Output(bool forced_writerestart = false) = 0;
+    virtual void output(bool forced_writerestart = false) = 0;
 
     /// read restart information for given time step
     virtual void read_restart(const int step) = 0;

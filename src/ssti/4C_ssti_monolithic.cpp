@@ -229,7 +229,7 @@ void SSTI::SSTIMono::output()
 
   ScaTraField()->check_and_write_output_and_restart();
   ThermoField()->check_and_write_output_and_restart();
-  structure_field()->Output();
+  structure_field()->output();
 }
 
 /*--------------------------------------------------------------------------*

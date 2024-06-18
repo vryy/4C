@@ -696,7 +696,7 @@ void XFEM::MeshCouplingFPI::gmsh_output_discretization(std::ostream& gmshfilecon
       false, false, gmshfilecontent, &currsolidpositions);
 }
 
-void XFEM::MeshCouplingFPI::Output(const int step, const double time, const bool write_restart_data)
+void XFEM::MeshCouplingFPI::output(const int step, const double time, const bool write_restart_data)
 {
   // output for interface
   cutter_output_->new_step(step, time);

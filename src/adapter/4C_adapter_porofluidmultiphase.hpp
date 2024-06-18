@@ -121,7 +121,7 @@ namespace Adapter
     virtual void prepare_time_step() = 0;
 
     //! output solution and restart data to file
-    virtual void Output() = 0;
+    virtual void output() = 0;
 
     //! update the solution after convergence of the nonlinear iteration.
     virtual void update() = 0;

@@ -158,7 +158,7 @@ void PoroElast::Monolithic::do_time_step()
   update();
 
   // write output to screen and files
-  Output();
+  output();
 }
 
 void PoroElast::Monolithic::Solve()

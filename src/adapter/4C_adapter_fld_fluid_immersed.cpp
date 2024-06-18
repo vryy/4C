@@ -56,7 +56,7 @@ void Adapter::FluidImmersed::update() { fluid_field()->update(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidImmersed::Output() { fluid_field()->StatisticsAndOutput(); }
+void Adapter::FluidImmersed::output() { fluid_field()->StatisticsAndOutput(); }
 
 
 /*----------------------------------------------------------------------*/

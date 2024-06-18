@@ -202,7 +202,7 @@ namespace LUBRICATION
     Teuchos::RCP<Core::FE::Discretization> discretization() { return discret_; }
 
     //! output solution and restart data to file
-    virtual void Output(const int num = 0);
+    virtual void output(const int num = 0);
 
     /*========================================================================*/
     //! @name Time, time-step and related methods

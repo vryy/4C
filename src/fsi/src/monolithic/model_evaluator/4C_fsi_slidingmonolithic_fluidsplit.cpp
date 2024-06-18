@@ -1507,8 +1507,8 @@ void FSI::SlidingMonolithicFluidSplit::update()
 /*----------------------------------------------------------------------------*/
 void FSI::SlidingMonolithicFluidSplit::output()
 {
-  structure_field()->Output();
-  fluid_field()->Output();
+  structure_field()->output();
+  fluid_field()->output();
 
   if (aleproj_ != Inpar::FSI::ALEprojection_none)
   {
@@ -1524,7 +1524,7 @@ void FSI::SlidingMonolithicFluidSplit::output()
   // output Lagrange multiplier
   OutputLambda();
 
-  ale_field()->Output();
+  ale_field()->output();
 
   if (structure_field()->get_constraint_manager()->HaveMonitor())
   {

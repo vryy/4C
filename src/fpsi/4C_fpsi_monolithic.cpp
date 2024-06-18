@@ -139,9 +139,9 @@ void FPSI::MonolithicBase::prepare_output(bool force_prepare)
 /*----------------------------------------------------------------------*/
 void FPSI::MonolithicBase::output()
 {
-  poro_field()->Output();
-  fluid_field()->Output();
-  ale_field()->Output();
+  poro_field()->output();
+  fluid_field()->output();
+  ale_field()->output();
 }
 
 /*----------------------------------------------------------------------*/

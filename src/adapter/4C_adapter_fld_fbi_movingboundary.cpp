@@ -63,7 +63,7 @@ void Adapter::FBIFluidMB::update() { fluid_field()->update(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FBIFluidMB::Output() { fluid_field()->StatisticsAndOutput(); }
+void Adapter::FBIFluidMB::output() { fluid_field()->StatisticsAndOutput(); }
 
 
 /*----------------------------------------------------------------------*/

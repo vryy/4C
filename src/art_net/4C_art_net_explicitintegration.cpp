@@ -628,7 +628,7 @@ void Arteries::ArtNetExplicitTimeInt::LoadState()
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                       ismail 07/09|
  *----------------------------------------------------------------------*/
-void Arteries::ArtNetExplicitTimeInt::Output(
+void Arteries::ArtNetExplicitTimeInt::output(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   int step = 0;

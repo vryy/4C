@@ -76,7 +76,7 @@ namespace FLD
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::Output
       */
-      void Output(Core::IO::DiscretizationWriter& output);
+      void output(Core::IO::DiscretizationWriter& output);
 
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::read_restart
@@ -134,7 +134,7 @@ namespace FLD
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::Output
       */
-      void Output(Core::IO::DiscretizationWriter& output);
+      void output(Core::IO::DiscretizationWriter& output);
 
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::read_restart

@@ -90,7 +90,7 @@ namespace Arteries
     }
 
     // output
-    void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
+    void output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
 
     //! output of element radius
     void OutputRadius();

@@ -103,7 +103,7 @@ void ElCh::MovingBoundaryAlgorithm::TimeLoop()
     fluid_field()->StatisticsAndOutput();
     if (algo_parameters().get<int>("RESTARTEVRY") != 0)
       fluid_field()->DiscWriter()->write_vector("idispn", idispnp_);
-    ale_field()->Output();
+    ale_field()->output();
   }
 
   // prepare scatra field
@@ -317,7 +317,7 @@ void ElCh::MovingBoundaryAlgorithm::output()
 
   // now the other physical fiels
   ScaTraField()->check_and_write_output_and_restart();
-  ale_field()->Output();
+  ale_field()->output();
 }
 
 

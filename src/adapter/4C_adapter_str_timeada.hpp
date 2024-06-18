@@ -91,7 +91,7 @@ namespace Adapter
     void post_update() override{};
 
     /// output results
-    void Output(bool forced_writerestart = false) override;
+    void output(bool forced_writerestart = false) override;
 
     /// wrapper for things that should be done after the output
     void PostOutput() override{};

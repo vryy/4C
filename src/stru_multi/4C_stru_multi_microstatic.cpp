@@ -660,7 +660,7 @@ void MultiScale::MicroStatic::prepare_output()
 /*----------------------------------------------------------------------*
  |  write output (public)                                       lw 02/08|
  *----------------------------------------------------------------------*/
-void MultiScale::MicroStatic::Output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
+void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
     const double time, const int step, const double dt)
 {
   bool isdatawritten = false;
@@ -754,7 +754,7 @@ void MultiScale::MicroStatic::Output(Teuchos::RCP<Core::IO::DiscretizationWriter
         break;
     }
   }
-}  // MultiScale::MicroStatic::Output()
+}  // MultiScale::MicroStatic::output()
 
 
 /*----------------------------------------------------------------------*

@@ -192,7 +192,7 @@ void Adapter::Thermo::Integrate()
       case Inpar::THR::conv_success:
         update();
         PrintStep();
-        Output();
+        output();
         break;
       case Inpar::THR::conv_fail_repeat:
         // do not update and output but try again

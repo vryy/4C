@@ -59,7 +59,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void update() = 0;
 
     //! output
-    virtual void Output() = 0;
+    virtual void output() = 0;
 
     //! Initialize the linear solver
     virtual void initialize_linear_solver(Teuchos::RCP<Core::LinAlg::Solver> solver) = 0;

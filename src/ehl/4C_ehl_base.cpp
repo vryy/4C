@@ -728,7 +728,7 @@ void EHL::Base::output(bool forced_writerestart)
   // output for structurefield:
   //===========================
   //  ApplyLubricationCouplingState(lubrication_->LubricationField()->Prenp());
-  structure_field()->Output(forced_writerestart);
+  structure_field()->output(forced_writerestart);
 
   // Additional output on structure field
   structure_field()->disc_writer()->write_vector("fluid_force",
@@ -767,7 +767,7 @@ void EHL::Base::output(bool forced_writerestart)
   // output for lubricationfield:
   //=============================
   set_mesh_disp(structure_field()->Dispnp());
-  lubrication_->LubricationField()->Output(forced_writerestart);
+  lubrication_->LubricationField()->output(forced_writerestart);
 
   // ============================
   // output for mortar interface
@@ -835,6 +835,6 @@ void EHL::Base::output(bool forced_writerestart)
   // reset states
   structure_field()->discretization()->ClearState(true);
   lubrication_->LubricationField()->discretization()->ClearState(true);
-}  // Output()
+}  // output()
 
 FOUR_C_NAMESPACE_CLOSE

@@ -267,7 +267,7 @@ bool XFEM::LevelSetCoupling::apply_complementary_operator()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCoupling::Output(
+void XFEM::LevelSetCoupling::output(
     const int step, const double time, const bool write_restart_data, const int lsc_idx)
 {
   // output for level-set interface

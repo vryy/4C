@@ -186,7 +186,7 @@ namespace Adapter
     virtual void update() = 0;
 
     //! output results
-    virtual void Output() = 0;
+    virtual void output() = 0;
 
     //! read restart information for given time step
     virtual void read_restart(const int step) = 0;

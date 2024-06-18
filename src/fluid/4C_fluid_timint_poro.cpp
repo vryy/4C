@@ -167,9 +167,9 @@ void FLD::TimIntPoro::update_iter_incrementally(
   }
 }
 
-void FLD::TimIntPoro::Output()
+void FLD::TimIntPoro::output()
 {
-  FluidImplicitTimeInt::Output();
+  FluidImplicitTimeInt::output();
   // output of solution
   if (step_ % upres_ == 0)
   {

@@ -732,7 +732,7 @@ void Airway::RedAirwayImplicitTimeInt::TimeStep(
   // Normal red_airway Output
   if (!CoupledTo3D)
   {
-    Output(CoupledTo3D, CouplingTo3DParams);
+    output(CoupledTo3D, CouplingTo3DParams);
   }
 
   // Update time step sizes
@@ -1804,7 +1804,7 @@ void Airway::RedAirwayImplicitTimeInt::LoadState()
 /*----------------------------------------------------------------------*
  | Output of solution vector to binio                       ismail 07/09|
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::Output(
+void Airway::RedAirwayImplicitTimeInt::output(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   int step = 0;

@@ -198,7 +198,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
 
     //! output solution and restart data to file
-    void Output() override;
+    void output() override;
 
     //! output solution and restart data to file
     virtual void print_header();

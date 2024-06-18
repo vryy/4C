@@ -582,7 +582,7 @@ Inpar::THR::ConvergenceStatus THR::TimIntImpl::newton_full_error_check()
   if ((iter_ >= itermax_) and (divcontype_ == Inpar::THR::divcont_stop))
   {
     // write restart output of last converged step before stopping
-    Output(true);
+    output(true);
 
     FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
     return Inpar::THR::conv_nonlin_fail;

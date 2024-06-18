@@ -3399,7 +3399,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
-  Output();
+  output();
 
   // -------------------------------------------------------------------
   //          dumping of turbulence statistics if required
@@ -3505,7 +3505,7 @@ void FLD::FluidImplicitTimeInt::WriteRuntimeOutput()
  | overloaded in TimIntPoro                                             |
  | overloaded in TimIntRedModels                               bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::Output()
+void FLD::FluidImplicitTimeInt::output()
 {
   // output of solution
   if (upres_ > 0 and step_ % upres_ == 0)

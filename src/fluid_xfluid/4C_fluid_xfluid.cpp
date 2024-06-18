@@ -3961,7 +3961,7 @@ void FLD::XFluid::x_timint_transfer_vectors_between_steps(
 
   xfluid_timeint->SetAndPrintStatus(screen_out);
 
-  if (reconstruct_method_output) xfluid_timeint->Output();
+  if (reconstruct_method_output) xfluid_timeint->output();
 }
 
 /*----------------------------------------------------------------------*
@@ -4412,7 +4412,7 @@ double FLD::XFluid::TimIntParam() const
 /*----------------------------------------------------------------------*
  |  write solution output                                  schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::Output()
+void FLD::XFluid::output()
 {
   const bool write_restart_data = step_ != 0 and uprestart_ != 0 and step_ % uprestart_ == 0;
 
@@ -4432,7 +4432,7 @@ void FLD::XFluid::Output()
 
   if (step_ % upres_ == 0)
   {
-    output_service_->Output(step_, time_, write_restart_data, state_, dispnp_, gridvnp_);
+    output_service_->output(step_, time_, write_restart_data, state_, dispnp_, gridvnp_);
   }
 
 

@@ -163,7 +163,7 @@ namespace Airway
     \brief update configuration and output to file/screen
 
     */
-    void Output(bool CoupledTo3D = false,
+    void output(bool CoupledTo3D = false,
         Teuchos::RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
 
     /*!

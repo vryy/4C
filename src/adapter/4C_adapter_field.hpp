@@ -144,7 +144,7 @@ namespace Adapter
     virtual void prepare_output(bool force_prepare_timestep) = 0;
 
     /// output results
-    virtual void Output(bool forced_writerestart = false) = 0;
+    virtual void output(bool forced_writerestart = false) = 0;
 
     /// read restart information for given time step
     virtual void read_restart(const int step) = 0;

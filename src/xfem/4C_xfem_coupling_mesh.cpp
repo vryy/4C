@@ -177,7 +177,7 @@ void XFEM::MeshCoupling::prepare_cutter_output()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCoupling::Output(const int step, const double time, const bool write_restart_data)
+void XFEM::MeshCoupling::output(const int step, const double time, const bool write_restart_data)
 {
   if (!mark_geometry_)  // Do not write for marked geometry!
   {
@@ -1764,7 +1764,7 @@ void XFEM::MeshCouplingFSI::gmsh_output_discretization(std::ostream& gmshfilecon
       false, false, gmshfilecontent, &currsolidpositions);
 }
 
-void XFEM::MeshCouplingFSI::Output(const int step, const double time, const bool write_restart_data)
+void XFEM::MeshCouplingFSI::output(const int step, const double time, const bool write_restart_data)
 {
   // output for interface
   cutter_output_->new_step(step, time);
@@ -2680,7 +2680,7 @@ void XFEM::MeshCouplingFluidFluid::read_restart(const int step)
     FOUR_C_THROW("Global dof numbering in maps does not match");
 }
 
-void XFEM::MeshCouplingFluidFluid::Output(
+void XFEM::MeshCouplingFluidFluid::output(
     const int step, const double time, const bool write_restart_data)
 {
   // copy from FSI without the itrueresidual output!

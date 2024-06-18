@@ -263,7 +263,7 @@ namespace STR
     );
 
     /// has to be renamed either here or print_step()
-    void Output(bool forced_writerestart) override
+    void output(bool forced_writerestart) override
     {
       OutputStep(forced_writerestart);
       // write Gmsh output

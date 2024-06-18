@@ -478,7 +478,7 @@ std::string Mat::ScatraMultiScaleGP::new_result_file_path(const std::string& new
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::ScatraMultiScaleGP::Output()
+void Mat::ScatraMultiScaleGP::output()
 {
   // skip ghosted macro-scale elements
   if (eleowner_)

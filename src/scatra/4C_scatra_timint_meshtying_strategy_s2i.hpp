@@ -225,7 +225,7 @@ namespace ScaTra
     Core::FE::Discretization& mortar_discretization(const int& condid) const;
 
     //! output solution for post-processing
-    void Output() const override;
+    void output() const override;
 
     void write_restart() const override;
 

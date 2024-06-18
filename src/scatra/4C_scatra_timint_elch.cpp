@@ -2226,7 +2226,7 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
       // for all time integration schemes, compute the current value for phidtnp
       // this is needed for evaluating charging currents due to double-layer capacity
       // This may only be called here and not inside OutputSingleElectrodeInfoBoundary!!!!
-      // Otherwise you modify your output to file called during Output()
+      // Otherwise you modify your output to file called during output()
       compute_time_derivative();
 
       double targetcurrent =

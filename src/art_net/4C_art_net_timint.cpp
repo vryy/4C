@@ -198,7 +198,7 @@ void Arteries::TimInt::TimeLoop(
     // -------------------------------------------------------------------
     if (!CoupledTo3D)
     {
-      Output(CoupledTo3D, CouplingTo3DParams);
+      output(CoupledTo3D, CouplingTo3DParams);
     }
 
     // -------------------------------------------------------------------

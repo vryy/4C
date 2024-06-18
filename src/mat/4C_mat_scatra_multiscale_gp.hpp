@@ -76,7 +76,7 @@ namespace Mat
     void update();
 
     //! output micro-scale quantities
-    void Output();
+    void output();
 
     //! read restart on micro scale
     void read_restart();

@@ -1215,7 +1215,7 @@ void ScaTra::ScaTraTimIntImpl::output_flux(Teuchos::RCP<Epetra_MultiVector> flux
 {
   // safety checks
   if (flux == Teuchos::null)
-    FOUR_C_THROW("Null pointer for flux vector output. Output() called before update() ??");
+    FOUR_C_THROW("Null pointer for flux vector output. output() called before update() ??");
   if (fluxtype != "domain" and fluxtype != "boundary")
     FOUR_C_THROW("Unknown flux type. Must be either 'domain' or 'boundary'!");
 

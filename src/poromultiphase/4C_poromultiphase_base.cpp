@@ -159,7 +159,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::prepare_time_loop()
   {
     constexpr bool force_prepare = true;
     structure_field()->prepare_output(force_prepare);
-    structure_field()->Output();
+    structure_field()->output();
     set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp());
   }
   else
@@ -262,8 +262,8 @@ void POROMULTIPHASE::PoroMultiPhaseBase::update_and_output()
   set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp());
 
   // output single fields
-  structure_field()->Output();
-  fluid_field()->Output();
+  structure_field()->output();
+  fluid_field()->output();
 }
 
 /*------------------------------------------------------------------------*

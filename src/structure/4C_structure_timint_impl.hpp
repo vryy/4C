@@ -873,7 +873,7 @@ namespace STR
     }
 
     //! Output results to binary file on disk
-    void Output(const bool forced_writerestart = false  ///< [in] Force writing of restart data
+    void output(const bool forced_writerestart = false  ///< [in] Force writing of restart data
         ) override;
 
     //! Set residual displacements \f$\Delta D_{n+1}^{<k>}\f$

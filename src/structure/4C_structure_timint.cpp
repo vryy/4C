@@ -2240,7 +2240,7 @@ void STR::TimInt::output_state(bool& datawritten)
   }
 
   // springdashpot output
-  if (springman_->HaveSpringDashpot()) springman_->Output(output_, discret_, disn_);
+  if (springman_->HaveSpringDashpot()) springman_->output(output_, discret_, disn_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -2812,7 +2812,7 @@ void STR::TimInt::OutputMicro()
     if (mat->MaterialType() == Core::Materials::m_struct_multiscale)
     {
       Mat::MicroMaterial* micro = static_cast<Mat::MicroMaterial*>(mat.get());
-      micro->Output();
+      micro->output();
     }
   }
 }
@@ -3033,7 +3033,7 @@ Inpar::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
     case Inpar::STR::divcont_stop:
     {
       // write restart output of last converged step before stopping
-      Output(true);
+      output(true);
 
       // we should not get here, FOUR_C_THROW for safety
       FOUR_C_THROW("Nonlinear solver did not converge! ");

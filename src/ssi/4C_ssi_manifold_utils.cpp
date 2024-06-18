@@ -742,7 +742,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::pre_evaluate(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::ScaTraManifoldScaTraFluxEvaluator::Output()
+void SSI::ScaTraManifoldScaTraFluxEvaluator::output()
 {
   FOUR_C_ASSERT(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
 

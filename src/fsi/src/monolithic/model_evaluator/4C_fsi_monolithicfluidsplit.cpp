@@ -1263,13 +1263,13 @@ void FSI::MonolithicFluidSplit::extract_field_vectors(Teuchos::RCP<const Epetra_
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicFluidSplit::output()
 {
-  structure_field()->Output();
-  fluid_field()->Output();
+  structure_field()->output();
+  fluid_field()->output();
 
   // output Lagrange multiplier
   OutputLambda();
 
-  ale_field()->Output();
+  ale_field()->output();
 
   if (structure_field()->get_constraint_manager()->HaveMonitor())
   {

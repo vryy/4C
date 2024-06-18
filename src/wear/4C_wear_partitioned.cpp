@@ -477,10 +477,10 @@ void Wear::Partitioned::output()
   structure_field()->prepare_output(force_prepare);
 
   // write strcture output to screen and files
-  structure_field()->Output();
+  structure_field()->output();
 
   // output ale
-  ale_field().Output();
+  ale_field().output();
 
   return;
 }

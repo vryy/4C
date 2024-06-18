@@ -35,7 +35,7 @@ namespace POROFLUIDMULTIPHASE
     void update() override;
 
     //! output
-    void Output() override;
+    void output() override;
 
     //! Initialize the linear solver
     void initialize_linear_solver(Teuchos::RCP<Core::LinAlg::Solver> solver) override;

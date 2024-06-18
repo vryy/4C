@@ -44,7 +44,7 @@ void Adapter::StructureTimIntAda::prepare_output(bool force_prepare)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::StructureTimIntAda::Output() { sta_->OutputPeriod(); }
+void Adapter::StructureTimIntAda::output() { sta_->OutputPeriod(); }
 
 
 /*----------------------------------------------------------------------*/

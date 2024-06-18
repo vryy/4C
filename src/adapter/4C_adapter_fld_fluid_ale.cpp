@@ -208,7 +208,7 @@ void Adapter::FluidAle::update()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Adapter::FluidAle::Output()
+void Adapter::FluidAle::output()
 {
   fluid_field()->StatisticsAndOutput();
 
@@ -232,7 +232,7 @@ void Adapter::FluidAle::Output()
     }
   }
 
-  ale_field()->Output();
+  ale_field()->output();
 }
 
 

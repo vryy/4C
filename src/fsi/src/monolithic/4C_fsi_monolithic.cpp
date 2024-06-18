@@ -198,9 +198,9 @@ void FSI::MonolithicBase::output()
    * the Discretizations, which in turn defines the dof number ordering of the
    * Discretizations.
    */
-  structure_field()->Output();
-  fluid_field()->Output();
-  ale_field()->Output();
+  structure_field()->output();
+  fluid_field()->output();
+  ale_field()->output();
 
   if (structure_field()->get_constraint_manager()->HaveMonitor())
   {

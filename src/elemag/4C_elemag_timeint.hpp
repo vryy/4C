@@ -219,8 +219,8 @@ namespace EleMag
 
     This routine outputs the computed global and local solutions to the output ".dat" file.
     */
-    virtual void Output();
-    // void Output();
+    virtual void output();
+    // void output();
 
     /*!
     \brief Write restart.

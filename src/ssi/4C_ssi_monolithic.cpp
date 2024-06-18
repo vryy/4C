@@ -542,11 +542,11 @@ void SSI::SsiMono::output()
     // domain output
     ScaTraManifold()->check_and_write_output_and_restart();
     // coupling output
-    if (manifoldscatraflux_->DoOutput()) manifoldscatraflux_->Output();
+    if (manifoldscatraflux_->DoOutput()) manifoldscatraflux_->output();
   }
 
   // output structure field
-  structure_field()->Output();
+  structure_field()->output();
 
   if (print_matlab_) print_system_matrix_rhs_to_mat_lab_format();
 }

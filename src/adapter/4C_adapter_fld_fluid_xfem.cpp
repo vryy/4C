@@ -88,7 +88,7 @@ void Adapter::FluidXFEM::update() { fluid_field()->update(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidXFEM::Output() { fluid_field()->StatisticsAndOutput(); }
+void Adapter::FluidXFEM::output() { fluid_field()->StatisticsAndOutput(); }
 
 
 /*----------------------------------------------------------------------*/

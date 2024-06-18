@@ -142,8 +142,8 @@ void EHL::Partitioned::update_and_output()
 
   lubrication_->LubricationField()->evaluate_error_compared_to_analytical_sol();
 
-  structure_->Output();
-  lubrication_->LubricationField()->Output();
+  structure_->output();
+  lubrication_->LubricationField()->output();
 }
 
 

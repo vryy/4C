@@ -181,7 +181,7 @@ namespace Adapter
     void UpdateIter() override { ale_->UpdateIter(); }
 
     //! output results
-    void Output() override { return ale_->Output(); }
+    void output() override { return ale_->output(); }
 
 
     //! read restart information for given time step \p step

@@ -3219,7 +3219,7 @@ Core::FE::Discretization& ScaTra::MeshtyingStrategyS2I::mortar_discretization(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2I::Output() const
+void ScaTra::MeshtyingStrategyS2I::output() const
 {
   // only relevant for monolithic or semi-implicit evaluation of scatra-scatra interface layer
   // growth

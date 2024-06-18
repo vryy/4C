@@ -67,7 +67,7 @@ namespace Adapter
     void update() override;
 
     /// output results
-    void Output() override;
+    void output() override;
 
     /// read restart information for given time step
     double read_restart(int step) override;

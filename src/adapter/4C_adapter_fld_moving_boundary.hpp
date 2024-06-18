@@ -77,7 +77,7 @@ namespace Adapter
     virtual void update() = 0;
 
     /// output results
-    virtual void Output() = 0;
+    virtual void output() = 0;
 
     /// read restart information for given time step
     virtual double read_restart(int step) = 0;

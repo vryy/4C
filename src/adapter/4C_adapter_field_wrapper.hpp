@@ -102,9 +102,9 @@ namespace Adapter
     }
 
     /// output results
-    void Output(bool forced_writerestart = false) override
+    void output(bool forced_writerestart = false) override
     {
-      return field_->Output(forced_writerestart);
+      return field_->output(forced_writerestart);
     }
 
     /// read restart information for given time step

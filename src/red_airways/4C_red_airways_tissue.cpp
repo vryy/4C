@@ -444,10 +444,10 @@ void Airway::RedAirwayTissue::update_and_output()
   constexpr bool force_prepare = false;
   structure_->prepare_output(force_prepare);
   structure_->update();
-  structure_->Output();
+  structure_->output();
 
   redairways_->TimeUpdate();
-  redairways_->Output();
+  redairways_->output();
 
   // In case of restart write all coupling variables to restart file
   if (redairways_->Step() % uprestart_ == 0)

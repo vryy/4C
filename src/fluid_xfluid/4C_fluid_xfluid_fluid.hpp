@@ -199,7 +199,7 @@ namespace FLD
     Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
     /// write output for both fluid discretizations
-    void Output() override;
+    void output() override;
 
     /// evaluate errors compared to implemented analytical solutions
     Teuchos::RCP<std::vector<double>> evaluate_error_compared_to_analytical_sol() override;

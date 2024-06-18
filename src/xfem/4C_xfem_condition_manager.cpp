@@ -775,13 +775,13 @@ void XFEM::ConditionManager::gmsh_output_discretization(std::ostream& gmshfileco
   }
 }
 
-void XFEM::ConditionManager::Output(
+void XFEM::ConditionManager::output(
     const int step, const double time, const bool write_restart_data)
 {
   // loop all mesh coupling objects
   for (int mc = 0; mc < (int)mesh_coupl_.size(); mc++)
   {
-    mesh_coupl_[mc]->Output(step, time, write_restart_data);
+    mesh_coupl_[mc]->output(step, time, write_restart_data);
   }
 
   // output for combined levelset field
@@ -795,7 +795,7 @@ void XFEM::ConditionManager::Output(
   // loop all level set coupling objects
   for (int lc = 0; lc < (int)levelset_coupl_.size(); lc++)
   {
-    levelset_coupl_[lc]->Output(step, time, write_restart_data, lc);
+    levelset_coupl_[lc]->output(step, time, write_restart_data, lc);
   }
 }
 

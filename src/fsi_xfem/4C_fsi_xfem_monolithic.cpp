@@ -916,7 +916,7 @@ void FSI::MonolithicXFEM::output()
   //--------------------------------
   // output for structural field
   //--------------------------------
-  StructurePoro()->Output();
+  StructurePoro()->output();
 
   //--------------------------------
   // output for Lagrange multiplier field (ie forces onto the structure, Robin-type forces
@@ -930,13 +930,13 @@ void FSI::MonolithicXFEM::output()
   {
     for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
          coupit != coup_man_.end(); ++coupit)
-      coupit->second->Output(*StructurePoro()->structure_field()->disc_writer());
+      coupit->second->output(*StructurePoro()->structure_field()->disc_writer());
   }
 
   //--------------------------------
   // output for fluid field - writes the whole GMSH output if switched on
   //--------------------------------
-  fluid_field()->Output();
+  fluid_field()->output();
   fluid_field()->LiftDrag();
 
 
@@ -947,7 +947,7 @@ void FSI::MonolithicXFEM::output()
     if (Comm().MyPID() == 0) StructurePoro()->get_constraint_manager()->PrintMonitorValues();
   }
 
-  if (HaveAle()) ale_field()->Output();
+  if (HaveAle()) ale_field()->output();
 
   return;
 }

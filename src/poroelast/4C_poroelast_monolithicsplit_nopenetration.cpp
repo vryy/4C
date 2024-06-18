@@ -590,10 +590,10 @@ void PoroElast::MonolithicSplitNoPenetration::update()
       *k_d_, Core::LinAlg::Copy));  // store D-Matrix from last timestep
 }
 
-void PoroElast::MonolithicSplitNoPenetration::Output(bool forced_writerestart)
+void PoroElast::MonolithicSplitNoPenetration::output(bool forced_writerestart)
 {
   // call base class
-  MonolithicSplit::Output(forced_writerestart);
+  MonolithicSplit::output(forced_writerestart);
 
   // for now, we always write the lagrange multiplier
   Teuchos::RCP<Epetra_Vector> fulllambda =

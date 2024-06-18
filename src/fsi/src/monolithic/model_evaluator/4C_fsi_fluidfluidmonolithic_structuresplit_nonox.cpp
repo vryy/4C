@@ -688,7 +688,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::extract_field_vectors(
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::output()
 {
-  structure_field()->Output();
+  structure_field()->output();
 
   // output Lagrange multiplier
   {
@@ -703,8 +703,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::output()
       structure_field()->disc_writer()->write_vector("fsilambda", lambdafull);
   }
 
-  fluid_field()->Output();
-  ale_field()->Output();
+  fluid_field()->output();
+  ale_field()->output();
 
   if (structure_field()->get_constraint_manager()->HaveMonitor())
   {

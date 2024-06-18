@@ -323,7 +323,7 @@ int STR::TimIntImpl::IntegrateStep()
   return error;
 }
 
-void STR::TimIntImpl::Output(const bool forced_writerestart)
+void STR::TimIntImpl::output(const bool forced_writerestart)
 {
   OutputStep(forced_writerestart);
 
@@ -1776,7 +1776,7 @@ int STR::TimIntImpl::newton_full_error_check(int linerror, int eleerror)
     if ((iter_ >= itermax_) and (divcontype_ == Inpar::STR::divcont_stop))
     {
       // write restart output of last converged step before stopping
-      Output(true);
+      output(true);
 
       FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
       return 1;
@@ -2908,7 +2908,7 @@ int STR::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror, int elee
     if ((iter_ >= itermax_) and (divcontype_ == Inpar::STR::divcont_stop))
     {
       // write restart output of last converged step before stopping
-      Output(true);
+      output(true);
 
       FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
       return 1;

@@ -123,7 +123,7 @@ namespace Mat
      *
      * @param[in] gp_id  macro-scale Gauss point ID
      */
-    void Output(const int gp_id) const;
+    void output(const int gp_id) const;
 
     /*!
      * @brief  read restart on micro scale

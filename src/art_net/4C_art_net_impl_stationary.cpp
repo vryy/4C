@@ -455,7 +455,7 @@ void Arteries::ArtNetImplStationary::prepare_time_loop()
     // set artery diameter of previous time step to intial artery diameter
     reset_artery_diam_previous_time_step();
     // write out initial state
-    Output(false, Teuchos::null);
+    output(false, Teuchos::null);
   }
 
   return;
@@ -470,7 +470,7 @@ void Arteries::ArtNetImplStationary::prepare_time_loop()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::ArtNetImplStationary::Output(
+void Arteries::ArtNetImplStationary::output(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   // time measurement: output of solution

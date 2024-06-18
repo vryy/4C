@@ -49,9 +49,9 @@ void FLD::TimIntAC::read_restart(int step)
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                        Thon 12/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntAC::Output()
+void FLD::TimIntAC::output()
 {
-  FluidImplicitTimeInt::Output();
+  FluidImplicitTimeInt::output();
 
   // output of solution
   if (uprestart_ > 0 and step_ % uprestart_ == 0)

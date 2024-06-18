@@ -270,9 +270,9 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::read_restart(const int step)
 /*----------------------------------------------------------------------*
  | output of solution vector to BINIO                  kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Output()
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::output()
 {
-  if (porofluidmultitimint_->Step() != 0) artnettimint_->Output(false, Teuchos::null);
+  if (porofluidmultitimint_->Step() != 0) artnettimint_->output(false, Teuchos::null);
 
   return;
 }

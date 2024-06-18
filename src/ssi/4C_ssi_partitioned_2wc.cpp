@@ -210,7 +210,7 @@ void SSI::SSIPart2WC::prepare_time_loop()
   // initial output
   constexpr bool force_prepare = true;
   structure_field()->prepare_output(force_prepare);
-  structure_field()->Output();
+  structure_field()->output();
   set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp(), false);
   ScaTraField()->prepare_time_loop();
 }
@@ -258,7 +258,7 @@ void SSI::SSIPart2WC::update_and_output()
 
   ScaTraField()->evaluate_error_compared_to_analytical_sol();
 
-  structure_field()->Output();
+  structure_field()->output();
   ScaTraField()->check_and_write_output_and_restart();
 }
 

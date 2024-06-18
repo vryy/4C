@@ -181,7 +181,7 @@ void PoroElastScaTra::PoroScatraPart2WC::update()
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraPart2WC::output()
 {
-  poro_field()->Output();
+  poro_field()->output();
   ScaTraField()->check_and_write_output_and_restart();
 }
 

@@ -190,7 +190,7 @@ namespace ALE
                       ALE::UTILS::MapExtractor::dbc_set_std) override;
 
     /// write output
-    void Output() override;
+    void output() override;
 
     /*! \brief Reset time step
      *

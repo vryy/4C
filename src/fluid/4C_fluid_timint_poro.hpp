@@ -73,7 +73,7 @@ namespace FLD
     \brief update configuration and output to file/screen
 
     */
-    void Output() override;
+    void output() override;
 
     /*!
     \brief Do some poro-specific stuff in assemble_mat_and_rhs
