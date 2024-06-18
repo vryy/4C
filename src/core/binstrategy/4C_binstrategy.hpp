@@ -61,7 +61,7 @@ namespace Core::IO
 /*----------------------------------------------------------------------*
  | binning strategy                                         ghamm 11/13 |
  *----------------------------------------------------------------------*/
-namespace BINSTRATEGY
+namespace Core::Binstrategy
 {
   /// forward declaration
   class Less;
@@ -129,7 +129,7 @@ namespace BINSTRATEGY
     BinningStrategy(const Teuchos::ParameterList& binning_params,
         Teuchos::RCP<Core::IO::OutputControl> output_control, const Epetra_Comm& comm,
         const int my_rank,
-        std::function<UTILS::SpecialElement(const Core::Elements::Element* element)> element_filter,
+        std::function<Utils::SpecialElement(const Core::Elements::Element* element)> element_filter,
         std::function<double(const Core::Elements::Element* element)> rigid_sphere_radius,
         std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)>
             correct_beam_center_node,
@@ -520,7 +520,7 @@ namespace BINSTRATEGY
      */
     void AssignElesToBins(Teuchos::RCP<Core::FE::Discretization> discret,
         std::map<int, std::set<int>> const& extended_bin_to_row_ele_map,
-        const std::function<UTILS::BinContentType(const Core::Elements::Element* element)>&) const;
+        const std::function<Utils::BinContentType(const Core::Elements::Element* element)>&) const;
 
     /*!
      * \brief get element of type bincontent in requested bins
@@ -531,8 +531,8 @@ namespace BINSTRATEGY
      * \param[in] roweles flag indicating to just consider elements owned by myrank
      */
     void GetBinContent(std::set<Core::Elements::Element*>& eles,
-        const std::vector<BINSTRATEGY::UTILS::BinContentType>& bincontent, std::vector<int>& binIds,
-        bool roweles = false) const;
+        const std::vector<Core::Binstrategy::Utils::BinContentType>& bincontent,
+        std::vector<int>& binIds, bool roweles = false) const;
 
     /*!
      * \brief remove all eles from bins
@@ -839,7 +839,7 @@ namespace BINSTRATEGY
     Teuchos::RCP<Epetra_Comm> comm_;
 
     //! function to get enum of elements that require special treatment
-    const std::function<UTILS::SpecialElement(const Core::Elements::Element* element)>
+    const std::function<Utils::SpecialElement(const Core::Elements::Element* element)>
         element_filter_;
 
     //! rigid_sphere_radius function to compute the radius of the rigid sphere
@@ -850,7 +850,7 @@ namespace BINSTRATEGY
     const std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)>
         correct_beam_center_node_;
 
-  };  // namespace BINSTRATEGY
+  };  // namespace Core::Binstrategy
 
   /*!
    *\brief Class for comparing Teuchos::RCP<Core::Nodes::Node> in a std::set
@@ -865,7 +865,7 @@ namespace BINSTRATEGY
     }
   };
 
-}  // namespace BINSTRATEGY
+}  // namespace Core::Binstrategy
 
 
 /*----------------------------------------------------------------------*/

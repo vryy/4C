@@ -40,7 +40,8 @@ namespace Core::Rebalance
   void RebalanceDiscretizationsByBinning(const Teuchos::ParameterList& binning_params,
       Teuchos::RCP<Core::IO::OutputControl> output_control,
       const std::vector<Teuchos::RCP<Core::FE::Discretization>>& vector_of_discretizations,
-      std::function<BINSTRATEGY::UTILS::SpecialElement(const Core::Elements::Element* element)>
+      std::function<Core::Binstrategy::Utils::SpecialElement(
+          const Core::Elements::Element* element)>
           element_filter,
       std::function<double(const Core::Elements::Element* element)> rigid_sphere_radius,
       std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)>

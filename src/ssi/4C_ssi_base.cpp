@@ -242,7 +242,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
         "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
         binning_params);
     auto element_filter = [](const Core::Elements::Element* element)
-    { return BINSTRATEGY::UTILS::SpecialElement::none; };
+    { return Core::Binstrategy::Utils::SpecialElement::none; };
     auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
     auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
     Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
@@ -682,7 +682,7 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
         "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
         binning_params);
     auto element_filter = [](const Core::Elements::Element* element)
-    { return BINSTRATEGY::UTILS::SpecialElement::none; };
+    { return Core::Binstrategy::Utils::SpecialElement::none; };
     auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
     auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
     Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
@@ -707,7 +707,7 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
         "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
         binning_params);
     auto element_filter = [](const Core::Elements::Element* element)
-    { return BINSTRATEGY::UTILS::SpecialElement::none; };
+    { return Core::Binstrategy::Utils::SpecialElement::none; };
     auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
     auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
     Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,

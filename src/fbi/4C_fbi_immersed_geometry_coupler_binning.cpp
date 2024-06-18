@@ -159,7 +159,7 @@ void FBI::FBIBinningGeometryCoupler::compute_current_positions(Core::FE::Discret
   std::set<Core::Elements::Element*> beam_element_list;
 
   binstrategy_->GetBinContent(
-      beam_element_list, {BINSTRATEGY::UTILS::BinContentType::Beam}, colbinvec, false);
+      beam_element_list, {Core::Binstrategy::Utils::BinContentType::Beam}, colbinvec, false);
 
   for (std::set<Core::Elements::Element*>::iterator element = beam_element_list.begin();
        element != beam_element_list.end(); element++)
@@ -184,7 +184,8 @@ void FBI::FBIBinningGeometryCoupler::compute_current_positions(Core::FE::Discret
 
 /*----------------------------------------------------------------------*/
 
-void FBI::FBIBinningGeometryCoupler::SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning)
+void FBI::FBIBinningGeometryCoupler::SetBinning(
+    Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning)
 {
   binstrategy_ = binning;
   binstrategy_->BinDiscret()->fill_complete(false, false, false);

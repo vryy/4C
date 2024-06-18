@@ -28,10 +28,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace BINSTRATEGY
+namespace Core::Binstrategy
 {
   class BinningStrategy;
-}  // namespace BINSTRATEGY
+}  // namespace Core::Binstrategy
 
 namespace Core::FE
 {
@@ -1396,7 +1396,8 @@ namespace Mortar
     @param[in] meanVelocity Current absolute value of the mean velocity of this interface
     @return Binning strategy object ready to be used
     */
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> setup_binning_strategy(const double meanVelocity);
+    Teuchos::RCP<Core::Binstrategy::BinningStrategy> setup_binning_strategy(
+        const double meanVelocity);
 
     //! @}
 

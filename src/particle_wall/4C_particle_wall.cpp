@@ -56,7 +56,7 @@ PARTICLEWALL::WallHandlerBase::WallHandlerBase(
 PARTICLEWALL::WallHandlerBase::~WallHandlerBase() = default;
 
 void PARTICLEWALL::WallHandlerBase::init(
-    const std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy)
+    const std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy)
 {
   // set interface to binning strategy
   binstrategy_ = binstrategy;
@@ -532,7 +532,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::extend_wall_element_ghosting(
   Teuchos::RCP<Epetra_Map> extendedelecolmap =
       binstrategy_->ExtendElementColMap(bintorowelemap, bintorowelemap, colbintoelemap, bincolmap_);
 
-  BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(
+  Core::Binstrategy::Utils::ExtendDiscretizationGhosting(
       walldiscretization_, extendedelecolmap, true, false, false);
 }
 

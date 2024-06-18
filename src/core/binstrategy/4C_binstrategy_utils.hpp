@@ -36,7 +36,7 @@ namespace Core::Nodes
   class Node;
 }
 
-namespace BINSTRATEGY::UTILS
+namespace Core::Binstrategy::Utils
 {
   /*!
    * \brief Type of elements assigned to a bin
@@ -107,7 +107,7 @@ namespace BINSTRATEGY::UTILS
           correct_beam_center_node,
       Teuchos::RCP<const Epetra_Vector> const disnp, double* currpos);
 
-}  // namespace BINSTRATEGY::UTILS
+}  // namespace Core::Binstrategy::Utils
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -174,7 +174,7 @@ namespace BEAMINTERACTION
       //!@name routines that are not derived and handle beam to beam contact
       //! @{
       /// check which contact is considered
-      bool have_contact_type(BINSTRATEGY::UTILS::BinContentType const& contacttype) const;
+      bool have_contact_type(Core::Binstrategy::Utils::BinContentType const& contacttype) const;
 
       /// print
       void print_all_beam_contact_element_pairs(std::ostream& out) const;
@@ -266,7 +266,7 @@ namespace BEAMINTERACTION
       Teuchos::RCP<Core::GeometricSearch::GeometricSearchParams> geometric_search_params_ptr_;
 
       //! element types considered for beam to ? contact
-      std::vector<BINSTRATEGY::UTILS::BinContentType> contactelementtypes_;
+      std::vector<Core::Binstrategy::Utils::BinContentType> contactelementtypes_;
 
       //! interacting pairs of beam elements that might exert forces on each other
       std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> contact_elepairs_;

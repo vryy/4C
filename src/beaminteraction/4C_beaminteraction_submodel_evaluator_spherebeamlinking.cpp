@@ -750,7 +750,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::find_and_store_neigh
 
     // set of beam elements that reside in neighboring bins
     std::set<Core::Elements::Element*> neighboring_elements;
-    std::vector<BINSTRATEGY::UTILS::BinContentType> bc(1, BINSTRATEGY::UTILS::BinContentType::Beam);
+    std::vector<Core::Binstrategy::Utils::BinContentType> bc(
+        1, Core::Binstrategy::Utils::BinContentType::Beam);
     BinStrategyPtr()->GetBinContent(neighboring_elements, bc, glob_neighboring_binIds);
 
     // -------------------------------------------------------------------------

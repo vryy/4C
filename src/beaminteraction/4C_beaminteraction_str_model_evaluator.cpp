@@ -158,11 +158,11 @@ void STR::MODELEVALUATOR::BeamInteraction::setup()
   auto element_filter = [](const Core::Elements::Element* element)
   {
     if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element))
-      return BINSTRATEGY::UTILS::SpecialElement::beam;
+      return Core::Binstrategy::Utils::SpecialElement::beam;
     else if (element->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
-      return BINSTRATEGY::UTILS::SpecialElement::rigid_sphere;
+      return Core::Binstrategy::Utils::SpecialElement::rigid_sphere;
     else
-      return BINSTRATEGY::UTILS::SpecialElement::none;
+      return Core::Binstrategy::Utils::SpecialElement::none;
   };
 
   auto rigid_sphere_radius = [](const Core::Elements::Element* element)
@@ -183,7 +183,7 @@ void STR::MODELEVALUATOR::BeamInteraction::setup()
       return node;
   };
 
-  binstrategy_ = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params,
+  binstrategy_ = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
       Global::Problem::Instance()->OutputControlFile(), ia_discret_->Comm(),
       ia_discret_->Comm().MyPID(), element_filter, rigid_sphere_radius, correct_beam_center_node,
       discret_vec, disp_vec));
@@ -559,7 +559,8 @@ void STR::MODELEVALUATOR::BeamInteraction::extend_ghosting()
       ia_state_ptr_->get_extended_bin_to_row_ele_map(), auxmap);
 
   // 2) extend ghosting of discretization
-  BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(ia_discret_, ia_elecolmap, true, false, true);
+  Core::Binstrategy::Utils::ExtendDiscretizationGhosting(
+      ia_discret_, ia_elecolmap, true, false, true);
 }
 
 /*----------------------------------------------------------------------------*

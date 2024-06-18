@@ -388,9 +388,9 @@ Teuchos::RCP<Core::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_ob
   auto element_filter = [](const Core::Elements::Element* element)
   {
     if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element))
-      return BINSTRATEGY::UTILS::SpecialElement::beam;
+      return Core::Binstrategy::Utils::SpecialElement::beam;
     else
-      return BINSTRATEGY::UTILS::SpecialElement::none;
+      return Core::Binstrategy::Utils::SpecialElement::none;
   };
   auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
   auto correct_beam_center_node = [](const Core::Nodes::Node* node)

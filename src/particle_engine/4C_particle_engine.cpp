@@ -928,10 +928,10 @@ void PARTICLEENGINE::ParticleEngine::init_binning_strategy()
       "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
       binning_params);
   auto element_filter = [](const Core::Elements::Element* element)
-  { return BINSTRATEGY::UTILS::SpecialElement::none; };
+  { return Core::Binstrategy::Utils::SpecialElement::none; };
   auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
   auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
-  binstrategy_ = std::make_shared<BINSTRATEGY::BinningStrategy>(binning_params,
+  binstrategy_ = std::make_shared<Core::Binstrategy::BinningStrategy>(binning_params,
       Global::Problem::Instance()->OutputControlFile(), comm_, comm_.MyPID(), element_filter,
       rigid_sphere_radius, correct_beam_center_node);
 }

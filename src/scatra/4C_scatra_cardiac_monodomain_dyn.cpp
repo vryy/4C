@@ -140,7 +140,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
           dis.push_back(scatradis);
 
           // binning strategy for parallel redistribution
-          Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy;
+          Teuchos::RCP<Core::Binstrategy::BinningStrategy> binningstrategy;
 
           std::vector<Teuchos::RCP<Epetra_Map>> stdelecolmap;
           std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
@@ -152,10 +152,10 @@ void scatra_cardiac_monodomain_dyn(int restart)
               "spatial_approximation_type",
               Global::Problem::Instance()->spatial_approximation_type(), binning_params);
           auto element_filter = [](const Core::Elements::Element* element)
-          { return BINSTRATEGY::UTILS::SpecialElement::none; };
+          { return Core::Binstrategy::Utils::SpecialElement::none; };
           auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
           auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
-          binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params,
+          binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
               Global::Problem::Instance()->OutputControlFile(), scatradis->Comm(),
               scatradis->Comm().MyPID(), element_filter, rigid_sphere_radius,
               correct_beam_center_node, dis));
@@ -292,7 +292,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
             dis.push_back(scatradis);
 
             // binning strategy for parallel redistribution
-            Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy;
+            Teuchos::RCP<Core::Binstrategy::BinningStrategy> binningstrategy;
 
             std::vector<Teuchos::RCP<Epetra_Map>> stdelecolmap;
             std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
@@ -304,11 +304,11 @@ void scatra_cardiac_monodomain_dyn(int restart)
                 "spatial_approximation_type",
                 Global::Problem::Instance()->spatial_approximation_type(), binning_params);
             auto element_filter = [](const Core::Elements::Element* element)
-            { return BINSTRATEGY::UTILS::SpecialElement::none; };
+            { return Core::Binstrategy::Utils::SpecialElement::none; };
 
             auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
             auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
-            binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params,
+            binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
                 Global::Problem::Instance()->OutputControlFile(), scatradis->Comm(),
                 scatradis->Comm().MyPID(), element_filter, rigid_sphere_radius,
                 correct_beam_center_node, dis));

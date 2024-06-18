@@ -354,7 +354,7 @@ namespace BEAMINTERACTION
     std::pair<int, int> CantorDePairing(long long z);
 
     //! convert element @p ele to bin content type
-    BINSTRATEGY::UTILS::BinContentType ConvertElementToBinContentType(
+    Core::Binstrategy::Utils::BinContentType ConvertElementToBinContentType(
         const Core::Elements::Element* ele);
 
   }  // namespace UTILS

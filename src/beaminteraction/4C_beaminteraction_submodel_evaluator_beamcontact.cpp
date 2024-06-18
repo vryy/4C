@@ -120,7 +120,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
           Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none)
   {
-    contactelementtypes_.push_back(BINSTRATEGY::UTILS::BinContentType::Beam);
+    contactelementtypes_.push_back(Core::Binstrategy::Utils::BinContentType::Beam);
 
     beam_contact_params_ptr_->build_beam_to_beam_contact_params();
   }
@@ -130,14 +130,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
   Discret().GetCondition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
   if (beampenaltycouplingconditions.size() > 0)
   {
-    contactelementtypes_.push_back(BINSTRATEGY::UTILS::BinContentType::Beam);
+    contactelementtypes_.push_back(Core::Binstrategy::Utils::BinContentType::Beam);
   }
 
   if (Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
           Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none)
   {
-    contactelementtypes_.push_back(BINSTRATEGY::UTILS::BinContentType::RigidSphere);
+    contactelementtypes_.push_back(Core::Binstrategy::Utils::BinContentType::RigidSphere);
 
     beam_contact_params_ptr_->build_beam_to_sphere_contact_params();
   }
@@ -150,7 +150,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
           beam_to_solid_volume_parameters, "CONTACT_DISCRETIZATION") !=
       Inpar::BeamToSolid::BeamToSolidContactDiscretization::none)
   {
-    contactelementtypes_.push_back(BINSTRATEGY::UTILS::BinContentType::Solid);
+    contactelementtypes_.push_back(Core::Binstrategy::Utils::BinContentType::Solid);
 
     beam_contact_params_ptr_->build_beam_to_solid_volume_meshtying_params();
 
@@ -181,7 +181,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
           beam_to_solid_surface_parameters, "CONTACT_DISCRETIZATION") !=
       Inpar::BeamToSolid::BeamToSolidContactDiscretization::none)
   {
-    contactelementtypes_.push_back(BINSTRATEGY::UTILS::BinContentType::Solid);
+    contactelementtypes_.push_back(Core::Binstrategy::Utils::BinContentType::Solid);
 
     beam_contact_params_ptr_->build_beam_to_solid_surface_meshtying_params();
 
@@ -212,7 +212,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
           beam_to_solid_surface_contact_parameters, "CONTACT_DISCRETIZATION") !=
       Inpar::BeamToSolid::BeamToSolidContactDiscretization::none)
   {
-    contactelementtypes_.push_back(BINSTRATEGY::UTILS::BinContentType::Solid);
+    contactelementtypes_.push_back(Core::Binstrategy::Utils::BinContentType::Solid);
 
     beam_contact_params_ptr_->build_beam_to_solid_surface_contact_params();
   }
@@ -719,7 +719,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
       dynamic_cast<const Epetra_MpiComm*>(&(Discret().Comm()))->Comm());
 
   // i) beam to beam contact
-  if (have_contact_type(BINSTRATEGY::UTILS::BinContentType::Beam))
+  if (have_contact_type(Core::Binstrategy::Utils::BinContentType::Beam))
   {
     // safety factor
     globalmax_beam_ia_distance *= safe_fac;
@@ -735,7 +735,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
   }
 
   // ii) beam to sphere contact
-  if (have_contact_type(BINSTRATEGY::UTILS::BinContentType::RigidSphere))
+  if (have_contact_type(Core::Binstrategy::Utils::BinContentType::RigidSphere))
   {
     // loop over all spheres
     double curr_ia_dist = 0.0;
@@ -772,7 +772,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
   }
 
   // iii) beam to solid contact
-  if (have_contact_type(BINSTRATEGY::UTILS::BinContentType::Solid))
+  if (have_contact_type(Core::Binstrategy::Utils::BinContentType::Solid))
   {
     FOUR_C_THROW("Not yet implemented for beam to solid contact");
   }
@@ -781,7 +781,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::have_contact_type(
-    BINSTRATEGY::UTILS::BinContentType const& contacttype) const
+    Core::Binstrategy::Utils::BinContentType const& contacttype) const
 {
   check_init();
   return (std::find(contactelementtypes_.begin(), contactelementtypes_.end(), contacttype) !=
@@ -868,7 +868,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
     {
       // Check if the current element is relevant for beam-to-xxx contact.
       Core::Elements::Element* currele = Discret().lColElement(colele_i);
-      const BINSTRATEGY::UTILS::BinContentType contact_type =
+      const Core::Binstrategy::Utils::BinContentType contact_type =
           BEAMINTERACTION::UTILS::ConvertElementToBinContentType(currele);
       if (std::find(contactelementtypes_.begin(), contactelementtypes_.end(), contact_type) !=
           contactelementtypes_.end())

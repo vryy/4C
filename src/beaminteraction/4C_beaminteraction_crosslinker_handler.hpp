@@ -53,7 +53,7 @@ namespace BEAMINTERACTION
     BeamCrosslinkerHandler();
 
     /// initialize linker handler
-    void init(int myrank, Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy);
+    void init(int myrank, Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy);
 
     /// setup linker handler
     void setup();
@@ -62,12 +62,15 @@ namespace BEAMINTERACTION
     virtual ~BeamCrosslinkerHandler() = default;
 
     /// get binning strategy
-    virtual inline Teuchos::RCP<BINSTRATEGY::BinningStrategy>& BinStrategy()
+    virtual inline Teuchos::RCP<Core::Binstrategy::BinningStrategy>& BinStrategy()
     {
       return binstrategy_;
     }
 
-    virtual inline BINSTRATEGY::BinningStrategy const& BinStrategy() const { return *binstrategy_; }
+    virtual inline Core::Binstrategy::BinningStrategy const& BinStrategy() const
+    {
+      return *binstrategy_;
+    }
 
     /// initial distribution of linker ( more general nodes of bindis_ ) to bins
     virtual void distribute_linker_to_bins(Teuchos::RCP<Epetra_Map> const& linkerrowmap);
@@ -120,7 +123,7 @@ namespace BEAMINTERACTION
 
    private:
     /// binning strategy
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
+    Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy_;
 
     /// myrank
     int myrank_;

@@ -27,7 +27,7 @@ namespace Adapter
   class ConstraintEnforcerFactory;
 }
 
-namespace BINSTRATEGY
+namespace Core::Binstrategy
 {
   class BinningStrategy;
 }
@@ -63,7 +63,7 @@ namespace FBI
      *
      * \param[in] binning binning strategy
      */
-    virtual void SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning);
+    virtual void SetBinning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning);
 
     /** \brief Setup the Geoemtry object
      *

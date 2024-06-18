@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::MeshFree
+namespace Core::FE::MeshFree
 {
   /*--------------------------------------------------------------------------*/
   /*!
@@ -100,7 +100,7 @@ namespace Discret::MeshFree
      * Makes a deep copy of a meshfree multibin
      *///                                                  (public) ghamm 04/13
     /*------------------------------------------------------------------------*/
-    MeshfreeMultiBin(const Discret::MeshFree::MeshfreeMultiBin& old);
+    MeshfreeMultiBin(const Core::FE::MeshFree::MeshfreeMultiBin& old);
 
     /*------------------------------------------------------------------------*/
     /*!
@@ -181,7 +181,7 @@ namespace Discret::MeshFree
      *///                                                  (public) ghamm 04/13
     /*------------------------------------------------------------------------*/
     inline const std::vector<Core::Elements::Element*>& AssociatedEles(
-        BINSTRATEGY::UTILS::BinContentType bin_content)
+        Core::Binstrategy::Utils::BinContentType bin_content)
     {
       return associated_ele_[bin_content];
     }
@@ -191,9 +191,9 @@ namespace Discret::MeshFree
      * \brief Add an associated element to this bin
      *///                                                  (public) ghamm 04/13
     /*------------------------------------------------------------------------*/
-    inline virtual void AddAssociatedEle(
-        BINSTRATEGY::UTILS::BinContentType bin_content,  //!< (in): type of element to be added
-        Core::Elements::Element* eleptr                  //!< (in): pointer to element to be added
+    inline virtual void AddAssociatedEle(Core::Binstrategy::Utils::BinContentType
+                                             bin_content,  //!< (in): type of element to be added
+        Core::Elements::Element* eleptr                    //!< (in): pointer to element to be added
     )
     {
       associated_ele_[bin_content].emplace_back(eleptr);
@@ -240,12 +240,12 @@ namespace Discret::MeshFree
     Core::FE::CellType Shape() const override { return Core::FE::CellType::dis_none; };
 
    private:
-    std::map<BINSTRATEGY::UTILS::BinContentType, std::vector<Core::Elements::Element*>>
+    std::map<Core::Binstrategy::Utils::BinContentType, std::vector<Core::Elements::Element*>>
         associated_ele_;
 
   };  // class MeshfreeMultiBin
 
-}  // namespace Discret::MeshFree
+}  // namespace Core::FE::MeshFree
 
 
 FOUR_C_NAMESPACE_CLOSE
