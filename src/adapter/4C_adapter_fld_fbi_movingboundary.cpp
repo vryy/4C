@@ -58,7 +58,7 @@ void Adapter::FBIFluidMB::prepare_time_step() { fluid_field()->prepare_time_step
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FBIFluidMB::Update() { fluid_field()->Update(); }
+void Adapter::FBIFluidMB::update() { fluid_field()->update(); }
 
 
 /*----------------------------------------------------------------------*/

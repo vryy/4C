@@ -44,7 +44,7 @@ namespace PoroElast
         bool firstiter = false) override;
 
     //! use monolithic update and set old meshtying quantities at the end of a timestep
-    void Update() override;
+    void update() override;
 
     //! Recover Lagrange Multiplier after Newton step
     void recover_lagrange_multiplier_after_newton_step(

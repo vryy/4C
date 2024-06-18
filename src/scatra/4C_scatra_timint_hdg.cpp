@@ -274,9 +274,9 @@ void ScaTra::TimIntHDG::set_old_part_of_righthandside()
 /*----------------------------------------------------------------------*
  * Update
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntHDG::Update()
+void ScaTra::TimIntHDG::update()
 {
-  ScaTra::TimIntGenAlpha::Update();
+  ScaTra::TimIntGenAlpha::update();
 
   // concentrations of this step become most recent
   // concentrations of the last step

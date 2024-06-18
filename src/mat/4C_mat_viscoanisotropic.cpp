@@ -362,7 +362,7 @@ void Mat::ViscoAnisotropic::setup(const int numgp, const std::vector<double> thi
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoAnisotropic::Update()
+void Mat::ViscoAnisotropic::update()
 {
   // make current values to values of last step
   histstresslast_ = histstresscurr_;

@@ -234,7 +234,7 @@ namespace FLD
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
-    void Update() override = 0;
+    void update() override = 0;
     void StatisticsAndOutput() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");

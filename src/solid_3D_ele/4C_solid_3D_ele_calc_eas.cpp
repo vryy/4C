@@ -862,7 +862,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Update(
         solid_material.Update(consistent_defgrd, gp, params, ele.Id());
       });
 
-  solid_material.Update();
+  solid_material.update();
 }
 
 template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>

@@ -267,10 +267,10 @@ void ScaTra::TimIntBDF2::compute_time_derivative()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntBDF2::Update()
+void ScaTra::TimIntBDF2::update()
 {
   // call base class routine
-  ScaTraTimIntImpl::Update();
+  ScaTraTimIntImpl::update();
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!

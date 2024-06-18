@@ -2930,7 +2930,7 @@ void ScaTra::MeshtyingStrategyS2I::compute_time_derivative() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2I::Update() const
+void ScaTra::MeshtyingStrategyS2I::update() const
 {
   // only relevant for monolithic evaluation of scatra-scatra interface layer growth
   if (intlayergrowth_evaluation_ == Inpar::S2I::growth_evaluation_monolithic)

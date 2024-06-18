@@ -707,8 +707,8 @@ void EHL::Base::update()
   mortaradapter_->Interface()->StoreToOld(Mortar::StrategyBase::n_old);
   mortaradapter_->Interface()->StoreToOld(Mortar::StrategyBase::dm);
   mortaradapter_->Interface()->StoreToOld(Mortar::StrategyBase::activeold);
-  structure_field()->Update();
-  lubrication_->LubricationField()->Update();
+  structure_field()->update();
+  lubrication_->LubricationField()->update();
 
   return;
 }

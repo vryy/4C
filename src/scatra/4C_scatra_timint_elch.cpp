@@ -806,7 +806,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_error_compared_to_analytical_sol()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElch::Update()
+void ScaTra::ScaTraTimIntElch::update()
 {
   // perform update of time-dependent electrode variables
   electrode_kinetics_time_update();

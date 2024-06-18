@@ -176,8 +176,8 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 void TSI::Algorithm::update()
 {
   apply_thermo_coupling_state(ThermoField()->Tempnp());
-  structure_field()->Update();
-  ThermoField()->Update();
+  structure_field()->update();
+  ThermoField()->update();
   if (contact_strategy_lagrange_ != Teuchos::null)
     contact_strategy_lagrange_->Update((structure_field()->Dispnp()));
   return;

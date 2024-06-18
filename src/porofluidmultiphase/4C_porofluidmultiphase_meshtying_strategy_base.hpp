@@ -56,7 +56,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void prepare_time_step() = 0;
 
     //! update
-    virtual void Update() = 0;
+    virtual void update() = 0;
 
     //! output
     virtual void Output() = 0;

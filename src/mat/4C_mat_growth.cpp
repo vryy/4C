@@ -288,7 +288,7 @@ void Mat::Growth::setup(int numgp, Input::LineDefinition* linedef)
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::Growth::Update()
+void Mat::Growth::update()
 {
   const int numgp = theta_->size();
 
@@ -297,7 +297,7 @@ void Mat::Growth::Update()
     thetaold_->at(i) = theta_->at(i);
   }
 
-  matelastic_->Update();
+  matelastic_->update();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1034,7 +1034,7 @@ void Mat::GrowthVolumetric::setup(int numgp, Input::LineDefinition* linedef)
 
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthVolumetric::Update()
+void Mat::GrowthVolumetric::update()
 {
   const int numgp = theta_->size();
 
@@ -1064,7 +1064,7 @@ void Mat::GrowthVolumetric::Update()
   }
 
   // update base class
-  Growth::Update();
+  Growth::update();
 }
 
 

@@ -376,7 +376,7 @@ int Discret::ELEMENTS::SoSh8p8::evaluate(Teuchos::ParameterList& params,
         Core::LinAlg::SerialDenseMatrix* oldfeas = &easdata_.feas;
         oldfeas->putScalar(0.0);
       }
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
     }
     break;
 

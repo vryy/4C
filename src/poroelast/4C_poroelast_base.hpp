@@ -193,7 +193,7 @@ namespace PoroElast
     void prepare_time_step() override;
 
     //! take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     //! calculate stresses, strains, energies
     void prepare_output(bool force_prepare_timestep) override;

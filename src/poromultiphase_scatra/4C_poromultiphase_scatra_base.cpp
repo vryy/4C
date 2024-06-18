@@ -252,13 +252,13 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::update_and_output()
   poromulti_->update_and_output();
 
   // scatra field
-  scatra_->ScaTraField()->Update();
+  scatra_->ScaTraField()->update();
   scatra_->ScaTraField()->evaluate_error_compared_to_analytical_sol();
   scatra_->ScaTraField()->check_and_write_output_and_restart();
   // artery scatra field
   if (artery_coupl_)
   {
-    scatramsht_->ArtScatraField()->Update();
+    scatramsht_->ArtScatraField()->update();
     scatramsht_->ArtScatraField()->evaluate_error_compared_to_analytical_sol();
     scatramsht_->ArtScatraField()->check_and_write_output_and_restart();
   }

@@ -528,7 +528,7 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
 
 
 /// update after converged time step
-void Mat::PlasticElastHyperVCU::Update()
+void Mat::PlasticElastHyperVCU::update()
 {
   // update local history data F_n <-- F_{n+1}
   for (unsigned gp = 0; gp < last_plastic_defgrd_inverse_.size(); ++gp)

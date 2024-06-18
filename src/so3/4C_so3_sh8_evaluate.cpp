@@ -368,7 +368,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         oldfeas->putScalar(0.0);
       }
       // Update of history for materials
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
     }
     break;
 

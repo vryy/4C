@@ -68,7 +68,7 @@ namespace Adapter
     double TimeScaling() const override;
 
     /// take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     /// get the linear solver object used for this field
     Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override;

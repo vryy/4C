@@ -307,10 +307,10 @@ void PoroElast::PoroBase::prepare_time_step()
   fluid_field()->prepare_time_step();
 }
 
-void PoroElast::PoroBase::Update()
+void PoroElast::PoroBase::update()
 {
-  structure_field()->Update();
-  fluid_field()->Update();
+  structure_field()->update();
+  fluid_field()->update();
   // clean up as soon as old time integration is unused!
   if (oldstructimint_)
   {

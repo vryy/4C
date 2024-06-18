@@ -388,7 +388,7 @@ namespace ScaTra
     virtual void PostSolve(){};
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
-    virtual void Update();
+    virtual void update();
 
     /*!
      * @brief apply moving mesh data

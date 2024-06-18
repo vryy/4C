@@ -163,7 +163,7 @@ namespace Mat
     void Output();
 
     // Update state vectors
-    void Update() override;
+    void update() override;
 
     /// Read restart of micro scale on a processor with macro scale
     void read_restart(const int gp, const int eleID, const bool eleowner);

@@ -124,7 +124,7 @@ namespace Adapter
     virtual void Output() = 0;
 
     //! update the solution after convergence of the nonlinear iteration.
-    virtual void Update() = 0;
+    virtual void update() = 0;
 
     //! calculate error compared to analytical solution
     virtual void evaluate_error_compared_to_analytical_sol() = 0;

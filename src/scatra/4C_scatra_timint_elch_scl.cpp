@@ -238,11 +238,11 @@ void ScaTra::ScaTraTimIntElchSCL::prepare_time_step()
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElchSCL::Update()
+void ScaTra::ScaTraTimIntElchSCL::update()
 {
-  ScaTraTimIntElch::Update();
+  ScaTraTimIntElch::update();
 
-  MicroScaTraField()->Update();
+  MicroScaTraField()->update();
 }
 
 /*------------------------------------------------------------------------------*

@@ -132,7 +132,7 @@ namespace Mat
       virtual void post_setup(Teuchos::ParameterList& params){};
 
       //! Dummy routine for setup update of summand
-      virtual void Update() { return; };
+      virtual void update() { return; };
 
       //! add strain energy
       virtual void AddStrainEnergy(double& psi,  ///< strain energy functions

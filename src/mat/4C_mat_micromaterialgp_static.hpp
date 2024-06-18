@@ -60,7 +60,7 @@ namespace Mat
     void perform_micro_simulation(Core::LinAlg::Matrix<3, 3>* defgrd,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat);
 
-    void Update();
+    void update();
 
     /// Calculate stresses and strains on the micro-scale
     void prepare_output();

@@ -159,7 +159,7 @@ double Adapter::FluidFSI::TimeScaling() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidFSI::Update()
+void Adapter::FluidFSI::update()
 {
   if (Global::Problem::Instance()->spatial_approximation_type() !=
       Core::FE::ShapeFunctionType::hdg)  // TODO als fix this!
@@ -169,7 +169,7 @@ void Adapter::FluidFSI::Update()
     interfaceforcen_ = fluidimpl_->ExtrapolateEndPoint(interfaceforcen_, interfaceforcem);
   }
 
-  FluidWrapper::Update();
+  FluidWrapper::update();
 }
 
 

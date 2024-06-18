@@ -294,7 +294,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
             (*alphao).values(),
             1);  // alphao := alpha
       }
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
       break;
     }
     //==================================================================================

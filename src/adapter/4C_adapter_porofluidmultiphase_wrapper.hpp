@@ -122,7 +122,7 @@ namespace Adapter
     void Output() override;
 
     //! update the solution after convergence of the nonlinear iteration.
-    void Update() override;
+    void update() override;
 
     //! calculate error compared to analytical solution
     void evaluate_error_compared_to_analytical_sol() override;

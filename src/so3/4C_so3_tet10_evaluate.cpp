@@ -309,7 +309,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
           // Update constraintmixture material
           if (Material()->MaterialType() == Core::Materials::m_constraintmixture)
           {
-            SolidMaterial()->Update();
+            SolidMaterial()->update();
           }
           break;
         }
@@ -1598,7 +1598,7 @@ void Discret::ELEMENTS::SoTet10::update_element(std::vector<double>& disp,
     }
   }
   // Update of history for materials
-  SolidMaterial()->Update();
+  SolidMaterial()->update();
 }
 
 FOUR_C_NAMESPACE_CLOSE

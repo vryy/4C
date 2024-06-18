@@ -845,14 +845,14 @@ bool LowMach::Algorithm::convergence_check(int itnum)
 void LowMach::Algorithm::time_update()
 {
   // update scalar
-  ScaTraField()->Update();
+  ScaTraField()->update();
 
   // in case of non-constant thermodynamic pressure: update
   if (consthermpress_ == "No_energy" or consthermpress_ == "No_mass")
     Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(ScaTraField())->UpdateThermPressure();
 
   // update fluid
-  fluid_field()->Update();
+  fluid_field()->update();
 
   return;
 }

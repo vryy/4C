@@ -272,7 +272,7 @@ namespace STR
     }
 
     /// has to be renamed either here or update_step_state() /UpdateStepStateElement()
-    void Update() override
+    void update() override
     {
       PreUpdate();
       UpdateStepState();

@@ -306,7 +306,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
           // Update constraintmixture material
           if (Material()->MaterialType() == Core::Materials::m_constraintmixture)
           {
-            SolidMaterial()->Update();
+            SolidMaterial()->update();
           }
           break;
         }
@@ -566,7 +566,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
       }
 
       // Update of history for materials
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
     }
     break;
 

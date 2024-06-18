@@ -97,7 +97,7 @@ void Adapter::FluidFluidFSI::Solve()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidFluidFSI::Update()
+void Adapter::FluidFluidFSI::update()
 {
   if (Interface()->FSICondRelevant() && IsAleRelaxationStep(Step()) &&
       (monolithic_approach_ == Inpar::XFEM::XFFSI_FixedALE_Partitioned ||
@@ -125,7 +125,7 @@ void Adapter::FluidFluidFSI::Update()
     prepare_shape_derivatives();
   }
 
-  FluidWrapper::Update();
+  FluidWrapper::update();
 }
 
 /*----------------------------------------------------------------------*/
@@ -178,7 +178,7 @@ void Adapter::FluidFluidFSI::evaluate(
   // call the usual routine
   xfluidfluid_->evaluate(stepinc);
 
-  // for fixed ALE approach, we only refresh the global fluid map extractor in Update()
+  // for fixed ALE approach, we only refresh the global fluid map extractor in update()
   if (monolithic_approach_ != Inpar::XFEM::XFFSI_Full_Newton) return;
 
   // this is the case of a full Newton approach: update the map extractor, as fluid DOFs possibly

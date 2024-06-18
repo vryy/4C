@@ -155,7 +155,7 @@ void PoroElast::Monolithic::do_time_step()
   prepare_output(force_prepare);
 
   // update all single field solvers
-  Update();
+  update();
 
   // write output to screen and files
   Output();

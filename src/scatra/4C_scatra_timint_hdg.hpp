@@ -45,7 +45,7 @@ namespace ScaTra
 
     //! update the solution after convergence of the nonlinear iteration,
     //! current solution becomes old solution of next time step
-    void Update() override;
+    void update() override;
 
     //  //! Initialization procedure before the first time step is done
     //  void prepare_first_time_step ();

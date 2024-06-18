@@ -488,7 +488,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::TimeLoop()
     //                         update solution
     //        current solution becomes old solution of next timestep
     // -------------------------------------------------------------------
-    Update();
+    update();
 
     // -------------------------------------------------------------------
     // evaluate error for problems with analytical solution
@@ -532,7 +532,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Solve()
 /*----------------------------------------------------------------------*
  | contains the call of linear/nonlinear solver             vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::Update() { strategy_->Update(); }
+void POROFLUIDMULTIPHASE::TimIntImpl::update() { strategy_->update(); }
 
 
 /*----------------------------------------------------------------------*

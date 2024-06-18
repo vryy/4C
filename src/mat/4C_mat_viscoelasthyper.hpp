@@ -197,7 +197,7 @@ namespace Mat
     void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// update history variables
-    void Update() override;
+    void update() override;
 
    protected:
     /// calculates the kinematic quantities and tensors used afterwards for viscous part

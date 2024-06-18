@@ -53,7 +53,7 @@ namespace ScaTra
     void evaluate_point_coupling() override;
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
-    void Update() const override;
+    void update() const override;
 
    private:
     //! copy constructor

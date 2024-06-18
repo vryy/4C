@@ -438,7 +438,7 @@ namespace FLD
     virtual void time_update_external_forces();
 
     /// Implement Adapter::Fluid
-    void Update() override { TimeUpdate(); }
+    void update() override { TimeUpdate(); }
 
     //! @name Time step size adaptivity in monolithic FSI
     //@{

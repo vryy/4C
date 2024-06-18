@@ -53,7 +53,7 @@ int Adapter::StructureTimeLoop::Integrate()
       // update time and step
       // update everything on the element level
       PreUpdate();
-      Update();
+      update();
       post_update();
 
       // write output

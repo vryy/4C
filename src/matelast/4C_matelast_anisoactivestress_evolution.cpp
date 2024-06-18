@@ -217,7 +217,7 @@ void Mat::Elastic::AnisoActiveStressEvolution::GetFiberVecs(
 }
 
 // Update internal stress variables
-void Mat::Elastic::AnisoActiveStressEvolution::Update() { tauc_n_ = tauc_np_; }
+void Mat::Elastic::AnisoActiveStressEvolution::update() { tauc_n_ = tauc_np_; }
 
 void Mat::Elastic::AnisoActiveStressEvolution::SetFiberVecs(const double newgamma,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)

@@ -166,7 +166,7 @@ void Mat::ViscoPlasticNoYieldSurface::setup(const int numgp, Input::LineDefiniti
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoPlasticNoYieldSurface::Update()
+void Mat::ViscoPlasticNoYieldSurface::update()
 {
   // this update is done after the global newton loop is converged
   last_plastic_defgrd_inverse_ = current_plastic_defgrd_inverse_;

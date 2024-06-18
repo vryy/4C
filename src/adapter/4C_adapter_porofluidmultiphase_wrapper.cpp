@@ -195,7 +195,7 @@ void Adapter::PoroFluidMultiphaseWrapper::Output() { porofluid_->Output(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::PoroFluidMultiphaseWrapper::Update() { porofluid_->Update(); }
+void Adapter::PoroFluidMultiphaseWrapper::update() { porofluid_->update(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

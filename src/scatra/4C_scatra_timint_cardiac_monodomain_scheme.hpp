@@ -41,7 +41,7 @@ namespace ScaTra
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update() override;
+    void update() override;
 
     //! read restart data
     void read_restart(
@@ -76,7 +76,7 @@ namespace ScaTra
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update() override;
+    void update() override;
 
     //! read restart data
     void read_restart(
@@ -108,7 +108,7 @@ namespace ScaTra
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update() override;
+    void update() override;
 
     //! read restart data
     void read_restart(

@@ -302,7 +302,7 @@ void Mat::SuperElasticSMA::setup(int numgp, Input::LineDefinition* linedef)
 /*----------------------------------------------------------------------*
  | update internal variables                              hemmler 09/16 |
  *----------------------------------------------------------------------*/
-void Mat::SuperElasticSMA::Update()
+void Mat::SuperElasticSMA::update()
 {
   druckerpragerloadinglast_ = druckerpragerloadingcurr_;
   xi_s_last_ = xi_s_curr_;
@@ -321,7 +321,7 @@ void Mat::SuperElasticSMA::Update()
     xi_s_curr_->at(i) = 0.0;
   }
   return;
-}  // Update()
+}  // update()
 
 
 /*----------------------------------------------------------------------*

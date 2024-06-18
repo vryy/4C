@@ -229,7 +229,7 @@ namespace Mat
     void setup(int numgp, Input::LineDefinition* linedef) override;
 
     //! update internal stress variables
-    void Update() override;
+    void update() override;
 
     //! evaluate material law
     void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,

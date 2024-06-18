@@ -1332,8 +1332,8 @@ void TSI::Partitioned::prepare_contact_strategy()
  *----------------------------------------------------------------------*/
 void TSI::Partitioned::update()
 {
-  structure_field()->Update();
-  ThermoField()->Update();
+  structure_field()->update();
+  ThermoField()->update();
   if (contact_strategy_lagrange_ != Teuchos::null)
     contact_strategy_lagrange_->Update((structure_field()->Dispnp()));
 }

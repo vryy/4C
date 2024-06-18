@@ -844,7 +844,7 @@ namespace STR
     }
 
     //! Update routine for coupled problems with monolithic approach
-    void Update() override
+    void update() override
     {
       PreUpdate();
       UpdateStepState();

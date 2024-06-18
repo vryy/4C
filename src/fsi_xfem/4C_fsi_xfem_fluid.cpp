@@ -84,7 +84,7 @@ void FSI::FluidXFEMAlgorithm::solve() { MBFluidField()->nonlinear_solve(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidXFEMAlgorithm::update() { MBFluidField()->Update(); }
+void FSI::FluidXFEMAlgorithm::update() { MBFluidField()->update(); }
 
 
 /*----------------------------------------------------------------------*/

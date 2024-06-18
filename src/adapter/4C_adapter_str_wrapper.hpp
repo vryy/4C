@@ -310,7 +310,7 @@ namespace Adapter
     void evaluate() override { structure_->evaluate(); }
 
     /// update at time step end
-    void Update() override { structure_->Update(); }
+    void update() override { structure_->update(); }
 
     /// update at time step end
     void Update(const double endtime) override { structure_->Update(endtime); }

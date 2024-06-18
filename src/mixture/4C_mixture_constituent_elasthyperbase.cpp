@@ -190,7 +190,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::update(Core::LinAlg::Matrix<3, 3
   MixtureConstituent::update(defgrd, params, gp, eleGID);
 
   // loop map of associated potential summands
-  for (auto& summand : potsum_) summand->Update();
+  for (auto& summand : potsum_) summand->update();
 
   // do nothing in the default case
   if (params_->get_prestressing_mat_id() > 0)

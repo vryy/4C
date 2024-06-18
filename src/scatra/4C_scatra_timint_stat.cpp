@@ -205,10 +205,10 @@ void ScaTra::TimIntStationary::read_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntStationary::Update()
+void ScaTra::TimIntStationary::update()
 {
   // call base class routine
-  ScaTraTimIntImpl::Update();
+  ScaTraTimIntImpl::update();
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!

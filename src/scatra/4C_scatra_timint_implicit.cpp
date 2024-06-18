@@ -1536,7 +1536,7 @@ void ScaTra::ScaTraTimIntImpl::TimeLoop()
     //                         update solution
     //        current solution becomes old solution of next timestep
     // -------------------------------------------------------------------
-    Update();
+    update();
 
     // -------------------------------------------------------------------
     // evaluate error for problems with analytical solution
@@ -1605,10 +1605,10 @@ void ScaTra::ScaTraTimIntImpl::Solve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntImpl::Update()
+void ScaTra::ScaTraTimIntImpl::update()
 {
   // update quantities associated with meshtying strategy
-  strategy_->Update();
+  strategy_->update();
 }
 
 /*----------------------------------------------------------------------*
@@ -1687,7 +1687,7 @@ void ScaTra::ScaTraTimIntImpl::WriteResult()
   // write output to Gmsh postprocessing files
   if (outputgmsh_) output_to_gmsh(step_, time_);
 
-  // write flux vector field (only writing, calculation was done during Update() call)
+  // write flux vector field (only writing, calculation was done during update() call)
   if (calcflux_domain_ != Inpar::ScaTra::flux_none or
       calcflux_boundary_ != Inpar::ScaTra::flux_none)
   {

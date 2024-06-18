@@ -1559,7 +1559,7 @@ void Discret::ELEMENTS::Membrane<distype>::update_element(std::vector<double>& d
     }
   }
 
-  SolidMaterial()->Update();
+  SolidMaterial()->update();
 
   return;
 }

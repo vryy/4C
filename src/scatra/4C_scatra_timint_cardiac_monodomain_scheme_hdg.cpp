@@ -49,13 +49,13 @@ void ScaTra::TimIntCardiacMonodomainHDG::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainHDG::Update()
+void ScaTra::TimIntCardiacMonodomainHDG::update()
 {
   // time update of myocard material
   element_material_time_update();
 
   // Standard Update
-  TimIntHDG::Update();
+  TimIntHDG::update();
 }
 
 /*----------------------------------------------------------------------*

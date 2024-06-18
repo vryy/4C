@@ -874,7 +874,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Update(Core::Elements::Eleme
           }
         });
   }
-  solid_material.Update();
+  solid_material.update();
 }
 
 template <Core::FE::CellType distype>

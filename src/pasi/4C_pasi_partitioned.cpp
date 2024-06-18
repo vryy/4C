@@ -219,7 +219,7 @@ void PaSI::PartitionedAlgo::struct_output()
   structurefield_->prepare_output(force_prepare);
 
   // update all single field solvers
-  structurefield_->Update();
+  structurefield_->update();
 
   // write output
   structurefield_->Output();

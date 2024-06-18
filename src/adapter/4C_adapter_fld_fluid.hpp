@@ -303,7 +303,7 @@ namespace Adapter
     virtual void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment) = 0;
 
     /// update at end of time step
-    virtual void Update() = 0;
+    virtual void update() = 0;
 
     /// update velocity increment after Newton step
     virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel) = 0;

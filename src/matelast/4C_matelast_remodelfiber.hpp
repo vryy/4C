@@ -391,7 +391,7 @@ namespace Mat
       };
 
       /// Update of summand
-      void Update() override;
+      void update() override;
 
       /*!
        * \brief Register anisotropy extensions to be passed to all summands

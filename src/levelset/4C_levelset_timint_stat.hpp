@@ -65,7 +65,7 @@ namespace ScaTra
 
     /// update the solution after Solve()
     /// extended version for coupled level-set problems including reinitialization
-    void Update() override
+    void update() override
     {
       FOUR_C_THROW("You should not need this function!");
       return;

@@ -141,7 +141,7 @@ void Mat::PlasticDruckerPrager::setup(int numgp, Input::LineDefinition* linedef)
   isinit_ = true;
 }
 
-void Mat::PlasticDruckerPrager::Update()
+void Mat::PlasticDruckerPrager::update()
 {
   strainpllast_ = strainplcurr_;
   strainbarpllast_ = strainbarplcurr_;

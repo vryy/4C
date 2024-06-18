@@ -253,7 +253,7 @@ void STR::TimeInt::Base::resize_m_step_tim_ada()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Base::Update()
+void STR::TimeInt::Base::update()
 {
   check_init_setup();
   int_ptr_->pre_update();

@@ -283,7 +283,7 @@ namespace ScaTra
     const Core::LinAlg::Solver& Solver() const override;
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
-    void Update() const override;
+    void update() const override;
 
     //! write integrated interface flux on slave side of s2i kintetics condition to csv file
     void OutputInterfaceFlux() const;

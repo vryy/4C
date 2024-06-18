@@ -237,7 +237,7 @@ namespace THR
     void UpdateStepElement() override = 0;
 
     //! update time step
-    void Update() override;
+    void update() override;
 
     //! update Newton step
     void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi) override;

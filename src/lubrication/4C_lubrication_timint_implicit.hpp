@@ -141,7 +141,7 @@ namespace LUBRICATION
     virtual void Solve();
 
     //! update the solution after convergence of the nonlinear iteration.
-    virtual void Update(const int num = 0  //!< field number
+    virtual void update(const int num = 0  //!< field number
         ) = 0;
 
     //! apply moving mesh data

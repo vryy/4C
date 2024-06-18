@@ -376,8 +376,8 @@ void ScaTra::ScaTraAlgorithm::outer_iteration_convection()
 /*----------------------------------------------------------------------*/
 void ScaTra::ScaTraAlgorithm::update()
 {
-  fluid_field()->Update();
-  ScaTraField()->Update();
+  fluid_field()->update();
+  ScaTraField()->update();
 }
 
 /*----------------------------------------------------------------------*/
@@ -385,8 +385,8 @@ void ScaTra::ScaTraAlgorithm::update()
 void ScaTra::ScaTraAlgorithm::update_convection()
 {
   // update scatra and fluid fields
-  ScaTraField()->Update();
-  fluid_field()->Update();
+  ScaTraField()->update();
+  fluid_field()->update();
 }
 
 /*----------------------------------------------------------------------*/

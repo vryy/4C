@@ -526,7 +526,7 @@ void Mat::ConstraintMixture::ResetAll(const int numgp)
 /*----------------------------------------------------------------------*
  |  Update internal variables                     (public)         12/10|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::Update()
+void Mat::ConstraintMixture::update()
 {
   // set mass of damaged collagen to zero
   // has to be done before history vector is changed

@@ -197,7 +197,7 @@ void Mat::ViscoNeoHooke::setup(int numgp, Input::LineDefinition* linedef)
 /*----------------------------------------------------------------------*
  |  Update internal stress variables              (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoNeoHooke::Update()
+void Mat::ViscoNeoHooke::update()
 {
   histstresslast_ = histstresscurr_;
   artstresslast_ = artstresscurr_;

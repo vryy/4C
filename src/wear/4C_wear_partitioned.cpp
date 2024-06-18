@@ -380,10 +380,10 @@ void Wear::Partitioned::prepare_time_step()
 void Wear::Partitioned::update()
 {
   // update at time step
-  structure_field()->Update();
+  structure_field()->update();
 
   // update
-  ale_field().Update();
+  ale_field().update();
 
   return;
 }

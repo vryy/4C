@@ -402,9 +402,9 @@ void Mat::ViscoElastHyper::setup(int numgp, Input::LineDefinition* linedef)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoElastHyper::Update()
+void Mat::ViscoElastHyper::update()
 {
-  Mat::ElastHyper::Update();
+  Mat::ElastHyper::update();
 
   // Update history values 09/13
   histscglast_ = histscgcurr_;

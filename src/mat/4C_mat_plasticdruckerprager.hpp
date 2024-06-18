@@ -109,7 +109,7 @@ namespace Mat
       return Teuchos::rcp(new PlasticDruckerPrager(*this));
     }
     void setup(int numgp, Input::LineDefinition* linedef) override;
-    void Update() override;
+    void update() override;
     /**
      * \brief Evaulate the stresses from the strains in the material
      *

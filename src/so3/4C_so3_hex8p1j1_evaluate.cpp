@@ -215,7 +215,7 @@ int Discret::ELEMENTS::SoHex8P1J1::evaluate(Teuchos::ParameterList& params,
       t_o_(0, 0) = t_(0, 0);
 
       // Update of history for materials
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
     }
     break;
 

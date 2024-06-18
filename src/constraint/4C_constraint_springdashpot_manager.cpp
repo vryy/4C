@@ -67,10 +67,10 @@ void CONSTRAINTS::SpringDashpotManager::stiffness_and_internal_forces(
   return;
 }
 
-void CONSTRAINTS::SpringDashpotManager::Update()
+void CONSTRAINTS::SpringDashpotManager::update()
 {
   // update all spring dashpot conditions for each new time step
-  for (int i = 0; i < n_conds_; ++i) springs_[i]->Update();
+  for (int i = 0; i < n_conds_; ++i) springs_[i]->update();
 
   return;
 }

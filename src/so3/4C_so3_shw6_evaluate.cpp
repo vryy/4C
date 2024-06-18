@@ -217,7 +217,7 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
         // alphao := alpha
         Core::LinAlg::DenseFunctions::update<double, soshw6_easpoisthick, 1>(*alphao, *alpha);
       }
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
     }
     break;
 

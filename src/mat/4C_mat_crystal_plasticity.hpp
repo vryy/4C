@@ -383,7 +383,7 @@ namespace Mat
     void setup_lattice_orientation(Input::LineDefinition* linedef);
 
     //! update internal variables
-    void Update() override;
+    void update() override;
 
     //! evaluate material law
     void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,      //!< [IN] deformation gradient

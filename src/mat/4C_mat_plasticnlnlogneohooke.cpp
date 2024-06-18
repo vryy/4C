@@ -364,7 +364,7 @@ void Mat::PlasticNlnLogNeoHooke::setup(int numgp, Input::LineDefinition* linedef
 /*----------------------------------------------------------------------*
  | update internal variables                                            |
  *----------------------------------------------------------------------*/
-void Mat::PlasticNlnLogNeoHooke::Update()
+void Mat::PlasticNlnLogNeoHooke::update()
 {
   // make current values at time step t_n+1 to values of last step t_n
   invplrcglast_ = invplrcgcurr_;
@@ -388,7 +388,7 @@ void Mat::PlasticNlnLogNeoHooke::Update()
     accplstraincurr_.at(i) = 0.0;
   }
   return;
-}  // Update()
+}  // update()
 
 
 /*----------------------------------------------------------------------*

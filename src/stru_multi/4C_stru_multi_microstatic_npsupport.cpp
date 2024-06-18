@@ -118,7 +118,7 @@ void MultiScale::np_support_drt()
       case 2:
       {
         // dummy material is used to update the micro material
-        dummymaterials[eleID]->Update();
+        dummymaterials[eleID]->update();
         break;
       }
       case 3:

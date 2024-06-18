@@ -74,7 +74,7 @@ namespace Adapter
     // virtual void evaluate(Teuchos::RCP<const Epetra_Vector> vel) = 0;
 
     /// update at time step end
-    virtual void Update() = 0;
+    virtual void update() = 0;
 
     /// output results
     virtual void Output() = 0;

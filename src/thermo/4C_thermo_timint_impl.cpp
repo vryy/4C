@@ -758,7 +758,7 @@ void THR::TimIntImpl::update_iter_incrementally(
 /*----------------------------------------------------------------------*
  | update time step                                         bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::Update()
+void THR::TimIntImpl::update()
 {
   // update temperature and temperature rate
   // after this call we will have tempn_ == temp_ (temp_{n+1} == temp_n), etc.
@@ -772,7 +772,7 @@ void THR::TimIntImpl::Update()
   resetiter_ = 0;
   return;
 
-}  // Update()
+}  // update()
 
 
 /*----------------------------------------------------------------------*

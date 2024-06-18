@@ -569,7 +569,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::Update(Core::Elements::Element&
           }
         });
   }
-  solid_material.Update();
+  solid_material.update();
 }
 
 template <Core::FE::CellType distype>

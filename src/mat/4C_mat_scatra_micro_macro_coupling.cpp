@@ -109,7 +109,7 @@ void Mat::ScatraMicroMacroCoupling::Update(const int gp_id) const
   if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
 
   // update multi-scale scalar transport submaterial at macro-scale Gauss point
-  matgp_.at(gp_id)->Update();
+  matgp_.at(gp_id)->update();
 }
 
 

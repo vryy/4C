@@ -587,18 +587,18 @@ void Mat::GrowthRemodelElastHyper::Update(Core::LinAlg::Matrix<3, 3> const& defg
 
   // loop map of associated potential summands
   // remodelfiber
-  for (auto& p : potsumrf_) p->Update();
+  for (auto& p : potsumrf_) p->update();
 
   // 2D elastin matrix
-  for (auto& p : potsumelmem_) p->Update();
+  for (auto& p : potsumelmem_) p->update();
 
   if (params_->membrane_ != 1)
   {
     // 3D elastin matrix
-    for (auto& p : potsumeliso_) p->Update();
+    for (auto& p : potsumeliso_) p->update();
 
     // volpenalty
-    potsumelpenalty_->Update();
+    potsumelpenalty_->update();
   }
 
 

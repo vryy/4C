@@ -1243,7 +1243,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::update()
   // save Lagrange multiplier for the next time step
   lag_mult_old_->Update(1.0, *lag_mult_, 0.0);
 
-  // call Update()-routine in base class to handle the single fields
+  // call update()-routine in base class to handle the single fields
   FSI::BlockMonolithic::update();
 }
 

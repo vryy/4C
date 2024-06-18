@@ -499,7 +499,7 @@ void LUBRICATION::TimIntImpl::Output(const int num)
     Core::LinAlg::PrintVectorInMatlabFormat(filename.str(), *prenp_);
   }
   // NOTE:
-  // statistics output for normal fluxes at boundaries was already done during Update()
+  // statistics output for normal fluxes at boundaries was already done during update()
 
   return;
 }  // TimIntImpl::Output

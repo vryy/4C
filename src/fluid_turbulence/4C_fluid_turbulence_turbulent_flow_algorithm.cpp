@@ -94,7 +94,7 @@ void FLD::TurbulentFlowAlgorithm::TimeLoop()
     // slove nonlinear problem
     inflowfluidalgo_->fluid_field()->Solve();
     // update time integration
-    inflowfluidalgo_->fluid_field()->Update();
+    inflowfluidalgo_->fluid_field()->update();
     // write output of statistics only
     // remark: does also gmsh-output if required
     inflowfluidalgo_->fluid_field()->StatisticsOutput();
@@ -108,7 +108,7 @@ void FLD::TurbulentFlowAlgorithm::TimeLoop()
     // replaces Solve
     fluidalgo_->fluid_field()->set_velocity_field(velnp_);
     // update time integration with given velocity field
-    fluidalgo_->fluid_field()->Update();
+    fluidalgo_->fluid_field()->update();
     // write output
     fluidalgo_->fluid_field()->Output();
   }

@@ -57,7 +57,7 @@ void SSI::SSIPart1WC::do_struct_step()
   constexpr bool force_prepare = false;
   structure_field()->prepare_output(force_prepare);
   // update all single field solvers
-  structure_field()->Update();
+  structure_field()->update();
   // write output to files
   structure_field()->Output();
   // write output to screen
@@ -132,7 +132,7 @@ void SSI::SSIPart1WC::do_scatra_step()
   //                         update solution
   //        current solution becomes old solution of next timestep
   // -------------------------------------------------------------------
-  ScaTraField()->Update();
+  ScaTraField()->update();
 
   // -------------------------------------------------------------------
   // evaluate error for problems with analytical solution

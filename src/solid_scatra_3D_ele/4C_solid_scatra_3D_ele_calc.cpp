@@ -467,7 +467,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Update(
             { solid_material.Update(deformation_gradient, gp, params, ele.Id()); });
       });
 
-  solid_material.Update();
+  solid_material.update();
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>

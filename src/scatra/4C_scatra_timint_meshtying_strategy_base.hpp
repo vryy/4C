@@ -265,7 +265,7 @@ namespace ScaTra
     virtual const Core::LinAlg::Solver& Solver() const = 0;
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
-    virtual void Update() const { return; };
+    virtual void update() const { return; };
 
    protected:
     //! instantiate strategy for Newton-Raphson convergence check

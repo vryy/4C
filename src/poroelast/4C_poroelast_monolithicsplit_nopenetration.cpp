@@ -577,10 +577,10 @@ void PoroElast::MonolithicSplitNoPenetration::recover_lagrange_multiplier_after_
   // we do not need to recover after a time step, it is done after every newton step
 }
 
-void PoroElast::MonolithicSplitNoPenetration::Update()
+void PoroElast::MonolithicSplitNoPenetration::update()
 {
   // call base class
-  MonolithicSplit::Update();
+  MonolithicSplit::update();
 
   // update lagrangean multiplier
   lambda_->Update(1.0, *lambdanp_, 0.0);

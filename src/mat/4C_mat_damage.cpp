@@ -314,7 +314,7 @@ void Mat::Damage::setup(int numgp, Input::LineDefinition* linedef)
 /*---------------------------------------------------------------------*
  | update internal stress variables (public)                dano 04/11 |
  *---------------------------------------------------------------------*/
-void Mat::Damage::Update()
+void Mat::Damage::update()
 {
   // make current values at time step tlast+1 to values of last step tlast
   strainpllast_ = strainplcurr_;
@@ -354,7 +354,7 @@ void Mat::Damage::Update()
   }
 
   return;
-}  // Update()
+}  // update()
 
 
 /*----------------------------------------------------------------------*
@@ -1107,7 +1107,7 @@ void Mat::Damage::evaluate_simplified_lemaitre(const Core::LinAlg::Matrix<3, 3>*
     //  - accumulated (un)damaged plastic strains
     //  - stress
 
-    // as current history vectors are set to zero in Update(), the old values
+    // as current history vectors are set to zero in update(), the old values
     // need to be set instead, otherwise no constant plastic values are possible
     strainplcurr_->at(gp) = strainpllast_->at(gp);
     strainbarplcurr_->at(gp) = strainbarpllast_->at(gp);
@@ -2218,7 +2218,7 @@ void Mat::Damage::evaluate_full_lemaitre(const Core::LinAlg::Matrix<3, 3>* defgr
     //  - back stress
     //    (--> relative stress)
     //  - stress
-    // as current history vectors are set to zero in Update(), the old values
+    // as current history vectors are set to zero in update(), the old values
     // need to be set instead, otherwise no constant plastic values are possible
     strainplcurr_->at(gp) = strainpllast_->at(gp);
     strainbarplcurr_->at(gp) = strainbarpllast_->at(gp);

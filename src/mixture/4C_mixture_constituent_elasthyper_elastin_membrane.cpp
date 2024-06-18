@@ -232,7 +232,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::update(
   MixtureConstituentElastHyperBase::update(defgrd, params, gp, eleGID);
 
   // loop map of associated potential summands
-  for (auto& summand : potsum_membrane_) summand->Update();
+  for (auto& summand : potsum_membrane_) summand->update();
 }
 
 void MIXTURE::MixtureConstituentElastHyperElastinMembrane::pre_evaluate(

@@ -128,7 +128,7 @@ namespace CONSTRAINTS
     /*!
          \brief Update constraint variables
     */
-    void Update();
+    void update();
 
     /*!
          \brief Update lagrange multiplier \f$\lambda_{n+1}=\lambda_{n}+factor*\f$(volerr)

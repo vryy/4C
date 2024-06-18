@@ -288,9 +288,9 @@ void ElCh::MovingBoundaryAlgorithm::solve_sca_tra()
 /*----------------------------------------------------------------------*/
 void ElCh::MovingBoundaryAlgorithm::update()
 {
-  fluid_field()->Update();
-  ale_field()->Update();
-  ScaTraField()->Update();
+  fluid_field()->update();
+  ale_field()->update();
+  ScaTraField()->update();
 
   // perform time shift of interface displacement
   idispn_->Update(1.0, *idispnp_, 0.0);

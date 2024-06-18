@@ -161,7 +161,7 @@ namespace ALE
     void UpdateIter() override;
 
     /// take the current solution to be the final one for this time step
-    void Update() override;
+    void update() override;
 
     /// convergence test for newton
     virtual bool Converged(const int iter);

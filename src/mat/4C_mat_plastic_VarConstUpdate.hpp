@@ -150,7 +150,7 @@ namespace Mat
     void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// update sumands
-    void Update() override;
+    void update() override;
 
     //! return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;

@@ -108,7 +108,7 @@ void LUBRICATION::TimIntStationary::add_time_integration_specific_vectors(
 /*----------------------------------------------------------------------*
  | update of solution at end of time step                   wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::Update(const int num)
+void LUBRICATION::TimIntStationary::update(const int num)
 {
   // for the stationary scheme there is nothing to do
 }

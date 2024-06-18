@@ -413,7 +413,7 @@ namespace Mat
     virtual void SetupHillPlasticity(Input::LineDefinition* linedef);
 
     /// update sumands
-    void Update() override
+    void update() override
     {
       FOUR_C_THROW(
           "Elastic summands in PlasticHyperElast are not allowed to have internal variables"

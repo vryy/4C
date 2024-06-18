@@ -154,7 +154,7 @@ namespace Mat
     );
 
     /// Update internal stress variables
-    void Update() override;
+    void update() override;
 
     void UpdateFiberDirs(const int numgp, Core::LinAlg::Matrix<3, 3>* defgrad);
 

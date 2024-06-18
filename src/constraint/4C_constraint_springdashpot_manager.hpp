@@ -60,7 +60,7 @@ namespace CONSTRAINTS
         Teuchos::RCP<Epetra_Vector> veln, Teuchos::ParameterList parlist);
 
     //! update for each new time step
-    void Update();
+    void update();
 
     //! output of gap, normal, and nodal stiffness
     void Output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,

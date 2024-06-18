@@ -360,9 +360,9 @@ void Mat::MembraneActiveStrain::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3
 /*----------------------------------------------------------------------*
  | Update internal variables                       brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::Update()
+void Mat::MembraneActiveStrain::update()
 {
-  matpassive_->Update();
+  matpassive_->update();
 }  // Mat::MembraneActiveStrain::Update
 
 /*----------------------------------------------------------------------*

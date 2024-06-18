@@ -93,7 +93,7 @@ namespace Adapter
     void evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter) override;
 
     /// update at time step end
-    void Update() override { field_->Update(); }
+    void update() override { field_->update(); }
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     void prepare_output(bool force_prepare) override

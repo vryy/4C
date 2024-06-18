@@ -253,8 +253,8 @@ void SSI::SSIPart2WC::update_and_output()
     nitsche_strategy_ssi()->Integrate(*cparams);
   }
 
-  structure_field()->Update();
-  ScaTraField()->Update();
+  structure_field()->update();
+  ScaTraField()->update();
 
   ScaTraField()->evaluate_error_compared_to_analytical_sol();
 

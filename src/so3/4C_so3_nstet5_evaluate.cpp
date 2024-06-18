@@ -325,7 +325,7 @@ int Discret::ELEMENTS::NStet5::evaluate(Teuchos::ParameterList& params,
       if (mat->MaterialType() == Core::Materials::m_struct_multiscale)
       {
         auto* micro = dynamic_cast<Mat::MicroMaterial*>(mat.get());
-        micro->Update();
+        micro->update();
       }
     }
     break;

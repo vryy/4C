@@ -142,9 +142,9 @@ void FSI::AlgorithmXFEM::update()
 {
   FOUR_C_THROW("currently unused");
 
-  StructurePoro()->Update();
-  fluid_field()->Update();
-  if (HaveAle()) ale_field()->Update();
+  StructurePoro()->update();
+  fluid_field()->update();
+  if (HaveAle()) ale_field()->update();
 
   return;
 }

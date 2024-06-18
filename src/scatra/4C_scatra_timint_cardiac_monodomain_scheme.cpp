@@ -54,10 +54,10 @@ void ScaTra::TimIntCardiacMonodomainOST::setup()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainOST::Update()
+void ScaTra::TimIntCardiacMonodomainOST::update()
 {
   // Standard Update
-  TimIntOneStepTheta::Update();
+  TimIntOneStepTheta::update();
 
   // time update of myocard material
   TimIntCardiacMonodomain::element_material_time_update();
@@ -151,10 +151,10 @@ void ScaTra::TimIntCardiacMonodomainBDF2::setup()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainBDF2::Update()
+void ScaTra::TimIntCardiacMonodomainBDF2::update()
 {
   // Standard Update
-  TimIntBDF2::Update();
+  TimIntBDF2::update();
 
   // time update of myocard material
   TimIntCardiacMonodomain::element_material_time_update();
@@ -237,10 +237,10 @@ void ScaTra::TimIntCardiacMonodomainGenAlpha::setup()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainGenAlpha::Update()
+void ScaTra::TimIntCardiacMonodomainGenAlpha::update()
 {
   // Standard Update
-  TimIntGenAlpha::Update();
+  TimIntGenAlpha::update();
 
   // time update of myocard material
   TimIntCardiacMonodomain::element_material_time_update();

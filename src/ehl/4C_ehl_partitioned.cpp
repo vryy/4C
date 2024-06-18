@@ -137,8 +137,8 @@ void EHL::Partitioned::update_and_output()
   constexpr bool force_prepare = false;
   structure_->prepare_output(force_prepare);
 
-  structure_->Update();
-  lubrication_->LubricationField()->Update();
+  structure_->update();
+  lubrication_->LubricationField()->update();
 
   lubrication_->LubricationField()->evaluate_error_compared_to_analytical_sol();
 

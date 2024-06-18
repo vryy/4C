@@ -94,8 +94,8 @@ void FSI::MonolithicBaseFS::prepare_time_step()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBaseFS::update()
 {
-  fluid_field()->Update();
-  ale_field()->Update();
+  fluid_field()->update();
+  ale_field()->update();
 }
 
 

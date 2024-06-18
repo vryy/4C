@@ -39,7 +39,7 @@ namespace ScaTra
 
     void setup() override;
 
-    void Update() override;
+    void update() override;
 
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
@@ -83,7 +83,7 @@ namespace ScaTra
 
     void setup() override;
 
-    void Update() override;
+    void update() override;
 
    protected:
     void compute_time_deriv_pot0(const bool init) override{};
@@ -112,7 +112,7 @@ namespace ScaTra
 
     void setup() override;
 
-    void Update() override;
+    void update() override;
 
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
@@ -146,7 +146,7 @@ namespace ScaTra
 
     void setup() override;
 
-    void Update() override;
+    void update() override;
 
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
@@ -178,7 +178,7 @@ namespace ScaTra
 
     void setup() override;
 
-    void Update() override;
+    void update() override;
 
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;

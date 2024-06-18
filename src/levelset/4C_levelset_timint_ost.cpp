@@ -140,7 +140,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::set_old_part_of_righthandside()
  | extended version for coupled level-set problems                      |
  | including reinitialization                           rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::Update()
+void ScaTra::LevelSetTimIntOneStepTheta::update()
 {
   // -----------------------------------------------------------------
   //                     reinitialize level-set

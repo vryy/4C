@@ -81,7 +81,7 @@ void FSI::FluidAleAlgorithm::solve() { MBFluidField()->nonlinear_solve(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::update() { MBFluidField()->Update(); }
+void FSI::FluidAleAlgorithm::update() { MBFluidField()->update(); }
 
 
 /*----------------------------------------------------------------------*/

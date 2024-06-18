@@ -190,7 +190,7 @@ void Adapter::Thermo::Integrate()
     switch (convStatus)
     {
       case Inpar::THR::conv_success:
-        Update();
+        update();
         PrintStep();
         Output();
         break;

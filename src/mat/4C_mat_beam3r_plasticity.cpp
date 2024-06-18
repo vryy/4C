@@ -398,7 +398,7 @@ void Mat::BeamPlasticMaterial<T>::compute_constitutive_parameter(
  *-----------------------------------------------------------------------------------------------*/
 
 template <typename T>
-void Mat::BeamPlasticMaterial<T>::Update()
+void Mat::BeamPlasticMaterial<T>::update()
 {
   for (unsigned int gp = 0; gp < numgp_force_; gp++)
   {

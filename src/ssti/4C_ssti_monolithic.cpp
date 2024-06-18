@@ -451,9 +451,9 @@ void SSTI::SSTIMono::Timeloop()
  *--------------------------------------------------------------------------------------*/
 void SSTI::SSTIMono::update()
 {
-  ScaTraField()->Update();
-  ThermoField()->Update();
-  structure_field()->Update();
+  ScaTraField()->update();
+  ThermoField()->update();
+  structure_field()->update();
 }
 
 /*--------------------------------------------------------------------------------------*

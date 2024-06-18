@@ -376,7 +376,7 @@ void ScaTra::MeshtyingStrategyS2IElch::init_conv_check_strategy()
 /*------------------------------------------------------------------------------------------*
  | update solution after convergence of the nonlinear Newton-Raphson iteration   fang 01/17 |
  *------------------------------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2IElch::Update() const
+void ScaTra::MeshtyingStrategyS2IElch::update() const
 {
   // update scatra-scatra interface layer thicknesses in case of semi-implicit solution approach
   if (intlayergrowth_evaluation_ == Inpar::S2I::growth_evaluation_semi_implicit)
@@ -527,7 +527,7 @@ void ScaTra::MeshtyingStrategyS2IElch::Update() const
 
   else
     // call base class routine
-    MeshtyingStrategyS2I::Update();
+    MeshtyingStrategyS2I::update();
 }
 
 

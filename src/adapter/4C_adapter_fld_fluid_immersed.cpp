@@ -51,7 +51,7 @@ void Adapter::FluidImmersed::prepare_time_step() { fluid_field()->prepare_time_s
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidImmersed::Update() { fluid_field()->Update(); }
+void Adapter::FluidImmersed::update() { fluid_field()->update(); }
 
 
 /*----------------------------------------------------------------------*/

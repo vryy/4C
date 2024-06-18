@@ -91,7 +91,7 @@ namespace FSI
    * residual via computeF(). So the field solvers themselves must be
    * clean, subsequent calls with the same interface input must yield the
    * same results. The time stepping therefore needs the further methods
-   * prepare_time_step() to start a new time step as wellas Update() and
+   * prepare_time_step() to start a new time step as wellas update() and
    * Output() to finish the current step, save the result and write the
    * files.
    */

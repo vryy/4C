@@ -369,7 +369,7 @@ double Mat::ScatraMultiScaleGP::evaluate_mean_concentration_time_derivative() co
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-void Mat::ScatraMultiScaleGP::Update()
+void Mat::ScatraMultiScaleGP::update()
 {
   if (is_ale_)
   {
@@ -387,7 +387,7 @@ void Mat::ScatraMultiScaleGP::Update()
       Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->Time());
 
   // update micro-scale time integrator
-  microtimint->Update();
+  microtimint->update();
 
   // clear state in micro-scale time integrator
   microtimint->ClearState();

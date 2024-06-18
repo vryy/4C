@@ -259,7 +259,7 @@ void Mat::PlasticLinElast::setup(int numgp, Input::LineDefinition* linedef)
 /*---------------------------------------------------------------------*
  | update internal stress variables (public)                dano 04/11 |
  *---------------------------------------------------------------------*/
-void Mat::PlasticLinElast::Update()
+void Mat::PlasticLinElast::update()
 {
   // make current values at time step t_n+1 to values of last step t_n
   strainpllast_ = strainplcurr_;
@@ -291,7 +291,7 @@ void Mat::PlasticLinElast::Update()
   }
 
   return;
-}  // Update()
+}  // update()
 
 
 /*----------------------------------------------------------------------*
@@ -675,7 +675,7 @@ void Mat::PlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     //  - back stress
     //    (--> relative stress)
 
-    // as current history vectors are set to zero in Update(), the old values
+    // as current history vectors are set to zero in update(), the old values
     // need to be set instead, otherwise no constant plastic values are possible
     strainplcurr_->at(gp) = strainpllast_->at(gp);
     strainbarplcurr_->at(gp) = strainbarpllast_->at(gp);

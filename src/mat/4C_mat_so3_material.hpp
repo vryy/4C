@@ -195,7 +195,7 @@ namespace Mat
     /*!
      * @brief Update of GP data (e.g., history variables)
      */
-    virtual void Update() {}
+    virtual void update() {}
 
     /*!
      * @brief Indicator, whether the extended update call is used
@@ -208,7 +208,7 @@ namespace Mat
      * @brief Update of GP data (e.g., history variables)
      *
      * This method is currently only called from specific element types. If you need the additional
-     * functionality compared to Update() with any other element than the adapted ones, you need to
+     * functionality compared to update() with any other element than the adapted ones, you need to
      * implement it yourself. Currently only HEX8 and HEX8FBAR elements are supported
      *
      * Materials that use this method need to return true in UsesExtendedUpdate()

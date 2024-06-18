@@ -175,7 +175,7 @@ namespace Adapter
     }
 
     //! update at time step end
-    void Update() override { ale_->Update(); }
+    void update() override { ale_->update(); }
 
     //! update at time step end
     void UpdateIter() override { ale_->UpdateIter(); }

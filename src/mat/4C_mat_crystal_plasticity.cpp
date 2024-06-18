@@ -491,7 +491,7 @@ void Mat::CrystalPlasticity::setup(int numgp, Input::LineDefinition* linedef)
 /*----------------------------------------------------------------------*
  | update internal variables (public)                                   |
  *----------------------------------------------------------------------*/
-void Mat::CrystalPlasticity::Update()
+void Mat::CrystalPlasticity::update()
 {
   // update values of last step t_n to current values at time step t_n+1
   deform_grad_last_ = deform_grad_current_;
@@ -526,7 +526,7 @@ void Mat::CrystalPlasticity::Update()
     (*defect_densities_current_)[i] = emptyvect;
   }
   return;
-}  // Update()
+}  // update()
 
 /*-------------------------------------------------------------------------------*
  | calculate stress, material stiffness matrix and evolution internal variables  |

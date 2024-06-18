@@ -306,10 +306,10 @@ void Mat::ScalarDepInterp::unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::Update()
+void Mat::ScalarDepInterp::update()
 {
-  lambda_zero_mat_->Update();
-  lambda_unit_mat_->Update();
+  lambda_zero_mat_->update();
+  lambda_unit_mat_->update();
 }
 
 /*----------------------------------------------------------------------------*/

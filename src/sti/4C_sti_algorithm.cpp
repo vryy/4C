@@ -397,16 +397,16 @@ void STI::Algorithm::transfer_thermo_to_scatra(const Teuchos::RCP<const Epetra_V
 void STI::Algorithm::update()
 {
   // update scatra field
-  scatra_->ScaTraField()->Update();
+  scatra_->ScaTraField()->update();
 
   // compare scatra field to analytical solution if applicable
   scatra_->ScaTraField()->evaluate_error_compared_to_analytical_sol();
 
   // update thermo field
-  thermo_->ScaTraField()->Update();
+  thermo_->ScaTraField()->update();
 
   // compare thermo field to analytical solution if applicable
   thermo_->ScaTraField()->evaluate_error_compared_to_analytical_sol();
-}  // STI::Algorithm::Update()
+}  // STI::Algorithm::update()
 
 FOUR_C_NAMESPACE_CLOSE

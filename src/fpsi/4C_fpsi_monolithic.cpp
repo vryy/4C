@@ -123,9 +123,9 @@ void FPSI::MonolithicBase::prepare_time_step()
 /*----------------------------------------------------------------------*/
 void FPSI::MonolithicBase::update()
 {
-  poro_field()->Update();
-  fluid_field()->Update();
-  ale_field()->Update();
+  poro_field()->update();
+  fluid_field()->update();
+  ale_field()->update();
 }
 
 /*----------------------------------------------------------------------*/

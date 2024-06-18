@@ -79,7 +79,7 @@ namespace Adapter
   field. There are different ways to use this adapter.
 
   In all cases you need to tell the thermal algorithm about your time
-  step. Therefore prepare_time_step(), Update() and Output() must be called at
+  step. Therefore prepare_time_step(), update() and Output() must be called at
   the appropriate position in the TSI algorithm.
 
   <h3>Dirichlet-Neumann coupled TSI</h3>
@@ -88,7 +88,7 @@ namespace Adapter
   for each time step after the structure displacements/velocities have been
   applied (ApplyStructVariables()). Solve() will be called many times for each
   time step until the equilibrium is reached. The thermal algorithm has to
-  preserve its state until Update() is called.
+  preserve its state until update() is called.
 
   After each Solve() you get the new temperatures by Tempnp().
 
@@ -198,7 +198,7 @@ namespace Adapter
     virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi) = 0;
 
     /// update at time step end
-    virtual void Update() = 0;
+    virtual void update() = 0;
 
     /// print info about finished time step
     virtual void PrintStep() = 0;

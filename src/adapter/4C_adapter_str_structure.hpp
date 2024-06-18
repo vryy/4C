@@ -92,7 +92,7 @@ namespace Adapter
   field. There are different ways to use this adapter.
 
   In all cases you need to tell the structural algorithm about your time
-  step. Therefore prepare_time_step(), Update() and Output() must be called at
+  step. Therefore prepare_time_step(), update() and Output() must be called at
   the appropriate position in the FSI algorithm.
 
   <h3>Dirichlet-Neumann coupled FSI</h3>
@@ -103,7 +103,7 @@ namespace Adapter
   structural problem for each time step after the fluid forces have been
   applied (apply_interface_forces()). Solve() will be called many times for each
   time step until the interface equilibrium is reached. The structural
-  algorithm has to preserve its state until Update() is called.
+  algorithm has to preserve its state until update() is called.
 
   After each Solve() you get the interface forces by extract_interface_dispnp().
 
@@ -353,7 +353,7 @@ namespace Adapter
     virtual void determine_stress_strain() = 0;
 
     /// update at time step end
-    void Update() override = 0;
+    void update() override = 0;
 
     /// update at time step end in case of FSI time adaptivity
     virtual void Update(double endtime) = 0;

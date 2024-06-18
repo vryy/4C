@@ -2034,7 +2034,7 @@ void Discret::ELEMENTS::So3Plast<distype>::update_plastic_deformation_nln(PlSpin
   }
   else
   {
-    SolidMaterial()->Update();
+    SolidMaterial()->update();
   }
 
   if (eastype_ != soh8p_easnone)

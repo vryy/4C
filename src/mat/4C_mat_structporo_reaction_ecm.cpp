@@ -175,12 +175,12 @@ void Mat::StructPoroReactionECM::reaction(const double porosity, const double J,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::StructPoroReactionECM::Update()
+void Mat::StructPoroReactionECM::update()
 {
   refporosity_old_ = refporosity_;
   refporositydot_old_ = refporositydot_;
 
-  StructPoroReaction::Update();
+  StructPoroReaction::update();
 }
 
 /*----------------------------------------------------------------------*

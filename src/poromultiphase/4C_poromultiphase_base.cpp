@@ -252,8 +252,8 @@ void POROMULTIPHASE::PoroMultiPhaseBase::update_and_output()
   structure_field()->prepare_output(force_prepare);
 
   // update single fields
-  structure_field()->Update();
-  fluid_field()->Update();
+  structure_field()->update();
+  fluid_field()->update();
 
   // evaluate error if desired
   fluid_field()->evaluate_error_compared_to_analytical_sol();

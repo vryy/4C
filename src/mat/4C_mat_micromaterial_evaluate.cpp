@@ -184,7 +184,7 @@ void Mat::MicroMaterial::evaluate(Core::LinAlg::Matrix<3, 3>* defgrd,
 
 
 // update for all procs
-void Mat::MicroMaterial::Update()
+void Mat::MicroMaterial::update()
 {
   // get sub communicator including the supporting procs
   Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
@@ -201,7 +201,7 @@ void Mat::MicroMaterial::Update()
   for (it = matgp_.begin(); it != matgp_.end(); ++it)
   {
     Teuchos::RCP<MicroMaterialGP> actmicromatgp = (*it).second;
-    actmicromatgp->Update();
+    actmicromatgp->update();
   }
 }
 

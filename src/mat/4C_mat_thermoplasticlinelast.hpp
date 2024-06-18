@@ -183,7 +183,7 @@ namespace Mat
     void setup(int numgp, Input::LineDefinition* linedef) override;
 
     //! update internal stress variables
-    void Update() override;
+    void update() override;
 
     //! reset internal stress variables
     void Reset();

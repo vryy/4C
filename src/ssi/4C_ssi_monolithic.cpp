@@ -940,11 +940,11 @@ void SSI::SsiMono::Timeloop()
 void SSI::SsiMono::update()
 {
   // update scalar transport field
-  ScaTraField()->Update();
-  if (is_sca_tra_manifold()) ScaTraManifold()->Update();
+  ScaTraField()->update();
+  if (is_sca_tra_manifold()) ScaTraManifold()->update();
 
   // update structure field
-  structure_field()->Update();
+  structure_field()->update();
 }
 
 /*--------------------------------------------------------------------------------------*

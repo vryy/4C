@@ -1499,7 +1499,7 @@ void FSI::SlidingMonolithicFluidSplit::update()
     fluid_field()->apply_interface_velocities(unew);
   }
 
-  // call Update()-routine in base class to handle the single fields
+  // call update()-routine in base class to handle the single fields
   FSI::BlockMonolithic::update();
 }
 

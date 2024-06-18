@@ -71,7 +71,7 @@ namespace ScaTra
 
     void TestResults() override;
 
-    void Update() override;
+    void update() override;
 
    protected:
     void add_problem_specific_parameters_and_vectors(Teuchos::ParameterList& params) override;

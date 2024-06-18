@@ -302,7 +302,7 @@ void Mat::MicroMaterialGP::perform_micro_simulation(Core::LinAlg::Matrix<3, 3>* 
 }
 
 
-void Mat::MicroMaterialGP::Update()
+void Mat::MicroMaterialGP::update()
 {
   // select corresponding "time integration class" for this microstructure
   Teuchos::RCP<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];

@@ -729,10 +729,10 @@ void Mat::MultiplicativeSplitDefgradElastHyper::setup(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::Update()
+void Mat::MultiplicativeSplitDefgradElastHyper::update()
 {
   // loop map of associated potential summands
-  for (const auto& summand : potsumel_) summand->Update();
+  for (const auto& summand : potsumel_) summand->update();
 }
 
 /*--------------------------------------------------------------------*

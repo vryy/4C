@@ -480,7 +480,7 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case calc_struct_update_istep:
     {
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
       update();
     }
     break;

@@ -221,7 +221,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Update(
             { solid_material.Update(deformation_gradient, gp, params, ele.Id()); });
       });
 
-  solid_material.Update();
+  solid_material.update();
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>

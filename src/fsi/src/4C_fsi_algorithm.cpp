@@ -151,8 +151,8 @@ void FSI::Algorithm::prepare_time_step()
 /*----------------------------------------------------------------------*/
 void FSI::Algorithm::update()
 {
-  structure_field()->Update();
-  MBFluidField()->Update();
+  structure_field()->update();
+  MBFluidField()->update();
 }
 
 

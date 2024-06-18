@@ -328,7 +328,7 @@ namespace Mat
       mat_->setup(numgp, linedef);
     }
 
-    void Update() override { mat_->Update(); }
+    void update() override { mat_->update(); }
 
     void reset_step() override { mat_->reset_step(); }
 

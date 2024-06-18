@@ -40,7 +40,7 @@ THR::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& ioparams,  //!< ioflag
 /*----------------------------------------------------------------------*
  | update time step                                          dano 01/12 |
  *----------------------------------------------------------------------*/
-void THR::TimIntExpl::Update()
+void THR::TimIntExpl::update()
 {
   // update temperature and temperature rate
   // after this call we will have tempn_ == temp_ (temp_{n+1} == temp_n), etc.
@@ -51,7 +51,7 @@ void THR::TimIntExpl::Update()
   UpdateStepElement();
   return;
 
-}  // Update()
+}  // update()
 
 
 /*----------------------------------------------------------------------*

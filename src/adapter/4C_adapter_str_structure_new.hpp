@@ -250,7 +250,7 @@ namespace Adapter
     void evaluate() override = 0;
 
     /// update at time step end
-    void Update() override = 0;
+    void update() override = 0;
 
     /// update at time step end in case of FSI time adaptivity
     void Update(double endtime) override = 0;

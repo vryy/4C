@@ -306,7 +306,7 @@ namespace Mat
      */
     void setup_cmat(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat);
 
-    void Update() override;
+    void update() override;
 
     bool needs_defgrd() override { return true; };
 

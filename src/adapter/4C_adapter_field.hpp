@@ -138,7 +138,7 @@ namespace Adapter
     }
 
     /// update at time step end
-    virtual void Update() = 0;
+    virtual void update() = 0;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     virtual void prepare_output(bool force_prepare_timestep) = 0;

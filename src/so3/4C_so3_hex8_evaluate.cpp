@@ -1104,7 +1104,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
           // Update constraintmixture material
           if (Material()->MaterialType() == Core::Materials::m_constraintmixture)
           {
-            SolidMaterial()->Update();
+            SolidMaterial()->update();
           }
           break;
         }
@@ -2866,7 +2866,7 @@ void Discret::ELEMENTS::SoHex8::update_element(std::vector<double>& disp,
     Core::LinAlg::SerialDenseMatrix* oldfeas = &easdata_.feas;
     oldfeas->putScalar(0.0);
   }
-  SolidMaterial()->Update();
+  SolidMaterial()->update();
 
   return;
 }

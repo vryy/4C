@@ -901,7 +901,7 @@ void FSI::LungMonolithic::prepare_time_step()
 
   // Update of Lagrange multipliers, current volumes and flow rates is
   // not necessary here, since these values are already equal to the
-  // "old" ones (cf. Update()). Note that we assume a constant
+  // "old" ones (cf. update()). Note that we assume a constant
   // predictor here!
 
   IncLagrMultVec_->PutScalar(0.0);

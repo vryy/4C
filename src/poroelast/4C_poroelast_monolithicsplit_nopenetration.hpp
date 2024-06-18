@@ -51,7 +51,7 @@ namespace PoroElast
     void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) override;
 
     //! take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     //! read restart data
     void read_restart(const int step) override;

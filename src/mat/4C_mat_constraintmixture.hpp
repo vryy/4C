@@ -254,7 +254,7 @@ namespace Mat
     void ResetAll(const int numgp);
 
     /// Update
-    void Update() override;
+    void update() override;
 
     /// Reset time step
     void reset_step() override;

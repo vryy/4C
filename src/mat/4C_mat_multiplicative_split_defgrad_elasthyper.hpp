@@ -201,7 +201,7 @@ namespace Mat
 
     void setup(int numgp, Input::LineDefinition* linedef) override;
 
-    void Update() override;
+    void update() override;
 
     /*!
      * @brief Evaluate off-diagonal stiffness matrix (required for monolithic algorithms)

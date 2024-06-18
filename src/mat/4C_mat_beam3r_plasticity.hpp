@@ -249,7 +249,7 @@ namespace Mat
 
     /** \brief update the plastic strain and curvature vectors
      */
-    void Update() override;
+    void update() override;
 
     /** \brief reset the values for current plastic strain and curvature
      */

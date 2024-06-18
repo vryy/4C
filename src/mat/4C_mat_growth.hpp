@@ -136,7 +136,7 @@ namespace Mat
     void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// Update
-    void Update() override;
+    void update() override;
 
     /// Reset time step
     void reset_step() override;
@@ -370,7 +370,7 @@ namespace Mat
     void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// Update
-    void Update() override;
+    void update() override;
 
     /// Return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;

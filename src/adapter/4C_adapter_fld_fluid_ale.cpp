@@ -199,10 +199,10 @@ void Adapter::FluidAle::prepare_time_step()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Adapter::FluidAle::Update()
+void Adapter::FluidAle::update()
 {
-  fluid_field()->Update();
-  ale_field()->Update();
+  fluid_field()->update();
+  ale_field()->update();
 }
 
 

@@ -278,7 +278,7 @@ int Adapter::StructureTimeAda::Integrate()
     // update everything on the element level
     PreUpdate();
 
-    Update();
+    update();
 
     post_update();
 

@@ -145,7 +145,7 @@ namespace Mat
     void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// Update internal stress variables
-    void Update() override;
+    void update() override;
 
     /// Evaluate material
     void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,      ///< deformation gradient

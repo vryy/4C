@@ -187,7 +187,7 @@ namespace Mat
       void SetupAAA(Teuchos::ParameterList& params, const int eleGID) override {}
 
       // update internal stress variables
-      void Update() override;
+      void update() override;
 
       /// Indicator for formulation
       void SpecifyFormulation(

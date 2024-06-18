@@ -428,7 +428,7 @@ void Arteries::ArtNetImplStationary::TimeUpdate()
 
   if (solvescatra_)
   {
-    scatra_->ScaTraField()->Update();
+    scatra_->ScaTraField()->update();
     scatra_->ScaTraField()->evaluate_error_compared_to_analytical_sol();
   }
 

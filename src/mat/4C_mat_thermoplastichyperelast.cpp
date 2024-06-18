@@ -335,7 +335,7 @@ void Mat::ThermoPlasticHyperElast::setup(int numgp, Input::LineDefinition* lined
 /*----------------------------------------------------------------------*
  | update internal variables                                 dano 03/13 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::Update()
+void Mat::ThermoPlasticHyperElast::update()
 {
   // make current values at time step t_n+1 to values of last step t_n
   defgrdlast_ = defgrdcurr_;
@@ -363,7 +363,7 @@ void Mat::ThermoPlasticHyperElast::Update()
   }
 
   return;
-}  // Update()
+}  // update()
 
 
 /*----------------------------------------------------------------------*

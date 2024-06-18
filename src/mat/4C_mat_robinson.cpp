@@ -307,7 +307,7 @@ void Mat::Robinson::setup(const int numgp, Input::LineDefinition* linedef)
 /*---------------------------------------------------------------------*
  | update after time step                          (public) dano 11/11 |
  *---------------------------------------------------------------------*/
-void Mat::Robinson::Update()
+void Mat::Robinson::update()
 {
   // make current values at time step t_n+1 to values of last step t_n
   // x_n := x_n+1
@@ -337,7 +337,7 @@ void Mat::Robinson::Update()
 
   return;
 
-}  // Update()
+}  // update()
 
 
 /*----------------------------------------------------------------------*

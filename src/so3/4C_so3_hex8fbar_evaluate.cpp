@@ -332,7 +332,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       // Update constraintmixture material
       if (Material()->MaterialType() == Core::Materials::m_constraintmixture)
       {
-        SolidMaterial()->Update();
+        SolidMaterial()->update();
       }
     }
     break;
@@ -1754,7 +1754,7 @@ void Discret::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
     }
   }
   else
-    SolidMaterial()->Update();
+    SolidMaterial()->update();
 
   return;
 }

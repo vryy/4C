@@ -185,7 +185,7 @@ namespace FLD
     void TimeUpdate() override;
 
     /// Implement Adapter::Fluid
-    void Update() override { TimeUpdate(); }
+    void update() override { TimeUpdate(); }
 
     /// CUT at new interface position, transform vectors,
     /// perform time integration and set new Vectors

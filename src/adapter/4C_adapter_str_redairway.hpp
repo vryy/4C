@@ -48,7 +48,7 @@ namespace Adapter
     void InitVol();
 
     //! (derived)
-    void Update() override;
+    void update() override;
 
    private:
     /// map between coupling ID and conditions on structure

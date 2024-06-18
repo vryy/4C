@@ -443,7 +443,7 @@ void Airway::RedAirwayTissue::update_and_output()
 {
   constexpr bool force_prepare = false;
   structure_->prepare_output(force_prepare);
-  structure_->Update();
+  structure_->update();
   structure_->Output();
 
   redairways_->TimeUpdate();

@@ -251,7 +251,7 @@ void Mat::Elastic::RemodelFiber::setup_structural_tensors_gr()
   }
 }
 
-void Mat::Elastic::RemodelFiber::Update()
+void Mat::Elastic::RemodelFiber::update()
 {
   // update history variable
   for (auto& k : potsumfiber_)

@@ -113,9 +113,9 @@ void PoroElast::MonolithicMeshtying::evaluate(
   if ((iter_ == 1) and (Step() == 1)) SetupExtractor();
 }
 
-void PoroElast::MonolithicMeshtying::Update()
+void PoroElast::MonolithicMeshtying::update()
 {
-  Monolithic::Update();
+  Monolithic::update();
   mortar_adapter_->UpdatePoroMt();
 }
 

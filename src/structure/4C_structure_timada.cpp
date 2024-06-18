@@ -219,7 +219,7 @@ int STR::TimAda::Integrate()
     sti_->print_step();
 
     // update
-    //    Update();
+    //    update();
     timestep_ += 1;
     time_ += stepsize_;
     UpdateStepSize(stpsiznew);

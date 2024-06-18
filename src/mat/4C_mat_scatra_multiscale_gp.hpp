@@ -73,7 +73,7 @@ namespace Mat
     double evaluate_mean_concentration_time_derivative() const;
 
     //! update micro-scale time integrator at the end of each time step
-    void Update();
+    void update();
 
     //! output micro-scale quantities
     void Output();

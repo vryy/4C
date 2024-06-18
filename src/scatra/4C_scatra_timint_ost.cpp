@@ -261,13 +261,13 @@ void ScaTra::TimIntOneStepTheta::compute_time_derivative()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntOneStepTheta::Update()
+void ScaTra::TimIntOneStepTheta::update()
 {
   // compute time derivative at time n+1
   compute_time_derivative();
 
   // call base class routine
-  ScaTraTimIntImpl::Update();
+  ScaTraTimIntImpl::update();
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!

@@ -164,9 +164,9 @@ void Adapter::StructureRedAirway::CalcFlux(
 
 
 /*======================================================================*/
-void Adapter::StructureRedAirway::Update()
+void Adapter::StructureRedAirway::update()
 {
-  StructureWrapper::Update();
+  StructureWrapper::update();
 
   for (int i = 0; i < coupmap_->NumMyElements(); ++i)
   {

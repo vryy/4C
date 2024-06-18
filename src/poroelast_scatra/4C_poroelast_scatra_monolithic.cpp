@@ -179,9 +179,9 @@ void PoroElastScaTra::PoroScatraMono::output()
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraMono::update()
 {
-  poro_field()->Update();
+  poro_field()->update();
 
-  ScaTraField()->Update();
+  ScaTraField()->update();
   ScaTraField()->evaluate_error_compared_to_analytical_sol();
 }
 

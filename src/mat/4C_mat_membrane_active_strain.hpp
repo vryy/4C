@@ -196,7 +196,7 @@ namespace Mat
         Core::LinAlg::Matrix<3, 3>& cmat, int gp, int eleGID) override;
 
     /// Update internal variables
-    void Update() override;
+    void update() override;
 
     /// Reset internal variables
     void reset_step() override;

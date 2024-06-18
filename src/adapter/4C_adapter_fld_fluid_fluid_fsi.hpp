@@ -62,7 +62,7 @@ namespace Adapter
 
     /// save results of current time step, do XFEM cut and refresh the
     /// merged fluid map extractor
-    void Update() override;
+    void update() override;
 
     /// solve for pure fluid-fluid-ale problem
     void Solve() override;

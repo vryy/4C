@@ -319,7 +319,7 @@ namespace Mat
     void post_setup(Teuchos::ParameterList& params, int eleGID) override;
 
     /// update
-    void Update() override;
+    void update() override;
 
     /// setup patient-specific AAA stuff
     virtual void SetupAAA(Teuchos::ParameterList& params, int eleGID);

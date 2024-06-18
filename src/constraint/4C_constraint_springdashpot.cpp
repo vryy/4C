@@ -990,7 +990,7 @@ void CONSTRAINTS::SpringDashpot::set_spring_type()
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::Update()
+void CONSTRAINTS::SpringDashpot::update()
 {
   // store current time step
   gapn_ = gap_;

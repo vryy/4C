@@ -614,9 +614,9 @@ void FSI::MonolithicNoNOX::update()
   }
 
   // update subsequent fields
-  structure_field()->Update();
-  fluid_field()->Update();
-  ale_field()->Update();
+  structure_field()->update();
+  fluid_field()->update();
+  ale_field()->update();
 }
 
 /*----------------------------------------------------------------------*/

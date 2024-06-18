@@ -299,7 +299,7 @@ void STR::MODELEVALUATOR::SpringDashpot::update_step_state(const double& timefac
         break;
     }
   }
-  for (const auto& spring : springs_) spring->Update();
+  for (const auto& spring : springs_) spring->update();
 }
 
 /*----------------------------------------------------------------------*

@@ -173,7 +173,7 @@ namespace Mat
     //    virtual int NumMat() const { return params_->nummat_; }
 
     /// Update
-    void Update() override;
+    void update() override;
 
     /// Reset time step
     void reset_step() override;

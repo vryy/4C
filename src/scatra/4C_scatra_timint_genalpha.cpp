@@ -345,7 +345,7 @@ void ScaTra::TimIntGenAlpha::compute_time_derivative()
  | current solution becomes most recent solution of next timestep       |
  |                                                             vg 11/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntGenAlpha::Update()
+void ScaTra::TimIntGenAlpha::update()
 {
   // set history variable to zero for not spoiling flux calculation
   // if (not incremental_) hist_->PutScalar(0.0);
@@ -362,7 +362,7 @@ void ScaTra::TimIntGenAlpha::Update()
   compute_time_derivative();
 
   // call base class routine
-  ScaTraTimIntImpl::Update();
+  ScaTraTimIntImpl::update();
 
   // solution of this step becomes most recent solution of last step
   phin_->Update(1.0, *phinp_, 0.0);

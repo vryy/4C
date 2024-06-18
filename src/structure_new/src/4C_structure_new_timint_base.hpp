@@ -153,7 +153,7 @@ namespace STR
       void PreUpdate() override {}
 
       /// Update routine for coupled problems with monolithic approach
-      void Update() override;
+      void update() override;
 
       /// Update routine for coupled problems with monolithic approach with time adaptivity
       void Update(double endtime) override = 0;

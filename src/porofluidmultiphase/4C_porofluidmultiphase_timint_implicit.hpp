@@ -128,7 +128,7 @@ namespace POROFLUIDMULTIPHASE
     void Solve() override;
 
     //! update the solution after convergence of the nonlinear iteration.
-    void Update() override;
+    void update() override;
 
     ///  compute time derivative
     virtual void compute_time_derivative() = 0;

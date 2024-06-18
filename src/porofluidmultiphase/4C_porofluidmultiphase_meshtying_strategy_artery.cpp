@@ -133,7 +133,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::prepare_time_step()
  | current solution becomes most recent solution of next timestep       |
  |                                                     kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Update()
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::update()
 {
   artnettimint_->TimeUpdate();
   return;

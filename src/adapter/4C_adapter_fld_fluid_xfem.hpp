@@ -64,7 +64,7 @@ namespace Adapter
     void prepare_time_step() override;
 
     /// update at time step end
-    void Update() override;
+    void update() override;
 
     /// output results
     void Output() override;

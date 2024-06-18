@@ -76,7 +76,7 @@ namespace Mat
     /** \brief Update all material related variables at the end of a time step
      *
      */
-    virtual void Update() = 0;
+    virtual void update() = 0;
 
     /** \brief Resets all material related variables i.e. in case of adaptive time stepping
      *

@@ -380,7 +380,7 @@ int Discret::ELEMENTS::Beam3r::evaluate(Teuchos::ParameterList& params,
       rtconv_gp_mass_ = rtnew_gp_mass_;
       rconv_gp_mass_ = rnew_gp_mass_;
       qconv_gp_dampstoch_ = qnew_gp_dampstoch_;
-      get_beam_material().Update();
+      get_beam_material().update();
       break;
     }
 

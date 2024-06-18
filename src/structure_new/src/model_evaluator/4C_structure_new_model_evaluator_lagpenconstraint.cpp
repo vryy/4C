@@ -250,7 +250,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::run_post_compute_x(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::LagPenConstraint::update_step_state(const double& timefac_n)
 {
-  constrman_->Update();
+  constrman_->update();
 
   // add the constraint force contributions to the old structural
   // residual state vector

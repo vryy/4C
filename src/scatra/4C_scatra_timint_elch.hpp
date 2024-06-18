@@ -103,7 +103,7 @@ namespace ScaTra
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update() override;
+    void update() override;
 
     /*--- query and output ---------------------------------------------------*/
 

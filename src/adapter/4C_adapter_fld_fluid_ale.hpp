@@ -68,7 +68,7 @@ namespace Adapter
     void prepare_time_step() override;
 
     /// Update to go from time step \f$t_n\f$ to \f$t_{n+1}\f$
-    void Update() override;
+    void update() override;
 
     /// Output current state of simulation
     void Output() override;

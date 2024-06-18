@@ -176,7 +176,7 @@ namespace
       }
     }
     FOUR_C_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
-    druckprag_->Update();
+    druckprag_->update();
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 1.0);
     for (int i = 3; i < 6; ++i) input_strain(i) = FAD(6, i, 0.0);
     druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
@@ -188,7 +188,7 @@ namespace
       }
     }
     FOUR_C_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
-    druckprag_->Update();
+    druckprag_->update();
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 0.2);
     for (int i = 3; i < 6; ++i) input_strain(i) = FAD(6, i, 0.0);
     druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);

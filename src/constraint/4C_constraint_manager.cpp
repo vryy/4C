@@ -384,7 +384,7 @@ void CONSTRAINTS::ConstrManager::UpdateLagrMult(double factor)
   }
 }
 
-void CONSTRAINTS::ConstrManager::Update() { lagr_mult_vec_old_->Update(1.0, *lagr_mult_vec_, 0.0); }
+void CONSTRAINTS::ConstrManager::update() { lagr_mult_vec_old_->Update(1.0, *lagr_mult_vec_, 0.0); }
 
 /*----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/

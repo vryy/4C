@@ -280,12 +280,12 @@ void Mat::ElastHyper::post_setup(Teuchos::ParameterList& params, const int eleGI
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::Update()
+void Mat::ElastHyper::update()
 {
   // loop map of associated potential summands
   for (auto& p : potsum_)
   {
-    p->Update();
+    p->update();
   }
 }
 

@@ -901,9 +901,9 @@ void FSI::MonolithicXFEM::update()
     coupit->second->Update(scaling_F);
 
   // update the single fields
-  StructurePoro()->Update();
-  fluid_field()->Update();
-  if (HaveAle()) ale_field()->Update();
+  StructurePoro()->update();
+  fluid_field()->update();
+  if (HaveAle()) ale_field()->update();
 }
 
 

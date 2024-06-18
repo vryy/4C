@@ -32,7 +32,7 @@ namespace POROFLUIDMULTIPHASE
     void prepare_time_step() override;
 
     //! update
-    void Update() override;
+    void update() override;
 
     //! output
     void Output() override;

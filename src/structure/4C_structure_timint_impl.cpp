@@ -2421,7 +2421,7 @@ int STR::TimIntImpl::uzawa_non_linear_newton_full()
 /*----------------------------------------------------------------------*/
 void STR::TimIntImpl::update_step_constraint()
 {
-  if (conman_->HaveConstraint()) conman_->Update();
+  if (conman_->HaveConstraint()) conman_->update();
 }
 
 /*----------------------------------------------------------------------*/
@@ -2442,7 +2442,7 @@ void STR::TimIntImpl::update_step_cardiovascular0_d()
 /*----------------------------------------------------------------------*/
 void STR::TimIntImpl::update_step_spring_dashpot()
 {
-  if (springman_->HaveSpringDashpot()) springman_->Update();
+  if (springman_->HaveSpringDashpot()) springman_->update();
 }
 
 /*----------------------------------------------------------------------*/

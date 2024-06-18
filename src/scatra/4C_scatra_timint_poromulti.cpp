@@ -275,10 +275,10 @@ void ScaTra::ScaTraTimIntPoroMultiOST::init()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiOST::Update()
+void ScaTra::ScaTraTimIntPoroMultiOST::update()
 {
-  TimIntOneStepTheta::Update();
-  ScaTraTimIntPoroMulti::Update();
+  TimIntOneStepTheta::update();
+  ScaTraTimIntPoroMulti::update();
 
   return;
 }
@@ -319,10 +319,10 @@ void ScaTra::ScaTraTimIntPoroMultiBDF2::init()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiBDF2::Update()
+void ScaTra::ScaTraTimIntPoroMultiBDF2::update()
 {
-  TimIntBDF2::Update();
-  ScaTraTimIntPoroMulti::Update();
+  TimIntBDF2::update();
+  ScaTraTimIntPoroMulti::update();
 
   return;
 }
@@ -364,10 +364,10 @@ void ScaTra::ScaTraTimIntPoroMultiGenAlpha::init()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiGenAlpha::Update()
+void ScaTra::ScaTraTimIntPoroMultiGenAlpha::update()
 {
-  TimIntGenAlpha::Update();
-  ScaTraTimIntPoroMulti::Update();
+  TimIntGenAlpha::update();
+  ScaTraTimIntPoroMulti::update();
 
   return;
 }
@@ -408,10 +408,10 @@ void ScaTra::ScaTraTimIntPoroMultiStationary::init()
  | current solution becomes most recent solution of next timestep       |
  |                                                         vuong  08/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiStationary::Update()
+void ScaTra::ScaTraTimIntPoroMultiStationary::update()
 {
-  TimIntStationary::Update();
-  ScaTraTimIntPoroMulti::Update();
+  TimIntStationary::update();
+  ScaTraTimIntPoroMulti::update();
 
   return;
 }

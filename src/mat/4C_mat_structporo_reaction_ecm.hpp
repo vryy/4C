@@ -141,7 +141,7 @@ namespace Mat
         const int gp);
 
     /// Update of GP data (e.g., history variables)
-    void Update() override;
+    void update() override;
 
     //! @name Visualization methods
 

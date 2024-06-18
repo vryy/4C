@@ -296,7 +296,7 @@ namespace CONTACT
 
     //! vector of contact pairs (pairs of elements, which might get in contact)
     std::vector<Teuchos::RCP<Beam3contactinterface>> pairs_;
-    //! vector of contact pairs of last time step. After Update() oldpairs_ is identical with pairs_
+    //! vector of contact pairs of last time step. After update() oldpairs_ is identical with pairs_
     //! until a new time
     // step starts. Therefore oldpairs_ can be used for output at the end of a time step after
     // Upadte() is called.
@@ -304,7 +304,7 @@ namespace CONTACT
 
     //! vector of close beam to solid contact pairs (pairs of elements, which might get in contact)
     std::vector<Teuchos::RCP<Beam3tosolidcontactinterface>> btsolpairs_;
-    //! vector of beam to solid contact pairs of last time step. After Update() oldpairs_ is
+    //! vector of beam to solid contact pairs of last time step. After update() oldpairs_ is
     //! identical with btsolpairs_ until a
     // new time step starts. Therefore oldbtsolpairs_ can be used for output at the end of a time
     // step after Upadte() is called.

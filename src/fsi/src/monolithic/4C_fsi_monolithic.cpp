@@ -696,7 +696,7 @@ void FSI::Monolithic::update()
       Core::UTILS::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   if (not timeadapton)
-    structure_field()->Update();  // constant dt
+    structure_field()->update();  // constant dt
   else
   {
     structure_field()->Update(Time());  // variable/adaptive dt
@@ -706,8 +706,8 @@ void FSI::Monolithic::update()
           ->UpdateStepSize(Dt());
   }
 
-  fluid_field()->Update();
-  ale_field()->Update();
+  fluid_field()->update();
+  ale_field()->update();
 }
 
 /*----------------------------------------------------------------------------*/

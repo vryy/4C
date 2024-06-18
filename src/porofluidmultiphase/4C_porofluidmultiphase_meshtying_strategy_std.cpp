@@ -40,7 +40,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::prepare_time_step() { return; }
  | current solution becomes most recent solution of next timestep       |
  |                                                     kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Update() { return; }
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::update() { return; }
 
 /*--------------------------------------------------------------------------*
  | initialize the linear solver                            kremheller 07/20 |
