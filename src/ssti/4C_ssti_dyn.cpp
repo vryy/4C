@@ -37,7 +37,7 @@ void ssti_drt()
 
   ssti->setup();
 
-  const int restart = problem->Restart();
+  const int restart = problem->restart();
   if (restart) ssti->read_restart(restart);
 
   ssti->SetupSystem();

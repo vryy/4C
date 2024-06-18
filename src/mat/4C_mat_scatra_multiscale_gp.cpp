@@ -418,7 +418,7 @@ void Mat::ScatraMultiScaleGP::new_result_file()
   if (eleowner_)
   {
     const int ndim = microproblem->NDim();
-    const int restart = Global::Problem::Instance()->Restart();
+    const int restart = Global::Problem::Instance()->restart();
     bool adaptname = true;
 
     // in case of restart, the new output file name has already been adapted
@@ -519,7 +519,7 @@ void Mat::ScatraMultiScaleGP::read_restart()
   Teuchos::RCP<ScaTra::TimIntOneStepTheta> microtimint = microdisnum_microtimint_map_[microdisnum_];
 
   // extract restart step
-  step_ = Global::Problem::Instance()->Restart();
+  step_ = Global::Problem::Instance()->restart();
 
   // set current state in micro-scale time integrator
   microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,

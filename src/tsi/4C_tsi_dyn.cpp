@@ -79,7 +79,7 @@ void tsi_dyn_drt()
       break;
   }  // end switch
 
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     // read the restart information, set vectors and variables

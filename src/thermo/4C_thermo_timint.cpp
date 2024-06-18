@@ -356,7 +356,7 @@ void THR::TimInt::OutputStep(bool forced_writerestart)
   {
     // restart has already been written or simulation has just started
     if ((writerestartevery_ and (step_ % writerestartevery_ == 0)) or
-        step_ == Global::Problem::Instance()->Restart())
+        step_ == Global::Problem::Instance()->restart())
       return;
     // if state already exists, add restart information
     if (writeglobevery_ and (step_ % writeglobevery_ == 0))

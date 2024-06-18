@@ -142,7 +142,7 @@ void STR::TimeInt::BaseDataGlobalState::init(const Teuchos::RCP<Core::FE::Discre
     stepnp_ = stepn_ + 1;
 
     // initialize restart step
-    restartstep_ = Global::Problem::Instance()->Restart();
+    restartstep_ = Global::Problem::Instance()->restart();
     if (restartstep_ < 0) FOUR_C_THROW("The restart step is expected to be positive.");
   }
 

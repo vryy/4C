@@ -179,10 +179,10 @@ void STR::MODELEVALUATOR::BeamInteraction::setup()
 
   // distribute problem according to bin distribution to procs ( in case of restart
   // partitioning is done during read_restart() )
-  if (not Global::Problem::Instance()->Restart()) partition_problem();
+  if (not Global::Problem::Instance()->restart()) partition_problem();
 
   // some actions need a partitioned system followed by a renewal of the partition
-  if (not Global::Problem::Instance()->Restart() and post_partition_problem()) partition_problem();
+  if (not Global::Problem::Instance()->restart() and post_partition_problem()) partition_problem();
 
   post_setup();
 

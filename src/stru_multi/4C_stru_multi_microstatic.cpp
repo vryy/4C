@@ -111,7 +111,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   printscreen_ = (ioflags.get<int>("STDOUTEVRY"));
 
 
-  restart_ = Global::Problem::Instance()->Restart();
+  restart_ = Global::Problem::Instance()->restart();
   restartevry_ = sdyn_macro.get<int>("RESTARTEVRY");
   iodisp_ = Core::UTILS::IntegralValue<int>(ioflags, "STRUCT_DISP");
   resevrydisp_ = sdyn_micro.get<int>("RESULTSEVRY");

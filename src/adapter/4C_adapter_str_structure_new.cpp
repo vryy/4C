@@ -149,7 +149,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // get the problem instance
   Global::Problem* problem = Global::Problem::Instance();
   // get the restart step
-  const int restart = problem->Restart();
+  const int restart = problem->restart();
 
   // ---------------------------------------------------------------------------
   // Define, initialize and start the timer

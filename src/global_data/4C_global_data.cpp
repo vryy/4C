@@ -114,7 +114,7 @@ std::string Global::Problem::ProblemName() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Global::Problem::Restart() const { return restartstep_; }
+int Global::Problem::restart() const { return restartstep_; }
 
 
 /*----------------------------------------------------------------------*/
@@ -174,7 +174,7 @@ Teuchos::RCP<Core::Communication::Communicators> Global::Problem::GetCommunicato
 void Global::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string& inputfile,
     std::string prefix, const std::string& restartkenner)
 {
-  if (Restart())
+  if (restart())
   {
     inputcontrol_ = Teuchos::rcp(new Core::IO::InputControl(restartkenner, comm));
 
@@ -187,7 +187,7 @@ void Global::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string
 
   outputcontrol_ = Teuchos::rcp(
       new Core::IO::OutputControl(comm, ProblemName(), spatial_approximation_type(), inputfile,
-          restartkenner, std::move(prefix), NDim(), Restart(), IOParams().get<int>("FILESTEPS"),
+          restartkenner, std::move(prefix), NDim(), restart(), IOParams().get<int>("FILESTEPS"),
           Core::UTILS::IntegralValue<bool>(IOParams(), "OUTPUT_BIN"), true));
 
   if (!Core::UTILS::IntegralValue<int>(IOParams(), "OUTPUT_BIN") && comm.MyPID() == 0)

@@ -174,7 +174,7 @@ void FS3I::ACFSI::read_restart()
   PartFS3I::read_restart();
 
   // AC specific restart stuff
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
 
   if (restart)
   {
@@ -255,7 +255,7 @@ void FS3I::ACFSI::Timeloop()
   SetFSISolution();
 
   // calculate inital time derivative, when restart was done from a part. FSI simulation
-  if (Global::Problem::Instance()->Restart() and
+  if (Global::Problem::Instance()->restart() and
       Core::UTILS::IntegralValue<int>(
           Global::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
   {
@@ -832,7 +832,7 @@ std::string FS3I::ACFSI::GetFileName(const int step)
 
   std::string filename;
 
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     const int crit_step = (int)(restart + fsiperiod_ / dt_ + 1e-14);

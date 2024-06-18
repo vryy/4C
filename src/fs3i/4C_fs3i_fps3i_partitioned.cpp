@@ -360,7 +360,7 @@ void FS3I::PartFPS3I::read_restart()
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
   Global::Problem* problem = Global::Problem::Instance();
-  const int restart = problem->Restart();
+  const int restart = problem->restart();
 
   if (restart)
   {

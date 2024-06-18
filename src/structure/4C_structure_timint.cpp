@@ -1976,7 +1976,7 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
     reset_step();
     // restart has already been written or simulation has just started
     if ((writerestartevery_ and (step_ % writerestartevery_ == 0)) or
-        step_ == Global::Problem::Instance()->Restart())
+        step_ == Global::Problem::Instance()->restart())
       return;
     // if state already exists, add restart information
     if (writeresultsevery_ and (step_ % writeresultsevery_ == 0))
@@ -1995,7 +1995,7 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
   // write restart step
   if ((writerestartevery_ and (step_ % writerestartevery_ == 0) and step_ != 0) or
       forced_writerestart or
-      Global::Problem::Instance()->RestartManager()->Restart(step_, discret_->Comm()))
+      Global::Problem::Instance()->RestartManager()->restart(step_, discret_->Comm()))
   {
     output_restart(datawritten);
     lastwrittenresultsstep_ = step_;

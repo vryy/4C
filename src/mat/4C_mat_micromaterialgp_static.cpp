@@ -106,7 +106,7 @@ Mat::MicroMaterialGP::~MicroMaterialGP()
 
 void Mat::MicroMaterialGP::read_restart()
 {
-  step_ = Global::Problem::Instance()->Restart();
+  step_ = Global::Problem::Instance()->restart();
   microstaticmap_[microdisnum_]->read_restart(step_, dis_, lastalpha_, restartname_);
 
   *oldalpha_ = *lastalpha_;
@@ -174,7 +174,7 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
   if (eleowner)
   {
     const int ndim = Global::Problem::Instance()->NDim();
-    const int restart = Global::Problem::Instance()->Restart();
+    const int restart = Global::Problem::Instance()->restart();
     bool adaptname = true;
     // in case of restart, the new output file name is already adapted
     if (restart) adaptname = false;

@@ -1481,7 +1481,7 @@ int STR::TimIntImpl::NewtonFull()
 
   if (outputeveryiter_)
   {
-    int restart = Global::Problem::Instance()->Restart();
+    int restart = Global::Problem::Instance()->restart();
     if (stepn_ == (restart + 1)) outputcounter_ = 0;
     OutputEveryIter(true);
   }
@@ -1868,7 +1868,7 @@ int STR::TimIntImpl::NewtonLS()
 
   if (outputeveryiter_)
   {
-    int restart = Global::Problem::Instance()->Restart();
+    int restart = Global::Problem::Instance()->restart();
     if (stepn_ == (restart + 1)) outputcounter_ = 0;
     OutputEveryIter(true);
   }
@@ -3328,7 +3328,7 @@ int STR::TimIntImpl::PTC()
 
   if (outputeveryiter_)
   {
-    int restart = Global::Problem::Instance()->Restart();
+    int restart = Global::Problem::Instance()->restart();
     if (stepn_ == (restart + 1)) outputcounter_ = 0;
     OutputEveryIter(true);
   }

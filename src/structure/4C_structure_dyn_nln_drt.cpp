@@ -125,7 +125,7 @@ void dyn_nlnstructural_drt()
       Core::UTILS::IntegralValue<int>(Global::Problem::Instance()->IOParams(), "WRITE_FINAL_STATE");
 
   // do restart
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     structadapter->read_restart(restart);

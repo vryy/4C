@@ -1591,14 +1591,14 @@ namespace FLD
 
   /*----------------------------------------------------------------------
 
-  Restart for scatra mean fields (statistics was restarted via Restart() )
+  Restart for scatra mean fields (statistics was restarted via restart() )
 
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::ReadRestartScaTra(
       Core::IO::DiscretizationReader& scatrareader, int step)
   {
     // we have only to read in the mean field.
-    // The rest of the restart was already done during the Restart() call
+    // The rest of the restart was already done during the restart() call
     if (statistics_general_mean_ != Teuchos::null)
     {
       if (samstart_ < step && step <= samstop_)

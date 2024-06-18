@@ -189,7 +189,7 @@ namespace Global
     std::string ProblemName() const;
 
     /// return restart step
-    [[nodiscard]] int Restart() const;
+    [[nodiscard]] int restart() const;
 
     /// number of space dimensions (as specified in the input file)
     int NDim() const;

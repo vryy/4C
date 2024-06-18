@@ -165,7 +165,7 @@ void STR::MonitorDbc::setup()
       Core::UTILS::IntegralValue<int>(sublist_IO_monitor_structure_dbc, "WRITE_HEADER"));
 
   // handle restart
-  if (Global::Problem::Instance()->Restart())
+  if (Global::Problem::Instance()->restart())
   {
     const std::string full_restart_dirpath(
         Global::Problem::Instance()->OutputControlFile()->restart_name() + "_monitor_dbc");

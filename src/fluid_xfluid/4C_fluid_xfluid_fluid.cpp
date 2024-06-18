@@ -127,7 +127,7 @@ void FLD::XFluidFluid::CreateInitialState()
   //--------------------------------------------------
   // Create XFluidFluid State
   //-----------------------------------------------
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
 
   if (restart)
   {

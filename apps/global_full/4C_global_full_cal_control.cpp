@@ -48,7 +48,7 @@ void ntacal()
 {
   using namespace FourC;
 
-  int restart = Global::Problem::Instance()->Restart();
+  int restart = Global::Problem::Instance()->restart();
 
   // choose the entry-routine depending on the problem type
   switch (Global::Problem::Instance()->GetProblemType())

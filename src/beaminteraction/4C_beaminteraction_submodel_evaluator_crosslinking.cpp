@@ -196,7 +196,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_setup()
 {
   check_init_setup();
 
-  if (not Global::Problem::Instance()->Restart())
+  if (not Global::Problem::Instance()->restart())
   {
     // in case of initially set crosslinker
     if (crosslinking_params_ptr_->total_num_init_crosslinker() > 0)

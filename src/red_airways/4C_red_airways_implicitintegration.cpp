@@ -519,7 +519,7 @@ void Airway::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
           acini_ele->UpdateRelaxedVolume(val);
 
           // adjust acini volumes in the vectors used in this function
-          if (not Global::Problem::Instance()->Restart())
+          if (not Global::Problem::Instance()->restart())
           {
             (*acini_e_volumenp_)[i] = val;
             (*acini_e_volumen_)[i] = val;

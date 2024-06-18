@@ -38,7 +38,7 @@ void thr_dyn_drt()
       Teuchos::rcp(new Adapter::ThermoBaseAlgorithm(tdyn, thermodis));
 
   // do restart if demanded from input file
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     thermoonly->ThermoField().read_restart(restart);

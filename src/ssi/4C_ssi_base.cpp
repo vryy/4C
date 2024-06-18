@@ -827,7 +827,7 @@ bool SSI::SSIBase::IsRestart() const
   // get the global problem
   const auto* problem = Global::Problem::Instance();
 
-  const int restartstep = problem->Restart();
+  const int restartstep = problem->restart();
 
   return (restartstep > 0);
 }

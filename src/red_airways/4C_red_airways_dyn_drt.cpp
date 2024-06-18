@@ -154,7 +154,7 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   }
 
   // Initial field from restart or calculated by given function
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart && !CoupledTo3D)
   {
     // Read the restart information, set vectors and variables
@@ -197,7 +197,7 @@ void redairway_tissue_dyn()
       Teuchos::rcp(new Airway::RedAirwayTissue(actdis->Comm(), rawdyn));
 
   // Read the restart information, set vectors and variables
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     redairway_tissue->read_restart(restart);

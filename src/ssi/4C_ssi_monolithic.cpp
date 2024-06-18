@@ -118,7 +118,7 @@ bool SSI::SsiMono::is_uncomplete_of_matrices_necessary_for_mesh_tying() const
     {
       auto* problem = Global::Problem::Instance();
       // restart based on time step
-      if (Step() == problem->Restart() + 1) return true;
+      if (Step() == problem->restart() + 1) return true;
     }
   }
 

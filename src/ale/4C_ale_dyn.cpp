@@ -39,7 +39,7 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   // read the restart information, set vectors and variables if necessary
   // -------------------------------------------------------------------
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart) aletimint->read_restart(restart);
 
   // -------------------------------------------------------------------

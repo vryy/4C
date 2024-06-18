@@ -99,7 +99,7 @@ STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input pa
 
   // enable restart for adaptive timestepping - however initial timestep size is still read from
   // datfile! (mhv 01/2015)
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     // read restart of marching time-integrator and reset initial time and step for adaptive loop

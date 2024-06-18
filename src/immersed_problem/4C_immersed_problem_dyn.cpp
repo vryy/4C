@@ -106,7 +106,7 @@ void immersed_problem_drt()
           // PARTITIONED FSI ALGORITHM
 
           // read restart step
-          const int restart = Global::Problem::Instance()->Restart();
+          const int restart = Global::Problem::Instance()->restart();
           if (restart)
             algo->read_restart(restart);
           else

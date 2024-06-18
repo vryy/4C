@@ -64,7 +64,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   // get the problem instance
   Global::Problem* problem = Global::Problem::Instance();
   // get the restart step
-  const int restart = problem->Restart();
+  const int restart = problem->restart();
 
   if (!matchinggrid_)
   {

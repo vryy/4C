@@ -214,7 +214,7 @@ void FLD::XFluid::init(bool createinitialstate)
   //
   // REMARK: ivelnp_ and idispnp_ will be set again for the new time step in PrepareXFEMSolve()
 
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
 
   if (restart) condition_manager_->read_restart(restart);
 
@@ -4446,7 +4446,7 @@ void FLD::XFluid::output()
 void FLD::XFluid::SetInitialFlowField(
     const Inpar::FLUID::InitialField initfield, const int startfuncno)
 {
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
 
   if (restart) return;
 

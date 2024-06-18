@@ -42,7 +42,7 @@ void particle_drt()
   particlealgorithm->init(initialparticles);
 
   // read restart information
-  const int restart = problem->Restart();
+  const int restart = problem->restart();
   if (restart) particlealgorithm->read_restart(restart);
 
   // setup particle algorithm

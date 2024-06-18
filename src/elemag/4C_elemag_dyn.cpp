@@ -111,7 +111,7 @@ void electromagnetics_drt()
       Teuchos::rcp(new Teuchos::ParameterList(elemagparams));
 
   // set restart step if required
-  int restart = problem->Restart();
+  int restart = problem->restart();
   params->set<int>("restart", restart);
 
   // create algorithm depending on time-integration scheme

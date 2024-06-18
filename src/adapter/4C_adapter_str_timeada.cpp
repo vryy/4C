@@ -128,7 +128,7 @@ void Adapter::StructureTimeAda::setup_time_ada()
   locerrdisn_ = Core::LinAlg::CreateVector(*(stm_->dof_row_map()), true);
 
   // enable restart for adaptive timestepping
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     // read restart of marching time-integrator and reset initial time and step for adaptive loop

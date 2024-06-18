@@ -492,7 +492,7 @@ void STR::TimeInt::Base::output_step(bool forced_writerestart)
     reset_step();
     // restart has already been written or simulation has just started
     if (dataio_->should_write_restart_for_step(dataglobalstate_->get_step_n()) or
-        dataglobalstate_->get_step_n() == Global::Problem::Instance()->Restart())
+        dataglobalstate_->get_step_n() == Global::Problem::Instance()->restart())
       return;
     // if state already exists, add restart information
     if (dataio_->write_results_for_this_step(dataglobalstate_->get_step_n()))

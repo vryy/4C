@@ -98,7 +98,7 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   // setup wrapper
   sta_wrapper_ = Teuchos::rcp(new Adapter::StructureTimeLoop(sta_));
 
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     const STR::TimeInt::Base& sti = *stm_;

@@ -378,7 +378,7 @@ void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int inte
   const std::string path(Core::IO::ExtractPath(ofile_path));
   const std::string dir_name(
       Core::IO::RemoveRestartStepFromFileName(
-          Core::IO::ExtractFileName(ofile_path), Global::Problem::Instance()->Restart()) +
+          Core::IO::ExtractFileName(ofile_path), Global::Problem::Instance()->restart()) +
       "_conservation");
 
   std::string full_filepath(path + dir_name);

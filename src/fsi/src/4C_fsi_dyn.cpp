@@ -127,7 +127,7 @@ void fluid_ale_drt()
   }
 
   Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
-  const int restart = problem->Restart();
+  const int restart = problem->restart();
   if (restart)
   {
     // read the restart information, set vectors and variables
@@ -188,7 +188,7 @@ void fluid_xfem_drt()
     Teuchos::RCP<FSI::FluidXFEMAlgorithm> fluidalgo =
         Teuchos::rcp(new FSI::FluidXFEMAlgorithm(comm));
 
-    const int restart = Global::Problem::Instance()->Restart();
+    const int restart = Global::Problem::Instance()->restart();
     if (restart)
     {
       // read the restart information, set vectors and variables
@@ -213,7 +213,7 @@ void fluid_xfem_drt()
 
     //--------------------------------------------------------------
     // restart the simulation
-    const int restart = Global::Problem::Instance()->Restart();
+    const int restart = Global::Problem::Instance()->restart();
     if (restart)
     {
       // read the restart information, set vectors and variables
@@ -288,7 +288,7 @@ void fluid_freesurf_drt()
 
       fsi = Teuchos::rcp(new FSI::MonolithicFS(comm, fsidyn));
 
-      const int restart = Global::Problem::Instance()->Restart();
+      const int restart = Global::Problem::Instance()->restart();
       if (restart)
       {
         // read the restart information, set vectors and variables
@@ -400,7 +400,7 @@ void fsi_immersed_drt()
     Teuchos::rcp_dynamic_cast<FSI::DirichletNeumannVel>(fsi, true)->SetBinning(binningstrategy);
   }
 
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     // read the restart information, set vectors and variables
@@ -601,7 +601,7 @@ void fsi_ale_drt()
 
       // read the restart information, set vectors and variables ---
       // be careful, dofmaps might be changed here in a Redistribute call
-      const int restart = Global::Problem::Instance()->Restart();
+      const int restart = Global::Problem::Instance()->restart();
       if (restart)
       {
         fsi->read_restart(restart);
@@ -703,7 +703,7 @@ void fsi_ale_drt()
 
       // read the restart information, set vectors and variables ---
       // be careful, dofmaps might be changed here in a Redistribute call
-      const int restart = Global::Problem::Instance()->Restart();
+      const int restart = Global::Problem::Instance()->restart();
       if (restart)
       {
         fsi->read_restart(restart);
@@ -753,7 +753,7 @@ void fsi_ale_drt()
           FOUR_C_THROW("unsupported partitioned FSI scheme");
           break;
       }
-      const int restart = Global::Problem::Instance()->Restart();
+      const int restart = Global::Problem::Instance()->restart();
       if (restart)
       {
         // read the restart information, set vectors and variables
@@ -858,7 +858,7 @@ void xfsi_drt()
 
       // read the restart information, set vectors and variables ---
       // be careful, dofmaps might be changed here in a Redistribute call
-      const int restart = Global::Problem::Instance()->Restart();
+      const int restart = Global::Problem::Instance()->restart();
       if (restart)
       {
         fsi->read_restart(restart);
@@ -907,7 +907,7 @@ void xfsi_drt()
           break;
       }
 
-      const int restart = Global::Problem::Instance()->Restart();
+      const int restart = Global::Problem::Instance()->restart();
       if (restart)
       {
         // read the restart information, set vectors and variables
@@ -1015,7 +1015,7 @@ void xfpsi_drt()
       // be careful, dofmaps might be changed here in a Redistribute call
       const int restart =
           Global::Problem::Instance()
-              ->Restart();  // not adapated at the moment .... Todo check it .. ChrAg
+              ->restart();  // not adapated at the moment .... Todo check it .. ChrAg
       if (restart)
       {
         fsi->read_restart(restart);

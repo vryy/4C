@@ -258,7 +258,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
     notsetup_ = false;
   }
 
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     const bool restartfrompartfsi =

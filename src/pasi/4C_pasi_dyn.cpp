@@ -82,7 +82,7 @@ void pasi_dyn()
   algo->init();
 
   // read restart information
-  const int restart = problem->Restart();
+  const int restart = problem->restart();
   if (restart) algo->read_restart(restart);
 
   // setup pasi algorithm

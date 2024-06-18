@@ -192,7 +192,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   // REMARK: We don't want to do this at the beginning, to be able to use std
   // Adapter::Coupling for FA-Coupling
   //-------------------------------------------------------------------------
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (not restart)
     fluid_field()->CreateInitialState();  // otherwise called within the fluid_field-Restart when
                                           // Ale displacements are correct
