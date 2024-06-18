@@ -411,7 +411,10 @@ bool CONTACT::AbstractStrategy::redistribute_contact_old(
     interfaces()[i]->redistribute();
 
     // call fill complete again
-    interfaces()[i]->fill_complete(true, maxdof_, ivel_[i]);
+    interfaces()[i]->fill_complete(Global::Problem::instance()->discretization_map(),
+        Global::Problem::instance()->binning_strategy_params(),
+        Global::Problem::instance()->output_control_file(),
+        Global::Problem::instance()->spatial_approximation_type(), true, maxdof_, ivel_[i]);
 
     // print new parallel distribution
     if (get_comm().MyPID() == 0)
@@ -2798,7 +2801,9 @@ void CONTACT::AbstractStrategy::print_active_set() const
 void CONTACT::AbstractStrategy::visualize_gmsh(const int step, const int iter)
 {
   // visualization with gmsh
-  for (int i = 0; i < (int)interfaces().size(); ++i) interfaces()[i]->visualize_gmsh(step, iter);
+  for (int i = 0; i < (int)interfaces().size(); ++i)
+    interfaces()[i]->visualize_gmsh(
+        step, iter, Global::Problem::instance()->output_control_file()->file_name_only_prefix());
 }
 
 /*----------------------------------------------------------------------*

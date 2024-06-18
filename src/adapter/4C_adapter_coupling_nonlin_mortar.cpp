@@ -530,8 +530,10 @@ void Adapter::CouplingNonLinMortar::complete_interface(
     bool isFinalDistribution = false;
     if (parallelRedist == Inpar::Mortar::ParallelRedist::redist_none || comm_->NumProc() == 1)
       isFinalDistribution = true;
-
-    interface->fill_complete(isFinalDistribution);
+    interface->fill_complete(Global::Problem::instance()->discretization_map(),
+        Global::Problem::instance()->binning_strategy_params(),
+        Global::Problem::instance()->output_control_file(),
+        Global::Problem::instance()->spatial_approximation_type(), isFinalDistribution);
   }
 
   // create binary search tree
@@ -555,7 +557,10 @@ void Adapter::CouplingNonLinMortar::complete_interface(
     interface->redistribute();
 
     // call fill complete again
-    interface->fill_complete(true);
+    interface->fill_complete(Global::Problem::instance()->discretization_map(),
+        Global::Problem::instance()->binning_strategy_params(),
+        Global::Problem::instance()->output_control_file(),
+        Global::Problem::instance()->spatial_approximation_type(), true);
 
     // re create binary search tree
     interface->create_search_tree();
@@ -742,7 +747,10 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
         comm_->NumProc() == 1)
       isFinalDistribution = true;
 
-    interface->fill_complete(isFinalDistribution);
+    interface->fill_complete(Global::Problem::instance()->discretization_map(),
+        Global::Problem::instance()->binning_strategy_params(),
+        Global::Problem::instance()->output_control_file(),
+        Global::Problem::instance()->spatial_approximation_type(), isFinalDistribution);
   }
 
   // store old row maps (before parallel redistribution)

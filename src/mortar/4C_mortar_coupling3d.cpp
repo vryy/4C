@@ -8,12 +8,10 @@
 /*----------------------------------------------------------------------*/
 #include "4C_mortar_coupling3d.hpp"
 
-#include "4C_contact_interpolator.hpp"  // MT interpolator is located in here
 #include "4C_fem_discretization.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
-#include "4C_mortar_calc_utils.hpp"
 #include "4C_mortar_defines.hpp"
 #include "4C_mortar_integrator.hpp"
 #include "4C_mortar_node.hpp"

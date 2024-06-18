@@ -19,6 +19,7 @@
 #include "4C_contact_interface.hpp"
 #include "4C_contact_lagrange_strategy.hpp"
 #include "4C_contact_wear_interface.hpp"
+#include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_wear.hpp"
 #include "4C_io.hpp"
@@ -4674,7 +4675,10 @@ bool Wear::LagrangeStrategyWear::redistribute_contact(
     interface_[i]->redistribute();
 
     // call fill complete again
-    interface_[i]->fill_complete(true, maxdof_);
+    interface_[i]->fill_complete(Global::Problem::instance()->discretization_map(),
+        Global::Problem::instance()->binning_strategy_params(),
+        Global::Problem::instance()->output_control_file(),
+        Global::Problem::instance()->spatial_approximation_type(), true, maxdof_);
 
     // print new parallel distribution
     interface_[i]->print_parallel_distribution();

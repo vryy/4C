@@ -376,7 +376,9 @@ void Adapter::CouplingPoroMortar::complete_interface(
 {
   // finalize the contact interface construction
   int maxdof = masterdis->dof_row_map()->MaxAllGID();
-  interface->fill_complete(true, maxdof);
+  interface->fill_complete({}, Global::Problem::instance()->binning_strategy_params(),
+      Global::Problem::instance()->output_control_file(),
+      Global::Problem::instance()->spatial_approximation_type(), true, maxdof);
 
   // interface->create_volume_ghosting(*masterdis);
 

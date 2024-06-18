@@ -164,10 +164,26 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     if (mrtrcond != nullptr)
     {
       mortar_coupling_ = Teuchos::rcp(new Mortar::MultiFieldCoupling());
-      mortar_coupling_->push_back_coupling(
-          structure_field()->discretization(), 0, std::vector<int>(3, 1));
-      mortar_coupling_->push_back_coupling(
-          thermo_field()->discretization(), 0, std::vector<int>(1, 1));
+      mortar_coupling_->push_back_coupling(structure_field()->discretization(), 0,
+          std::vector<int>(3, 1), Global::Problem::instance()->mortar_coupling_params(),
+          Global::Problem::instance()->contact_dynamic_params(),
+          Global::Problem::instance()->binning_strategy_params(),
+          {{"structure", Global::Problem::instance()->get_dis("structure")},
+              {"thermo", Global::Problem::instance()->get_dis("thermo")}},
+          Global::Problem::instance()->function_manager(),
+          Global::Problem::instance()->output_control_file(),
+          Global::Problem::instance()->spatial_approximation_type(),
+          Global::Problem::instance()->n_dim());
+      mortar_coupling_->push_back_coupling(thermo_field()->discretization(), 0,
+          std::vector<int>(1, 1), Global::Problem::instance()->mortar_coupling_params(),
+          Global::Problem::instance()->contact_dynamic_params(),
+          Global::Problem::instance()->binning_strategy_params(),
+          {{"structure", Global::Problem::instance()->get_dis("structure")},
+              {"thermo", Global::Problem::instance()->get_dis("thermo")}},
+          Global::Problem::instance()->function_manager(),
+          Global::Problem::instance()->output_control_file(),
+          Global::Problem::instance()->spatial_approximation_type(),
+          Global::Problem::instance()->n_dim());
     }
   }
 
@@ -496,7 +512,7 @@ void TSI::Algorithm::prepare_contact_strategy()
     // ---------------------------------------------------------------------
     CONTACT::STRATEGY::Factory factory;
     factory.init(structure_field()->discretization());
-    factory.setup();
+    factory.setup(Global::Problem::instance()->n_dim());
 
     // check the problem dimension
     factory.check_dimension();

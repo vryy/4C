@@ -66,7 +66,7 @@ void Solid::ModelEvaluator::Meshtying::setup()
   // create the meshtying factory
   Mortar::STRATEGY::FactoryMT factory;
   factory.init(global_state_ptr()->get_discret());
-  factory.setup();
+  factory.setup(Global::Problem::instance()->n_dim());
 
   // check the problem dimension
   factory.check_dimension();

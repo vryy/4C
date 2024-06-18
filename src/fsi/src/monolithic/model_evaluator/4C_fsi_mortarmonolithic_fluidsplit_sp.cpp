@@ -212,7 +212,11 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system()
 
     coupling_solid_fluid_mortar_->setup(structure_field()->discretization(),
         fluid_field()->discretization(), ale_field()->write_access_discretization(), coupleddof,
-        "FSICoupling", comm_, Global::Problem::instance()->function_manager(), true);
+        "FSICoupling", comm_, Global::Problem::instance()->function_manager(),
+        Global::Problem::instance()->binning_strategy_params(),
+        Global::Problem::instance()->discretization_map(),
+        Global::Problem::instance()->output_control_file(),
+        Global::Problem::instance()->spatial_approximation_type(), true);
 
     // fluid to ale at the interface
     interface_coup_fluid_ale.setup_condition_coupling(*fluid_field()->discretization(),

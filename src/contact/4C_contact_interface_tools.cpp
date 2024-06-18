@@ -28,7 +28,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Visualize contact stuff with gmsh                         popp 08/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::visualize_gmsh(const int step, const int iter)
+void CONTACT::Interface::visualize_gmsh(
+    const int step, const int iter, const std::string& file_name_only_prefix)
 {
   //**********************************************************************
   // GMSH output of all interface elements
@@ -36,9 +37,7 @@ void CONTACT::Interface::visualize_gmsh(const int step, const int iter)
   // construct unique filename for gmsh output
   // basic information
   std::ostringstream filename;
-  const std::string filebase =
-      Global::Problem::instance()->output_control_file()->file_name_only_prefix();
-  filename << "o/gmsh_output/" << filebase << "_co_id";
+  filename << "o/gmsh_output/" << file_name_only_prefix << "_co_id";
   if (id_ < 10)
     filename << 0;
   else if (id_ > 99)
@@ -699,9 +698,7 @@ void CONTACT::Interface::visualize_gmsh(const int step, const int iter)
 
   // create files for visualization of slave dops for every layer
   std::ostringstream filenametn;
-  const std::string filebasetn =
-      Global::Problem::instance()->OutputControlFile()->file_name_only_prefix();
-  filenametn << "o/gmsh_output/" << filebasetn << "_";
+  filenametn << "o/gmsh_output/" << file_name_only_prefix << "_";
 
   if (step < 10)
     filenametn << 0 << 0 << 0 << 0;
@@ -870,9 +867,7 @@ void CONTACT::Interface::visualize_gmsh(const int step, const int iter)
   //**********************************************************************
 #ifdef MORTARGMSHCTN
   std::ostringstream filenamectn;
-  const std::string filebasectn =
-      Global::Problem::instance()->OutputControlFile()->file_name_only_prefix();
-  filenamectn << "o/gmsh_output/" << filebasectn << "_";
+  filenamectn << "o/gmsh_output/" << file_name_only_prefix << "_";
   if (step < 10)
     filenamectn << 0 << 0 << 0 << 0;
   else if (step < 100)

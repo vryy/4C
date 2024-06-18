@@ -34,10 +34,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Mortar::STRATEGY::FactoryMT::setup()
+void Mortar::STRATEGY::FactoryMT::setup(const int dim)
 {
   check_init();
-  Mortar::STRATEGY::Factory::setup();
+  Mortar::STRATEGY::Factory::setup(dim);
 
   set_is_setup();
 
@@ -443,7 +443,9 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
 
     // create an empty meshtying interface and store it in this Manager
     // (for structural meshtying we currently choose redundant master storage)
-    interfaces.push_back(Mortar::Interface::create(groupid1, get_comm(), dim, mtparams));
+    interfaces.push_back(Mortar::Interface::create(groupid1, get_comm(), dim, mtparams,
+        Global::Problem::instance()->output_control_file(),
+        Global::Problem::instance()->spatial_approximation_type()));
 
     // get it again
     Teuchos::RCP<Mortar::Interface> interface = interfaces[(int)interfaces.size() - 1];
@@ -557,7 +559,10 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
     }
 
     //-------------------- finalize the meshtying interface construction
-    interface->fill_complete(true, maxdof);
+    interface->fill_complete(Global::Problem::instance()->discretization_map(),
+        Global::Problem::instance()->binning_strategy_params(),
+        Global::Problem::instance()->output_control_file(),
+        Global::Problem::instance()->spatial_approximation_type(), true, maxdof);
 
   }  // for (int i=0; i<(int)contactconditions.size(); ++i)
   if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;

@@ -13,7 +13,6 @@
 #include "4C_fem_nurbs_discretization.hpp"
 #include "4C_fem_nurbs_discretization_control_point.hpp"
 #include "4C_fem_nurbs_discretization_knotvector.hpp"
-#include "4C_global_data.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
@@ -717,15 +716,10 @@ int Mortar::SortConvexHullPoints(bool out, Core::LinAlg::SerialDenseMatrix& tran
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Mortar::UTILS::create_volume_ghosting(const Core::FE::Discretization& dis_src,
-    const std::vector<std::string> dis_tar, std::vector<std::pair<int, int>> material_links,
-    bool check_on_in, bool check_on_exit)
+    const std::vector<Teuchos::RCP<Core::FE::Discretization>>& voldis,
+    std::vector<std::pair<int, int>> material_links, bool check_on_in, bool check_on_exit)
 {
-  if (dis_tar.size() == 0) return;
-
-  Global::Problem* problem = Global::Problem::instance();
-  std::vector<Teuchos::RCP<Core::FE::Discretization>> voldis;
-  for (int name = 0; name < (int)dis_tar.size(); ++name)
-    voldis.push_back(problem->get_dis(dis_tar.at(name)));
+  if (voldis.size() == 0) return;
 
   if (check_on_in)
     for (int c = 1; c < (int)voldis.size(); ++c)

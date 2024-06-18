@@ -15,6 +15,7 @@
 
 #include "4C_coupling_adapter_base.hpp"
 #include "4C_fem_general_shape_function_type.hpp"
+#include "4C_io_control.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Map.h>
@@ -103,10 +104,14 @@ namespace Coupling::Adapter
         const std::string& couplingcond,     ///< string for coupling condition
         const Epetra_Comm& comm,             ///< communicator
         const Core::UTILS::FunctionManager& function_manager,  ///< function manager
-        const bool slavewithale = false,                       ///< flag defining if slave is ALE
-        const bool slidingale = false,                         ///< flag indicating sliding ALE case
-        const int nds_master = 0,                              ///< master dofset number
-        const int nds_slave = 0                                ///< slave dofset number
+        const Teuchos::ParameterList& binning_params,          ///< parameters for binning strategy
+        const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
+        Teuchos::RCP<Core::IO::OutputControl> output_control,
+        Core::FE::ShapeFunctionType spatial_approximation_type,
+        const bool slavewithale = false,  ///< flag defining if slave is ALE
+        const bool slidingale = false,    ///< flag indicating sliding ALE case
+        const int nds_master = 0,         ///< master dofset number
+        const int nds_slave = 0           ///< slave dofset number
     );
 
     /*! setup the machinery (generalized version)
@@ -127,8 +132,12 @@ namespace Coupling::Adapter
         const std::map<int, Teuchos::RCP<Core::Elements::Element>>&
             masterelements,  ///< master elements
         const std::map<int, Teuchos::RCP<Core::Elements::Element>>&
-            slaveelements,                ///< slave elements
-        const Epetra_Comm& comm,          ///< communicator
+            slaveelements,                             ///< slave elements
+        const Epetra_Comm& comm,                       ///< communicator
+        const Teuchos::ParameterList& binning_params,  ///< parameters for binning strategy
+        const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
+        Teuchos::RCP<Core::IO::OutputControl> output_control,
+        Core::FE::ShapeFunctionType spatial_approximation_type,
         const bool slavewithale = false,  ///< flag defining if slave is ALE
         const bool slidingale = false,    ///< flag indicating sliding ALE case
         const int nds_master = 0,         ///< master dofset number

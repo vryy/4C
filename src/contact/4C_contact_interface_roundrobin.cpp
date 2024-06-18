@@ -12,6 +12,7 @@
 #include "4C_contact_friction_node.hpp"
 #include "4C_contact_interface.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -377,7 +378,10 @@ void CONTACT::Interface::round_robin_change_ownership()
   // call the (very) expensive FILLCOMPLETE()!
   // ********************************************
   // make sure discretization is complete
-  fill_complete(true);
+  fill_complete(Global::Problem::instance()->discretization_map(),
+      Global::Problem::instance()->binning_strategy_params(),
+      Global::Problem::instance()->output_control_file(),
+      Global::Problem::instance()->spatial_approximation_type(), true);
 
   return;
 }
@@ -461,7 +465,10 @@ void CONTACT::Interface::round_robin_detect_ghosting()
   // finally extend ghosting
   discret().export_column_elements(*eextendedghosting_);
   discret().export_column_nodes(*nextendedghosting_);
-  fill_complete(true);
+  fill_complete(Global::Problem::instance()->discretization_map(),
+      Global::Problem::instance()->binning_strategy_params(),
+      Global::Problem::instance()->output_control_file(),
+      Global::Problem::instance()->spatial_approximation_type(), true);
 
   // reset extended ghosting maps
   eextendedghosting_ = Teuchos::null;

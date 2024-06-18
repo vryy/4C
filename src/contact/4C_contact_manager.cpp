@@ -526,7 +526,10 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
       interface->update_parallel_layout_and_data_structures(false, true, maxdof, 0.0);
     }
     else
-      interface->fill_complete(true, maxdof);
+      interface->fill_complete(Global::Problem::instance()->discretization_map(),
+          Global::Problem::instance()->binning_strategy_params(),
+          Global::Problem::instance()->output_control_file(),
+          Global::Problem::instance()->spatial_approximation_type(), true, maxdof);
 
     if ((contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::poroelast ||
             contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::poroscatra) &&
@@ -1228,7 +1231,7 @@ void CONTACT::Manager::read_restart(Core::IO::DiscretizationReader& reader,
          ++i)
       dynamic_cast<CONTACT::AbstractStrategy&>(get_strategy())
           .contact_interfaces()[i]
-          ->create_volume_ghosting();
+          ->create_volume_ghosting(Global::Problem::instance()->discretization_map());
   }
 
   // If Parent Elements are required, we need to reconnect them before contact restart!

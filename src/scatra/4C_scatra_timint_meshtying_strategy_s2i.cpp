@@ -2237,7 +2237,10 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
         std::vector<int> coupleddof(scatratimint_->num_dof_per_node(), 1);
         icoupmortar.setup_interface(scatratimint_->discretization(),
             scatratimint_->discretization(), coupleddof, mastergnodes, slavegnodes, masterelements,
-            slaveelements, scatratimint_->discretization()->get_comm());
+            slaveelements, scatratimint_->discretization()->get_comm(),
+            Global::Problem::instance()->binning_strategy_params(), {},
+            Global::Problem::instance()->output_control_file(),
+            Global::Problem::instance()->spatial_approximation_type());
 
         // extract mortar interface
         Mortar::Interface& interface = *icoupmortar.interface();
@@ -2286,7 +2289,9 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
                                                          .sublist("PARALLEL REDISTRIBUTION")
                                                          .get<std::string>("PARALLEL_REDIST"));
             interface.redistribute();
-            interface.fill_complete(true);
+            interface.fill_complete({}, Global::Problem::instance()->binning_strategy_params(),
+                Global::Problem::instance()->output_control_file(),
+                Global::Problem::instance()->spatial_approximation_type(), true);
             interface.print_parallel_distribution();
             interface.create_search_tree();
           }

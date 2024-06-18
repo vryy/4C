@@ -222,26 +222,6 @@ void PoroElast::Monolithic::solve()
     iter_ += 1;
   }  // end equilibrium loop
 
-  //---------------------------------------------- output of number of iterations
-  //  {
-  //    std::ostringstream s;
-  //    s << std::right << std::setw(16) << std::scientific << Time()
-  //      << std::right << std::setw(10) << std::scientific << Step()
-  //      << std::right << std::setw(10) << std::scientific << iter_-1;
-  //
-  //    std::ofstream f;
-  //    const std::string fname = Global::Problem::instance()->OutputControlFile()->file_name()
-  //                            + "_numiter.txt";
-  //
-  //    if (Step() <= 1)
-  //      f.open(fname.c_str(),std::fstream::trunc); //f << header.str() << std::endl;
-  //    else
-  //      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-  //
-  //    f << s.str() << "\n";
-  //    f.close();
-  //  }
-
   // correct iteration counter
   iter_ -= 1;
 

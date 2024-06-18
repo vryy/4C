@@ -1137,7 +1137,8 @@ namespace CONTACT
     \param[in] step Time step index
     \param[in] iter Nonlinear iteration index
     */
-    void visualize_gmsh(const int step, const int iter) final;
+    void visualize_gmsh(
+        const int step, const int iter, const std::string& file_name_only_prefix) final;
 
     //! @name Finite difference checks
     //!@{

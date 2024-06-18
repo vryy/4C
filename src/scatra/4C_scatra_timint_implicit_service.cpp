@@ -2161,22 +2161,6 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
 
         if (myrank_ == 0)
         {
-          // print last error in a separate file
-          //        if ((step_==stepmax_) or (time_==maxtime_))// write results to file
-          //        {
-          //          std::ostringstream temp;
-          //          temp << k;
-          //          const std::string simulation = problem_->OutputControlFile()->file_name();
-          //          const std::string fname = simulation+"_c"+temp.str()+".relerror";
-          //
-          //          std::ofstream f;
-          //          f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-          //          f << "#| " << simulation << "\n";
-          //          f << "#| Step | Time | rel. L2-error scalar | rel. H1-error scalar  |\n";
-          //          f << step_ << " " << time_ << " " << (*relerrors_)[k*2] << " " <<
-          //          (*relerrors_)[k*2+1] << "\n"; f.flush(); f.close();
-          //        }
-
           std::ostringstream temp;
           temp << k;
           const std::string simulation = problem_->output_control_file()->file_name();
