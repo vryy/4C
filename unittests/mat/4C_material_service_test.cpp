@@ -125,7 +125,7 @@ namespace
     Core::LinAlg::FourTensor<3> Ce;
     const double E = 2.0;
     const double NU = 0.3;
-    Mat::calculate_linear_isotropic_elastic_tensor(Ce, E, NU);
+    Mat::setup_linear_isotropic_elastic_tensor(Ce, E, NU);
 
     Core::LinAlg::Matrix<6, 6> De;
     Mat::four_tensor_to_matrix(Ce, De);
@@ -181,7 +181,7 @@ namespace
     // test the calculation of fourth order deviatoric tensor and contraction of fourth order tensor
     // and Matrix
     Core::LinAlg::FourTensor<3> Id;
-    Mat::calculate_deviatoric_projection_tensor(Id);
+    Mat::setup_deviatoric_projection_tensor(Id);
 
     Core::LinAlg::Matrix<3, 3> stress(false);
     stress(0, 0) = 1.0;

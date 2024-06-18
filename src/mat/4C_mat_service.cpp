@@ -1226,7 +1226,7 @@ void Mat::add_contraction_matrix_four_tensor(Core::LinAlg::Matrix<3, 3>& matrix_
           matrix_result(i, j) += scale * four_tensor(i, j, k, l) * matrix(k, l);
 }
 
-void Mat::calculate_linear_isotropic_elastic_tensor(Core::LinAlg::FourTensor<3>& elasticity_tensor,
+void Mat::setup_linear_isotropic_elastic_tensor(Core::LinAlg::FourTensor<3>& elasticity_tensor,
     const double youngs_modulus, const double poisson_ratio)
 {
   const double lambda =
@@ -1243,7 +1243,7 @@ void Mat::calculate_linear_isotropic_elastic_tensor(Core::LinAlg::FourTensor<3>&
               lambda * eye(i, j) * eye(k, l) + mu * (eye(i, k) * eye(j, l) + eye(i, l) * eye(j, k));
 }
 
-void Mat::calculate_deviatoric_projection_tensor(
+void Mat::setup_deviatoric_projection_tensor(
     Core::LinAlg::FourTensor<3>& four_tensor, const double scale)
 {
   const auto eye = [](int i, int j) { return i == j ? 1.0 : 0.0; };

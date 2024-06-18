@@ -569,7 +569,7 @@ namespace Mat
    * @param[in]  youngs_modulus     Young's modulus
    * @param[in]  poisson_ratio      Poisson ratio
    */
-  void calculate_linear_isotropic_elastic_tensor(Core::LinAlg::FourTensor<3>& elasticity_tensor,
+  void setup_linear_isotropic_elastic_tensor(Core::LinAlg::FourTensor<3>& elasticity_tensor,
       const double youngs_modulus, const double poisson_ratio);
 
   /*!
@@ -587,7 +587,7 @@ namespace Mat
    * @param[out]  four_tensor   the resulting deviatoric tensor
    * @param[in]   scale         the scaling factor
    */
-  void calculate_deviatoric_projection_tensor(
+  void setup_deviatoric_projection_tensor(
       Core::LinAlg::FourTensor<3>& four_tensor, const double scale = 1.0);
 
   /*!
