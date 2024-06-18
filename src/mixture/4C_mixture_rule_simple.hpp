@@ -54,7 +54,7 @@ namespace MIXTURE
       explicit SimpleMixtureRule(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// Create mixturerule instance
-      std::unique_ptr<MIXTURE::MixtureRule> CreateRule() override;
+      std::unique_ptr<MIXTURE::MixtureRule> create_rule() override;
 
       /// @name parameters of the mixture rule
       /// @{
@@ -76,11 +76,14 @@ namespace MIXTURE
     /// Constructor for mixture rule given the input parameters
     explicit SimpleMixtureRule(MIXTURE::PAR::SimpleMixtureRule* params);
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
         Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
-    double ReturnMassDensity() const override { return params_->initial_reference_density_; };
+    [[nodiscard]] double return_mass_density() const override
+    {
+      return params_->initial_reference_density_;
+    };
 
    private:
     ///! Rule parameters as defined in the input file

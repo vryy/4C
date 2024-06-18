@@ -69,7 +69,7 @@ namespace MIXTURE
       explicit GrowthRemodelMixtureRule(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// Create mixturerule instance
-      std::unique_ptr<MIXTURE::MixtureRule> CreateRule() override;
+      std::unique_ptr<MIXTURE::MixtureRule> create_rule() override;
 
       /// @name parameters of the mixture rule
       /// @{
@@ -100,19 +100,19 @@ namespace MIXTURE
     /// Constructor for mixture rule given the input parameters
     explicit GrowthRemodelMixtureRule(MIXTURE::PAR::GrowthRemodelMixtureRule* params);
 
-    void PackMixtureRule(Core::Communication::PackBuffer& data) const override;
+    void pack_mixture_rule(Core::Communication::PackBuffer& data) const override;
 
-    void UnpackMixtureRule(
+    void unpack_mixture_rule(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
     void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 
-    void Setup(Teuchos::ParameterList& params, int eleGID) override;
+    void setup(Teuchos::ParameterList& params, int eleGID) override;
 
-    void Update(Core::LinAlg::Matrix<3, 3> const& F, Teuchos::ParameterList& params, int gp,
+    void update(Core::LinAlg::Matrix<3, 3> const& F, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
         Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
@@ -122,17 +122,17 @@ namespace MIXTURE
      * \param constituent
      * \return double
      */
-    double get_constituent_initial_reference_mass_density(
+    [[nodiscard]] double get_constituent_initial_reference_mass_density(
         const MIXTURE::MixtureConstituent& constituent) const;
 
     void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateOutputData(
+    bool evaluate_output_data(
         const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
    private:
-    double compute_current_reference_growth_scalar(int gp) const;
+    [[nodiscard]] double compute_current_reference_growth_scalar(int gp) const;
 
     ///! Rule parameters as defined in the input file
     PAR::GrowthRemodelMixtureRule* params_{};

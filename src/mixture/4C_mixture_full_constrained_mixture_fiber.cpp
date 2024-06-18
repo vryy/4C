@@ -127,7 +127,7 @@ namespace
   }
 
   template <typename Number>
-  static inline Number EvaluateI4(Number lambda_e)
+  static inline Number evaluate_i4(Number lambda_e)
   {
     return std::pow(lambda_e, 2);
   }
@@ -142,17 +142,17 @@ namespace
   static inline Number EvaluateFiberMaterialCauchyStress(
       const MIXTURE::RemodelFiberMaterial<Number>& fiber_material, Number lambda_e)
   {
-    const Number I4 = EvaluateI4(lambda_e);
-    return fiber_material.GetCauchyStress(I4);
+    const Number I4 = evaluate_i4(lambda_e);
+    return fiber_material.get_cauchy_stress(I4);
   }
 
   template <typename Number>
   static inline Number EvaluateDFiberMaterialCauchyStressDLambdaESq(
       const MIXTURE::RemodelFiberMaterial<Number>& fiber_material, Number lambda_e)
   {
-    const Number I4 = EvaluateI4(lambda_e);
+    const Number I4 = evaluate_i4(lambda_e);
     const Number DI4DLambdaESq = EvaluateDI4DlLambdaESq(lambda_e);
-    return fiber_material.GetDCauchyStressDI4(I4) * DI4DLambdaESq;
+    return fiber_material.get_d_cauchy_stress_d_i4(I4) * DI4DLambdaESq;
   }
 
   template <typename Number>
@@ -217,13 +217,13 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::FullConstrainedMixtureFiber(
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::Pack(Core::Communication::PackBuffer& data) const
+void MIXTURE::FullConstrainedMixtureFiber<Number>::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("Packing and Unpacking is currently only implemented for the double-specialization");
 }
 
 template <>
-void MIXTURE::FullConstrainedMixtureFiber<double>::Pack(Core::Communication::PackBuffer& data) const
+void MIXTURE::FullConstrainedMixtureFiber<double>::pack(Core::Communication::PackBuffer& data) const
 {
   data.add_to_pack(sig_h_);
   data.add_to_pack(lambda_pre_);
@@ -246,7 +246,7 @@ void MIXTURE::FullConstrainedMixtureFiber<double>::Pack(Core::Communication::Pac
     }
 
     data.add_to_pack(interval.base_dt);
-    interval.adaptivity_info.Pack(data);
+    interval.adaptivity_info.pack(data);
   }
 
   data.add_to_pack(current_time_);
@@ -258,14 +258,14 @@ void MIXTURE::FullConstrainedMixtureFiber<double>::Pack(Core::Communication::Pac
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::Unpack(
+void MIXTURE::FullConstrainedMixtureFiber<Number>::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   FOUR_C_THROW("Packing and Unpacking is currently only implemented for the double-specialization");
 }
 
 template <>
-void MIXTURE::FullConstrainedMixtureFiber<double>::Unpack(
+void MIXTURE::FullConstrainedMixtureFiber<double>::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   Core::Communication::ParObject::extract_from_pack(position, data, sig_h_);
@@ -295,7 +295,7 @@ void MIXTURE::FullConstrainedMixtureFiber<double>::Unpack(
 
     Core::Communication::ParObject::extract_from_pack(position, data, interval.base_dt);
 
-    interval.adaptivity_info.Unpack(position, data);
+    interval.adaptivity_info.unpack(position, data);
   }
 
 
@@ -310,7 +310,7 @@ void MIXTURE::FullConstrainedMixtureFiber<double>::Unpack(
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::RecomputeState(
+void MIXTURE::FullConstrainedMixtureFiber<Number>::recompute_state(
     const Number lambda_f, const double time, const double dt)
 {
   ReinitializeState(*this, lambda_f, time);
@@ -605,7 +605,7 @@ Number MIXTURE::FullConstrainedMixtureFiber<
 
 
 template <typename Number>
-Number MIXTURE::FullConstrainedMixtureFiber<Number>::EvaluateLambdaRef(Number lambda_f) const
+Number MIXTURE::FullConstrainedMixtureFiber<Number>::evaluate_lambda_ref(Number lambda_f) const
 {
   return lambda_pre_ / lambda_f;
 }
@@ -699,7 +699,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::compute_internal_variables()
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::ReinitializeHistory(
+void MIXTURE::FullConstrainedMixtureFiber<Number>::reinitialize_history(
     const Number lambda_f, const double time)
 {
   ReinitializeState(*this, lambda_f, time);
@@ -741,7 +741,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::ReinitializeHistory(
 
   const MassIncrement<Number> last_mass_increment = history_.back().timesteps.back();
   // check if the item is already in the history
-  if (IsAlmostEqual(mass_increment, last_mass_increment, 1e-7))
+  if (is_almost_equal(mass_increment, last_mass_increment, 1e-7))
   {
     return;
   }
@@ -769,7 +769,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::ReinitializeHistory(
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::AddTime(const double delta_time)
+void MIXTURE::FullConstrainedMixtureFiber<Number>::add_time(const double delta_time)
 {
   for (auto& interval : history_)
   {
@@ -789,7 +789,7 @@ double MIXTURE::FullConstrainedMixtureFiber<Number>::get_last_time_in_history() 
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::Update()
+void MIXTURE::FullConstrainedMixtureFiber<Number>::update()
 {
   if (growth_enabled_)
   {
@@ -814,14 +814,14 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::Update()
               std::vector<bool> erase_item;
               TimestepAdaptivityInfo adaptivity_info;
               std::tie(erase_item, adaptivity_info) =
-                  OptimizeHistoryIntegration(interval.adaptivity_info, interval.timesteps.size(),
+                  optimize_history_integration(interval.adaptivity_info, interval.timesteps.size(),
                       [&](const std::array<std::optional<unsigned int>, 5>& indices)
                       {
-                        const double begin_time = interval.adaptivity_info.GetIndexTime(
+                        const double begin_time = interval.adaptivity_info.get_index_time(
                             indices[0].value(), 0.0, interval.base_dt);
-                        const double end_time = interval.adaptivity_info.GetIndexTime(
+                        const double end_time = interval.adaptivity_info.get_index_time(
                             indices[4].value(), 0.0, interval.base_dt);
-                        return IsModelEquationSimpsonRuleIntegrationBelowTolerance<Number>(
+                        return is_model_equation_simpson_rule_integration_below_tolerance<Number>(
                             growth_evolution_, current_time_, begin_time, end_time,
                             tolerance_per_time * (end_time - begin_time));
                       });
@@ -847,7 +847,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::Update()
               std::vector<bool> erase_item;
               TimestepAdaptivityInfo adaptivity_info;
               std::tie(erase_item, adaptivity_info) =
-                  OptimizeHistoryIntegration(interval.adaptivity_info, interval.timesteps.size(),
+                  optimize_history_integration(interval.adaptivity_info, interval.timesteps.size(),
                       [&](const std::array<std::optional<unsigned int>, 5>& indices)
                       {
                         // here I need to do a 5th order integration and compare it with 3rd oder
@@ -876,9 +876,9 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::Update()
                                   mass_increment, current_time_, current_state_.lambda_f);
                             };
 
-                        const double begin_time = interval.adaptivity_info.GetIndexTime(
+                        const double begin_time = interval.adaptivity_info.get_index_time(
                             indices[0].value(), 0.0, interval.base_dt);
-                        const double end_time = interval.adaptivity_info.GetIndexTime(
+                        const double end_time = interval.adaptivity_info.get_index_time(
                             indices[4].value(), 0.0, interval.base_dt);
                         Number allowed_tolerance = tolerance_per_time * (end_time - begin_time);
 
@@ -940,7 +940,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::Update()
   else
   {
     const double delta_time = current_time_ - get_last_time_in_history();
-    AddTime(delta_time);
+    add_time(delta_time);
   }
 
   current_time_shift_ = 0.0;

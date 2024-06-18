@@ -36,7 +36,7 @@ namespace MIXTURE
       explicit MixtureConstituentFullConstrainedMixtureFiber(
           const Core::Mat::PAR::Parameter::Data& matdata);
       /// create material instance of matching type with my parameters
-      std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
+      std::unique_ptr<MIXTURE::MixtureConstituent> create_constituent(int id) override;
 
       const int fiber_id_;
       const int init_;
@@ -65,38 +65,39 @@ namespace MIXTURE
     MixtureConstituentFullConstrainedMixtureFiber(
         MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber* params, int id);
 
-    [[nodiscard]] Core::Materials::MaterialType MaterialType() const override;
+    [[nodiscard]] Core::Materials::MaterialType material_type() const override;
 
-    void PackConstituent(Core::Communication::PackBuffer& data) const override;
+    void pack_constituent(Core::Communication::PackBuffer& data) const override;
 
-    void UnpackConstituent(
+    void unpack_constituent(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
     void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 
-    void ReadElement(int numgp, Input::LineDefinition* linedef) override;
+    void read_element(int numgp, Input::LineDefinition* linedef) override;
 
-    void Setup(Teuchos::ParameterList& params, int eleGID) override;
+    void setup(Teuchos::ParameterList& params, int eleGID) override;
 
-    void Update(const Core::LinAlg::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp,
+    void update(const Core::LinAlg::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
         Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
-    void EvaluateElasticPart(const Core::LinAlg::Matrix<3, 3>& FM,
+    void evaluate_elastic_part(const Core::LinAlg::Matrix<3, 3>& FM,
         const Core::LinAlg::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp,
         int eleGID) override;
 
-    [[nodiscard]] double GetGrowthScalar(int gp) const override;
-    [[nodiscard]] Core::LinAlg::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const override;
+    [[nodiscard]] double get_growth_scalar(int gp) const override;
+    [[nodiscard]] Core::LinAlg::Matrix<1, 6> get_d_growth_scalar_d_cg(
+        int gp, int eleGID) const override;
 
     void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateOutputData(
+    bool evaluate_output_data(
         const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
    private:

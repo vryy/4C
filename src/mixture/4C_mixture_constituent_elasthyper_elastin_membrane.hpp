@@ -87,7 +87,7 @@ namespace MIXTURE
           const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
+      std::unique_ptr<MIXTURE::MixtureConstituent> create_constituent(int id) override;
 
       /// @name material parameters
       /// @{
@@ -122,7 +122,7 @@ namespace MIXTURE
         MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane* params, int id);
 
     /// Returns the material type enum
-    Core::Materials::MaterialType MaterialType() const override;
+    [[nodiscard]] Core::Materials::MaterialType material_type() const override;
 
     /*!
      * \brief Pack data into a char vector from this class
@@ -133,7 +133,7 @@ namespace MIXTURE
      *
      * @param data (in/put) : vector storing all data to be packed into this instance.
      */
-    void PackConstituent(Core::Communication::PackBuffer& data) const override;
+    void pack_constituent(Core::Communication::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -145,7 +145,7 @@ namespace MIXTURE
      * @param position (in/out) : current position to unpack data
      * @param data (in) : vector storing all data to be unpacked into this instance.
      */
-    void UnpackConstituent(
+    void unpack_constituent(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
     /*!
@@ -161,7 +161,7 @@ namespace MIXTURE
      * @param numgp (in) Number of Gauss-points
      * @param params (in/out) Parameter list for exchange of parameters
      */
-    void ReadElement(int numgp, Input::LineDefinition* linedef) override;
+    void read_element(int numgp, Input::LineDefinition* linedef) override;
 
 
     /*!
@@ -174,7 +174,7 @@ namespace MIXTURE
      * @param gp Gauss point
      * @param eleGID Global element identifier
      */
-    void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
+    void update(Core::LinAlg::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
     /*!
@@ -190,7 +190,7 @@ namespace MIXTURE
         MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
 
-    double GetGrowthScalar(int gp) const override;
+    [[nodiscard]] double get_growth_scalar(int gp) const override;
 
     /*!
      * \brief Standard evaluation of the material. This material does only support evaluation with
@@ -204,7 +204,7 @@ namespace MIXTURE
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
         Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
@@ -219,7 +219,7 @@ namespace MIXTURE
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    void EvaluateElasticPart(const Core::LinAlg::Matrix<3, 3>& F,
+    void evaluate_elastic_part(const Core::LinAlg::Matrix<3, 3>& F,
         const Core::LinAlg::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp,
         int eleGID) override;

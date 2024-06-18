@@ -82,7 +82,7 @@ namespace MIXTURE
       }
 
       /// create material instance of matching type with my parameters
-      virtual std::unique_ptr<MIXTURE::MixtureRule> CreateRule() = 0;
+      virtual std::unique_ptr<MIXTURE::MixtureRule> create_rule() = 0;
 
       /*!
        * \brief Factory of the mixture rule parameters
@@ -93,7 +93,7 @@ namespace MIXTURE
        * @param matid Material id of the mixturerule
        * @return Parameters of the referenced mixture rule
        */
-      static MIXTURE::PAR::MixtureRule* Factory(int matid);
+      static MIXTURE::PAR::MixtureRule* factory(int matid);
     };
   }  // namespace PAR
 
@@ -124,7 +124,7 @@ namespace MIXTURE
 
     virtual ~MixtureRule() = default;
 
-    virtual void PackMixtureRule(Core::Communication::PackBuffer& data) const;
+    virtual void pack_mixture_rule(Core::Communication::PackBuffer& data) const;
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -136,7 +136,7 @@ namespace MIXTURE
      * @param data (in) : vector storing all data to be unpacked into this instance.
      * @param position (in/out) : current position to unpack data
      */
-    virtual void UnpackMixtureRule(
+    virtual void unpack_mixture_rule(
         std::vector<char>::size_type& position, const std::vector<char>& data);
 
     /*!
@@ -144,7 +144,7 @@ namespace MIXTURE
      *
      * @param constituents (in) List of constituents
      */
-    void SetConstituents(
+    void set_constituents(
         std::shared_ptr<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>> constituents)
     {
       constituents_ = std::move(constituents);
@@ -161,7 +161,7 @@ namespace MIXTURE
      * @param numgp (in) Number of Gauss-points
      * @param params (in/out) : Parameter list for exchange of parameters
      */
-    virtual void ReadElement(int numgp, Input::LineDefinition* linedef);
+    virtual void read_element(int numgp, Input::LineDefinition* linedef);
 
     /*!
      * Returns whether the constituent is already set up
@@ -178,7 +178,7 @@ namespace MIXTURE
      * @param params (in/out) : Container for additional information
      * @param eleGID (in) : global element id
      */
-    virtual void Setup(Teuchos::ParameterList& params, int eleGID);
+    virtual void setup(Teuchos::ParameterList& params, int eleGID);
 
     /*!
      * \brief Update of the material law
@@ -190,7 +190,7 @@ namespace MIXTURE
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void Update(Core::LinAlg::Matrix<3, 3> const& F, Teuchos::ParameterList& params,
+    virtual void update(Core::LinAlg::Matrix<3, 3> const& F, Teuchos::ParameterList& params,
         const int gp, const int eleGID)
     {
       // Nothing needs to be updated in this simple mixture rule
@@ -221,7 +221,7 @@ namespace MIXTURE
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+    virtual void evaluate(const Core::LinAlg::Matrix<3, 3>& F,
         const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp,
         int eleGID) = 0;
@@ -231,7 +231,7 @@ namespace MIXTURE
      *
      * @return material mass density
      */
-    virtual double ReturnMassDensity() const
+    [[nodiscard]] virtual double return_mass_density() const
     {
       FOUR_C_THROW("Rule does not provide the evaluation of a material mass density.");
       return 0;
@@ -257,7 +257,7 @@ namespace MIXTURE
      *
      * \return true if data is set by the material, otherwise false
      */
-    virtual bool EvaluateOutputData(
+    virtual bool evaluate_output_data(
         const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
     {
       return false;
@@ -268,7 +268,7 @@ namespace MIXTURE
      * \brief Returns a reference to the constituents
      * @return
      */
-    std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>& constituents() const
+    [[nodiscard]] std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>& constituents() const
     {
       return *constituents_;
     }
@@ -278,7 +278,7 @@ namespace MIXTURE
      *
      * @return Number of Gauss points
      */
-    int num_gp() const { return numgp_; }
+    [[nodiscard]] int num_gp() const { return numgp_; }
 
    private:
     ///! list of the references to the constituents

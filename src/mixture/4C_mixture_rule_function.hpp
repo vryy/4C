@@ -46,7 +46,7 @@ namespace MIXTURE
       explicit FunctionMixtureRule(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// Create mixturerule instance
-      std::unique_ptr<MIXTURE::MixtureRule> CreateRule() override;
+      std::unique_ptr<MIXTURE::MixtureRule> create_rule() override;
 
       /// @name parameters of the mixture rule
       /// @{
@@ -68,18 +68,18 @@ namespace MIXTURE
     /// Constructor for mixture rule given the input parameters
     explicit FunctionMixtureRule(MIXTURE::PAR::FunctionMixtureRule* params);
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
         Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
-    [[nodiscard]] double ReturnMassDensity() const override
+    [[nodiscard]] double return_mass_density() const override
     {
       return params_->initial_reference_density_;
     };
 
-    void Setup(Teuchos::ParameterList& params, const int eleGID) override;
+    void setup(Teuchos::ParameterList& params, const int eleGID) override;
 
-    void UnpackMixtureRule(
+    void unpack_mixture_rule(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
    private:

@@ -40,21 +40,21 @@ MIXTURE::RemodelFiberMaterialExponential<T>::RemodelFiberMaterialExponential(
 }
 
 template <typename T>
-T MIXTURE::RemodelFiberMaterialExponential<T>::GetCauchyStress(T I4) const
+T MIXTURE::RemodelFiberMaterialExponential<T>::get_cauchy_stress(T I4) const
 {
-  return MIXTURE::GetExponentialFiberCauchyStress<T>(params_->params_, I4);
+  return MIXTURE::get_exponential_fiber_cauchy_stress<T>(params_->params_, I4);
 }
 
 template <typename T>
-T MIXTURE::RemodelFiberMaterialExponential<T>::GetDCauchyStressDI4(T I4) const
+T MIXTURE::RemodelFiberMaterialExponential<T>::get_d_cauchy_stress_d_i4(T I4) const
 {
-  return MIXTURE::GetDExponentialFiberCauchyStressDI4<T>(params_->params_, I4);
+  return MIXTURE::get_d_exponential_fiber_cauchy_stress_d_i4<T>(params_->params_, I4);
 }
 
 template <typename T>
 T MIXTURE::RemodelFiberMaterialExponential<T>::get_d_cauchy_stress_d_i4_d_i4(T I4) const
 {
-  return MIXTURE::GetDExponentialFiberCauchyStressDI4DI4<T>(params_->params_, I4);
+  return MIXTURE::get_d_exponential_fiber_cauchy_stress_d_i4_d_i4<T>(params_->params_, I4);
 }
 
 template class MIXTURE::PAR::RemodelFiberMaterialExponential<double>;

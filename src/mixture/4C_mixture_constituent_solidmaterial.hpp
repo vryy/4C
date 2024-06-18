@@ -32,7 +32,7 @@ namespace MIXTURE
      public:
       explicit MixtureConstituentSolidMaterial(const Core::Mat::PAR::Parameter::Data& matdata);
       /// create material instance of matching type with my parameters
-      std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
+      std::unique_ptr<MIXTURE::MixtureConstituent> create_constituent(int id) override;
 
       /// @name material parameters
       /// @{
@@ -55,26 +55,26 @@ namespace MIXTURE
     explicit MixtureConstituentSolidMaterial(
         MIXTURE::PAR::MixtureConstituentSolidMaterial* params, int id);
 
-    void PackConstituent(Core::Communication::PackBuffer& data) const override;
+    void pack_constituent(Core::Communication::PackBuffer& data) const override;
 
-    void UnpackConstituent(
+    void unpack_constituent(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
-    Core::Materials::MaterialType MaterialType() const override;
+    Core::Materials::MaterialType material_type() const override;
 
-    void ReadElement(int numgp, Input::LineDefinition* linedef) override;
+    void read_element(int numgp, Input::LineDefinition* linedef) override;
 
-    void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
+    void update(Core::LinAlg::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
         const int gp, const int eleGID) override;
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
         Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
     void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateOutputData(
+    bool evaluate_output_data(
         const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
    private:

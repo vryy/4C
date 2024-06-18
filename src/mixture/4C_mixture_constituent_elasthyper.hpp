@@ -32,7 +32,7 @@ namespace MIXTURE
      public:
       explicit MixtureConstituentElastHyper(const Core::Mat::PAR::Parameter::Data& matdata);
       /// create material instance of matching type with my parameters
-      std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
+      std::unique_ptr<MIXTURE::MixtureConstituent> create_constituent(int id) override;
 
       /// @name material parameters
       /// @{
@@ -54,7 +54,7 @@ namespace MIXTURE
         MIXTURE::PAR::MixtureConstituentElastHyper* params, int id);
 
     /// Returns the material type enum
-    Core::Materials::MaterialType MaterialType() const override;
+    Core::Materials::MaterialType material_type() const override;
 
     /*!
      * Evaluates the constituents. Needs to compute the stress contribution of the constituent out
@@ -66,7 +66,7 @@ namespace MIXTURE
      * @param S_stress 2nd Piola Kirchhoff stress tensor in stress like Voigt-notation
      * @param cmat Constitutive tensor in Voigt notation
      */
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
         Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
@@ -89,7 +89,7 @@ namespace MIXTURE
      * @param gp Gauss-point
      * @param eleGID Global element id
      */
-    void EvaluateElasticPart(const Core::LinAlg::Matrix<3, 3>& F,
+    void evaluate_elastic_part(const Core::LinAlg::Matrix<3, 3>& F,
         const Core::LinAlg::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp,
         int eleGID) override;

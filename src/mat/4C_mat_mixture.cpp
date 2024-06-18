@@ -36,12 +36,12 @@ Mat::PAR::Mixture::Mixture(const Core::Mat::PAR::Parameter::Data& matdata)
   for (int i = 0; i < num_constituents; ++i)
   {
     // Create constituent material
-    constituents_.emplace_back(MIXTURE::PAR::MixtureConstituent::Factory(constituent_matids[i]));
+    constituents_.emplace_back(MIXTURE::PAR::MixtureConstituent::factory(constituent_matids[i]));
   }
 
   // Create mixture rule
   mixture_rule_ =
-      MIXTURE::PAR::MixtureRule::Factory(matdata.parameters.Get<int>("MATIDMIXTURERULE"));
+      MIXTURE::PAR::MixtureRule::factory(matdata.parameters.Get<int>("MATIDMIXTURERULE"));
 }
 
 // Create a material instance from parameters
@@ -81,15 +81,15 @@ Mat::Mixture::Mixture(Mat::PAR::Mixture* params)
   int id = 0;
   for (auto const& constituent : params_->constituents_)
   {
-    constituents_->emplace_back(constituent->CreateConstituent(id));
+    constituents_->emplace_back(constituent->create_constituent(id));
     constituents_->back()->register_anisotropy_extensions(anisotropy_);
 
     ++id;
   }
 
   // create instance of mixture rule
-  mixture_rule_ = params->mixture_rule_->CreateRule();
-  mixture_rule_->SetConstituents(constituents_);
+  mixture_rule_ = params->mixture_rule_->create_rule();
+  mixture_rule_->set_constituents(constituents_);
   mixture_rule_->register_anisotropy_extensions(anisotropy_);
 }
 
@@ -127,11 +127,11 @@ void Mat::Mixture::Pack(Core::Communication::PackBuffer& data) const
   {
     for (const auto& constituent : *constituents_)
     {
-      constituent->PackConstituent(data);
+      constituent->pack_constituent(data);
     }
 
     // pack mixturerule
-    mixture_rule_->PackMixtureRule(data);
+    mixture_rule_->pack_mixture_rule(data);
   }
 }
 
@@ -190,24 +190,24 @@ void Mat::Mixture::Unpack(const std::vector<char>& data)
       int id = 0;
       for (auto const& constituent : params_->constituents_)
       {
-        constituents_->emplace_back(constituent->CreateConstituent(id));
+        constituents_->emplace_back(constituent->create_constituent(id));
 
         ++id;
       }
 
       // create instance of mixture rule
-      mixture_rule_ = params_->mixture_rule_->CreateRule();
+      mixture_rule_ = params_->mixture_rule_->create_rule();
 
       // make sure the referenced materials in material list have quick access parameters
       for (const auto& constituent : *constituents_)
       {
-        constituent->UnpackConstituent(position, data);
+        constituent->unpack_constituent(position, data);
         constituent->register_anisotropy_extensions(anisotropy_);
       }
 
       // unpack mixturerule
-      mixture_rule_->UnpackMixtureRule(position, data);
-      mixture_rule_->SetConstituents(constituents_);
+      mixture_rule_->unpack_mixture_rule(position, data);
+      mixture_rule_->set_constituents(constituents_);
       mixture_rule_->register_anisotropy_extensions(anisotropy_);
 
       // position checking is not available in post processing mode
@@ -234,10 +234,10 @@ void Mat::Mixture::Setup(const int numgp, Input::LineDefinition* linedef)
   // Let all constituents read the line definition
   for (const auto& constituent : *constituents_)
   {
-    constituent->ReadElement(numgp, linedef);
+    constituent->read_element(numgp, linedef);
   }
 
-  mixture_rule_->ReadElement(numgp, linedef);
+  mixture_rule_->read_element(numgp, linedef);
 }
 
 // Post setup routine -> Call Setup of constituents and mixture rule
@@ -249,13 +249,13 @@ void Mat::Mixture::post_setup(Teuchos::ParameterList& params, const int eleGID)
   {
     for (const auto& constituent : *constituents_)
     {
-      constituent->Setup(params, eleGID);
+      constituent->setup(params, eleGID);
     }
   }
 
   if (mixture_rule_ != nullptr)
   {
-    mixture_rule_->Setup(params, eleGID);
+    mixture_rule_->setup(params, eleGID);
   }
 
   setup_ = true;
@@ -268,10 +268,10 @@ void Mat::Mixture::Update(Core::LinAlg::Matrix<3, 3> const& defgrd, const int gp
   // Update all constituents
   for (const auto& constituent : *constituents_)
   {
-    constituent->Update(defgrd, params, gp, eleGID);
+    constituent->update(defgrd, params, gp, eleGID);
   }
 
-  mixture_rule_->Update(defgrd, params, gp, eleGID);
+  mixture_rule_->update(defgrd, params, gp, eleGID);
 }
 
 // Evaluates the material
@@ -295,7 +295,7 @@ void Mat::Mixture::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   }
 
   // Evaluate mixturerule
-  mixture_rule_->Evaluate(*defgrd, *glstrain, params, *stress, *cmat, gp, eleGID);
+  mixture_rule_->evaluate(*defgrd, *glstrain, params, *stress, *cmat, gp, eleGID);
 }
 
 void Mat::Mixture::register_output_data_names(
@@ -311,10 +311,10 @@ void Mat::Mixture::register_output_data_names(
 bool Mat::Mixture::EvaluateOutputData(
     const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
-  bool out = mixture_rule_->EvaluateOutputData(name, data);
+  bool out = mixture_rule_->evaluate_output_data(name, data);
   for (const auto& constituent : *constituents_)
   {
-    out = out || constituent->EvaluateOutputData(name, data);
+    out = out || constituent->evaluate_output_data(name, data);
   }
 
   return out;

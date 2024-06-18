@@ -47,7 +47,7 @@ MIXTURE::PAR::MixtureRule::MixtureRule(const Core::Mat::PAR::Parameter::Data& ma
 }
 
 // Mixture rule factory generates the mixturerule parameters for a specific material id
-MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
+MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::factory(int matid)
 {
   // for the sake of safety
   if (Global::Problem::Instance()->Materials() == Teuchos::null)
@@ -98,7 +98,7 @@ MIXTURE::MixtureRule::MixtureRule(MIXTURE::PAR::MixtureRule* params)
 }
 
 // Pack the mixture rule
-void MIXTURE::MixtureRule::PackMixtureRule(Core::Communication::PackBuffer& data) const
+void MIXTURE::MixtureRule::pack_mixture_rule(Core::Communication::PackBuffer& data) const
 {
   // Add number of Gauss points
   Core::Communication::ParObject::add_to_pack(data, numgp_);
@@ -111,7 +111,7 @@ void MIXTURE::MixtureRule::PackMixtureRule(Core::Communication::PackBuffer& data
 }
 
 // Unpack the mixture rule
-void MIXTURE::MixtureRule::UnpackMixtureRule(
+void MIXTURE::MixtureRule::unpack_mixture_rule(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // Read initialized flag
@@ -125,7 +125,7 @@ void MIXTURE::MixtureRule::UnpackMixtureRule(
 }
 
 // reads the element definition and set up all quantities
-void MIXTURE::MixtureRule::ReadElement(int numgp, Input::LineDefinition* linedef)
+void MIXTURE::MixtureRule::read_element(int numgp, Input::LineDefinition* linedef)
 {
   // Init must only be called once
   if (has_read_element_) FOUR_C_THROW("ReadElement() is called multiple times. Just once allowed.");
@@ -135,7 +135,7 @@ void MIXTURE::MixtureRule::ReadElement(int numgp, Input::LineDefinition* linedef
 }
 
 // Setup the mixture rule
-void MIXTURE::MixtureRule::Setup(Teuchos::ParameterList& params, const int eleGID)
+void MIXTURE::MixtureRule::setup(Teuchos::ParameterList& params, const int eleGID)
 {
   // Setup must be called after ReadElement()
   if (!has_read_element_) FOUR_C_THROW("ReadElement() must be called before Setup()!");

@@ -19,21 +19,21 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void MIXTURE::Details::AdaptTimestepAdaptivityInfo(
+void MIXTURE::Details::adapt_timestep_adaptivity_info(
     MIXTURE::TimestepAdaptivityInfo& timestep_adaptivity_info, unsigned int level,
     unsigned int num_coarsened_intervals)
 {
   if (level == 0)
   {
-    timestep_adaptivity_info.EmplaceBack(1, num_coarsened_intervals / 2);
+    timestep_adaptivity_info.emplace_back(1, num_coarsened_intervals / 2);
   }
   else
   {
-    timestep_adaptivity_info.SplitLevel(level, num_coarsened_intervals / 2);
+    timestep_adaptivity_info.split_level(level, num_coarsened_intervals / 2);
   }
 }
 
-void MIXTURE::Details::MarkCoarsenedTimestepAsToBeDeleted(std::vector<bool>& items_to_delete,
+void MIXTURE::Details::mark_coarsened_timestep_as_to_be_deleted(std::vector<bool>& items_to_delete,
     const unsigned int num_items_to_delete, const unsigned int begin_index)
 {
   bool last_deleted = true;
@@ -55,9 +55,9 @@ void MIXTURE::Details::MarkCoarsenedTimestepAsToBeDeleted(std::vector<bool>& ite
   }
 }
 
-void MIXTURE::TimestepAdaptivityInfo::Pack(Core::Communication::PackBuffer& data) const
+void MIXTURE::TimestepAdaptivityInfo::pack(Core::Communication::PackBuffer& data) const
 {
-  data.add_to_pack(GetNumberOfLevels());
+  data.add_to_pack(get_number_of_levels());
   for (const auto& item : list_)
   {
     data.add_to_pack(item.level_);
@@ -65,7 +65,7 @@ void MIXTURE::TimestepAdaptivityInfo::Pack(Core::Communication::PackBuffer& data
   }
 }
 
-void MIXTURE::TimestepAdaptivityInfo::Unpack(
+void MIXTURE::TimestepAdaptivityInfo::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   std::size_t size_of_adaptivity_info;
@@ -80,7 +80,7 @@ void MIXTURE::TimestepAdaptivityInfo::Unpack(
   }
 }
 
-void MIXTURE::TimestepAdaptivityInfo::EmplaceBack(
+void MIXTURE::TimestepAdaptivityInfo::emplace_back(
     unsigned int level, unsigned int num_simpson_intervals)
 {
   if (list_.size() > 0 && list_.back().level_ == level)
@@ -108,7 +108,7 @@ unsigned int MIXTURE::TimestepAdaptivityInfo::get_total_number_of_simpson_interv
       { return sum + item.simpson_intervals_; });
 }
 
-void MIXTURE::TimestepAdaptivityInfo::SplitLevel(
+void MIXTURE::TimestepAdaptivityInfo::split_level(
     unsigned int level, unsigned int new_num_simpson_intervals)
 {
   for (std::size_t i = 0; i < list_.size(); ++i)
@@ -147,26 +147,26 @@ void MIXTURE::TimestepAdaptivityInfo::SplitLevel(
   FOUR_C_THROW("Could not find refinement level %d in the list", level);
 }
 
-unsigned int MIXTURE::TimestepAdaptivityInfo::MaxLevel()
+unsigned int MIXTURE::TimestepAdaptivityInfo::max_level()
 {
   if (list_.size() == 0) return 0;
   return list_[0].level_;
 }
-unsigned int MIXTURE::TimestepAdaptivityInfo::GetBaseIndex(const unsigned int index) const
+unsigned int MIXTURE::TimestepAdaptivityInfo::get_base_index(const unsigned int index) const
 {
-  return GetBaseIndices<unsigned int, 1>({index})[0];
+  return get_base_indices<unsigned int, 1>({index})[0];
 }
 
-std::optional<unsigned int> MIXTURE::TimestepAdaptivityInfo::GetBaseIndex(
+std::optional<unsigned int> MIXTURE::TimestepAdaptivityInfo::get_base_index(
     const TimestepAdaptivityInfo& base, unsigned int timestep) const
 {
-  return base.GetIndexFromBase(GetBaseIndex(timestep));
+  return base.get_index_from_base(get_base_index(timestep));
 }
 
-std::optional<unsigned int> MIXTURE::TimestepAdaptivityInfo::GetIndexFromBase(
+std::optional<unsigned int> MIXTURE::TimestepAdaptivityInfo::get_index_from_base(
     const unsigned int base_index) const
 {
-  return GetIndicesFromBase<unsigned int, 1>({base_index})[0];
+  return get_indices_from_base<unsigned int, 1>({base_index})[0];
 }
 
 
@@ -185,12 +185,12 @@ unsigned int MIXTURE::TimestepAdaptivityInfo::get_number_of_simpson_intervals(
   if (level > 0) return 0;
 
   FOUR_C_THROW(
-      "Cou can only call this item for a level within 0 < x <= MaxLevel(). You called it with "
+      "Cou can only call this item for a level within 0 < x <= max_level(). You called it with "
       "%d",
       level);
 }
 
-unsigned int MIXTURE::TimestepAdaptivityInfo::GetBeginIndex(const unsigned int level) const
+unsigned int MIXTURE::TimestepAdaptivityInfo::get_begin_index(const unsigned int level) const
 {
   unsigned int current_index = 0;
   for (const auto& item : list_)
@@ -203,7 +203,7 @@ unsigned int MIXTURE::TimestepAdaptivityInfo::GetBeginIndex(const unsigned int l
   return current_index;
 }
 
-double MIXTURE::TimestepAdaptivityInfo::GetBeginTime(
+double MIXTURE::TimestepAdaptivityInfo::get_begin_time(
     const unsigned int level, const double base_time, const double base_dt) const
 {
   double begin_time = base_time;
@@ -216,9 +216,9 @@ double MIXTURE::TimestepAdaptivityInfo::GetBeginTime(
   return begin_time;
 }
 
-double MIXTURE::TimestepAdaptivityInfo::GetIndexTime(
+double MIXTURE::TimestepAdaptivityInfo::get_index_time(
     const unsigned int index, const double base_time, const double base_dt) const
 {
-  return base_time + GetBaseIndex(index) * base_dt;
+  return base_time + get_base_index(index) * base_dt;
 }
 FOUR_C_NAMESPACE_CLOSE

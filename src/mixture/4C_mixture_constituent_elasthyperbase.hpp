@@ -37,7 +37,8 @@ namespace MIXTURE
     {
      public:
       explicit MixtureConstituentElastHyperBase(const Core::Mat::PAR::Parameter::Data& matdata);
-      int get_prestressing_mat_id() const { return matid_prestress_strategy_; }
+
+      [[nodiscard]] int get_prestressing_mat_id() const { return matid_prestress_strategy_; }
 
       /// @name material parameters
       /// @{
@@ -76,7 +77,7 @@ namespace MIXTURE
      *
      * @param data (in/put) : vector storing all data to be packed into this instance.
      */
-    void PackConstituent(Core::Communication::PackBuffer& data) const override;
+    void pack_constituent(Core::Communication::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -88,7 +89,7 @@ namespace MIXTURE
      * @param position (in/out) : current position to unpack data
      * @param data (in) : vector storing all data to be unpacked into this instance.
      */
-    void UnpackConstituent(
+    void unpack_constituent(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
     /*!
@@ -104,7 +105,7 @@ namespace MIXTURE
      * @param numgp (in) Number of Gauss-points
      * @param params (in/out) Parameter list for exchange of parameters
      */
-    void ReadElement(int numgp, Input::LineDefinition* linedef) override;
+    void read_element(int numgp, Input::LineDefinition* linedef) override;
 
     /*!
      * \brief Updates the material and all its summands
@@ -116,7 +117,7 @@ namespace MIXTURE
      * @param gp Gauss point
      * @param eleGID Global element identifier
      */
-    void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
+    void update(Core::LinAlg::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
     /*!
@@ -124,14 +125,17 @@ namespace MIXTURE
      *
      * \return const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& Reference to the summands
      */
-    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& Summands() const { return potsum_; }
+    [[nodiscard]] const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& summands() const
+    {
+      return potsum_;
+    }
 
     /*!
      * \brief Returns a reference to all summand properties
      *
      * \return const Mat::SummandProperties& Reference to the summand properties
      */
-    const Mat::SummandProperties& SummandProperties() { return summand_properties_; }
+    const Mat::SummandProperties& summand_properties() { return summand_properties_; }
 
     /*!
      * \brief Method that is called to setup the constituent once before the start of the simulation
@@ -139,7 +143,7 @@ namespace MIXTURE
      * \param params Container for additional information
      * \param eleGID Global element id
      */
-    void Setup(Teuchos::ParameterList& params, int eleGID) override;
+    void setup(Teuchos::ParameterList& params, int eleGID) override;
 
     /*!
      * \brief Method that is called once for each Gauss point before the first evaluate call
@@ -155,7 +159,7 @@ namespace MIXTURE
     void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateOutputData(
+    bool evaluate_output_data(
         const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
    protected:
@@ -165,7 +169,7 @@ namespace MIXTURE
      * \param gp Gauss point
      * \return const Core::LinAlg::Matrix<3, 3>& Reference to the prestretch tensor
      */
-    const Core::LinAlg::Matrix<3, 3>& prestretch_tensor(const int gp) const
+    [[nodiscard]] const Core::LinAlg::Matrix<3, 3>& prestretch_tensor(const int gp) const
     {
       return prestretch_[gp];
     }
@@ -175,7 +179,7 @@ namespace MIXTURE
      *
      * \return const Mat::CylinderCoordinateSystemProvider&
      */
-    const Mat::CylinderCoordinateSystemAnisotropyExtension&
+    [[nodiscard]] const Mat::CylinderCoordinateSystemAnisotropyExtension&
     cylinder_coordinate_system_anisotropy_extension() const
     {
       return cosy_anisotropy_extension_;

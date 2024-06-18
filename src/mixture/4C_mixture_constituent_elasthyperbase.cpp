@@ -61,16 +61,16 @@ MIXTURE::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
   if (params->get_prestressing_mat_id() > 0)
   {
     prestress_strategy_ =
-        MIXTURE::PAR::PrestressStrategy::Factory(params->get_prestressing_mat_id())
+        MIXTURE::PAR::PrestressStrategy::factory(params->get_prestressing_mat_id())
             ->create_prestress_strategy();
   }
 }
 
 // Pack the constituent
-void MIXTURE::MixtureConstituentElastHyperBase::PackConstituent(
+void MIXTURE::MixtureConstituentElastHyperBase::pack_constituent(
     Core::Communication::PackBuffer& data) const
 {
-  MixtureConstituent::PackConstituent(data);
+  MixtureConstituent::pack_constituent(data);
 
   // matid
   int matid = -1;
@@ -82,7 +82,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::PackConstituent(
 
   cosy_anisotropy_extension_.pack_anisotropy(data);
 
-  if (prestress_strategy_ != nullptr) prestress_strategy_->Pack(data);
+  if (prestress_strategy_ != nullptr) prestress_strategy_->pack(data);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -92,10 +92,10 @@ void MIXTURE::MixtureConstituentElastHyperBase::PackConstituent(
 }
 
 // Unpack the constituent
-void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
+void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  MixtureConstituent::UnpackConstituent(position, data);
+  MixtureConstituent::unpack_constituent(position, data);
 
   // make sure we have a pristine material
   params_ = nullptr;
@@ -112,14 +112,14 @@ void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
       const unsigned int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
       Core::Mat::PAR::Parameter* mat =
           Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+      if (mat->Type() == material_type())
       {
         params_ = dynamic_cast<MIXTURE::PAR::MixtureConstituentElastHyperBase*>(mat);
       }
       else
       {
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+            material_type());
       }
     }
   }
@@ -135,10 +135,10 @@ void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
     if (params_->get_prestressing_mat_id() > 0)
     {
       prestress_strategy_ =
-          MIXTURE::PAR::PrestressStrategy::Factory(params_->get_prestressing_mat_id())
+          MIXTURE::PAR::PrestressStrategy::factory(params_->get_prestressing_mat_id())
               ->create_prestress_strategy();
 
-      prestress_strategy_->Unpack(position, data);
+      prestress_strategy_->unpack(position, data);
     }
 
     // make sure the referenced materials in material list have quick access parameters
@@ -166,10 +166,10 @@ void MIXTURE::MixtureConstituentElastHyperBase::register_anisotropy_extensions(
 }
 
 // Reads the element from the input file
-void MIXTURE::MixtureConstituentElastHyperBase::ReadElement(
+void MIXTURE::MixtureConstituentElastHyperBase::read_element(
     int numgp, Input::LineDefinition* linedef)
 {
-  MixtureConstituent::ReadElement(numgp, linedef);
+  MixtureConstituent::read_element(numgp, linedef);
 
   // Setup summands
   for (const auto& summand : potsum_) summand->Setup(numgp, linedef);
@@ -184,10 +184,10 @@ void MIXTURE::MixtureConstituentElastHyperBase::ReadElement(
 }
 
 // Updates all summands
-void MIXTURE::MixtureConstituentElastHyperBase::Update(Core::LinAlg::Matrix<3, 3> const& defgrd,
+void MIXTURE::MixtureConstituentElastHyperBase::update(Core::LinAlg::Matrix<3, 3> const& defgrd,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
-  MixtureConstituent::Update(defgrd, params, gp, eleGID);
+  MixtureConstituent::update(defgrd, params, gp, eleGID);
 
   // loop map of associated potential summands
   for (auto& summand : potsum_) summand->Update();
@@ -195,20 +195,20 @@ void MIXTURE::MixtureConstituentElastHyperBase::Update(Core::LinAlg::Matrix<3, 3
   // do nothing in the default case
   if (params_->get_prestressing_mat_id() > 0)
   {
-    prestress_strategy_->Update(cosy_anisotropy_extension_.get_coordinate_system_provider(gp),
+    prestress_strategy_->update(cosy_anisotropy_extension_.get_coordinate_system_provider(gp),
         *this, defgrd, prestretch_[gp], params, gp, eleGID);
   }
 }
 
-void MIXTURE::MixtureConstituentElastHyperBase::Setup(
+void MIXTURE::MixtureConstituentElastHyperBase::setup(
     Teuchos::ParameterList& params, const int eleGID)
 {
-  MixtureConstituent::Setup(params, eleGID);
+  MixtureConstituent::setup(params, eleGID);
   if (params_->get_prestressing_mat_id() > 0)
   {
     prestretch_.resize(num_gp());
 
-    prestress_strategy_->Setup(*this, params, num_gp(), eleGID);
+    prestress_strategy_->setup(*this, params, num_gp(), eleGID);
   }
 }
 
@@ -218,7 +218,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::pre_evaluate(
   // do nothing in the default case
   if (params_->get_prestressing_mat_id() > 0)
   {
-    prestress_strategy_->EvaluatePrestress(mixtureRule,
+    prestress_strategy_->evaluate_prestress(mixtureRule,
         cosy_anisotropy_extension_.get_coordinate_system_provider(gp), *this, prestretch_[gp],
         params, gp, eleGID);
   }
@@ -229,15 +229,15 @@ void MIXTURE::MixtureConstituentElastHyperBase::register_output_data_names(
 {
   if (prestress_strategy_ != nullptr)
   {
-    names_and_size["mixture_constituent_" + std::to_string(Id()) + "_elasthyper_prestretch"] = 9;
+    names_and_size["mixture_constituent_" + std::to_string(id()) + "_elasthyper_prestretch"] = 9;
   }
 }
 
-bool MIXTURE::MixtureConstituentElastHyperBase::EvaluateOutputData(
+bool MIXTURE::MixtureConstituentElastHyperBase::evaluate_output_data(
     const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   if (prestress_strategy_ != nullptr &&
-      name == "mixture_constituent_" + std::to_string(Id()) + "_elasthyper_prestretch")
+      name == "mixture_constituent_" + std::to_string(id()) + "_elasthyper_prestretch")
   {
     for (int gp = 0; gp < num_gp(); ++gp)
     {

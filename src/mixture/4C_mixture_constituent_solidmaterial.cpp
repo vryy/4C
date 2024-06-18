@@ -29,7 +29,7 @@ MIXTURE::PAR::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
 
 // Create an instance of MIXTURE::MixtureConstituentSolidMaterial from the parameters
 std::unique_ptr<MIXTURE::MixtureConstituent>
-MIXTURE::PAR::MixtureConstituentSolidMaterial::CreateConstituent(int id)
+MIXTURE::PAR::MixtureConstituentSolidMaterial::create_constituent(int id)
 {
   return std::unique_ptr<MIXTURE::MixtureConstituentSolidMaterial>(
       new MIXTURE::MixtureConstituentSolidMaterial(this, id));
@@ -59,16 +59,16 @@ MIXTURE::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
         material_->Parameter()->Id());
 }
 
-Core::Materials::MaterialType MIXTURE::MixtureConstituentSolidMaterial::MaterialType() const
+Core::Materials::MaterialType MIXTURE::MixtureConstituentSolidMaterial::material_type() const
 {
   return Core::Materials::mix_solid_material;
 }
 
-void MIXTURE::MixtureConstituentSolidMaterial::PackConstituent(
+void MIXTURE::MixtureConstituentSolidMaterial::pack_constituent(
     Core::Communication::PackBuffer& data) const
 {
   // pack constituent data
-  MixtureConstituent::PackConstituent(data);
+  MixtureConstituent::pack_constituent(data);
 
   // add the matid of the Mixture_SolidMaterial
   int matid = -1;
@@ -79,11 +79,11 @@ void MIXTURE::MixtureConstituentSolidMaterial::PackConstituent(
   material_->Pack(data);
 }
 
-void MIXTURE::MixtureConstituentSolidMaterial::UnpackConstituent(
+void MIXTURE::MixtureConstituentSolidMaterial::unpack_constituent(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // unpack constituent data
-  MixtureConstituent::UnpackConstituent(position, data);
+  MixtureConstituent::unpack_constituent(position, data);
 
   // make sure we have a pristine material
   params_ = nullptr;
@@ -101,14 +101,14 @@ void MIXTURE::MixtureConstituentSolidMaterial::UnpackConstituent(
       const unsigned int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
       Core::Mat::PAR::Parameter* mat =
           Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+      if (mat->Type() == material_type())
       {
         params_ = dynamic_cast<MIXTURE::PAR::MixtureConstituentSolidMaterial*>(mat);
       }
       else
       {
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+            material_type());
       }
     }
   }
@@ -130,20 +130,20 @@ void MIXTURE::MixtureConstituentSolidMaterial::UnpackConstituent(
 
 Core::Materials::MaterialType MaterialType() { return Core::Materials::mix_solid_material; }
 
-void MIXTURE::MixtureConstituentSolidMaterial::ReadElement(
+void MIXTURE::MixtureConstituentSolidMaterial::read_element(
     int numgp, Input::LineDefinition* linedef)
 {
-  MixtureConstituent::ReadElement(numgp, linedef);
+  MixtureConstituent::read_element(numgp, linedef);
   material_->Setup(numgp, linedef);
 }
 
-void MIXTURE::MixtureConstituentSolidMaterial::Update(Core::LinAlg::Matrix<3, 3> const& defgrd,
+void MIXTURE::MixtureConstituentSolidMaterial::update(Core::LinAlg::Matrix<3, 3> const& defgrd,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   material_->Update(defgrd, gp, params, eleGID);
 }
 
-void MIXTURE::MixtureConstituentSolidMaterial::Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+void MIXTURE::MixtureConstituentSolidMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)
@@ -157,7 +157,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::register_output_data_names(
   material_->register_output_data_names(names_and_size);
 }
 
-bool MIXTURE::MixtureConstituentSolidMaterial::EvaluateOutputData(
+bool MIXTURE::MixtureConstituentSolidMaterial::evaluate_output_data(
     const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   return material_->EvaluateOutputData(name, data);

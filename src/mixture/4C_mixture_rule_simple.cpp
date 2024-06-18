@@ -36,7 +36,7 @@ MIXTURE::PAR::SimpleMixtureRule::SimpleMixtureRule(const Core::Mat::PAR::Paramet
     FOUR_C_THROW("Mass fractions don't sum up to 1, which is unphysical.");
 }
 
-std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::SimpleMixtureRule::CreateRule()
+std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::SimpleMixtureRule::create_rule()
 {
   return std::unique_ptr<MIXTURE::SimpleMixtureRule>(new MIXTURE::SimpleMixtureRule(this));
 }
@@ -46,7 +46,7 @@ MIXTURE::SimpleMixtureRule::SimpleMixtureRule(MIXTURE::PAR::SimpleMixtureRule* p
 {
 }
 
-void MIXTURE::SimpleMixtureRule::Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+void MIXTURE::SimpleMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)
@@ -62,7 +62,7 @@ void MIXTURE::SimpleMixtureRule::Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     MixtureConstituent& constituent = *constituents()[i];
     cstress.Clear();
     ccmat.Clear();
-    constituent.Evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
+    constituent.evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
 
     // Add stress contribution to global stress
     // In this basic mixture rule, the mass fractions do not change

@@ -48,13 +48,13 @@ MIXTURE::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStrategy(
 {
 }
 
-void MIXTURE::IsotropicCylinderPrestressStrategy::Setup(
+void MIXTURE::IsotropicCylinderPrestressStrategy::setup(
     MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int numgp, int eleGID)
 {
   // nothing to do
 }
 
-void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const MixtureRule& mixtureRule,
+void MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_prestress(const MixtureRule& mixtureRule,
     const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
     MIXTURE::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
     Teuchos::ParameterList& params, int gp, int eleGID)
@@ -69,7 +69,7 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const Mixtur
 
   auto& elhyper = dynamic_cast<MIXTURE::MixtureConstituentElastHyperBase&>(constituent);
 
-  if (elhyper.Summands().size() != 2)
+  if (elhyper.summands().size() != 2)
   {
     FOUR_C_THROW(
         "Currrently, the prestressing technique is only implemented for an ElastHyper constituent "
@@ -79,8 +79,8 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const Mixtur
 
   // Let's assume that for simplicity, the first index is the IsoNeoHooke material and the second
   // index is the Sussman-Bathe penalty parameter
-  auto matiso = Teuchos::rcp_dynamic_cast<Mat::Elastic::IsoNeoHooke>(elhyper.Summands()[0]);
-  auto matvol = Teuchos::rcp_dynamic_cast<Mat::Elastic::VolSussmanBathe>(elhyper.Summands()[1]);
+  auto matiso = Teuchos::rcp_dynamic_cast<Mat::Elastic::IsoNeoHooke>(elhyper.summands()[0]);
+  auto matvol = Teuchos::rcp_dynamic_cast<Mat::Elastic::VolSussmanBathe>(elhyper.summands()[1]);
 
   if (Teuchos::is_null(matiso))
   {
@@ -177,7 +177,7 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const Mixtur
       params_->circumferential_prestretch_, cylinderCosy->GetCir(), cylinderCosy->GetCir(), 1.0);
 }
 
-double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule& mixtureRule,
+double MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_mue_frac(MixtureRule& mixtureRule,
     const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
     MIXTURE::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
     Teuchos::ParameterList& params, int gp, int eleGID) const
@@ -198,7 +198,7 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
   Core::LinAlg::Matrix<6, 6> cmat(true);
 
 
-  mixtureRule.Evaluate(F, E_strain, params, S_stress, cmat, gp, eleGID);
+  mixtureRule.evaluate(F, E_strain, params, S_stress, cmat, gp, eleGID);
 
   Core::LinAlg::Matrix<6, 1> Acir(false);
   // Compute structural tensor
@@ -228,7 +228,7 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
   return (target_stress - (total_stress - membrane_stress)) / membrane_stress;
 }
 
-void MIXTURE::IsotropicCylinderPrestressStrategy::Update(
+void MIXTURE::IsotropicCylinderPrestressStrategy::update(
     const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
     MIXTURE::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
     Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)

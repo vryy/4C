@@ -42,7 +42,7 @@ namespace MIXTURE
   };
 
   template <typename Number>
-  bool IsAlmostEqual(
+  bool is_almost_equal(
       const MassIncrement<Number>& inc1, const MassIncrement<Number>& inc2, const double tolerance)
   {
     return std::abs(inc1.reference_stretch - inc2.reference_stretch) < tolerance &&
@@ -107,19 +107,19 @@ namespace MIXTURE
      *
      * @param data (out) : buffer to serialize data to.
      */
-    void Pack(Core::Communication::PackBuffer& data) const;
+    void pack(Core::Communication::PackBuffer& data) const;
 
     /*!
      * @brief Unpack all internal data that was previously packed by
-     * #Pack(Core::Communication::PackBuffer&)
+     * #pack(Core::Communication::PackBuffer&)
      *
      * @param position (in/out) : Position, where to start reading
      * @param data (in) : Vector of chars to extract data from
      */
-    void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
     /// @brief Updates previous history data
-    void Update();
+    void update();
 
     /*!
      * @brief Change the deposition stretch during simulation. This also changes the homeostatic
@@ -139,7 +139,7 @@ namespace MIXTURE
      * @param time (in) : Total time
      * @param dt (in) : Timestep
      */
-    void RecomputeState(Number lambda_f, double time, double dt);
+    void recompute_state(Number lambda_f, double time, double dt);
 
     /*!
      * @brief Reinitialize the history of the full constrained mixture fiber
@@ -153,7 +153,7 @@ namespace MIXTURE
      * @param lambda_f (in) : Stretch of the fiber
      * @param time (in) : Total tiem
      */
-    void ReinitializeHistory(Number lambda_f, double time);
+    void reinitialize_history(Number lambda_f, double time);
 
     /*!
      * @brief Returns the last time record in the history, or 0.0 if it is empty
@@ -169,7 +169,7 @@ namespace MIXTURE
      *
      * @param delta_time
      */
-    void AddTime(double delta_time);
+    void add_time(double delta_time);
 
     ///@brief Integrands that need to be integrated over for the full constrained mixture model
     ///@{
@@ -218,7 +218,7 @@ namespace MIXTURE
      */
     [[nodiscard]] Number compute_history_cauchy_stress(Number lambda_f) const;
 
-    [[nodiscard]] Number EvaluateLambdaRef(Number lambda_f) const;
+    [[nodiscard]] Number evaluate_lambda_ref(Number lambda_f) const;
     [[nodiscard]] Number evaluate_d_lambda_ref_sq_d_lambda_f_sq(Number lambda_f) const;
 
     MassIncrement<Number> evaluate_current_mass_increment(
@@ -226,7 +226,7 @@ namespace MIXTURE
     {
       const Number growth_scalar_production_rate =
           growth_evolution_.evaluate_true_mass_production_rate((cauchy_stress - sig_h_) / sig_h_);
-      return {EvaluateLambdaRef(current_state_.lambda_f), growth_scalar,
+      return {evaluate_lambda_ref(current_state_.lambda_f), growth_scalar,
           growth_scalar_production_rate, current_time_};
     }
 

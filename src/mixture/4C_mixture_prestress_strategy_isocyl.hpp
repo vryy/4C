@@ -65,7 +65,7 @@ namespace MIXTURE
     explicit IsotropicCylinderPrestressStrategy(
         MIXTURE::PAR::IsotropicCylinderPrestressStrategy* params);
 
-    void Setup(MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int gp,
+    void setup(MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
     /*!
@@ -75,7 +75,7 @@ namespace MIXTURE
      * @param gp (in) : Gauss-point
      * @param eleGID (in) : Global element id
      */
-    void EvaluatePrestress(const MixtureRule& mixtureRule,
+    void evaluate_prestress(const MixtureRule& mixtureRule,
         const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
         MIXTURE::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
@@ -92,12 +92,12 @@ namespace MIXTURE
      * \param eleGID global Element id
      * \return double Fraction of the membrane stress contribution to ensure equilibrium
      */
-    double EvaluateMueFrac(MixtureRule& mixtureRule,
+    double evaluate_mue_frac(MixtureRule& mixtureRule,
         const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
         MIXTURE::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
         Teuchos::ParameterList& params, int gp, int eleGID) const override;
 
-    void Update(const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+    void update(const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
         MIXTURE::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
         Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
 

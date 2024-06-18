@@ -91,7 +91,7 @@ MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber::
 }
 
 std::unique_ptr<MIXTURE::MixtureConstituent>
-MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber::CreateConstituent(int id)
+MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber::create_constituent(int id)
 {
   return std::make_unique<MIXTURE::MixtureConstituentFullConstrainedMixtureFiber>(this, id);
 }
@@ -111,34 +111,34 @@ MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::
       Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-Core::Materials::MaterialType MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::MaterialType()
-    const
+Core::Materials::MaterialType
+MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::material_type() const
 {
   return Core::Materials::mix_full_constrained_mixture_fiber;
 }
 
-void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::PackConstituent(
+void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::pack_constituent(
     Core::Communication::PackBuffer& data) const
 {
-  MIXTURE::MixtureConstituent::PackConstituent(data);
+  MIXTURE::MixtureConstituent::pack_constituent(data);
   anisotropy_extension_.pack_anisotropy(data);
 
   for (const FullConstrainedMixtureFiber<double>& fiber : full_constrained_mixture_fiber_)
-    fiber.Pack(data);
+    fiber.pack(data);
 
   Core::Communication::ParObject::add_to_pack(data, last_lambda_f_);
 }
 
-void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::UnpackConstituent(
+void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::unpack_constituent(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  MIXTURE::MixtureConstituent::UnpackConstituent(position, data);
+  MIXTURE::MixtureConstituent::unpack_constituent(position, data);
   initialize();
 
   anisotropy_extension_.unpack_anisotropy(data, position);
 
   for (FullConstrainedMixtureFiber<double>& fiber : full_constrained_mixture_fiber_)
-    fiber.Unpack(position, data);
+    fiber.unpack(position, data);
 
   Core::Communication::ParObject::extract_from_pack(position, data, last_lambda_f_);
 
@@ -146,7 +146,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::UnpackConstituent(
   {
     for (auto gp = 0; gp < num_gp(); ++gp)
     {
-      full_constrained_mixture_fiber_[gp].ReinitializeHistory(
+      full_constrained_mixture_fiber_[gp].reinitialize_history(
           last_lambda_f_[gp], full_constrained_mixture_fiber_[gp].get_last_time_in_history());
     }
   }
@@ -177,33 +177,33 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::initialize()
   }
 }
 
-void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::ReadElement(
+void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::read_element(
     int numgp, Input::LineDefinition* linedef)
 {
-  MIXTURE::MixtureConstituent::ReadElement(numgp, linedef);
+  MIXTURE::MixtureConstituent::read_element(numgp, linedef);
   initialize();
 }
 
-void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::Setup(
+void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::setup(
     Teuchos::ParameterList& params, int eleGID)
 {
-  MIXTURE::MixtureConstituent::Setup(params, eleGID);
+  MIXTURE::MixtureConstituent::setup(params, eleGID);
 
   if (params_->growth_enabled_)
   {
     for (auto& fiber : full_constrained_mixture_fiber_)
     {
       // No deformation at t=0
-      fiber.ReinitializeHistory(1.0, 0.0);
+      fiber.reinitialize_history(1.0, 0.0);
     }
   }
 }
 
-void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::Update(
+void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::update(
     const Core::LinAlg::Matrix<3, 3>& F, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
 {
-  MixtureConstituent::Update(F, params, gp, eleGID);
+  MixtureConstituent::update(F, params, gp, eleGID);
 
   const double time = GetTotalTime(params);
   full_constrained_mixture_fiber_[gp].set_deposition_stretch(
@@ -211,23 +211,23 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::Update(
   last_lambda_f_[gp] = evaluate_lambdaf(EvaluateC(F), gp, eleGID);
 
   // Update state
-  full_constrained_mixture_fiber_[gp].Update();
+  full_constrained_mixture_fiber_[gp].update();
 }
 
 void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::register_output_data_names(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   MixtureConstituent::register_output_data_names(names_and_size);
-  names_and_size["mixture_constituent_" + std::to_string(Id()) + "_sig_h"] = 1;
-  names_and_size["mixture_constituent_" + std::to_string(Id()) + "_sig"] = 1;
-  names_and_size["mixture_constituent_" + std::to_string(Id()) + "_growth_scalar"] = 1;
-  names_and_size["mixture_constituent_" + std::to_string(Id()) + "_history_size"] = 1;
+  names_and_size["mixture_constituent_" + std::to_string(id()) + "_sig_h"] = 1;
+  names_and_size["mixture_constituent_" + std::to_string(id()) + "_sig"] = 1;
+  names_and_size["mixture_constituent_" + std::to_string(id()) + "_growth_scalar"] = 1;
+  names_and_size["mixture_constituent_" + std::to_string(id()) + "_history_size"] = 1;
 }
 
-bool MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::EvaluateOutputData(
+bool MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_output_data(
     const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
-  if (name == "mixture_constituent_" + std::to_string(Id()) + "_sig_h")
+  if (name == "mixture_constituent_" + std::to_string(id()) + "_sig_h")
   {
     for (int gp = 0; gp < num_gp(); ++gp)
     {
@@ -235,7 +235,7 @@ bool MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::EvaluateOutputData(
     }
     return true;
   }
-  else if (name == "mixture_constituent_" + std::to_string(Id()) + "_sig")
+  else if (name == "mixture_constituent_" + std::to_string(id()) + "_sig")
   {
     for (int gp = 0; gp < num_gp(); ++gp)
     {
@@ -243,7 +243,7 @@ bool MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::EvaluateOutputData(
     }
     return true;
   }
-  else if (name == "mixture_constituent_" + std::to_string(Id()) + "_growth_scalar")
+  else if (name == "mixture_constituent_" + std::to_string(id()) + "_growth_scalar")
   {
     for (int gp = 0; gp < num_gp(); ++gp)
     {
@@ -251,7 +251,7 @@ bool MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::EvaluateOutputData(
     }
     return true;
   }
-  else if (name == "mixture_constituent_" + std::to_string(Id()) + "_history_size")
+  else if (name == "mixture_constituent_" + std::to_string(id()) + "_history_size")
   {
     for (int gp = 0; gp < num_gp(); ++gp)
     {
@@ -262,7 +262,7 @@ bool MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::EvaluateOutputData(
     }
     return true;
   }
-  return MixtureConstituent::EvaluateOutputData(name, data);
+  return MixtureConstituent::evaluate_output_data(name, data);
 }
 
 Core::LinAlg::Matrix<1, 6>
@@ -300,7 +300,7 @@ MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_current_cmat(
   return cmat;
 }
 
-void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::Evaluate(
+void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate(
     const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
     Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
     Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
@@ -311,13 +311,13 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::Evaluate(
   Core::LinAlg::Matrix<3, 3> C = EvaluateC(F);
 
   const double lambda_f = evaluate_lambdaf(C, gp, eleGID);
-  full_constrained_mixture_fiber_[gp].RecomputeState(lambda_f, time, delta_time);
+  full_constrained_mixture_fiber_[gp].recompute_state(lambda_f, time, delta_time);
 
   S_stress.Update(evaluate_current_p_k2(gp, eleGID));
   cmat.Update(evaluate_current_cmat(gp, eleGID));
 }
 
-void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::EvaluateElasticPart(
+void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_elastic_part(
     const Core::LinAlg::Matrix<3, 3>& FM, const Core::LinAlg::Matrix<3, 3>& iFextin,
     Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
     Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
@@ -327,13 +327,14 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::EvaluateElasticPart
       "deformation.");
 }
 
-double MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::GetGrowthScalar(int gp) const
+double MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::get_growth_scalar(int gp) const
 {
   return full_constrained_mixture_fiber_[gp].computed_growth_scalar_;
 }
 
 Core::LinAlg::Matrix<1, 6>
-MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::GetDGrowthScalarDC(int gp, int eleGID) const
+MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::get_d_growth_scalar_d_cg(
+    int gp, int eleGID) const
 {
   if (!params_->growth_enabled_) return Core::LinAlg::Matrix<1, 6>(true);
   Core::LinAlg::Matrix<1, 6> dGrowthScalarDE = evaluate_d_lambdafsq_dc(gp, eleGID);

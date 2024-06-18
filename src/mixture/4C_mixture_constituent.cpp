@@ -41,7 +41,7 @@ Teuchos::RCP<Core::Mat::Material> MIXTURE::PAR::MixtureConstituent::create_mater
 
 // Create the parameters of the constituents from the material number and the reference mass
 // fraction
-MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int matnum)
+MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::factory(int matnum)
 {
   // for the sake of safety
   if (Global::Problem::Instance()->Materials() == Teuchos::null)
@@ -103,7 +103,7 @@ MIXTURE::MixtureConstituent::MixtureConstituent(MIXTURE::PAR::MixtureConstituent
 }
 
 //! Init is called once at the beginning to setup the number of GPs and the Parameter List
-void MIXTURE::MixtureConstituent::ReadElement(int numgp, Input::LineDefinition* linedef)
+void MIXTURE::MixtureConstituent::read_element(int numgp, Input::LineDefinition* linedef)
 {
   // Init must only be called once
   if (has_read_element_) FOUR_C_THROW("ReadElement() is called multiple times. Just once allowed.");
@@ -112,7 +112,7 @@ void MIXTURE::MixtureConstituent::ReadElement(int numgp, Input::LineDefinition* 
 }
 
 // Setup of the mixture constituents and all its subparts
-void MIXTURE::MixtureConstituent::Setup(Teuchos::ParameterList& params, const int eleGID)
+void MIXTURE::MixtureConstituent::setup(Teuchos::ParameterList& params, const int eleGID)
 {
   // Setup must be called after Init()
   if (!has_read_element_) FOUR_C_THROW("ReadElement() must be called before Setup()");
@@ -123,7 +123,7 @@ void MIXTURE::MixtureConstituent::Setup(Teuchos::ParameterList& params, const in
 }
 
 // Pack everything for distribution to other processors
-void MIXTURE::MixtureConstituent::PackConstituent(Core::Communication::PackBuffer& data) const
+void MIXTURE::MixtureConstituent::pack_constituent(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::ParObject::add_to_pack(data, numgp_);
   Core::Communication::ParObject::add_to_pack(data, static_cast<int>(has_read_element_));
@@ -131,7 +131,7 @@ void MIXTURE::MixtureConstituent::PackConstituent(Core::Communication::PackBuffe
 }
 
 // Unpack base constituent data, need to be called by every derived class
-void MIXTURE::MixtureConstituent::UnpackConstituent(
+void MIXTURE::MixtureConstituent::unpack_constituent(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // make sure we have a pristine material
@@ -145,7 +145,7 @@ void MIXTURE::MixtureConstituent::UnpackConstituent(
   is_setup_ = (bool)Core::Communication::ParObject::extract_int(position, data);
 }
 
-void MIXTURE::MixtureConstituent::EvaluateElasticPart(const Core::LinAlg::Matrix<3, 3>& F,
+void MIXTURE::MixtureConstituent::evaluate_elastic_part(const Core::LinAlg::Matrix<3, 3>& F,
     const Core::LinAlg::Matrix<3, 3>& F_in, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
