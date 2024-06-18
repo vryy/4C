@@ -541,15 +541,18 @@ void Mat::PlasticElastHyper::SetupHillPlasticity(Input::LineDefinition* linedef)
 
     // calculate plastic anisotropy tensor
     PlAniso_full_.Clear();
-    ElastSymTensorMultiply(PlAniso_full_, alpha1, M0, M0, 1.);
-    ElastSymTensorMultiply(PlAniso_full_, alpha2, M1, M1, 1.);
-    ElastSymTensorMultiply(PlAniso_full_, alpha3, M2, M2, 1.);
-    ElastSymTensorMultiplyAddSym(PlAniso_full_, 0.5 * (alpha3 - alpha1 - alpha2), M0, M1, 1.);
-    ElastSymTensorMultiplyAddSym(PlAniso_full_, 0.5 * (alpha1 - alpha2 - alpha3), M1, M2, 1.);
-    ElastSymTensorMultiplyAddSym(PlAniso_full_, 0.5 * (alpha2 - alpha3 - alpha1), M0, M2, 1.);
-    AddSymmetricHolzapfelProduct(PlAniso_full_, M0, M1, alpha4);
-    AddSymmetricHolzapfelProduct(PlAniso_full_, M1, M2, alpha5);
-    AddSymmetricHolzapfelProduct(PlAniso_full_, M0, M2, alpha6);
+    add_elasticity_tensor_product(PlAniso_full_, alpha1, M0, M0, 1.);
+    add_elasticity_tensor_product(PlAniso_full_, alpha2, M1, M1, 1.);
+    add_elasticity_tensor_product(PlAniso_full_, alpha3, M2, M2, 1.);
+    add_symmetric_elasticity_tensor_product(
+        PlAniso_full_, 0.5 * (alpha3 - alpha1 - alpha2), M0, M1, 1.);
+    add_symmetric_elasticity_tensor_product(
+        PlAniso_full_, 0.5 * (alpha1 - alpha2 - alpha3), M1, M2, 1.);
+    add_symmetric_elasticity_tensor_product(
+        PlAniso_full_, 0.5 * (alpha2 - alpha3 - alpha1), M0, M2, 1.);
+    add_symmetric_holzapfel_product(PlAniso_full_, M0, M1, alpha4);
+    add_symmetric_holzapfel_product(PlAniso_full_, M1, M2, alpha5);
+    add_symmetric_holzapfel_product(PlAniso_full_, M0, M2, alpha6);
 
     // we need this matrix to get rid of the zero eigenvalue to be able to invert
     // the anisotropy tensor. After the inversion we expand the tensor again to 6x6
@@ -697,10 +700,11 @@ void Mat::PlasticElastHyper::evaluate_thermal_stress(const Core::LinAlg::Matrix<
   icg(5) = invRCG(0, 2);
 
   pk2->Update(-3. * Cte() * deltaT * modinv(2) * ddPmodII(2), icg, 1.);
-  ElastSymTensorMultiply(
+  add_elasticity_tensor_product(
       *cmat, -3. * Cte() * deltaT * modinv(2) * modinv(2) * dddPmodIII, invRCG, invRCG, 1.);
-  ElastSymTensorMultiply(*cmat, -3. * Cte() * deltaT * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
-  ElastSymTensor_o_Multiply(
+  add_elasticity_tensor_product(
+      *cmat, -3. * Cte() * deltaT * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
+  add_kronecker_tensor_product(
       *cmat, +6. * Cte() * deltaT * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
 
   return;
@@ -753,10 +757,12 @@ void Mat::PlasticElastHyper::EvaluateCTvol(const Core::LinAlg::Matrix<3, 3>* def
   icg(5) = invRCG(0, 2);
 
   cTvol->Update(-3. * Cte() * modinv(2) * ddPmodII(2), icg, 1.);
-  ElastSymTensorMultiply(
+  add_elasticity_tensor_product(
       *dCTvoldE, -3. * Cte() * modinv(2) * modinv(2) * dddPmodIII, invRCG, invRCG, 1.);
-  ElastSymTensorMultiply(*dCTvoldE, -3. * Cte() * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
-  ElastSymTensor_o_Multiply(*dCTvoldE, +6. * Cte() * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
+  add_elasticity_tensor_product(
+      *dCTvoldE, -3. * Cte() * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
+  add_kronecker_tensor_product(
+      *dCTvoldE, +6. * Cte() * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
 
   return;
 }
@@ -1840,15 +1846,16 @@ void Mat::PlasticElastHyper::EvaluateCauchyPlast(const Core::LinAlg::Matrix<3, 1
       (.5 * dPI(1) / prinv_(2) - ddPII(3)) / sqrt(prinv_(2)), be2v_, CFpiCei_, 1.);
   d_cauchy_dFpi.Scale(2.);
 
-  AddRightNonSymmetricHolzapfelProduct(
+  add_right_non_symmetric_holzapfel_product(
       d_cauchy_dFpi, *defgrd, Fe_, (dPI(0) + prinv_(0) * dPI(1)) / sqrt(prinv_(2)));
-  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dFpi, *defgrd, beFe_, -dPI(1) / sqrt(prinv_(2)));
-  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dFpi, beF_, Fe_, -dPI(1) / sqrt(prinv_(2)));
+  add_right_non_symmetric_holzapfel_product(
+      d_cauchy_dFpi, *defgrd, beFe_, -dPI(1) / sqrt(prinv_(2)));
+  add_right_non_symmetric_holzapfel_product(d_cauchy_dFpi, beF_, Fe_, -dPI(1) / sqrt(prinv_(2)));
 
-  AddRightNonSymmetricHolzapfelProduct(
+  add_right_non_symmetric_holzapfel_product(
       d_cauchy_dF, id2_, FCpi_, (dPI(0) + prinv_(0) * dPI(1)) / sqrt(prinv_(2)));
-  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dF, id2_, beFCpi_, -dPI(1) / sqrt(prinv_(2)));
-  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dF, be_, FCpi_, -dPI(1) / sqrt(prinv_(2)));
+  add_right_non_symmetric_holzapfel_product(d_cauchy_dF, id2_, beFCpi_, -dPI(1) / sqrt(prinv_(2)));
+  add_right_non_symmetric_holzapfel_product(d_cauchy_dF, be_, FCpi_, -dPI(1) / sqrt(prinv_(2)));
   d_cauchy_dF.Scale(2.);
   d_cauchy_dFpi.Scale(2.);
 
@@ -2240,8 +2247,8 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_elast(
   cmatisoprinc.MultiplyNT(delta(4), CpiCCpi_, ircg_, 1.);
   cmatisoprinc.MultiplyNT(delta(4), ircg_, CpiCCpi_, 1.);
   cmatisoprinc.MultiplyNT(delta(5), ircg_, ircg_, 1.);
-  AddtoCmatHolzapfelProduct(cmatisoprinc, ircg_, delta(6));
-  AddtoCmatHolzapfelProduct(cmatisoprinc, Cpi_, delta(7));
+  add_holzapfel_product(cmatisoprinc, ircg_, delta(6));
+  add_holzapfel_product(cmatisoprinc, Cpi_, delta(7));
 
   return;
 }
@@ -2255,8 +2262,8 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_plast(
     const Core::LinAlg::Matrix<8, 1>& delta)
 {
   // derivative of PK2 w.r.t. inverse plastic deformation gradient
-  AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc, id2_, invpldefgrd_, gamma(0));
-  AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc, CpiC_, invpldefgrd_, gamma(1));
+  add_right_non_symmetric_holzapfel_product(dPK2dFpinvIsoprinc, id2_, invpldefgrd_, gamma(0));
+  add_right_non_symmetric_holzapfel_product(dPK2dFpinvIsoprinc, CpiC_, invpldefgrd_, gamma(1));
   dPK2dFpinvIsoprinc.MultiplyNT(delta(0), Cpi_, CFpi_, 1.);
   dPK2dFpinvIsoprinc.MultiplyNT(delta(1), Cpi_, CFpiCe_, 1.);
   dPK2dFpinvIsoprinc.MultiplyNT(delta(1), CpiCCpi_, CFpi_, 1.);
@@ -2266,7 +2273,7 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_plast(
   dPK2dFpinvIsoprinc.MultiplyNT(delta(4), CpiCCpi_, CFpiCei_, 1.);
   dPK2dFpinvIsoprinc.MultiplyNT(delta(4), ircg_, CFpiCe_, 1.);
   dPK2dFpinvIsoprinc.MultiplyNT(delta(5), ircg_, CFpiCei_, 1.);
-  AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc, id2_, FpiCe_, 0.5 * delta(7));
+  add_right_non_symmetric_holzapfel_product(dPK2dFpinvIsoprinc, id2_, FpiCe_, 0.5 * delta(7));
 
   // Mandel stress
   Core::LinAlg::Matrix<6, 1> Mv;
@@ -2282,8 +2289,8 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_plast(
   MandelStressIsoprinc(2, 0) += Mv(5);
 
   // derivative of Mandel stress w.r.t. GL
-  AddSymmetricHolzapfelProduct(dMdCisoprinc, invpldefgrd_, invpldefgrd_, .5 * gamma(0));
-  AddSymmetricHolzapfelProduct(dMdCisoprinc, invpldefgrd_, FpiCe_, gamma(1));
+  add_symmetric_holzapfel_product(dMdCisoprinc, invpldefgrd_, invpldefgrd_, .5 * gamma(0));
+  add_symmetric_holzapfel_product(dMdCisoprinc, invpldefgrd_, FpiCe_, gamma(1));
   dMdCisoprinc.MultiplyNT(delta(0), Ce_, Cpi_, 1.);
   dMdCisoprinc.MultiplyNT(delta(1), Ce_, CpiCCpi_, 1.);
   dMdCisoprinc.MultiplyNT(delta(1), Ce2_, Cpi_, 1.);
@@ -2295,9 +2302,9 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_plast(
   dMdCisoprinc.MultiplyNT(delta(5), id2V_, ircg_, 1.);
 
   // derivative of Mandel stress w.r.t. inverse plastic deformation gradient
-  AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc, FpiTC_, id2_, gamma(0));
-  AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc, FpiTC_, CeM_, gamma(1));
-  AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc, CeFpiTC_, id2_, gamma(1));
+  add_right_non_symmetric_holzapfel_product(dMdFpinvIsoprinc, FpiTC_, id2_, gamma(0));
+  add_right_non_symmetric_holzapfel_product(dMdFpinvIsoprinc, FpiTC_, CeM_, gamma(1));
+  add_right_non_symmetric_holzapfel_product(dMdFpinvIsoprinc, CeFpiTC_, id2_, gamma(1));
   dMdFpinvIsoprinc.MultiplyNT(delta(0), Ce_, CFpi_, 1.);
   dMdFpinvIsoprinc.MultiplyNT(delta(1), Ce_, CFpiCe_, 1.);
   dMdFpinvIsoprinc.MultiplyNT(delta(1), Ce2_, CFpi_, 1.);
@@ -2535,9 +2542,9 @@ void Mat::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
     for (int n = 1; n <= nmax; n++)
     {
       for (int m = 1; m <= n / 2; m++)
-        AddSymmetricHolzapfelProduct(MatrixExpDeriv, Xn.at(m - 1), Xn.at(n - m), .5 / fac[n]);
+        add_symmetric_holzapfel_product(MatrixExpDeriv, Xn.at(m - 1), Xn.at(n - m), .5 / fac[n]);
       if (n % 2 == 1)
-        AddSymmetricHolzapfelProduct(
+        add_symmetric_holzapfel_product(
             MatrixExpDeriv, Xn.at((n - 1) / 2), Xn.at((n - 1) / 2), .25 / fac[n]);
     }
   }
@@ -2620,12 +2627,12 @@ void Mat::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
       s6 = EW(c, c) * EW(c, c) * s3;
 
       // calculate derivative
-      Mat::AddToCmatDerivTensorSquare(MatrixExpDeriv, s1, MatrixIn, 1.);
+      Mat::add_derivative_of_squared_tensor(MatrixExpDeriv, s1, MatrixIn, 1.);
       MatrixExpDeriv.Update(-s2, id4sharp, 1.);
-      Mat::ElastSymTensorMultiply(MatrixExpDeriv, -1. * s3, MatrixIn, MatrixIn, 1.);
-      Mat::ElastSymTensorMultiply(MatrixExpDeriv, s4, MatrixIn, id2, 1.);
-      Mat::ElastSymTensorMultiply(MatrixExpDeriv, s5, id2, MatrixIn, 1.);
-      Mat::ElastSymTensorMultiply(MatrixExpDeriv, -s6, id2, id2, 1.);
+      Mat::add_elasticity_tensor_product(MatrixExpDeriv, -1. * s3, MatrixIn, MatrixIn, 1.);
+      Mat::add_elasticity_tensor_product(MatrixExpDeriv, s4, MatrixIn, id2, 1.);
+      Mat::add_elasticity_tensor_product(MatrixExpDeriv, s5, id2, MatrixIn, 1.);
+      Mat::add_elasticity_tensor_product(MatrixExpDeriv, -s6, id2, id2, 1.);
     }
 
     else if (abs(EW(0, 0) - EW(1, 1)) > EWtolerance &&
@@ -2655,24 +2662,25 @@ void Mat::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
         double fac = exp(EW(a, a)) / ((EW(a, a) - EW(b, b)) * (EW(a, a) - EW(c, c)));
 
         // + d X^2 / d X
-        Mat::AddToCmatDerivTensorSquare(MatrixExpDeriv, fac, MatrixIn, 1.);
+        Mat::add_derivative_of_squared_tensor(MatrixExpDeriv, fac, MatrixIn, 1.);
 
         // - (x_b + x_c) I_s
         MatrixExpDeriv.Update(-1. * (EW(b, b) + EW(c, c)) * fac, id4sharp, 1.);
 
         // - [(x_a - x_b) + (x_a - x_c)] E_a \dyad E_a
-        Mat::ElastSymTensorMultiply(MatrixExpDeriv,
+        Mat::add_elasticity_tensor_product(MatrixExpDeriv,
             -1. * fac * ((EW(a, a) - EW(b, b)) + (EW(a, a) - EW(c, c))), Ea, Ea, 1.);
 
 
         // - (x_b - x_c) (E_b \dyad E_b)
-        Mat::ElastSymTensorMultiply(MatrixExpDeriv, -1. * fac * (EW(b, b) - EW(c, c)), Eb, Eb, 1.);
+        Mat::add_elasticity_tensor_product(
+            MatrixExpDeriv, -1. * fac * (EW(b, b) - EW(c, c)), Eb, Eb, 1.);
 
         // + (x_b - x_c) (E_c \dyad E_c)
-        Mat::ElastSymTensorMultiply(MatrixExpDeriv, fac * (EW(b, b) - EW(c, c)), Ec, Ec, 1.);
+        Mat::add_elasticity_tensor_product(MatrixExpDeriv, fac * (EW(b, b) - EW(c, c)), Ec, Ec, 1.);
 
         // dy / dx_a E_a \dyad E_a
-        Mat::ElastSymTensorMultiply(MatrixExpDeriv, exp(EW(a, a)), Ea, Ea, 1.);
+        Mat::add_elasticity_tensor_product(MatrixExpDeriv, exp(EW(a, a)), Ea, Ea, 1.);
       }  // end loop over all eigenvalues
     }
 
@@ -2723,7 +2731,7 @@ void Mat::PlasticElastHyper::matrix_exponential_derivative3x3(
   MatrixExpDeriv.Clear();
   for (int n = 1; n <= nmax; n++)
     for (int m = 1; m <= n; m++)
-      AddNonSymmetricProduct(1. / fac[n], Xn.at(m - 1), Xn.at(n - m), MatrixExpDeriv);
+      add_non_symmetric_product(1. / fac[n], Xn.at(m - 1), Xn.at(n - m), MatrixExpDeriv);
 
   return;
 }

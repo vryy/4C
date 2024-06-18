@@ -376,10 +376,10 @@ void Mat::ViscoNeoHooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // add volumetric elastic part 1
   // add scalar2 Cinv o Cinv (see Holzapfel p. 254)
-  AddtoCmatHolzapfelProduct((*cmat), Cinv, scalar2);
+  add_holzapfel_product((*cmat), Cinv, scalar2);
 
   // add visco-elastic deviatoric part 1
-  AddtoCmatHolzapfelProduct(*cmat, Cinv, scalarvisco * scalar3);
+  add_holzapfel_product(*cmat, Cinv, scalarvisco * scalar3);
 
   for (int i = 0; i < 6; ++i)
   {

@@ -75,7 +75,7 @@ void MIXTURE::StiffnessGrowthStrategy::evaluate_growth_stress_cmat(
   // contribution: Cinv \otimes Cinv
   cmat.MultiplyNT(delta5, iC_stress, iC_stress, 0.0);
   // contribution: Cinv \odot Cinv
-  Mat::AddtoCmatHolzapfelProduct(cmat, iC_stress, delta6);
+  Mat::add_holzapfel_product(cmat, iC_stress, delta6);
 
   cmat.MultiplyNN(dgamma2DGrowthScalar, iC_stress, dCurrentReferenceGrowthScalarDC, 1.0);
 }

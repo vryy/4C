@@ -1502,7 +1502,7 @@ void Mat::ConstraintMixture::evaluate_elastin(const Core::LinAlg::Matrix<NUM_STR
   double delta6 = 2. * beta * mue * pow(I3, -beta);
   cmatiso.MultiplyNT(delta6, Cisoinv, Cisoinv);
   double delta7 = 2. * mue * pow(I3, -beta);
-  AddtoCmatHolzapfelProduct(cmatiso, Cisoinv, delta7);
+  add_holzapfel_product(cmatiso, Cisoinv, delta7);
   cmatiso.Scale(refmassdenselastin / density * prestretchelastin * prestretchelastin *
                 prestretchelastin * prestretchelastin * elastin_survival);
   *cmat = cmatiso;
@@ -1655,7 +1655,7 @@ void Mat::ConstraintMixture::evaluate_volumetric(const Core::LinAlg::Matrix<NUM_
 
   //--- do elasticity matrix -------------------------------------------------------------
   // cmatvol = J(p + J dp/dJ) Cinv x Cinv  -  2 J p Cinv o Cinv
-  AddtoCmatHolzapfelProduct((*cmat), Cinv, (-2 * J * p));
+  add_holzapfel_product((*cmat), Cinv, (-2 * J * p));
   for (int i = 0; i < 6; i++)
   {
     for (int j = 0; j < 6; j++)

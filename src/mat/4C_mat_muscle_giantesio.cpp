@@ -44,17 +44,17 @@ namespace
 
     // part1 = tensor_A * matrix_B * matrix_C
     Core::LinAlg::FourTensor<3> part1(true);
-    Mat::MultiplyMatrixFourTensorBySecondIndex<3>(part1, mBmC, tensor_A, false);
+    Mat::multiply_matrix_four_tensor_by_second_index<3>(part1, mBmC, tensor_A, false);
 
     // part2 = matrix_A * tensor_B * matrix_C
     Core::LinAlg::FourTensor<3> mAtB(true);  // matrix_A * tensor_B
-    Mat::MultiplyMatrixFourTensor<3>(mAtB, matrix_A, tensor_B, false);
+    Mat::multiply_matrix_four_tensor<3>(mAtB, matrix_A, tensor_B, false);
     Core::LinAlg::FourTensor<3> part2(true);  // (matrix_A * tensor_B) * matrix_C
-    Mat::MultiplyMatrixFourTensorBySecondIndex<3>(part2, matrix_C, mAtB, false);
+    Mat::multiply_matrix_four_tensor_by_second_index<3>(part2, matrix_C, mAtB, false);
 
     // part3 = matrix_A * matrix_B * tensor_C
     Core::LinAlg::FourTensor<3> part3(true);
-    Mat::MultiplyMatrixFourTensor<3>(part3, mAmB, tensor_C, false);
+    Mat::multiply_matrix_four_tensor<3>(part3, mAmB, tensor_C, false);
 
     // result = part1 + part2 + part3
     Core::LinAlg::FourTensor<3> tAmBmCmAtBmCmAmBtC(true);
@@ -91,7 +91,7 @@ namespace
     for (int i = 3; i < 6; i++) dCdCv(i, i) = 0.5;
 
     Core::LinAlg::FourTensor<3> dCdC(true);
-    Mat::SetupFourTensor(dCdC, dCdCv);
+    Mat::setup_four_tensor_from_6x6_voigt_matrix(dCdC, dCdCv);
 
     return dCdC;
   }
@@ -140,7 +140,7 @@ namespace
     Core::LinAlg::FourTensor<3> dCedC(true);
     dCedC = SumMultiplyTmmMtmMmt(invFa, C, invFa, dinvFadC, dCdC, dinvFadC, 1.0);
     Core::LinAlg::Matrix<6, 6> dCedCv(true);
-    Mat::Setup6x6VoigtMatrix(dCedCv, dCedC);
+    Mat::setup_6x6_voigt_matrix_from_four_tensor(dCedCv, dCedC);
 
     // inverse of the elastic right Cauchy Green tensor Ce
     Core::LinAlg::Matrix<3, 3> invCe(true);
@@ -189,18 +189,18 @@ namespace
     dSedCev.MultiplyNT(-(beta * Je + 1.) * expbeta * detCe, invCeLinvCev, invCev, 1.0);
     dSedCev.MultiplyNT((beta * Je + 1.) * Je * expbeta, invCev, invCev, 1.0);
     // adds scalar * (invC boeppel invC) to cmat, see Holzapfel2000, p. 254
-    Mat::AddtoCmatHolzapfelProduct(dSedCev, invCev, -Je * expbeta);
+    Mat::add_holzapfel_product(dSedCev, invCev, -Je * expbeta);
     // adds -expbeta * detCe * dinvCLinvCdCv to cmat
-    Mat::AddDerivInvABInvBProduct(-expbeta * detCe, invCev, invCeLinvCev, dSedCev);
+    Mat::add_derivative_of_inva_b_inva_product(-expbeta * detCe, invCev, invCeLinvCev, dSedCev);
     dSedCev.Scale(gamma / 2);
 
     Core::LinAlg::FourTensor<3> dSedCe(true);
-    Mat::SetupFourTensor(dSedCe, dSedCev);
+    Mat::setup_four_tensor_from_6x6_voigt_matrix(dSedCe, dSedCev);
 
     // derivative of Se w.r.t C
     // dSedC_ijkl = dSedCe_ijab dCedC_abkl
     Core::LinAlg::FourTensor<3> dSedC(true);
-    Mat::MultiplyFourTensorFourTensor<3>(dSedC, dSedCe, dCedC, true);
+    Mat::multiply_four_tensor_four_tensor<3>(dSedC, dSedCe, dCedC, true);
 
     StressAndDeriv Se_dSedC = {.Se = Se, .dSedC = dSedC};
 
@@ -517,7 +517,7 @@ void Mat::MuscleGiantesio::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // first derivative of Fa^{-1} w.r.t. C
   // dinvFadC_ijkl = dinvFadomegaa_ij domegaadC_kl
   Core::LinAlg::FourTensor<3> dinvFadC(true);
-  Mat::AddDyadicProductMatrixMatrix(dinvFadC, dinvFadomegaa, domegaadC);
+  Mat::add_dyadic_product_matrix_matrix(dinvFadC, dinvFadomegaa, domegaadC);
 
   // --------------------------------------------------------------
   // elastic second Piola Kirchhoff stress tensor Se and its derivative w.r.t C
@@ -542,7 +542,7 @@ void Mat::MuscleGiantesio::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   MultiplyNNN(CinvFadFadomegaa, 1.0, C, invFa, dFadomegaa);
 
   Core::LinAlg::Matrix<6, 1> S2v(domegaadCv);
-  double scalar_contraction = -2.0 * Mat::ContractMatrixMatrix(CinvFadFadomegaa, S1);
+  double scalar_contraction = -2.0 * Mat::contract_matrix_matrix(CinvFadFadomegaa, S1);
   S2v.Scale(scalar_contraction);
 
   // Svol = - gamma/2 * detC^-kappa
@@ -560,7 +560,7 @@ void Mat::MuscleGiantesio::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Core::LinAlg::FourTensor<3> dS1dC(true);
   dS1dC =
       SumMultiplyTmmMtmMmt(invFa, Se_dSedC.Se, invFa, dinvFadC, Se_dSedC.dSedC, dinvFadC, detFa);
-  Mat::Setup6x6VoigtMatrix(cmat1v, dS1dC);
+  Mat::setup_6x6_voigt_matrix_from_four_tensor(cmat1v, dS1dC);
   cmat1v.Scale(2.0);
 
   // compute cmat2 = 2 dS2dC
@@ -579,12 +579,12 @@ void Mat::MuscleGiantesio::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   H.MultiplyNN(1.0, invFa, ddFaddomegaa, 1.0);
   Core::LinAlg::Matrix<3, 3> CH(true);
   CH.MultiplyNN(C, H);
-  double helper = Mat::ContractMatrixMatrix(S1, CH);
+  double helper = Mat::contract_matrix_matrix(S1, CH);
 
   Core::LinAlg::Matrix<3, 3> dscalardC(domegaadC);
   dscalardC.Scale(helper);
   MultiplyNNN(dscalardC, 1.0, S1, dFadomegaa, invFa);
-  Mat::AddContractionMatrixFourTensor(dscalardC, CinvFadFadomegaa, dS1dC);
+  Mat::add_contraction_matrix_four_tensor(dscalardC, CinvFadFadomegaa, dS1dC);
   Core::LinAlg::Matrix<6, 1> dscalardCv(true);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(
       dscalardC, dscalardCv);  // not yet scaled with -2.0
@@ -596,7 +596,7 @@ void Mat::MuscleGiantesio::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // compute cmatvol = 2 dS2dC
   Core::LinAlg::Matrix<6, 6> cmatvolv(true);
   cmatvolv.MultiplyNT(gamma * kappa * std::pow(detC, -kappa), invCv, invCv, 1.0);
-  Mat::AddtoCmatHolzapfelProduct(cmatvolv, invCv, gamma * std::pow(detC, -kappa));
+  Mat::add_holzapfel_product(cmatvolv, invCv, gamma * std::pow(detC, -kappa));
 
   // --------------------------------------------------------------
   // update constituent stress and material tangent

@@ -38,7 +38,7 @@ namespace Mat
    * @brief Returns the second invariant of the deviatoric stress tensor,
    * \f$J_2 = \dfrac{1}{2} \mathbf(s) : \mathbf{s}\f$
    */
-  double ComputeJ2(const Core::LinAlg::Matrix<3, 3>& stress);
+  double second_invariant_of_deviatoric_stress(const Core::LinAlg::Matrix<3, 3>& stress);
 
   /*!
    * @brief Multiply two 2nd order tensors A x B and add the result to a 4th order symmetric
@@ -46,24 +46,23 @@ namespace Mat
    *
    * In tensor index notation this method does
    * \f[
-   * C_{IJKL} := \text{ScalarThis} \cdot C_{IJKL}
-   *          + \frac{1}{2} \cdot \text{ScalarAB} \cdot \left( A_{IJ} \cdot B_{KL} \right)
+   * C_{IJKL} := \text{scalar_this} \cdot C_{IJKL}
+   *          + \frac{1}{2} \cdot \text{scalar_AB} \cdot \left( A_{IJ} \cdot B_{KL} \right)
    * \f]
    *
    * Compute the "elasticity tensor product" A x B of two 2nd order tensors (in matrix notation) and
    * add the result to a 4th order tensor (in Voigt matrix notation!) using the symmetry-conditions
-   * inherent to elasticity tensors. This is another version of this function using the fixed size
-   * matrix.
+   * inherent to elasticity tensors.
    *
    * @param[in,out] C       Material tangent matrix to be modified
-   * @param[in] ScalarAB    Scalar to multiply with A x B
+   * @param[in] scalar_AB    Scalar to multiply with A x B
    * @param[in] A           Dense matrix (3 x 3) as 2nd order tensor A
    * @param[in] B           Dense matrix (3 x 3) as 2nd order tensor B
-   * @param[in] ScalarThis  Scalar to multiply with C before adding A x B
+   * @param[in] scalar_this  Scalar to multiply with C before adding A x B
    */
-  void ElastSymTensorMultiply(Core::LinAlg::Matrix<6, 6>& C, const double ScalarAB,
+  void add_elasticity_tensor_product(Core::LinAlg::Matrix<6, 6>& C, const double scalar_AB,
       const Core::LinAlg::Matrix<3, 3>& A, const Core::LinAlg::Matrix<3, 3>& B,
-      const double ScalarThis);
+      const double scalar_this);
 
   /*!
    * @brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a 4th order
@@ -71,8 +70,8 @@ namespace Mat
    *
    * In tensor index notation this method does
    * \f[
-   * C_{IJKL} := \text{ScalarThis} \cdot C_{IJKL}
-   *          + \text{ScalarAB} \cdot \left( A_{IJ} \cdot B_{KL} + B_{IJ} \cdot A_{KL} \right)
+   * C_{IJKL} := \text{scalar_this} \cdot C_{IJKL}
+   *          + \text{scalar_AB} \cdot \left( A_{IJ} \cdot B_{KL} + B_{IJ} \cdot A_{KL} \right)
    * \f]
    *
    * Compute the "elasticity tensor product" (A x B + B x A) of two 2nd order tensors (in matrix
@@ -80,14 +79,14 @@ namespace Mat
    * symmetry-conditions inherent to elasticity tensors
    *
    * @param[in,out] C       Material tangent matrix to be modified
-   * @param[in] ScalarAB    Scalar to multiply with (A x B + B x A)
+   * @param[in] scalar_AB    Scalar to multiply with (A x B + B x A)
    * @param[in] A           Dense matrix (3 x 3) as 2nd order tensor A
    * @param[in] B           Dense matrix (3 x 3) as 2nd order tensor B
-   * @param[in] ScalarThis  Scalar to multiply with C before adding (A x B + B x A)
+   * @param[in] scalar_this  Scalar to multiply with C before adding (A x B + B x A)
    */
-  void ElastSymTensorMultiplyAddSym(Core::LinAlg::Matrix<6, 6>& C, const double ScalarAB,
-      const Core::LinAlg::Matrix<3, 3>& A, const Core::LinAlg::Matrix<3, 3>& B,
-      const double ScalarThis);
+  void add_symmetric_elasticity_tensor_product(Core::LinAlg::Matrix<6, 6>& C,
+      const double scalar_AB, const Core::LinAlg::Matrix<3, 3>& A,
+      const Core::LinAlg::Matrix<3, 3>& B, const double scalar_this);
 
   /*!
    * @brief Multiply two 2nd order tensors A o B and add the result to a 4th order symmetric
@@ -95,24 +94,24 @@ namespace Mat
    *
    * In tensor index notation this method does
    * \f[
-   * C_{IJKL} := \text{ScalarThis} \cdot C_{IJKL} + \frac{1}{2} \cdot \text{ScalarAB} \cdot \left(
+   * C_{IJKL} := \text{scalar_this} \cdot C_{IJKL} + \frac{1}{2} \cdot \text{scalar_AB} \cdot \left(
    *             A_{IK} \cdot B_{JL} + A_{IL} \cdot B_{JK} \right) \f]
    *
    * Compute the "material tensor product" A o B (also known as kronecker-tensor-product) of two 2nd
    * order tensors (in matrix notation) and add the result to a 4th order tensor (also in matrix
    * notation) using the symmetry-conditions inherent to material tensors, or tangent matrices,
    * respectively AND the Voigt notation of E,S, and C with the famous factor 2! The implementation
-   * uses the fixed size matrix.ss
+   * uses the fixed size matrix.
    *
    * @param[in,out] C       Material tangent matrix to be modified
-   * @param[in] ScalarAB    Scalar to multiply with A o B
+   * @param[in] scalar_AB    Scalar to multiply with A o B
    * @param[in] A           Dense matrix (3 x 3) as 2nd order tensor A
    * @param[in] B           Dense matrix (3 x 3) as 2nd order tensor B
-   * @param[in] ScalarThis  Scalar to multiply with C before adding A o B
+   * @param[in] scalar_this  Scalar to multiply with C before adding A o B
    */
-  void ElastSymTensor_o_Multiply(Core::LinAlg::Matrix<6, 6>& C, const double ScalarAB,
+  void add_kronecker_tensor_product(Core::LinAlg::Matrix<6, 6>& C, const double scalar_AB,
       const Core::LinAlg::Matrix<3, 3>& A, const Core::LinAlg::Matrix<3, 3>& B,
-      const double ScalarThis);
+      const double scalar_this);
 
   /*!
    * @brief Add 'Holzapfel product' contribution to constitutive tensor using Voigt notation
@@ -154,7 +153,7 @@ namespace Mat
    * @param[in] scalar   Scalar, corresponding to \f$\delta_7\f$ in Holzapfel [1], p.261
    */
   template <typename T>
-  void AddtoCmatHolzapfelProduct(Core::LinAlg::Matrix<6, 6, T>& cmat,
+  void add_holzapfel_product(Core::LinAlg::Matrix<6, 6, T>& cmat,
       const Core::LinAlg::Matrix<6, 1, T>& invc, const T scalar);
 
   /*!
@@ -209,7 +208,7 @@ namespace Mat
    *                        S^{33}\; S^{12}\; S^{23}\; S^{31} ]\f$
    * @param[in] cmat        Constitutive tensor
    */
-  void VolumetrifyAndIsochorify(Core::LinAlg::Matrix<6, 1>* pk2vol,
+  void volumetrify_and_isochorify(Core::LinAlg::Matrix<6, 1>* pk2vol,
       Core::LinAlg::Matrix<6, 6>* cvol, Core::LinAlg::Matrix<6, 1>* pk2iso,
       Core::LinAlg::Matrix<6, 6>* ciso, const Core::LinAlg::Matrix<6, 1>& gl,
       const Core::LinAlg::Matrix<6, 1>& pk2, const Core::LinAlg::Matrix<6, 6>& cmat);
@@ -220,8 +219,8 @@ namespace Mat
    *
    * In tensor index notation this method does
    * \f[
-   * C_{IJKL} := \text{ScalarThis} \cdot C_{IJKL}
-   *           + \text{ScalarDX2} \cdot \frac{d (X^2)_{IJ}}{d X_{KL}}
+   * C_{IJKL} := \text{scalar_this} \cdot C_{IJKL}
+   *           + \text{scalar_squared_dx} \cdot \frac{d (X^2)_{IJ}}{d X_{KL}}
    * \f]
    *
    * Compute the derivative of the square of a symmetric 2nd order tensor w.r.t. to the tensor add
@@ -229,12 +228,12 @@ namespace Mat
    * inherent to elasticity tensors.
    *
    * @param[in,out] C       Material tangent matrix to be modified
-   * @param[in] ScalarDX2   Scalar to multiply with dX^2/dX
+   * @param[in] scalar_squared_dx   Scalar to multiply with dX^2/dX
    * @param[in] X           Dense matrix (3 x 3)
-   * @param[in] ScalarThis  Scalar to multiply with C before adding dX^2/dX
+   * @param[in] scalar_this  Scalar to multiply with C before adding dX^2/dX
    */
-  void AddToCmatDerivTensorSquare(Core::LinAlg::Matrix<6, 6>& C, double ScalarDX2,
-      Core::LinAlg::Matrix<3, 3> X, double ScalarThis);
+  void add_derivative_of_squared_tensor(Core::LinAlg::Matrix<6, 6>& C, double scalar_squared_dx,
+      Core::LinAlg::Matrix<3, 3> X, double scalar_this);
 
   /*!
    * @brief Add symmetric Holzapfel product to a 4th order tensor in matrix notation
@@ -252,7 +251,7 @@ namespace Mat
    * @param[in] B     2nd order tensor \f[B_{gh}\f]
    * @param[in] fac   Scalar factor
    */
-  void AddSymmetricHolzapfelProduct(Core::LinAlg::Matrix<6, 6>& X,
+  void add_symmetric_holzapfel_product(Core::LinAlg::Matrix<6, 6>& X,
       const Core::LinAlg::Matrix<3, 3>& A, const Core::LinAlg::Matrix<3, 3>& B, const double fac);
 
   /*!
@@ -274,7 +273,7 @@ namespace Mat
    * @param[in] fac         Scalar factor
    */
   template <typename T>
-  void AddRightNonSymmetricHolzapfelProduct(Core::LinAlg::Matrix<6, 9, T>& out,
+  void add_right_non_symmetric_holzapfel_product(Core::LinAlg::Matrix<6, 9, T>& out,
       Core::LinAlg::Matrix<3, 3, T> const& A, Core::LinAlg::Matrix<3, 3, T> const& B, T const fac);
 
   /*!
@@ -297,7 +296,7 @@ namespace Mat
    * @param[in] fac         Scalar factor
    */
   template <typename T>
-  void AddRightNonSymmetricHolzapfelProductStrainLike(Core::LinAlg::Matrix<6, 9, T>& out,
+  void add_right_non_symmetric_holzapfel_product_strain_like(Core::LinAlg::Matrix<6, 9, T>& out,
       Core::LinAlg::Matrix<3, 3, T> const& A, Core::LinAlg::Matrix<3, 3, T> const& B, T const fac);
 
   /*!
@@ -318,7 +317,7 @@ namespace Mat
    * @param[in] B           2nd order tensor \f[B_{GH}\f]
    * @param[in] fac         Scalar factor
    */
-  void AddLeftNonSymmetricHolzapfelProduct(Core::LinAlg::Matrix<9, 6>& out,
+  void add_left_non_symmetric_holzapfel_product(Core::LinAlg::Matrix<9, 6>& out,
       Core::LinAlg::Matrix<3, 3> const& A, Core::LinAlg::Matrix<3, 3> const& B, double const fac);
 
   /*!
@@ -337,7 +336,7 @@ namespace Mat
    * @param[in] B           2nd order tensor \f[B_{CD}\f]
    * @param[in,out] out     4th order tensor \f[\text{out}_{EFGH}\f]
    */
-  void AddNonSymmetricProduct(double const& fac, Core::LinAlg::Matrix<3, 3> const& A,
+  void add_non_symmetric_product(double const& fac, Core::LinAlg::Matrix<3, 3> const& A,
       Core::LinAlg::Matrix<3, 3> const& B, Core::LinAlg::Matrix<9, 9>& out);
 
   /*!
@@ -367,8 +366,9 @@ namespace Mat
    * @param[in,out] out     4th order tensor derivative of invA*B*invA w.r.t. A in stress-like Voigt
    *                        notation
    */
-  void AddDerivInvABInvBProduct(double const& fac, const Core::LinAlg::Matrix<6, 1>& invA,
-      const Core::LinAlg::Matrix<6, 1>& invABinvA, Core::LinAlg::Matrix<6, 6>& out);
+  void add_derivative_of_inva_b_inva_product(double const& fac,
+      const Core::LinAlg::Matrix<6, 1>& invA, const Core::LinAlg::Matrix<6, 1>& invABinvA,
+      Core::LinAlg::Matrix<6, 6>& out);
 
   /*!
    * @brief Evaluates the principal invariants of any symmetric tensor
@@ -376,7 +376,7 @@ namespace Mat
    * @param[out] prinv  Principal invariants of the tensor
    * @param[in]  tens   Tensor
    */
-  void InvariantsPrincipal(
+  void invariants_principal(
       Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 3>& tens);
 
   /*!
@@ -395,7 +395,7 @@ namespace Mat
    * @param[out] prdir  Principal directions
    * @param[in] rcg     Right Cauchy-Green strain tensor in strain-like Voigt notation
    */
-  void StretchesPrincipal(Core::LinAlg::Matrix<3, 1>& prstr, Core::LinAlg::Matrix<3, 3>& prdir,
+  void stretches_principal(Core::LinAlg::Matrix<3, 1>& prstr, Core::LinAlg::Matrix<3, 3>& prdir,
       const Core::LinAlg::Matrix<6, 1>& rcg);
 
   /*!
@@ -404,25 +404,12 @@ namespace Mat
    * @param[out] modstr Modified principal stretches
    * @param[in] prstr   Principal stretches
    */
-  void StretchesModified(
+  void stretches_modified(
       Core::LinAlg::Matrix<3, 1>& modstr, const Core::LinAlg::Matrix<3, 1>& prstr);
 
-  inline void InvariantsPrincipal(
-      Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 3>& tens)
-  {
-    // 1st invariant, trace tens
-    prinv(0) = tens(0, 0) + tens(1, 1) + tens(2, 2);
-
-    // 2nd invariant, 0.5( (trace(tens))^2 - trace(tens^2))
-    prinv(1) = tens(0, 0) * tens(1, 1) + tens(1, 1) * tens(2, 2) + tens(0, 0) * tens(2, 2) -
-               tens(0, 1) * tens(1, 0) - tens(1, 2) * tens(2, 1) - tens(0, 2) * tens(2, 0);
-
-    // 3rd invariant, determinant tens
-    prinv(2) = tens.Determinant();
-  }
 
   template <class T>
-  T* CreateMaterialParameterInstance(Core::Mat::PAR::Parameter* curmat)
+  T* create_material_parameter_instance(Core::Mat::PAR::Parameter* curmat)
   {
     auto* params = dynamic_cast<T*>(curmat);
     return params;
@@ -430,79 +417,80 @@ namespace Mat
 
   /// Set every tensor value to zero
   template <int dim>
-  void ClearFourTensor(Core::LinAlg::FourTensor<dim>& fourTensor);
+  void clear_four_tensor(Core::LinAlg::FourTensor<dim>& four_tensor);
 
   /*!
    * @brief Multiply 4th order tensor with 2nd order matrix
    *
-   * @param[in,out] fourTensorResult   Result of 4th order tensor - matrix multiplication
+   * @param[in,out] four_tensor_result   Result of 4th order tensor - matrix multiplication
    *                                   \f$C^{ijkl} += A^{ijkm} B_m^l\f$
-   * @param[in] fourTensor             4th order tensor \f$A^{ijkm}\f$
+   * @param[in] four_tensor             4th order tensor \f$A^{ijkm}\f$
    * @param[in] matrix                 2-tensor \f$B_m^l\f$
-   * @param[in] clearResultTensor      if true: \f$C^{ijkl}\f$ is cleared when method is called
+   * @param[in] clear_result_tensor      if true: \f$C^{ijkl}\f$ is cleared when method is called
    */
   template <int dim>
-  void MultiplyFourTensorMatrix(Core::LinAlg::FourTensor<dim>& fourTensorResult,
-      const Core::LinAlg::FourTensor<dim>& fourTensor, const Core::LinAlg::Matrix<dim, dim>& matrix,
-      const bool clearResultTensor = true);
+  void multiply_four_tensor_matrix(Core::LinAlg::FourTensor<dim>& four_tensor_result,
+      const Core::LinAlg::FourTensor<dim>& four_tensor,
+      const Core::LinAlg::Matrix<dim, dim>& matrix, const bool clear_result_tensor = true);
 
   /*!
    * @brief Multiply 2nd order matrix with 4th order tensor
    *
-   * @param[in,out] fourTensorResult   Result of matrix - 4th order tensor multiplication
+   * @param[in,out] four_tensor_result   Result of matrix - 4th order tensor multiplication
    *                                   \f$C^{ijkl} += B^i_m A^{mjkl}\f$
    * @param[in] matrix                 2-tensor \f$B^i_m\f$
-   * @param[in] fourTensor             4th order tensor \f$A^{mjkl}\f$
-   * @param[in] clearResultTensor      if true: \f$C^{ijkl}\f$ is cleared when method is called
+   * @param[in] four_tensor             4th order tensor \f$A^{mjkl}\f$
+   * @param[in] clear_result_tensor      if true: \f$C^{ijkl}\f$ is cleared when method is called
    */
   template <int dim>
-  void MultiplyMatrixFourTensor(Core::LinAlg::FourTensor<dim>& fourTensorResult,
-      const Core::LinAlg::Matrix<dim, dim>& matrix, const Core::LinAlg::FourTensor<dim>& fourTensor,
-      const bool clearResultTensor = true);
+  void multiply_matrix_four_tensor(Core::LinAlg::FourTensor<dim>& four_tensor_result,
+      const Core::LinAlg::Matrix<dim, dim>& matrix,
+      const Core::LinAlg::FourTensor<dim>& four_tensor, const bool clear_result_tensor = true);
 
   /*!
    * @brief Multiply 2nd order matrix with 4th order tensor by the second index
    *
-   * @param[in,out] fourTensorResult   Result of matrix - 4th order tensor multiplication
+   * @param[in,out] four_tensor_result   Result of matrix - 4th order tensor multiplication
    *                                   \f$C^{ijkl} += B_m^j A^{imkl}\f$
    * @param[in] matrix                 2nd order tensor \f$B_m^j\f$
-   * @param[in] fourTensor             4th order tensor \f$A^{imkl}\f$
-   * @param[in] clearResultTensor      if true: C_ijkl is cleared when method is called
+   * @param[in] four_tensor             4th order tensor \f$A^{imkl}\f$
+   * @param[in] clear_result_tensor      if true: C_ijkl is cleared when method is called
    */
   template <int dim>
-  void MultiplyMatrixFourTensorBySecondIndex(Core::LinAlg::FourTensor<dim>& fourTensorResult,
-      const Core::LinAlg::Matrix<dim, dim>& matrix, const Core::LinAlg::FourTensor<dim>& fourTensor,
-      const bool clearResultTensor = true);
+  void multiply_matrix_four_tensor_by_second_index(
+      Core::LinAlg::FourTensor<dim>& four_tensor_result,
+      const Core::LinAlg::Matrix<dim, dim>& matrix,
+      const Core::LinAlg::FourTensor<dim>& four_tensor, const bool clear_result_tensor = true);
 
   /*!
    * @brief Multiply 4th order tensor with 4th order tensor by the first two indices
    *
-   * @param[in,out] fourTensorResult   Result of 4th order tensor - 4th order tensor multiplication
-   *                                   \f$C^{ijkl} += A^{ij}_{ab} B^{abkl}\f$
-   * @param[in] fourTensor1            4th order tensor \f$A^{ij}_{ab}\f$
-   * @param[in] fourTensor2            4th order tensor \f$B^{abkl}\f$
-   * @param[in] clearResultTensor      if true: C_ijkl is cleared when method is called
+   * @param[in,out] four_tensor_result   Result of 4th order tensor - 4th order tensor
+   * multiplication \f$C^{ijkl} += A^{ij}_{ab} B^{abkl}\f$
+   * @param[in] four_tensor_1            4th order tensor \f$A^{ij}_{ab}\f$
+   * @param[in] four_tensor_2            4th order tensor \f$B^{abkl}\f$
+   * @param[in] clear_result_tensor      if true: C_ijkl is cleared when method is called
    */
   template <int dim>
-  void MultiplyFourTensorFourTensor(Core::LinAlg::FourTensor<dim>& fourTensorResult,
-      const Core::LinAlg::FourTensor<dim>& fourTensor1,
-      const Core::LinAlg::FourTensor<dim>& fourTensor2, const bool clearResultTensor = true);
+  void multiply_four_tensor_four_tensor(Core::LinAlg::FourTensor<dim>& four_tensor_result,
+      const Core::LinAlg::FourTensor<dim>& four_tensor_1,
+      const Core::LinAlg::FourTensor<dim>& four_tensor_2, const bool clear_result_tensor = true);
 
   /*!
    * @brief Pull back of a symmetric elastic 4th order tensor (in matrix/voigt notation) via the 2nd
    * order deformation gradient (also in matrix notation)
    */
   template <int dim>
-  Core::LinAlg::Matrix<6, 6> PullBackFourTensor(
-      const Core::LinAlg::Matrix<dim, dim>& defgr, const Core::LinAlg::Matrix<6, 6>& cMatVoigt);
+  Core::LinAlg::Matrix<6, 6> pull_back_four_tensor(
+      const Core::LinAlg::Matrix<dim, dim>& defgrd, const Core::LinAlg::Matrix<6, 6>& cmat_voigt);
 
   /*!
    * @brief Pull back the ijkl-th entry of a symmetric elastic 4th order tensor (in matrix/voigt
    * notation) via the 2nd order deformation gradient (also in matrix notation)
    */
   template <int dim>
-  double PullBackFourTensorijkl(const Core::LinAlg::Matrix<dim, dim>& defgr,
-      const Core::LinAlg::FourTensor<dim>& fourTensor, const int i, const int j, const int k,
+  double get_pull_back_four_tensor_entry(const Core::LinAlg::Matrix<dim, dim>& defgrd,
+      const Core::LinAlg::FourTensor<dim>& four_tensor, const int i, const int j, const int k,
       const int l);
 
   /*!
@@ -511,74 +499,68 @@ namespace Mat
    * @note Setup 4th order tensor from 6x6 Voigt matrix (which has to be the representative of a 4
    * tensor with at least minor symmetries)
    *
-   * @param[out] fourTensor   4th order tensor that is set up based on matrixVoigt
-   * @param[in]  matrixVoigt  4th order tensor in Voigt notation with at least minor symmetries
+   * @param[out] four_tensor   4th order tensor that is set up based on matrix_voigt
+   * @param[in]  matrix_voigt  4th order tensor in Voigt notation with at least minor symmetries
    */
   template <int dim>
-  void SetupFourTensor(
-      Core::LinAlg::FourTensor<dim>& fourTensor, const Core::LinAlg::Matrix<6, 6>& matrixVoigt);
+  void setup_four_tensor_from_6x6_voigt_matrix(
+      Core::LinAlg::FourTensor<dim>& four_tensor, const Core::LinAlg::Matrix<6, 6>& matrix_voigt);
 
   /*!
    * @brief Setup 6x6 Voigt matrix from 4th order tensor with minor symmetries
    *
-   * @param[out] matrixVoigt  6x6 Voigt matrix that is set up based on fourTensor
-   * @param[in]  fourTensor   4th order tensor with minor symmetries
+   * @param[out] matrix_voigt  6x6 Voigt matrix that is set up based on four_tensor
+   * @param[in]  four_tensor   4th order tensor with minor symmetries
    */
   template <int dim>
-  void Setup6x6VoigtMatrix(
-      Core::LinAlg::Matrix<6, 6>& matrixVoigt, const Core::LinAlg::FourTensor<dim>& fourTensor);
-
-  /*!
-   * @brief Transpose 4th order tensor w.r.t. to basis vectors 1 and 2
-   */
-  template <int dim>
-  void TransposeFourTensor12(Core::LinAlg::FourTensor<dim>& resultTensor,
-      const Core::LinAlg::FourTensor<dim>& inputTensor);
+  void setup_6x6_voigt_matrix_from_four_tensor(
+      Core::LinAlg::Matrix<6, 6>& matrix_voigt, const Core::LinAlg::FourTensor<dim>& four_tensor);
 
   /*!
    * @brief Adds the dyadic product of two 2nd order tensors to a 4th order tensor
    *
-   * @param[in,out] fourTensorResult    4th order tensor \f$C^{ijkl} = A^{ij} B^{kl}\f$
-   * @param[in]     matrixA             2nd order tensor \f$A^{ij}\f$
-   * @param[in]     matrixB             2nd order tensor \f$B^{kl}\f$
+   * @param[in,out] four_tensor_result    4th order tensor \f$C^{ijkl} = A^{ij} B^{kl}\f$
+   * @param[in]     matrix_A             2nd order tensor \f$A^{ij}\f$
+   * @param[in]     matrix_B             2nd order tensor \f$B^{kl}\f$
    */
-  void AddDyadicProductMatrixMatrix(Core::LinAlg::FourTensor<3>& fourTensorResult,
-      const Core::LinAlg::Matrix<3, 3>& matrixA, const Core::LinAlg::Matrix<3, 3>& matrixB);
+  void add_dyadic_product_matrix_matrix(Core::LinAlg::FourTensor<3>& four_tensor_result,
+      const Core::LinAlg::Matrix<3, 3>& matrix_A, const Core::LinAlg::Matrix<3, 3>& matrix_B);
 
   /*!
    * @brief Adds the dyadic product of two 2nd order tensors to a 4th order tensor
    *
-   * @param[in,out] fourTensorResult    4th order tensor \f$C^{ijkl} = A^{ij} B^{kl}\f$
-   * @param[in]     matrixA             2nd order tensor \f$A^{ij}\f$
-   * @param[in]     matrixB             2nd order tensor \f$B^{kl}\f$
+   * @param[in,out] four_tensor_result    4th order tensor \f$C^{ijkl} = A^{ij} B^{kl}\f$
+   * @param[in]     matrix_A             2nd order tensor \f$A^{ij}\f$
+   * @param[in]     matrix_B             2nd order tensor \f$B^{kl}\f$
    * @param[in]     scale               scaling factor
    */
-  void AddDyadicProductMatrixMatrix(Core::LinAlg::FourTensor<3>& fourTensorResult,
-      const double scale, const Core::LinAlg::Matrix<3, 3>& matrixA,
-      const Core::LinAlg::Matrix<3, 3>& matrixB);
+  void add_dyadic_product_matrix_matrix(Core::LinAlg::FourTensor<3>& four_tensor_result,
+      const double scale, const Core::LinAlg::Matrix<3, 3>& matrix_A,
+      const Core::LinAlg::Matrix<3, 3>& matrix_B);
 
   /*!
    * @brief Adds the contraction of a 2nd order tensor and a 4th order tensor
    * to a 2nd order tensor
    *
-   * @param[in,out] matrixResult    2nd order tensor \f$C^{kl} = A_{ij} B^{ijkl}\f$
+   * @param[in,out] matrix_result    2nd order tensor \f$C^{kl} = A_{ij} B^{ijkl}\f$
    * @param[in]     matrix          2nd order tensor \f$A_{ij}\f$
-   * @param[in]     fourTensor      4th order tensor \f$B^{ijkl}\f$
+   * @param[in]     four_tensor      4th order tensor \f$B^{ijkl}\f$
    */
-  void AddContractionMatrixFourTensor(Core::LinAlg::Matrix<3, 3>& matrixResult,
-      const Core::LinAlg::Matrix<3, 3>& matrix, const Core::LinAlg::FourTensor<3>& fourTensor);
+  void add_contraction_matrix_four_tensor(Core::LinAlg::Matrix<3, 3>& matrix_result,
+      const Core::LinAlg::Matrix<3, 3>& matrix, const Core::LinAlg::FourTensor<3>& four_tensor);
 
   /*!
    * @brief Adds the contraction of a 4th order tensor and a 2nd order tensor
    * to a 2nd order tensor
    *
-   * @param[in,out] matrixResult    2nd order tensor \f$C^{ij} = A_{ijkl} B^{kl}\f$
+   * @param[in,out] matrix_result    2nd order tensor \f$C^{ij} = A_{ijkl} B^{kl}\f$
    * @param[in]     scale           the scaling factor
-   * @param[in]     fourTensor      4th order tensor \f$B^{kl}\f$
+   * @param[in]     four_tensor      4th order tensor \f$B^{kl}\f$
    * @param[in]     matrix          2nd order tensor \f$A_{ijkl}\f$
    */
-  void AddContractionFourTensorMatrix(Core::LinAlg::Matrix<3, 3>& matrixResult, const double scale,
-      const Core::LinAlg::FourTensor<3>& fourTensor, const Core::LinAlg::Matrix<3, 3>& matrix);
+  void add_contraction_matrix_four_tensor(Core::LinAlg::Matrix<3, 3>& matrix_result,
+      const double scale, const Core::LinAlg::FourTensor<3>& four_tensor,
+      const Core::LinAlg::Matrix<3, 3>& matrix);
 
   /*!
    * @brief Compute the fourth order linear isotropic elastic tensor
@@ -587,7 +569,7 @@ namespace Mat
    * @param[in]  youngs_modulus     Young's modulus
    * @param[in]  poisson_ratio      Poisson ratio
    */
-  void CalculateLinearIsotropicElasticTensor(Core::LinAlg::FourTensor<3>& elasticity_tensor,
+  void calculate_linear_isotropic_elastic_tensor(Core::LinAlg::FourTensor<3>& elasticity_tensor,
       const double youngs_modulus, const double poisson_ratio);
 
   /*!
@@ -605,18 +587,18 @@ namespace Mat
    * @param[out]  four_tensor   the resulting deviatoric tensor
    * @param[in]   scale         the scaling factor
    */
-  void CalculateDeviatoricProjectionTensor(
+  void calculate_deviatoric_projection_tensor(
       Core::LinAlg::FourTensor<3>& four_tensor, const double scale = 1.0);
 
   /*!
    * @brief Returns the double contraction of two 2nd order tensors
    *
    * @param[out]    scalarContraction   0th order tensor \f$s = A_{ij} B^{ij}\f$
-   * @param[in]     matrixA             2nd order tensor \f$A_{ij}\f$
-   * @param[in]     matrixB             2nd order tensor \f$B^{ij}\f$
+   * @param[in]     matrix_A             2nd order tensor \f$A_{ij}\f$
+   * @param[in]     matrix_B             2nd order tensor \f$B^{ij}\f$
    */
-  double ContractMatrixMatrix(
-      const Core::LinAlg::Matrix<3, 3>& matrixA, const Core::LinAlg::Matrix<3, 3>& matrixB);
+  double contract_matrix_matrix(
+      const Core::LinAlg::Matrix<3, 3>& matrix_A, const Core::LinAlg::Matrix<3, 3>& matrix_B);
 
   /*!
    * @brief Converts a fourth order (symmetric) tensor to a second order tensor
@@ -624,7 +606,7 @@ namespace Mat
    * @param[in]     T             4th order tensor
    * @param[out]    A             matrix
    */
-  void FourTensorToMatrix(const Core::LinAlg::FourTensor<3>& T, Core::LinAlg::Matrix<6, 6>& A);
+  void four_tensor_to_matrix(const Core::LinAlg::FourTensor<3>& T, Core::LinAlg::Matrix<6, 6>& A);
 }  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE

@@ -385,9 +385,9 @@ void Mat::MuscleCombo::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   ccmat.MultiplyNT(
       (beta * J + 1.) * J * expbeta + kappa * std::pow(detC, -kappa), invCv, invCv, 1.0);
   // adds scalar * (invC boeppel invC) to cmat, see Holzapfel2000, p. 254
-  Mat::AddtoCmatHolzapfelProduct(ccmat, invCv, -(J * expbeta - std::pow(detC, -kappa)));
+  Mat::add_holzapfel_product(ccmat, invCv, -(J * expbeta - std::pow(detC, -kappa)));
   // adds -expbeta*detC * dinvCLinvCdCv to cmats
-  Mat::AddDerivInvABInvBProduct(-expbeta * detC, invCv, invCLinvCv, ccmat);
+  Mat::add_derivative_of_inva_b_inva_product(-expbeta * detC, invCv, invCLinvCv, ccmat);
   // additional term for corrected derivative of strain energy function
   ccmat.MultiplyNT(dEta / (8 * lambdaM), Mv, Mv, 1.0);
   ccmat.Scale(gamma);

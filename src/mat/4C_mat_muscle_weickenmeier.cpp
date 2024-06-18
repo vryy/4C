@@ -339,9 +339,9 @@ void Mat::MuscleWeickenmeier::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   ccmat.MultiplyNT(
       (beta * J + 1.) * J * expbeta + kappa * std::pow(detC, -kappa), invCv, invCv, 1.0);
   // adds scalar * (invC boeppel invC) to cmat, see Holzapfel2000, p. 254
-  Mat::AddtoCmatHolzapfelProduct(ccmat, invCv, -(J * expbeta - std::pow(detC, -kappa)));
+  Mat::add_holzapfel_product(ccmat, invCv, -(J * expbeta - std::pow(detC, -kappa)));
   // adds -expbeta*detC * dinvCLinvCdCv to cmats
-  Mat::AddDerivInvABInvBProduct(-expbeta * detC, invCv, invCLinvCv, ccmat);
+  Mat::add_derivative_of_inva_b_inva_product(-expbeta * detC, invCv, invCLinvCv, ccmat);
   ccmat.Scale(gamma);
 
   // update stress and material tangent with the computed stress and cmat values

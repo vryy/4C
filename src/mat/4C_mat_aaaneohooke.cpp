@@ -320,7 +320,7 @@ void Mat::AAAneohooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     }
 
   // contribution: boeppel-product
-  AddtoCmatHolzapfelProduct(*cmat, invc, delta7);
+  add_holzapfel_product(*cmat, invc, delta7);
 
   // 2nd step: volumetric part
   //==========================
@@ -332,7 +332,7 @@ void Mat::AAAneohooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     for (int j = 0; j < 6; j++) (*cmat)(i, j) += delta6 * invc(i) * invc(j);
 
   // contribution: boeppel-product
-  AddtoCmatHolzapfelProduct(*cmat, invc, delta7);
+  add_holzapfel_product(*cmat, invc, delta7);
 
   return;
 }

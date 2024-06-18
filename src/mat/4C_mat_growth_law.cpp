@@ -197,7 +197,7 @@ void Mat::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
 
   // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
   Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelastic(true);
-  cmatelastic = Mat::PullBackFourTensor<3>(F_ginv, cmatdach);
+  cmatelastic = Mat::pull_back_four_tensor<3>(F_ginv, cmatdach);
   // calculate stress
   // 2PK stress S = F_g^-1 Sdach F_g^-T
   Core::LinAlg::Matrix<3, 3> Sdach(true);

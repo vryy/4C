@@ -1103,7 +1103,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
           stress_tensor);  // may contain non-isochoric material response
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cgen(
           cmat);  // may contain non-isochoric material response
-      Mat::VolumetrifyAndIsochorify(
+      Mat::volumetrify_and_isochorify(
           nullptr, nullptr, &stress_tensor, &cmat, glstrain, pk2gen, cgen);
     }
     // end of call material law

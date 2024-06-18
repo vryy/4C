@@ -121,7 +121,7 @@ void Mat::Elastic::IsoAnisoExpo::add_stress_aniso_modified(const Core::LinAlg::M
   Saniso.Update(-incJ / 3. * traceCSfbar, icg, incJ);
 
   Core::LinAlg::Matrix<6, 6> Psl(true);  // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
-  AddtoCmatHolzapfelProduct(Psl, icg, 1.0);
+  add_holzapfel_product(Psl, icg, 1.0);
   Psl.MultiplyNT(-1. / 3., icg, icg, 1.0);
 
   Core::LinAlg::Matrix<6, 1> Aiso(structural_tensor_);

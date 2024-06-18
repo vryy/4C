@@ -795,10 +795,10 @@ void Discret::ELEMENTS::NStet5Type::dev_stress_tangent(Core::LinAlg::Matrix<6, 1
   Core::LinAlg::Matrix<6, 6> CCvol(true);  // fill with zeros
 
   //--------------------------------------- CCvol += 2pJ (Cinv boeppel Cinv)
-  Mat::ElastSymTensor_o_Multiply(CCvol, -2.0 * fac, Cinv, Cinv, 0.0);
+  Mat::add_kronecker_tensor_product(CCvol, -2.0 * fac, Cinv, Cinv, 0.0);
 
   //------------------------------------------ CCvol += 2/3 * Cinv dyad S
-  Mat::ElastSymTensorMultiply(CCvol, 2.0 / 3.0, Cinv, Smat, 1.0);
+  Mat::add_elasticity_tensor_product(CCvol, 2.0 / 3.0, Cinv, Smat, 1.0);
 
   //-------------------------------------- CCvol += 1/3 Cinv dyad ( CC : C )
   {
@@ -824,7 +824,7 @@ void Discret::ELEMENTS::NStet5Type::dev_stress_tangent(Core::LinAlg::Matrix<6, 1
     CCcC(2, 0) = CCcC(0, 2);
     CCcC(2, 1) = CCcC(1, 2);
     CCcC(2, 2) = CCcolonC(2);
-    Mat::ElastSymTensorMultiply(CCvol, 1. / 3., Cinv, CCcC, 1.0);
+    Mat::add_elasticity_tensor_product(CCvol, 1. / 3., Cinv, CCcC, 1.0);
   }
 
   //----------------------------------------------------- CCdev = CC - CCvol

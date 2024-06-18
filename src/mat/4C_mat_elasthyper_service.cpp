@@ -212,7 +212,7 @@ void Mat::ElastHyperAddIsotropicStressCmat(Core::LinAlg::Matrix<6, 1>& S_stress,
   // contribution: Cinv \otimes Cinv
   cmat.MultiplyNT(delta(5), iC_stress, iC_stress, 1.0);
   // contribution: Cinv \odot Cinv
-  AddtoCmatHolzapfelProduct(cmat, iC_stress, delta(6));
+  add_holzapfel_product(cmat, iC_stress, delta(6));
   // contribution: Id4^#
   cmat.Update(delta(7), id4sharp, 1.0);
 }
@@ -225,10 +225,10 @@ void Mat::ElastHyperAddResponseStretches(Core::LinAlg::Matrix<6, 6>& cmat,
   // get principal stretches and directions
   Core::LinAlg::Matrix<3, 1> prstr;
   Core::LinAlg::Matrix<3, 3> prdir;
-  StretchesPrincipal(prstr, prdir, C_strain);
+  stretches_principal(prstr, prdir, C_strain);
   // modified stretches
   Core::LinAlg::Matrix<3, 1> modstr;
-  StretchesModified(modstr, prstr);
+  stretches_modified(modstr, prstr);
   // determinant of deformation gradient
   const double detdefgrad = prstr(0) * prstr(1) * prstr(2);
 

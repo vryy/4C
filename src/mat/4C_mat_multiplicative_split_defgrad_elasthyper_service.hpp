@@ -82,7 +82,7 @@ namespace Mat
     Mat::EvaluateCe(F, iFin, Ce);
 
     // Compute principal invariants
-    Mat::InvariantsPrincipal(principleInvariantsCe, Ce);
+    Mat::invariants_principal(principleInvariantsCe, Ce);
 
     Core::LinAlg::Matrix<3, 1> dPIe(true);
     Core::LinAlg::Matrix<6, 1> ddPIIe(true);
@@ -117,8 +117,8 @@ namespace Mat
     cmat.MultiplyNT(delta(4), iCinCiCinv, iCv, 1.);
     cmat.MultiplyNT(delta(4), iCv, iCinCiCinv, 1.);
     cmat.MultiplyNT(delta(5), iCv, iCv, 1.);
-    Mat::AddtoCmatHolzapfelProduct(cmat, iCv, delta(6));
-    Mat::AddtoCmatHolzapfelProduct(cmat, iCinv, delta(7));
+    Mat::add_holzapfel_product(cmat, iCv, delta(6));
+    Mat::add_holzapfel_product(cmat, iCinv, delta(7));
   }
 
 }  // namespace Mat
