@@ -2715,7 +2715,7 @@ void FLD::XFluid::init_krylov_space_projection()
   // check if for fluid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
-    const auto name = KSPcond[icond]->parameters().Get<std::string>("discretization");
+    const auto name = KSPcond[icond]->parameters().get<std::string>("discretization");
     if (name == "fluid")
     {
       numfluid++;
@@ -2766,12 +2766,12 @@ void FLD::XFluid::setup_krylov_space_projection(Core::Conditions::Condition* ksp
    */
 
   // confirm that mode flags are number of nodal dofs
-  const int nummodes = kspcond->parameters().Get<int>("NUMMODES");
+  const int nummodes = kspcond->parameters().get<int>("NUMMODES");
   if (nummodes != (numdim_ + 1))
     FOUR_C_THROW("Expecting numdim_+1 modes in Krylov projection definition. Check dat-file!");
 
   // get vector of mode flags as given in dat-file
-  const auto* modeflags = &kspcond->parameters().Get<std::vector<int>>("ONOFF");
+  const auto* modeflags = &kspcond->parameters().get<std::vector<int>>("ONOFF");
 
   // confirm that only the pressure mode is selected for Krylov projection in dat-file
   for (int rr = 0; rr < numdim_; ++rr)
@@ -2793,7 +2793,7 @@ void FLD::XFluid::setup_krylov_space_projection(Core::Conditions::Condition* ksp
 
   // get from dat-file definition how weights are to be computed
   const std::string* weighttype =
-      &kspcond->parameters().Get<std::string>("weight vector definition");
+      &kspcond->parameters().get<std::string>("weight vector definition");
 
   // set flag for projection update true only if ALE and integral weights
   if (alefluid_ and (*weighttype == "integration")) updateprojection_ = true;

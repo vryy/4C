@@ -1934,20 +1934,20 @@ double CONTACT::Aug::Strategy::GetPotentialValue(
   {
     case NOX::Nln::MeritFunction::mrtfct_lagrangian:
     {
-      return data().Potential().Get(POTENTIAL::Type::lagrangian, POTENTIAL::SetType::all);
+      return data().Potential().get(POTENTIAL::Type::lagrangian, POTENTIAL::SetType::all);
     }
     case NOX::Nln::MeritFunction::mrtfct_lagrangian_active:
     {
-      return data().Potential().Get(POTENTIAL::Type::lagrangian, POTENTIAL::SetType::active);
+      return data().Potential().get(POTENTIAL::Type::lagrangian, POTENTIAL::SetType::active);
     }
     case NOX::Nln::MeritFunction::mrtfct_infeasibility_two_norm:
     {
-      return data().Potential().Get(
+      return data().Potential().get(
           POTENTIAL::Type::infeasibility_measure, POTENTIAL::SetType::all);
     }
     case NOX::Nln::MeritFunction::mrtfct_infeasibility_two_norm_active:
     {
-      return data().Potential().Get(
+      return data().Potential().get(
           POTENTIAL::Type::infeasibility_measure, POTENTIAL::SetType::active);
     }
     default:

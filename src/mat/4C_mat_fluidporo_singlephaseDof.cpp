@@ -77,8 +77,8 @@ Mat::PAR::FluidPoroPhaseDof* Mat::PAR::FluidPoroPhaseDof::CreatePhaseDof(int pha
 Mat::PAR::FluidPoroPhaseDofDiffPressure::FluidPoroPhaseDofDiffPressure(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : FluidPoroPhaseDof(matdata),
-      diffpresCoeffs_(matdata.parameters.Get<std::vector<int>>("PRESCOEFF")),
-      phaselawId_(matdata.parameters.Get<int>("PHASELAWID"))
+      diffpresCoeffs_(matdata.parameters.get<std::vector<int>>("PRESCOEFF")),
+      phaselawId_(matdata.parameters.get<int>("PHASELAWID"))
 {
   phaselaw_ = Mat::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(phaselawId_);
 }
@@ -182,7 +182,7 @@ double Mat::PAR::FluidPoroPhaseDofDiffPressure::evaluate_deriv_of_dof_wrt_pressu
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroPhaseDofPressure::FluidPoroPhaseDofPressure(
     const Core::Mat::PAR::Parameter::Data& matdata)
-    : FluidPoroPhaseDof(matdata), phaselawId_(matdata.parameters.Get<int>("PHASELAWID"))
+    : FluidPoroPhaseDof(matdata), phaselawId_(matdata.parameters.get<int>("PHASELAWID"))
 {
   phaselaw_ = Mat::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(phaselawId_);
   return;
@@ -280,7 +280,7 @@ double Mat::PAR::FluidPoroPhaseDofPressure::evaluate_deriv_of_dof_wrt_pressure(
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroPhaseDofSaturation::FluidPoroPhaseDofSaturation(
     const Core::Mat::PAR::Parameter::Data& matdata)
-    : FluidPoroPhaseDof(matdata), phaselawId_(matdata.parameters.Get<int>("PHASELAWID"))
+    : FluidPoroPhaseDof(matdata), phaselawId_(matdata.parameters.get<int>("PHASELAWID"))
 {
   phaselaw_ = Mat::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(phaselawId_);
   return;

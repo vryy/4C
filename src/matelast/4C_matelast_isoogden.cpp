@@ -15,8 +15,8 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::Elastic::PAR::IsoOgden::IsoOgden(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      mue_(matdata.parameters.Get<double>("MUE")),
-      alpha_(matdata.parameters.Get<double>("ALPHA"))
+      mue_(matdata.parameters.get<double>("MUE")),
+      alpha_(matdata.parameters.get<double>("ALPHA"))
 {
 }
 

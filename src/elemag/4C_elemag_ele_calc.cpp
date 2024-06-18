@@ -1413,7 +1413,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
   {
     // Get the user defined functions
     auto* cond = params.getPtr<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-    const auto& funct = (*cond)->parameters().Get<std::vector<int>>("funct");
+    const auto& funct = (*cond)->parameters().get<std::vector<int>>("funct");
     const double time = params.get<double>("time");
 
     Core::LinAlg::SerialDenseVector tempVec1(shapesface_->nfdofs_ * nsd_);

@@ -250,7 +250,7 @@ double CONTACT::Aug::Potential::get_time_integration_factor() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::Aug::Potential::Get(
+double CONTACT::Aug::Potential::get(
     enum POTENTIAL::Type pot_type, enum POTENTIAL::SetType pot_set) const
 {
   if (not isvalid_.potential_) FOUR_C_THROW("Call Compute() first!");

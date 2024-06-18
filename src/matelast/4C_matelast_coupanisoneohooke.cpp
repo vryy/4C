@@ -18,10 +18,10 @@ FOUR_C_NAMESPACE_OPEN
 Mat::Elastic::PAR::CoupAnisoNeoHooke::CoupAnisoNeoHooke(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : ParameterAniso(matdata),
-      c_(matdata.parameters.Get<double>("C")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
-      init_(matdata.parameters.Get<int>("INIT")),
-      adapt_angle_(matdata.parameters.Get<bool>("ADAPT_ANGLE"))
+      c_(matdata.parameters.get<double>("C")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
+      init_(matdata.parameters.get<int>("INIT")),
+      adapt_angle_(matdata.parameters.get<bool>("ADAPT_ANGLE"))
 {
 }
 

@@ -130,7 +130,7 @@ void CONTACT::Aug::IntegrationWrapper::IntegrateDerivEle3D(Mortar::Element& sele
 
   timer_ptr->stop(GlobalTimeID::IntegrateDerivEle3D);
 
-  Epetra_Vector* sele_times = cparams_ptr->Get<Epetra_Vector>(0);
+  Epetra_Vector* sele_times = cparams_ptr->get<Epetra_Vector>(0);
   const int slid = sele_times->Map().LID(sele.Id());
   if (slid == -1)
     FOUR_C_THROW("Couldn't find the current slave element GID #%d on proc #%d.", sele.Id(),
@@ -270,7 +270,7 @@ void CONTACT::Aug::IntegrationWrapper::IntegrateDerivEle2D(Mortar::Element& sele
 
   timer_ptr->stop(GlobalTimeID::IntegrateDerivEle2D);
 
-  Epetra_Vector* sele_times = cparams_ptr->Get<Epetra_Vector>(0);
+  Epetra_Vector* sele_times = cparams_ptr->get<Epetra_Vector>(0);
   const int slid = sele_times->Map().LID(sele.Id());
   if (slid == -1)
     FOUR_C_THROW("Couldn't find the current slave element GID #%d on proc #%d.", sele.Id(),
@@ -986,7 +986,7 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::extract_active_slave_node_li_ds(std::vector<unsigned>& active_nlids,
     const Mortar::Element& sele) const
 {
-  const Epetra_Map* active_snode_row_map = this->c_params().template Get<Epetra_Map>(1);
+  const Epetra_Map* active_snode_row_map = this->c_params().template get<Epetra_Map>(1);
 
   const int* nodeids = sele.NodeIds();
 

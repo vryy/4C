@@ -21,12 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::LinearDensityViscosity::LinearDensityViscosity(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      refdensity_(matdata.parameters.Get<double>("REFDENSITY")),
-      refviscosity_(matdata.parameters.Get<double>("REFVISCOSITY")),
-      refpressure_(matdata.parameters.Get<double>("REFPRESSURE")),
-      coeffdensity_(matdata.parameters.Get<double>("COEFFDENSITY")),
-      coeffviscosity_(matdata.parameters.Get<double>("COEFFVISCOSITY")),
-      gamma_(matdata.parameters.Get<double>("GAMMA"))
+      refdensity_(matdata.parameters.get<double>("REFDENSITY")),
+      refviscosity_(matdata.parameters.get<double>("REFVISCOSITY")),
+      refpressure_(matdata.parameters.get<double>("REFPRESSURE")),
+      coeffdensity_(matdata.parameters.get<double>("COEFFDENSITY")),
+      coeffviscosity_(matdata.parameters.get<double>("COEFFVISCOSITY")),
+      gamma_(matdata.parameters.get<double>("GAMMA"))
 {
 }
 

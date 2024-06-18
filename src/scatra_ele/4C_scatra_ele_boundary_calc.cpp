@@ -309,8 +309,8 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
         FOUR_C_THROW("Cannot access condition 'TransportThermoConvections'!");
 
       // get heat transfer coefficient and surrounding temperature
-      const auto heatranscoeff = cond->parameters().Get<double>("coeff");
-      const auto surtemp = cond->parameters().Get<double>("surtemp");
+      const auto heatranscoeff = cond->parameters().get<double>("coeff");
+      const auto surtemp = cond->parameters().get<double>("surtemp");
 
       convective_heat_transfer(
           ele, mat, ephinp, elemat1_epetra, elevec1_epetra, heatranscoeff, surtemp);
@@ -506,9 +506,9 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_neumann
 
   // get values, switches and spatial functions from the  condition
   // (assumed to be constant on element boundary)
-  const int numdof = condition.parameters().Get<int>("numdof");
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const int numdof = condition.parameters().get<int>("numdof");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
   const auto* func = condition.parameters().GetIf<std::vector<int>>("funct");
 
   if (numdofpernode_ != numdof)
@@ -1638,7 +1638,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boun
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'TransportRobin'");
 
   // get on/off flags
-  const auto* onoff = &cond->parameters().Get<std::vector<int>>("onoff");
+  const auto* onoff = &cond->parameters().get<std::vector<int>>("onoff");
 
   // safety check
   if ((int)(onoff->size()) != numscal_)
@@ -1650,8 +1650,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boun
   }
 
   // extract prefactor and reference value from condition
-  const auto prefac = cond->parameters().Get<double>("prefactor");
-  const auto refval = cond->parameters().Get<double>("refvalue");
+  const auto prefac = cond->parameters().get<double>("prefactor");
+  const auto refval = cond->parameters().get<double>("refvalue");
 
   //////////////////////////////////////////////////////////////////////
   //                  read nodal values
@@ -1801,15 +1801,15 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
       params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'SurfacePermeability'");
 
-  const auto* onoff = &cond->parameters().Get<std::vector<int>>("onoff");
+  const auto* onoff = &cond->parameters().get<std::vector<int>>("onoff");
 
-  const auto perm = cond->parameters().Get<double>("permeability coefficient");
+  const auto perm = cond->parameters().get<double>("permeability coefficient");
 
   // get flag if concentration flux across membrane is affected by local wall shear stresses: 0->no
   // 1->yes
-  const bool wss_onoff = (bool)cond->parameters().Get<int>("wss onoff");
+  const bool wss_onoff = (bool)cond->parameters().get<int>("wss onoff");
 
-  const auto* coeffs = &cond->parameters().Get<std::vector<double>>("wss coeffs");
+  const auto* coeffs = &cond->parameters().get<std::vector<double>>("wss coeffs");
 
   //////////////////////////////////////////////////////////////////////
   //                  build RHS and StiffMat
@@ -1954,21 +1954,21 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
   if (cond == Teuchos::null)
     FOUR_C_THROW("Cannot access condition 'DESIGN SCATRA COUPLING SURF CONDITIONS'");
 
-  const auto* onoff = &cond->parameters().Get<std::vector<int>>("onoff");
+  const auto* onoff = &cond->parameters().get<std::vector<int>>("onoff");
 
   // get the standard permeability of the interface
-  const auto perm = cond->parameters().Get<double>("permeability coefficient");
+  const auto perm = cond->parameters().get<double>("permeability coefficient");
 
   // get flag if concentration flux across membrane is affected by local wall shear stresses: 0->no
   // 1->yes
-  const bool wss_onoff = (bool)cond->parameters().Get<int>("wss onoff");
-  const auto* coeffs = &cond->parameters().Get<std::vector<double>>("wss coeffs");
+  const bool wss_onoff = (bool)cond->parameters().get<int>("wss onoff");
+  const auto* coeffs = &cond->parameters().get<std::vector<double>>("wss coeffs");
 
   // hydraulic conductivity at interface
-  const auto conductivity = cond->parameters().Get<double>("hydraulic conductivity");
+  const auto conductivity = cond->parameters().get<double>("hydraulic conductivity");
 
   // Staverman filtration coefficient at interface
-  const auto sigma = cond->parameters().Get<double>("filtration coefficient");
+  const auto sigma = cond->parameters().get<double>("filtration coefficient");
 
   ///////////////////////////////////////////////////////////////////////////
   // ------------do the actual calculations----------------------------------
@@ -2125,8 +2125,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
 
   // get values and spatial functions from condition
   // (assumed to be constant on element boundary)
-  const auto& val = (*dbc).parameters().Get<std::vector<double>>("val");
-  const auto& func = (*dbc).parameters().Get<std::vector<int>>("funct");
+  const auto& val = (*dbc).parameters().get<std::vector<double>>("val");
+  const auto& func = (*dbc).parameters().get<std::vector<int>>("funct");
 
   // assign boundary value multiplied by time-curve factor
   double dirichval = val[0];
@@ -2267,7 +2267,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
   bool mixhyb = false;
 
   // stabilization parameter for Nitsche term
-  const auto nitsche_stab_para = dbc->parameters().Get<double>("TauBscaling");
+  const auto nitsche_stab_para = dbc->parameters().get<double>("TauBscaling");
 
   // if stabilization parameter negative: mixed-hybrid formulation
   if (nitsche_stab_para < 0.0) mixhyb = true;
@@ -2275,7 +2275,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
   // pre-factor for adjoint-consistency term:
   // either 1.0 (adjoint-consistent, default) or -1.0 (adjoint-inconsistent)
   double gamma = 1.0;
-  const auto consistency = dbc->parameters().Get<std::string>("Choice of gamma parameter");
+  const auto consistency = dbc->parameters().get<std::string>("Choice of gamma parameter");
   if (consistency == "adjoint-consistent")
     gamma = 1.0;
   else if (consistency == "diffusive-optimal")

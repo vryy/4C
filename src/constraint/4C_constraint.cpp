@@ -36,7 +36,7 @@ CONSTRAINTS::Constraint::Constraint(Teuchos::RCP<Core::FE::Discretization> discr
     constrtype_ = get_constr_type(conditionname);
     for (auto& i : constrcond_)
     {
-      int condID = (i->parameters().Get<int>("ConditionID"));
+      int condID = (i->parameters().get<int>("ConditionID"));
       if (condID > maxID)
       {
         maxID = condID;
@@ -80,7 +80,7 @@ CONSTRAINTS::Constraint::Constraint(
 
     for (auto& i : constrcond_)
     {
-      int condID = i->parameters().Get<int>("ConditionID");
+      int condID = i->parameters().get<int>("ConditionID");
       auto* const myinittime = i->parameters().GetIf<double>("activTime");
       if (myinittime)
       {
@@ -159,7 +159,7 @@ void CONSTRAINTS::Constraint::Initialize(const double& time)
   for (auto* cond : constrcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
 
     // if current time (at) is larger than activation time of the condition, activate it
     if ((inittimes_.find(condID)->second <= time) && (activecons_.find(condID)->second == false))
@@ -236,7 +236,7 @@ void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params
     double scConMat = params.get("scaleConstrMat", 1.0);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
     params.set("ConditionID", condID);
 
     // is conditions supposed to be active?
@@ -370,7 +370,7 @@ void CONSTRAINTS::Constraint::initialize_constraint(
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
 
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
     params.set("ConditionID", condID);
 
     // if current time is larger than initialization time of the condition, start computing

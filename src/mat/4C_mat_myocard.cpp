@@ -33,13 +33,13 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::Myocard::Myocard(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      diff1(matdata.parameters.Get<double>("DIFF1")),
-      diff2(matdata.parameters.Get<double>("DIFF2")),
+      diff1(matdata.parameters.get<double>("DIFF1")),
+      diff2(matdata.parameters.get<double>("DIFF2")),
       diff3(0.0),
-      dt_deriv(matdata.parameters.Get<double>("PERTUBATION_DERIV")),
-      model(matdata.parameters.Get<std::string>("MODEL")),
-      tissue(matdata.parameters.Get<std::string>("TISSUE")),
-      time_scale(matdata.parameters.Get<double>("TIME_SCALE")),
+      dt_deriv(matdata.parameters.get<double>("PERTUBATION_DERIV")),
+      model(matdata.parameters.get<std::string>("MODEL")),
+      tissue(matdata.parameters.get<std::string>("TISSUE")),
+      time_scale(matdata.parameters.get<double>("TIME_SCALE")),
       num_gp(0)
 {
 }

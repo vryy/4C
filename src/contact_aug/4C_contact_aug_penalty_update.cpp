@@ -158,7 +158,7 @@ void CONTACT::Aug::PenaltyUpdate::State::Set(
 
   CONTACT::Aug::Potential& pot = pu_.data().Potential();
   pot.Compute();
-  gn_gn_ = pot.Get(POTENTIAL::Type::infeasibility_measure, POTENTIAL::SetType::active);
+  gn_gn_ = pot.get(POTENTIAL::Type::infeasibility_measure, POTENTIAL::SetType::active);
   pot.ComputeLin(dir);
   gn_dgn_ = pot.GetLin(POTENTIAL::Type::infeasibility_measure, POTENTIAL::SetType::active,
       POTENTIAL::LinTerm::wrt_d);

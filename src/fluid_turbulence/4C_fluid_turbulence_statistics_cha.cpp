@@ -2541,7 +2541,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
             for (auto& numcond : mypbc)
             {
               const auto mymasterslavetoggle =
-                  numcond->parameters().Get<std::string>("Is slave periodic boundary condition");
+                  numcond->parameters().get<std::string>("Is slave periodic boundary condition");
 
               if (mymasterslavetoggle == "Master")
               {

@@ -23,9 +23,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::NewtonianFluid::NewtonianFluid(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      viscosity_(matdata.parameters.Get<double>("DYNVISCOSITY")),
-      density_(matdata.parameters.Get<double>("DENSITY")),
-      gamma_(matdata.parameters.Get<double>("GAMMA"))
+      viscosity_(matdata.parameters.get<double>("DYNVISCOSITY")),
+      density_(matdata.parameters.get<double>("DENSITY")),
+      gamma_(matdata.parameters.get<double>("GAMMA"))
 {
 }
 

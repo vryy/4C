@@ -81,9 +81,9 @@ namespace Core::Geo
 
       const Teuchos::RCP<Core::FE::Discretization>& GetPtr() { return back_discret_; }
 
-      Core::FE::Discretization& Get() { return *back_discret_; }
+      Core::FE::Discretization& get() { return *back_discret_; }
 
-      const Core::FE::Discretization& Get() const { return *back_discret_; }
+      const Core::FE::Discretization& get() const { return *back_discret_; }
 
       virtual int NumMyColElements() const;
 

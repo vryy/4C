@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  *  constructor (public)                               vuong 08/16      |
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(const Core::Mat::PAR::Parameter::Data& matdata)
-    : Parameter(matdata), density_(matdata.parameters.Get<double>("DENSITY")), isinit_(false)
+    : Parameter(matdata), density_(matdata.parameters.get<double>("DENSITY")), isinit_(false)
 {
   // retrieve problem instance to read from
   const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -37,18 +37,18 @@ Mat::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(const Core::Mat::PAR::Param
 
   // create density law
   densitylaw_ =
-      Mat::PAR::PoroDensityLaw::CreateDensityLaw(matdata.parameters.Get<int>("DENSITYLAWID"));
+      Mat::PAR::PoroDensityLaw::CreateDensityLaw(matdata.parameters.get<int>("DENSITYLAWID"));
 
   // create permeability law
   relpermeabilitylaw_ = Mat::PAR::FluidPoroRelPermeabilityLaw::create_rel_permeability_law(
-      matdata.parameters.Get<int>("RELPERMEABILITYLAWID"));
+      matdata.parameters.get<int>("RELPERMEABILITYLAWID"));
 
   // create viscosity law
   viscositylaw_ = Mat::PAR::FluidPoroViscosityLaw::CreateViscosityLaw(
-      matdata.parameters.Get<int>("VISCOSITYLAWID"));
+      matdata.parameters.get<int>("VISCOSITYLAWID"));
 
   auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(
-      matdata.parameters.Get<int>("DOFTYPEID"));
+      matdata.parameters.get<int>("DOFTYPEID"));
 
   switch (curmat->Type())
   {
@@ -258,12 +258,12 @@ double Mat::FluidPoroSinglePhase::evaluate_deriv_of_dof_wrt_pressure(
 Mat::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      density_(matdata.parameters.Get<double>("DENSITY")),
-      diffusivity_(matdata.parameters.Get<double>("DIFFUSIVITY")),
-      scalardependentflux_(matdata.parameters.Get<bool>("AddScalarDependentFlux")),
-      numscal_(matdata.parameters.Get<int>("NUMSCAL")),
-      scalardiffs_((matdata.parameters.Get<std::vector<double>>("SCALARDIFFS"))),
-      omega_half_((matdata.parameters.Get<std::vector<double>>("OMEGA_HALF"))),
+      density_(matdata.parameters.get<double>("DENSITY")),
+      diffusivity_(matdata.parameters.get<double>("DIFFUSIVITY")),
+      scalardependentflux_(matdata.parameters.get<bool>("AddScalarDependentFlux")),
+      numscal_(matdata.parameters.get<int>("NUMSCAL")),
+      scalardiffs_((matdata.parameters.get<std::vector<double>>("SCALARDIFFS"))),
+      omega_half_((matdata.parameters.get<std::vector<double>>("OMEGA_HALF"))),
       isinit_(false)
 {
   // retrieve problem instance to read from
@@ -412,8 +412,8 @@ void Mat::FluidPoroSingleVolFrac::Initialize()
 Mat::PAR::FluidPoroVolFracPressure::FluidPoroVolFracPressure(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      permeability_(matdata.parameters.Get<double>("PERMEABILITY")),
-      min_volfrac_(matdata.parameters.Get<double>("MIN_VOLFRAC")),
+      permeability_(matdata.parameters.get<double>("PERMEABILITY")),
+      min_volfrac_(matdata.parameters.get<double>("MIN_VOLFRAC")),
       isinit_(false)
 {
   // retrieve problem instance to read from
@@ -428,7 +428,7 @@ Mat::PAR::FluidPoroVolFracPressure::FluidPoroVolFracPressure(
 
   // create viscosity law
   viscositylaw_ = Mat::PAR::FluidPoroViscosityLaw::CreateViscosityLaw(
-      matdata.parameters.Get<int>("VISCOSITYLAWID"));
+      matdata.parameters.get<int>("VISCOSITYLAWID"));
 }
 
 /*----------------------------------------------------------------------*

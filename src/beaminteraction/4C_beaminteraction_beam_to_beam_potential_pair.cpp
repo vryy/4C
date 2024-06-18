@@ -235,19 +235,19 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   T norm_dist = 0.0;                         // = |r1-r2|
 
   // evaluate charge densities from DLINE charge condition specified in input file
-  double q1 = linechargeconds_[0]->parameters().Get<double>("val");
-  double q2 = linechargeconds_[1]->parameters().Get<double>("val");
+  double q1 = linechargeconds_[0]->parameters().get<double>("val");
+  double q2 = linechargeconds_[1]->parameters().get<double>("val");
 
   // evaluate function in time if specified in line charge conditions
   // TODO allow for functions in space, i.e. varying charge along beam centerline
-  int function_number = linechargeconds_[0]->parameters().Get<int>("funct");
+  int function_number = linechargeconds_[0]->parameters().get<int>("funct");
 
   if (function_number != -1)
     q1 *= Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
               .evaluate(time_);
 
-  function_number = linechargeconds_[1]->parameters().Get<int>("funct");
+  function_number = linechargeconds_[1]->parameters().get<int>("funct");
 
   if (function_number != -1)
     q2 *= Global::Problem::Instance()
@@ -616,19 +616,19 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   T gap_regularized = 0.0;  // modified gap if a regularization of the force law is applied
 
   // evaluate charge/particle densities from DLINE charge condition specified in input file
-  double q1 = linechargeconds_[0]->parameters().Get<double>("val");
-  double q2 = linechargeconds_[1]->parameters().Get<double>("val");
+  double q1 = linechargeconds_[0]->parameters().get<double>("val");
+  double q2 = linechargeconds_[1]->parameters().get<double>("val");
 
   // evaluate function in time if specified in line charge conditions
   // TODO allow for functions in space, i.e. varying charge along beam centerline
-  int function_number = linechargeconds_[0]->parameters().Get<int>("funct");
+  int function_number = linechargeconds_[0]->parameters().get<int>("funct");
 
   if (function_number != -1)
     q1 *= Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
               .evaluate(time_);
 
-  function_number = linechargeconds_[1]->parameters().Get<int>("funct");
+  function_number = linechargeconds_[1]->parameters().get<int>("funct");
 
   if (function_number != -1)
     q2 *= Global::Problem::Instance()
@@ -1201,19 +1201,19 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T> force_pot_master_GP(true);
 
   // evaluate charge/particle densities from DLINE charge condition specified in input file
-  double rho1 = linechargeconds_[0]->parameters().Get<double>("val");
-  double rho2 = linechargeconds_[1]->parameters().Get<double>("val");
+  double rho1 = linechargeconds_[0]->parameters().get<double>("val");
+  double rho2 = linechargeconds_[1]->parameters().get<double>("val");
 
   // evaluate function in time if specified in line charge conditions
   // TODO allow for functions in space, i.e. varying charge along beam centerline
-  int function_number = linechargeconds_[0]->parameters().Get<int>("funct");
+  int function_number = linechargeconds_[0]->parameters().get<int>("funct");
 
   if (function_number != -1)
     rho1 *= Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
                 .evaluate(time_);
 
-  function_number = linechargeconds_[1]->parameters().Get<int>("funct");
+  function_number = linechargeconds_[1]->parameters().get<int>("funct");
 
   if (function_number != -1)
     rho2 *= Global::Problem::Instance()

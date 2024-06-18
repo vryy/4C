@@ -68,22 +68,22 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::Robinson::Robinson(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      kind_((matdata.parameters.Get<std::string>("KIND"))),
-      youngs_((matdata.parameters.Get<std::vector<double>>("YOUNG"))),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      thermexpans_(matdata.parameters.Get<double>("THEXPANS")),
-      inittemp_(matdata.parameters.Get<double>("INITTEMP")),
-      hrdn_fact_(matdata.parameters.Get<double>("HRDN_FACT")),
-      hrdn_expo_(matdata.parameters.Get<double>("HRDN_EXPO")),
-      shrthrshld_((matdata.parameters.Get<std::vector<double>>("SHRTHRSHLD"))),
-      rcvry_(matdata.parameters.Get<double>("RCVRY")),
-      actv_ergy_(matdata.parameters.Get<double>("ACTV_ERGY")),
-      actv_tmpr_(matdata.parameters.Get<double>("ACTV_TMPR")),
-      g0_(matdata.parameters.Get<double>("G0")),
-      m_(matdata.parameters.Get<double>("M_EXPO")),
-      beta_((matdata.parameters.Get<std::vector<double>>("BETA"))),
-      h_(matdata.parameters.Get<double>("H_FACT"))
+      kind_((matdata.parameters.get<std::string>("KIND"))),
+      youngs_((matdata.parameters.get<std::vector<double>>("YOUNG"))),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      thermexpans_(matdata.parameters.get<double>("THEXPANS")),
+      inittemp_(matdata.parameters.get<double>("INITTEMP")),
+      hrdn_fact_(matdata.parameters.get<double>("HRDN_FACT")),
+      hrdn_expo_(matdata.parameters.get<double>("HRDN_EXPO")),
+      shrthrshld_((matdata.parameters.get<std::vector<double>>("SHRTHRSHLD"))),
+      rcvry_(matdata.parameters.get<double>("RCVRY")),
+      actv_ergy_(matdata.parameters.get<double>("ACTV_ERGY")),
+      actv_tmpr_(matdata.parameters.get<double>("ACTV_TMPR")),
+      g0_(matdata.parameters.get<double>("G0")),
+      m_(matdata.parameters.get<double>("M_EXPO")),
+      beta_((matdata.parameters.get<std::vector<double>>("BETA"))),
+      h_(matdata.parameters.get<double>("H_FACT"))
 {
 }
 

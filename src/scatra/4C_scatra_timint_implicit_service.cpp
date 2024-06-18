@@ -2219,14 +2219,14 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
       for (unsigned icond = 0; icond < ncond; ++icond)
       {
         // extract condition ID
-        const int condid = relerrorconditions[icond]->parameters().Get<int>("ConditionID");
+        const int condid = relerrorconditions[icond]->parameters().get<int>("ConditionID");
 
         // create element parameter list for error calculation
         Teuchos::ParameterList eleparams;
         Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
             "action", ScaTra::Action::calc_error, eleparams);
         eleparams.set<int>("calcerrorflag", Inpar::ScaTra::calcerror_byfunction);
-        const int errorfunctnumber = relerrorconditions[icond]->parameters().Get<int>("FunctionID");
+        const int errorfunctnumber = relerrorconditions[icond]->parameters().get<int>("FunctionID");
         if (errorfunctnumber < 1) FOUR_C_THROW("Invalid function number for error calculation!");
         eleparams.set<int>("error function number", errorfunctnumber);
 
@@ -2286,7 +2286,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
             for (unsigned icond = 0; icond < ncond; ++icond)
             {
               // extract condition ID
-              const int condid = relerrorconditions[icond]->parameters().Get<int>("ConditionID");
+              const int condid = relerrorconditions[icond]->parameters().get<int>("ConditionID");
 
               // extend headline
               f << " rel. L2-error in domain " << condid << " | rel. H1-error in domain " << condid
@@ -2308,7 +2308,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
           for (unsigned icond = 0; icond < ncond; ++icond)
           {
             // extract condition ID
-            const int condid = relerrorconditions[icond]->parameters().Get<int>("ConditionID");
+            const int condid = relerrorconditions[icond]->parameters().get<int>("ConditionID");
 
             // extend error line
             f << " " << (*relerrors_)[condid * NumDofPerNode() * 2 + k * 2] << " "
@@ -2669,7 +2669,7 @@ void ScaTra::OutputScalarsStrategyCondition::init_strategy_specific(
   for (auto* condition : conditions_)
   {
     // extract condition ID
-    const int condid = condition->parameters().Get<int>("ConditionID");
+    const int condid = condition->parameters().get<int>("ConditionID");
 
     // determine the number of dofs on the current condition
     const int numdofpernode = scatratimint->scalarhandler_->num_dof_per_node_in_condition(
@@ -2752,7 +2752,7 @@ void ScaTra::OutputScalarsStrategyCondition::print_to_screen()
     for (auto* condition : conditions_)
     {
       // extract condition ID
-      const int condid = condition->parameters().Get<int>("ConditionID");
+      const int condid = condition->parameters().get<int>("ConditionID");
 
       // determine the number of dofs on the current condition
       const int numdofpernode = numdofpernodepercondition_[condid];
@@ -2789,7 +2789,7 @@ ScaTra::OutputScalarsStrategyCondition::prepare_csv_output()
   for (auto* condition : conditions_)
   {
     // extract condition ID
-    const int condid = condition->parameters().Get<int>("ConditionID");
+    const int condid = condition->parameters().get<int>("ConditionID");
 
     FOUR_C_ASSERT(
         runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
@@ -2929,7 +2929,7 @@ void ScaTra::OutputScalarsStrategyCondition::evaluate_integrals(
   for (auto* condition : conditions_)
   {
     // extract condition ID
-    const int condid = condition->parameters().Get<int>("ConditionID");
+    const int condid = condition->parameters().get<int>("ConditionID");
 
     // determine the number of dofs on the current condition
     const int numdofpernode = numdofpernodepercondition_[condid];

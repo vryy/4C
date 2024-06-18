@@ -20,17 +20,17 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::Electrode::Electrode(const Core::Mat::PAR::Parameter::Data& matdata)
     : ElchSingleMat(matdata),
-      cmax_(matdata.parameters.Get<double>("C_MAX")),
-      chimax_(matdata.parameters.Get<double>("CHI_MAX")),
-      ocpmodel_(string_to_ocp_model(matdata.parameters.Get<std::string>("OCP_MODEL"))),
-      ocpparanum_(matdata.parameters.Get<int>("OCP_PARA_NUM")),
-      ocppara_(matdata.parameters.Get<std::vector<double>>("OCP_PARA")),
+      cmax_(matdata.parameters.get<double>("C_MAX")),
+      chimax_(matdata.parameters.get<double>("CHI_MAX")),
+      ocpmodel_(string_to_ocp_model(matdata.parameters.get<std::string>("OCP_MODEL"))),
+      ocpparanum_(matdata.parameters.get<int>("OCP_PARA_NUM")),
+      ocppara_(matdata.parameters.get<std::vector<double>>("OCP_PARA")),
       X_(0, 0.0),
       b_(0, 0.0),
       a_(0, 0.0),
       m_(0, 0.0),
-      xmin_(matdata.parameters.Get<double>("X_MIN")),
-      xmax_(matdata.parameters.Get<double>("X_MAX"))
+      xmin_(matdata.parameters.get<double>("X_MIN")),
+      xmax_(matdata.parameters.get<double>("X_MAX"))
 {
   // safety checks
   if (cmax_ < 1.0e-12)
@@ -53,7 +53,7 @@ Mat::PAR::Electrode::Electrode(const Core::Mat::PAR::Parameter::Data& matdata)
   if (xmin_ > xmax_) FOUR_C_THROW("X_MIN cannot be larger than X_MAX!");
 
   // additional preparations
-  std::string ocpcsv(matdata.parameters.Get<std::string>("OCP_CSV"));
+  std::string ocpcsv(matdata.parameters.get<std::string>("OCP_CSV"));
   switch (ocpmodel_)
   {
     case ocp_csv:

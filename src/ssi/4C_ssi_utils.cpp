@@ -829,8 +829,8 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
     std::vector<Core::Conditions::Condition*> InterfaceS2IConditions;
     std::vector<Core::Conditions::Condition*> InterfaceContactConditions;
 
-    const int S2IKineticsID = conditionToBeTested->parameters().Get<int>("S2IKineticsID");
-    const int contactconditionID = conditionToBeTested->parameters().Get<int>("ContactConditionID");
+    const int S2IKineticsID = conditionToBeTested->parameters().get<int>("S2IKineticsID");
+    const int contactconditionID = conditionToBeTested->parameters().get<int>("ContactConditionID");
 
     if (S2IKineticsID != contactconditionID)
     {
@@ -843,7 +843,7 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
     // loop over all scatra-scatra interface conditions and add them to the vector, if IDs match
     for (auto* s2ikinetics_cond : s2ikinetics_conditions)
     {
-      if (s2ikinetics_cond->parameters().Get<int>("ConditionID") != S2IKineticsID) continue;
+      if (s2ikinetics_cond->parameters().get<int>("ConditionID") != S2IKineticsID) continue;
 
       InterfaceS2IConditions.push_back(s2ikinetics_cond);
     }
@@ -851,7 +851,7 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
     // loop over all contact conditions and add them to the vector, if IDs match
     for (auto* contactcondition : contactconditions)
     {
-      if (contactcondition->parameters().Get<int>("Interface ID") != contactconditionID) continue;
+      if (contactcondition->parameters().get<int>("Interface ID") != contactconditionID) continue;
 
       InterfaceContactConditions.push_back(contactcondition);
     }
@@ -891,7 +891,7 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
             "'Contact' conditions with ID: %i;\n"
             "The last two conditions are NOT defined on the same node-sets which is not "
             "reasonable. Check your Input-File!",
-            conditionToBeTested->parameters().Get<int>("ConditionID"), S2IKineticsID,
+            conditionToBeTested->parameters().get<int>("ConditionID"), S2IKineticsID,
             contactconditionID);
       }
     }
@@ -1345,7 +1345,7 @@ void SSI::UTILS::SSIMeshTying::find_slave_slave_transformation_nodes(
   std::vector<int> original_slave_gids;
   for (auto* meshtying_conditon : meshtying_conditons)
   {
-    if (meshtying_conditon->parameters().Get<int>("interface side") == Inpar::S2I::side_slave)
+    if (meshtying_conditon->parameters().get<int>("interface side") == Inpar::S2I::side_slave)
     {
       Core::Communication::AddOwnedNodeGIDFromList(
           *dis, *meshtying_conditon->GetNodes(), original_slave_gids);

@@ -83,14 +83,14 @@ void UTILS::Cardiovascular0D4ElementWindkessel::evaluate(Teuchos::ParameterList&
   for (auto* cond : cardiovascular0dcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("id");
+    int condID = cond->parameters().get<int>("id");
     params.set("id", condID);
 
-    double C = cardiovascular0dcond_[condID]->parameters().Get<double>("C");
-    double R_p = cardiovascular0dcond_[condID]->parameters().Get<double>("R_p");
-    double Z_c = cardiovascular0dcond_[condID]->parameters().Get<double>("Z_c");
-    double L = cardiovascular0dcond_[condID]->parameters().Get<double>("L");
-    double p_ref = cardiovascular0dcond_[condID]->parameters().Get<double>("p_ref");
+    double C = cardiovascular0dcond_[condID]->parameters().get<double>("C");
+    double R_p = cardiovascular0dcond_[condID]->parameters().get<double>("R_p");
+    double Z_c = cardiovascular0dcond_[condID]->parameters().get<double>("Z_c");
+    double L = cardiovascular0dcond_[condID]->parameters().get<double>("L");
+    double p_ref = cardiovascular0dcond_[condID]->parameters().get<double>("p_ref");
 
     // Cardiovascular0D stiffness
     Core::LinAlg::SerialDenseMatrix wkstiff(numdof_per_cond, numdof_per_cond);
@@ -279,7 +279,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
   for (auto* cond : cardiovascular0dcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("id");
+    int condID = cond->parameters().get<int>("id");
     params.set("id", condID);
 
     // global and local ID of this bc in the redundant vectors
@@ -288,7 +288,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
     gindex[0] = numdof_per_cond * condID + offsetID;
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
-    double p_0 = cardiovascular0dcond_[condID]->parameters().Get<double>("p_0");
+    double p_0 = cardiovascular0dcond_[condID]->parameters().get<double>("p_0");
     double q_0 = 0.;
     double s_0 = 0.;
 

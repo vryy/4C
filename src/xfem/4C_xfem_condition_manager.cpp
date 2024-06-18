@@ -130,7 +130,7 @@ void XFEM::ConditionManager::GetCouplingIds(const Core::FE::Discretization& cond
   for (size_t s = 0; s < conditions.size(); ++s)
   {
     Core::Conditions::Condition* cond = conditions[s];
-    const int couplingID = cond->parameters().Get<int>("label");
+    const int couplingID = cond->parameters().get<int>("label");
 
     coupling_ids.insert(couplingID);
   }

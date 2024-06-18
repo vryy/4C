@@ -29,9 +29,9 @@ Mat::ParticleWallMaterialDEMType Mat::ParticleWallMaterialDEMType::instance_;
 Mat::PAR::ParticleWallMaterialDEM::ParticleWallMaterialDEM(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      frictionTang_(matdata.parameters.Get<double>("FRICT_COEFF_TANG")),
-      frictionRoll_(matdata.parameters.Get<double>("FRICT_COEFF_ROLL")),
-      adhesionSurfaceEnergy_(matdata.parameters.Get<double>("ADHESION_SURFACE_ENERGY"))
+      frictionTang_(matdata.parameters.get<double>("FRICT_COEFF_TANG")),
+      frictionRoll_(matdata.parameters.get<double>("FRICT_COEFF_ROLL")),
+      adhesionSurfaceEnergy_(matdata.parameters.get<double>("ADHESION_SURFACE_ENERGY"))
 {
   // empty constructor
 }

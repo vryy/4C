@@ -92,7 +92,7 @@ void FS3I::ACFSI::init()
   Global::Problem::Instance()->GetDis("fluid")->GetCondition("ImpedanceCond", ImpCond);
   for (auto& i : ImpCond)
   {
-    const double thisperiod = i->parameters().Get<double>("TIMEPERIOD");
+    const double thisperiod = i->parameters().get<double>("TIMEPERIOD");
 
     if (thisperiod != fsiperiod_)
     {

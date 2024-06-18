@@ -132,9 +132,9 @@ void Core::Conditions::LocsysManager::Update(const double time,
       {
         typelocsys_[i] = currlocsys->Type();
 
-        const auto* rotangle = &currlocsys->parameters().Get<std::vector<double>>("rotangle");
-        const auto* funct = &currlocsys->parameters().Get<std::vector<int>>("funct");
-        const auto* useUpdatedNodePos = &currlocsys->parameters().Get<int>("useupdatednodepos");
+        const auto* rotangle = &currlocsys->parameters().get<std::vector<double>>("rotangle");
+        const auto* funct = &currlocsys->parameters().get<std::vector<int>>("funct");
+        const auto* useUpdatedNodePos = &currlocsys->parameters().get<int>("useupdatednodepos");
 
         const auto* useConsistentNodeNormal =
             (currlocsys->Type() == Core::Conditions::SurfaceLocsys or

@@ -46,19 +46,19 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::Damage::Damage(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      sigma_y_((matdata.parameters.Get<std::vector<double>>("SIGMA_Y"))),
-      strainbar_p_ref_((matdata.parameters.Get<std::vector<double>>("EPSBAR_P"))),
-      damden_(matdata.parameters.Get<double>("DAMDEN")),
-      damexp_(matdata.parameters.Get<double>("DAMEXP")),
-      epsbarD_(matdata.parameters.Get<double>("DAMTHRESHOLD")),
-      kinhard_(matdata.parameters.Get<double>("KINHARD")),
-      kinhard_rec_(matdata.parameters.Get<double>("KINHARD_REC")),
-      sathardening_(matdata.parameters.Get<double>("SATHARDENING")),
-      hardexpo_(matdata.parameters.Get<double>("HARDEXPO")),
-      abstol_(matdata.parameters.Get<double>("TOL"))
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      sigma_y_((matdata.parameters.get<std::vector<double>>("SIGMA_Y"))),
+      strainbar_p_ref_((matdata.parameters.get<std::vector<double>>("EPSBAR_P"))),
+      damden_(matdata.parameters.get<double>("DAMDEN")),
+      damexp_(matdata.parameters.get<double>("DAMEXP")),
+      epsbarD_(matdata.parameters.get<double>("DAMTHRESHOLD")),
+      kinhard_(matdata.parameters.get<double>("KINHARD")),
+      kinhard_rec_(matdata.parameters.get<double>("KINHARD_REC")),
+      sathardening_(matdata.parameters.get<double>("SATHARDENING")),
+      hardexpo_(matdata.parameters.get<double>("HARDEXPO")),
+      abstol_(matdata.parameters.get<double>("TOL"))
 {
   if (hardexpo_ < 0.0) FOUR_C_THROW("Nonlinear hardening exponent must be non-negative!");
   if (damden_ == 0.0)

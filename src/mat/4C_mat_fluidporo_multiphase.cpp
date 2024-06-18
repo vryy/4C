@@ -26,8 +26,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(const Core::Mat::PAR::Parameter::Data& matdata)
     : MatList(matdata),
-      permeability_(matdata.parameters.Get<double>("PERMEABILITY")),
-      numfluidphases_(matdata.parameters.Get<int>("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
+      permeability_(matdata.parameters.get<double>("PERMEABILITY")),
+      numfluidphases_(matdata.parameters.get<int>("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
       numvolfrac_(-1),
       dof2pres_(Teuchos::null),
       constraintphaseID_(-1),

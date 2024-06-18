@@ -26,9 +26,9 @@ FOUR_C_NAMESPACE_OPEN
 MIXTURE::PAR::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureConstituent(matdata),
-      matid_prestress_strategy_(matdata.parameters.Get<int>("PRESTRESS_STRATEGY")),
-      nummat_(matdata.parameters.Get<int>("NUMMAT")),
-      matids_(matdata.parameters.Get<std::vector<int>>("MATIDS"))
+      matid_prestress_strategy_(matdata.parameters.get<int>("PRESTRESS_STRATEGY")),
+      nummat_(matdata.parameters.get<int>("NUMMAT")),
+      matids_(matdata.parameters.get<std::vector<int>>("MATIDS"))
 {
   // check, if size of summands fits to the number of summands
   if (nummat_ != (int)matids_.size())

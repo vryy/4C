@@ -15,8 +15,8 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::Elastic::PAR::IsoTestMaterial::IsoTestMaterial(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      c1_(matdata.parameters.Get<double>("C1")),
-      c2_(matdata.parameters.Get<double>("C2"))
+      c1_(matdata.parameters.get<double>("C1")),
+      c2_(matdata.parameters.get<double>("C2"))
 {
 }
 

@@ -46,17 +46,17 @@ namespace
 MIXTURE::PAR::MixtureConstituentRemodelFiberExpl::MixtureConstituentRemodelFiberExpl(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureConstituent(matdata),
-      fiber_id_(matdata.parameters.Get<int>("FIBER_ID") - 1),
-      init_(matdata.parameters.Get<int>("INIT")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
-      fiber_material_id_(matdata.parameters.Get<int>("FIBER_MATERIAL_ID")),
+      fiber_id_(matdata.parameters.get<int>("FIBER_ID") - 1),
+      init_(matdata.parameters.get<int>("INIT")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
+      fiber_material_id_(matdata.parameters.get<int>("FIBER_MATERIAL_ID")),
       fiber_material_(FiberMaterialFactory(fiber_material_id_)),
-      growth_enabled_(matdata.parameters.Get<bool>("GROWTH_ENABLED")),
-      poisson_decay_time_(matdata.parameters.Get<double>("DECAY_TIME")),
-      growth_constant_(matdata.parameters.Get<double>("GROWTH_CONSTANT")),
-      deposition_stretch_(matdata.parameters.Get<double>("DEPOSITION_STRETCH")),
-      deposition_stretch_timefunc_num_(matdata.parameters.Get<int>("DEPOSITION_STRETCH_TIMEFUNCT")),
-      inelastic_external_deformation_(matdata.parameters.Get<bool>("INELASTIC_GROWTH"))
+      growth_enabled_(matdata.parameters.get<bool>("GROWTH_ENABLED")),
+      poisson_decay_time_(matdata.parameters.get<double>("DECAY_TIME")),
+      growth_constant_(matdata.parameters.get<double>("GROWTH_CONSTANT")),
+      deposition_stretch_(matdata.parameters.get<double>("DEPOSITION_STRETCH")),
+      deposition_stretch_timefunc_num_(matdata.parameters.get<int>("DEPOSITION_STRETCH_TIMEFUNCT")),
+      inelastic_external_deformation_(matdata.parameters.get<bool>("INELASTIC_GROWTH"))
 {
 }
 

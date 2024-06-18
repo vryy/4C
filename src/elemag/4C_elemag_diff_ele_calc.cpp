@@ -1799,7 +1799,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeAbsorbin
   // Get the user defined functions
   Teuchos::RCP<Core::Conditions::Condition>* cond =
 params.getPtr<Teuchos::RCP<Core::Conditions::Condition>>("condition"); const std::vector<int>* funct
-= (cond)->Get<std::vector<int>>("funct"); const double time = params.get<double>("time");
+= (cond)->get<std::vector<int>>("funct"); const double time = params.get<double>("time");
 
   Core::LinAlg::SerialDenseVector tempVec1(shapesface_->nfdofs_ * nsd_);
   Core::LinAlg::SerialDenseVector tempVec2(shapesface_->nfdofs_ * (nsd_ - 1));

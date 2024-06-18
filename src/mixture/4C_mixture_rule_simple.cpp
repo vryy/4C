@@ -26,8 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::SimpleMixtureRule::SimpleMixtureRule(const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureRule(matdata),
-      initial_reference_density_(matdata.parameters.Get<double>("DENS")),
-      mass_fractions_(matdata.parameters.Get<std::vector<double>>("MASSFRAC"))
+      initial_reference_density_(matdata.parameters.get<double>("DENS")),
+      mass_fractions_(matdata.parameters.get<std::vector<double>>("MASSFRAC"))
 {
   // check, whether the mass frac sums up to 1
   const double sum = std::accumulate(mass_fractions_.begin(), mass_fractions_.end(), 0.0);

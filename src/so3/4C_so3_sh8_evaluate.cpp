@@ -1845,7 +1845,7 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
 
     for (auto& conu : cond0)
     {
-      int tmp = conu->parameters().Get<int>("ConditionID");
+      int tmp = conu->parameters().get<int>("ConditionID");
       if (tmp < condnum0) condnum0 = tmp;
     }
     if (condnum0 ==
@@ -1855,7 +1855,7 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
 
     for (auto& conu : cond1)
     {
-      int tmp = conu->parameters().Get<int>("ConditionID");
+      int tmp = conu->parameters().get<int>("ConditionID");
       if (tmp < condnum1) condnum1 = tmp;
     }
     if (condnum1 ==

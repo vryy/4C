@@ -49,8 +49,8 @@ Mat::Elastic::CoupAnisoExpoAnisotropyExtension::get_structural_tensor_stress(int
 Mat::Elastic::PAR::CoupAnisoExpo::CoupAnisoExpo(const Core::Mat::PAR::Parameter::Data& matdata)
     : Mat::PAR::ParameterAniso(matdata),
       Mat::Elastic::PAR::CoupAnisoExpoBase(matdata),
-      adapt_angle_(matdata.parameters.Get<bool>("ADAPT_ANGLE")),
-      fiber_id_(matdata.parameters.Get<int>("FIBER_ID"))
+      adapt_angle_(matdata.parameters.get<bool>("ADAPT_ANGLE")),
+      fiber_id_(matdata.parameters.get<int>("FIBER_ID"))
 {
 }
 

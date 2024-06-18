@@ -27,9 +27,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::MicroMaterial::MicroMaterial(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      microfile_((matdata.parameters.Get<std::string>("MICROFILE"))),
-      microdisnum_(matdata.parameters.Get<int>("MICRODIS_NUM")),
-      initvol_(matdata.parameters.Get<double>("INITVOL"))
+      microfile_((matdata.parameters.get<std::string>("MICROFILE"))),
+      microdisnum_(matdata.parameters.get<int>("MICRODIS_NUM")),
+      initvol_(matdata.parameters.get<double>("INITVOL"))
 {
 }
 

@@ -1323,9 +1323,9 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::Compute
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
-  const auto* onoff = &condition->parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition->parameters().Get<std::vector<double>>("val");
-  const auto* func = &condition->parameters().Get<std::vector<int>>("funct");
+  const auto* onoff = &condition->parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition->parameters().get<std::vector<double>>("val");
+  const auto* func = &condition->parameters().get<std::vector<int>>("funct");
 
 
   Core::FE::ShapeValuesFaceParams svfparams(

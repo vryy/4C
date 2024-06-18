@@ -75,7 +75,7 @@ void Core::Adapter::CouplingMortar::setup(const Teuchos::RCP<Core::FE::Discretiz
 
     for (unsigned i = 0; i < conds.size(); i++)
     {
-      const std::string& side = conds[i]->parameters().Get<std::string>("Side");
+      const std::string& side = conds[i]->parameters().get<std::string>("Side");
 
       if (side == "Master")
         conds_master.push_back(conds[i]);

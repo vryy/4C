@@ -26,13 +26,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::Newman::Newman(const Core::Mat::PAR::Parameter::Data& matdata)
     : ElchSingleMat(matdata),
-      valence_(matdata.parameters.Get<double>("VALENCE")),
-      transnrcurve_(matdata.parameters.Get<int>("TRANSNR")),
-      thermfaccurve_(matdata.parameters.Get<int>("THERMFAC")),
-      transnrparanum_(matdata.parameters.Get<int>("TRANS_PARA_NUM")),
-      transnrpara_(matdata.parameters.Get<std::vector<double>>("TRANS_PARA")),
-      thermfacparanum_(matdata.parameters.Get<int>("THERM_PARA_NUM")),
-      thermfacpara_(matdata.parameters.Get<std::vector<double>>("THERM_PARA"))
+      valence_(matdata.parameters.get<double>("VALENCE")),
+      transnrcurve_(matdata.parameters.get<int>("TRANSNR")),
+      thermfaccurve_(matdata.parameters.get<int>("THERMFAC")),
+      transnrparanum_(matdata.parameters.get<int>("TRANS_PARA_NUM")),
+      transnrpara_(matdata.parameters.get<std::vector<double>>("TRANS_PARA")),
+      thermfacparanum_(matdata.parameters.get<int>("THERM_PARA_NUM")),
+      thermfacpara_(matdata.parameters.get<std::vector<double>>("THERM_PARA"))
 {
   if (transnrparanum_ != (int)transnrpara_.size())
     FOUR_C_THROW("number of materials %d does not fit to size of material vector %d",

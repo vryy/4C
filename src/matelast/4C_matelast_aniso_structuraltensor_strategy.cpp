@@ -21,14 +21,14 @@ FOUR_C_NAMESPACE_OPEN
 Mat::Elastic::PAR::StructuralTensorParameter::StructuralTensorParameter(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      c1_(matdata.parameters.Get<double>("C1")),
-      c2_(matdata.parameters.Get<double>("C2")),
-      c3_(matdata.parameters.Get<double>("C3")),
-      c4_(matdata.parameters.Get<double>("C4")),
+      c1_(matdata.parameters.get<double>("C1")),
+      c2_(matdata.parameters.get<double>("C2")),
+      c3_(matdata.parameters.get<double>("C3")),
+      c4_(matdata.parameters.get<double>("C4")),
       distribution_type_(distr_type_undefined),
       strategy_type_(strategy_type_undefined)
 {
-  std::string strategy_type = matdata.parameters.Get<std::string>("STRATEGY");
+  std::string strategy_type = matdata.parameters.get<std::string>("STRATEGY");
   if (strategy_type == "Standard")
     strategy_type_ = strategy_type_standard;
   else if (strategy_type == "ByDistributionFunction")
@@ -39,7 +39,7 @@ Mat::Elastic::PAR::StructuralTensorParameter::StructuralTensorParameter(
     FOUR_C_THROW(
         "unknown strategy for evaluation of the structural tensor for anisotropic material.");
 
-  std::string distr_type = matdata.parameters.Get<std::string>("DISTR");
+  std::string distr_type = matdata.parameters.get<std::string>("DISTR");
   if (distr_type == "vonMisesFisher")
   {
     distribution_type_ = distr_type_vonmisesfisher;

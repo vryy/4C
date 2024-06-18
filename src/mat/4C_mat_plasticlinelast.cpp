@@ -41,13 +41,13 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::PlasticLinElast::PlasticLinElast(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      yield_(matdata.parameters.Get<double>("YIELD")),
-      isohard_(matdata.parameters.Get<double>("ISOHARD")),
-      kinhard_(matdata.parameters.Get<double>("KINHARD")),
-      abstol_(matdata.parameters.Get<double>("TOL"))
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      yield_(matdata.parameters.get<double>("YIELD")),
+      isohard_(matdata.parameters.get<double>("ISOHARD")),
+      kinhard_(matdata.parameters.get<double>("KINHARD")),
+      abstol_(matdata.parameters.get<double>("TOL"))
 {
 }
 

@@ -24,10 +24,10 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::ScatraMatMultiPoroFluid::ScatraMatMultiPoroFluid(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : ScatraMat(matdata),
-      phaseID_(matdata.parameters.Get<int>("PHASEID")),
-      delta_(matdata.parameters.Get<double>("DELTA")),
-      min_sat_(matdata.parameters.Get<double>("MIN_SAT")),
-      relative_mobility_funct_id_(matdata.parameters.Get<int>("RELATIVE_MOBILITY_FUNCTION_ID"))
+      phaseID_(matdata.parameters.get<int>("PHASEID")),
+      delta_(matdata.parameters.get<double>("DELTA")),
+      min_sat_(matdata.parameters.get<double>("MIN_SAT")),
+      relative_mobility_funct_id_(matdata.parameters.get<int>("RELATIVE_MOBILITY_FUNCTION_ID"))
 {
 }
 
@@ -115,9 +115,9 @@ void Mat::ScatraMatMultiPoroFluid::Unpack(const std::vector<char>& data)
 Mat::PAR::ScatraMatMultiPoroVolFrac::ScatraMatMultiPoroVolFrac(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : ScatraMat(matdata),
-      phaseID_(matdata.parameters.Get<int>("PHASEID")),
-      delta_(matdata.parameters.Get<double>("DELTA")),
-      relative_mobility_funct_id_(matdata.parameters.Get<int>("RELATIVE_MOBILITY_FUNCTION_ID"))
+      phaseID_(matdata.parameters.get<int>("PHASEID")),
+      delta_(matdata.parameters.get<double>("DELTA")),
+      relative_mobility_funct_id_(matdata.parameters.get<int>("RELATIVE_MOBILITY_FUNCTION_ID"))
 {
 }
 
@@ -206,7 +206,7 @@ void Mat::ScatraMatMultiPoroVolFrac::Unpack(const std::vector<char>& data)
 
 Mat::PAR::ScatraMatMultiPoroSolid::ScatraMatMultiPoroSolid(
     const Core::Mat::PAR::Parameter::Data& matdata)
-    : ScatraMat(matdata), delta_(matdata.parameters.Get<double>("DELTA"))
+    : ScatraMat(matdata), delta_(matdata.parameters.get<double>("DELTA"))
 {
 }
 
@@ -292,14 +292,14 @@ void Mat::ScatraMatMultiPoroSolid::Unpack(const std::vector<char>& data)
 Mat::PAR::ScatraMatMultiPoroTemperature::ScatraMatMultiPoroTemperature(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : ScatraMat(matdata),
-      numfluidphases_(matdata.parameters.Get<int>("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
-      numvolfrac_(matdata.parameters.Get<int>("NUMVOLFRAC")),
-      cp_fluid_((matdata.parameters.Get<std::vector<double>>("CP_FLUID"))),
-      cp_volfrac_((matdata.parameters.Get<std::vector<double>>("CP_VOLFRAC"))),
-      cp_solid_(matdata.parameters.Get<double>("CP_SOLID")),
-      kappa_fluid_((matdata.parameters.Get<std::vector<double>>("KAPPA_FLUID"))),
-      kappa_volfrac_((matdata.parameters.Get<std::vector<double>>("KAPPA_VOLFRAC"))),
-      kappa_solid_(matdata.parameters.Get<double>("KAPPA_SOLID"))
+      numfluidphases_(matdata.parameters.get<int>("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
+      numvolfrac_(matdata.parameters.get<int>("NUMVOLFRAC")),
+      cp_fluid_((matdata.parameters.get<std::vector<double>>("CP_FLUID"))),
+      cp_volfrac_((matdata.parameters.get<std::vector<double>>("CP_VOLFRAC"))),
+      cp_solid_(matdata.parameters.get<double>("CP_SOLID")),
+      kappa_fluid_((matdata.parameters.get<std::vector<double>>("KAPPA_FLUID"))),
+      kappa_volfrac_((matdata.parameters.get<std::vector<double>>("KAPPA_VOLFRAC"))),
+      kappa_solid_(matdata.parameters.get<double>("KAPPA_SOLID"))
 {
 }
 

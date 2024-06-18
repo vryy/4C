@@ -28,8 +28,8 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams::PowerConstitutiveLawParams(
     const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container)
     : CONTACT::CONSTITUTIVELAW::Parameter(container),
-      a_(container->Get<double>("A")),
-      b_(container->Get<double>("B"))
+      a_(container->get<double>("A")),
+      b_(container->get<double>("B"))
 {
 }
 /*----------------------------------------------------------------------*/

@@ -57,7 +57,7 @@ void CONSTRAINTS::MPConstraint2::Initialize(const double& time)
   for (auto* cond : constrcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
 
     // if current time (at) is larger than activation time of the condition, activate it
     if ((inittimes_.find(condID)->second < time) && (!activecons_.find(condID)->second))
@@ -91,11 +91,11 @@ void CONSTRAINTS::MPConstraint2::Initialize(
   for (unsigned int i = 0; i < constrcond_.size(); i++)
   {
     Core::Conditions::Condition& cond = *(constrcond_[i]);
-    int condID = cond.parameters().Get<int>("ConditionID");
+    int condID = cond.parameters().get<int>("ConditionID");
     if (inittimes_.find(condID)->second <= time)
     {
-      const int MPCcondID = constrcond_[i]->parameters().Get<int>("ConditionID");
-      amplit[i] = constrcond_[i]->parameters().Get<double>("amplitude");
+      const int MPCcondID = constrcond_[i]->parameters().get<int>("ConditionID");
+      amplit[i] = constrcond_[i]->parameters().get<double>("amplitude");
       const int mid = params.get("OffsetID", 0);
       IDs[i] = MPCcondID - mid;
       // remember next time, that this condition is already initialized, i.e. active
@@ -241,9 +241,9 @@ void CONSTRAINTS::MPConstraint2::reorder_constraint_nodes(
   std::vector<int> temp = nodeids;
   if (nodeids.size() == 3)
   {
-    nodeids[0] = temp[cond->parameters().Get<int>("constrNode 1") - 1];
-    nodeids[1] = temp[cond->parameters().Get<int>("constrNode 2") - 1];
-    nodeids[2] = temp[cond->parameters().Get<int>("constrNode 3") - 1];
+    nodeids[0] = temp[cond->parameters().get<int>("constrNode 1") - 1];
+    nodeids[1] = temp[cond->parameters().get<int>("constrNode 2") - 1];
+    nodeids[2] = temp[cond->parameters().get<int>("constrNode 3") - 1];
   }
   else
   {
@@ -292,7 +292,7 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
   {
     Core::Elements::Element* actele = disc->lColElement(i);
     Core::Conditions::Condition& cond = *(constrcond_[actele->Id()]);
-    int condID = cond.parameters().Get<int>("ConditionID");
+    int condID = cond.parameters().get<int>("ConditionID");
 
     // computation only if time is larger or equal than initialization time for constraint
     if (inittimes_.find(condID)->second <= time)

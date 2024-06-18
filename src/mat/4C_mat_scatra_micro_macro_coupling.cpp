@@ -19,9 +19,9 @@ FOUR_C_NAMESPACE_OPEN
  *--------------------------------------------------------------------*/
 Mat::PAR::ScatraMicroMacroCoupling::ScatraMicroMacroCoupling(
     const Core::Mat::PAR::Parameter::Data& matdata)
-    : microfile_((matdata.parameters.Get<std::string>("MICROFILE"))),
-      microdisnum_(matdata.parameters.Get<int>("MICRODIS_NUM")),
-      A_s_(matdata.parameters.Get<double>("A_s"))
+    : microfile_((matdata.parameters.get<std::string>("MICROFILE"))),
+      microdisnum_(matdata.parameters.get<int>("MICRODIS_NUM")),
+      A_s_(matdata.parameters.get<double>("A_s"))
 {
 }
 

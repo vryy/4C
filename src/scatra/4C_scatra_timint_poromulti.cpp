@@ -198,13 +198,13 @@ void ScaTra::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
     double Pb = 0.0;
 
     // read input from condition
-    const auto oxyscalar = conditions[0]->parameters().Get<int>("SCALARID") - 1;
-    const auto CaO2_max = conditions[0]->parameters().Get<double>("CaO2_max");
-    const auto Pb50 = conditions[0]->parameters().Get<double>("Pb50");
-    const auto n = conditions[0]->parameters().Get<double>("n");
-    const auto alpha_eff = conditions[0]->parameters().Get<double>("alpha_bl_eff");
-    const auto rho_oxy = conditions[0]->parameters().Get<double>("rho_oxy");
-    const auto rho_bl = conditions[0]->parameters().Get<double>("rho_bl");
+    const auto oxyscalar = conditions[0]->parameters().get<int>("SCALARID") - 1;
+    const auto CaO2_max = conditions[0]->parameters().get<double>("CaO2_max");
+    const auto Pb50 = conditions[0]->parameters().get<double>("Pb50");
+    const auto n = conditions[0]->parameters().get<double>("n");
+    const auto alpha_eff = conditions[0]->parameters().get<double>("alpha_bl_eff");
+    const auto rho_oxy = conditions[0]->parameters().get<double>("rho_oxy");
+    const auto rho_bl = conditions[0]->parameters().get<double>("rho_bl");
 
     // loop over all nodes
     for (unsigned inode = 0; inode < nodegids->size(); ++inode)

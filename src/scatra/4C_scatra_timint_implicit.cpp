@@ -888,7 +888,7 @@ void ScaTra::ScaTraTimIntImpl::prepare_krylov_projection()
   // check if for scatra Krylov projection is required
   for (std::size_t icond = 0; icond < numcond; icond++)
   {
-    const auto& name = KSPCond[icond]->parameters().Get<std::string>("discretization");
+    const auto& name = KSPCond[icond]->parameters().get<std::string>("discretization");
     if (name == "scatra")
     {
       numscatra++;
@@ -2220,7 +2220,7 @@ void ScaTra::ScaTraTimIntImpl::setup_krylov_space_projection(Core::Conditions::C
   // revision 17615.
 
   // confirm that mode flags are number of nodal dofs/scalars
-  const int nummodes = kspcond->parameters().Get<int>("NUMMODES");
+  const int nummodes = kspcond->parameters().get<int>("NUMMODES");
   if (nummodes != NumDofPerNode())
   {
     FOUR_C_THROW(
@@ -2229,7 +2229,7 @@ void ScaTra::ScaTraTimIntImpl::setup_krylov_space_projection(Core::Conditions::C
   }
 
   // get vector of mode flags as given in dat-file
-  const auto* modeflags = &kspcond->parameters().Get<std::vector<int>>("ONOFF");
+  const auto* modeflags = &kspcond->parameters().get<std::vector<int>>("ONOFF");
 
   // count actual active modes selected in dat-file
   std::vector<int> activemodeids;
@@ -2242,7 +2242,7 @@ void ScaTra::ScaTraTimIntImpl::setup_krylov_space_projection(Core::Conditions::C
   }
 
   // get from dat-file definition how weights are to be computed
-  const auto* weighttype = &kspcond->parameters().Get<std::string>("weight vector definition");
+  const auto* weighttype = &kspcond->parameters().get<std::string>("weight vector definition");
 
   // set flag for projection update true only if ALE and integral weights
   if (isale_ and (*weighttype == "integration")) updateprojection_ = true;
@@ -3302,7 +3302,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
 
           // compute matrix and vector contributions according to kinetic model for current
           // macro-micro coupling condition
-          const int kinetic_model = condition->parameters().Get<int>("kinetic model");
+          const int kinetic_model = condition->parameters().get<int>("kinetic model");
 
           switch (kinetic_model)
           {
@@ -3349,7 +3349,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
                 FOUR_C_THROW("Invalid electrode material for multi-scale coupling!");
 
               // access input parameters associated with current condition
-              const int nume = condition->parameters().Get<int>("e-");
+              const int nume = condition->parameters().get<int>("e-");
               if (nume != 1)
               {
                 FOUR_C_THROW(
@@ -3377,10 +3377,10 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
                   (gasconstant * (Global::Problem::Instance(0)->ELCHControlParams().get<double>(
                                      "TEMPERATURE")));
               const double alphaa =
-                  condition->parameters().Get<double>("alpha_a");  // anodic transfer coefficient
+                  condition->parameters().get<double>("alpha_a");  // anodic transfer coefficient
               const double alphac =
-                  condition->parameters().Get<double>("alpha_c");  // cathodic transfer coefficient
-              const double kr = condition->parameters().Get<double>(
+                  condition->parameters().get<double>("alpha_c");  // cathodic transfer coefficient
+              const double kr = condition->parameters().get<double>(
                   "k_r");  // rate constant of charge transfer reaction
               if (kr < 0.) FOUR_C_THROW("Charge transfer constant k_r is negative!");
 
@@ -3422,7 +3422,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
               const double eta = phinp_macro_[2] - phinp_macro_[1] - epd;
 
               // Butler-Volmer exchange mass flux density
-              const double j0 = condition->parameters().Get<int>("kinetic model") ==
+              const double j0 = condition->parameters().get<int>("kinetic model") ==
                                         Inpar::S2I::kinetics_butlervolmerreduced
                                     ? kr
                                     : kr * std::pow(conc_el, alphaa) *

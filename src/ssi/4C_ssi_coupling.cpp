@@ -462,7 +462,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
 
       std::set<int> couplingids;
       for (auto& cond_struct : conds_struct)
-        couplingids.insert(cond_struct->parameters().Get<int>("coupling id"));
+        couplingids.insert(cond_struct->parameters().get<int>("coupling id"));
 
       Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> structgidmatchingdofset = Teuchos::rcp(
           new Core::DOFSets::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
@@ -494,7 +494,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
 
       std::set<int> couplingids;
       for (auto& cond_struct : conds_struct)
-        couplingids.insert(cond_struct->parameters().Get<int>("coupling id"));
+        couplingids.insert(cond_struct->parameters().get<int>("coupling id"));
 
       Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> scatragidmatchingdofset = Teuchos::rcp(
           new Core::DOFSets::DofSetGIDBasedWrapper(scatradis, scatradis->GetDofSetProxy()));

@@ -3083,10 +3083,10 @@ void CONTACT::AbstractStrategy::evaluate(CONTACT::ParamsInterface& cparams,
     }
     case Mortar::eval_run_post_apply_jacobian_inverse:
     {
-      const Epetra_Vector* rhs = cparams.Get<const Epetra_Vector>(0);
-      Epetra_Vector* result = cparams.Get<Epetra_Vector>(1);
-      const Epetra_Vector* xold = cparams.Get<const Epetra_Vector>(2);
-      const NOX::Nln::Group* grp = cparams.Get<const NOX::Nln::Group>(3);
+      const Epetra_Vector* rhs = cparams.get<const Epetra_Vector>(0);
+      Epetra_Vector* result = cparams.get<Epetra_Vector>(1);
+      const Epetra_Vector* xold = cparams.get<const Epetra_Vector>(2);
+      const NOX::Nln::Group* grp = cparams.get<const NOX::Nln::Group>(3);
 
       run_post_apply_jacobian_inverse(cparams, *rhs, *result, *xold, *grp);
 
@@ -3094,7 +3094,7 @@ void CONTACT::AbstractStrategy::evaluate(CONTACT::ParamsInterface& cparams,
     }
     case Mortar::eval_correct_parameters:
     {
-      const NOX::Nln::CorrectionType* type = cparams.Get<const NOX::Nln::CorrectionType>(0);
+      const NOX::Nln::CorrectionType* type = cparams.get<const NOX::Nln::CorrectionType>(0);
 
       correct_parameters(cparams, *type);
 

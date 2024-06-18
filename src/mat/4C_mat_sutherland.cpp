@@ -22,13 +22,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::Sutherland::Sutherland(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      refvisc_(matdata.parameters.Get<double>("REFVISC")),
-      reftemp_(matdata.parameters.Get<double>("REFTEMP")),
-      suthtemp_(matdata.parameters.Get<double>("SUTHTEMP")),
-      shc_(matdata.parameters.Get<double>("SHC")),
-      pranum_(matdata.parameters.Get<double>("PRANUM")),
-      thermpress_(matdata.parameters.Get<double>("THERMPRESS")),
-      gasconst_(matdata.parameters.Get<double>("GASCON"))
+      refvisc_(matdata.parameters.get<double>("REFVISC")),
+      reftemp_(matdata.parameters.get<double>("REFTEMP")),
+      suthtemp_(matdata.parameters.get<double>("SUTHTEMP")),
+      shc_(matdata.parameters.get<double>("SHC")),
+      pranum_(matdata.parameters.get<double>("PRANUM")),
+      thermpress_(matdata.parameters.get<double>("THERMPRESS")),
+      gasconst_(matdata.parameters.get<double>("GASCON"))
 {
 }
 

@@ -27,11 +27,11 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      nummat_elast_(matdata.parameters.Get<int>("NUMMATEL")),
-      matids_elast_(matdata.parameters.Get<std::vector<int>>("MATIDSEL")),
-      numfac_inel_(matdata.parameters.Get<int>("NUMFACINEL")),
-      inel_defgradfacids_(matdata.parameters.Get<std::vector<int>>("INELDEFGRADFACIDS")),
-      density_(matdata.parameters.Get<double>("DENS"))
+      nummat_elast_(matdata.parameters.get<int>("NUMMATEL")),
+      matids_elast_(matdata.parameters.get<std::vector<int>>("MATIDSEL")),
+      numfac_inel_(matdata.parameters.get<int>("NUMFACINEL")),
+      inel_defgradfacids_(matdata.parameters.get<std::vector<int>>("INELDEFGRADFACIDS")),
+      density_(matdata.parameters.get<double>("DENS"))
 {
   // check if sizes fit
   if (nummat_elast_ != static_cast<int>(matids_elast_.size()))

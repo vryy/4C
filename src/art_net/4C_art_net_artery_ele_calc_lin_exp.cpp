@@ -1058,7 +1058,7 @@ bool Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
       std::string TerminalType = (ele->Nodes()[i]
                                       ->GetCondition("ArtInOutCond")
                                       ->parameters()
-                                      .Get<std::string>("terminaltype"));
+                                      .get<std::string>("terminaltype"));
       if (TerminalType == "inlet")
         TermIO = -1.0;
       else if (TerminalType == "outlet")
@@ -1261,7 +1261,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
       std::string TerminalType = (ele->Nodes()[i]
                                       ->GetCondition("ArtInOutCond")
                                       ->parameters()
-                                      .Get<std::string>("terminaltype"));
+                                      .get<std::string>("terminaltype"));
       if (TerminalType == "inlet")
         TermIO = -1.0;
       else if (TerminalType == "outlet")
@@ -1490,7 +1490,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* e
 
       const auto* curve = condition->parameters().GetIf<int>("curve");
 
-      double curvefac = condition->parameters().Get<double>("val");
+      double curvefac = condition->parameters().get<double>("val");
       int curvenum = -1;
       if (curve) curvenum = *curve;
       if (curvenum > 0)
@@ -1504,7 +1504,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* e
       std::string TerminalType = (ele->Nodes()[i]
                                       ->GetCondition("ArtInOutCond")
                                       ->parameters()
-                                      .Get<std::string>("terminaltype"));
+                                      .get<std::string>("terminaltype"));
       int dof = 0;
       if (TerminalType == "inlet")
       {

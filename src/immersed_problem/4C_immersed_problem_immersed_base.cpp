@@ -461,7 +461,7 @@ void Immersed::ImmersedBase::evaluate_interpolation_condition(
     if (fool->first == condstring)
     {
       Core::Conditions::Condition& cond = *(fool->second);
-      if (condid == -1 || condid == cond.parameters().Get<int>("ConditionID"))
+      if (condid == -1 || condid == cond.parameters().get<int>("ConditionID"))
       {
         std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond.Geometry();
         if (geom.empty())

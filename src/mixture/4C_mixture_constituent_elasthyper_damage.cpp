@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 MIXTURE::PAR::MixtureConstituentElastHyperDamage::MixtureConstituentElastHyperDamage(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureConstituentElastHyperBase(matdata),
-      damage_function_id_(matdata.parameters.Get<int>("DAMAGE_FUNCT"))
+      damage_function_id_(matdata.parameters.get<int>("DAMAGE_FUNCT"))
 {
   // nothing to do here
 }

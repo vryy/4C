@@ -122,7 +122,7 @@ void CONTACT::Aug::ComboStrategy::create_strategy_linear_solvers(
   if (not cparams_interface)
     FOUR_C_THROW("You have to provide a pointer to the CONTACT::ParamsInterface!");
 
-  Core::FE::Discretization* str_discret = cparams_interface->Get<Core::FE::Discretization>();
+  Core::FE::Discretization* str_discret = cparams_interface->get<Core::FE::Discretization>();
 
   strat_lin_solvers.push_back(STR::SOLVER::Factory::build_meshtying_contact_lin_solver(
       *str_discret, strategy.Type(), strategy.SystemType(), ls_id));
@@ -469,7 +469,7 @@ void CONTACT::Aug::ComboStrategy::eval_force(CONTACT::ParamsInterface& cparams)
 
 #ifdef DEBUG_COMBO_STRATEGY
   std::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << std::endl;
-  std::cout << Inpar::CONTACT::SolvingStrategy2String(Get().Type()) << "\n";
+  std::cout << Inpar::CONTACT::SolvingStrategy2String(get().Type()) << "\n";
 #endif
 }
 

@@ -223,8 +223,8 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   const std::vector<int>* nodeids = cond.GetNodes();
   if (!nodeids) FOUR_C_THROW("Dirichlet condition does not have nodal cloud");
 
-  const auto* funct = &cond.parameters().Get<std::vector<int>>("funct");
-  const auto* val = &cond.parameters().Get<std::vector<double>>("val");
+  const auto* funct = &cond.parameters().get<std::vector<int>>("funct");
+  const auto* val = &cond.parameters().get<std::vector<double>>("val");
 
 
   // determine highest degree of time derivative

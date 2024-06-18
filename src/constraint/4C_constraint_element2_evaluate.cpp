@@ -33,7 +33,7 @@ int Discret::ELEMENTS::ConstraintElement2::evaluate(Teuchos::ParameterList& para
   {
     Teuchos::RCP<Core::Conditions::Condition> condition =
         params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-    const std::string& type = condition->parameters().Get<std::string>("control value");
+    const std::string& type = condition->parameters().get<std::string>("control value");
 
     if (type == "dist")
       act = calc_MPC_dist_stiff;

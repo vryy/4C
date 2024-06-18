@@ -200,7 +200,7 @@ namespace CONTACT
         void split_into_surface_directions(const Epetra_Vector& dir,
             Teuchos::RCP<Epetra_Vector>& x_dir_ptr, Teuchos::RCP<Epetra_Vector>& y_dir_ptr) const;
 
-        Teuchos::RCP<const Epetra_Vector> Get(const ::NOX::Solver::Generic& solver) const;
+        Teuchos::RCP<const Epetra_Vector> get(const ::NOX::Solver::Generic& solver) const;
 
         enum Inpar::CONTACT::PlotDirection type_;
         enum Inpar::CONTACT::PlotDirectionSplit split_;

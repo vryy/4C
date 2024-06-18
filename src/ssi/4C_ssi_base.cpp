@@ -867,17 +867,17 @@ bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
   structdis->GetCondition("SSIInterfaceContact", ssi_contact_conditions);
   for (auto* s2ikinetics_cond : s2ikinetics_conditons)
   {
-    if ((s2ikinetics_cond->parameters().Get<int>("interface side") == Inpar::S2I::side_slave) and
-        (s2ikinetics_cond->parameters().Get<int>("kinetic model") !=
+    if ((s2ikinetics_cond->parameters().get<int>("interface side") == Inpar::S2I::side_slave) and
+        (s2ikinetics_cond->parameters().get<int>("kinetic model") !=
             Inpar::S2I::kinetics_nointerfaceflux) and
-        (s2ikinetics_cond->parameters().Get<int>("is_pseudo_contact") == 1))
+        (s2ikinetics_cond->parameters().get<int>("is_pseudo_contact") == 1))
     {
       is_s2i_kinetic_with_pseudo_contact = true;
-      const int s2i_kinetics_condition_id = s2ikinetics_cond->parameters().Get<int>("ConditionID");
+      const int s2i_kinetics_condition_id = s2ikinetics_cond->parameters().get<int>("ConditionID");
 
       for (auto* contact_condition : ssi_contact_conditions)
       {
-        if (contact_condition->parameters().Get<int>("ConditionID") == s2i_kinetics_condition_id)
+        if (contact_condition->parameters().get<int>("ConditionID") == s2i_kinetics_condition_id)
         {
           FOUR_C_THROW(
               "Pseudo contact formulation of s2i kinetics conditions does not make sense in "

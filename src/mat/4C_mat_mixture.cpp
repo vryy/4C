@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::Mixture::Mixture(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata), constituents_(0)
 {
-  const int num_constituents = matdata.parameters.Get<int>("NUMCONST");
-  const auto& constituent_matids = matdata.parameters.Get<std::vector<int>>("MATIDSCONST");
+  const int num_constituents = matdata.parameters.get<int>("NUMCONST");
+  const auto& constituent_matids = matdata.parameters.get<std::vector<int>>("MATIDSCONST");
 
   // check, if size of constituents fits to the number of constituents
   if (num_constituents != (int)constituent_matids.size())
@@ -41,7 +41,7 @@ Mat::PAR::Mixture::Mixture(const Core::Mat::PAR::Parameter::Data& matdata)
 
   // Create mixture rule
   mixture_rule_ =
-      MIXTURE::PAR::MixtureRule::factory(matdata.parameters.Get<int>("MATIDMIXTURERULE"));
+      MIXTURE::PAR::MixtureRule::factory(matdata.parameters.get<int>("MATIDMIXTURERULE"));
 }
 
 // Create a material instance from parameters

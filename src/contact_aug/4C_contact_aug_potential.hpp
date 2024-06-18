@@ -90,7 +90,7 @@ namespace CONTACT
        *  \param set_type  Specifies the desired set (active, inactive, all/both, ...)
        *
        *  \author hiermeier */
-      double Get(enum POTENTIAL::Type pot_type, enum POTENTIAL::SetType pot_set) const;
+      double get(enum POTENTIAL::Type pot_type, enum POTENTIAL::SetType pot_set) const;
 
       /** \brief Return a part of the linear potential model
        *

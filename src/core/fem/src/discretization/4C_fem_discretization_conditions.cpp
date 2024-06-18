@@ -344,7 +344,7 @@ bool Core::FE::Discretization::build_surfacesin_condition(
   std::set<int> VolEleIDs;
   if (cond->Type() == Core::Conditions::StructFluidSurfCoupling)
   {
-    if ((cond->parameters().Get<std::string>("field")) == "structure")
+    if ((cond->parameters().get<std::string>("field")) == "structure")
     {
       find_associated_ele_i_ds(cond, VolEleIDs, "StructFluidVolCoupling");
     }
@@ -616,14 +616,14 @@ void Core::FE::Discretization::find_associated_ele_i_ds(
     const std::string& name)
 {
   // determine constraint number
-  int condID = cond->parameters().Get<int>("coupling id");
+  int condID = cond->parameters().get<int>("coupling id");
 
   std::vector<Core::Conditions::Condition*> volconds;
   GetCondition(name, volconds);
 
   for (auto& actvolcond : volconds)
   {
-    if (actvolcond->parameters().Get<int>("coupling id") == condID)
+    if (actvolcond->parameters().get<int>("coupling id") == condID)
     {
       // get ptrs to all node ids that have this condition
       const std::vector<int>* nodeids = actvolcond->GetNodes();

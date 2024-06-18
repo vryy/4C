@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 Mat::Elastic::PAR::CoupSVK::CoupSVK(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata)
 {
-  double c1 = matdata.parameters.Get<double>("YOUNG");
-  double c2 = matdata.parameters.Get<double>("NUE");
+  double c1 = matdata.parameters.get<double>("YOUNG");
+  double c2 = matdata.parameters.get<double>("NUE");
 
   if (c2 <= 0.5 and c2 > -1.0)
   {

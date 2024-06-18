@@ -16,14 +16,14 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::Elastic::PAR::CoupAnisoPow::CoupAnisoPow(const Core::Mat::PAR::Parameter::Data& matdata)
     : ParameterAniso(matdata),
-      k_(matdata.parameters.Get<double>("K")),
-      d1_(matdata.parameters.Get<double>("D1")),
-      d2_(matdata.parameters.Get<double>("D2")),
-      fibernumber_(matdata.parameters.Get<int>("FIBER")),
-      activethres_(matdata.parameters.Get<double>("ACTIVETHRES")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
-      init_(matdata.parameters.Get<int>("INIT")),
-      adapt_angle_(matdata.parameters.Get<bool>("ADAPT_ANGLE"))
+      k_(matdata.parameters.get<double>("K")),
+      d1_(matdata.parameters.get<double>("D1")),
+      d2_(matdata.parameters.get<double>("D2")),
+      fibernumber_(matdata.parameters.get<int>("FIBER")),
+      activethres_(matdata.parameters.get<double>("ACTIVETHRES")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
+      init_(matdata.parameters.get<int>("INIT")),
+      adapt_angle_(matdata.parameters.get<bool>("ADAPT_ANGLE"))
 {
 }
 

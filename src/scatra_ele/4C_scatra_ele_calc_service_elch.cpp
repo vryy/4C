@@ -355,13 +355,13 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKineticsPoint'!");
 
   // access parameters of the condition
-  const int kinetics = cond->parameters().Get<int>("kinetic model");
-  double pot0 = cond->parameters().Get<double>("pot");
-  const int functnum = cond->parameters().Get<int>("funct");
-  const int nume = cond->parameters().Get<int>("e-");
+  const int kinetics = cond->parameters().get<int>("kinetic model");
+  double pot0 = cond->parameters().get<double>("pot");
+  const int functnum = cond->parameters().get<int>("funct");
+  const int nume = cond->parameters().get<int>("e-");
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman
   // condition) but the electrode status is evaluated
-  const int zerocur = cond->parameters().Get<int>("zero_cur");
+  const int zerocur = cond->parameters().get<int>("zero_cur");
   if (nume < 0)
   {
     FOUR_C_THROW(
@@ -371,7 +371,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
 
   // convention for stoichiometric coefficients s_i:
   // Sum_i (s_i  M_i^(z_i)) -> n e- (n needs to be positive)
-  const auto* stoich = &cond->parameters().Get<std::vector<int>>("stoich");
+  const auto* stoich = &cond->parameters().get<std::vector<int>>("stoich");
   if ((unsigned int)my::numscal_ != (*stoich).size())
   {
     FOUR_C_THROW(
@@ -491,7 +491,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_elch_bound
 )
 {
   // get boundary porosity from condition if available, or set equal to volume porosity otherwise
-  double epsilon = cond->parameters().Get<double>("epsilon");
+  double epsilon = cond->parameters().get<double>("epsilon");
   if (epsilon == -1)
     epsilon = scalar;
   else if (epsilon <= 0 or epsilon > 1)
@@ -589,10 +589,10 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_electrode_
 
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neumann
   // condition) but the electrode status is evaluated
-  const int zerocur = cond->parameters().Get<int>("zero_cur");
+  const int zerocur = cond->parameters().get<int>("zero_cur");
 
   // get boundary porosity from condition if available, or set equal to volume porosity otherwise
-  double epsilon = cond->parameters().Get<double>("epsilon");
+  double epsilon = cond->parameters().get<double>("epsilon");
   if (epsilon == -1)
     epsilon = scalar;
   else if (epsilon <= 0 or epsilon > 1)

@@ -41,18 +41,18 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::ThermoPlasticHyperElast::ThermoPlasticHyperElast(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      cte_(matdata.parameters.Get<double>("CTE")),
-      inittemp_(matdata.parameters.Get<double>("INITTEMP")),
-      yield_(matdata.parameters.Get<double>("YIELD")),
-      isohard_(matdata.parameters.Get<double>("ISOHARD")),
-      sathardening_(matdata.parameters.Get<double>("SATHARDENING")),
-      hardexpo_(matdata.parameters.Get<double>("HARDEXPO")),
-      yieldsoft_(matdata.parameters.Get<double>("YIELDSOFT")),
-      hardsoft_(matdata.parameters.Get<double>("HARDSOFT")),
-      abstol_(matdata.parameters.Get<double>("TOL"))
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      cte_(matdata.parameters.get<double>("CTE")),
+      inittemp_(matdata.parameters.get<double>("INITTEMP")),
+      yield_(matdata.parameters.get<double>("YIELD")),
+      isohard_(matdata.parameters.get<double>("ISOHARD")),
+      sathardening_(matdata.parameters.get<double>("SATHARDENING")),
+      hardexpo_(matdata.parameters.get<double>("HARDEXPO")),
+      yieldsoft_(matdata.parameters.get<double>("YIELDSOFT")),
+      hardsoft_(matdata.parameters.get<double>("HARDSOFT")),
+      abstol_(matdata.parameters.get<double>("TOL"))
 {
   if (sathardening_ < yield_)
     FOUR_C_THROW("Saturation hardening must not be less than initial yield stress!");

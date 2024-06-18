@@ -51,7 +51,7 @@ int Discret::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& 
   //};
   // Configuration config = config_none;
 
-  const auto& type = condition.parameters().Get<std::string>("type");
+  const auto& type = condition.parameters().get<std::string>("type");
   if (type == "neum_live")
   {
     ltype = neum_live;
@@ -61,9 +61,9 @@ int Discret::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& 
     FOUR_C_THROW("Unknown type of LineNeumann condition");
 
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
-  const auto* spa_func = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
+  const auto* spa_func = &condition.parameters().get<std::vector<int>>("funct");
 
   /*
   **    TIME CURVE BUSINESS

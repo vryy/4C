@@ -64,7 +64,7 @@ CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointCon
       // Read the reference points
       for (const auto& entry : point_periodic_rve_ref_conditions_)
       {
-        const auto& str_id = entry->parameters().Get<std::string>("referenceNode");
+        const auto& str_id = entry->parameters().get<std::string>("referenceNode");
         const auto* nodeInSet = entry->GetNodes();
 
         if (nodeInSet->size() > 1)
@@ -563,7 +563,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_linear
   int nEq = 0;
   for (const auto& ceTerm : point_linear_coupled_equation_conditions_)
   {
-    nEq = std::max(nEq, (ceTerm->parameters().Get<int>("EQUATION_ID")) - 1);
+    nEq = std::max(nEq, (ceTerm->parameters().get<int>("EQUATION_ID")) - 1);
   }
   Core::IO::cout(Core::IO::verbose)
       << "There are " << nEq + 1 << " linear MPC Equations defined" << Core::IO::endl;
@@ -577,10 +577,10 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_linear
 
   for (const auto& ceTerm : point_linear_coupled_equation_conditions_)
   {
-    auto eq_id = (ceTerm->parameters().Get<int>("EQUATION_ID")) - 1;
+    auto eq_id = (ceTerm->parameters().get<int>("EQUATION_ID")) - 1;
     const auto* node_id = ceTerm->GetNodes();
-    const auto& dofStr = ceTerm->parameters().Get<std::string>("DOF");
-    auto coef = ceTerm->parameters().Get<double>("COEFFICIENT");
+    const auto& dofStr = ceTerm->parameters().get<std::string>("DOF");
+    auto coef = ceTerm->parameters().get<double>("COEFFICIENT");
     auto* node = discret_ptr_->gNode(node_id->data()[0]);
 
 
@@ -793,7 +793,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::
           << Core::IO::endl;
       for (const auto& conditionLine : line_periodic_rve_conditions_)
       {
-        const auto& boundary = conditionLine->parameters().Get<std::string>("EdgeLineId");
+        const auto& boundary = conditionLine->parameters().get<std::string>("EdgeLineId");
 
         // Print the Edge Condition
         Core::IO::cout(Core::IO::verbose) << "EDGE: " << boundary.c_str() << " Node IDs: ";
@@ -820,7 +820,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::
           << Core::IO::endl;
       for (const auto& conditionLine : surface_periodic_rve_conditions_)
       {
-        const auto& boundary = conditionLine->parameters().Get<std::string>("SurfId");
+        const auto& boundary = conditionLine->parameters().get<std::string>("SurfId");
 
         Core::IO::cout(Core::IO::verbose) << "SURF: " << boundary.c_str() << " Node IDs: ";
         for (auto nodeId : *conditionLine->GetNodes())

@@ -59,7 +59,7 @@ Mat::PAR::FluidPoroViscosityLaw* Mat::PAR::FluidPoroViscosityLaw::CreateViscosit
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroViscosityLawConstant::FluidPoroViscosityLawConstant(
     const Core::Mat::PAR::Parameter::Data& matdata)
-    : FluidPoroViscosityLaw(matdata, true), viscosity_(matdata.parameters.Get<double>("VALUE"))
+    : FluidPoroViscosityLaw(matdata, true), viscosity_(matdata.parameters.get<double>("VALUE"))
 {
   return;
 }
@@ -68,9 +68,9 @@ Mat::PAR::FluidPoroViscosityLawConstant::FluidPoroViscosityLawConstant(
 Mat::PAR::FluidPoroViscosityLawCellAdherence::FluidPoroViscosityLawCellAdherence(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : FluidPoroViscosityLaw(matdata, false),
-      visc0_(matdata.parameters.Get<double>("VISC_0")),
-      xi_(matdata.parameters.Get<double>("XI")),
-      psi_(matdata.parameters.Get<double>("PSI"))
+      visc0_(matdata.parameters.get<double>("VISC_0")),
+      xi_(matdata.parameters.get<double>("XI")),
+      psi_(matdata.parameters.get<double>("PSI"))
 
 {
   if (visc0_ <= 0.0) FOUR_C_THROW("VISC_0 cannot be smaller or equal to zero!");

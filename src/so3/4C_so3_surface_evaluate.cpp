@@ -77,7 +77,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
   Configuration config = config_none;
 
   // get type of condition
-  const auto& type = condition.parameters().Get<std::string>("type");
+  const auto& type = condition.parameters().get<std::string>("type");
   if (type == "neum_live")
   {
     ltype = neum_live;
@@ -104,8 +104,8 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
   }
 
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
   const auto* spa_func = condition.parameters().GetIf<std::vector<int>>("funct");
 
   /*

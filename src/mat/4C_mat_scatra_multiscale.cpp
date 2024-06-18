@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::ScatraMultiScale::ScatraMultiScale(const Core::Mat::PAR::Parameter::Data& matdata)
     : ScatraMat(matdata),
       ScatraMicroMacroCoupling(matdata),
-      porosity_(matdata.parameters.Get<double>("POROSITY")),
-      tortuosity_(matdata.parameters.Get<double>("TORTUOSITY"))
+      porosity_(matdata.parameters.get<double>("POROSITY")),
+      tortuosity_(matdata.parameters.get<double>("TORTUOSITY"))
 {
   return;
 }

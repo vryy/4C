@@ -46,7 +46,7 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(
   // get time period length of first condition, this should always be
   // the same!
   // -------------------------------------------------------------------
-  double period = impedancecond[0]->parameters().Get<double>("TIMEPERIOD");
+  double period = impedancecond[0]->parameters().get<double>("TIMEPERIOD");
 
   // -------------------------------------------------------------------
   // now care for the fact that there could be more than one input line
@@ -54,9 +54,9 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(
   // -------------------------------------------------------------------
   for (int i = 0; i < numcondlines; i++)
   {
-    int condid = impedancecond[i]->parameters().Get<int>("ConditionID");
+    int condid = impedancecond[i]->parameters().get<int>("ConditionID");
 
-    double thisperiod = impedancecond[i]->parameters().Get<double>("TIMEPERIOD");
+    double thisperiod = impedancecond[i]->parameters().get<double>("TIMEPERIOD");
     if (thisperiod != period)
       FOUR_C_THROW("all periods of impedance conditions in one problem have to be the same!!!");
 
@@ -186,12 +186,12 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<Core::FE::Disc
     : discret_(actdis),
       myrank_(discret_->Comm().MyPID()),
       theta_(0.5),
-      treetype_(impedancecond->parameters().Get<std::string>("TYPE")),
-      period_(impedancecond->parameters().Get<double>("TIMEPERIOD")),
-      r1_(impedancecond->parameters().Get<double>("R1")),
-      r2_(impedancecond->parameters().Get<double>("R2")),
-      c_(impedancecond->parameters().Get<double>("C")),
-      functnum_(impedancecond->parameters().Get<int>("FUNCT"))
+      treetype_(impedancecond->parameters().get<std::string>("TYPE")),
+      period_(impedancecond->parameters().get<double>("TIMEPERIOD")),
+      r1_(impedancecond->parameters().get<double>("R1")),
+      r2_(impedancecond->parameters().get<double>("R2")),
+      c_(impedancecond->parameters().get<double>("C")),
+      functnum_(impedancecond->parameters().get<int>("FUNCT"))
 {
   if (myrank_ == 0)
   {

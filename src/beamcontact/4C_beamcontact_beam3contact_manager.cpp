@@ -682,10 +682,10 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // sort out solid-to-solid contact pairs, since these are treated in the contact framework
   for (int i = 0; i < (int)beamandsolidcontactconditions.size(); ++i)
   {
-    if ((beamandsolidcontactconditions[i]->parameters().Get<std::string>("Application")) ==
+    if ((beamandsolidcontactconditions[i]->parameters().get<std::string>("Application")) ==
         "Beamtosolidcontact")
       btscontactconditions.push_back(beamandsolidcontactconditions[i]);
-    if ((beamandsolidcontactconditions[i]->parameters().Get<std::string>("Application")) ==
+    if ((beamandsolidcontactconditions[i]->parameters().get<std::string>("Application")) ==
         "Beamtosolidmeshtying")
       btsmeshtyingconditions.push_back(beamandsolidcontactconditions[i]);
   }
@@ -1530,11 +1530,11 @@ void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
 
     for (unsigned int i = 0; i < conds1.size(); ++i)
     {
-      int npotlaw1 = conds1[i]->parameters().Get<int>("potlaw");
+      int npotlaw1 = conds1[i]->parameters().get<int>("potlaw");
 
       for (unsigned int j = 0; j < conds2.size(); ++j)
       {
-        int npotlaw2 = conds2[j]->parameters().Get<int>("potlaw");
+        int npotlaw2 = conds2[j]->parameters().get<int>("potlaw");
 
         // here, we also exclude "self-interaction", i.e. a pair of elements on the same physical
         // beam

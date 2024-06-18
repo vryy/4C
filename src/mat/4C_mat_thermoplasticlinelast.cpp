@@ -51,17 +51,17 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::ThermoPlasticLinElast::ThermoPlasticLinElast(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      thermexpans_(matdata.parameters.Get<double>("THEXPANS")),
-      thetainit_(matdata.parameters.Get<double>("INITTEMP")),
-      yield_(matdata.parameters.Get<double>("YIELD")),
-      isohard_(matdata.parameters.Get<double>("ISOHARD")),
-      kinhard_(matdata.parameters.Get<double>("KINHARD")),
-      sigma_y_((matdata.parameters.Get<std::vector<double>>("SIGMA_Y"))),
-      strainbar_p_ref_((matdata.parameters.Get<std::vector<double>>("EPSBAR_P"))),
-      abstol_(matdata.parameters.Get<double>("TOL"))
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      thermexpans_(matdata.parameters.get<double>("THEXPANS")),
+      thetainit_(matdata.parameters.get<double>("INITTEMP")),
+      yield_(matdata.parameters.get<double>("YIELD")),
+      isohard_(matdata.parameters.get<double>("ISOHARD")),
+      kinhard_(matdata.parameters.get<double>("KINHARD")),
+      sigma_y_((matdata.parameters.get<std::vector<double>>("SIGMA_Y"))),
+      strainbar_p_ref_((matdata.parameters.get<std::vector<double>>("EPSBAR_P"))),
+      abstol_(matdata.parameters.get<double>("TOL"))
 {
 }
 

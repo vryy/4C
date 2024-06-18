@@ -55,7 +55,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
   };
 
   LoadType ltype = neum_none;
-  const std::string& type = condition.parameters().Get<std::string>("type");
+  const std::string& type = condition.parameters().get<std::string>("type");
   if (type == "neum_live")
     ltype = neum_live;
   else if (type == "neum_pseudo_orthopressure")
@@ -66,9 +66,9 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
     FOUR_C_THROW("Unknown type of SurfaceNeumann condition");
 
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
-  const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
+  const auto* funct = &condition.parameters().get<std::vector<int>>("funct");
 
   // check total time
   double time = -1.0;

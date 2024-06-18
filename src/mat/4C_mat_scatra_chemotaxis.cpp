@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::ScatraChemotaxisMat::ScatraChemotaxisMat(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      numscal_(matdata.parameters.Get<int>("NUMSCAL")),
-      pair_(matdata.parameters.Get<std::vector<int>>("PAIR")),
-      chemocoeff_(matdata.parameters.Get<double>("CHEMOCOEFF"))
+      numscal_(matdata.parameters.get<int>("NUMSCAL")),
+      pair_(matdata.parameters.get<std::vector<int>>("PAIR")),
+      chemocoeff_(matdata.parameters.get<double>("CHEMOCOEFF"))
 {
   // Some checks for more safety
   if (numscal_ != (int)pair_.size())

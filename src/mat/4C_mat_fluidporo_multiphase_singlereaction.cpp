@@ -22,13 +22,13 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      numscal_(matdata.parameters.Get<int>("NUMSCAL")),
-      numvolfrac_(matdata.parameters.Get<int>("NUMVOLFRAC")),
-      totalnummultiphasedof_(matdata.parameters.Get<int>("TOTALNUMDOF")),
+      numscal_(matdata.parameters.get<int>("NUMSCAL")),
+      numvolfrac_(matdata.parameters.get<int>("NUMVOLFRAC")),
+      totalnummultiphasedof_(matdata.parameters.get<int>("TOTALNUMDOF")),
       numfluidphases_(totalnummultiphasedof_ - 2 * numvolfrac_),
-      scale_(matdata.parameters.Get<std::vector<int>>("SCALE")),
+      scale_(matdata.parameters.get<std::vector<int>>("SCALE")),
       coupling_(set_coupling_type(matdata)),
-      functID_(matdata.parameters.Get<int>("FUNCTID")),
+      functID_(matdata.parameters.get<int>("FUNCTID")),
       isinit_(false),
       scalarnames_(numscal_),
       pressurenames_(numfluidphases_),
@@ -342,11 +342,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroSingleReaction::create_mate
 Mat::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling
 Mat::PAR::FluidPoroSingleReaction::set_coupling_type(const Core::Mat::PAR::Parameter::Data& matdata)
 {
-  if ((matdata.parameters.Get<std::string>("COUPLING")) == "scalar_by_function")
+  if ((matdata.parameters.get<std::string>("COUPLING")) == "scalar_by_function")
   {
     return porofluid_reac_coup_scalarsbyfunction;
   }
-  else if ((matdata.parameters.Get<std::string>("COUPLING")) == "no_coupling")
+  else if ((matdata.parameters.get<std::string>("COUPLING")) == "no_coupling")
   {
     return porofluid_reac_coup_none;
   }

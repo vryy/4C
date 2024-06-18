@@ -38,7 +38,7 @@ Adapter::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   for (unsigned i = 0; i < temp.size(); ++i)
   {
     Core::Conditions::Condition& cond = *(temp[i]);
-    if ((cond.parameters().Get<std::string>("field")) == "structure")
+    if ((cond.parameters().get<std::string>("field")) == "structure")
     {
       constrcond_.push_back(temp[i]);
     }
@@ -50,7 +50,7 @@ Adapter::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   for (unsigned i = 0; i < temp.size(); ++i)
   {
     Core::Conditions::Condition& cond = *(temp[i]);
-    if ((cond.parameters().Get<std::string>("field")) == "structure") asicond_.push_back(temp[i]);
+    if ((cond.parameters().get<std::string>("field")) == "structure") asicond_.push_back(temp[i]);
   }
   if (asicond_.size() == 0)
     FOUR_C_THROW("No structure-ale coupling constraints found for lung fsi");
@@ -62,7 +62,7 @@ Adapter::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   std::map<int, std::set<int>> AllConstrDofMap;
   for (auto& constrcond : constrcond_)
   {
-    int condID = constrcond->parameters().Get<int>("coupling id");
+    int condID = constrcond->parameters().get<int>("coupling id");
     const std::vector<int>* constrnodeIDs = constrcond->GetNodes();
     std::set<int>& constrdofs = AllConstrDofMap[condID];
     for (int gid : *constrnodeIDs)
@@ -78,7 +78,7 @@ Adapter::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   std::map<int, std::set<int>> AllAsiDofMap;
   for (auto& asicond : asicond_)
   {
-    int asicondID = asicond->parameters().Get<int>("coupling id");
+    int asicondID = asicond->parameters().get<int>("coupling id");
     std::set<int>& asidofs = AllAsiDofMap[asicondID];
     const std::vector<int>* asinodeIDs = asicond->GetNodes();
     for (int gid : *asinodeIDs)
@@ -140,7 +140,7 @@ void Adapter::StructureLung::ListLungVolCons(std::set<int>& LungVolConIDs, int& 
 
   for (auto& cond : constrcond_)
   {
-    int condID = cond->parameters().Get<int>("coupling id");
+    int condID = cond->parameters().get<int>("coupling id");
     if (LungVolConIDs.find(condID) == LungVolConIDs.end())
     {
       if (condID < MinLungVolConID) MinLungVolConID = condID;
@@ -180,7 +180,7 @@ void Adapter::StructureLung::InitializeVolCon(
 
     {
       // Get ConditionID of current condition if defined and write value in parameterlist
-      int condID = cond.parameters().Get<int>("coupling id");
+      int condID = cond.parameters().get<int>("coupling id");
       params.set("ConditionID", condID);
       params.set<Teuchos::RCP<Core::Conditions::Condition>>(
           "condition", Teuchos::rcp(&cond, false));
@@ -284,7 +284,7 @@ void Adapter::StructureLung::EvaluateVolCon(
     Core::Conditions::Condition& cond = *(constrcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond.parameters().Get<int>("coupling id");
+    int condID = cond.parameters().get<int>("coupling id");
     params.set("ConditionID", condID);
 
     // elements might need condition

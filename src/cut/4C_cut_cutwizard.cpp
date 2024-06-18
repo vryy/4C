@@ -707,7 +707,7 @@ void Core::Geo::CutWizard::find_position_dof_sets(bool include_inner)
     comm_.Barrier();
 
     // find number and connection of dofsets at nodes from cut volumes
-    intersection_->CreateNodalDofSet(include_inner, back_mesh_->Get());
+    intersection_->CreateNodalDofSet(include_inner, back_mesh_->get());
 
     if (communicate) cut_parallel->communicate_node_dof_set_numbers(include_inner);
   }
@@ -771,7 +771,7 @@ void Core::Geo::CutWizard::dump_gmsh_num_dof_sets(bool include_inner)
   std::stringstream str;
   str << filename;
 
-  intersection_->dump_gmsh_num_dof_sets(str.str(), include_inner, back_mesh_->Get());
+  intersection_->dump_gmsh_num_dof_sets(str.str(), include_inner, back_mesh_->get());
 }
 
 

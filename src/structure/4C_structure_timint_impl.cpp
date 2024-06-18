@@ -273,7 +273,7 @@ void STR::TimIntImpl::setup()
   // check if for solid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
-    const std::string& name = KSPcond[icond]->parameters().Get<std::string>("discretization");
+    const std::string& name = KSPcond[icond]->parameters().get<std::string>("discretization");
     if (name == "solid")
     {
       numsolid++;
@@ -762,11 +762,11 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
 void STR::TimIntImpl::setup_krylov_space_projection(Core::Conditions::Condition* kspcond)
 {
   // get number of mode flags in dat-file
-  const int nummodes = kspcond->parameters().Get<int>("NUMMODES");
+  const int nummodes = kspcond->parameters().get<int>("NUMMODES");
 
   // get rigid body mode flags - number and order as in ComputeNullspace
   // e.g. for a 3-D solid: [transx transy transz rotx roty rotz]
-  const auto* modeflags = &kspcond->parameters().Get<std::vector<int>>("ONOFF");
+  const auto* modeflags = &kspcond->parameters().get<std::vector<int>>("ONOFF");
 
   // get actual active mode ids given in dat-file
   std::vector<int> activemodeids;
@@ -780,7 +780,7 @@ void STR::TimIntImpl::setup_krylov_space_projection(Core::Conditions::Condition*
 
   // get from dat-file definition how weights are to be computed
   const std::string* weighttype =
-      &kspcond->parameters().Get<std::string>("weight vector definition");
+      &kspcond->parameters().get<std::string>("weight vector definition");
 
   // since we only use total Lagrange, no update necessary.
   updateprojection_ = false;

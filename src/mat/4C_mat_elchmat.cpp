@@ -21,11 +21,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::ElchMat::ElchMat(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      numdof_((matdata.parameters.Get<int>("NUMDOF"))),
-      numscal_((matdata.parameters.Get<int>("NUMSCAL"))),
-      numphase_(matdata.parameters.Get<int>("NUMPHASE")),
-      phaseids_(matdata.parameters.Get<std::vector<int>>("PHASEIDS")),
-      local_(matdata.parameters.Get<bool>("LOCAL"))
+      numdof_((matdata.parameters.get<int>("NUMDOF"))),
+      numscal_((matdata.parameters.get<int>("NUMSCAL"))),
+      numphase_(matdata.parameters.get<int>("NUMPHASE")),
+      phaseids_(matdata.parameters.get<std::vector<int>>("PHASEIDS")),
+      local_(matdata.parameters.get<bool>("LOCAL"))
 {
   if (numphase_ != (int)phaseids_.size())
     FOUR_C_THROW(

@@ -34,13 +34,13 @@ namespace
   {
     if (activation_type == Inpar::Mat::ActivationType::function_of_space_time)
     {
-      auto actFunctId = matdata.parameters.Get<int>("FUNCTID");
+      auto actFunctId = matdata.parameters.get<int>("FUNCTID");
       if (actFunctId <= 0) FOUR_C_THROW("Function id must be positive");
       return actFunctId;
     }
     else if (activation_type == Inpar::Mat::ActivationType::map)
     {
-      return matdata.parameters.Get<const ActivationMapType>("MAPFILE");
+      return matdata.parameters.get<const ActivationMapType>("MAPFILE");
     }
     else
       return std::monostate{};
@@ -98,18 +98,18 @@ namespace
 
 Mat::PAR::MuscleCombo::MuscleCombo(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      alpha_(matdata.parameters.Get<double>("ALPHA")),
-      beta_(matdata.parameters.Get<double>("BETA")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
-      kappa_(matdata.parameters.Get<double>("KAPPA")),
-      omega0_(matdata.parameters.Get<double>("OMEGA0")),
-      Popt_(matdata.parameters.Get<double>("POPT")),
-      lambdaMin_(matdata.parameters.Get<double>("LAMBDAMIN")),
-      lambdaOpt_(matdata.parameters.Get<double>("LAMBDAOPT")),
+      alpha_(matdata.parameters.get<double>("ALPHA")),
+      beta_(matdata.parameters.get<double>("BETA")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
+      kappa_(matdata.parameters.get<double>("KAPPA")),
+      omega0_(matdata.parameters.get<double>("OMEGA0")),
+      Popt_(matdata.parameters.get<double>("POPT")),
+      lambdaMin_(matdata.parameters.get<double>("LAMBDAMIN")),
+      lambdaOpt_(matdata.parameters.get<double>("LAMBDAOPT")),
       activationType_(
-          static_cast<Inpar::Mat::ActivationType>(matdata.parameters.Get<int>("ACTEVALTYPE"))),
+          static_cast<Inpar::Mat::ActivationType>(matdata.parameters.get<int>("ACTEVALTYPE"))),
       activationParams_(GetActivationParams(matdata, activationType_)),
-      density_(matdata.parameters.Get<double>("DENS"))
+      density_(matdata.parameters.get<double>("DENS"))
 {
   // error handling for parameter ranges
   // passive material parameters

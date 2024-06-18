@@ -170,7 +170,7 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
 
     for (unsigned i = 0; i < conds.size(); i++)
     {
-      const std::string& side = conds[i]->parameters().Get<std::string>("Side");
+      const std::string& side = conds[i]->parameters().get<std::string>("Side");
 
       if (side == "Master") conds_master.push_back(conds[i]);
 
@@ -623,7 +623,7 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
   {
     // add one, since read in of COUPLING parameter in DESIGN SURF SPRING DASHPOT CONDITIONS
     // subtracts one
-    if (coup_conds[i]->parameters().Get<int>("coupling id") == (coupling_id + 1))
+    if (coup_conds[i]->parameters().get<int>("coupling id") == (coupling_id + 1))
       conds_master.push_back(coup_conds[i]);
   }
   if (!conds_master.size()) FOUR_C_THROW("Coupling ID not found.");

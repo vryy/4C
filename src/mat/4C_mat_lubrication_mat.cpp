@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::LubricationMat::LubricationMat(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      density_(matdata.parameters.Get<double>("DENSITY")),
-      lubricationlawID_(matdata.parameters.Get<int>("LUBRICATIONLAWID")),
+      density_(matdata.parameters.get<double>("DENSITY")),
+      lubricationlawID_(matdata.parameters.get<int>("LUBRICATIONLAWID")),
       lubricationlaw_(nullptr)
 {
   // retrieve problem instance to read from

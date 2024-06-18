@@ -24,10 +24,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*/
 Mat::PAR::Growth::Growth(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      idmatelastic_(matdata.parameters.Get<int>("IDMATELASTIC")),
-      idgrowthlaw_(matdata.parameters.Get<int>("GROWTHLAW")),
-      starttime_(matdata.parameters.Get<double>("STARTTIME")),
-      endtime_(matdata.parameters.Get<double>("ENDTIME"))
+      idmatelastic_(matdata.parameters.get<int>("IDMATELASTIC")),
+      idgrowthlaw_(matdata.parameters.get<int>("GROWTHLAW")),
+      starttime_(matdata.parameters.get<double>("STARTTIME")),
+      endtime_(matdata.parameters.get<double>("ENDTIME"))
 {
   // retrieve problem instance to read from
   const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();

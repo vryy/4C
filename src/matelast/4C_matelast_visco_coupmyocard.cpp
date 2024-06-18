@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 Mat::Elastic::PAR::CoupMyocard::CoupMyocard(const Core::Mat::PAR::Parameter::Data& matdata)
-    : Parameter(matdata), n_(matdata.parameters.Get<double>("N"))
+    : Parameter(matdata), n_(matdata.parameters.get<double>("N"))
 {
 }
 

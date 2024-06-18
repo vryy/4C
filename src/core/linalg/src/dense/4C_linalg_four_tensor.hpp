@@ -45,7 +45,7 @@ namespace Core::LinAlg
      *
      * @return 4-tensor
      */
-    inline std::array<std::array<std::array<std::array<double, dim>, dim>, dim>, dim>& Get()
+    inline std::array<std::array<std::array<std::array<double, dim>, dim>, dim>, dim>& get()
     {
       return four_tensor_;
     }
@@ -96,7 +96,7 @@ namespace Core::LinAlg
     if (i1 >= dim or i2 >= dim or i3 >= dim or i4 >= dim)
       FOUR_C_THROW("Indices %i,%i,%i,%i out of range in FourTensor<%i>.", i1, i2, i3, i4, dim);
 #endif
-    return Get()[i1][i2][i3][i4];
+    return get()[i1][i2][i3][i4];
   }
 
   template <int dim>

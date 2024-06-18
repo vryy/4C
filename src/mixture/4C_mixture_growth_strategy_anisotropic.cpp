@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 MIXTURE::PAR::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : MIXTURE::PAR::MixtureGrowthStrategy(matdata),
-      init_mode_(matdata.parameters.Get<int>("INIT")),
-      fiber_id_(matdata.parameters.Get<int>("FIBER_ID"))
+      init_mode_(matdata.parameters.get<int>("INIT")),
+      fiber_id_(matdata.parameters.get<int>("FIBER_ID"))
 {
 }
 

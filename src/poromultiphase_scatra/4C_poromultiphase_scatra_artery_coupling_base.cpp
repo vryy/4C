@@ -88,9 +88,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::recompute_coupled_d
     std::vector<Core::Conditions::Condition*> coupcond, unsigned int couplingnode)
 {
   coupleddofs_art_ =
-      (coupcond[couplingnode]->parameters().Get<std::vector<int>>("COUPLEDDOF_REDUCED"));
+      (coupcond[couplingnode]->parameters().get<std::vector<int>>("COUPLEDDOF_REDUCED"));
   coupleddofs_cont_ =
-      (coupcond[couplingnode]->parameters().Get<std::vector<int>>("COUPLEDDOF_PORO"));
+      (coupcond[couplingnode]->parameters().get<std::vector<int>>("COUPLEDDOF_PORO"));
 
   // decrease the value of all elements by 1, because we start counting from 0 here and in the input
   // file we start from 1

@@ -19,16 +19,16 @@ FOUR_C_NAMESPACE_OPEN
 Mat::Elastic::PAR::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : ParameterAniso(matdata),
-      A4_(matdata.parameters.Get<double>("A4")),
-      B4_(matdata.parameters.Get<double>("B4")),
-      A6_(matdata.parameters.Get<double>("A6")),
-      B6_(matdata.parameters.Get<double>("B6")),
-      A8_(matdata.parameters.Get<double>("A8")),
-      B8_(matdata.parameters.Get<double>("B8")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
-      init_(matdata.parameters.Get<int>("INIT")),
-      fib_comp_(matdata.parameters.Get<bool>("FIB_COMP")),
-      adapt_angle_(matdata.parameters.Get<bool>("ADAPT_ANGLE"))
+      A4_(matdata.parameters.get<double>("A4")),
+      B4_(matdata.parameters.get<double>("B4")),
+      A6_(matdata.parameters.get<double>("A6")),
+      B6_(matdata.parameters.get<double>("B6")),
+      A8_(matdata.parameters.get<double>("A8")),
+      B8_(matdata.parameters.get<double>("B8")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
+      init_(matdata.parameters.get<int>("INIT")),
+      fib_comp_(matdata.parameters.get<bool>("FIB_COMP")),
+      adapt_angle_(matdata.parameters.get<bool>("ADAPT_ANGLE"))
 {
 }
 

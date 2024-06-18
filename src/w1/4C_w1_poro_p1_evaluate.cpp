@@ -908,9 +908,9 @@ int Discret::ELEMENTS::Wall1PoroP1<distype>::evaluate_neumann(Teuchos::Parameter
 
 
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
-  const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
+  const auto* funct = &condition.parameters().get<std::vector<int>>("funct");
 
 
   Core::LinAlg::Matrix<Base::numdim_, Base::numnod_> N_XYZ;

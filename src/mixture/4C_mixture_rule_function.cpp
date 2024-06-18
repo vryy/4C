@@ -52,8 +52,8 @@ namespace
 MIXTURE::PAR::FunctionMixtureRule::FunctionMixtureRule(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureRule(matdata),
-      initial_reference_density_(matdata.parameters.Get<double>("DENS")),
-      mass_fractions_funct_ids_(matdata.parameters.Get<std::vector<int>>("MASSFRACFUNCT")){};
+      initial_reference_density_(matdata.parameters.get<double>("DENS")),
+      mass_fractions_funct_ids_(matdata.parameters.get<std::vector<int>>("MASSFRACFUNCT")){};
 
 std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::FunctionMixtureRule::create_rule()
 {

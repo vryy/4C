@@ -28,17 +28,17 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::PAR::PlasticDruckerPrager::PlasticDruckerPrager(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      isohard_(matdata.parameters.Get<double>("ISOHARD")),
-      abstol_(matdata.parameters.Get<double>("TOL")),
-      cohesion_(matdata.parameters.Get<double>("C")),
-      eta_(matdata.parameters.Get<double>("ETA")),
-      xi_(matdata.parameters.Get<double>("XI")),
-      etabar_(matdata.parameters.Get<double>("ETABAR")),
-      tang_(matdata.parameters.Get<std::string>("TANG")),
-      itermax_(matdata.parameters.Get<int>("MAXITER"))
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      isohard_(matdata.parameters.get<double>("ISOHARD")),
+      abstol_(matdata.parameters.get<double>("TOL")),
+      cohesion_(matdata.parameters.get<double>("C")),
+      eta_(matdata.parameters.get<double>("ETA")),
+      xi_(matdata.parameters.get<double>("XI")),
+      etabar_(matdata.parameters.get<double>("ETABAR")),
+      tang_(matdata.parameters.get<std::string>("TANG")),
+      itermax_(matdata.parameters.get<int>("MAXITER"))
 {
 }
 

@@ -36,9 +36,9 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
     // control the constraint by absolute or relative values
     for (auto* conditer : constrcond_)
     {
-      const int condID = conditer->parameters().Get<int>("ConditionID");
-      penalties_[condID] = conditer->parameters().Get<double>("penalty");
-      const std::string type = conditer->parameters().Get<std::string>("control");
+      const int condID = conditer->parameters().get<int>("ConditionID");
+      penalties_[condID] = conditer->parameters().get<double>("penalty");
+      const std::string type = conditer->parameters().get<std::string>("control");
       if (type == "abs")
         absconstraint_[condID] = true;
       else
@@ -87,7 +87,7 @@ void CONSTRAINTS::MPConstraint3Penalty::Initialize(const double& time)
   for (auto* cond : constrcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
 
     // if current time (at) is larger than activation time of the condition, activate it
     if ((inittimes_.find(condID)->second < time) && (!activecons_.find(condID)->second))
@@ -118,7 +118,7 @@ void CONSTRAINTS::MPConstraint3Penalty::Initialize(Teuchos::ParameterList& param
 
   for (auto* cond : constrcond_)
   {
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
     // control absolute values
     switch (Type())
     {
@@ -233,14 +233,14 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
       case mpcnodeonplane3d:
       {
         // take three nodes defining plane as specified by user and put them into a set
-        const auto& defnvp = (*conditer)->parameters().Get<std::vector<int>>("planeNodes");
+        const auto& defnvp = (*conditer)->parameters().get<std::vector<int>>("planeNodes");
         defnv = defnvp;
       }
       break;
       case mpcnormalcomp3d:
       {
         // take master node
-        const int defn = (*conditer)->parameters().Get<int>("masterNode");
+        const int defn = (*conditer)->parameters().get<int>("masterNode");
         defnv.push_back(defn);
       }
       break;
@@ -296,7 +296,7 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
         newdis->add_element(constraintele);
       }
       // save the connection between element and condition
-      eletocond_id_[nodeiter + startID] = (*conditer)->parameters().Get<int>("ConditionID");
+      eletocond_id_[nodeiter + startID] = (*conditer)->parameters().get<int>("ConditionID");
       eletocondvecindex_[nodeiter + startID] = index;
     }
     // adjust starting ID for next condition, in this case nodeiter=ngid.size(), hence the counter
@@ -323,7 +323,7 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
     constraintnodecolvec.clear();
     newdis->Redistribute(*constraintnoderowmap, *constraintnodecolmap);
     // put new discretization into the map
-    newdiscmap[(*conditer)->parameters().Get<int>("ConditionID")] = newdis;
+    newdiscmap[(*conditer)->parameters().get<int>("ConditionID")] = newdis;
     // increase counter
     index++;
   }
@@ -464,7 +464,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<Core::FE::Di
 
     if (absconstraint_.find(condID)->second && init)
     {
-      elevector3[0] = cond->parameters().Get<double>("amplitude");
+      elevector3[0] = cond->parameters().get<double>("amplitude");
     }
     else
     {

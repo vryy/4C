@@ -277,14 +277,14 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
           specialtreatment = true;
 
           // check total number of dofs and determine which dofs are to be coupled
-          if (couplingconditions[relevantcondid]->parameters().Get<int>("numdof") !=
+          if (couplingconditions[relevantcondid]->parameters().get<int>("numdof") !=
               numdfrownodes[i])
             FOUR_C_THROW(
                 "ERROR: Number of DoFs in coupling condition (%i) does not match node (%i)",
-                couplingconditions[relevantcondid]->parameters().Get<int>("numdof"),
+                couplingconditions[relevantcondid]->parameters().get<int>("numdof"),
                 numdfrownodes[i]);
           const std::vector<int>& onoffcond =
-              couplingconditions[relevantcondid]->parameters().Get<std::vector<int>>("onoff");
+              couplingconditions[relevantcondid]->parameters().get<std::vector<int>>("onoff");
 
           // get master node of this condition
           int mgid = (*nodeids)[0];

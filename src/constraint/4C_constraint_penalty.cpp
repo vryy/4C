@@ -32,7 +32,7 @@ CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
     {
       const double* mypenalty = i->parameters().GetIf<double>("penalty");
       const double* myrho = i->parameters().GetIf<double>("rho");
-      int condID = i->parameters().Get<int>("ConditionID");
+      int condID = i->parameters().get<int>("ConditionID");
       if (mypenalty and myrho)
       {
         penalties_.insert(std::pair<int, double>(condID, *mypenalty));
@@ -105,7 +105,7 @@ void CONSTRAINTS::ConstraintPenalty::Initialize(const double& time)
   for (auto* cond : constrcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
 
     // if current time (at) is larger than activation time of the condition, activate it
     if ((inittimes_.find(condID)->second <= time) && (activecons_.find(condID)->second == false))
@@ -195,7 +195,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
     double scStiff = params.get("scaleStiffEntries", 1.0);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
     params.set("ConditionID", condID);
 
     // is conditions supposed to be active?
@@ -317,7 +317,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_error(
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
 
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
     params.set("ConditionID", condID);
 
     // if current time is larger than initialization time of the condition, start computing

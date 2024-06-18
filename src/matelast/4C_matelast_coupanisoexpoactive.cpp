@@ -18,17 +18,17 @@ FOUR_C_NAMESPACE_OPEN
 Mat::Elastic::PAR::CoupAnisoExpoActive::CoupAnisoExpoActive(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : ParameterAniso(matdata),
-      k1_(matdata.parameters.Get<double>("K1")),
-      k2_(matdata.parameters.Get<double>("K2")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
-      k1comp_(matdata.parameters.Get<double>("K1COMP")),
-      k2comp_(matdata.parameters.Get<double>("K2COMP")),
-      init_(matdata.parameters.Get<int>("INIT")),
-      adapt_angle_(matdata.parameters.Get<bool>("ADAPT_ANGLE")),
-      s_(matdata.parameters.Get<double>("S")),
-      lambdamax_(matdata.parameters.Get<double>("LAMBDAMAX")),
-      lambda0_(matdata.parameters.Get<double>("LAMBDA0")),
-      dens_(matdata.parameters.Get<double>("DENS"))
+      k1_(matdata.parameters.get<double>("K1")),
+      k2_(matdata.parameters.get<double>("K2")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
+      k1comp_(matdata.parameters.get<double>("K1COMP")),
+      k2comp_(matdata.parameters.get<double>("K2COMP")),
+      init_(matdata.parameters.get<int>("INIT")),
+      adapt_angle_(matdata.parameters.get<bool>("ADAPT_ANGLE")),
+      s_(matdata.parameters.get<double>("S")),
+      lambdamax_(matdata.parameters.get<double>("LAMBDAMAX")),
+      lambda0_(matdata.parameters.get<double>("LAMBDA0")),
+      dens_(matdata.parameters.get<double>("DENS"))
 {
 }
 

@@ -72,12 +72,12 @@ bool CONTACT::INTEGRATOR::find_feasible_master_elements(Mortar::Element& sele,
 #ifdef DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
       CONTACT::Aug::ProjectorBase* proj_ptr = nullptr;
       if (sele.Id() == -1 or sele.Id() == -1)
-        proj_ptr = CONTACT::Aug::ProjectorBase::Get(probdim, slavetype, mastertype, true);
+        proj_ptr = CONTACT::Aug::ProjectorBase::get(probdim, slavetype, mastertype, true);
       else
-        proj_ptr = CONTACT::Aug::ProjectorBase::Get(probdim, slavetype, mastertype);
+        proj_ptr = CONTACT::Aug::ProjectorBase::get(probdim, slavetype, mastertype);
 #else
       CONTACT::Aug::ProjectorBase* proj_ptr =
-          CONTACT::Aug::ProjectorBase::Get(probdim, slavetype, mastertype);
+          CONTACT::Aug::ProjectorBase::get(probdim, slavetype, mastertype);
 #endif
 
       CONTACT::Aug::ProjectorBase& proj = *proj_ptr;

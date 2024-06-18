@@ -29,7 +29,7 @@ MIXTURE::PAR::ConstantPrestressStrategy::ConstantPrestressStrategy(
     : PrestressStrategy(matdata), prestretch_()
 {
   std::copy_n(
-      matdata.parameters.Get<std::vector<double>>("PRESTRETCH").begin(), 9, prestretch_.begin());
+      matdata.parameters.get<std::vector<double>>("PRESTRETCH").begin(), 9, prestretch_.begin());
 }
 
 std::unique_ptr<MIXTURE::PrestressStrategy>

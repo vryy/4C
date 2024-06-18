@@ -25,8 +25,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::MatListReactions::MatListReactions(const Core::Mat::PAR::Parameter::Data& matdata)
     : MatList(matdata),
-      numreac_((matdata.parameters.Get<int>("NUMREAC"))),
-      reacids_((matdata.parameters.Get<std::vector<int>>("REACIDS")))
+      numreac_((matdata.parameters.get<int>("NUMREAC"))),
+      reacids_((matdata.parameters.get<std::vector<int>>("REACIDS")))
 {
   // check if sizes fit
   if (numreac_ != (int)reacids_.size())

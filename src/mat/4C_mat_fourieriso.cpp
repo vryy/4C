@@ -26,8 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::FourierIso::FourierIso(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
       // be careful: capa_ := rho * C_V, e.g contains the density
-      capa_(matdata.parameters.Get<double>("CAPA")),
-      conduct_(matdata.parameters.Get<double>("CONDUCT"))
+      capa_(matdata.parameters.get<double>("CAPA")),
+      conduct_(matdata.parameters.get<double>("CONDUCT"))
 {
 }
 

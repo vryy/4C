@@ -21,18 +21,18 @@ FOUR_C_NAMESPACE_OPEN
 Mat::Elastic::PAR::AnisoActiveStressEvolution::AnisoActiveStressEvolution(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : ParameterAniso(matdata),
-      sigma_(matdata.parameters.Get<double>("SIGMA")),
-      tauc0_(matdata.parameters.Get<double>("TAUC0")),
-      maxactiv_(matdata.parameters.Get<double>("MAX_ACTIVATION")),
-      minactiv_(matdata.parameters.Get<double>("MIN_ACTIVATION")),
-      activationthreshold_(matdata.parameters.Get<double>("ACTIVATION_THRES")),
-      sourceactiv_(matdata.parameters.Get<int>("SOURCE_ACTIVATION")),
-      strain_dep_(matdata.parameters.Get<bool>("STRAIN_DEPENDENCY")),
-      lambda_lower_(matdata.parameters.Get<double>("LAMBDA_LOWER")),
-      lambda_upper_(matdata.parameters.Get<double>("LAMBDA_UPPER")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
-      init_(matdata.parameters.Get<int>("INIT")),
-      adapt_angle_(matdata.parameters.Get<bool>("ADAPT_ANGLE"))
+      sigma_(matdata.parameters.get<double>("SIGMA")),
+      tauc0_(matdata.parameters.get<double>("TAUC0")),
+      maxactiv_(matdata.parameters.get<double>("MAX_ACTIVATION")),
+      minactiv_(matdata.parameters.get<double>("MIN_ACTIVATION")),
+      activationthreshold_(matdata.parameters.get<double>("ACTIVATION_THRES")),
+      sourceactiv_(matdata.parameters.get<int>("SOURCE_ACTIVATION")),
+      strain_dep_(matdata.parameters.get<bool>("STRAIN_DEPENDENCY")),
+      lambda_lower_(matdata.parameters.get<double>("LAMBDA_LOWER")),
+      lambda_upper_(matdata.parameters.get<double>("LAMBDA_UPPER")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
+      init_(matdata.parameters.get<int>("INIT")),
+      adapt_angle_(matdata.parameters.get<bool>("ADAPT_ANGLE"))
 {
 }
 

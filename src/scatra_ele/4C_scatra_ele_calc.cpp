@@ -857,11 +857,11 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::body_force(
   if (myneumcond.size() == 1)
   {
     // (SPATIAL) FUNCTION BUSINESS
-    const auto* funct = &myneumcond[0]->parameters().Get<std::vector<int>>("funct");
+    const auto* funct = &myneumcond[0]->parameters().get<std::vector<int>>("funct");
 
     // get values and switches from the condition
-    const auto* onoff = &myneumcond[0]->parameters().Get<std::vector<int>>("onoff");
-    const auto* val = &myneumcond[0]->parameters().Get<std::vector<double>>("val");
+    const auto* onoff = &myneumcond[0]->parameters().get<std::vector<int>>("onoff");
+    const auto* val = &myneumcond[0]->parameters().get<std::vector<double>>("val");
 
     // set this condition to the bodyforce array
     for (int idof = 0; idof < numdofpernode_; idof++)

@@ -27,8 +27,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::MatListChemotaxis::MatListChemotaxis(const Core::Mat::PAR::Parameter::Data& matdata)
     : MatList(matdata),
-      numpair_((matdata.parameters.Get<int>("NUMPAIR"))),
-      pairids_((matdata.parameters.Get<std::vector<int>>("PAIRIDS")))
+      numpair_((matdata.parameters.get<int>("NUMPAIR"))),
+      pairids_((matdata.parameters.get<std::vector<int>>("PAIRIDS")))
 {
   // check if sizes fit
   if (numpair_ != (int)pairids_.size())

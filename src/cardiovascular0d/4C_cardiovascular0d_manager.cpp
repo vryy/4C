@@ -587,7 +587,7 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
   // vector, at the respective coupling_id
   for (unsigned int i = 0; i < numcoupcond; ++i)
   {
-    int id_strcoupcond = cardvasc0dstructcoupcond[i]->parameters().Get<int>("coupling_id");
+    int id_strcoupcond = cardvasc0dstructcoupcond[i]->parameters().get<int>("coupling_id");
 
     Core::Conditions::Condition* coupcond = cardvasc0dstructcoupcond[i];
     std::vector<double> newval(6, 0.0);
@@ -603,14 +603,14 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
       {
         Core::Conditions::Condition& cond =
             *(cardvasc0d_syspulcirculation_->get_cardiovascular0_d_condition()[j]);
-        int id_cardvasc0d = cond.parameters().Get<int>("id");
+        int id_cardvasc0d = cond.parameters().get<int>("id");
 
         if (id_strcoupcond == id_cardvasc0d)
         {
           const std::string& conditiontype =
               cardvasc0d_syspulcirculation_->get_cardiovascular0_d_condition()[j]
                   ->parameters()
-                  .Get<std::string>("type");
+                  .get<std::string>("type");
           if (conditiontype == "ventricle_left") newval[0] = -(*actpres)[3];
           if (conditiontype == "ventricle_right") newval[0] = -(*actpres)[11];
           if (conditiontype == "atrium_left") newval[0] = -(*actpres)[0];
@@ -628,14 +628,14 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
       {
         Core::Conditions::Condition& cond =
             *(cardvascrespir0d_syspulperiphcirculation_->get_cardiovascular0_d_condition()[j]);
-        int id_cardvasc0d = cond.parameters().Get<int>("id");
+        int id_cardvasc0d = cond.parameters().get<int>("id");
 
         if (id_strcoupcond == id_cardvasc0d)
         {
           const std::string conditiontype =
               cardvascrespir0d_syspulperiphcirculation_->get_cardiovascular0_d_condition()[j]
                   ->parameters()
-                  .Get<std::string>("type");
+                  .get<std::string>("type");
           if (conditiontype == "ventricle_left") newval[0] = -(*actpres)[3];
           if (conditiontype == "ventricle_right") newval[0] = -(*actpres)[27];
           if (conditiontype == "atrium_left") newval[0] = -(*actpres)[0];

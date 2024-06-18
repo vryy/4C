@@ -36,9 +36,9 @@ namespace Core::Communication
 MIXTURE::PAR::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureRule(matdata),
-      growth_strategy_matid_(matdata.parameters.Get<int>("GROWTH_STRATEGY")),
-      initial_reference_density_(matdata.parameters.Get<double>("DENS")),
-      mass_fractions_(matdata.parameters.Get<std::vector<double>>("MASSFRAC"))
+      growth_strategy_matid_(matdata.parameters.get<int>("GROWTH_STRATEGY")),
+      initial_reference_density_(matdata.parameters.get<double>("DENS")),
+      mass_fractions_(matdata.parameters.get<std::vector<double>>("MASSFRAC"))
 {
 }
 

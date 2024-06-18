@@ -183,7 +183,7 @@ Mat::Elastic::PAR::CoupAnisoExpoShear::CoupAnisoExpoShear(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Core::Mat::PAR::Parameter(matdata), Mat::Elastic::PAR::CoupAnisoExpoBase(matdata)
 {
-  std::copy_n(matdata.parameters.Get<std::vector<int>>("FIBER_IDS").begin(), 2, fiber_id_.begin());
+  std::copy_n(matdata.parameters.get<std::vector<int>>("FIBER_IDS").begin(), 2, fiber_id_.begin());
 
   for (int& i : fiber_id_) i -= 1;
 }

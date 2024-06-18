@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::StructPoroReactionECM::StructPoroReactionECM(
     const Core::Mat::PAR::Parameter::Data& matdata)
-    : StructPoroReaction(matdata), densCollagen_(matdata.parameters.Get<double>("DENSCOLLAGEN"))
+    : StructPoroReaction(matdata), densCollagen_(matdata.parameters.get<double>("DENSCOLLAGEN"))
 {
 }
 

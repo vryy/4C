@@ -28,10 +28,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::ElastHyper::ElastHyper(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      nummat_(matdata.parameters.Get<int>("NUMMAT")),
-      matids_(matdata.parameters.Get<std::vector<int>>("MATIDS")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      polyconvex_(matdata.parameters.Get<int>("POLYCONVEX"))
+      nummat_(matdata.parameters.get<int>("NUMMAT")),
+      matids_(matdata.parameters.get<std::vector<int>>("MATIDS")),
+      density_(matdata.parameters.get<double>("DENS")),
+      polyconvex_(matdata.parameters.get<int>("POLYCONVEX"))
 
 {
   // check if sizes fit

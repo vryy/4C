@@ -315,9 +315,9 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
 void FLD::TransferTurbulentInflowCondition::get_data(
     int& id, int& direction, ToggleType& type, const Core::Conditions::Condition* cond)
 {
-  id = cond->parameters().Get<int>("id");
+  id = cond->parameters().get<int>("id");
 
-  const auto mydirection = cond->parameters().Get<std::string>("transfer direction");
+  const auto mydirection = cond->parameters().get<std::string>("transfer direction");
   if (mydirection == "x")
   {
     direction = 0;
@@ -335,7 +335,7 @@ void FLD::TransferTurbulentInflowCondition::get_data(
     FOUR_C_THROW("unknown direction");
   }
 
-  const auto mytoggle = cond->parameters().Get<std::string>("toggle");
+  const auto mytoggle = cond->parameters().get<std::string>("toggle");
   if (mytoggle == "master")
   {
     type = master;

@@ -25,13 +25,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::ScatraReactionMat::ScatraReactionMat(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      numscal_(matdata.parameters.Get<int>("NUMSCAL")),
-      stoich_(matdata.parameters.Get<std::vector<int>>("STOICH")),
-      reaccoeff_(matdata.parameters.Get<double>("REACCOEFF")),
-      distrfunctreaccoeffid_(matdata.parameters.Get<int>("DISTRFUNCT")),
+      numscal_(matdata.parameters.get<int>("NUMSCAL")),
+      stoich_(matdata.parameters.get<std::vector<int>>("STOICH")),
+      reaccoeff_(matdata.parameters.get<double>("REACCOEFF")),
+      distrfunctreaccoeffid_(matdata.parameters.get<int>("DISTRFUNCT")),
       coupling_(set_coupling_type(matdata)),
-      couprole_(matdata.parameters.Get<std::vector<double>>("ROLE")),
-      reacstart_(matdata.parameters.Get<std::vector<double>>("REACSTART")),
+      couprole_(matdata.parameters.get<std::vector<double>>("ROLE")),
+      reacstart_(matdata.parameters.get<std::vector<double>>("REACSTART")),
       isdistrfunctreaccoeff_(distrfunctreaccoeffid_ != 0),
       isreacstart_(false),
       isinit_(false)
@@ -41,7 +41,7 @@ Mat::PAR::ScatraReactionMat::ScatraReactionMat(const Core::Mat::PAR::Parameter::
     FOUR_C_THROW(
         "The coupling '%s' is not a valid reaction coupling. Valid couplings are "
         "'simple_multiplicative', 'constant' and 'michaelis_menten'.",
-        (matdata.parameters.Get<std::string>("COUPLING")).c_str());
+        (matdata.parameters.get<std::string>("COUPLING")).c_str());
 
   if (numscal_ != (int)stoich_.size())
     FOUR_C_THROW("number of scalars %d does not fit to size of the STOICH vector %d", numscal_,
@@ -214,27 +214,27 @@ Mat::ScatraReactionMatType Mat::ScatraReactionMatType::instance_;
 Mat::PAR::ReactionCoupling Mat::PAR::ScatraReactionMat::set_coupling_type(
     const Core::Mat::PAR::Parameter::Data& matdata)
 {
-  if ((matdata.parameters.Get<std::string>("COUPLING")) == "simple_multiplicative")
+  if ((matdata.parameters.get<std::string>("COUPLING")) == "simple_multiplicative")
   {
     return reac_coup_simple_multiplicative;
   }
-  else if ((matdata.parameters.Get<std::string>("COUPLING")) == "power_multiplicative")
+  else if ((matdata.parameters.get<std::string>("COUPLING")) == "power_multiplicative")
   {
     return reac_coup_power_multiplicative;
   }
-  else if ((matdata.parameters.Get<std::string>("COUPLING")) == "constant")
+  else if ((matdata.parameters.get<std::string>("COUPLING")) == "constant")
   {
     return reac_coup_constant;
   }
-  else if ((matdata.parameters.Get<std::string>("COUPLING")) == "michaelis_menten")
+  else if ((matdata.parameters.get<std::string>("COUPLING")) == "michaelis_menten")
   {
     return reac_coup_michaelis_menten;
   }
-  else if ((matdata.parameters.Get<std::string>("COUPLING")) == "by_function")
+  else if ((matdata.parameters.get<std::string>("COUPLING")) == "by_function")
   {
     return reac_coup_byfunction;
   }
-  else if ((matdata.parameters.Get<std::string>("COUPLING")) == "no_coupling")
+  else if ((matdata.parameters.get<std::string>("COUPLING")) == "no_coupling")
   {
     return reac_coup_none;
   }

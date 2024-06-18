@@ -34,10 +34,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::Maxwell0dAcinus::Maxwell0dAcinus(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      stiffness1_(matdata.parameters.Get<double>("Stiffness1")),
-      stiffness2_(matdata.parameters.Get<double>("Stiffness2")),
-      viscosity1_(matdata.parameters.Get<double>("Viscosity1")),
-      viscosity2_(matdata.parameters.Get<double>("Viscosity2"))
+      stiffness1_(matdata.parameters.get<double>("Stiffness1")),
+      stiffness2_(matdata.parameters.get<double>("Stiffness2")),
+      viscosity1_(matdata.parameters.get<double>("Viscosity1")),
+      viscosity2_(matdata.parameters.get<double>("Viscosity2"))
 {
 }
 

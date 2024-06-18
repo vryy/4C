@@ -115,7 +115,7 @@ namespace Core::IO
      * is thrown in case no value of specified type is stored under @p name in the container.
      */
     template <typename T>
-    const T& Get(const std::string& name) const
+    const T& get(const std::string& name) const
     {
       if (const T* p = GetIf<T>(name))
         return *p;

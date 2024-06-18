@@ -332,13 +332,13 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::create_cou
           std::vector<Core::Conditions::Condition*> coupcond;
           arterydis_->GetCondition(condname_, coupcond);
           std::string coupling_element_type_ =
-              (coupcond[j])->parameters().Get<std::string>("coupling_type");
+              (coupcond[j])->parameters().get<std::string>("coupling_type");
 
           // recompute coupling dofs
           recompute_coupled_do_fs_for_ntp(coupcond, j);
 
           // get penalty parameter
-          const auto penalty = coupcond[j]->parameters().Get<double>("PENALTY");
+          const auto penalty = coupcond[j]->parameters().get<double>("PENALTY");
 
           // get eta (parameter coordinate of corresponding node)
           const int eta_ntp = (i == 0) ? -1 : 1;

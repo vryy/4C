@@ -29,14 +29,14 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::MembraneActiveStrain::MembraneActiveStrain(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      matid_passive_(matdata.parameters.Get<int>("MATIDPASSIVE")),
-      scalid_voltage_(matdata.parameters.Get<int>("SCALIDVOLTAGE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      beta1_(matdata.parameters.Get<double>("BETA1")),
-      beta2_(matdata.parameters.Get<double>("BETA2")),
-      voltage_threshold_(matdata.parameters.Get<double>("VOLTHRESH")),
-      alpha1_(matdata.parameters.Get<double>("ALPHA1")),
-      alpha2_(matdata.parameters.Get<double>("ALPHA2"))
+      matid_passive_(matdata.parameters.get<int>("MATIDPASSIVE")),
+      scalid_voltage_(matdata.parameters.get<int>("SCALIDVOLTAGE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      beta1_(matdata.parameters.get<double>("BETA1")),
+      beta2_(matdata.parameters.get<double>("BETA2")),
+      voltage_threshold_(matdata.parameters.get<double>("VOLTHRESH")),
+      alpha1_(matdata.parameters.get<double>("ALPHA1")),
+      alpha2_(matdata.parameters.get<double>("ALPHA2"))
 {
   return;
 }  // Mat::PAR::MembraneActiveStrain::MembraneActiveStrain

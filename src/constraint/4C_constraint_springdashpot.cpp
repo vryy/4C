@@ -34,11 +34,11 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
     Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::Conditions::Condition> cond)
     : actdisc_(std::move(dis)),
       spring_(std::move(cond)),
-      stiff_tens_((spring_->parameters().Get<std::vector<double>>("stiff"))[0]),
-      stiff_comp_((spring_->parameters().Get<std::vector<double>>("stiff"))[0]),
-      offset_((spring_->parameters().Get<std::vector<double>>("disploffset"))[0]),
-      viscosity_((spring_->parameters().Get<std::vector<double>>("visco"))[0]),
-      coupling_(spring_->parameters().Get<int>("coupling id")),
+      stiff_tens_((spring_->parameters().get<std::vector<double>>("stiff"))[0]),
+      stiff_comp_((spring_->parameters().get<std::vector<double>>("stiff"))[0]),
+      offset_((spring_->parameters().get<std::vector<double>>("disploffset"))[0]),
+      viscosity_((spring_->parameters().get<std::vector<double>>("visco"))[0]),
+      coupling_(spring_->parameters().get<int>("coupling id")),
       nodes_(spring_->GetNodes()),
       area_(),
       gap0_(),
@@ -67,10 +67,10 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
     FOUR_C_THROW("Coupling id necessary for DIRECTION cursurfnormal.");
 
   // safety checks of input
-  const auto* springstiff = &spring_->parameters().Get<std::vector<double>>("stiff");
-  const auto* numfuncstiff = &spring_->parameters().Get<std::vector<int>>("funct_stiff");
+  const auto* springstiff = &spring_->parameters().get<std::vector<double>>("stiff");
+  const auto* numfuncstiff = &spring_->parameters().get<std::vector<int>>("funct_stiff");
   const auto* numfuncnonlinstiff =
-      &spring_->parameters().Get<std::vector<int>>("funct_nonlinstiff");
+      &spring_->parameters().get<std::vector<int>>("funct_nonlinstiff");
 
   for (unsigned i = 0; i < (*numfuncnonlinstiff).size(); ++i)
   {
@@ -117,17 +117,17 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<Core::LinAlg::Sparse
   actdisc_->set_state("offset_prestress", offset_prestr_new_);
 
   // get values and switches from the condition
-  const auto* onoff = &spring_->parameters().Get<std::vector<int>>("onoff");
-  const auto* springstiff = &spring_->parameters().Get<std::vector<double>>("stiff");
-  const auto* numfuncstiff = &spring_->parameters().Get<std::vector<int>>("funct_stiff");
-  const auto* dashpotvisc = &spring_->parameters().Get<std::vector<double>>("visco");
-  const auto* numfuncvisco = &spring_->parameters().Get<std::vector<int>>("funct_visco");
-  const auto* disploffset = &spring_->parameters().Get<std::vector<double>>("disploffset");
+  const auto* onoff = &spring_->parameters().get<std::vector<int>>("onoff");
+  const auto* springstiff = &spring_->parameters().get<std::vector<double>>("stiff");
+  const auto* numfuncstiff = &spring_->parameters().get<std::vector<int>>("funct_stiff");
+  const auto* dashpotvisc = &spring_->parameters().get<std::vector<double>>("visco");
+  const auto* numfuncvisco = &spring_->parameters().get<std::vector<int>>("funct_visco");
+  const auto* disploffset = &spring_->parameters().get<std::vector<double>>("disploffset");
   const auto* numfuncdisploffset =
-      &spring_->parameters().Get<std::vector<int>>("funct_disploffset");
+      &spring_->parameters().get<std::vector<int>>("funct_disploffset");
   const auto* numfuncnonlinstiff =
-      &spring_->parameters().Get<std::vector<int>>("funct_nonlinstiff");
-  const auto* direction = &spring_->parameters().Get<std::string>("direction");
+      &spring_->parameters().get<std::vector<int>>("funct_nonlinstiff");
+  const auto* direction = &spring_->parameters().get<std::string>("direction");
 
   // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
   const double time_fac = p.get("time_fac", 0.0);
@@ -363,12 +363,12 @@ void CONSTRAINTS::SpringDashpot::evaluate_force(Epetra_Vector& fint,
         case cursurfnormal:  // spring dashpot acts in curnormal direction
 
           // safety checks
-          const auto* numfuncstiff = &spring_->parameters().Get<std::vector<int>>("funct_stiff");
-          const auto* numfuncvisco = &spring_->parameters().Get<std::vector<int>>("funct_visco");
+          const auto* numfuncstiff = &spring_->parameters().get<std::vector<int>>("funct_stiff");
+          const auto* numfuncvisco = &spring_->parameters().get<std::vector<int>>("funct_visco");
           const auto* numfuncdisploffset =
-              &spring_->parameters().Get<std::vector<int>>("funct_disploffset");
+              &spring_->parameters().get<std::vector<int>>("funct_disploffset");
           const auto* numfuncnonlinstiff =
-              &spring_->parameters().Get<std::vector<int>>("funct_nonlinstiff");
+              &spring_->parameters().get<std::vector<int>>("funct_nonlinstiff");
           for (int dof_numfuncstiff : *numfuncstiff)
           {
             if (dof_numfuncstiff != 0)
@@ -485,12 +485,12 @@ void CONSTRAINTS::SpringDashpot::evaluate_force_stiff(Core::LinAlg::SparseMatrix
         case cursurfnormal:  // spring dashpot acts in curnormal direction
 
           // safety checks
-          const auto* numfuncstiff = &spring_->parameters().Get<std::vector<int>>("funct_stiff");
-          const auto* numfuncvisco = &spring_->parameters().Get<std::vector<int>>("funct_visco");
+          const auto* numfuncstiff = &spring_->parameters().get<std::vector<int>>("funct_stiff");
+          const auto* numfuncvisco = &spring_->parameters().get<std::vector<int>>("funct_visco");
           const auto* numfuncdisploffset =
-              &spring_->parameters().Get<std::vector<int>>("funct_disploffset");
+              &spring_->parameters().get<std::vector<int>>("funct_disploffset");
           const auto* numfuncnonlinstiff =
-              &spring_->parameters().Get<std::vector<int>>("funct_nonlinstiff");
+              &spring_->parameters().get<std::vector<int>>("funct_nonlinstiff");
           for (int dof_numfuncstiff : *numfuncstiff)
           {
             if (dof_numfuncstiff != 0)
@@ -972,7 +972,7 @@ void CONSTRAINTS::SpringDashpot::get_cur_normals(
 void CONSTRAINTS::SpringDashpot::set_spring_type()
 {
   // get spring direction from condition
-  const auto dir = spring_->parameters().Get<std::string>("direction");
+  const auto dir = spring_->parameters().get<std::string>("direction");
 
   if (dir == "xyz")
     springtype_ = xyz;

@@ -21,19 +21,19 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::CrosslinkerMat::CrosslinkerMat(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      link_element_matnum_(matdata.parameters.Get<double>("MATNUM")),
+      link_element_matnum_(matdata.parameters.get<double>("MATNUM")),
       jointtype_(Inpar::BEAMINTERACTION::String2JointType(
-          (matdata.parameters.Get<std::string>("JOINTTYPE")))),
-      linkinglength_(matdata.parameters.Get<double>("LINKINGLENGTH")),
-      linkinglengthtol_(matdata.parameters.Get<double>("LINKINGLENGTHTOL")),
-      linkingangle_(matdata.parameters.Get<double>("LINKINGANGLE")),
-      linkingangletol_(matdata.parameters.Get<double>("LINKINGANGLETOL")),
-      k_on_(matdata.parameters.Get<double>("K_ON")),
-      k_off_(matdata.parameters.Get<double>("K_OFF")),
-      deltabelleq_(matdata.parameters.Get<double>("DELTABELLEQ")),
-      nobonddistsphere(matdata.parameters.Get<double>("NOBONDDISTSPHERE")),
+          (matdata.parameters.get<std::string>("JOINTTYPE")))),
+      linkinglength_(matdata.parameters.get<double>("LINKINGLENGTH")),
+      linkinglengthtol_(matdata.parameters.get<double>("LINKINGLENGTHTOL")),
+      linkingangle_(matdata.parameters.get<double>("LINKINGANGLE")),
+      linkingangletol_(matdata.parameters.get<double>("LINKINGANGLETOL")),
+      k_on_(matdata.parameters.get<double>("K_ON")),
+      k_off_(matdata.parameters.get<double>("K_OFF")),
+      deltabelleq_(matdata.parameters.get<double>("DELTABELLEQ")),
+      nobonddistsphere(matdata.parameters.get<double>("NOBONDDISTSPHERE")),
       linkertype_(Inpar::BEAMINTERACTION::String2CrosslinkerType(
-          (matdata.parameters.Get<std::string>("TYPE"))))
+          (matdata.parameters.get<std::string>("TYPE"))))
 {
   if (link_element_matnum_ < 0)
     FOUR_C_THROW(

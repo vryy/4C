@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::Spring::Spring(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      stiffness_(matdata.parameters.Get<double>("STIFFNESS")),
-      density_(matdata.parameters.Get<double>("DENS"))
+      stiffness_(matdata.parameters.get<double>("STIFFNESS")),
+      density_(matdata.parameters.get<double>("DENS"))
 {
 }
 

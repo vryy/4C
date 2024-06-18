@@ -646,24 +646,24 @@ namespace Mat::FLUIDPORO
 
 Mat::PAR::FluidPoro::FluidPoro(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      viscosity_(matdata.parameters.Get<double>("DYNVISCOSITY")),
-      density_(matdata.parameters.Get<double>("DENSITY")),
-      permeability_(matdata.parameters.Get<double>("PERMEABILITY")),
-      axial_permeability_(matdata.parameters.Get<double>("AXIALPERMEABILITY")),
+      viscosity_(matdata.parameters.get<double>("DYNVISCOSITY")),
+      density_(matdata.parameters.get<double>("DENSITY")),
+      permeability_(matdata.parameters.get<double>("PERMEABILITY")),
+      axial_permeability_(matdata.parameters.get<double>("AXIALPERMEABILITY")),
       type_(undefined),
       varying_permeability_(false),
       permeability_func_(Mat::PAR::pf_undefined),
       permeability_correction_factor_(1.0),
       initial_porosity_(1.0)
 {
-  const auto& typestring = matdata.parameters.Get<std::string>("TYPE");
+  const auto& typestring = matdata.parameters.get<std::string>("TYPE");
 
   if (typestring == "Darcy")
     type_ = darcy;
   else if (typestring == "Darcy-Brinkman")
     type_ = darcy_brinkman;
 
-  const auto& pfuncstring = matdata.parameters.Get<std::string>("PERMEABILITYFUNCTION");
+  const auto& pfuncstring = matdata.parameters.get<std::string>("PERMEABILITYFUNCTION");
 
   if (pfuncstring == "Const")
     permeability_func_ = Mat::PAR::constant;
@@ -683,7 +683,7 @@ Mat::PAR::FluidPoro::FluidPoro(const Core::Mat::PAR::Parameter::Data& matdata)
   {
     for (int dim = 0; dim < 3; ++dim)
       orthotropic_permeabilities_[dim] =
-          matdata.parameters.Get<double>("ORTHOPERMEABILITY" + std::to_string(dim + 1));
+          matdata.parameters.get<double>("ORTHOPERMEABILITY" + std::to_string(dim + 1));
   }
 }
 

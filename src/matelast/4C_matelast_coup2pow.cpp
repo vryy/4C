@@ -15,8 +15,8 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::Elastic::PAR::Coup2Pow::Coup2Pow(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      c_(matdata.parameters.Get<double>("C")),
-      d_(matdata.parameters.Get<int>("D"))
+      c_(matdata.parameters.get<double>("C")),
+      d_(matdata.parameters.get<int>("D"))
 {
 }
 

@@ -28,22 +28,22 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::ViscoAnisotropic::ViscoAnisotropic(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      kappa_(matdata.parameters.Get<double>("KAPPA")),
-      mue_(matdata.parameters.Get<double>("MUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      k1_(matdata.parameters.Get<double>("K1")),
-      k2_(matdata.parameters.Get<double>("K2")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
+      kappa_(matdata.parameters.get<double>("KAPPA")),
+      mue_(matdata.parameters.get<double>("MUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      k1_(matdata.parameters.get<double>("K1")),
+      k2_(matdata.parameters.get<double>("K2")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
       numstresstypes_(3),
       beta_(),
       relax_(),
-      minstretch_(matdata.parameters.Get<double>("MINSTRETCH")),
-      elethick_(matdata.parameters.Get<int>("ELETHICKDIR"))
+      minstretch_(matdata.parameters.get<double>("MINSTRETCH")),
+      elethick_(matdata.parameters.get<int>("ELETHICKDIR"))
 {
-  beta_[0] = matdata.parameters.Get<double>("BETA_ISO");
-  beta_[1] = matdata.parameters.Get<double>("BETA_ANISO");
-  relax_[0] = matdata.parameters.Get<double>("RELAX_ISO");
-  relax_[1] = matdata.parameters.Get<double>("RELAX_ANISO");
+  beta_[0] = matdata.parameters.get<double>("BETA_ISO");
+  beta_[1] = matdata.parameters.get<double>("BETA_ANISO");
+  relax_[0] = matdata.parameters.get<double>("RELAX_ISO");
+  relax_[1] = matdata.parameters.get<double>("RELAX_ANISO");
 }
 
 

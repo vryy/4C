@@ -190,8 +190,8 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
     const std::vector<int>* nodeids = cond->GetNodes();
     if (!nodeids) FOUR_C_THROW("PointNeumann condition does not have nodal cloud");
     const auto* tmp_funct = cond->parameters().GetIf<std::vector<int>>("funct");
-    const auto& onoff = cond->parameters().Get<std::vector<int>>("onoff");
-    const auto& val = cond->parameters().Get<std::vector<double>>("val");
+    const auto& onoff = cond->parameters().get<std::vector<int>>("onoff");
+    const auto& val = cond->parameters().get<std::vector<double>>("val");
 
     for (const int nodeid : *nodeids)
     {
@@ -386,7 +386,7 @@ void Core::FE::Discretization::evaluate_condition(Teuchos::ParameterList& params
   {
     if (name == condstring)
     {
-      if (condid == -1 || condid == cond->parameters().Get<int>("ConditionID"))
+      if (condid == -1 || condid == cond->parameters().get<int>("ConditionID"))
       {
         std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->Geometry();
         // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
@@ -554,7 +554,7 @@ void Core::FE::Discretization::EvaluateScalars(
     if (name == condstring)
     {
       // additional filtering by condition ID if explicitly provided
-      if (condid == -1 or condid == condition->parameters().Get<int>("ConditionID"))
+      if (condid == -1 or condid == condition->parameters().get<int>("ConditionID"))
       {
         // extract geometry map of current condition
         std::map<int, Teuchos::RCP<Core::Elements::Element>>& geometry = condition->Geometry();
@@ -591,7 +591,7 @@ void Core::FE::Discretization::EvaluateScalars(
             cpuscalars += elescalars;
           }  // if(element.Owner() == Comm().MyPID())
         }    // loop over elements
-      }      // if(condid == -1 or condid == condition.Get<int>("ConditionID"))
+      }      // if(condid == -1 or condid == condition.get<int>("ConditionID"))
     }        // if(conditionpair->first == condstring)
   }          // loop over conditions
 

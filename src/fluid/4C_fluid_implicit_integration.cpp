@@ -1611,7 +1611,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
       if (alefluid_) discret_->set_state(ndsale_, "dispnp", dispnp_);
 
       // set values for elements
-      const int fdp_cond_id = fdpcond[fdpcondid]->parameters().Get<int>("ConditionID");
+      const int fdp_cond_id = fdpcond[fdpcondid]->parameters().get<int>("ConditionID");
       flowdeppressureparams.set<double>("flow rate", flowraterel[fdp_cond_id]);
       flowdeppressureparams.set<double>("flow volume", flowvolumerel[fdp_cond_id]);
 
@@ -1743,7 +1743,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
     {
       // check for already existing ID and add ID
       const int sscbcondid_from_container =
-          sscbcond[sscbcondid]->parameters().Get<int>("ConditionID");
+          sscbcond[sscbcondid]->parameters().get<int>("ConditionID");
       if (sscbcondid_from_container)
       {
         if (sscbcondid_from_container != sscbcondid)
@@ -1830,7 +1830,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
     for (int nscondid = 0; nscondid < (int)nscond.size(); nscondid++)
     {
       // check for already existing ID and add ID
-      const int nscondid_from_container = nscond[nscondid]->parameters().Get<int>("ConditionID");
+      const int nscondid_from_container = nscond[nscondid]->parameters().get<int>("ConditionID");
       if (nscondid_from_container)
       {
         if (nscondid_from_container != nscondid)
@@ -1858,7 +1858,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
 
       // set slip coefficient
       Core::Conditions::Condition* currnavierslip = nscond[nscondid];
-      const double beta = currnavierslip->parameters().Get<double>("slipcoefficient");
+      const double beta = currnavierslip->parameters().get<double>("slipcoefficient");
       navierslipparams.set<double>("beta", beta);
 
       // evaluate navier slip boundary condition
@@ -2100,7 +2100,7 @@ void FLD::FluidImplicitTimeInt::init_krylov_space_projection()
   // check if for fluid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
-    const auto& name = KSPcond[icond]->parameters().Get<std::string>("discretization");
+    const auto& name = KSPcond[icond]->parameters().get<std::string>("discretization");
     if (name == "fluid")
     {
       numfluid++;
@@ -2129,12 +2129,12 @@ void FLD::FluidImplicitTimeInt::init_krylov_space_projection()
 void FLD::FluidImplicitTimeInt::setup_krylov_space_projection(Core::Conditions::Condition* kspcond)
 {
   // confirm that mode flags are number of nodal dofs
-  const int nummodes = kspcond->parameters().Get<int>("NUMMODES");
+  const int nummodes = kspcond->parameters().get<int>("NUMMODES");
   if (nummodes != (numdim_ + 1))
     FOUR_C_THROW("Expecting numdim_+1 modes in Krylov projection definition. Check dat-file!");
 
   // get vector of mode flags as given in dat-file
-  const auto& modeflags = kspcond->parameters().Get<std::vector<int>>("ONOFF");
+  const auto& modeflags = kspcond->parameters().get<std::vector<int>>("ONOFF");
 
   // confirm that only the pressure mode is selected for Krylov projection in dat-file
   for (int rr = 0; rr < numdim_; ++rr)
@@ -2155,7 +2155,7 @@ void FLD::FluidImplicitTimeInt::setup_krylov_space_projection(Core::Conditions::
   kspsplitter_->setup(*discret_);
 
   // get from dat-file definition how weights are to be computed
-  const auto* weighttype = &kspcond->parameters().Get<std::string>("weight vector definition");
+  const auto* weighttype = &kspcond->parameters().get<std::string>("weight vector definition");
 
   // set flag for projection update true only if ALE and integral weights
   if (alefluid_ and (*weighttype == "integration")) updateprojection_ = true;
@@ -2545,13 +2545,13 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
     }
 
     // Get coupling type
-    std::string coupling = (selectedCond[0]->parameters().Get<std::string>("coupling"));
+    std::string coupling = (selectedCond[0]->parameters().get<std::string>("coupling"));
 
     // Get scaling value
-    const double scalingValue = selectedCond[0]->parameters().Get<double>("val");
+    const double scalingValue = selectedCond[0]->parameters().get<double>("val");
 
     // Get function for node normal calculation
-    const int nodeNormalFunct = selectedCond[0]->parameters().Get<int>("nodenormalfunct");
+    const int nodeNormalFunct = selectedCond[0]->parameters().get<int>("nodenormalfunct");
 
     // Get a vector layout from the discretization to construct matching
     // vectors and matrices

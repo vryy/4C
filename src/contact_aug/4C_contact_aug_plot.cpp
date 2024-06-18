@@ -260,7 +260,7 @@ Teuchos::RCP<Epetra_Map> CONTACT::Aug::Plot::Direction::find_connected_dofs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::Aug::Plot::Direction::Get(
+Teuchos::RCP<const Epetra_Vector> CONTACT::Aug::Plot::Direction::get(
     const ::NOX::Solver::Generic& solver) const
 {
   Teuchos::RCP<Epetra_Vector> dir_ptr = Teuchos::null;
@@ -674,7 +674,7 @@ void CONTACT::Aug::Plot::execute(const ::NOX::Solver::Generic& solver)
   NOX::Nln::CONSTRAINT::Group plot_grp = *ref_grp;
 
   // get direction
-  Teuchos::RCP<const Epetra_Vector> dir_ptr = dir_.Get(solver);
+  Teuchos::RCP<const Epetra_Vector> dir_ptr = dir_.get(solver);
   const Epetra_Vector& dir = *dir_ptr;
 
   switch (type_)

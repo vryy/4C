@@ -60,7 +60,7 @@ Mat::PAR::FluidPoroRelPermeabilityLaw::create_rel_permeability_law(int matID)
 Mat::PAR::FluidPoroRelPermeabilityLawConstant::FluidPoroRelPermeabilityLawConstant(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : FluidPoroRelPermeabilityLaw(matdata, true),
-      relpermeability_(matdata.parameters.Get<double>("VALUE"))
+      relpermeability_(matdata.parameters.get<double>("VALUE"))
 {
   if (relpermeability_ > 1.0)
     FOUR_C_THROW(
@@ -73,8 +73,8 @@ Mat::PAR::FluidPoroRelPermeabilityLawConstant::FluidPoroRelPermeabilityLawConsta
 Mat::PAR::FluidPoroRelPermeabilityLawExponent::FluidPoroRelPermeabilityLawExponent(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : FluidPoroRelPermeabilityLaw(matdata, false),
-      exp_(matdata.parameters.Get<double>("EXP")),
-      minsat_(matdata.parameters.Get<double>("MIN_SAT"))
+      exp_(matdata.parameters.get<double>("EXP")),
+      minsat_(matdata.parameters.get<double>("MIN_SAT"))
 {
   if (exp_ <= 1.0)
     FOUR_C_THROW("exponent in relative permeability phase law has to be bigger than 1.0");

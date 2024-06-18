@@ -625,9 +625,9 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_filament_id_and_type(
     if (cond == nullptr)
       FOUR_C_THROW(" No filament number assigned to element with gid %i .", ele->Id());
 
-    double current_id = cond->parameters().Get<int>("FilamentId");
+    double current_id = cond->parameters().get<int>("FilamentId");
     double current_type =
-        Inpar::BEAMINTERACTION::String2FilamentType((cond->parameters().Get<std::string>("Type")));
+        Inpar::BEAMINTERACTION::String2FilamentType((cond->parameters().get<std::string>("Type")));
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
     {

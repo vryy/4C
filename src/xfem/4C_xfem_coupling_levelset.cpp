@@ -233,7 +233,7 @@ void XFEM::LevelSetCoupling::set_level_set_boolean_type()
         "no element condition for LevelSetCouplingBC set. Not possible to extract BOOLEANTYPE!");
 
   Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
-  const std::string& booleantype = cond->parameters().Get<std::string>("booleantype");
+  const std::string& booleantype = cond->parameters().get<std::string>("booleantype");
 
   if (booleantype == "none")
     ls_boolean_type_ = ls_none;
@@ -259,7 +259,7 @@ bool XFEM::LevelSetCoupling::apply_complementary_operator()
         "no element condition for LevelSetCouplingBC set. Not possible to extract BOOLEANTYPE!");
 
   Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
-  bool complementary = (bool)cond->parameters().Get<int>("complementary");
+  bool complementary = (bool)cond->parameters().get<int>("complementary");
 
   return complementary;
 }
@@ -390,7 +390,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
   // get the function from the first element
   const int lid = 0;
   Core::Conditions::Condition* cond = cutterele_conds_[lid].second;
-  const int func_no = cond->parameters().Get<int>("levelsetfieldno");
+  const int func_no = cond->parameters().get<int>("levelsetfieldno");
 
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < cutter_dis_->NumMyRowNodes(); lnodeid++)
@@ -429,13 +429,13 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
   if (cond_type == Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
   {
     // Do we need smoothed gradients? I.e. what type is it?
-    const int val = cutterele_conds_[lid].second->parameters().Get<int>("SURFACE_PROJECTION");
+    const int val = cutterele_conds_[lid].second->parameters().get<int>("SURFACE_PROJECTION");
     projtosurf_ = static_cast<Inpar::XFEM::ProjToSurface>(val);
 
     if (projtosurf_ != Inpar::XFEM::Proj_normal)  // and projtosurf_!=Inpar::XFEM::Proj_normal_phi
     {
       // check for potential L2_Projection smoothing
-      const int l2_proj_num = (cond->parameters().Get<int>("l2projsolv") + 1);
+      const int l2_proj_num = (cond->parameters().get<int>("l2projsolv") + 1);
       if (l2_proj_num < 1) FOUR_C_THROW("Issue with L2_PROJECTION_SOLVER, smaller than 1!!!");
 
       // SMOOTHED GRAD PHI!!!!!! (Create from nodal map on Xfluid discretization)
@@ -1095,11 +1095,11 @@ void XFEM::LevelSetCouplingNeumann::do_condition_specific_setup()
   // Check if Inflow Stabilisation is active
   if (!cutterele_conds_.size()) FOUR_C_THROW("cutterele_conds_.size = 0!");
   Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
-  auto inflow_stab = cond->parameters().Get<bool>("InflowStab");
+  auto inflow_stab = cond->parameters().get<bool>("InflowStab");
   for (auto& cutterele_cond : cutterele_conds_)
   {
     Core::Conditions::Condition* cond = cutterele_cond.second;
-    auto this_inflow = cond->parameters().Get<bool>("InflowStab");
+    auto this_inflow = cond->parameters().get<bool>("InflowStab");
     if (inflow_stab != this_inflow)
       FOUR_C_THROW(
           "You want to stabilized just some of your Neumann Boundaries? - feel free to implement!");
@@ -1242,8 +1242,8 @@ void XFEM::LevelSetCouplingNavierSlip::set_element_conditions()
   Core::Conditions::Condition* cond = cutterele_conds_[0].second;  // get condition of first element
 
   // Get robin coupling IDs
-  robin_dirichlet_id_ = cond->parameters().Get<int>("robin_id_dirch");
-  robin_neumann_id_ = cond->parameters().Get<int>("robin_id_neumann");
+  robin_dirichlet_id_ = cond->parameters().get<int>("robin_id_dirch");
+  robin_neumann_id_ = cond->parameters().get<int>("robin_id_neumann");
 
   has_neumann_jump_ = (robin_neumann_id_ < 0) ? false : true;
 
@@ -1395,18 +1395,18 @@ void XFEM::LevelSetCouplingNavierSlip::set_condition_specific_parameters()
   Core::Conditions::Condition* cond = cutterele_conds_[0].second;  // get condition of first element
 
   // Get the scaling factor for the slip length
-  sliplength_ = cond->parameters().Get<double>("slipcoeff");
+  sliplength_ = cond->parameters().get<double>("slipcoeff");
 
   // Temporary variable for readability.
   bool tmp_bool;
 
   // Is the slip length constant? Don't call functions at GP-level unnecessary.
-  tmp_bool = (cond->parameters().Get<int>("funct") < 1);
+  tmp_bool = (cond->parameters().get<int>("funct") < 1);
   is_constant_sliplength_ = (tmp_bool) ? true : false;
 
   // Project the prescribed velocity in tangential direction, to remove "spurious velocities"
   //  from the geometry approximation.
-  tmp_bool = ((cond->parameters().Get<int>("force_tang_vel")) == 0);
+  tmp_bool = ((cond->parameters().get<int>("force_tang_vel")) == 0);
   forcetangvel_ = (tmp_bool) ? false : true;
 }
 
@@ -1422,7 +1422,7 @@ void XFEM::LevelSetCouplingNavierSlip::get_condition_by_robin_id(
   for (size_t i = 0; i < mycond.size(); ++i)
   {
     Core::Conditions::Condition* cond = mycond[i];
-    const int id = cond->parameters().Get<int>("robin_id");
+    const int id = cond->parameters().get<int>("robin_id");
 
     if (id == coupling_id) mynewcond.push_back(cond);
   }

@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::NewmanMultiScale::NewmanMultiScale(const Core::Mat::PAR::Parameter::Data& matdata)
     : Newman(matdata),
       ScatraMicroMacroCoupling(matdata),
-      electronic_cond_(matdata.parameters.Get<double>("ELECTRONIC_COND")),
-      conc_dep_scale_func_num_(matdata.parameters.Get<int>("ELECTRONIC_COND_CONC_SCALE_FUNC_NUM"))
+      electronic_cond_(matdata.parameters.get<double>("ELECTRONIC_COND")),
+      conc_dep_scale_func_num_(matdata.parameters.get<int>("ELECTRONIC_COND_CONC_SCALE_FUNC_NUM"))
 {
 }
 

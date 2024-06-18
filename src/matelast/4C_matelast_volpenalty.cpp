@@ -16,8 +16,8 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::Elastic::PAR::VolPenalty::VolPenalty(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      eps_(matdata.parameters.Get<double>("EPSILON")),
-      gam_(matdata.parameters.Get<double>("GAMMA"))
+      eps_(matdata.parameters.get<double>("EPSILON")),
+      gam_(matdata.parameters.get<double>("GAMMA"))
 {
   if (eps_ < 0. || gam_ <= 0.)
     FOUR_C_THROW("VolPenalty parameters EPSILON and GAMMA have to be greater zero");

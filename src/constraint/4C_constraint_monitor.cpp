@@ -30,7 +30,7 @@ CONSTRAINTS::Monitor::Monitor(Teuchos::RCP<Core::FE::Discretization> discr,
     montype_ = get_moni_type(conditionname);
     for (auto& i : moncond_)
     {
-      int condID = i->parameters().Get<int>("ConditionID");
+      int condID = i->parameters().get<int>("ConditionID");
 
       if (condID > maxID)
       {
@@ -108,7 +108,7 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
   for (auto* cond : moncond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    const int condID = cond->parameters().Get<int>("ConditionID");
+    const int condID = cond->parameters().get<int>("ConditionID");
     const int offsetID = params.get("OffsetID", 0);
     params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 

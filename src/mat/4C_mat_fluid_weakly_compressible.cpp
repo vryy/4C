@@ -21,10 +21,10 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::WeaklyCompressibleFluid::WeaklyCompressibleFluid(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      viscosity_(matdata.parameters.Get<double>("VISCOSITY")),
-      refdensity_(matdata.parameters.Get<double>("REFDENSITY")),
-      refpressure_(matdata.parameters.Get<double>("REFPRESSURE")),
-      comprcoeff_(matdata.parameters.Get<double>("COMPRCOEFF"))
+      viscosity_(matdata.parameters.get<double>("VISCOSITY")),
+      refdensity_(matdata.parameters.get<double>("REFDENSITY")),
+      refpressure_(matdata.parameters.get<double>("REFPRESSURE")),
+      comprcoeff_(matdata.parameters.get<double>("COMPRCOEFF"))
 {
 }
 

@@ -500,8 +500,8 @@ void STR::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdynpa
   bool realcontactconditions = false;
   for (const auto& contactCondition : contactconditions)
   {
-    if (contactCondition->parameters().Get<std::string>("Application") != "Beamtosolidcontact" &&
-        contactCondition->parameters().Get<std::string>("Application") != "Beamtosolidmeshtying")
+    if (contactCondition->parameters().get<std::string>("Application") != "Beamtosolidcontact" &&
+        contactCondition->parameters().get<std::string>("Application") != "Beamtosolidmeshtying")
       realcontactconditions = true;
   }
   if (mortarconditions.size() == 0 and !realcontactconditions) return;

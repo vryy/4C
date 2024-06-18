@@ -317,7 +317,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
   for (auto kinetics_slave_cond :
       meshtying_strategy_thermo_->kinetics_conditions_meshtying_slave_side())
   {
-    if (kinetics_slave_cond.second->parameters().Get<int>("kinetic model") !=
+    if (kinetics_slave_cond.second->parameters().get<int>("kinetic model") !=
         static_cast<int>(Inpar::S2I::kinetics_nointerfaceflux))
     {
       // collect condition specific data and store to scatra boundary parameter class

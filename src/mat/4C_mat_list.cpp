@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::MatList::MatList(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      nummat_(matdata.parameters.Get<int>("NUMMAT")),
-      matids_(matdata.parameters.Get<std::vector<int>>("MATIDS")),
-      local_((matdata.parameters.Get<bool>("LOCAL")))
+      nummat_(matdata.parameters.get<int>("NUMMAT")),
+      matids_(matdata.parameters.get<std::vector<int>>("MATIDS")),
+      local_((matdata.parameters.get<bool>("LOCAL")))
 {
   // check if sizes fit
   if (nummat_ != (int)matids_.size())

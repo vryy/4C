@@ -21,13 +21,13 @@ template <typename T>
 MIXTURE::PAR::RemodelFiberMaterialExponentialActive<T>::RemodelFiberMaterialExponentialActive(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : RemodelFiberMaterial<T>(matdata),
-      passive_params_{matdata.parameters.Get<double>("K1"), matdata.parameters.Get<double>("K2"),
-          matdata.parameters.Get<bool>("COMPRESSION")},
-      initial_reference_density_(matdata.parameters.Get<double>("DENS")),
-      sigma_act_max_(matdata.parameters.Get<double>("SIGMA_MAX")),
-      lambda_act_max_(matdata.parameters.Get<double>("LAMBDAMAX")),
-      lambda_act_0_(matdata.parameters.Get<double>("LAMBDA0")),
-      lambda_act_(matdata.parameters.Get<double>("LAMBDAACT")),
+      passive_params_{matdata.parameters.get<double>("K1"), matdata.parameters.get<double>("K2"),
+          matdata.parameters.get<bool>("COMPRESSION")},
+      initial_reference_density_(matdata.parameters.get<double>("DENS")),
+      sigma_act_max_(matdata.parameters.get<double>("SIGMA_MAX")),
+      lambda_act_max_(matdata.parameters.get<double>("LAMBDAMAX")),
+      lambda_act_0_(matdata.parameters.get<double>("LAMBDA0")),
+      lambda_act_(matdata.parameters.get<double>("LAMBDAACT")),
       dPsiAct_(sigma_act_max_ / initial_reference_density_ *
                (1.0 - std::pow(lambda_act_max_ - lambda_act_, 2) /
                           std::pow(lambda_act_max_ - lambda_act_0_, 2)))

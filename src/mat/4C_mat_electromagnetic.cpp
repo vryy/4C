@@ -31,9 +31,9 @@ Mat::PAR::ElectromagneticMat::ElectromagneticMat(const Core::Mat::PAR::Parameter
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
-  matparams_.at(sigma_)->PutScalar(matdata.parameters.Get<double>("CONDUCTIVITY"));
-  matparams_.at(epsilon_)->PutScalar(matdata.parameters.Get<double>("PERMITTIVITY"));
-  matparams_.at(mu_)->PutScalar(matdata.parameters.Get<double>("PERMEABILITY"));
+  matparams_.at(sigma_)->PutScalar(matdata.parameters.get<double>("CONDUCTIVITY"));
+  matparams_.at(epsilon_)->PutScalar(matdata.parameters.get<double>("PERMITTIVITY"));
+  matparams_.at(mu_)->PutScalar(matdata.parameters.get<double>("PERMEABILITY"));
 
   return;
 }
