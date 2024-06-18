@@ -54,7 +54,7 @@ namespace MIXTURE
      * @param I4 Fourth invariant of the Cauchy-Green tensor
      * @return T
      */
-    [[nodiscard]] virtual T GetCauchyStress(T I4) const = 0;
+    [[nodiscard]] virtual T get_cauchy_stress(T I4) const = 0;
 
     /*!
      * @brief Evaluates the first derivative of the Cauchy stress w.r.t. I4
@@ -62,7 +62,7 @@ namespace MIXTURE
      * @param I4 Fourth invariant of the Cauchy-Green tensor
      * @return T
      */
-    [[nodiscard]] virtual T GetDCauchyStressDI4(T I4) const = 0;
+    [[nodiscard]] virtual T get_d_cauchy_stress_d_i4(T I4) const = 0;
 
     /*!
      * @brief Evaluates the second derivative of the Cauchy stress w.r.t. I4

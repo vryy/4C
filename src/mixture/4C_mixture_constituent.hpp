@@ -51,12 +51,12 @@ namespace MIXTURE
       explicit MixtureConstituent(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      virtual std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) = 0;
+      virtual std::unique_ptr<MIXTURE::MixtureConstituent> create_constituent(int id) = 0;
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() final;
 
-      static MIXTURE::PAR::MixtureConstituent* Factory(int matnum);
+      static MIXTURE::PAR::MixtureConstituent* factory(int matnum);
     };
   }  // namespace PAR
 
@@ -87,7 +87,7 @@ namespace MIXTURE
     virtual ~MixtureConstituent() = default;
 
     /// Returns the id of the constituent
-    int Id() const { return id_; }
+    [[nodiscard]] int id() const { return id_; }
 
     /*!
      * \brief Pack data into a char vector from this class
@@ -98,7 +98,7 @@ namespace MIXTURE
      *
      * @param data (in/put) : vector storing all data to be packed into this instance.
      */
-    virtual void PackConstituent(Core::Communication::PackBuffer& data) const;
+    virtual void pack_constituent(Core::Communication::PackBuffer& data) const;
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -110,11 +110,11 @@ namespace MIXTURE
      * @param position (in/out) : current position to unpack data
      * @param data (in) : vector storing all data to be unpacked into this instance.
      */
-    virtual void UnpackConstituent(
+    virtual void unpack_constituent(
         std::vector<char>::size_type& position, const std::vector<char>& data);
 
     /// material type
-    virtual Core::Materials::MaterialType MaterialType() const = 0;
+    [[nodiscard]] virtual Core::Materials::MaterialType material_type() const = 0;
 
     /*!
      * \brief Register anisotropy extensions of all sub-materials of the constituent
@@ -132,7 +132,7 @@ namespace MIXTURE
      * @param numgp (in) Number of Gauss-points
      * @param params (in/out) Parameter list for exchange of parameters
      */
-    virtual void ReadElement(int numgp, Input::LineDefinition* linedef);
+    virtual void read_element(int numgp, Input::LineDefinition* linedef);
 
     /*!
      * Returns whether the constituent is already set up
@@ -149,7 +149,7 @@ namespace MIXTURE
      * @param params Container for additional information
      * @param eleGID Global element id
      */
-    virtual void Setup(Teuchos::ParameterList& params, int eleGID);
+    virtual void setup(Teuchos::ParameterList& params, int eleGID);
 
     /*!
      * \brief Update of the internal variables
@@ -162,7 +162,7 @@ namespace MIXTURE
      * @param gp Gauss point
      * @param eleGID Global element identifier
      */
-    virtual void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
+    virtual void update(Core::LinAlg::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
         const int gp, const int eleGID)
     {
     }
@@ -179,7 +179,7 @@ namespace MIXTURE
      * @param gp Gauss-point
      * @param eleGID Global element id
      */
-    virtual void UpdateElasticPart(const Core::LinAlg::Matrix<3, 3>& F,
+    virtual void update_elastic_part(const Core::LinAlg::Matrix<3, 3>& F,
         const Core::LinAlg::Matrix<3, 3>& iFext, Teuchos::ParameterList& params, const double dt,
         const int gp, const int eleGID)
     {
@@ -205,7 +205,7 @@ namespace MIXTURE
      *
      * \return double
      */
-    [[nodiscard]] virtual double GetGrowthScalar(int gp) const { return 1.0; }
+    [[nodiscard]] virtual double get_growth_scalar(int gp) const { return 1.0; }
 
 
     /*!
@@ -219,7 +219,8 @@ namespace MIXTURE
      * @return Core::LinAlg::Matrix<1, 6> Derivative of the growth scalar w.r.t. Cauchy-Green
      * deformation tensor
      */
-    [[nodiscard]] virtual Core::LinAlg::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const
+    [[nodiscard]] virtual Core::LinAlg::Matrix<1, 6> get_d_growth_scalar_d_cg(
+        int gp, int eleGID) const
     {
       const Core::LinAlg::Matrix<1, 6> dGrowthScalarDC(true);
       return dGrowthScalarDC;
@@ -247,7 +248,7 @@ namespace MIXTURE
      * @param gp Gauss-point
      * @param eleGID Global element id
      */
-    virtual void EvaluateElasticPart(const Core::LinAlg::Matrix<3, 3>& F,
+    virtual void evaluate_elastic_part(const Core::LinAlg::Matrix<3, 3>& F,
         const Core::LinAlg::Matrix<3, 3>& iF_in, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID);
 
@@ -267,7 +268,7 @@ namespace MIXTURE
      * @param gp (in) : Number of Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+    virtual void evaluate(const Core::LinAlg::Matrix<3, 3>& F,
         const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp,
         int eleGID) = 0;
@@ -294,7 +295,7 @@ namespace MIXTURE
      *
      * \return true if data is set by the material, otherwise false
      */
-    virtual bool EvaluateOutputData(
+    virtual bool evaluate_output_data(
         const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
     {
       return false;

@@ -58,15 +58,15 @@ namespace MIXTURE
     /// Constructor for the material given the material parameters
     explicit ConstantPrestressStrategy(MIXTURE::PAR::ConstantPrestressStrategy* params);
 
-    void Setup(MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int gp,
+    void setup(MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
-    void EvaluatePrestress(const MixtureRule& mixtureRule,
+    void evaluate_prestress(const MixtureRule& mixtureRule,
         const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
         MIXTURE::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
-    void Update(const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+    void update(const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
         MIXTURE::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
         Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
 

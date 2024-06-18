@@ -52,7 +52,7 @@ namespace MIXTURE
        * @param matid Material id of the mixturerule
        * @return Parameters of the referenced mixture rule
        */
-      static MIXTURE::PAR::MixtureGrowthStrategy* Factory(int matid);
+      static MIXTURE::PAR::MixtureGrowthStrategy* factory(int matid);
     };
   }  // namespace PAR
 

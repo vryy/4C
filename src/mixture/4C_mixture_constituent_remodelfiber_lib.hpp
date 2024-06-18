@@ -42,7 +42,7 @@ namespace MIXTURE::PAR
 namespace MIXTURE
 {
   template <typename T>
-  [[nodiscard]] inline T GetExponentialFiberStrainEnergy(
+  [[nodiscard]] inline T get_exponential_fiber_strain_energy(
       const PAR::ExponentialFiberParameters& params, const T I4)
   {
     if (I4 < 0 && !params.supports_compression_)
@@ -53,7 +53,7 @@ namespace MIXTURE
   }
 
   template <typename T>
-  [[nodiscard]] inline T GetDExponentialFiberStrainEnergyDI4(
+  [[nodiscard]] inline T get_d_exponential_fiber_strain_energy_d_i4(
       const PAR::ExponentialFiberParameters& params, const T I4)
   {
     if (I4 < 0 && !params.supports_compression_)
@@ -63,7 +63,7 @@ namespace MIXTURE
   }
 
   template <typename T>
-  [[nodiscard]] inline T GetDExponentialFiberStrainEnergyDI4DI4(
+  [[nodiscard]] inline T get_d_exponential_fiber_strain_energy_d_i4_d_i4(
       const PAR::ExponentialFiberParameters& params, const T I4)
   {
     if (I4 < 0 && !params.supports_compression_)
@@ -74,7 +74,7 @@ namespace MIXTURE
   }
 
   template <typename T>
-  [[nodiscard]] inline T GetDExponentialFiberStrainEnergyDI4DI4DI4(
+  [[nodiscard]] inline T get_d_exponential_fiber_strain_energy_d_i4_d_i4_d_i4(
       const PAR::ExponentialFiberParameters& params, const T I4)
   {
     if (I4 < 0 && !params.supports_compression_)
@@ -87,30 +87,30 @@ namespace MIXTURE
   }
 
   template <typename T>
-  [[nodiscard]] inline T GetExponentialFiberCauchyStress(
+  [[nodiscard]] inline T get_exponential_fiber_cauchy_stress(
       const PAR::ExponentialFiberParameters& params, const T I4)
   {
-    const T dPsi = MIXTURE::GetDExponentialFiberStrainEnergyDI4<T>(params, I4);
+    const T dPsi = MIXTURE::get_d_exponential_fiber_strain_energy_d_i4<T>(params, I4);
 
     return 2.0 * dPsi * I4;
   }
 
   template <typename T>
-  [[nodiscard]] inline T GetDExponentialFiberCauchyStressDI4(
+  [[nodiscard]] inline T get_d_exponential_fiber_cauchy_stress_d_i4(
       const PAR::ExponentialFiberParameters& params, const T I4)
   {
-    const T dPsi = MIXTURE::GetDExponentialFiberStrainEnergyDI4<T>(params, I4);
-    const T ddPsi = MIXTURE::GetDExponentialFiberStrainEnergyDI4DI4<T>(params, I4);
+    const T dPsi = MIXTURE::get_d_exponential_fiber_strain_energy_d_i4<T>(params, I4);
+    const T ddPsi = MIXTURE::get_d_exponential_fiber_strain_energy_d_i4_d_i4<T>(params, I4);
 
     return 2.0 * (dPsi + I4 * ddPsi);
   }
 
   template <typename T>
-  [[nodiscard]] inline T GetDExponentialFiberCauchyStressDI4DI4(
+  [[nodiscard]] inline T get_d_exponential_fiber_cauchy_stress_d_i4_d_i4(
       const PAR::ExponentialFiberParameters& params, const T I4)
   {
-    const T ddPsi = MIXTURE::GetDExponentialFiberStrainEnergyDI4DI4<T>(params, I4);
-    const T dddPsi = MIXTURE::GetDExponentialFiberStrainEnergyDI4DI4DI4<T>(params, I4);
+    const T ddPsi = MIXTURE::get_d_exponential_fiber_strain_energy_d_i4_d_i4<T>(params, I4);
+    const T dddPsi = MIXTURE::get_d_exponential_fiber_strain_energy_d_i4_d_i4_d_i4<T>(params, I4);
 
     return 2.0 * (2 * ddPsi + I4 * dddPsi);
   }

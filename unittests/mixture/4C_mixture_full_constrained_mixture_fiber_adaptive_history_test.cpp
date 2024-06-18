@@ -27,16 +27,16 @@ namespace
   {
     MIXTURE::TimestepAdaptivityInfo level{};
 
-    level.EmplaceBack(3, 5);
-    EXPECT_EQ(level.GetNumberOfLevels(), 1);
+    level.emplace_back(3, 5);
+    EXPECT_EQ(level.get_number_of_levels(), 1);
     EXPECT_EQ(level.get_total_number_of_simpson_intervals(), 5);
 
-    level.EmplaceBack(2, 3);
-    EXPECT_EQ(level.GetNumberOfLevels(), 2);
+    level.emplace_back(2, 3);
+    EXPECT_EQ(level.get_number_of_levels(), 2);
     EXPECT_EQ(level.get_total_number_of_simpson_intervals(), 8);
 
-    level.EmplaceBack(2, 6);
-    EXPECT_EQ(level.GetNumberOfLevels(), 2);
+    level.emplace_back(2, 6);
+    EXPECT_EQ(level.get_number_of_levels(), 2);
     EXPECT_EQ(level.get_total_number_of_simpson_intervals(), 14);
   }
 
@@ -47,125 +47,125 @@ namespace
 #endif
     MIXTURE::TimestepAdaptivityInfo level{};
 
-    level.EmplaceBack(1, 5);
+    level.emplace_back(1, 5);
 
-    EXPECT_ANY_THROW(level.EmplaceBack(2, 1));
+    EXPECT_ANY_THROW(level.emplace_back(2, 1));
   }
 
   TEST(TimestepAdaptivityTest, SplitLevel)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(3, 6);
-    level.EmplaceBack(2, 12);
-    level.EmplaceBack(1, 8);
+    level.emplace_back(3, 6);
+    level.emplace_back(2, 12);
+    level.emplace_back(1, 8);
 
-    level.SplitLevel(3, 2);
+    level.split_level(3, 2);
     EXPECT_EQ(level[0], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(4, 2));
     EXPECT_EQ(level[1], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(3, 2));
     EXPECT_EQ(level[2], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 12));
     EXPECT_EQ(level[3], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(1, 8));
-    EXPECT_EQ(level.GetNumberOfLevels(), 4);
+    EXPECT_EQ(level.get_number_of_levels(), 4);
 
-    level.SplitLevel(4, 1);
+    level.split_level(4, 1);
     EXPECT_EQ(level[0], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(5, 1));
     EXPECT_EQ(level[1], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(3, 2));
     EXPECT_EQ(level[2], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 12));
     EXPECT_EQ(level[3], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(1, 8));
-    EXPECT_EQ(level.GetNumberOfLevels(), 4);
+    EXPECT_EQ(level.get_number_of_levels(), 4);
 
-    level.SplitLevel(1, 1);
+    level.split_level(1, 1);
     EXPECT_EQ(level[0], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(5, 1));
     EXPECT_EQ(level[1], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(3, 2));
     EXPECT_EQ(level[2], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 13));
     EXPECT_EQ(level[3], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(1, 6));
-    EXPECT_EQ(level.GetNumberOfLevels(), 4);
+    EXPECT_EQ(level.get_number_of_levels(), 4);
 
-    level.SplitLevel(1, 3);
+    level.split_level(1, 3);
     EXPECT_EQ(level[0], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(5, 1));
     EXPECT_EQ(level[1], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(3, 2));
     EXPECT_EQ(level[2], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 16));
-    EXPECT_EQ(level.GetNumberOfLevels(), 3);
+    EXPECT_EQ(level.get_number_of_levels(), 3);
 
-    EXPECT_ANY_THROW(level.SplitLevel(1, 0));
+    EXPECT_ANY_THROW(level.split_level(1, 0));
   }
 
   TEST(TimestepAdaptivityTest, get_total_number_of_simpson_intervals)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(3, 2);
-    level.EmplaceBack(2, 1);
+    level.emplace_back(3, 2);
+    level.emplace_back(2, 1);
 
     EXPECT_EQ(level.get_total_number_of_simpson_intervals(), 3);
   }
 
-  TEST(TimestepAdaptivityTest, MaxLevel)
+  TEST(TimestepAdaptivityTest, max_level)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(3, 2);
-    level.EmplaceBack(2, 1);
+    level.emplace_back(3, 2);
+    level.emplace_back(2, 1);
 
-    EXPECT_EQ(level.MaxLevel(), 3);
+    EXPECT_EQ(level.max_level(), 3);
   }
 
   TEST(TimestepAdaptivityTest, get_number_of_simpson_intervals)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(3, 2);
-    level.EmplaceBack(2, 1);
+    level.emplace_back(3, 2);
+    level.emplace_back(2, 1);
 
     EXPECT_EQ(level.get_number_of_simpson_intervals(3), 2);
     EXPECT_EQ(level.get_number_of_simpson_intervals(2), 1);
     EXPECT_EQ(level.get_number_of_simpson_intervals(1), 0);
   }
 
-  TEST(TimestepAdaptivityTest, GetBeginIndex)
+  TEST(TimestepAdaptivityTest, get_begin_index)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(3, 2);
-    level.EmplaceBack(2, 1);
+    level.emplace_back(3, 2);
+    level.emplace_back(2, 1);
 
-    EXPECT_EQ(level.GetBeginIndex(3), 0);
-    EXPECT_EQ(level.GetBeginIndex(2), 4);
-    EXPECT_EQ(level.GetBeginIndex(1), 6);
-    EXPECT_EQ(level.GetBeginIndex(0), 6);
+    EXPECT_EQ(level.get_begin_index(3), 0);
+    EXPECT_EQ(level.get_begin_index(2), 4);
+    EXPECT_EQ(level.get_begin_index(1), 6);
+    EXPECT_EQ(level.get_begin_index(0), 6);
   }
 
-  TEST(TimestepAdaptivityTest, GetBeginTime)
+  TEST(TimestepAdaptivityTest, get_begin_time)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(3, 2);
-    level.EmplaceBack(2, 1);
+    level.emplace_back(3, 2);
+    level.emplace_back(2, 1);
 
-    EXPECT_NEAR(level.GetBeginTime(3, 1.0, 0.1), 1.0, 1e-15);
-    EXPECT_NEAR(level.GetBeginTime(2, 1.0, 0.1), 4.2, 1e-15);
-    EXPECT_NEAR(level.GetBeginTime(1, 1.0, 0.1), 5.0, 1e-15);
-    EXPECT_NEAR(level.GetBeginTime(0, 1.0, 0.1), 5.0, 1e-15);
+    EXPECT_NEAR(level.get_begin_time(3, 1.0, 0.1), 1.0, 1e-15);
+    EXPECT_NEAR(level.get_begin_time(2, 1.0, 0.1), 4.2, 1e-15);
+    EXPECT_NEAR(level.get_begin_time(1, 1.0, 0.1), 5.0, 1e-15);
+    EXPECT_NEAR(level.get_begin_time(0, 1.0, 0.1), 5.0, 1e-15);
   }
 
-  TEST(TimestepAdaptivityTest, GetIndexTime)
+  TEST(TimestepAdaptivityTest, get_index_time)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(3, 2);
-    level.EmplaceBack(2, 1);
+    level.emplace_back(3, 2);
+    level.emplace_back(2, 1);
 
-    EXPECT_NEAR(level.GetIndexTime(0, 1.0, 0.1), 1.0, 1e-15);
-    EXPECT_NEAR(level.GetIndexTime(1, 1.0, 0.1), 1.8, 1e-15);
-    EXPECT_NEAR(level.GetIndexTime(2, 1.0, 0.1), 2.6, 1e-15);
-    EXPECT_NEAR(level.GetIndexTime(3, 1.0, 0.1), 3.4, 1e-15);
-    EXPECT_NEAR(level.GetIndexTime(4, 1.0, 0.1), 4.2, 1e-15);
-    EXPECT_NEAR(level.GetIndexTime(5, 1.0, 0.1), 4.6, 1e-15);
-    EXPECT_NEAR(level.GetIndexTime(6, 1.0, 0.1), 5.0, 1e-15);
-    EXPECT_NEAR(level.GetIndexTime(7, 1.0, 0.1), 5.1, 1e-15);
-    EXPECT_NEAR(level.GetIndexTime(8, 1.0, 0.1), 5.2, 1e-15);
+    EXPECT_NEAR(level.get_index_time(0, 1.0, 0.1), 1.0, 1e-15);
+    EXPECT_NEAR(level.get_index_time(1, 1.0, 0.1), 1.8, 1e-15);
+    EXPECT_NEAR(level.get_index_time(2, 1.0, 0.1), 2.6, 1e-15);
+    EXPECT_NEAR(level.get_index_time(3, 1.0, 0.1), 3.4, 1e-15);
+    EXPECT_NEAR(level.get_index_time(4, 1.0, 0.1), 4.2, 1e-15);
+    EXPECT_NEAR(level.get_index_time(5, 1.0, 0.1), 4.6, 1e-15);
+    EXPECT_NEAR(level.get_index_time(6, 1.0, 0.1), 5.0, 1e-15);
+    EXPECT_NEAR(level.get_index_time(7, 1.0, 0.1), 5.1, 1e-15);
+    EXPECT_NEAR(level.get_index_time(8, 1.0, 0.1), 5.2, 1e-15);
   }
 
-  TEST(TimestepAdaptivityTest, GetNumberOfLevels)
+  TEST(TimestepAdaptivityTest, get_number_of_levels)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(3, 2);
-    level.EmplaceBack(2, 1);
+    level.emplace_back(3, 2);
+    level.emplace_back(2, 1);
 
-    EXPECT_EQ(level.GetNumberOfLevels(), 2);
+    EXPECT_EQ(level.get_number_of_levels(), 2);
   }
 
   TEST(TimestepAdaptivityTest, OptimizeHistoryFromUnoptimizedHistory)
@@ -177,12 +177,12 @@ namespace
     const double dt = 1.0;
     const double tolerance = 1e-8 / 24;
 
-    const auto [remove_items, new_level] = MIXTURE::OptimizeHistoryIntegration(level, 25,
+    const auto [remove_items, new_level] = MIXTURE::optimize_history_integration(level, 25,
         [&](const std::array<std::optional<unsigned int>, 5>& indices)
         {
-          const double begin_time = level.GetIndexTime(indices[0].value(), 0.0, dt);
-          const double end_time = level.GetIndexTime(indices[4].value(), 0.0, dt);
-          return MIXTURE::IsModelEquationSimpsonRuleIntegrationBelowTolerance(
+          const double begin_time = level.get_index_time(indices[0].value(), 0.0, dt);
+          const double end_time = level.get_index_time(indices[4].value(), 0.0, dt);
+          return MIXTURE::is_model_equation_simpson_rule_integration_below_tolerance(
               growth_evolution, time, begin_time, end_time, tolerance * (end_time - begin_time));
         });
 
@@ -201,7 +201,7 @@ namespace
   TEST(TimestepAdaptivityTest, OptimizeHistoryFromPartiallyOptimizedHistory)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(1, 2);
+    level.emplace_back(1, 2);
 
     const MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
         0.0, 1.0);
@@ -209,12 +209,12 @@ namespace
     const double dt = 1.0;
     const double tolerance = 1e-8 / 24;
 
-    const auto [remove_items, new_level] = MIXTURE::OptimizeHistoryIntegration(level, 21,
+    const auto [remove_items, new_level] = MIXTURE::optimize_history_integration(level, 21,
         [&](const std::array<std::optional<unsigned int>, 5>& indices)
         {
-          const double begin_time = level.GetIndexTime(indices[0].value(), 0.0, dt);
-          const double end_time = level.GetIndexTime(indices[4].value(), 0.0, dt);
-          return MIXTURE::IsModelEquationSimpsonRuleIntegrationBelowTolerance(
+          const double begin_time = level.get_index_time(indices[0].value(), 0.0, dt);
+          const double end_time = level.get_index_time(indices[4].value(), 0.0, dt);
+          return MIXTURE::is_model_equation_simpson_rule_integration_below_tolerance(
               growth_evolution, time, begin_time, end_time, tolerance * (end_time - begin_time));
         });
 
@@ -231,20 +231,20 @@ namespace
   TEST(TimestepAdaptivityTest, OptimizeHistoryFromOptimizedHistory)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(2, 1);
-    level.EmplaceBack(1, 1);
+    level.emplace_back(2, 1);
+    level.emplace_back(1, 1);
     const MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
         0.0, 1.0);
     const double time = 30;
     const double dt = 1.0;
     const double tolerance = 1e-8 / 24;
 
-    const auto [remove_items, new_level] = MIXTURE::OptimizeHistoryIntegration(level, 17,
+    const auto [remove_items, new_level] = MIXTURE::optimize_history_integration(level, 17,
         [&](const std::array<std::optional<unsigned int>, 5>& indices)
         {
-          const double begin_time = level.GetIndexTime(indices[0].value(), 0.0, dt);
-          const double end_time = level.GetIndexTime(indices[4].value(), 0.0, dt);
-          return MIXTURE::IsModelEquationSimpsonRuleIntegrationBelowTolerance(
+          const double begin_time = level.get_index_time(indices[0].value(), 0.0, dt);
+          const double end_time = level.get_index_time(indices[4].value(), 0.0, dt);
+          return MIXTURE::is_model_equation_simpson_rule_integration_below_tolerance(
               growth_evolution, time, begin_time, end_time, tolerance * (end_time - begin_time));
         });
 
@@ -260,104 +260,105 @@ namespace
   TEST(TimestepAdaptivityTest, GetBaseTimestep)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(3, 1);
-    level.EmplaceBack(2, 2);
-    level.EmplaceBack(1, 1);
+    level.emplace_back(3, 1);
+    level.emplace_back(2, 2);
+    level.emplace_back(1, 1);
 
-    EXPECT_EQ(level.GetBaseIndex(0), 0);
-    EXPECT_EQ(level.GetBaseIndex(1), 8);
-    EXPECT_EQ(level.GetBaseIndex(2), 16);
-    EXPECT_EQ(level.GetBaseIndex(3), 16 + 4);
-    EXPECT_EQ(level.GetBaseIndex(4), 16 + 8);
-    EXPECT_EQ(level.GetBaseIndex(5), 16 + 12);
-    EXPECT_EQ(level.GetBaseIndex(6), 16 + 16);
-    EXPECT_EQ(level.GetBaseIndex(7), 16 + 16 + 2);
-    EXPECT_EQ(level.GetBaseIndex(8), 16 + 16 + 4);
-    EXPECT_EQ(level.GetBaseIndex(9), 16 + 16 + 4 + 1);
-    EXPECT_EQ(level.GetBaseIndex(10), 16 + 16 + 4 + 2);
+    EXPECT_EQ(level.get_base_index(0), 0);
+    EXPECT_EQ(level.get_base_index(1), 8);
+    EXPECT_EQ(level.get_base_index(2), 16);
+    EXPECT_EQ(level.get_base_index(3), 16 + 4);
+    EXPECT_EQ(level.get_base_index(4), 16 + 8);
+    EXPECT_EQ(level.get_base_index(5), 16 + 12);
+    EXPECT_EQ(level.get_base_index(6), 16 + 16);
+    EXPECT_EQ(level.get_base_index(7), 16 + 16 + 2);
+    EXPECT_EQ(level.get_base_index(8), 16 + 16 + 4);
+    EXPECT_EQ(level.get_base_index(9), 16 + 16 + 4 + 1);
+    EXPECT_EQ(level.get_base_index(10), 16 + 16 + 4 + 2);
   }
 
-  TEST(TimestepAdaptivityTest, GetBaseIndices)
+  TEST(TimestepAdaptivityTest, get_base_indices)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(3, 1);
-    level.EmplaceBack(2, 2);
-    level.EmplaceBack(1, 1);
+    level.emplace_back(3, 1);
+    level.emplace_back(2, 2);
+    level.emplace_back(1, 1);
 
-    auto base_indices = level.GetBaseIndices<unsigned int, 11>({0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    auto base_indices =
+        level.get_base_indices<unsigned int, 11>({0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
 
     EXPECT_THAT(base_indices, testing::ElementsAre(0, 8, 16, 20, 24, 28, 32, 34, 36, 37, 38));
   }
 
-  TEST(TimestepAdaptivityTest, GetIndexFromBase)
+  TEST(TimestepAdaptivityTest, get_index_from_base)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(2, 2);
-    level.EmplaceBack(1, 1);
+    level.emplace_back(2, 2);
+    level.emplace_back(1, 1);
 
-    EXPECT_EQ(level.GetIndexFromBase(0), 0);
-    EXPECT_FALSE(level.GetIndexFromBase(1).has_value());
-    EXPECT_FALSE(level.GetIndexFromBase(2).has_value());
-    EXPECT_FALSE(level.GetIndexFromBase(3).has_value());
-    EXPECT_EQ(level.GetIndexFromBase(4), 1);
-    EXPECT_FALSE(level.GetIndexFromBase(5).has_value());
-    EXPECT_FALSE(level.GetIndexFromBase(6).has_value());
-    EXPECT_FALSE(level.GetIndexFromBase(7).has_value());
-    EXPECT_EQ(level.GetIndexFromBase(8), 2);
-    EXPECT_FALSE(level.GetIndexFromBase(9).has_value());
-    EXPECT_FALSE(level.GetIndexFromBase(10).has_value());
-    EXPECT_FALSE(level.GetIndexFromBase(11).has_value());
-    EXPECT_EQ(level.GetIndexFromBase(12), 3);
-    EXPECT_FALSE(level.GetIndexFromBase(13).has_value());
-    EXPECT_FALSE(level.GetIndexFromBase(14).has_value());
-    EXPECT_FALSE(level.GetIndexFromBase(15).has_value());
-    EXPECT_EQ(level.GetIndexFromBase(16), 4);
-    EXPECT_FALSE(level.GetIndexFromBase(17).has_value());
-    EXPECT_EQ(level.GetIndexFromBase(18), 5);
-    EXPECT_FALSE(level.GetIndexFromBase(19).has_value());
-    EXPECT_EQ(level.GetIndexFromBase(20), 6);
-    EXPECT_EQ(level.GetIndexFromBase(21), 7);
-    EXPECT_EQ(level.GetIndexFromBase(22), 8);
+    EXPECT_EQ(level.get_index_from_base(0), 0);
+    EXPECT_FALSE(level.get_index_from_base(1).has_value());
+    EXPECT_FALSE(level.get_index_from_base(2).has_value());
+    EXPECT_FALSE(level.get_index_from_base(3).has_value());
+    EXPECT_EQ(level.get_index_from_base(4), 1);
+    EXPECT_FALSE(level.get_index_from_base(5).has_value());
+    EXPECT_FALSE(level.get_index_from_base(6).has_value());
+    EXPECT_FALSE(level.get_index_from_base(7).has_value());
+    EXPECT_EQ(level.get_index_from_base(8), 2);
+    EXPECT_FALSE(level.get_index_from_base(9).has_value());
+    EXPECT_FALSE(level.get_index_from_base(10).has_value());
+    EXPECT_FALSE(level.get_index_from_base(11).has_value());
+    EXPECT_EQ(level.get_index_from_base(12), 3);
+    EXPECT_FALSE(level.get_index_from_base(13).has_value());
+    EXPECT_FALSE(level.get_index_from_base(14).has_value());
+    EXPECT_FALSE(level.get_index_from_base(15).has_value());
+    EXPECT_EQ(level.get_index_from_base(16), 4);
+    EXPECT_FALSE(level.get_index_from_base(17).has_value());
+    EXPECT_EQ(level.get_index_from_base(18), 5);
+    EXPECT_FALSE(level.get_index_from_base(19).has_value());
+    EXPECT_EQ(level.get_index_from_base(20), 6);
+    EXPECT_EQ(level.get_index_from_base(21), 7);
+    EXPECT_EQ(level.get_index_from_base(22), 8);
   }
 
-  TEST(TimestepAdaptivityTest, GetBaseIndexWithBase)
+  TEST(TimestepAdaptivityTest, get_base_indexWithBase)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(3, 1);
-    level.EmplaceBack(1, 1);
+    level.emplace_back(3, 1);
+    level.emplace_back(1, 1);
 
     MIXTURE::TimestepAdaptivityInfo base{};
-    base.EmplaceBack(1, 4);
+    base.emplace_back(1, 4);
 
-    EXPECT_EQ(level.GetBaseIndex(base, 0), 0);
-    EXPECT_EQ(level.GetBaseIndex(base, 1), 4);
-    EXPECT_EQ(level.GetBaseIndex(base, 2), 8);
-    EXPECT_EQ(level.GetBaseIndex(base, 3), 10);
-    EXPECT_EQ(level.GetBaseIndex(base, 4), 12);
-    EXPECT_EQ(level.GetBaseIndex(base, 5), 13);
+    EXPECT_EQ(level.get_base_index(base, 0), 0);
+    EXPECT_EQ(level.get_base_index(base, 1), 4);
+    EXPECT_EQ(level.get_base_index(base, 2), 8);
+    EXPECT_EQ(level.get_base_index(base, 3), 10);
+    EXPECT_EQ(level.get_base_index(base, 4), 12);
+    EXPECT_EQ(level.get_base_index(base, 5), 13);
   }
 
-  TEST(TimestepAdaptivityTest, GetBaseIndicesWithBase)
+  TEST(TimestepAdaptivityTest, get_base_indicesWithBase)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(3, 1);
-    level.EmplaceBack(1, 1);
+    level.emplace_back(3, 1);
+    level.emplace_back(1, 1);
 
     MIXTURE::TimestepAdaptivityInfo base{};
-    base.EmplaceBack(1, 4);
+    base.emplace_back(1, 4);
 
-    auto base_indices = level.GetBaseIndices<unsigned int, 6>(base, {0, 1, 2, 3, 4, 5});
+    auto base_indices = level.get_base_indices<unsigned int, 6>(base, {0, 1, 2, 3, 4, 5});
 
     EXPECT_THAT(base_indices, testing::ElementsAre(0, 4, 8, 10, 12, 13));
   }
 
-  TEST(TimestepAdaptivityTest, GetIndicesFromBase)
+  TEST(TimestepAdaptivityTest, get_indices_from_base)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
-    level.EmplaceBack(2, 2);
-    level.EmplaceBack(1, 1);
+    level.emplace_back(2, 2);
+    level.emplace_back(1, 1);
 
-    auto indices = level.GetIndicesFromBase<unsigned int, 23>(
+    auto indices = level.get_indices_from_base<unsigned int, 23>(
         {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22});
     EXPECT_THAT(indices,
         testing::ElementsAre(0, std::nullopt, std::nullopt, std::nullopt, 1, std::nullopt,
@@ -365,26 +366,26 @@ namespace
             std::nullopt, std::nullopt, std::nullopt, 4, std::nullopt, 5, std::nullopt, 6, 7, 8));
   }
 
-  TEST(TimestepAdaptivityTest, GetIndicesFromBaseWrongOrder)
+  TEST(TimestepAdaptivityTest, get_indices_from_baseWrongOrder)
   {
 #ifndef FOUR_C_ENABLE_ASSERTIONS
     GTEST_SKIP() << "Skip debug assertion tests in release mode.";
 #endif
     MIXTURE::TimestepAdaptivityInfo level{};
     auto get_indices_from_base = [&]() {
-      return level.GetIndicesFromBase<unsigned int, 3>({0, 3, 1});
+      return level.get_indices_from_base<unsigned int, 3>({0, 3, 1});
     };
     EXPECT_ANY_THROW(get_indices_from_base());
   }
 
-  TEST(TimestepAdaptivityTest, GetBaseIndicesWrongOrder)
+  TEST(TimestepAdaptivityTest, get_base_indicesWrongOrder)
   {
 #ifndef FOUR_C_ENABLE_ASSERTIONS
     GTEST_SKIP() << "Skip debug assertion tests in release mode.";
 #endif
     MIXTURE::TimestepAdaptivityInfo level{};
 
-    auto get_base_indices = [&]() { return level.GetBaseIndices<unsigned int, 3>({0, 3, 1}); };
+    auto get_base_indices = [&]() { return level.get_base_indices<unsigned int, 3>({0, 3, 1}); };
     EXPECT_ANY_THROW(get_base_indices());
   }
 }  // namespace

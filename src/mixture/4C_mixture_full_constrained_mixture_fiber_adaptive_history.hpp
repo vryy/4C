@@ -31,12 +31,12 @@ namespace MIXTURE
   namespace Details
   {
     template <typename integer>
-    [[nodiscard]] integer IntegerPower(integer x, unsigned int p)
+    [[nodiscard]] integer integer_power(integer x, unsigned int p)
     {
       if (p == 0) return 1;
       if (p == 1) return x;
 
-      integer tmp = IntegerPower(x, p / 2);
+      integer tmp = integer_power(x, p / 2);
       if (p % 2 == 0)
         return tmp * tmp;
       else
@@ -80,25 +80,25 @@ namespace MIXTURE
       }
     };
 
-    void Pack(Core::Communication::PackBuffer& data) const;
+    void pack(Core::Communication::PackBuffer& data) const;
 
-    void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
-    void EmplaceBack(unsigned int level, unsigned int num_simpson_intervals);
+    void emplace_back(unsigned int level, unsigned int num_simpson_intervals);
 
     unsigned int get_total_number_of_simpson_intervals();
 
-    void SplitLevel(unsigned int level, unsigned int new_num_simpson_intervals);
+    void split_level(unsigned int level, unsigned int new_num_simpson_intervals);
 
-    unsigned int MaxLevel();
+    unsigned int max_level();
 
-    [[nodiscard]] unsigned int GetBaseIndex(unsigned int index) const;
+    [[nodiscard]] unsigned int get_base_index(unsigned int index) const;
 
-    [[nodiscard]] std::optional<unsigned int> GetBaseIndex(
+    [[nodiscard]] std::optional<unsigned int> get_base_index(
         const TimestepAdaptivityInfo& base, unsigned int timestep) const;
 
     template <typename ValueType, std::size_t size>
-    [[nodiscard]] std::array<ValueType, size> GetBaseIndices(
+    [[nodiscard]] std::array<ValueType, size> get_base_indices(
         const std::array<ValueType, size>& indices) const
     {
       FOUR_C_ASSERT(
@@ -121,7 +121,7 @@ namespace MIXTURE
         {
           current_index += 1;
           current_base_index =
-              level_begin_index + level_step * Details::IntegerPower(2, item.level_);
+              level_begin_index + level_step * Details::integer_power(2, item.level_);
 
           for (; current_item_index < indices.size(); ++current_item_index)
           {
@@ -147,16 +147,17 @@ namespace MIXTURE
     }
 
     template <typename ValueType, std::size_t size>
-    [[nodiscard]] std::array<std::optional<ValueType>, size> GetBaseIndices(
+    [[nodiscard]] std::array<std::optional<ValueType>, size> get_base_indices(
         const TimestepAdaptivityInfo& base, const std::array<ValueType, size>& indices) const
     {
-      return base.GetIndicesFromBase<ValueType, size>(GetBaseIndices<ValueType, size>(indices));
+      return base.get_indices_from_base<ValueType, size>(
+          get_base_indices<ValueType, size>(indices));
     }
 
-    [[nodiscard]] std::optional<unsigned int> GetIndexFromBase(unsigned int base_index) const;
+    [[nodiscard]] std::optional<unsigned int> get_index_from_base(unsigned int base_index) const;
 
     template <typename ValueType, std::size_t size>
-    [[nodiscard]] std::array<std::optional<ValueType>, size> GetIndicesFromBase(
+    [[nodiscard]] std::array<std::optional<ValueType>, size> get_indices_from_base(
         const std::array<ValueType, size>& base_indices) const
     {
       FOUR_C_ASSERT(std::is_sorted(base_indices.begin(), base_indices.end()),
@@ -180,7 +181,7 @@ namespace MIXTURE
         {
           current_index += 1;
           current_base_index =
-              level_begin_index + level_step * Details::IntegerPower(2, item.level_);
+              level_begin_index + level_step * Details::integer_power(2, item.level_);
 
           for (; current_item_index < indices.size(); ++current_item_index)
           {
@@ -211,17 +212,17 @@ namespace MIXTURE
 
     [[nodiscard]] unsigned int get_number_of_simpson_intervals(unsigned int level) const;
 
-    [[nodiscard]] unsigned int GetBeginIndex(unsigned int level) const;
+    [[nodiscard]] unsigned int get_begin_index(unsigned int level) const;
 
-    [[nodiscard]] double GetBeginTime(unsigned int level, double base_time, double base_dt) const;
+    [[nodiscard]] double get_begin_time(unsigned int level, double base_time, double base_dt) const;
 
-    [[nodiscard]] double GetIndexTime(unsigned int index, double base_time, double base_dt) const;
+    [[nodiscard]] double get_index_time(unsigned int index, double base_time, double base_dt) const;
 
     const TimestepAdaptivityInfoItem& operator[](unsigned int i) const { return list_[i]; }
 
-    [[nodiscard]] std::size_t GetNumberOfLevels() const { return list_.size(); }
+    [[nodiscard]] std::size_t get_number_of_levels() const { return list_.size(); }
 
-    void Clear() { list_.clear(); }
+    void clear() { list_.clear(); }
 
     [[nodiscard]] std::vector<TimestepAdaptivityInfoItem>::iterator begin()
     {
@@ -246,13 +247,13 @@ namespace MIXTURE
 
   namespace Details
   {
-    void AdaptTimestepAdaptivityInfo(MIXTURE::TimestepAdaptivityInfo& timestep_adaptivity_info,
+    void adapt_timestep_adaptivity_info(MIXTURE::TimestepAdaptivityInfo& timestep_adaptivity_info,
         unsigned int level, unsigned int num_coarsened_intervals);
-    void MarkCoarsenedTimestepAsToBeDeleted(std::vector<bool>& items_to_delete,
+    void mark_coarsened_timestep_as_to_be_deleted(std::vector<bool>& items_to_delete,
         const unsigned int num_items_to_delete, const unsigned int begin_index);
 
     template <typename CoarsenableEvaluator>
-    unsigned int GetNumberCoarsenableIntervals(const TimestepAdaptivityInfo& base_info,
+    unsigned int get_number_coarsenable_intervals(const TimestepAdaptivityInfo& base_info,
         const TimestepAdaptivityInfo& current_info, const unsigned int begin_index,
         const unsigned int max_simpson_intervals, CoarsenableEvaluator corsenable_evaluator)
     {
@@ -261,7 +262,7 @@ namespace MIXTURE
 
       for (unsigned int i = 0; i < max_coarsened_simpson_intervals; ++i)
       {
-        if (corsenable_evaluator(current_info.GetBaseIndices<unsigned int, 5>(
+        if (corsenable_evaluator(current_info.get_base_indices<unsigned int, 5>(
                 base_info, {begin_index + i * 4, begin_index + i * 4 + 1, begin_index + i * 4 + 2,
                                begin_index + i * 4 + 3, begin_index + i * 4 + 4})))
         {
@@ -305,17 +306,17 @@ namespace MIXTURE
    * @return std::vector<bool> : Vector of bools to mark timestep that are marked to be deleted.
    */
   template <typename CoarsenableEvaluator>
-  std::tuple<std::vector<bool>, TimestepAdaptivityInfo> OptimizeHistoryIntegration(
+  std::tuple<std::vector<bool>, TimestepAdaptivityInfo> optimize_history_integration(
       const TimestepAdaptivityInfo& base_adaptivity_info, int num_total_steps,
       CoarsenableEvaluator coarsenable_evaluator)
   {
     TimestepAdaptivityInfo current_adaptivity_info = base_adaptivity_info;
 
     std::vector<bool> items_to_delete(num_total_steps, false);
-    for (unsigned int check_level = 0; check_level <= current_adaptivity_info.MaxLevel();
+    for (unsigned int check_level = 0; check_level <= current_adaptivity_info.max_level();
          ++check_level)
     {
-      const unsigned int begin_index = current_adaptivity_info.GetBeginIndex(check_level);
+      const unsigned int begin_index = current_adaptivity_info.get_begin_index(check_level);
       const unsigned int max_simpson_intervals = std::invoke(
           [&]()
           {
@@ -331,14 +332,14 @@ namespace MIXTURE
           });
 
       unsigned int num_coarsenable_intervals =
-          Details::GetNumberCoarsenableIntervals<CoarsenableEvaluator>(base_adaptivity_info,
+          Details::get_number_coarsenable_intervals<CoarsenableEvaluator>(base_adaptivity_info,
               current_adaptivity_info, begin_index, max_simpson_intervals, coarsenable_evaluator);
 
       if (num_coarsenable_intervals > 0)
       {
-        Details::AdaptTimestepAdaptivityInfo(
+        Details::adapt_timestep_adaptivity_info(
             current_adaptivity_info, check_level, num_coarsenable_intervals);
-        Details::MarkCoarsenedTimestepAsToBeDeleted(
+        Details::mark_coarsened_timestep_as_to_be_deleted(
             items_to_delete, num_coarsenable_intervals, begin_index);
       }
     }
@@ -358,7 +359,7 @@ namespace MIXTURE
    * @return true if error is smaller than tolerance, else false
    */
   template <typename Number>
-  bool IsModelEquationSimpsonRuleIntegrationBelowTolerance(
+  bool is_model_equation_simpson_rule_integration_below_tolerance(
       const MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<Number>& growth_evolution,
       const double time, const double begin_time, const double end_time, const Number tolerance)
   {

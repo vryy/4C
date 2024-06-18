@@ -112,7 +112,7 @@ MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane::
 
 // Create an instance of MIXTURE::MixtureConstituentElastHyper from the parameters
 std::unique_ptr<MIXTURE::MixtureConstituent>
-MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane::CreateConstituent(int id)
+MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane::create_constituent(int id)
 {
   return std::unique_ptr<MIXTURE::MixtureConstituentElastHyperElastinMembrane>(
       new MIXTURE::MixtureConstituentElastHyperElastinMembrane(this, id));
@@ -147,17 +147,17 @@ MIXTURE::MixtureConstituentElastHyperElastinMembrane::MixtureConstituentElastHyp
 }
 
 // Returns the material type
-Core::Materials::MaterialType MIXTURE::MixtureConstituentElastHyperElastinMembrane::MaterialType()
+Core::Materials::MaterialType MIXTURE::MixtureConstituentElastHyperElastinMembrane::material_type()
     const
 {
   return Core::Materials::mix_elasthyper_elastin_membrane;
 }
 
 // Pack the constituent
-void MIXTURE::MixtureConstituentElastHyperElastinMembrane::PackConstituent(
+void MIXTURE::MixtureConstituentElastHyperElastinMembrane::pack_constituent(
     Core::Communication::PackBuffer& data) const
 {
-  MixtureConstituentElastHyperBase::PackConstituent(data);
+  MixtureConstituentElastHyperBase::pack_constituent(data);
 
   Core::Communication::ParObject::add_to_pack(data, current_reference_growth_);
 
@@ -173,10 +173,10 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::PackConstituent(
 }
 
 // Unpack the constituent
-void MIXTURE::MixtureConstituentElastHyperElastinMembrane::UnpackConstituent(
+void MIXTURE::MixtureConstituentElastHyperElastinMembrane::unpack_constituent(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  MixtureConstituentElastHyperBase::UnpackConstituent(position, data);
+  MixtureConstituentElastHyperBase::unpack_constituent(position, data);
 
   Core::Communication::ParObject::extract_from_pack(position, data, current_reference_growth_);
 
@@ -199,10 +199,10 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::register_anisotropy_e
 }
 
 // Reads the element from the input file
-void MIXTURE::MixtureConstituentElastHyperElastinMembrane::ReadElement(
+void MIXTURE::MixtureConstituentElastHyperElastinMembrane::read_element(
     int numgp, Input::LineDefinition* linedef)
 {
-  MixtureConstituentElastHyperBase::ReadElement(numgp, linedef);
+  MixtureConstituentElastHyperBase::read_element(numgp, linedef);
 
   // Setup summands
   for (const auto& summand : potsum_membrane_) summand->Setup(numgp, linedef);
@@ -212,7 +212,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::ReadElement(
 }
 
 // Updates all summands
-void MIXTURE::MixtureConstituentElastHyperElastinMembrane::Update(
+void MIXTURE::MixtureConstituentElastHyperElastinMembrane::update(
     Core::LinAlg::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
 {
@@ -229,7 +229,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::Update(
           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
           .Evaluate(reference_coordinates.A(), totaltime, 0);
 
-  MixtureConstituentElastHyperBase::Update(defgrd, params, gp, eleGID);
+  MixtureConstituentElastHyperBase::update(defgrd, params, gp, eleGID);
 
   // loop map of associated potential summands
   for (auto& summand : potsum_membrane_) summand->Update();
@@ -251,17 +251,17 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::pre_evaluate(
         "implement MIXTURE::ElastinMembranePrestressStrategy.");
   }
 
-  mue_frac_[gp] = strategy->EvaluateMueFrac(mixtureRule,
+  mue_frac_[gp] = strategy->evaluate_mue_frac(mixtureRule,
       cylinder_coordinate_system_anisotropy_extension().get_coordinate_system_provider(gp), *this,
       *this, params, gp, eleGID);
 }
 
-double MIXTURE::MixtureConstituentElastHyperElastinMembrane::GetGrowthScalar(int gp) const
+double MIXTURE::MixtureConstituentElastHyperElastinMembrane::get_growth_scalar(int gp) const
 {
   return current_reference_growth_[gp];
 }
 
-void MIXTURE::MixtureConstituentElastHyperElastinMembrane::Evaluate(
+void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate(
     const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
     Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
     Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
@@ -269,7 +269,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::Evaluate(
   FOUR_C_THROW("This constituent does not support Evaluation without an elastic part.");
 }
 
-void MIXTURE::MixtureConstituentElastHyperElastinMembrane::EvaluateElasticPart(
+void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_elastic_part(
     const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<3, 3>& iFextin,
     Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
     Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
@@ -280,7 +280,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::EvaluateElasticPart(
 
   // Evaluate 3D elastic part
   Mat::ElastHyperEvaluateElasticPart(
-      F, iFin, S_stress, cmat, Summands(), SummandProperties(), gp, eleGID);
+      F, iFin, S_stress, cmat, summands(), summand_properties(), gp, eleGID);
 
   // Evaluate Membrane
   static Core::LinAlg::Matrix<6, 1> Smembrane_stress(false);

@@ -54,7 +54,7 @@ namespace MIXTURE
        *
        * @param data (out) : buffer to serialize data to.
        */
-      void Pack(Core::Communication::PackBuffer& data) const;
+      void pack(Core::Communication::PackBuffer& data) const;
 
       /*!
        * @brief Unpack all internal data that was previously packed by
@@ -63,10 +63,10 @@ namespace MIXTURE
        * @param position (in/out) : Position, where to start reading
        * @param data (in) : Vector of chars to extract data from
        */
-      void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+      void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
       /// @brief Updates previous history data
-      void Update();
+      void update();
 
       /*!
        * @brief Sets the deposition (homeostatic) stretch.

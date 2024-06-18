@@ -22,7 +22,7 @@ MIXTURE::PAR::MixtureGrowthStrategy::MixtureGrowthStrategy(
 {
 }
 
-MIXTURE::PAR::MixtureGrowthStrategy* MIXTURE::PAR::MixtureGrowthStrategy::Factory(const int matid)
+MIXTURE::PAR::MixtureGrowthStrategy* MIXTURE::PAR::MixtureGrowthStrategy::factory(const int matid)
 {
   // for the sake of safety
   if (Global::Problem::Instance()->Materials() == Teuchos::null)

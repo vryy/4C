@@ -72,7 +72,7 @@ namespace
   };
 
   template <typename T>
-  [[nodiscard]] T EvaluateI4(T lambda_f, T lambda_r, T lambda_ext)
+  [[nodiscard]] T evaluate_i4(T lambda_f, T lambda_r, T lambda_ext)
   {
     return std::pow(lambda_f, 2) / std::pow(lambda_r * lambda_ext, 2);
   }
@@ -104,7 +104,7 @@ MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::RemodelFiberI
 }
 
 template <int numstates, typename T>
-void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::Pack(
+void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::pack(
     Core::Communication::PackBuffer& data) const
 {
   if constexpr (!std::is_floating_point_v<T>)
@@ -129,7 +129,7 @@ void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::Pack(
 }
 
 template <int numstates, typename T>
-void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::Unpack(
+void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   if constexpr (!std::is_floating_point_v<T>)
@@ -156,7 +156,7 @@ void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::Unpack(
 }
 
 template <int numstates, typename T>
-void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::Update()
+void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::update()
 {
   for (std::size_t i = 1; i < numstates; ++i)
   {
@@ -405,7 +405,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_remodel_evolution_equation_dt(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
-  const T I4 = EvaluateI4<T>(lambda_f, lambda_r, lambda_ext);
+  const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
   const T delta_sig = evaluate_fiber_cauchy_stress(lambda_f, lambda_r, lambda_ext) - sig_h_;
   const T dsigdI4 = evaluate_d_fiber_cauchy_stress_partial_d_i4(lambda_f, lambda_r, lambda_ext);
 
@@ -421,7 +421,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_remodel_evolution_equation_dt_d_sig(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
-  const T I4 = EvaluateI4<T>(lambda_f, lambda_r, lambda_ext);
+  const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
   const T delta_sig = evaluate_fiber_cauchy_stress(lambda_f, lambda_r, lambda_ext) - sig_h_;
   const T dsigdI4 = evaluate_d_fiber_cauchy_stress_partial_d_i4(lambda_f, lambda_r, lambda_ext);
 
@@ -436,7 +436,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_remodel_evolution_equation_dt_d_i4(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
-  const T I4 = EvaluateI4<T>(lambda_f, lambda_r, lambda_ext);
+  const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
   const T delta_sig = evaluate_fiber_cauchy_stress(lambda_f, lambda_r, lambda_ext) - sig_h_;
   const T dsigdI4 = evaluate_d_fiber_cauchy_stress_partial_d_i4(lambda_f, lambda_r, lambda_ext);
   const T dsigdI4dI4 =
@@ -465,7 +465,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_remodel_evolution_equation_dt_partial_d_remodel(const T lambda_f,
     const T lambda_r, const T lambda_ext) const
 {
-  const T I4 = EvaluateI4<T>(lambda_f, lambda_r, lambda_ext);
+  const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
   const T dsigdI4 = evaluate_d_fiber_cauchy_stress_partial_d_i4(lambda_f, lambda_r, lambda_ext);
   const T delta_sig = evaluate_fiber_cauchy_stress(lambda_f, lambda_r, lambda_ext) - sig_h_;
 
@@ -496,8 +496,8 @@ template <int numstates, typename T>
 T MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::evaluate_fiber_cauchy_stress(
     const T lambda_f, const T lambda_r, const T lambda_ext) const
 {
-  const T I4 = EvaluateI4<T>(lambda_f, lambda_r, lambda_ext);
-  return fiber_material_->GetCauchyStress(I4);
+  const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
+  return fiber_material_->get_cauchy_stress(I4);
 }
 
 template <int numstates, typename T>
@@ -527,9 +527,9 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
   const T lambda_f = states_.back().lambda_f;
   const T lambda_r = states_.back().lambda_r;
   const T lambda_ext = states_.back().lambda_ext;
-  const T I4 = EvaluateI4<T>(lambda_f, lambda_r, lambda_ext);
+  const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
 
-  return fiber_material_->GetCauchyStress(I4) / std::pow(lambda_f, 2);
+  return fiber_material_->get_cauchy_stress(I4) / std::pow(lambda_f, 2);
 }
 
 template <int numstates, typename T>
@@ -540,9 +540,10 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
   const T lambda_f = states_.back().lambda_f;
   const T lambda_r = states_.back().lambda_r;
   const T lambda_ext = states_.back().lambda_ext;
-  const T I4 = EvaluateI4<T>(lambda_f, lambda_r, lambda_ext);
+  const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
 
-  return (fiber_material_->GetDCauchyStressDI4(I4) * I4 - fiber_material_->GetCauchyStress(I4)) /
+  return (fiber_material_->get_d_cauchy_stress_d_i4(I4) * I4 -
+             fiber_material_->get_cauchy_stress(I4)) /
          std::pow(lambda_f, 4);
 }
 
@@ -554,11 +555,11 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
   const T lambda_f = states_.back().lambda_f;
   const T lambda_r = states_.back().lambda_r;
   const T lambda_ext = states_.back().lambda_ext;
-  const T I4 = EvaluateI4<T>(lambda_f, lambda_r, lambda_ext);
+  const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
 
   const T dI4dlambdar = EvaluatedI4dlambdar(lambda_f, lambda_r, lambda_ext);
 
-  return fiber_material_->GetDCauchyStressDI4(I4) * dI4dlambdar / std::pow(lambda_f, 2);
+  return fiber_material_->get_d_cauchy_stress_d_i4(I4) * dI4dlambdar / std::pow(lambda_f, 2);
 }
 
 template <int numstates, typename T>
@@ -632,8 +633,8 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_fiber_cauchy_stress_partial_d_i4(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
-  const T I4 = EvaluateI4<T>(lambda_f, lambda_r, lambda_ext);
-  return fiber_material_->GetDCauchyStressDI4(I4);
+  const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
+  return fiber_material_->get_d_cauchy_stress_d_i4(I4);
 }
 
 template <int numstates, typename T>
@@ -641,7 +642,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_fiber_cauchy_stress_partial_d_i4_d_i4(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
-  const T I4 = EvaluateI4<T>(lambda_f, lambda_r, lambda_ext);
+  const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
   return fiber_material_->get_d_cauchy_stress_d_i4_d_i4(I4);
 }
 
@@ -681,22 +682,22 @@ MIXTURE::RemodelFiber<numstates>::RemodelFiber(
 }
 
 template <int numstates>
-void MIXTURE::RemodelFiber<numstates>::Pack(Core::Communication::PackBuffer& data) const
+void MIXTURE::RemodelFiber<numstates>::pack(Core::Communication::PackBuffer& data) const
 {
-  impl_->Pack(data);
+  impl_->pack(data);
 }
 
 template <int numstates>
-void MIXTURE::RemodelFiber<numstates>::Unpack(
+void MIXTURE::RemodelFiber<numstates>::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  impl_->Unpack(position, data);
+  impl_->unpack(position, data);
 }
 
 template <int numstates>
-void MIXTURE::RemodelFiber<numstates>::Update()
+void MIXTURE::RemodelFiber<numstates>::update()
 {
-  impl_->Update();
+  impl_->update();
 }
 
 template <int numstates>

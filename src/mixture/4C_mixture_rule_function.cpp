@@ -55,7 +55,7 @@ MIXTURE::PAR::FunctionMixtureRule::FunctionMixtureRule(
       initial_reference_density_(matdata.parameters.Get<double>("DENS")),
       mass_fractions_funct_ids_(matdata.parameters.Get<std::vector<int>>("MASSFRACFUNCT")){};
 
-std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::FunctionMixtureRule::CreateRule()
+std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::FunctionMixtureRule::create_rule()
 {
   return std::make_unique<MIXTURE::FunctionMixtureRule>(this);
 }
@@ -67,22 +67,22 @@ MIXTURE::FunctionMixtureRule::FunctionMixtureRule(MIXTURE::PAR::FunctionMixtureR
   // from input
 }
 
-void MIXTURE::FunctionMixtureRule::Setup(Teuchos::ParameterList& params, const int eleGID)
+void MIXTURE::FunctionMixtureRule::setup(Teuchos::ParameterList& params, const int eleGID)
 {
-  MixtureRule::Setup(params, eleGID);
+  MixtureRule::setup(params, eleGID);
 
   mass_fractions_functions_ = CreateFunctionsFromFunctionIds(params_->mass_fractions_funct_ids_);
 }
 
-void MIXTURE::FunctionMixtureRule::UnpackMixtureRule(
+void MIXTURE::FunctionMixtureRule::unpack_mixture_rule(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  MIXTURE::MixtureRule::UnpackMixtureRule(position, data);
+  MIXTURE::MixtureRule::unpack_mixture_rule(position, data);
 
   mass_fractions_functions_ = CreateFunctionsFromFunctionIds(params_->mass_fractions_funct_ids_);
 }
 
-void MIXTURE::FunctionMixtureRule::Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+void MIXTURE::FunctionMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)
@@ -114,7 +114,7 @@ void MIXTURE::FunctionMixtureRule::Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     MixtureConstituent& constituent = *constituents()[i];
     cstress.Clear();
     ccmat.Clear();
-    constituent.Evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
+    constituent.evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
 
     S_stress.Update(constituent_density, cstress, 1.0);
     cmat.Update(constituent_density, ccmat, 1.0);

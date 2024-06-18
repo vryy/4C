@@ -51,9 +51,9 @@ namespace MIXTURE
    public:
     RemodelFiberMaterialExponential(const PAR::RemodelFiberMaterialExponential<T>* matdata);
 
-    [[nodiscard]] T GetCauchyStress(T I4) const final;
+    [[nodiscard]] T get_cauchy_stress(T I4) const final;
 
-    [[nodiscard]] T GetDCauchyStressDI4(T I4) const final;
+    [[nodiscard]] T get_d_cauchy_stress_d_i4(T I4) const final;
 
     [[nodiscard]] T get_d_cauchy_stress_d_i4_d_i4(T I4) const final;
 

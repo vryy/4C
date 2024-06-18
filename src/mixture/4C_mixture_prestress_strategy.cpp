@@ -23,7 +23,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Prestress stragegy factory generates the prestress strategy for a specific material id
-MIXTURE::PAR::PrestressStrategy* MIXTURE::PAR::PrestressStrategy::Factory(int matid)
+MIXTURE::PAR::PrestressStrategy* MIXTURE::PAR::PrestressStrategy::factory(int matid)
 {
   // for the sake of safety
   if (Global::Problem::Instance()->Materials() == Teuchos::null)

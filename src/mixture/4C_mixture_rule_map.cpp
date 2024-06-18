@@ -68,7 +68,7 @@ MIXTURE::PAR::MapMixtureRule::MapMixtureRule(const Core::Mat::PAR::Parameter::Da
       mass_fractions_map_(matdata.parameters.Get<std::unordered_map<int, std::vector<double>>>(
           "MASSFRACMAPFILE")){};
 
-std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::MapMixtureRule::CreateRule()
+std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::MapMixtureRule::create_rule()
 {
   return std::make_unique<MIXTURE::MapMixtureRule>(this);
 }
@@ -78,18 +78,18 @@ MIXTURE::MapMixtureRule::MapMixtureRule(MIXTURE::PAR::MapMixtureRule* params)
 {
 }
 
-void MIXTURE::MapMixtureRule::Setup(Teuchos::ParameterList& params, const int eleGID)
+void MIXTURE::MapMixtureRule::setup(Teuchos::ParameterList& params, const int eleGID)
 {
-  MixtureRule::Setup(params, eleGID);
+  MixtureRule::setup(params, eleGID);
 }
 
-void MIXTURE::MapMixtureRule::UnpackMixtureRule(
+void MIXTURE::MapMixtureRule::unpack_mixture_rule(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  MIXTURE::MixtureRule::UnpackMixtureRule(position, data);
+  MIXTURE::MixtureRule::unpack_mixture_rule(position, data);
 }
 
-void MIXTURE::MapMixtureRule::Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+void MIXTURE::MapMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)
@@ -108,7 +108,7 @@ void MIXTURE::MapMixtureRule::Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     MixtureConstituent& constituent = *constituents()[i];
     cstress.Clear();
     ccmat.Clear();
-    constituent.Evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
+    constituent.evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
 
     // add stress contribution to global stress
     double constituent_density = params_->initial_reference_density_ * massfracs[i];
