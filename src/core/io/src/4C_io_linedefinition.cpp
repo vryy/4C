@@ -772,23 +772,12 @@ namespace Input
 
   std::optional<Core::IO::InputParameterContainer> LineDefinition::read(std::istream& stream)
   {
-    return read(stream, nullptr);
-  }
-
-
-
-  std::optional<Core::IO::InputParameterContainer> LineDefinition::read(
-      std::istream& stream, const std::string* skipname)
-  {
     pimpl_->readtailcomponents_.clear();
     for (auto& component : pimpl_->components_)
     {
-      if (!skipname || !component.IsNamed(*skipname))
+      if (not component.ReadRequired(pimpl_->container_, stream))
       {
-        if (not component.ReadRequired(pimpl_->container_, stream))
-        {
-          return std::nullopt;
-        }
+        return std::nullopt;
       }
     }
 
