@@ -71,7 +71,7 @@ namespace PoroMultiPhaseScaTra
     virtual ~PoroMultiPhaseScatraArteryCouplingPairBase() = default;
 
     //! Init
-    virtual void Init(std::vector<Core::Elements::Element const*> elements,
+    virtual void init(std::vector<Core::Elements::Element const*> elements,
         const Teuchos::ParameterList& couplingparams,
         const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
@@ -168,7 +168,7 @@ namespace PoroMultiPhaseScaTra
     PoroMultiPhaseScatraArteryCouplingPair();
 
     //! Init
-    void Init(std::vector<Core::Elements::Element const*> elements,
+    void init(std::vector<Core::Elements::Element const*> elements,
         const Teuchos::ParameterList& couplingparams,
         const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
@@ -499,7 +499,7 @@ namespace PoroMultiPhaseScaTra
     //! name of the condition
     std::string condname_;
 
-    //! indicates if the Init() function has been called
+    //! indicates if the init() function has been called
     bool isinit_;
 
     //! indicates if the pre_evaluate() function has been called

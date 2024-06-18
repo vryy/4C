@@ -457,7 +457,7 @@ bool XFEM::XfluidTimeintBase::call_side_edge_intersection_t(
   Teuchos::RCP<Core::Geo::Cut::Options> options =
       Teuchos::rcp(new Core::Geo::Cut::Options());  // Create cut options for intersection
                                                     // (specify to use double prec.)
-  intersect->Init(xyze_lineElement, xyze_surfaceElement, false, false, false, options.getRawPtr());
+  intersect->init(xyze_lineElement, xyze_surfaceElement, false, false, false, options.getRawPtr());
 
   // check also limits during the newton scheme and when converged
   double itol;

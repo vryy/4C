@@ -38,7 +38,7 @@ namespace FLD
     \brief initialization
 
     */
-    void Init() override;
+    void init() override;
 
     /*!
     \brief set scalar fields within outer iteration loop

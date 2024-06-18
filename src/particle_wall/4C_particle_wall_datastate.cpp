@@ -26,7 +26,7 @@ PARTICLEWALL::WallDataState::WallDataState(const Teuchos::ParameterList& params)
   // empty constructor
 }
 
-void PARTICLEWALL::WallDataState::Init(
+void PARTICLEWALL::WallDataState::init(
     const Teuchos::RCP<Core::FE::Discretization> walldiscretization)
 {
   // set wall discretization

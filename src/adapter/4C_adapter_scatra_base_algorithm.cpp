@@ -510,12 +510,12 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::ScaTraBaseAlgorithm::Init()
+void Adapter::ScaTraBaseAlgorithm::init()
 {
   set_is_setup(false);
 
   // initialize scatra time integrator
-  scatra_->Init();
+  scatra_->init();
 
   set_is_init(true);
 }
@@ -603,7 +603,7 @@ void Adapter::ScaTraBaseAlgorithm::check_is_setup() const
 /*----------------------------------------------------------------------*/
 void Adapter::ScaTraBaseAlgorithm::check_is_init() const
 {
-  if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
+  if (not is_init()) FOUR_C_THROW("init(...) was not called.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

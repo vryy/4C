@@ -58,7 +58,7 @@ namespace Adapter
         Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
-    void Init() override;
+    void init() override;
 
     Teuchos::RCP<const Epetra_Map> dof_row_map() override;
 

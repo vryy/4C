@@ -31,7 +31,7 @@ ParticleInteraction::DEMContactNormalBase::DEMContactNormalBase(
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactNormalBase::Init()
+void ParticleInteraction::DEMContactNormalBase::init()
 {
   if (not((c_ <= 0.0 and k_normal_ > 0.0) or (c_ > 0.0 and v_max_ > 0.0 and k_normal_ <= 0.0)))
     FOUR_C_THROW(
@@ -87,10 +87,10 @@ ParticleInteraction::DEMContactNormalLinearSpringDamp::DEMContactNormalLinearSpr
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactNormalLinearSpringDamp::Init()
+void ParticleInteraction::DEMContactNormalLinearSpringDamp::init()
 {
   // call base class init
-  DEMContactNormalLinearSpring::Init();
+  DEMContactNormalLinearSpring::init();
 
   // safety checks for contact parameters
   if (e_ < 0.0)
@@ -189,10 +189,10 @@ ParticleInteraction::DEMContactNormalNonlinearDampBase::DEMContactNormalNonlinea
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactNormalNonlinearDampBase::Init()
+void ParticleInteraction::DEMContactNormalNonlinearDampBase::init()
 {
   // call base class init
-  DEMContactNormalNonlinearBase::Init();
+  DEMContactNormalNonlinearBase::init();
 
   // safety checks for contact parameters
   if (d_normal_ < 0.0)

@@ -124,7 +124,7 @@ int STR::TimAda::Integrate()
 {
   // finalize initialization
   // (only relevant if an auxiliary time integrator is used)
-  Init(sti_);
+  init(sti_);
 
   // Richardson extrapolation to no avail
   if (MethodAdaptDis() == ada_ident)

@@ -39,7 +39,7 @@ namespace ParticleInteraction
     virtual ~SPHKernelBase() = default;
 
     //! init kernel handler
-    virtual void Init();
+    virtual void init();
 
     //! setup kernel handler
     virtual void setup();

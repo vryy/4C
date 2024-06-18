@@ -100,7 +100,7 @@ void ssi_drt()
 
     // 3.1.2 init the chosen ssi algorithm
     // Construct time integrators of subproblems inside.
-    ssi->Init(comm, ssiparams, scatradyn, sdyn, "structure", "scatra", isale);
+    ssi->init(comm, ssiparams, scatradyn, sdyn, "structure", "scatra", isale);
 
     // now we can finally fill our discretizations
     // reinitialization of the structural elements is

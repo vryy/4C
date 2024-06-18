@@ -91,7 +91,7 @@ LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdi
 /*------------------------------------------------------------------------*
  | initialize time integration                                wirtz 11/15 |
  *------------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::Init()
+void LUBRICATION::TimIntImpl::init()
 {
   // -------------------------------------------------------------------
   // always nonlinear solver
@@ -161,7 +161,7 @@ void LUBRICATION::TimIntImpl::Init()
   prei_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   return;
-}  // TimIntImpl::Init()
+}  // TimIntImpl::init()
 
 
 

@@ -56,10 +56,10 @@ LowMach::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LowMach::Algorithm::Init()
+void LowMach::Algorithm::init()
 {
-  // call Init() in base class
-  Adapter::ScaTraFluidCouplingAlgorithm::Init();
+  // call init() in base class
+  Adapter::ScaTraFluidCouplingAlgorithm::init();
 
   // flag for monolithic solver
   monolithic_ = (Core::UTILS::IntegralValue<int>(probdyn_, "MONOLITHIC"));

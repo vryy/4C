@@ -22,7 +22,7 @@ PARTICLEENGINE::ParticleContainerBundle::ParticleContainerBundle()
   // empty constructor
 }
 
-void PARTICLEENGINE::ParticleContainerBundle::Init()
+void PARTICLEENGINE::ParticleContainerBundle::init()
 {
   // nothing to do
 }
@@ -58,7 +58,7 @@ void PARTICLEENGINE::ParticleContainerBundle::setup(
 
     // create and init container of owned particles
     container = std::make_shared<ParticleContainer>();
-    container->Init();
+    container->init();
     // setup container of owned particles
     container->setup(initialsize, stateset);
     // set container of owned particles
@@ -66,7 +66,7 @@ void PARTICLEENGINE::ParticleContainerBundle::setup(
 
     // create and init container of ghosted particles
     container = std::make_shared<ParticleContainer>();
-    container->Init();
+    container->init();
     // setup container of ghosted particles
     container->setup(initialsize, stateset);
     // set container of ghosted particles

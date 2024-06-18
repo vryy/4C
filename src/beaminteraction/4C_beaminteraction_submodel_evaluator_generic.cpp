@@ -42,7 +42,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Generic()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
+void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::init(
     Teuchos::RCP<Core::FE::Discretization> const& ia_discret,
     Teuchos::RCP<Core::FE::Discretization> const& bindis,
     Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> const& gstate,
@@ -72,14 +72,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::check_init_setup() const
 {
-  if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
+  if (!is_init() or !is_setup()) FOUR_C_THROW("Call init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::check_init() const
 {
-  if (not is_init()) FOUR_C_THROW("Call Init() first!");
+  if (not is_init()) FOUR_C_THROW("Call init() first!");
 }
 
 /*----------------------------------------------------------------------------*

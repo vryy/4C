@@ -47,7 +47,7 @@ namespace XFEM
     /** \brief initialize member variables for xfield<-->field couplings
      *
      *  An examples is the XFluidFluid problem. */
-    void Init(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
+    void init(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
         const Teuchos::RCP<Core::Geo::CutWizard>& wizard,
         const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
         const Teuchos::RCP<Core::FE::Discretization>& xfielddiscret,
@@ -133,13 +133,13 @@ namespace XFEM
     //! check the initialization indicator
     inline void check_init() const
     {
-      if (not isinit_) FOUR_C_THROW("Call XFEM::XFieldState::Init() first!");
+      if (not isinit_) FOUR_C_THROW("Call XFEM::XFieldState::init() first!");
     }
 
     //! check the initialization and setup indicators
     inline void check_init_setup() const
     {
-      if (not issetup_ or not isinit_) FOUR_C_THROW("Call Init() and setup() first!");
+      if (not issetup_ or not isinit_) FOUR_C_THROW("Call init() and setup() first!");
     }
 
    protected:

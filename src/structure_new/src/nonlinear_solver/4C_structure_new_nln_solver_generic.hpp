@@ -58,7 +58,7 @@ namespace STR
         virtual ~Generic() = default;
 
         //! initialization
-        virtual void Init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate,
+        virtual void init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate,
             const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn,
             const Teuchos::RCP<STR::TimeInt::NoxInterface>& noxinterface,
             const Teuchos::RCP<STR::Integrator>& integrator,
@@ -90,20 +90,20 @@ namespace STR
         virtual int get_num_nln_iterations() const = 0;
 
        protected:
-        //! Returns true if Init() has been called
+        //! Returns true if init() has been called
         inline const bool& is_init() const { return isinit_; };
 
         //! Returns true if setup() has been called
         inline const bool& is_setup() const { return issetup_; };
 
-        //! Check if Init() and setup() have been called
+        //! Check if init() and setup() have been called
         void check_init_setup() const
         {
-          FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
+          FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
         }
 
-        //! Check if Init() has been called
-        void check_init() const { FOUR_C_ASSERT(is_init(), "You have to call Init() first!"); }
+        //! Check if init() has been called
+        void check_init() const { FOUR_C_ASSERT(is_init(), "You have to call init() first!"); }
 
         //! Returns the global state data container pointer
         Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> data_global_state_ptr()

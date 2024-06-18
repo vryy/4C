@@ -86,7 +86,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distype
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distypeArt, Core::FE::CellType distypeCont, int dim>
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::Init(std::vector<Core::Elements::Element const*> elements,
+    dim>::init(std::vector<Core::Elements::Element const*> elements,
     const Teuchos::ParameterList& couplingparams, const Teuchos::ParameterList& fluidcouplingparams,
     const std::vector<int>& coupleddofs_cont, const std::vector<int>& coupleddofs_art,
     const std::vector<std::vector<int>>& scale_vec, const std::vector<std::vector<int>>& funct_vec,

@@ -35,7 +35,7 @@ namespace ParticleInteraction
     virtual ~SPHEquationOfStateBase() = default;
 
     //! init equation of state handler
-    virtual void Init();
+    virtual void init();
 
     //! setup equation of state handler
     virtual void setup();

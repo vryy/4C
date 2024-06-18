@@ -32,7 +32,7 @@ void ssti_drt()
                                   problem->SSTIControlParams(), "COUPALGO"),
       comm, problem->SSTIControlParams());
 
-  ssti->Init(comm, problem->SSTIControlParams(), problem->scalar_transport_dynamic_params(),
+  ssti->init(comm, problem->SSTIControlParams(), problem->scalar_transport_dynamic_params(),
       problem->SSTIControlParams().sublist("THERMO"), problem->structural_dynamic_params());
 
   ssti->setup();

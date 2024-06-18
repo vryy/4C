@@ -192,7 +192,7 @@ void SSTI::SSTIMono::build_null_spaces()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSTI::SSTIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& sstitimeparams,
+void SSTI::SSTIMono::init(const Epetra_Comm& comm, const Teuchos::ParameterList& sstitimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams,
     const Teuchos::ParameterList& structparams)
 {
@@ -202,7 +202,7 @@ void SSTI::SSTIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList&
     FOUR_C_THROW("Invalid type of velocity field for scalar-structure interaction!");
 
   // call base class routine
-  SSTIAlgorithm::Init(comm, sstitimeparams, scatraparams, thermoparams, structparams);
+  SSTIAlgorithm::init(comm, sstitimeparams, scatraparams, thermoparams, structparams);
 }
 
 

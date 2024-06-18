@@ -28,7 +28,7 @@ FLD::TimIntPoro::TimIntPoro(const Teuchos::RCP<Core::FE::Discretization>& actdis
 {
 }
 
-void FLD::TimIntPoro::Init()
+void FLD::TimIntPoro::init()
 {
   Teuchos::ParameterList* stabparams;
   stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));

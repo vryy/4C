@@ -55,10 +55,10 @@ void ScaTra::ScaTraAlgorithm::setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ScaTra::ScaTraAlgorithm::Init()
+void ScaTra::ScaTraAlgorithm::init()
 {
   // call init in base class
-  Adapter::ScaTraFluidCouplingAlgorithm::Init();
+  Adapter::ScaTraFluidCouplingAlgorithm::init();
 }
 
 /*----------------------------------------------------------------------*

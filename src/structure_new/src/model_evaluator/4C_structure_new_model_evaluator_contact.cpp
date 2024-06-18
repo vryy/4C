@@ -42,7 +42,7 @@ void STR::MODELEVALUATOR::Contact::setup()
   // create the contact factory
   // ---------------------------------------------------------------------
   CONTACT::STRATEGY::Factory factory;
-  factory.Init(global_state_ptr()->get_discret());
+  factory.init(global_state_ptr()->get_discret());
   factory.setup();
 
   // check the problem dimension

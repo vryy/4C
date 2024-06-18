@@ -51,7 +51,7 @@ PARTICLEENGINE::ParticleEngine::ParticleEngine(
 
 PARTICLEENGINE::ParticleEngine::~ParticleEngine() = default;
 
-void PARTICLEENGINE::ParticleEngine::Init()
+void PARTICLEENGINE::ParticleEngine::init()
 {
   // init binning strategy
   init_binning_strategy();
@@ -1027,7 +1027,7 @@ void PARTICLEENGINE::ParticleEngine::init_particle_container_bundle()
 {
   // create and init particle container bundle
   particlecontainerbundle_ = std::make_shared<ParticleContainerBundle>();
-  particlecontainerbundle_->Init();
+  particlecontainerbundle_->init();
 }
 
 void PARTICLEENGINE::ParticleEngine::setup_particle_container_bundle(
@@ -1042,7 +1042,7 @@ void PARTICLEENGINE::ParticleEngine::init_particle_unique_global_id_handler()
   // create and init unique global identifier handler
   particleuniqueglobalidhandler_ =
       std::unique_ptr<UniqueGlobalIdHandler>(new UniqueGlobalIdHandler(comm_, "particle"));
-  particleuniqueglobalidhandler_->Init();
+  particleuniqueglobalidhandler_->init();
 }
 
 void PARTICLEENGINE::ParticleEngine::setup_particle_unique_global_id_handler() const
@@ -1069,7 +1069,7 @@ void PARTICLEENGINE::ParticleEngine::init_particle_vtp_writer()
   // construct and init particle runtime vtp writer
   particlevtpwriter_ =
       std::unique_ptr<ParticleRuntimeVtpWriter>(new ParticleRuntimeVtpWriter(comm_));
-  particlevtpwriter_->Init(particlecontainerbundle_);
+  particlevtpwriter_->init(particlecontainerbundle_);
 }
 
 void PARTICLEENGINE::ParticleEngine::setup_particle_vtp_writer() const

@@ -57,7 +57,7 @@ namespace ParticleInteraction
     explicit DEMNeighborPairs();
 
     //! init neighbor pair handler
-    void Init();
+    void init();
 
     //! setup neighbor pair handler
     void setup(

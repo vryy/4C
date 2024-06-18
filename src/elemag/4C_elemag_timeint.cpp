@@ -70,7 +70,7 @@ EleMag::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<Core::FE::Discretization
 /*----------------------------------------------------------------------*
  |  initialization routine (public)                    berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void EleMag::ElemagTimeInt::Init()
+void EleMag::ElemagTimeInt::init()
 {
   // get dof row map
   Teuchos::RCP<const Epetra_Map> dofrowmap = Teuchos::rcp(discret_->dof_row_map(), false);

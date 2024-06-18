@@ -36,7 +36,7 @@ BEAMINTERACTION::BeamPotentialPair::BeamPotentialPair()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamPotentialPair::Init(
+void BEAMINTERACTION::BeamPotentialPair::init(
     const Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> params_ptr,
     const Core::Elements::Element* element1, const Core::Elements::Element* element2)
 {
@@ -192,14 +192,14 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialPair::check_init() const
 {
-  if (not is_init()) FOUR_C_THROW("Call Init() first!");
+  if (not is_init()) FOUR_C_THROW("Call init() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialPair::check_init_setup() const
 {
-  if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
+  if (not is_init() or not is_setup()) FOUR_C_THROW("Call init() and setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*

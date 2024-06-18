@@ -49,7 +49,7 @@ Core::Geo::MeshFree::BoundingBox::BoundingBox()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::Init(const Teuchos::ParameterList& binning_params)
+void Core::Geo::MeshFree::BoundingBox::init(const Teuchos::ParameterList& binning_params)
 {
   issetup_ = false;
 
@@ -114,7 +114,7 @@ void Core::Geo::MeshFree::BoundingBox::Init(const Teuchos::ParameterList& binnin
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::Init(
+void Core::Geo::MeshFree::BoundingBox::init(
     Core::LinAlg::Matrix<3, 2> const& box, std::vector<bool> const& pbconoff)
 {
   issetup_ = false;

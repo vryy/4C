@@ -119,7 +119,7 @@ namespace FLD
     \brief initialization
 
     */
-    void Init() override;
+    void init() override;
 
     /*!
     \brief initialization of nonlinear BCs

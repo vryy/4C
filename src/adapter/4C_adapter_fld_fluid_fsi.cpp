@@ -56,10 +56,10 @@ Adapter::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Di
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidFSI::Init()
+void Adapter::FluidFSI::init()
 {
   // call base class init
-  FluidWrapper::Init();
+  FluidWrapper::init();
 
   // cast fluid to fluidimplicit
   if (fluidimpl_ == Teuchos::null)
@@ -701,7 +701,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidFSI::calculate_wall_shear_stresses()
   // Get WSSManager
   Teuchos::RCP<FLD::UTILS::StressManager> stressmanager = fluidimpl_->StressManager();
 
-  // Since the WSS Manager cannot be initialized in the FluidImplicitTimeInt::Init()
+  // Since the WSS Manager cannot be initialized in the FluidImplicitTimeInt::init()
   // it is not so sure if the WSSManager is jet initialized. So let's be safe here..
   if (stressmanager == Teuchos::null) FOUR_C_THROW("Call of StressManager failed!");
   if (not stressmanager->is_init()) FOUR_C_THROW("StressManager has not been initialized jet!");

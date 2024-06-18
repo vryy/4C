@@ -42,7 +42,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Initialize with the stuff coming from input file.
      */
-    void Init() override;
+    void init() override;
 
     /**
      * \brief Returns the coupling type for beam-to-surface coupling.

@@ -167,7 +167,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
 
     // build processor local octree
     auto nodematchingoctree = Core::COUPLING::NodeMatchingOctree();
-    nodematchingoctree.Init(*dis_, masternodeids, maxnodeperleaf, tol);
+    nodematchingoctree.init(*dis_, masternodeids, maxnodeperleaf, tol);
     nodematchingoctree.setup();
 
     // create map from gid masternode -> gid corresponding slavenode

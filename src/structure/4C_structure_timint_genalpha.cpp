@@ -124,12 +124,12 @@ STR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntGenAlpha::Init(const Teuchos::ParameterList& timeparams,
+void STR::TimIntGenAlpha::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
-  // call Init() in base class
-  STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
+  // call init() in base class
+  STR::TimIntImpl::init(timeparams, sdynparams, xparams, actdis, solver);
 
   // calculate time integration parameters
   CalcCoeff();

@@ -38,7 +38,7 @@ STR::MODELEVALUATOR::BrownianDynData::BrownianDynData()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDynData::Init(
+void STR::MODELEVALUATOR::BrownianDynData::init(
     const Teuchos::RCP<const STR::MODELEVALUATOR::Data>& str_data_ptr)
 {
   issetup_ = false;

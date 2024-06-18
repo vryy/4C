@@ -41,10 +41,10 @@ ParticleInteraction::ParticleInteractionDEM::ParticleInteractionDEM(
 
 ParticleInteraction::ParticleInteractionDEM::~ParticleInteractionDEM() = default;
 
-void ParticleInteraction::ParticleInteractionDEM::Init()
+void ParticleInteraction::ParticleInteractionDEM::init()
 {
   // call base class init
-  ParticleInteractionBase::Init();
+  ParticleInteractionBase::init();
 
   // init neighbor pair handler
   init_neighbor_pair_handler();
@@ -216,7 +216,7 @@ void ParticleInteraction::ParticleInteractionDEM::init_neighbor_pair_handler()
   neighborpairs_ = std::make_shared<ParticleInteraction::DEMNeighborPairs>();
 
   // init neighbor pair handler
-  neighborpairs_->Init();
+  neighborpairs_->init();
 }
 
 void ParticleInteraction::ParticleInteractionDEM::init_history_pair_handler()
@@ -225,7 +225,7 @@ void ParticleInteraction::ParticleInteractionDEM::init_history_pair_handler()
   historypairs_ = std::make_shared<ParticleInteraction::DEMHistoryPairs>(comm_);
 
   // init history pair handler
-  historypairs_->Init();
+  historypairs_->init();
 }
 
 void ParticleInteraction::ParticleInteractionDEM::init_contact_handler()
@@ -235,7 +235,7 @@ void ParticleInteraction::ParticleInteractionDEM::init_contact_handler()
       new ParticleInteraction::DEMContact(params_dem_));
 
   // init contact handler
-  contact_->Init();
+  contact_->init();
 }
 
 void ParticleInteraction::ParticleInteractionDEM::init_adhesion_handler()
@@ -250,7 +250,7 @@ void ParticleInteraction::ParticleInteractionDEM::init_adhesion_handler()
         new ParticleInteraction::DEMAdhesion(params_dem_));
 
   // init adhesion handler
-  if (adhesion_) adhesion_->Init();
+  if (adhesion_) adhesion_->init();
 }
 
 void ParticleInteraction::ParticleInteractionDEM::setup_particle_interaction_writer()

@@ -51,7 +51,7 @@ namespace PARTICLEALGORITHM
      *
      * \param[in] gravity gravity acceleration
      */
-    void Init(const std::vector<double>& gravity);
+    void init(const std::vector<double>& gravity);
 
     /*!
      * \brief setup gravity handler

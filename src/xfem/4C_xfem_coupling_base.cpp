@@ -92,12 +92,12 @@ XFEM::CouplingBase::CouplingBase(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::CouplingBase::Init()
+void XFEM::CouplingBase::init()
 {
   // TODO: correct handling of init and setup flags for derived classes
 
   // ---------------------------------------------------------------------------
-  // We need to call setup() after Init()
+  // We need to call setup() after init()
   // ---------------------------------------------------------------------------
   issetup_ = false;
 

@@ -69,7 +69,7 @@ namespace ParticleInteraction
     ~SPHTemperature();
 
     //! init temperature handler
-    void Init();
+    void init();
 
     //! setup temperature handler
     void setup(

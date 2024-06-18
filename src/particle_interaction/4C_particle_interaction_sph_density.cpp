@@ -40,7 +40,7 @@ ParticleInteraction::SPHDensityBase::SPHDensityBase(const Teuchos::ParameterList
   // empty constructor
 }
 
-void ParticleInteraction::SPHDensityBase::Init()
+void ParticleInteraction::SPHDensityBase::init()
 {
   // init with potential fluid particle types
   fluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2};
@@ -813,10 +813,10 @@ ParticleInteraction::SPHDensityPredictCorrect::SPHDensityPredictCorrect(
 
 ParticleInteraction::SPHDensityPredictCorrect::~SPHDensityPredictCorrect() = default;
 
-void ParticleInteraction::SPHDensityPredictCorrect::Init()
+void ParticleInteraction::SPHDensityPredictCorrect::init()
 {
   // call base class init
-  SPHDensityBase::Init();
+  SPHDensityBase::init();
 
   // init density correction handler
   init_density_correction_handler();
@@ -923,7 +923,7 @@ void ParticleInteraction::SPHDensityPredictCorrect::init_density_correction_hand
   }
 
   // init density correction handler
-  densitycorrection_->Init();
+  densitycorrection_->init();
 }
 
 void ParticleInteraction::SPHDensityPredictCorrect::correct_density() const

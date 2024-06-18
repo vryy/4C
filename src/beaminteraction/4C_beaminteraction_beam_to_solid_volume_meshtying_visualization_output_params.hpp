@@ -40,7 +40,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Initialize with the stuff coming from input file.
      */
-    void Init();
+    void init();
 
     /**
      * \brief Setup member variables.
@@ -110,7 +110,7 @@ namespace BEAMINTERACTION
      */
     inline void check_init_setup() const
     {
-      if (!isinit_ or !issetup_) FOUR_C_THROW("Call Init() and setup() first!");
+      if (!isinit_ or !issetup_) FOUR_C_THROW("Call init() and setup() first!");
     }
 
     /**
@@ -118,7 +118,7 @@ namespace BEAMINTERACTION
      */
     inline void check_init() const
     {
-      if (!isinit_) FOUR_C_THROW("Init() has not been called, yet!");
+      if (!isinit_) FOUR_C_THROW("init() has not been called, yet!");
     }
 
     //! Flag if object is initialized.

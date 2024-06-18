@@ -28,12 +28,12 @@ namespace
       artificialviscosity_ = std::make_unique<ParticleInteraction::SPHArtificialViscosity>();
 
       // init artificial viscosity handler
-      artificialviscosity_->Init();
+      artificialviscosity_->init();
 
       // setup artificial viscosity handler
       artificialviscosity_->setup();
     }
-    // note: the public functions Init() and setup() of class SPHEquationOfStateGenTait are called
+    // note: the public functions init() and setup() of class SPHEquationOfStateGenTait are called
     // in SetUp() and thus implicitly tested by all following unittests
   };
 

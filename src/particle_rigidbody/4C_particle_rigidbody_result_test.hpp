@@ -51,7 +51,7 @@ namespace ParticleRigidBody
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void Init();
+    void init();
 
     /*!
      * \brief setup rigid body result test

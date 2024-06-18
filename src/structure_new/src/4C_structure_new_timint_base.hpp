@@ -62,7 +62,7 @@ namespace STR
       Base();
 
       /// initialize (all already existing) class variables
-      virtual void Init(const Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio,
+      virtual void init(const Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio,
           const Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn,
           const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> dataglobalstate);
 
@@ -732,14 +732,14 @@ namespace STR
 
       ///@}
      protected:
-      /// Check if Init() and setup() have been called, yet.
+      /// Check if init() and setup() have been called, yet.
       inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
       }
 
-      /// Check if Init() has been called
-      inline void check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!"); }
+      /// Check if init() has been called
+      inline void check_init() const { FOUR_C_ASSERT(is_init(), "Call init() first!"); }
 
       /// Get the global state
       BaseDataGlobalState& data_global_state()
@@ -873,7 +873,7 @@ namespace STR
       void initialize_energy_file_stream_and_write_headers();
 
      protected:
-      /// flag indicating if Init() has been called
+      /// flag indicating if init() has been called
       bool isinit_;
 
       /// flag indicating if setup() has been called

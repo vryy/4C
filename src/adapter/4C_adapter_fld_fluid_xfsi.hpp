@@ -64,7 +64,7 @@ namespace Adapter
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     /// initialize algorithm
-    void Init() override;
+    void init() override;
 
     /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& StructInterface() const

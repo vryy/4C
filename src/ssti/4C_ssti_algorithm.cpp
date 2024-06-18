@@ -50,7 +50,7 @@ SSTI::SSTIAlgorithm::SSTIAlgorithm(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
+void SSTI::SSTIAlgorithm::init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& sstitimeparams, const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& thermoparams, const Teuchos::ParameterList& structparams)
 {
@@ -79,21 +79,21 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
   struct_adapterbase_ptr_ = Adapter::build_structure_algorithm(structparams);
 
   // initialize structure base algorithm
-  struct_adapterbase_ptr_->Init(
+  struct_adapterbase_ptr_->init(
       sstitimeparams, const_cast<Teuchos::ParameterList&>(structparams), structuredis);
 
   // create and initialize scatra problem and thermo problem
   scatra_ = Teuchos::rcp(
       new Adapter::ScaTraBaseAlgorithm(sstitimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
           problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), "scatra", true));
-  scatra_->Init();
+  scatra_->init();
   scatra_->ScaTraField()->set_number_of_dof_set_displacement(1);
   scatra_->ScaTraField()->set_number_of_dof_set_velocity(1);
   scatra_->ScaTraField()->set_number_of_dof_set_thermo(2);
   thermo_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(sstitimeparams,
       clone_thermo_params(scatraparams, thermoparams),
       problem->SolverParams(thermoparams.get<int>("LINEAR_SOLVER")), "thermo", true));
-  thermo_->Init();
+  thermo_->init();
   thermo_->ScaTraField()->set_number_of_dof_set_displacement(1);
   thermo_->ScaTraField()->set_number_of_dof_set_velocity(1);
   thermo_->ScaTraField()->set_number_of_dof_set_sca_tra(2);
@@ -420,7 +420,7 @@ Teuchos::RCP<ScaTra::ScaTraTimIntImpl> SSTI::SSTIAlgorithm::ThermoField() const
 /*----------------------------------------------------------------------*/
 void SSTI::SSTIAlgorithm::check_is_init()
 {
-  if (not isinit_) FOUR_C_THROW("Init(...) was not called.");
+  if (not isinit_) FOUR_C_THROW("init(...) was not called.");
 }
 
 /*----------------------------------------------------------------------*/

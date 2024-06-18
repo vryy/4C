@@ -26,7 +26,7 @@ ParticleInteraction::DEMContactTangentialBase::DEMContactTangentialBase(
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactTangentialBase::Init()
+void ParticleInteraction::DEMContactTangentialBase::init()
 {
   // nothing to do
 }
@@ -53,10 +53,10 @@ ParticleInteraction::DEMContactTangentialLinearSpringDamp::DEMContactTangentialL
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactTangentialLinearSpringDamp::Init()
+void ParticleInteraction::DEMContactTangentialLinearSpringDamp::init()
 {
   // call base class init
-  DEMContactTangentialBase::Init();
+  DEMContactTangentialBase::init();
 
   // safety checks for contact parameters
   if (nue_ <= -1.0 or nue_ > 0.5)

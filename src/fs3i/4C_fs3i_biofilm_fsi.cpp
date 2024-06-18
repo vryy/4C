@@ -54,17 +54,17 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm) : PartFS3I1Wc(comm), comm_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::Init()
+void FS3I::BiofilmFSI::init()
 {
   if (comm_.MyPID() == 0)
     std::cout << "\n WARNING ! The implementation of BiofilmFSI is not well tested,\n"
-                 " buggy, and introduction of just Init(...) and setup() in commit\n"
+                 " buggy, and introduction of just init(...) and setup() in commit\n"
                  " to revision 22366 led to differing results slightly above the\n"
                  " convergence tolerance. Rework on this problem type is necessary!\n\n"
               << std::endl;
 
-  // call Init() in base class
-  FS3I::PartFS3I1Wc::Init();
+  // call init() in base class
+  FS3I::PartFS3I1Wc::init();
 
   //---------------------------------------------------------------------
   // set up struct ale

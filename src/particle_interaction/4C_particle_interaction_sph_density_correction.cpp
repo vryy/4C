@@ -23,7 +23,7 @@ ParticleInteraction::SPHDensityCorrectionBase::SPHDensityCorrectionBase()
   // empty constructor
 }
 
-void ParticleInteraction::SPHDensityCorrectionBase::Init()
+void ParticleInteraction::SPHDensityCorrectionBase::init()
 {
   // nothing to do
 }

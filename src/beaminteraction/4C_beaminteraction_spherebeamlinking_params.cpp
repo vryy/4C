@@ -36,7 +36,7 @@ BEAMINTERACTION::SphereBeamLinkingParams::SphereBeamLinkingParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TimeInt::BaseDataGlobalState const& gstate)
+void BEAMINTERACTION::SphereBeamLinkingParams::init(STR::TimeInt::BaseDataGlobalState const& gstate)
 {
   issetup_ = false;
 

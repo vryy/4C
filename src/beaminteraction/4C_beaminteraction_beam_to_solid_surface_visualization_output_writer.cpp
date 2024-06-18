@@ -52,7 +52,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Init()
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::init()
 {
   issetup_ = false;
   isinit_ = true;
@@ -391,7 +391,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
  */
 void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::check_init_setup() const
 {
-  if (!isinit_ or !issetup_) FOUR_C_THROW("Call Init() and setup() first!");
+  if (!isinit_ or !issetup_) FOUR_C_THROW("Call init() and setup() first!");
 }
 
 /**
@@ -399,7 +399,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::check_init_se
  */
 void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::check_init() const
 {
-  if (!isinit_) FOUR_C_THROW("Init() has not been called, yet!");
+  if (!isinit_) FOUR_C_THROW("init() has not been called, yet!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

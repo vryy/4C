@@ -42,7 +42,7 @@ ParticleInteraction::SPHInterfaceViscosity::SPHInterfaceViscosity(
 
 ParticleInteraction::SPHInterfaceViscosity::~SPHInterfaceViscosity() = default;
 
-void ParticleInteraction::SPHInterfaceViscosity::Init()
+void ParticleInteraction::SPHInterfaceViscosity::init()
 {
   // init artificial viscosity handler
   init_artificial_viscosity_handler();
@@ -129,7 +129,7 @@ void ParticleInteraction::SPHInterfaceViscosity::init_artificial_viscosity_handl
       new ParticleInteraction::SPHArtificialViscosity());
 
   // init artificial viscosity handler
-  artificialviscosity_->Init();
+  artificialviscosity_->init();
 }
 
 void ParticleInteraction::SPHInterfaceViscosity::compute_interface_viscosity_particle_contribution()

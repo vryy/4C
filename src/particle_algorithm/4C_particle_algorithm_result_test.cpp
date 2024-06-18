@@ -25,7 +25,7 @@ PARTICLEALGORITHM::ParticleResultTest::ParticleResultTest() : Core::UTILS::Resul
   // empty constructor
 }
 
-void PARTICLEALGORITHM::ParticleResultTest::Init()
+void PARTICLEALGORITHM::ParticleResultTest::init()
 {
   // nothing to do
 }

@@ -95,7 +95,7 @@ namespace STR
           new T(timeparams, ioparams, sdyn, xparams, sti->discretization(), sti->Solver(),
               Teuchos::null,  // no contact solver
               sti->disc_writer()));
-      sta_->Init(timeparams, sdyn, xparams, sti->discretization(), sti->Solver());
+      sta_->init(timeparams, sdyn, xparams, sti->discretization(), sti->Solver());
 
       // check explicitness
       if (sta_->MethodImplicit())
@@ -125,11 +125,11 @@ namespace STR
       sta_->setup();
 
       // Actually, we would like to call Merge() and ResizeMStep() now and in the
-      // past we have done this right here. However, this requires that both Init()
+      // past we have done this right here. However, this requires that both init()
       // and setup() have already been called on both(!) the marching time integrator
       // and the auxiliary time integrator. Since setup() has not yet been called
       // for the marching time integrator, we must postpone Merge() and ResizeMStep()
-      // to a later point. They can now be found in the new Init() function below,
+      // to a later point. They can now be found in the new init() function below,
       // which is called at the beginning of Integrate(). [popp 01/2017]
       // sta_->Merge(*sti);
       // sta_->ResizeMStep();
@@ -143,11 +143,11 @@ namespace STR
     //@{
 
     /*! Finalize the class initialization
-     * Merge() and ResizeMStep() need to be called after(!) both Init()
+     * Merge() and ResizeMStep() need to be called after(!) both init()
      * and setup() have been called on both the marching time integrator
      * and the auxiliary time integrator (popp 01/2017).
      */
-    void Init(Teuchos::RCP<TimInt>& sti) override
+    void init(Teuchos::RCP<TimInt>& sti) override
     {
       // merge
       sta_->Merge(*sti);

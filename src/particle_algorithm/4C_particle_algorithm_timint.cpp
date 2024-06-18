@@ -36,7 +36,7 @@ PARTICLEALGORITHM::TimInt::TimInt(const Teuchos::ParameterList& params)
 
 PARTICLEALGORITHM::TimInt::~TimInt() = default;
 
-void PARTICLEALGORITHM::TimInt::Init()
+void PARTICLEALGORITHM::TimInt::init()
 {
   // init dirichlet boundary condition handler
   init_dirichlet_boundary_condition();
@@ -132,7 +132,7 @@ void PARTICLEALGORITHM::TimInt::init_dirichlet_boundary_condition()
           new PARTICLEALGORITHM::DirichletBoundaryConditionHandler(params_));
 
   // init dirichlet boundary condition handler
-  dirichletboundarycondition_->Init();
+  dirichletboundarycondition_->init();
 
   // get reference to set of particle types subjected to dirichlet boundary conditions
   const std::set<PARTICLEENGINE::TypeEnum>& typessubjectedtodirichletbc =
@@ -150,7 +150,7 @@ void PARTICLEALGORITHM::TimInt::init_temperature_boundary_condition()
           new PARTICLEALGORITHM::TemperatureBoundaryConditionHandler(params_));
 
   // init temperature boundary condition handler
-  temperatureboundarycondition_->Init();
+  temperatureboundarycondition_->init();
 
   // get reference to set of particle types subjected to temperature boundary conditions
   const std::set<PARTICLEENGINE::TypeEnum>& typessubjectedtotempbc =

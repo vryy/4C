@@ -40,7 +40,7 @@ namespace FLD
     \brief initialization
 
     */
-    void Init() override;
+    void init() override;
 
     /*!
     \brief Set theta_ to its value, dependent on integration method for GenAlpha and BDF2

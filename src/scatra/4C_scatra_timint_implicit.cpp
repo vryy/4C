@@ -220,7 +220,7 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntImpl::Init()
+void ScaTra::ScaTraTimIntImpl::init()
 {
   set_is_setup(false);
 
@@ -308,14 +308,14 @@ void ScaTra::ScaTraTimIntImpl::Init()
 
   // we have successfully initialized this class
   set_is_init(true);
-}  // ScaTraTimIntImpl::Init()
+}  // ScaTraTimIntImpl::init()
 
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::setup()
 {
-  // we have to call Init() first
+  // we have to call init() first
   check_is_init();
 
   // compute Null Space
@@ -570,7 +570,7 @@ void ScaTra::ScaTraTimIntImpl::setup()
     }
 
     // initialize scalar output strategy
-    outputscalarstrategy_->Init(this);
+    outputscalarstrategy_->init(this);
   }
   else
   {
@@ -598,7 +598,7 @@ void ScaTra::ScaTraTimIntImpl::setup()
   {
     // initialize domain integral output strategy
     outputdomainintegralstrategy_ = Teuchos::rcp(new OutputDomainIntegralStrategy);
-    outputdomainintegralstrategy_->Init(this);
+    outputdomainintegralstrategy_->init(this);
   }
   else
   {
@@ -3476,7 +3476,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
  *-----------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::check_is_init() const
 {
-  if (not is_init()) FOUR_C_THROW("ScaTraTimIntImpl is not initialized. Call Init() first.");
+  if (not is_init()) FOUR_C_THROW("ScaTraTimIntImpl is not initialized. Call init() first.");
 }
 
 /*-----------------------------------------------------------------------------*

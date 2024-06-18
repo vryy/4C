@@ -32,7 +32,7 @@ BEAMINTERACTION::BeamInteractionParams::BeamInteractionParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamInteractionParams::Init()
+void BEAMINTERACTION::BeamInteractionParams::init()
 {
   issetup_ = false;
 
@@ -174,7 +174,7 @@ BEAMINTERACTION::Data::BindEventData::BindEventData()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::BindEventData::Init(
+void BEAMINTERACTION::Data::BindEventData::init(
     int clgid, int elegid, int bspotlocn, int requestproc, int permission)
 {
   clgid_ = clgid;

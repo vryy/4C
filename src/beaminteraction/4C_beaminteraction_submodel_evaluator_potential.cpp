@@ -128,7 +128,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::setup()
 
   // init and setup beam to beam contact data container
   beam_potential_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamPotentialParams());
-  beam_potential_params().Init(GState().get_time_n());
+  beam_potential_params().init(GState().get_time_n());
   beam_potential_params().setup();
 
   print_console_welcome_message(std::cout);
@@ -874,7 +874,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::create_beam_potential_el
       Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> newbeaminteractionpair =
           BEAMINTERACTION::BeamPotentialPair::Create(ele_ptrs, beam_potential_params());
 
-      newbeaminteractionpair->Init(beam_potential_params_ptr(), ele_ptrs[0], ele_ptrs[1]);
+      newbeaminteractionpair->init(beam_potential_params_ptr(), ele_ptrs[0], ele_ptrs[1]);
 
       newbeaminteractionpair->setup();
 

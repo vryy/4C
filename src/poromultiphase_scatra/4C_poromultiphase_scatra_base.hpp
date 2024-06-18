@@ -51,7 +51,7 @@ namespace PoroMultiPhaseScaTra
         const Teuchos::ParameterList& globaltimeparams);  // Problem builder
 
     //! initialization
-    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+    virtual void init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& poroparams,
         const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
         const Teuchos::ParameterList& scatraparams, const std::string& struct_disname,

@@ -527,7 +527,7 @@ namespace CONTACT
     \brief Initialize the self binary tree
 
     */
-    void Init() override;
+    void init() override;
 
    protected:
     /*!

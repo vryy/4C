@@ -91,7 +91,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      */
-    void Init();
+    void init();
 
     /*!
      * \brief setup particle engine

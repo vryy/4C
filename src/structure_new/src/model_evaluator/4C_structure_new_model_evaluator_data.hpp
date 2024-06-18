@@ -92,7 +92,7 @@ namespace STR
 
 
       //! initialize the stuff coming from outside
-      void Init(const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
+      void init(const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
 
       //! setup member variables
       void setup();
@@ -762,13 +762,13 @@ namespace STR
       //! Checks the init and setup status
       inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
       }
 
       //! Checks the init status
       inline void check_init() const
       {
-        FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
+        FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
       }
 
      private:
@@ -827,7 +827,7 @@ namespace STR
       void collect_norm_types_over_all_procs(const quantity_norm_type_map& normtypes) const;
 
      private:
-      //! indicator if the Init() routine has been called, yet.
+      //! indicator if the init() routine has been called, yet.
       bool isinit_;
 
       //! indicator if the setup() routine has been called, yet.
@@ -1003,7 +1003,7 @@ namespace STR
       BeamData();
 
       //! initialize the stuff coming from outside
-      void Init();
+      void init();
 
       //! setup member variables
       void setup();
@@ -1061,13 +1061,13 @@ namespace STR
       //! Checks the init and setup status
       inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
       }
 
       //! Checks the init status
       inline void check_init() const
       {
-        FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
+        FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
       }
 
      private:
@@ -1109,7 +1109,7 @@ namespace STR
       ContactData();
 
       //! initialize the stuff coming from outside
-      void Init(const Teuchos::RCP<const STR::MODELEVALUATOR::Data>& str_data_ptr);
+      void init(const Teuchos::RCP<const STR::MODELEVALUATOR::Data>& str_data_ptr);
 
       //! setup member variables
       void setup();
@@ -1265,13 +1265,13 @@ namespace STR
       //! Checks the init and setup status
       inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
       }
 
       //! Checks the init status
       inline void check_init() const
       {
-        FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
+        FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
       }
 
       //! Time integration strategy
@@ -1328,7 +1328,7 @@ namespace STR
       BrownianDynData();
 
       //! initialize the stuff coming from outside
-      void Init(Teuchos::RCP<const STR::MODELEVALUATOR::Data> const& str_data_ptr);
+      void init(Teuchos::RCP<const STR::MODELEVALUATOR::Data> const& str_data_ptr);
 
       //! setup member variables
       void setup();
@@ -1424,13 +1424,13 @@ namespace STR
       //! Checks the init and setup status
       inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
       }
 
       //! Checks the init status
       inline void check_init() const
       {
-        FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
+        FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
       }
 
      private:

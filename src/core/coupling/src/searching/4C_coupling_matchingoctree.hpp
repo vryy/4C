@@ -88,7 +88,7 @@ namespace Core::COUPLING
     \param   tol            (i) tolerance for octree
 
     \return void  */
-    virtual int Init(const Core::FE::Discretization& actdis, const std::vector<int>& masternodeids,
+    virtual int init(const Core::FE::Discretization& actdis, const std::vector<int>& masternodeids,
         const int maxnodeperleaf = 150, const double tol = 1e-08);
 
     //! setup this class
@@ -253,7 +253,7 @@ namespace Core::COUPLING
     //! returns true if setup() was called and is still valid
     bool is_setup() { return issetup_; };
 
-    //! returns true if Init(..) was called and is still valid
+    //! returns true if init(..) was called and is still valid
     bool is_init() { return isinit_; };
 
     //! check if \ref setup() was called
@@ -262,10 +262,10 @@ namespace Core::COUPLING
       if (not is_setup()) FOUR_C_THROW("setup() was not called.");
     };
 
-    //! check if \ref Init() was called
+    //! check if \ref init() was called
     void check_is_init()
     {
-      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("init(...) was not called.");
     };
 
    private:
@@ -406,7 +406,7 @@ namespace Core::COUPLING
     \param  tol             (i) Tolerance for octree
 
     \return  int  */
-    virtual int Init(const Core::FE::Discretization& actdis, std::vector<int>& nodeids,
+    virtual int init(const Core::FE::Discretization& actdis, std::vector<int>& nodeids,
         const Core::LinAlg::SerialDenseMatrix& boundingbox, const int layer,
         const int maxnodeperleaf, const double tol);
 
@@ -521,7 +521,7 @@ namespace Core::COUPLING
     //! returns true if setup() was called and is still valid
     bool is_setup() { return issetup_; };
 
-    //! returns true if Init(..) was called and is still valid
+    //! returns true if init(..) was called and is still valid
     bool is_init() { return isinit_; };
 
     //! check if \ref setup() was called
@@ -530,10 +530,10 @@ namespace Core::COUPLING
       if (not is_setup()) FOUR_C_THROW("setup() was not called.");
     };
 
-    //! check if \ref Init() was called
+    //! check if \ref init() was called
     void check_is_init()
     {
-      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("init(...) was not called.");
     };
 
    private:

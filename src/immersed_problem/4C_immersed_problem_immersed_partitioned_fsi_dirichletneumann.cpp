@@ -56,7 +56,7 @@ Immersed::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Immersed::ImmersedPartitionedFSIDirichletNeumann::Init(const Teuchos::ParameterList& params)
+int Immersed::ImmersedPartitionedFSIDirichletNeumann::init(const Teuchos::ParameterList& params)
 {
   // reset the setup flag
   set_is_setup(false);
@@ -90,7 +90,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::read_restart(int step)
 /*----------------------------------------------------------------------*/
 void Immersed::ImmersedPartitionedFSIDirichletNeumann::setup()
 {
-  // make sure Init(...) was called first
+  // make sure init(...) was called first
   check_is_init();
 
   // call setup of base class

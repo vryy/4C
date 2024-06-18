@@ -46,7 +46,7 @@ void STR::TimeInt::Explicit::setup()
   // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TimeInt::NoxInterface> noxinterface_ptr =
       Teuchos::rcp(new STR::TimeInt::NoxInterface);
-  noxinterface_ptr->Init(
+  noxinterface_ptr->init(
       data_global_state_ptr(), explint_ptr_, dbc_ptr(), Teuchos::rcp(this, false));
   noxinterface_ptr->setup();
   // ---------------------------------------------------------------------------
@@ -61,7 +61,7 @@ void STR::TimeInt::Explicit::setup()
     nlnSolverType = Inpar::STR::soltech_singlestep;
   }
   nlnsolver_ptr_ = STR::Nln::SOLVER::build_nln_solver(nlnSolverType);
-  nlnsolver_ptr_->Init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, explint_ptr_,
+  nlnsolver_ptr_->init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, explint_ptr_,
       Teuchos::rcp(this, false));
   nlnsolver_ptr_->setup();
   // set setup flag

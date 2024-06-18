@@ -34,9 +34,9 @@ Mortar::STRATEGY::Factory::Factory()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::STRATEGY::Factory::Init(Teuchos::RCP<Core::FE::Discretization> dis)
+void Mortar::STRATEGY::Factory::init(Teuchos::RCP<Core::FE::Discretization> dis)
 {
-  // call setup() after Init()
+  // call setup() after init()
   issetup_ = false;
 
   discret_ptr_ = dis;
@@ -65,14 +65,14 @@ void Mortar::STRATEGY::Factory::setup()
  *----------------------------------------------------------------------------*/
 void Mortar::STRATEGY::Factory::check_init_setup() const
 {
-  if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
+  if (!is_init() or !is_setup()) FOUR_C_THROW("Call init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Mortar::STRATEGY::Factory::check_init() const
 {
-  if (not is_init()) FOUR_C_THROW("Call Init() first!");
+  if (not is_init()) FOUR_C_THROW("Call init() first!");
 }
 
 /*----------------------------------------------------------------------------*

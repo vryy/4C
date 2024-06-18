@@ -40,7 +40,7 @@ namespace POROMULTIPHASE
         const Teuchos::ParameterList& globaltimeparams);  // Problem builder
 
     /// initialization
-    void Init(const Teuchos::ParameterList& globaltimeparams,
+    void init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,
         const Teuchos::ParameterList& fluidparams, const std::string& struct_disname,
         const std::string& fluid_disname, bool isale, int nds_disp, int nds_vel,

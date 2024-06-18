@@ -31,7 +31,7 @@ namespace FS3I
     PartFS3I2Wc(const Epetra_Comm& comm);
 
     //! initialize this class
-    void Init() override;
+    void init() override;
 
     //! setup this class
     void setup() override;

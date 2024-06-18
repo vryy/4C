@@ -42,7 +42,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Initialize with the stuff coming from input file.
      */
-    virtual void Init() = 0;
+    virtual void init() = 0;
 
     /**
      * \brief Set the common beam-to-solid parameters.
@@ -71,7 +71,7 @@ namespace BEAMINTERACTION
      */
     inline void check_init_setup() const
     {
-      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call init() and setup() first!");
     }
 
     /**
@@ -79,7 +79,7 @@ namespace BEAMINTERACTION
      */
     inline void check_init() const
     {
-      if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
+      if (!is_init()) FOUR_C_THROW("init() has not been called, yet!");
     }
 
     /**

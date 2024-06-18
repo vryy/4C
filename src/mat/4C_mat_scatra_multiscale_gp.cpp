@@ -67,7 +67,7 @@ Mat::ScatraMultiScaleGP::~ScatraMultiScaleGP()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::ScatraMultiScaleGP::Init()
+void Mat::ScatraMultiScaleGP::init()
 {
   // extract micro-scale problem
   Global::Problem* microproblem = Global::Problem::Instance(microdisnum_);
@@ -211,7 +211,7 @@ void Mat::ScatraMultiScaleGP::Init()
     // instantiate and initialize micro-scale time integrator
     microdisnum_microtimint_map_[microdisnum_] = Teuchos::rcp(new ScaTra::TimIntOneStepTheta(
         microdis, solver, sdyn_micro, extraparams, Teuchos::null, microdisnum_));
-    microdisnum_microtimint_map_[microdisnum_]->Init();
+    microdisnum_microtimint_map_[microdisnum_]->init();
     microdisnum_microtimint_map_[microdisnum_]->set_number_of_dof_set_velocity(1);
     microdisnum_microtimint_map_[microdisnum_]->setup();
 

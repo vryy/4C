@@ -69,7 +69,7 @@ namespace STR
     MonitorDbc() = default;
 
     /// initialize class members
-    void Init(const Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_ptr,
+    void init(const Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_ptr,
         Core::FE::Discretization& discret, STR::TimeInt::BaseDataGlobalState& gstate,
         STR::Dbc& dbc);
 
@@ -132,7 +132,7 @@ namespace STR
 
     inline const Epetra_Comm& comm() const;
 
-    inline void throw_if_not_init() const { FOUR_C_ASSERT(isinit_, "Call Init() first!"); }
+    inline void throw_if_not_init() const { FOUR_C_ASSERT(isinit_, "Call init() first!"); }
 
     inline void throw_if_not_setup() const { FOUR_C_ASSERT(issetup_, "Call setup() first!"); }
 

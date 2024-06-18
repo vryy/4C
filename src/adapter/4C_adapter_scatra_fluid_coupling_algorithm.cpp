@@ -48,11 +48,11 @@ Adapter::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(const Epetra
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::ScaTraFluidCouplingAlgorithm::Init()
+void Adapter::ScaTraFluidCouplingAlgorithm::init()
 {
   set_is_setup(false);
 
-  Adapter::ScaTraBaseAlgorithm::Init();
+  Adapter::ScaTraBaseAlgorithm::init();
 
   // perform algorithm specific initialization stuff
   do_algorithm_specific_init();
@@ -73,7 +73,7 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup()
   Adapter::ScaTraBaseAlgorithm::setup();
 
   // initialize fluid time integration scheme
-  fluid_field()->Init();
+  fluid_field()->init();
 
   // setup coupling adapter
   if (not volcoupl_fluidscatra_.is_null())
@@ -178,7 +178,7 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup_field_coupling(
     volcoupl_fluidscatra_ = Teuchos::rcp(new Core::Adapter::MortarVolCoupl());
 
     // setup projection matrices (use default material strategy)
-    volcoupl_fluidscatra_->Init(problem->NDim(), fluiddis, scatradis, nullptr, nullptr, nullptr,
+    volcoupl_fluidscatra_->init(problem->NDim(), fluiddis, scatradis, nullptr, nullptr, nullptr,
         nullptr, Teuchos::null, true);
   }
 }

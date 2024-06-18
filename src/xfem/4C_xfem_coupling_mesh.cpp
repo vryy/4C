@@ -311,9 +311,9 @@ XFEM::MeshVolCoupling::MeshVolCoupling(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshVolCoupling::Init()
+void XFEM::MeshVolCoupling::init()
 {
-  XFEM::MeshCoupling::Init();
+  XFEM::MeshCoupling::init();
 
   // do additional redistributino of embedded discretization and create an auxiliary dis
   if (get_averaging_strategy() != Inpar::XFEM::Xfluid_Sided)
@@ -623,7 +623,7 @@ XFEM::MeshCouplingBC::MeshCouplingBC(
 void XFEM::MeshCouplingBC::do_condition_specific_setup()
 {
   // set the initial interface displacements as they are used for initial cut position at the end of
-  // Xfluid::Init()
+  // Xfluid::init()
   set_interface_displacement();
 
   // set the interface displacements also to idispn

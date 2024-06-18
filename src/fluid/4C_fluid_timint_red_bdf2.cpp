@@ -34,12 +34,12 @@ FLD::TimIntRedModelsBDF2::TimIntRedModelsBDF2(const Teuchos::RCP<Core::FE::Discr
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModelsBDF2::Init()
+void FLD::TimIntRedModelsBDF2::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntBDF2::Init();
-  TimIntRedModels::Init();
+  TimIntBDF2::init();
+  TimIntRedModels::init();
 
   return;
 }

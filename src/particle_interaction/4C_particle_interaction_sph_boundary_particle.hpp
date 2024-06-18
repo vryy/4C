@@ -51,7 +51,7 @@ namespace ParticleInteraction
     virtual ~SPHBoundaryParticleBase() = default;
 
     //! init boundary particle handler
-    virtual void Init();
+    virtual void init();
 
     //! setup boundary particle handler
     virtual void setup(

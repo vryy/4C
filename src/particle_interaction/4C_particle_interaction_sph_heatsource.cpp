@@ -32,7 +32,7 @@ ParticleInteraction::SPHHeatSourceBase::SPHHeatSourceBase(const Teuchos::Paramet
   // empty constructor
 }
 
-void ParticleInteraction::SPHHeatSourceBase::Init()
+void ParticleInteraction::SPHHeatSourceBase::init()
 {
   // nothing to do
 }
@@ -153,10 +153,10 @@ ParticleInteraction::SPHHeatSourceSurface::SPHHeatSourceSurface(
   // empty constructor
 }
 
-void ParticleInteraction::SPHHeatSourceSurface::Init()
+void ParticleInteraction::SPHHeatSourceSurface::init()
 {
   // call base class init
-  SPHHeatSourceBase::Init();
+  SPHHeatSourceBase::init();
 
   // init heat source direction vector
   double value;

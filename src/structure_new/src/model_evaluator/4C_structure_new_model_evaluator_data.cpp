@@ -207,7 +207,7 @@ STR::MODELEVALUATOR::Data::Data()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::Init(const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr)
+void STR::MODELEVALUATOR::Data::init(const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr)
 {
   sdyn_ptr_ = timint_ptr->get_data_sdyn_ptr();
   io_ptr_ = timint_ptr->get_data_io_ptr();
@@ -233,14 +233,14 @@ void STR::MODELEVALUATOR::Data::setup()
       case Inpar::STR::model_contact:
       {
         contact_data_ptr_ = Teuchos::rcp(new ContactData());
-        contact_data_ptr_->Init(Teuchos::rcp(this, false));
+        contact_data_ptr_->init(Teuchos::rcp(this, false));
         contact_data_ptr_->setup();
         break;
       }
       case Inpar::STR::model_browniandyn:
       {
         browniandyn_data_ptr_ = Teuchos::rcp(new BrownianDynData());
-        browniandyn_data_ptr_->Init(Teuchos::rcp(this, false));
+        browniandyn_data_ptr_->init(Teuchos::rcp(this, false));
         browniandyn_data_ptr_->setup();
         break;
       }
@@ -257,7 +257,7 @@ void STR::MODELEVALUATOR::Data::setup()
   if (sdyn_ptr_->HaveEleTech(Inpar::STR::EleTech::rotvec))
   {
     beam_data_ptr_ = Teuchos::rcp(new BeamData());
-    beam_data_ptr_->Init();
+    beam_data_ptr_->init();
     beam_data_ptr_->setup();
   }
 

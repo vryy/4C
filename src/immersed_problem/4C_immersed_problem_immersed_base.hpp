@@ -66,13 +66,13 @@ namespace Immersed
     Hand in all objects/parameters/etc. from outside.
     Construct and manipulate internal objects.
 
-    \note Try to only perform actions in Init(), which are still valid
+    \note Try to only perform actions in init(), which are still valid
           after parallel redistribution of discretizations.
           If you have to perform an action depending on the parallel
           distribution, make sure you adapt the affected objects after
           parallel redistribution.
           Example: cloning a discretization from another discretization is
-          OK in Init(...). However, after redistribution of the source
+          OK in init(...). However, after redistribution of the source
           discretization do not forget to also redistribute the cloned
           discretization.
           All objects relying on the parallel distribution are supposed to
@@ -82,13 +82,13 @@ namespace Immersed
     \return int
     \date 08/16
     \author rauch  */
-    virtual int Init(const Teuchos::ParameterList& params) = 0;
+    virtual int init(const Teuchos::ParameterList& params) = 0;
 
     /*! \brief Setup all class internal objects and members
 
      setup() is not supposed to have any input arguments !
 
-     Must only be called after Init().
+     Must only be called after init().
 
      Construct all objects depending on the parallel distribution and
      relying on valid maps like, e.g. the state vectors, system matrices, etc.
@@ -327,7 +327,7 @@ namespace Immersed
     //! returns true if setup() was called and is still valid
     bool is_setup() { return issetup_; };
 
-    //! returns true if Init(..) was called and is still valid
+    //! returns true if init(..) was called and is still valid
     bool is_init() { return isinit_; };
 
     //! check if \ref setup() was called
@@ -336,10 +336,10 @@ namespace Immersed
       if (not is_setup()) FOUR_C_THROW("setup() was not called.");
     };
 
-    //! check if \ref Init() was called
+    //! check if \ref init() was called
     void check_is_init()
     {
-      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("init(...) was not called.");
     };
 
    protected:

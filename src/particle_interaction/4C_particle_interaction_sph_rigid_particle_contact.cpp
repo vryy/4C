@@ -39,7 +39,7 @@ ParticleInteraction::SPHRigidParticleContactBase::SPHRigidParticleContactBase(
   // empty constructor
 }
 
-void ParticleInteraction::SPHRigidParticleContactBase::Init()
+void ParticleInteraction::SPHRigidParticleContactBase::init()
 {
   // init with potential boundary particle types
   boundarytypes_ = {PARTICLEENGINE::BoundaryPhase, PARTICLEENGINE::RigidPhase};

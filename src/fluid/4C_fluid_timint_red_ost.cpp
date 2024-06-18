@@ -34,12 +34,12 @@ FLD::TimIntRedModelsOst::TimIntRedModelsOst(const Teuchos::RCP<Core::FE::Discret
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModelsOst::Init()
+void FLD::TimIntRedModelsOst::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntOneStepTheta::Init();
-  TimIntRedModels::Init();
+  TimIntOneStepTheta::init();
+  TimIntRedModels::init();
 
   return;
 }

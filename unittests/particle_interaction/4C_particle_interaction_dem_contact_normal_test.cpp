@@ -41,13 +41,13 @@ namespace
           std::make_unique<ParticleInteraction::DEMContactNormalLinearSpring>(params_dem);
 
       // init normal contact handler
-      contactnormal_->Init();
+      contactnormal_->init();
 
       // setup normal contact handler
       contactnormal_->setup(dens_max_);
     }
 
-    // note: the public functions Init() and setup() of class DEMContactNormalLinearSpring are
+    // note: the public functions init() and setup() of class DEMContactNormalLinearSpring are
     // called in the constructor and thus implicitly tested by all following unittests
   };
 
@@ -135,14 +135,14 @@ namespace
           std::make_unique<ParticleInteraction::DEMContactNormalLinearSpringDamp>(params_dem);
 
       // init normal contact handler
-      contactnormal_->Init();
-      contactnormal_ezero_->Init();
+      contactnormal_->init();
+      contactnormal_ezero_->init();
 
       // setup normal contact handler
       contactnormal_->setup(dens_max_);
       contactnormal_ezero_->setup(dens_max_);
     }
-    // note: the public functions Init() and setup() of class DEMContactNormalLinearSpringDamp are
+    // note: the public functions init() and setup() of class DEMContactNormalLinearSpringDamp are
     // called in the constructor and thus implicitly tested by all following unittests
   };
 
@@ -224,13 +224,13 @@ namespace
       contactnormal_ = std::make_unique<ParticleInteraction::DEMContactNormalHertz>(params_dem);
 
       // init normal contact handler
-      contactnormal_->Init();
+      contactnormal_->init();
 
       // setup normal contact handler
       contactnormal_->setup(dens_max_);
     }
 
-    // note: the public functions Init() and setup() of class DEMContactNormalHertz are called in
+    // note: the public functions init() and setup() of class DEMContactNormalHertz are called in
     // setup() and thus implicitly tested by all following unittests
   };
 
@@ -311,12 +311,12 @@ namespace
           std::make_unique<ParticleInteraction::DEMContactNormalLeeHerrmann>(params_dem);
 
       // init normal contact handler
-      contactnormal_->Init();
+      contactnormal_->init();
 
       // setup normal contact handler
       contactnormal_->setup(dens_max_);
     }
-    // note: the public functions Init() and setup() of class DEMContactNormalLeeHerrmann are called
+    // note: the public functions init() and setup() of class DEMContactNormalLeeHerrmann are called
     // in setup() and thus implicitly tested by all following unittests
   };
 
@@ -384,12 +384,12 @@ namespace
           std::make_unique<ParticleInteraction::DEMContactNormalKuwabaraKono>(params_dem);
 
       // init normal contact handler
-      contactnormal_->Init();
+      contactnormal_->init();
 
       // setup normal contact handler
       contactnormal_->setup(dens_max_);
     }
-    // note: the public functions Init() and setup() of class DEMContactNormalKuwabaraKono are
+    // note: the public functions init() and setup() of class DEMContactNormalKuwabaraKono are
     // called in the constructor and thus implicitly tested by all following unittests
   };
 
@@ -456,12 +456,12 @@ namespace
       contactnormal_ = std::make_unique<ParticleInteraction::DEMContactNormalTsuji>(params_dem);
 
       // init normal contact handler
-      contactnormal_->Init();
+      contactnormal_->init();
 
       // setup normal contact handler
       contactnormal_->setup(dens_max_);
     }
-    // note: the public functions Init() and setup() of class DEMContactNormalTsuji are called in
+    // note: the public functions init() and setup() of class DEMContactNormalTsuji are called in
     // setup() and thus implicitly tested by all following unittests
   };
 

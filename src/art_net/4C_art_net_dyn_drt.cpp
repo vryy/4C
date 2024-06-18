@@ -152,7 +152,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
       timintscheme, actdis, linsolvernumber, artdyn, artdyn, output);
 
   // initialize
-  artnettimint->Init(artdyn, artdyn, scatra_disname);
+  artnettimint->init(artdyn, artdyn, scatra_disname);
 
   // Initialize state save vectors
   if (CoupledTo3D)

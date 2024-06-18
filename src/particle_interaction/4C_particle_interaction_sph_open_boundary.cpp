@@ -37,7 +37,7 @@ ParticleInteraction::SPHOpenBoundaryBase::SPHOpenBoundaryBase(const Teuchos::Par
   // empty constructor
 }
 
-void ParticleInteraction::SPHOpenBoundaryBase::Init()
+void ParticleInteraction::SPHOpenBoundaryBase::init()
 {
   // nothing to do
 }
@@ -206,10 +206,10 @@ ParticleInteraction::SPHOpenBoundaryDirichlet::SPHOpenBoundaryDirichlet(
   // empty constructor
 }
 
-void ParticleInteraction::SPHOpenBoundaryDirichlet::Init()
+void ParticleInteraction::SPHOpenBoundaryDirichlet::init()
 {
   // call base class init
-  SPHOpenBoundaryBase::Init();
+  SPHOpenBoundaryBase::init();
 
   // init function id of prescribed state
   prescribedstatefunctid_ = params_sph_.get<int>("DIRICHLET_FUNCT");
@@ -410,10 +410,10 @@ ParticleInteraction::SPHOpenBoundaryNeumann::SPHOpenBoundaryNeumann(
   // empty constructor
 }
 
-void ParticleInteraction::SPHOpenBoundaryNeumann::Init()
+void ParticleInteraction::SPHOpenBoundaryNeumann::init()
 {
   // call base class init
-  SPHOpenBoundaryBase::Init();
+  SPHOpenBoundaryBase::init();
 
   // init function id of prescribed state
   prescribedstatefunctid_ = params_sph_.get<int>("NEUMANN_FUNCT");

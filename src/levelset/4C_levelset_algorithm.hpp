@@ -52,7 +52,7 @@ namespace ScaTra
     // -----------------------------------------------------------------
 
     /// initialize level-set algorithm
-    void Init() override;
+    void init() override;
 
     /// setup level-set algorithm
     void setup() override;

@@ -55,7 +55,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
   artnettimint_->SetSolveScatra(false);
 
   // initialize
-  artnettimint_->Init(probparams, artdyn, "artery_scatra");
+  artnettimint_->init(probparams, artdyn, "artery_scatra");
 
   // print user info
   if (porofluidmultitimint->discretization()->Comm().MyPID() == 0)

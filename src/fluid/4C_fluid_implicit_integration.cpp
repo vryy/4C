@@ -121,7 +121,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::Init()
+void FLD::FluidImplicitTimeInt::init()
 {
   // time measurement: initialization
   TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
@@ -384,7 +384,7 @@ void FLD::FluidImplicitTimeInt::Init()
   }
   reconstructder_ = Core::UTILS::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der");
 
-}  // FluidImplicitTimeInt::Init()
+}  // FluidImplicitTimeInt::init()
 
 /*----------------------------------------------------------------------*
  |  create internal faces for the case of EOS stab                      |

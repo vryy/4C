@@ -41,10 +41,10 @@ ElCh::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ElCh::MovingBoundaryAlgorithm::Init()
+void ElCh::MovingBoundaryAlgorithm::init()
 {
   // call setup in base class
-  Adapter::ScaTraFluidAleCouplingAlgorithm::Init();
+  Adapter::ScaTraFluidAleCouplingAlgorithm::init();
 
   // safety check
   if (!ScaTraField()->discretization()->GetCondition("ScaTraFluxCalc"))

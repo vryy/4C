@@ -37,7 +37,7 @@ namespace FLD
     \brief initialization
 
     */
-    void Init() override;
+    void init() override;
 
     /*!
     \brief return scheme-specific time integration parameter

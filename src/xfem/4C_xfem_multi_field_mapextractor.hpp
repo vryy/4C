@@ -164,13 +164,13 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 09/16 */
-    void Init(const std::vector<Teuchos::RCP<const Core::FE::Discretization>>& dis_vec,
+    void init(const std::vector<Teuchos::RCP<const Core::FE::Discretization>>& dis_vec,
         int max_num_reserved_dofs_per_node);
 
     /** \brief Setup member variables
      *
      *  Everything is initialized what will change if one of the
-     *  discretizations in the discretization vector (see Init()) is
+     *  discretizations in the discretization vector (see init()) is
      *  redistributed.
      *
      *  \author hiermeier
@@ -400,16 +400,16 @@ namespace XFEM
     bool is_x_fem_dis(enum FieldName field) const { return is_x_fem_dis(slave_id(field)); }
 
    protected:
-    /// check if Init() has been called yet
+    /// check if init() has been called yet
     inline void check_init() const
     {
-      if (not isinit_) FOUR_C_THROW("Call Init() first!");
+      if (not isinit_) FOUR_C_THROW("Call init() first!");
     }
 
-    /// check if Init() and setup() have been called yet
+    /// check if init() and setup() have been called yet
     inline void check_init_setup() const
     {
-      if ((not isinit_) or (not issetup_)) FOUR_C_THROW("Call Init() and/or setup() first!");
+      if ((not isinit_) or (not issetup_)) FOUR_C_THROW("Call init() and/or setup() first!");
     }
 
    private:
@@ -636,7 +636,7 @@ namespace XFEM
 
     const std::set<int>& g_interface_node_gid_set() const { return g_interface_node_gid_set_; }
 
-    /** \brief reset class variables at the beginning of each Init() and setup() call
+    /** \brief reset class variables at the beginning of each init() and setup() call
      *
      *  \param num_dis_vec (in): number of wrapped discretizations
      *  \param full        (in): TRUE initiates a reset of all class variables */
@@ -682,7 +682,7 @@ namespace XFEM
     void build_interface_matrix_transformers();
 
    private:
-    /// boolean which indicates, that the Init() routine has been called
+    /// boolean which indicates, that the init() routine has been called
     bool isinit_;
 
     /// boolean which indicates, that the setup() routine has been called

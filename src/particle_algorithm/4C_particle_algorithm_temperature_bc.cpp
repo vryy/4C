@@ -30,7 +30,7 @@ PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::TemperatureBoundaryCondi
   // empty constructor
 }
 
-void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::Init()
+void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::init()
 {
   // get control parameters for conditions
   const Teuchos::ParameterList& params_conditions =

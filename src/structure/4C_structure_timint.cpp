@@ -175,7 +175,7 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
+void STR::TimInt::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
@@ -208,7 +208,7 @@ void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
 
   // initialize constraint manager
   conman_ = Teuchos::rcp(new CONSTRAINTS::ConstrManager());
-  conman_->Init(discret_, sdynparams_);
+  conman_->init(discret_, sdynparams_);
 
   // create stiffness, mass matrix and other fields
   CreateFields();
@@ -224,7 +224,7 @@ void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimInt::setup()
 {
-  // we have to call Init() before
+  // we have to call init() before
   check_is_init();
 
   create_all_solution_vectors();

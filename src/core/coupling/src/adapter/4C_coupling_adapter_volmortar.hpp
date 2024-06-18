@@ -71,7 +71,7 @@ namespace Core::Adapter
     \brief Call parallel redistr. and evaluate volmortar coupl.
 
     */
-    void Init(int spatial_dimension, Teuchos::RCP<Core::FE::Discretization> dis1,
+    void init(int spatial_dimension, Teuchos::RCP<Core::FE::Discretization> dis1,
         Teuchos::RCP<Core::FE::Discretization> dis2, std::vector<int>* coupleddof12 = nullptr,
         std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofsets12 = nullptr,
         std::pair<int, int>* dofsets21 = nullptr,
@@ -87,7 +87,7 @@ namespace Core::Adapter
     /*!
     \brief Redistribute discretizations to meet needs of volmortar coupling
 
-    \note Call this method in your global control algorithm inbetween \ref Init()
+    \note Call this method in your global control algorithm inbetween \ref init()
           and \ref setup(), in case you need parallel redistribution
 
 
@@ -222,7 +222,7 @@ namespace Core::Adapter
     /// check init and setup call
     void check_init() const
     {
-      if (not is_init()) FOUR_C_THROW("ERROR: Call Init() first!");
+      if (not is_init()) FOUR_C_THROW("ERROR: Call init() first!");
     }
 
    private:

@@ -114,7 +114,7 @@ void MIXTURE::MixtureConstituent::read_element(int numgp, Input::LineDefinition*
 // Setup of the mixture constituents and all its subparts
 void MIXTURE::MixtureConstituent::setup(Teuchos::ParameterList& params, const int eleGID)
 {
-  // Setup must be called after Init()
+  // Setup must be called after init()
   if (!has_read_element_) FOUR_C_THROW("ReadElement() must be called before setup()");
 
   // Setup must only be called once

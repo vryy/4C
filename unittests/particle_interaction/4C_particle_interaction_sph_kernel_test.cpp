@@ -50,16 +50,16 @@ namespace
       kernel_3D_ = std::make_unique<ParticleInteraction::SPHKernelCubicSpline>(params_sph_3D);
 
       // init kernel handler
-      kernel_1D_->Init();
-      kernel_2D_->Init();
-      kernel_3D_->Init();
+      kernel_1D_->init();
+      kernel_2D_->init();
+      kernel_3D_->init();
 
       // setup kernel handler
       kernel_1D_->setup();
       kernel_2D_->setup();
       kernel_3D_->setup();
     }
-    // note: the public functions Init() and setup() of class SPHKernelCubicSpline are called in
+    // note: the public functions init() and setup() of class SPHKernelCubicSpline are called in
     // setup() and thus implicitly tested by all following unittests
   };
 
@@ -318,16 +318,16 @@ namespace
       kernel_3D_ = std::make_unique<ParticleInteraction::SPHKernelQuinticSpline>(params_sph_3D);
 
       // init kernel handler
-      kernel_1D_->Init();
-      kernel_2D_->Init();
-      kernel_3D_->Init();
+      kernel_1D_->init();
+      kernel_2D_->init();
+      kernel_3D_->init();
 
       // setup kernel handler
       kernel_1D_->setup();
       kernel_2D_->setup();
       kernel_3D_->setup();
     }
-    // note: the public functions Init() and setup() of class SPHKernelQuinticSpline are called in
+    // note: the public functions init() and setup() of class SPHKernelQuinticSpline are called in
     // setup() and thus implicitly tested by all following unittests
   };
 

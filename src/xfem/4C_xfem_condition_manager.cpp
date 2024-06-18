@@ -287,7 +287,7 @@ void XFEM::ConditionManager::create_new_mesh_coupling(const std::string& cond_na
   AddMeshCoupling(cond_name, cond_dis, coupling_id);
 }
 
-void XFEM::ConditionManager::Init()
+void XFEM::ConditionManager::init()
 {
   issetup_ = false;
 
@@ -295,14 +295,14 @@ void XFEM::ConditionManager::Init()
   // loop all mesh coupling objects
   for (int mc = 0; mc < (int)mesh_coupl_.size(); mc++)
   {
-    mesh_coupl_[mc]->Init();
+    mesh_coupl_[mc]->init();
   }
 
   //--------------------------------------------------------
   // loop all levelset coupling objects
   for (int lc = 0; lc < (int)levelset_coupl_.size(); lc++)
   {
-    levelset_coupl_[lc]->Init();
+    levelset_coupl_[lc]->init();
   }
 
   isinit_ = true;

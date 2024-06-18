@@ -71,7 +71,7 @@ namespace ParticleInteraction
     explicit DEMHistoryPairs(const Epetra_Comm& comm);
 
     //! init history pair handler
-    void Init();
+    void init();
 
     //! setup history pair handler
     void setup(

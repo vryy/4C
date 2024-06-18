@@ -98,7 +98,7 @@ namespace PARTICLEWALL
      *
      * \param[in] binstrategy binning strategy
      */
-    virtual void Init(const std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy);
+    virtual void init(const std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy);
 
     /*!
      * \brief setup wall handler

@@ -27,7 +27,7 @@ ParticleInteraction::DEMHistoryPairs::DEMHistoryPairs(const Epetra_Comm& comm) :
   // empty constructor
 }
 
-void ParticleInteraction::DEMHistoryPairs::Init()
+void ParticleInteraction::DEMHistoryPairs::init()
 {
   // nothing to do
 }

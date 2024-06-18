@@ -62,7 +62,7 @@ namespace FS3I
     ACFSI(const Epetra_Comm& comm);
 
     /// initialize this class
-    void Init() override;
+    void init() override;
 
     /// setup this class
     void setup() override;

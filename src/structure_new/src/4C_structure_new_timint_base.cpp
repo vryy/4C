@@ -60,12 +60,12 @@ STR::TimeInt::Base::Base()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Base::Init(const Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio,
+void STR::TimeInt::Base::init(const Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio,
     const Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn,
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> dataglobalstate)
 {
   // ---------------------------------------------------------------------------
-  // We need to call setup() after Init()
+  // We need to call setup() after init()
   // ---------------------------------------------------------------------------
   issetup_ = false;
 
@@ -97,14 +97,14 @@ void STR::TimeInt::Base::setup()
    * discretization routines. Therefore many methods need a slight modification
    * (most times adding a "const" should fix the problem).          hiermeier */
   Teuchos::RCP<Core::FE::Discretization> discret_ptr = data_global_state().get_discret();
-  dbc_ptr_->Init(discret_ptr, data_global_state().get_freact_np(), Teuchos::rcp(this, false));
+  dbc_ptr_->init(discret_ptr, data_global_state().get_freact_np(), Teuchos::rcp(this, false));
   dbc_ptr_->setup();
 
   // ---------------------------------------------------------------------------
   // Create the explicit/implicit integrator
   // ---------------------------------------------------------------------------
   int_ptr_ = STR::build_integrator(data_sdyn());
-  int_ptr_->Init(data_s_dyn_ptr(), data_global_state_ptr(), data_io_ptr(), dbc_ptr_,
+  int_ptr_->init(data_s_dyn_ptr(), data_global_state_ptr(), data_io_ptr(), dbc_ptr_,
       Teuchos::rcp(this, false));
   int_ptr_->setup();
   int_ptr_->post_setup();
@@ -389,7 +389,7 @@ Teuchos::RCP<Core::UTILS::ResultTest> STR::TimeInt::Base::CreateFieldTest()
 {
   check_init_setup();
   Teuchos::RCP<STR::ResultTest> resulttest = Teuchos::rcp(new STR::ResultTest());
-  resulttest->Init(get_data_global_state(), integrator().eval_data());
+  resulttest->init(get_data_global_state(), integrator().eval_data());
   resulttest->setup();
 
   return resulttest;

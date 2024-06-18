@@ -30,7 +30,7 @@ PARTICLEALGORITHM::DirichletBoundaryConditionHandler::DirichletBoundaryCondition
   // empty constructor
 }
 
-void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::Init()
+void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::init()
 {
   // get control parameters for initial/boundary conditions
   const Teuchos::ParameterList& params_conditions =

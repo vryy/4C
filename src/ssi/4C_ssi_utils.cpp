@@ -1115,7 +1115,7 @@ void SSI::UTILS::SSIMeshTying::find_matching_node_pairs(Teuchos::RCP<Core::FE::D
 
     // init node matching octree with nodes from condition a
     auto tree = Core::COUPLING::NodeMatchingOctree();
-    tree.Init(*dis, inodegidvec_a, 150, 1.0e-8);
+    tree.init(*dis, inodegidvec_a, 150, 1.0e-8);
     tree.setup();
 
     // find nodes from condition b that match nodes from condition a
@@ -1353,7 +1353,7 @@ void SSI::UTILS::SSIMeshTying::find_slave_slave_transformation_nodes(
   }
 
   auto tree = Core::COUPLING::NodeMatchingOctree();
-  tree.Init(*dis, inodegidvec_slave, 150, 1.0e-8);
+  tree.init(*dis, inodegidvec_slave, 150, 1.0e-8);
   tree.setup();
   std::map<int, std::pair<int, double>> coupled_gid_nodes;
   tree.FindMatch(*dis, original_slave_gids, coupled_gid_nodes);

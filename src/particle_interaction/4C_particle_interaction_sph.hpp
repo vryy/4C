@@ -68,7 +68,7 @@ namespace ParticleInteraction
     ~ParticleInteractionSPH() override;
 
     //! init particle interaction handler
-    void Init() override;
+    void init() override;
 
     //! setup particle interaction handler
     void setup(

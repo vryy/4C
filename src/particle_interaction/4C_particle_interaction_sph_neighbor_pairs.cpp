@@ -31,7 +31,7 @@ ParticleInteraction::SPHNeighborPairs::SPHNeighborPairs()
   // empty constructor
 }
 
-void ParticleInteraction::SPHNeighborPairs::Init()
+void ParticleInteraction::SPHNeighborPairs::init()
 {
   // nothing to do
 }

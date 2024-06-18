@@ -27,7 +27,7 @@ ParticleRigidBody::RigidBodyRuntimeVtpWriter::RigidBodyRuntimeVtpWriter(const Ep
   // empty constructor
 }
 
-void ParticleRigidBody::RigidBodyRuntimeVtpWriter::Init(
+void ParticleRigidBody::RigidBodyRuntimeVtpWriter::init(
     const std::shared_ptr<ParticleRigidBody::RigidBodyDataState> rigidbodydatastate)
 {
   // set rigid body data state container

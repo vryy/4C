@@ -169,7 +169,7 @@ int Adapter::StructureTimeAda::Integrate()
   // finalize initialization
   // (only relevant if an auxiliary time integrator is used)
   // buih STR:TimeInt::Base should be initialized outside
-  // stm_->Init();
+  // stm_->init();
 
   // Richardson extrapolation to no avail
   if (MethodAdaptDis() == ada_ident)

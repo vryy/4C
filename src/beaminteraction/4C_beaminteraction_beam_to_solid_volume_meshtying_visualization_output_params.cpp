@@ -40,7 +40,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::Init()
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::init()
 {
   issetup_ = false;
   isinit_ = true;

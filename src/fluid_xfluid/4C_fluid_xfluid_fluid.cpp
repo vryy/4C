@@ -72,13 +72,13 @@ FLD::XFluidFluid::XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& emb
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluidFluid::Init(bool createinitialstate)
+void FLD::XFluidFluid::init(bool createinitialstate)
 {
   // initialize embedded fluid
-  embedded_fluid_->Init();
+  embedded_fluid_->init();
 
   // base class init
-  XFluid::Init(false);
+  XFluid::init(false);
 
   // set parameters specific for fluid-fluid coupling
   set_x_fluid_fluid_params();

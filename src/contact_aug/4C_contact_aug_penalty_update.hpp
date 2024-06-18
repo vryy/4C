@@ -115,7 +115,7 @@ namespace CONTACT
       virtual Inpar::CONTACT::PenaltyUpdate Type() const = 0;
 
       /// initialize the penalty update object
-      void Init(Strategy* const strategy, DataContainer* const data);
+      void init(Strategy* const strategy, DataContainer* const data);
 
       /// update the contact regularization parameter (increase)
       void Update(const CONTACT::ParamsInterface& cparams);
@@ -166,7 +166,7 @@ namespace CONTACT
       /// reset class members
       void reset();
 
-      /// Throw if Init() has not been called
+      /// Throw if init() has not been called
       void throw_if_not_initialized() const;
 
       /// access the surrounding strategy
@@ -277,7 +277,7 @@ namespace CONTACT
       };
 
      private:
-      /// has Init() been called?
+      /// has init() been called?
       bool isinit_ = false;
 
       /// call-back to the surrounding strategy

@@ -61,12 +61,12 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& timepa
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntOneStepTheta::Init(const Teuchos::ParameterList& timeparams,
+void STR::TimIntOneStepTheta::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
-  // call Init() in base class
-  STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
+  // call init() in base class
+  STR::TimIntImpl::init(timeparams, sdynparams, xparams, actdis, solver);
 
   // general variable verifications:
   // info to user about current time integration scheme and its parametrization

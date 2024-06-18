@@ -41,7 +41,7 @@ namespace ScaTra
     // -----------------------------------------------------------------
 
     /// initialize algorithm
-    void Init() override;
+    void init() override;
 
     /// initialize algorithm
     void setup() override;

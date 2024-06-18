@@ -43,7 +43,7 @@ namespace Mortar
     MatrixRowColTransformer(const unsigned num_transformer);
 
 
-    void Init(const plain_block_map_pairs& redistributed_row,
+    void init(const plain_block_map_pairs& redistributed_row,
         const plain_block_map_pairs& redistributed_column,
         const plain_block_map_pairs& unredistributed_row,
         const plain_block_map_pairs& unredistributed_column);
@@ -74,7 +74,7 @@ namespace Mortar
 
     inline void throw_if_not_init() const
     {
-      if (not isinit_) FOUR_C_THROW("Call Init() first!");
+      if (not isinit_) FOUR_C_THROW("Call init() first!");
     }
 
     inline void throw_if_not_init_and_setup() const

@@ -221,7 +221,7 @@ namespace XFEM
         const std::string& suffix = ""  ///< suffix for cutterdisname
     );
 
-    void Init() override;
+    void init() override;
 
     //! Initialize Volume Coupling
     void Init_VolCoupling();

@@ -42,12 +42,12 @@ STR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
+void STR::TimIntStatics::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
-  // call Init() in base class
-  STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
+  // call init() in base class
+  STR::TimIntImpl::init(timeparams, sdynparams, xparams, actdis, solver);
 
   auto dyntype = Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdynparams, "DYNAMICTYP");
   const Inpar::STR::PreStress pre_stress_type = Teuchos::getIntegralValue<Inpar::STR::PreStress>(

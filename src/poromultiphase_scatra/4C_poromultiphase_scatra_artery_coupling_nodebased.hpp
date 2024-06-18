@@ -93,7 +93,7 @@ namespace PoroMultiPhaseScaTra
     Teuchos::RCP<const Epetra_Map> dof_row_map() const override;
 
     //! init the strategy
-    void Init() override;
+    void init() override;
 
     //! setup the strategy
     void setup() override;

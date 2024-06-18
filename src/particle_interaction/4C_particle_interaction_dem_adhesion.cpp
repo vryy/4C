@@ -45,7 +45,7 @@ ParticleInteraction::DEMAdhesion::DEMAdhesion(const Teuchos::ParameterList& para
 
 ParticleInteraction::DEMAdhesion::~DEMAdhesion() = default;
 
-void ParticleInteraction::DEMAdhesion::Init()
+void ParticleInteraction::DEMAdhesion::init()
 {
   // init adhesion law handler
   init_adhesion_law_handler();
@@ -131,7 +131,7 @@ void ParticleInteraction::DEMAdhesion::init_adhesion_law_handler()
   }
 
   // init adhesion law handler
-  adhesionlaw_->Init();
+  adhesionlaw_->init();
 }
 
 void ParticleInteraction::DEMAdhesion::init_adhesion_surface_energy_handler()
@@ -173,7 +173,7 @@ void ParticleInteraction::DEMAdhesion::init_adhesion_surface_energy_handler()
   }
 
   // init adhesion surface energy handler
-  adhesionsurfaceenergy_->Init();
+  adhesionsurfaceenergy_->init();
 }
 
 void ParticleInteraction::DEMAdhesion::setup_particle_interaction_writer()

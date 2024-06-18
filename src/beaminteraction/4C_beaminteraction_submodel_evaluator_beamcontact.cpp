@@ -81,7 +81,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
 
   // build a new data container to manage beam interaction parameters
   beam_interaction_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionParams());
-  beam_interaction_params_ptr_->Init();
+  beam_interaction_params_ptr_->init();
   beam_interaction_params_ptr_->setup();
 
   // build a new data container to manage geometric search parameters
@@ -165,7 +165,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
                   Core::IO::VisualizationParametersFactory(
                       Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
                       *Global::Problem::Instance()->OutputControlFile(), GState().get_time_n())));
-      beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->Init();
+      beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->init();
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->setup(
           GInOutput().get_runtime_output_params(),
           beam_contact_params_ptr_->beam_to_solid_volume_meshtying_params()
@@ -196,7 +196,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
                   Core::IO::VisualizationParametersFactory(
                       Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
                       *Global::Problem::Instance()->OutputControlFile(), GState().get_time_n())));
-      beam_to_solid_surface_visualization_output_writer_ptr_->Init();
+      beam_to_solid_surface_visualization_output_writer_ptr_->init();
       beam_to_solid_surface_visualization_output_writer_ptr_->setup(
           GInOutput().get_runtime_output_params(),
           beam_contact_params_ptr_->beam_to_solid_surface_meshtying_params()
@@ -992,7 +992,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
 
       if (newbeaminteractionpair != Teuchos::null)
       {
-        newbeaminteractionpair->Init(beam_contact_params_ptr_, ele_ptrs);
+        newbeaminteractionpair->init(beam_contact_params_ptr_, ele_ptrs);
         newbeaminteractionpair->setup();
 
         // add to list of current contact pairs

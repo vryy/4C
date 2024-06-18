@@ -78,7 +78,7 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
 /*----------------------------------------------------------------------*
  | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SSIBase::init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
@@ -447,7 +447,7 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
 
   // initialize coupling objects including dof sets
   Global::Problem* problem = Global::Problem::Instance();
-  ssicoupling_->Init(problem->NDim(), problem->GetDis(struct_disname), Teuchos::rcp(this, false));
+  ssicoupling_->init(problem->NDim(), problem->GetDis(struct_disname), Teuchos::rcp(this, false));
 
   return redistribution_required;
 }
@@ -749,7 +749,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
       struct_adapterbase_ptr_ = Adapter::build_structure_algorithm(structparams);
 
       // initialize structure base algorithm
-      struct_adapterbase_ptr_->Init(
+      struct_adapterbase_ptr_->init(
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
     }
     // build structure based on old structural time integration
@@ -779,7 +779,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
       SSI::UTILS::ModifyScaTraParams(scatraparams),
       problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle));
 
-  ScaTraBaseAlgorithm()->Init();
+  ScaTraBaseAlgorithm()->init();
 
   // create and initialize scatra base algorithm for manifolds
   if (is_sca_tra_manifold())
@@ -790,7 +790,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
         problem->SolverParams(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
         "scatra_manifold", isAle));
 
-    sca_tra_manifold_base_algorithm()->Init();
+    sca_tra_manifold_base_algorithm()->init();
   }
 
   // do checks if adaptive time stepping is activated

@@ -22,7 +22,7 @@ ParticleInteraction::SPHEquationOfStateBase::SPHEquationOfStateBase()
   // empty constructor
 }
 
-void ParticleInteraction::SPHEquationOfStateBase::Init()
+void ParticleInteraction::SPHEquationOfStateBase::init()
 {
   // nothing to do
 }

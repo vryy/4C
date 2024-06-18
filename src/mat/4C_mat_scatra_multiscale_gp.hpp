@@ -48,7 +48,7 @@ namespace Mat
     ~ScatraMultiScaleGP();
 
     //! perform initializations
-    void Init();
+    void init();
 
     //! prepare time step
     void prepare_time_step(const std::vector<double>& phinp_macro  //!< macro-scale state variables

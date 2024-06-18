@@ -41,7 +41,7 @@ BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::BeamToFluidMeshtyingVtkOut
 /**
  *
  */
-void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Init()
+void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::init()
 {
   issetup_ = false;
   isinit_ = true;
@@ -184,7 +184,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::check_init_setup() const
 {
-  if (!isinit_ or !issetup_) FOUR_C_THROW("Call Init() and setup() first!");
+  if (!isinit_ or !issetup_) FOUR_C_THROW("Call init() and setup() first!");
 }
 
 /**
@@ -192,7 +192,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::check_init_setup() co
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::check_init() const
 {
-  if (!isinit_) FOUR_C_THROW("Init() has not been called, yet!");
+  if (!isinit_) FOUR_C_THROW("init() has not been called, yet!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

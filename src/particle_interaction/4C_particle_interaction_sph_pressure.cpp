@@ -29,7 +29,7 @@ ParticleInteraction::SPHPressure::SPHPressure()
   // empty constructor
 }
 
-void ParticleInteraction::SPHPressure::Init()
+void ParticleInteraction::SPHPressure::init()
 {
   // init with potential fluid particle types
   fluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2};

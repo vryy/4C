@@ -83,7 +83,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
 
   // initialize search tree
   auto tree = Core::COUPLING::NodeMatchingOctree();
-  tree.Init(*sourcedis_, masternodes, 150);
+  tree.init(*sourcedis_, masternodes, 150);
   tree.setup();
 
   // match master and slave nodes using octtree
@@ -141,7 +141,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   Core::Conditions::FindConditionedNodes(dis, couplingcond_slave_, slavenodes);
 
   // initialize search tree
-  tree.Init(*sourcedis_, masternodes, 150);
+  tree.init(*sourcedis_, masternodes, 150);
   tree.setup();
 
   // match master and slave nodes using octtree

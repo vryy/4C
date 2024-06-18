@@ -47,9 +47,9 @@ STR::MODELEVALUATOR::BeamInteractionDataState::BeamInteractionDataState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionDataState::Init()
+void STR::MODELEVALUATOR::BeamInteractionDataState::init()
 {
-  // We have to call setup() after Init()
+  // We have to call setup() after init()
   issetup_ = false;
 
   // clear stl stuff

@@ -127,7 +127,7 @@ void ScaTra::TimIntHDG::setup()
   timealgoset_ = timealgo_;
   if (timealgo_ != Inpar::ScaTra::timeint_stationary) timealgo_ = Inpar::ScaTra::timeint_gen_alpha;
 
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
   ScaTra::TimIntGenAlpha::setup();
 

@@ -224,7 +224,7 @@ ScaTra::TimIntCardiacMonodomainGenAlpha::TimIntCardiacMonodomainGenAlpha(
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntCardiacMonodomainGenAlpha::setup()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
   TimIntGenAlpha::setup();
 

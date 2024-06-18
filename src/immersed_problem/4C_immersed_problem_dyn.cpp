@@ -95,7 +95,7 @@ void immersed_problem_drt()
           }
 
           // init algo
-          algo->Init(params);
+          algo->init(params);
 
           // ghost structure redundantly on all procs
           Core::Rebalance::GhostDiscretizationOnAllProcs(problem->GetDis("structure"));

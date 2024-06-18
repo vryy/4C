@@ -35,7 +35,7 @@ namespace ParticleInteraction
     virtual ~SPHDensityCorrectionBase() = default;
 
     //! init density correction handler
-    virtual void Init();
+    virtual void init();
 
     //! setup density correction handler
     virtual void setup();

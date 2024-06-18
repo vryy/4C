@@ -53,7 +53,7 @@ PARTICLEWALL::WallHandlerBase::WallHandlerBase(
 
 PARTICLEWALL::WallHandlerBase::~WallHandlerBase() = default;
 
-void PARTICLEWALL::WallHandlerBase::Init(
+void PARTICLEWALL::WallHandlerBase::init(
     const std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy)
 {
   // set interface to binning strategy
@@ -433,7 +433,7 @@ void PARTICLEWALL::WallHandlerBase::init_wall_data_state()
   walldatastate_ = std::make_shared<PARTICLEWALL::WallDataState>(params_);
 
   // init wall data state container
-  walldatastate_->Init(walldiscretization_);
+  walldatastate_->init(walldiscretization_);
 }
 
 void PARTICLEWALL::WallHandlerBase::create_wall_discretization_runtime_vtu_writer(

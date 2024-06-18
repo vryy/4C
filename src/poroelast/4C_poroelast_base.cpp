@@ -67,7 +67,7 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
         Teuchos::rcp(new UTILS::PoroMaterialStrategy());
 
     // setup projection matrices
-    volcoupl_->Init(Global::Problem::Instance()->NDim(), structdis, fluiddis, nullptr, nullptr,
+    volcoupl_->init(Global::Problem::Instance()->NDim(), structdis, fluiddis, nullptr, nullptr,
         nullptr, nullptr, materialstrategy);
     Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
     Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
@@ -81,7 +81,7 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   // integrator
   const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
 
-  // create the structural time integrator (Init() called inside)
+  // create the structural time integrator (init() called inside)
   // clean up as soon as old time integration is unused!
   if (oldstructimint_)
   {
@@ -96,7 +96,7 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   {
     Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr =
         Adapter::build_structure_algorithm(sdyn);
-    adapterbase_ptr->Init(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+    adapterbase_ptr->init(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     adapterbase_ptr->setup();
     structure_ = Teuchos::rcp_dynamic_cast<Adapter::FPSIStructureWrapper>(
         adapterbase_ptr->structure_field());

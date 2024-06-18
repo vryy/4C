@@ -79,7 +79,7 @@ namespace BEAMINTERACTION
     BeamLinkRigidJointed(const BeamLinkRigidJointed& old);
 
     //! Initialization
-    void Init(const int id, const std::vector<std::pair<int, int>>& eleids,
+    void init(const int id, const std::vector<std::pair<int, int>>& eleids,
         const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
         const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
         Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset) override;

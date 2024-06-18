@@ -24,7 +24,7 @@ PARTICLEALGORITHM::InputGenerator::InputGenerator(
   // empty constructor
 }
 
-void PARTICLEALGORITHM::InputGenerator::Init()
+void PARTICLEALGORITHM::InputGenerator::init()
 {
   // nothing to do
 }

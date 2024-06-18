@@ -26,7 +26,7 @@ PARTICLEALGORITHM::ViscousDampingHandler::ViscousDampingHandler(const double vis
   // empty constructor
 }
 
-void PARTICLEALGORITHM::ViscousDampingHandler::Init()
+void PARTICLEALGORITHM::ViscousDampingHandler::init()
 {
   // nothing to do
 }

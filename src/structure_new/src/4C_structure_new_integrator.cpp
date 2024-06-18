@@ -49,7 +49,7 @@ STR::Integrator::Integrator()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::Init(const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_ptr,
+void STR::Integrator::init(const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_ptr,
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
     const Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
     const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr)
@@ -74,14 +74,14 @@ void STR::Integrator::setup()
   // build model evaluator data container
   // ---------------------------------------------------------------------------
   eval_data_ptr_ = Teuchos::rcp(new STR::MODELEVALUATOR::Data());
-  eval_data_ptr_->Init(timint_ptr_);
+  eval_data_ptr_->init(timint_ptr_);
   eval_data_ptr_->setup();
 
   // ---------------------------------------------------------------------------
   // build model evaluator
   // ---------------------------------------------------------------------------
   modelevaluator_ptr_ = Teuchos::rcp(new STR::ModelEvaluator());
-  modelevaluator_ptr_->Init(
+  modelevaluator_ptr_->init(
       eval_data_ptr_, sdyn_ptr_, gstate_ptr_, io_ptr_, Teuchos::rcp(this, false), timint_ptr_);
   modelevaluator_ptr_->setup();
 
@@ -89,7 +89,7 @@ void STR::Integrator::setup()
   // build monitor for a tensile test
   // ---------------------------------------------------------------------------
   monitor_dbc_ptr_ = Teuchos::rcp(new STR::MonitorDbc);
-  monitor_dbc_ptr_->Init(io_ptr_, *gstate_ptr_->get_discret(), *gstate_ptr_, *dbc_ptr_);
+  monitor_dbc_ptr_->init(io_ptr_, *gstate_ptr_->get_discret(), *gstate_ptr_, *dbc_ptr_);
   monitor_dbc_ptr_->setup();
 
   mt_energy_.setup();
@@ -153,13 +153,13 @@ void STR::Integrator::set_initial_displacement(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!"); }
+void STR::Integrator::check_init() const { FOUR_C_ASSERT(is_init(), "Call init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::Integrator::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*

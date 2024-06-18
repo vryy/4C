@@ -81,7 +81,7 @@ void poromultiphasescatra_dyn(int restart)
       PoroMultiPhaseScaTra::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
           solscheme, poroscatraparams, comm);
 
-  algo->Init(poroscatraparams, poroscatraparams, poroparams, structparams, fluidparams,
+  algo->init(poroscatraparams, poroscatraparams, poroparams, structparams, fluidparams,
       scatraparams, struct_disname, fluid_disname, scatra_disname, true, ndsporo_disp, ndsporo_vel,
       ndsporo_solidpressure, ndsporofluid_scatra, &nearbyelepairs);
 

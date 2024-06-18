@@ -78,7 +78,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 04/2018
      */
-    virtual void Init();
+    virtual void init();
 
     /*!
      * \brief time integration scheme specific initialization routine

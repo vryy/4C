@@ -216,7 +216,7 @@ CONTACT::AbstractStrategy::AbstractStrategy(
 
   // build the NOX::Nln::CONSTRAINT::Interface::Required object
   noxinterface_ptr_ = Teuchos::rcp(new CONTACT::NoxInterface);
-  noxinterface_ptr_->Init(Teuchos::rcp(this, false));
+  noxinterface_ptr_->init(Teuchos::rcp(this, false));
   noxinterface_ptr_->setup();
 
   return;

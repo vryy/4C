@@ -89,9 +89,9 @@ PoroElastScaTra::PoroScatraBase::PoroScatraBase(
   scatra_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
       timeparams, scatradyn, problem->SolverParams(linsolvernumber), "scatra", true));
 
-  // now we can call Init() on the base algo.
+  // now we can call init() on the base algo.
   // time integrator is constructed and initialized inside.
-  scatra_->Init();
+  scatra_->init();
   scatra_->ScaTraField()->set_number_of_dof_set_displacement(2);
   scatra_->ScaTraField()->set_number_of_dof_set_velocity(2);
 
@@ -297,9 +297,9 @@ void PoroElastScaTra::PoroScatraBase::setup_coupling(
     std::pair<int, int> dofsets21_fluidscatra = std::pair<int, int>(2, 0);
 
     // setup projection matrices (use default material strategy)
-    volcoupl_structurescatra_->Init(Global::Problem::Instance()->NDim(), structdis, scatradis,
+    volcoupl_structurescatra_->init(Global::Problem::Instance()->NDim(), structdis, scatradis,
         nullptr, nullptr, &dofsets12_structurescatra, &dofsets21_structurescatra, Teuchos::null);
-    volcoupl_fluidscatra_->Init(Global::Problem::Instance()->NDim(), fluiddis, scatradis, nullptr,
+    volcoupl_fluidscatra_->init(Global::Problem::Instance()->NDim(), fluiddis, scatradis, nullptr,
         nullptr, &dofsets12_fluidscatra, &dofsets21_fluidscatra, Teuchos::null);
 
     volcoupl_structurescatra_->setup(Global::Problem::Instance()->VolmortarParams());

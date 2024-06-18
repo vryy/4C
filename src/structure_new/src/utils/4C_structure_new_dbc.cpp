@@ -45,7 +45,7 @@ STR::Dbc::Dbc()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::Init(const Teuchos::RCP<Core::FE::Discretization>& discret_ptr,
+void STR::Dbc::init(const Teuchos::RCP<Core::FE::Discretization>& discret_ptr,
     const Teuchos::RCP<Epetra_Vector>& freact_ptr,
     const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr)
 {
@@ -126,13 +126,13 @@ void STR::Dbc::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!"); }
+void STR::Dbc::check_init() const { FOUR_C_ASSERT(is_init(), "Call init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::Dbc::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*

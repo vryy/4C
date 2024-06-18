@@ -90,7 +90,7 @@ Wear::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
 
     // init coupling
     Teuchos::rcp_dynamic_cast<Core::Adapter::MortarVolCoupl>(coupalestru_)
-        ->Init(ndim, Global::Problem::Instance()->GetDis("ale"),
+        ->init(ndim, Global::Problem::Instance()->GetDis("ale"),
             Global::Problem::Instance()->GetDis("structure"), &coupleddof12, &coupleddof21,
             &dofset12, &dofset21, Teuchos::null, false);
 

@@ -122,8 +122,8 @@ namespace FLD
     static void setup_fluid_discretization();
 
     /// initialization
-    void Init() override { Init(true); }
-    virtual void Init(bool createinitialstate);
+    void init() override { init(true); }
+    virtual void init(bool createinitialstate);
 
     void add_additional_scalar_dofset_and_coupling();
 

@@ -108,7 +108,7 @@ namespace STR
        * @param sdynparams Parameter list for structural dynamics from input file
        * @param datasdyn Structural dynamics data container
        */
-      void Init(const Teuchos::RCP<Core::FE::Discretization> discret,
+      void init(const Teuchos::RCP<Core::FE::Discretization> discret,
           const Teuchos::ParameterList& sdynparams,
           const Teuchos::RCP<const BaseDataSDyn> datasdyn);
 
@@ -269,12 +269,12 @@ namespace STR
       inline void check_init_setup() const
       {
         FOUR_C_ASSERT(
-            is_init() and is_setup(), "Call STR::BaseDataGlobalState::Init() and setup() first!");
+            is_init() and is_setup(), "Call STR::BaseDataGlobalState::init() and setup() first!");
       }
 
       inline void check_init() const
       {
-        FOUR_C_ASSERT(is_init(), "STR::BaseDataGlobalState::Init() has not been called, yet!");
+        FOUR_C_ASSERT(is_init(), "STR::BaseDataGlobalState::init() has not been called, yet!");
       }
 
      public:
@@ -925,7 +925,7 @@ namespace STR
      protected:
       /// @name variables for internal use only
       ///@{
-      /// flag indicating if Init() has been called
+      /// flag indicating if init() has been called
       bool isinit_;
 
       /// flag indicating if setup() has been called

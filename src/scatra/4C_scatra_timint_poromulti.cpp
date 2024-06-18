@@ -35,7 +35,7 @@ ScaTra::ScaTraTimIntPoroMulti::ScaTraTimIntPoroMulti(Teuchos::RCP<Core::FE::Disc
 /*----------------------------------------------------------------------*
  | initialize algorithm                                    vuong  08/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMulti::Init() { return; }
+void ScaTra::ScaTraTimIntPoroMulti::init() { return; }
 
 /*----------------------------------------------------------------------*
  | set solution fields on given dof sets                    vuong  08/16 |
@@ -259,12 +259,12 @@ ScaTra::ScaTraTimIntPoroMultiOST::ScaTraTimIntPoroMultiOST(
 /*----------------------------------------------------------------------*
  |  initialize time integration                             vuong  08/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiOST::Init()
+void ScaTra::ScaTraTimIntPoroMultiOST::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntOneStepTheta::Init();
-  ScaTraTimIntPoroMulti::Init();
+  TimIntOneStepTheta::init();
+  ScaTraTimIntPoroMulti::init();
 
   return;
 }
@@ -303,12 +303,12 @@ ScaTra::ScaTraTimIntPoroMultiBDF2::ScaTraTimIntPoroMultiBDF2(
 /*----------------------------------------------------------------------*
  |  initialize time integration                             vuong  08/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiBDF2::Init()
+void ScaTra::ScaTraTimIntPoroMultiBDF2::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntBDF2::Init();
-  ScaTraTimIntPoroMulti::Init();
+  TimIntBDF2::init();
+  ScaTraTimIntPoroMulti::init();
 
   return;
 }
@@ -348,12 +348,12 @@ ScaTra::ScaTraTimIntPoroMultiGenAlpha::ScaTraTimIntPoroMultiGenAlpha(
 /*----------------------------------------------------------------------*
  |  initialize time integration                             vuong  08/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiGenAlpha::Init()
+void ScaTra::ScaTraTimIntPoroMultiGenAlpha::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntGenAlpha::Init();
-  ScaTraTimIntPoroMulti::Init();
+  TimIntGenAlpha::init();
+  ScaTraTimIntPoroMulti::init();
 
   return;
 }
@@ -392,12 +392,12 @@ ScaTra::ScaTraTimIntPoroMultiStationary::ScaTraTimIntPoroMultiStationary(
 /*----------------------------------------------------------------------*
  |  initialize time integration                             vuong  08/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiStationary::Init()
+void ScaTra::ScaTraTimIntPoroMultiStationary::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntStationary::Init();
-  ScaTraTimIntPoroMulti::Init();
+  TimIntStationary::init();
+  ScaTraTimIntPoroMulti::init();
 
   return;
 }

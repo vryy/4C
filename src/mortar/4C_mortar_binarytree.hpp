@@ -207,7 +207,7 @@ namespace Mortar
     \brief Initialize the binary tree
 
     */
-    void Init() final;
+    void init() final;
 
    private:
     /*!

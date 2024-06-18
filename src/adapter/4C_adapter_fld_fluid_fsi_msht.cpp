@@ -28,10 +28,10 @@ Adapter::FluidFSIMsht::FluidFSIMsht(Teuchos::RCP<Fluid> fluid,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidFSIMsht::Init()
+void Adapter::FluidFSIMsht::init()
 {
   // call base class init
-  FluidFSI::Init();
+  FluidFSI::init();
 
   // create fluid map extractor
   setup_fsi_interface();

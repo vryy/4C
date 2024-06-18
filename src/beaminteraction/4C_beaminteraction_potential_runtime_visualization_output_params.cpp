@@ -36,7 +36,7 @@ BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::BeamToBeamPotentialRunt
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::Init(
+void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::init(
     const Teuchos::ParameterList& beam_contact_visualization_output_paramslist)
 {
   issetup_ = false;
@@ -82,14 +82,14 @@ void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::setup()
 void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::throw_error_if_not_init_and_setup()
     const
 {
-  if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
+  if (!is_init() or !is_setup()) FOUR_C_THROW("Call init() and setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::throw_error_if_not_init() const
 {
-  if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
+  if (!is_init()) FOUR_C_THROW("init() has not been called, yet!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -72,7 +72,7 @@ namespace BEAMINTERACTION
     */
     virtual ~BeamContactPair() = default;
     //! Initialization
-    virtual void Init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
+    virtual void init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
         std::vector<Core::Elements::Element const*> elements);
 
     //! Setup
@@ -402,7 +402,7 @@ namespace BEAMINTERACTION
    protected:
     //! @name member variables
 
-    //! indicates if the Init() function has been called
+    //! indicates if the init() function has been called
     bool isinit_;
 
     //! indicates if the setup() function has been called

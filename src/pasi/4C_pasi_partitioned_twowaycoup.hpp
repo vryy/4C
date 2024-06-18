@@ -52,7 +52,7 @@ namespace PaSI
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    void Init() override;
+    void init() override;
 
     /*!
      * \brief setup pasi algorithm
@@ -238,7 +238,7 @@ namespace PaSI
      *
      * \author Sebastian Fuchs \date 07/2020
      */
-    void Init() override;
+    void init() override;
 
    protected:
     /*!
@@ -317,7 +317,7 @@ namespace PaSI
      *
      * \author Sebastian Fuchs \date 03/2017
      */
-    void Init() override;
+    void init() override;
 
     /*!
      * \brief read restart information for given time step

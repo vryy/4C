@@ -106,7 +106,7 @@ namespace Adapter
     virtual ~Fluid() = default;
 
     /// initialize time integration
-    virtual void Init() = 0;
+    virtual void init() = 0;
 
     //! @name Vector access
 

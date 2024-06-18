@@ -97,7 +97,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
     std::pair<int, int> dofsets21(0, 0);
 
     // initialize coupling adapter
-    coupfa_volmortar->Init(ndim, fluid_field()->discretization(),
+    coupfa_volmortar->init(ndim, fluid_field()->discretization(),
         ale_field()->write_access_discretization(), &coupleddof12, &coupleddof21, &dofsets12,
         &dofsets21, Teuchos::null, false);
 
@@ -120,7 +120,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
 
   // initializing the fluid is done later as for xfluids the first cut is done
   // there (coupfa_ cannot be build anymore!!!)
-  fluid_field()->Init();
+  fluid_field()->init();
   fluid->SetInitialFlowField(
       Global::Problem::Instance()->FluidDynamicParams());  // call from base algorithm
 
@@ -153,7 +153,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
     std::pair<int, int> dofsets12(0, 0);
     std::pair<int, int> dofsets21(0, 0);
 
-    icoupfa->Init(ndim, Global::Problem::Instance()->GetDis("fluid"),
+    icoupfa->init(ndim, Global::Problem::Instance()->GetDis("fluid"),
         Global::Problem::Instance()->GetDis("ale"), &coupleddof12, &coupleddof21, &dofsets12,
         &dofsets21, Teuchos::null, false);
 

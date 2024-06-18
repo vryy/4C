@@ -38,10 +38,10 @@ Adapter::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(const 
 /*----------------------------------------------------------------------*
 | Setup                                                     rauch 08/16 |
 *----------------------------------------------------------------------*/
-void Adapter::ScaTraFluidAleCouplingAlgorithm::Init()
+void Adapter::ScaTraFluidAleCouplingAlgorithm::init()
 {
-  // call Init() in base class
-  Adapter::ScaTraFluidCouplingAlgorithm::Init();
+  // call init() in base class
+  Adapter::ScaTraFluidCouplingAlgorithm::init();
 
   ale_ = Teuchos::rcp_dynamic_cast<AleFluidWrapper>(AleBaseAlgorithm::ale_field(), true);
 }

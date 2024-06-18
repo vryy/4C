@@ -61,7 +61,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Initialize the object.
      */
-    void Init();
+    void init();
 
     /**
      * \brief Setup the output writer base and the desired field data.

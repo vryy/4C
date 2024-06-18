@@ -40,7 +40,7 @@ STR::MODELEVALUATOR::BeamInteractionOld::BeamInteractionOld()
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteractionOld::setup()
 {
-  if (not is_init()) FOUR_C_THROW("Init() has not been called, yet!");
+  if (not is_init()) FOUR_C_THROW("init() has not been called, yet!");
 
   // setup the pointers for displacement and stiffness
   disnp_ptr_ = global_state().get_dis_np();

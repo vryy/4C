@@ -55,7 +55,7 @@ namespace Adapter
         bool isale, bool dirichletcond);
 
     /// initialize and prepare maps
-    void Init() override;
+    void init() override;
 
     /// prepare time step
     void prepare_time_step() override;

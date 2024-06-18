@@ -30,7 +30,7 @@ namespace ScaTra
 
 
     /// initialize time integration scheme
-    void Init() override;
+    void init() override;
 
     /// compute values at intermediate time steps (required for generalized-alpha)
     void compute_intermediate_values() override { return; };

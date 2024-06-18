@@ -91,10 +91,10 @@ void CONTACT::Aug::SteepestAscentSaddlePoint::Strategy::post_setup(bool redistri
 
   if (init)
   {
-    data().SaData().PenaltyUpdate().Init(this, &data());
+    data().SaData().PenaltyUpdate().init(this, &data());
 
 #ifdef LAGRANGE_FUNC
-    Data().SaData().lagrange_multiplier_func().Init(this, Data());
+    Data().SaData().lagrange_multiplier_func().init(this, Data());
     Data().SaData().lagrange_multiplier_func().setup();
 #endif
   }

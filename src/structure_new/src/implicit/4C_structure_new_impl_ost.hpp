@@ -195,11 +195,11 @@ namespace STR
 
       /** \brief Access the time integration coefficient \f$\theta\f$
        *
-       * If Init() and setup() have already been called, #theta_ is already set correctly,
+       * If init() and setup() have already been called, #theta_ is already set correctly,
        * so we can just return it.
        *
        * However, we sometimes need the value of \f$\theta\f$
-       * before this time integration scheme has been properly setup. Then, i.e. if Init()
+       * before this time integration scheme has been properly setup. Then, i.e. if init()
        * and setup() haven't been called yet, we read the value of \f$\theta\f$ from
        * a data container.
        *

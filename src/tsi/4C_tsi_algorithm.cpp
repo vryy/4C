@@ -74,7 +74,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     Teuchos::RCP<Core::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy =
         Teuchos::rcp(new TSI::UTILS::TSIMaterialStrategy());
     // init coupling adapter projection matrices
-    volcoupl_->Init(Global::Problem::Instance()->NDim(), structdis, thermodis, nullptr, nullptr,
+    volcoupl_->init(Global::Problem::Instance()->NDim(), structdis, thermodis, nullptr, nullptr,
         nullptr, nullptr, materialstrategy);
     // redistribute discretizations to meet needs of volmortar coupling
     Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
@@ -102,7 +102,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
     Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr =
         Adapter::build_structure_algorithm(sdyn);
-    adapterbase_ptr->Init(Global::Problem::Instance()->TSIDynamicParams(),
+    adapterbase_ptr->init(Global::Problem::Instance()->TSIDynamicParams(),
         const_cast<Teuchos::ParameterList&>(sdyn), structdis);
 
     // set the temperature; Monolithic does this in it's own constructor with potentially
@@ -484,7 +484,7 @@ void TSI::Algorithm::prepare_contact_strategy()
     // create the contact factory
     // ---------------------------------------------------------------------
     CONTACT::STRATEGY::Factory factory;
-    factory.Init(structure_field()->discretization());
+    factory.init(structure_field()->discretization());
     factory.setup();
 
     // check the problem dimension

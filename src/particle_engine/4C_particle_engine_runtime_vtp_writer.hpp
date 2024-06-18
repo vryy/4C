@@ -65,7 +65,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlecontainerbundle particle container bundle
      */
-    void Init(const ParticleContainerBundleShrdPtr particlecontainerbundle);
+    void init(const ParticleContainerBundleShrdPtr particlecontainerbundle);
 
     /*!
      * \brief setup particle runtime vtp writer

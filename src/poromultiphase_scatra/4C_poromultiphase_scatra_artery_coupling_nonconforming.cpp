@@ -63,7 +63,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::init()
 {
   // we do not have a moving mesh
   if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::porofluidmultiphase)
@@ -266,7 +266,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
         Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase> newpair =
             PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
                 create_new_artery_coupling_pair(ele_ptrs);
-        newpair->Init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
+        newpair->init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
             coupleddofs_art_, scale_vec_, funct_vec_, condname_,
             couplingparams_.get<double>("PENALTY"));
 
@@ -357,7 +357,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::create_cou
               Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>
                   newpair = PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
                       create_new_artery_coupling_pair(ele_ptrs);
-              newpair->Init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
+              newpair->init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
                   coupleddofs_art_, scale_vec_, funct_vec_, condname_, penalty,
                   coupling_element_type_, eta_ntp);
               // add to list of current contact pairs

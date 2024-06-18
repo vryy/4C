@@ -85,7 +85,7 @@ namespace ParticleRigidBody
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void Init();
+    void init();
 
     /*!
      * \brief setup rigid body handler

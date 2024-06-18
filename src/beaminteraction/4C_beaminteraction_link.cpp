@@ -57,7 +57,7 @@ BEAMINTERACTION::BeamLink::BeamLink(const BEAMINTERACTION::BeamLink& old)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::Init(const int id, const std::vector<std::pair<int, int>>& eleids,
+void BEAMINTERACTION::BeamLink::init(const int id, const std::vector<std::pair<int, int>>& eleids,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
     Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)

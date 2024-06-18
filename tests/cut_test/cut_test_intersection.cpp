@@ -93,7 +93,7 @@ void test_quad4_line2(double x1, double y1, double x2, double y2)
   Teuchos::RCP<Core::Geo::Cut::IntersectionBase> intersection =
       Core::Geo::Cut::IntersectionBase::Create(
           Core::FE::CellType::line2, Core::FE::CellType::quad4);
-  intersection->Init(&mesh, edge, side, false, false, false);
+  intersection->init(&mesh, edge, side, false, false, false);
 
   Core::Geo::Cut::PointSet cuts;
   intersection->Intersect(cuts);

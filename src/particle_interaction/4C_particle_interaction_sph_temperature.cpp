@@ -38,7 +38,7 @@ ParticleInteraction::SPHTemperature::SPHTemperature(const Teuchos::ParameterList
 
 ParticleInteraction::SPHTemperature::~SPHTemperature() = default;
 
-void ParticleInteraction::SPHTemperature::Init()
+void ParticleInteraction::SPHTemperature::init()
 {
   // init heat source handler
   init_heat_source_handler();
@@ -208,7 +208,7 @@ void ParticleInteraction::SPHTemperature::init_heat_source_handler()
   }
 
   // init heat source handler
-  if (heatsource_) heatsource_->Init();
+  if (heatsource_) heatsource_->init();
 }
 
 void ParticleInteraction::SPHTemperature::init_heat_loss_evaporation_handler()
@@ -218,7 +218,7 @@ void ParticleInteraction::SPHTemperature::init_heat_loss_evaporation_handler()
         new ParticleInteraction::SPHHeatLossEvaporation(params_sph_));
 
   // init evaporation induced heat loss handler
-  if (heatlossevaporation_) heatlossevaporation_->Init();
+  if (heatlossevaporation_) heatlossevaporation_->init();
 }
 
 void ParticleInteraction::SPHTemperature::energy_equation() const

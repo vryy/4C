@@ -42,7 +42,7 @@ FLD::TimIntLoma::TimIntLoma(const Teuchos::RCP<Core::FE::Discretization>& actdis
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::Init()
+void FLD::TimIntLoma::init()
 {
   // conservative formulation currently not supported in low-Mach-number case
   // when using generalized-alpha time-integration scheme

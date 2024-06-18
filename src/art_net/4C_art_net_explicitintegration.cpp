@@ -62,7 +62,7 @@ Arteries::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::ArtNetExplicitTimeInt::Init(const Teuchos::ParameterList& globaltimeparams,
+void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname)
 {
   // time measurement: initialization
@@ -72,7 +72,7 @@ void Arteries::ArtNetExplicitTimeInt::Init(const Teuchos::ParameterList& globalt
   }
 
   // call base class
-  TimInt::Init(globaltimeparams, arteryparams, scatra_disname);
+  TimInt::init(globaltimeparams, arteryparams, scatra_disname);
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled() || !discret_->HaveDofs()) discret_->fill_complete();

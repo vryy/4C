@@ -49,10 +49,10 @@ namespace Core::Geo
       virtual ~BoundingBox() = default;
 
       /// initialize bounding box object
-      void Init(const Teuchos::ParameterList& binning_params);
+      void init(const Teuchos::ParameterList& binning_params);
 
       /// initialize bounding box object
-      void Init(Core::LinAlg::Matrix<3, 2> const& box, std::vector<bool> const& pbconoff);
+      void init(Core::LinAlg::Matrix<3, 2> const& box, std::vector<bool> const& pbconoff);
 
       /// setup bounding box object, setup call is needed in case of box dirichlet
       void setup(const Teuchos::ParameterList& io_params,
@@ -228,13 +228,13 @@ namespace Core::Geo
       //! Check the init state
       inline void throw_if_not_init() const
       {
-        if (not is_init()) FOUR_C_THROW("Call Init() first!");
+        if (not is_init()) FOUR_C_THROW("Call init() first!");
       }
 
       //! Check the init and setup state
       inline void throw_if_not_init_or_setup() const
       {
-        if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
+        if (not is_init() or not is_setup()) FOUR_C_THROW("Call init() and setup() first!");
       }
 
      private:
@@ -270,7 +270,7 @@ namespace Core::Geo
      protected:
       //! @name member variables
 
-      //! indicates if the Init() function has been called
+      //! indicates if the init() function has been called
       bool isinit_;
 
       //! indicates if the setup() function has been called

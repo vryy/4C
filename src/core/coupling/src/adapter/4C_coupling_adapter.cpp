@@ -369,7 +369,7 @@ void Core::Adapter::Coupling::match_nodes(const Core::FE::Discretization& master
 {
   // match master and slave nodes using octree
   auto tree = Core::COUPLING::NodeMatchingOctree();
-  tree.Init(masterdis, masternodes, 150, tolerance);
+  tree.init(masterdis, masternodes, 150, tolerance);
   tree.setup();
 
   std::map<int, std::pair<int, double>> coupling;

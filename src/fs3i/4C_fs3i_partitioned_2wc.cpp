@@ -45,10 +45,10 @@ FS3I::PartFS3I2Wc::PartFS3I2Wc(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I2Wc::Init()
+void FS3I::PartFS3I2Wc::init()
 {
-  // call Init() in base class
-  FS3I::PartFS3I::Init();
+  // call init() in base class
+  FS3I::PartFS3I::init();
 
   return;
 }

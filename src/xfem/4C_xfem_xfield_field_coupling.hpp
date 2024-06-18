@@ -58,7 +58,7 @@ namespace XFEM
       Coupling();
 
       /// initialize class member variables
-      void Init(const enum MinDofDiscretization& min_dof_dis);
+      void init(const enum MinDofDiscretization& min_dof_dis);
 
       /** \name Conversion between master and slave
        *

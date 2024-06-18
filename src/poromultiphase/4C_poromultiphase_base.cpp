@@ -38,7 +38,7 @@ POROMULTIPHASE::PoroMultiPhaseBase::PoroMultiPhaseBase(
 /*----------------------------------------------------------------------*
  | initialize algorithm                                    vuong 08/16  |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& globaltimeparams,
+void POROMULTIPHASE::PoroMultiPhaseBase::init(const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,
     const Teuchos::ParameterList& fluidparams, const std::string& struct_disname,
     const std::string& fluid_disname, bool isale, int nds_disp, int nds_vel, int nds_solidpressure,
@@ -54,7 +54,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
   // build structural time integrator
   Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase =
       Adapter::build_structure_algorithm(structparams);
-  adapterbase->Init(globaltimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
+  adapterbase->init(globaltimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
   adapterbase->setup();
   structure_ = adapterbase->structure_field();
 
@@ -101,7 +101,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
   // wrap it
   fluid_ = Teuchos::rcp(new Adapter::PoroFluidMultiphaseWrapper(porofluid));
   // initialize it
-  fluid_->Init(isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra, nearbyelepairs);
+  fluid_->init(isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra, nearbyelepairs);
 
   // done.
   return;

@@ -52,7 +52,7 @@ namespace STR
     //@{
 
     //! Finalize the class initialization (nothing to do here)
-    void Init(Teuchos::RCP<TimInt>& sti) override {}
+    void init(Teuchos::RCP<TimInt>& sti) override {}
 
     /*! \brief Make one step with auxiliary scheme
      *

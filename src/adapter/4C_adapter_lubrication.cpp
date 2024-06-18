@@ -95,7 +95,7 @@ void Adapter::LubricationBaseAlgorithm::setup(
   lubrication_ = Teuchos::rcp(new LUBRICATION::TimIntStationary(
       actdis, solver, lubricationtimeparams, extraparams, output));
 
-  lubrication_->Init();
+  lubrication_->init();
   // initialize algorithm for specific time-integration scheme
 
   return;

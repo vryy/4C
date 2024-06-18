@@ -60,7 +60,7 @@ namespace STR
       NoxInterface();
 
       //! Init function
-      virtual void Init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
+      virtual void init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
           const Teuchos::RCP<STR::Integrator>& int_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
           const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
 

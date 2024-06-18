@@ -26,7 +26,7 @@ PARTICLEENGINE::ParticleRuntimeVtpWriter::ParticleRuntimeVtpWriter(const Epetra_
   // empty constructor
 }
 
-void PARTICLEENGINE::ParticleRuntimeVtpWriter::Init(
+void PARTICLEENGINE::ParticleRuntimeVtpWriter::init(
     const ParticleContainerBundleShrdPtr particlecontainerbundle)
 {
   // set particle container bundle

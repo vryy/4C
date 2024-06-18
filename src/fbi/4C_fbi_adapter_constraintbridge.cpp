@@ -34,7 +34,7 @@ void Adapter::FBIConstraintBridge::setup(const Epetra_Map* beam_map, const Epetr
 {
   // Create the beaminteraction data container and set the parameters
   beam_interaction_params_ = Teuchos::rcp(new FBI::BeamToFluidMeshtyingParams());
-  beam_interaction_params_->Init();
+  beam_interaction_params_->init();
   beam_interaction_params_->setup();
 
   const Teuchos::ParameterList& geometry_parameter_list =
@@ -72,7 +72,7 @@ void Adapter::FBIConstraintBridge::CreatePair(
   // create the underlying geometrypair doing the integration (segment or gauss point projection
   // based)
   newinteractionpair->CreateGeometryPair(elements[0], elements[1], GetGeometryData());
-  newinteractionpair->Init(GetParams(), elements);
+  newinteractionpair->init(GetParams(), elements);
   newinteractionpair->setup();
 
   // hand in the current position and velocities of the participating elements

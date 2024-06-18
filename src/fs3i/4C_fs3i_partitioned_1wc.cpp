@@ -31,9 +31,9 @@ FS3I::PartFS3I1Wc::PartFS3I1Wc(const Epetra_Comm& comm) : PartFS3I(comm) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I1Wc::Init()
+void FS3I::PartFS3I1Wc::init()
 {
-  FS3I::PartFS3I::Init();
+  FS3I::PartFS3I::init();
   return;
 }
 

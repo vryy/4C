@@ -42,7 +42,7 @@ BEAMINTERACTION::BeamToBeamContactParams::BeamToBeamContactParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamContactParams::Init()
+void BEAMINTERACTION::BeamToBeamContactParams::init()
 {
   issetup_ = false;
 

@@ -25,7 +25,7 @@ BEAMINTERACTION::BeamToSphereContactParams::BeamToSphereContactParams()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 
-void BEAMINTERACTION::BeamToSphereContactParams::Init()
+void BEAMINTERACTION::BeamToSphereContactParams::init()
 {
   issetup_ = false;
 

@@ -269,7 +269,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   Teuchos::RCP<STR::TimInt> tmpstr =
       STR::TimIntCreate(prbdyn, *ioflags, sdyn, *xparams, actdis, solver, contactsolver, output);
   // initialize the time integrator
-  tmpstr->Init(prbdyn, sdyn, *xparams, actdis, solver);
+  tmpstr->init(prbdyn, sdyn, *xparams, actdis, solver);
 
   // ---------------------------------------------------------------------------
   // ---------------------------------------------------------------------------

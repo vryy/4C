@@ -39,7 +39,7 @@ namespace ParticleInteraction
     explicit MaterialHandler(const Teuchos::ParameterList& params);
 
     //! init particle material handler
-    void Init();
+    void init();
 
     //! setup particle material handler
     void setup();

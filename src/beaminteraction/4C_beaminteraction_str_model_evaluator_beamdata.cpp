@@ -22,7 +22,7 @@ STR::MODELEVALUATOR::BeamData::BeamData()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamData::Init()
+void STR::MODELEVALUATOR::BeamData::init()
 {
   issetup_ = false;
   isinit_ = true;

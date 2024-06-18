@@ -47,10 +47,10 @@ ParticleInteraction::ParticleInteractionSPH::ParticleInteractionSPH(
 
 ParticleInteraction::ParticleInteractionSPH::~ParticleInteractionSPH() = default;
 
-void ParticleInteraction::ParticleInteractionSPH::Init()
+void ParticleInteraction::ParticleInteractionSPH::init()
 {
   // call base class init
-  ParticleInteractionBase::Init();
+  ParticleInteractionBase::init();
 
   // init kernel handler
   init_kernel_handler();
@@ -471,7 +471,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_kernel_handler()
   }
 
   // init kernel handler
-  kernel_->Init();
+  kernel_->init();
 }
 
 void ParticleInteraction::ParticleInteractionSPH::init_equation_of_state_bundle()
@@ -481,7 +481,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_equation_of_state_bundle(
       std::make_shared<ParticleInteraction::SPHEquationOfStateBundle>(params_sph_);
 
   // init equation of state bundle
-  equationofstatebundle_->Init(particlematerial_);
+  equationofstatebundle_->init(particlematerial_);
 }
 
 void ParticleInteraction::ParticleInteractionSPH::init_neighbor_pair_handler()
@@ -490,7 +490,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_neighbor_pair_handler()
   neighborpairs_ = std::make_shared<ParticleInteraction::SPHNeighborPairs>();
 
   // init neighbor pair handler
-  neighborpairs_->Init();
+  neighborpairs_->init();
 }
 
 void ParticleInteraction::ParticleInteractionSPH::init_density_handler()
@@ -529,7 +529,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_density_handler()
   }
 
   // init density handler
-  density_->Init();
+  density_->init();
 
   // safety check
   if (densityevaluationscheme != Inpar::PARTICLE::DensityPredictCorrect and
@@ -547,7 +547,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_pressure_handler()
       std::unique_ptr<ParticleInteraction::SPHPressure>(new ParticleInteraction::SPHPressure());
 
   // init pressure handler
-  pressure_->Init();
+  pressure_->init();
 }
 
 void ParticleInteraction::ParticleInteractionSPH::init_temperature_handler()
@@ -579,7 +579,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_temperature_handler()
   }
 
   // init temperature handler
-  if (temperature_) temperature_->Init();
+  if (temperature_) temperature_->init();
 }
 
 void ParticleInteraction::ParticleInteractionSPH::init_momentum_handler()
@@ -589,7 +589,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_momentum_handler()
       new ParticleInteraction::SPHMomentum(params_sph_));
 
   // init momentum handler
-  momentum_->Init();
+  momentum_->init();
 }
 
 void ParticleInteraction::ParticleInteractionSPH::init_surface_tension_handler()
@@ -621,7 +621,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_surface_tension_handler()
   }
 
   // init surface tension handler
-  if (surfacetension_) surfacetension_->Init();
+  if (surfacetension_) surfacetension_->init();
 }
 
 void ParticleInteraction::ParticleInteractionSPH::init_boundary_particle_handler()
@@ -653,7 +653,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_boundary_particle_handler
   }
 
   // init boundary particle handler
-  if (boundaryparticle_) boundaryparticle_->Init();
+  if (boundaryparticle_) boundaryparticle_->init();
 }
 
 void ParticleInteraction::ParticleInteractionSPH::init_dirichlet_open_boundary_handler()
@@ -685,7 +685,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_dirichlet_open_boundary_h
   }
 
   // init open boundary handler
-  if (dirichletopenboundary_) dirichletopenboundary_->Init();
+  if (dirichletopenboundary_) dirichletopenboundary_->init();
 }
 
 void ParticleInteraction::ParticleInteractionSPH::init_neumann_open_boundary_handler()
@@ -717,7 +717,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_neumann_open_boundary_han
   }
 
   // init open boundary handler
-  if (neumannopenboundary_) neumannopenboundary_->Init();
+  if (neumannopenboundary_) neumannopenboundary_->init();
 }
 
 void ParticleInteraction::ParticleInteractionSPH::init_virtual_wall_particle_handler()
@@ -749,7 +749,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_virtual_wall_particle_han
   }
 
   // init virtual wall particle handler
-  if (virtualwallparticle_) virtualwallparticle_->Init();
+  if (virtualwallparticle_) virtualwallparticle_->init();
 }
 
 void ParticleInteraction::ParticleInteractionSPH::init_phase_change_handler()
@@ -792,7 +792,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_phase_change_handler()
   }
 
   // init phase change handler
-  if (phasechange_) phasechange_->Init();
+  if (phasechange_) phasechange_->init();
 }
 
 void ParticleInteraction::ParticleInteractionSPH::init_rigid_particle_contact_handler()
@@ -825,7 +825,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_rigid_particle_contact_ha
   }
 
   // init rigid particle contact handler
-  if (rigidparticlecontact_) rigidparticlecontact_->Init();
+  if (rigidparticlecontact_) rigidparticlecontact_->init();
 }
 
 FOUR_C_NAMESPACE_CLOSE

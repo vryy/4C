@@ -479,7 +479,7 @@ const Teuchos::RCP<const Epetra_Map>& SSI::SsiMono::dof_row_map() const
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SsiMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SsiMono::init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
@@ -526,7 +526,7 @@ void SSI::SsiMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   }
 
   // call base class routine
-  SSIBase::Init(
+  SSIBase::init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 }
 

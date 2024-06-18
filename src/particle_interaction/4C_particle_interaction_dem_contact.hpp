@@ -69,7 +69,7 @@ namespace ParticleInteraction
     ~DEMContact();
 
     //! init contact handler
-    void Init();
+    void init();
 
     //! setup contact handler
     void setup(

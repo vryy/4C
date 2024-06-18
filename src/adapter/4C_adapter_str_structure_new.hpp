@@ -546,7 +546,7 @@ namespace Adapter
     virtual ~StructureBaseAlgorithmNew() = default;
 
     /// initialize all class internal variables
-    virtual void Init(const Teuchos::ParameterList& prbdyn, Teuchos::ParameterList& sdyn,
+    virtual void init(const Teuchos::ParameterList& prbdyn, Teuchos::ParameterList& sdyn,
         Teuchos::RCP<Core::FE::Discretization> actdis);
 
     /// setup
@@ -603,17 +603,17 @@ namespace Adapter
      *
      *  \code
      *  Teuchos::RCP<FSI_Partitioned> fsi_model_ptr = Teuchos::rcp(new FSI_Partitioned());
-     *  // optional: call of your own 2-nd Init() method
-     *  fsi_model_ptr->Init(stuff_you_need_inside_the_model_evaluator);
+     *  // optional: call of your own 2-nd init() method
+     *  fsi_model_ptr->init(stuff_you_need_inside_the_model_evaluator);
      *  prbdyn.set<Teuchos::RCP<STR::MODELEVALUATOR::Generic> >("Partitioned Coupling Model",
      *      fsi_model_ptr);
      *  \endcode
      *
      *  </ol>
      *
-     *  \remark Please keep in mind, that the prescribed Generic::Init() and Generic::setup()
+     *  \remark Please keep in mind, that the prescribed Generic::init() and Generic::setup()
      *  methods will be called automatically in the STR::ModelEvaluator::setup() routine. If
-     *  you need a different Init() method, just define a second Init() function with different
+     *  you need a different init() method, just define a second init() function with different
      *  input variables in your concrete class implementation and call it somewhere in your code
      *  (see upper example code).
      *  The constructor is supposed to stay empty. If you need a safety check, you can overload

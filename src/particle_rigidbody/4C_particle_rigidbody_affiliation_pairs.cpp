@@ -27,7 +27,7 @@ ParticleRigidBody::RigidBodyAffiliationPairs::RigidBodyAffiliationPairs(const Ep
   // empty constructor
 }
 
-void ParticleRigidBody::RigidBodyAffiliationPairs::Init()
+void ParticleRigidBody::RigidBodyAffiliationPairs::init()
 {
   // nothing to do
 }

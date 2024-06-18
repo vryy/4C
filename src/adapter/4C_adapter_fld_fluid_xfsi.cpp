@@ -48,10 +48,10 @@ Adapter::XFluidFSI::XFluidFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::XFluidFSI::Init()
+void Adapter::XFluidFSI::init()
 {
   // call base class init
-  FluidWrapper::Init();
+  FluidWrapper::init();
 
   // cast fluid to fluidimplicit
   xfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluid>(fluid_);

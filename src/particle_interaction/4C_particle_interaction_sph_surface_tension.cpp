@@ -56,7 +56,7 @@ ParticleInteraction::SPHSurfaceTension::SPHSurfaceTension(const Teuchos::Paramet
 
 ParticleInteraction::SPHSurfaceTension::~SPHSurfaceTension() = default;
 
-void ParticleInteraction::SPHSurfaceTension::Init()
+void ParticleInteraction::SPHSurfaceTension::init()
 {
   // init interface viscosity handler
   init_interface_viscosity_handler();
@@ -252,7 +252,7 @@ void ParticleInteraction::SPHSurfaceTension::init_interface_viscosity_handler()
         new ParticleInteraction::SPHInterfaceViscosity(params_sph_));
 
   // init interface viscosity handler
-  if (interfaceviscosity_) interfaceviscosity_->Init();
+  if (interfaceviscosity_) interfaceviscosity_->init();
 }
 
 void ParticleInteraction::SPHSurfaceTension::init_recoil_pressure_evaporation_handler()
@@ -263,7 +263,7 @@ void ParticleInteraction::SPHSurfaceTension::init_recoil_pressure_evaporation_ha
         new ParticleInteraction::SPHRecoilPressureEvaporation(params_sph_));
 
   // init evaporation induced recoil pressure handler
-  if (recoilpressureevaporation_) recoilpressureevaporation_->Init();
+  if (recoilpressureevaporation_) recoilpressureevaporation_->init();
 }
 
 void ParticleInteraction::SPHSurfaceTension::init_barrier_force_handler()
@@ -274,7 +274,7 @@ void ParticleInteraction::SPHSurfaceTension::init_barrier_force_handler()
         new ParticleInteraction::SPHBarrierForce(params_sph_));
 
   // init barrier force handler
-  if (barrierforce_) barrierforce_->Init();
+  if (barrierforce_) barrierforce_->init();
 }
 
 void ParticleInteraction::SPHSurfaceTension::compute_colorfield_gradient() const

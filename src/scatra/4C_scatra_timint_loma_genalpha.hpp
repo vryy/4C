@@ -35,7 +35,7 @@ namespace ScaTra
 
 
     /// initialize time integration scheme
-    void Init() override;
+    void init() override;
 
     /// setup time integration scheme
     void setup() override;

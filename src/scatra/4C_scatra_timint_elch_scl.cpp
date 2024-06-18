@@ -97,7 +97,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
   micro_timint_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(*sdyn_micro, *sdyn_micro,
       problem->SolverParams(sdyn_micro->get<int>("LINEAR_SOLVER")), "scatra_micro", false));
 
-  micro_timint_->Init();
+  micro_timint_->init();
 
   auto dofset_vel = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(3, 0, 0, true));
   if (micro_timint_->ScaTraField()->discretization()->AddDofSet(dofset_vel) != 1)

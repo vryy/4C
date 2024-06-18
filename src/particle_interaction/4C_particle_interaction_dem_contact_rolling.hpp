@@ -37,7 +37,7 @@ namespace ParticleInteraction
     virtual ~DEMContactRollingBase() = default;
 
     //! init rolling contact handler
-    virtual void Init();
+    virtual void init();
 
     //! setup rolling contact handler
     virtual void setup(const double& k_normal);
@@ -87,7 +87,7 @@ namespace ParticleInteraction
     explicit DEMContactRollingViscous(const Teuchos::ParameterList& params);
 
     //! init rolling contact handler
-    void Init() override;
+    void init() override;
 
     //! setup rolling contact handler
     void setup(const double& k_normal) override;

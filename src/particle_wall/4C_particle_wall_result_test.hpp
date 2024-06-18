@@ -55,7 +55,7 @@ namespace PARTICLEWALL
      *
      * \author Sebastian Fuchs \date 03/2019
      */
-    void Init();
+    void init();
 
     /*!
      * \brief setup wall result test

@@ -43,7 +43,7 @@ BEAMINTERACTION::BeamContactPair::BeamContactPair()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactPair::Init(
+void BEAMINTERACTION::BeamContactPair::init(
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
     std::vector<Core::Elements::Element const*> elements)
 {
@@ -174,14 +174,14 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactPair::check_init() const
 {
-  if (not is_init()) FOUR_C_THROW("Call Init() first!");
+  if (not is_init()) FOUR_C_THROW("Call init() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactPair::check_init_setup() const
 {
-  if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
+  if (not is_init() or not is_setup()) FOUR_C_THROW("Call init() and setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

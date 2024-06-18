@@ -2487,7 +2487,7 @@ void ScaTra::OutputScalarsStrategyBase::output_total_and_mean_scalars(
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void ScaTra::OutputScalarsStrategyBase::Init(const ScaTraTimIntImpl* const scatratimint)
+void ScaTra::OutputScalarsStrategyBase::init(const ScaTraTimIntImpl* const scatratimint)
 {
   myrank_ = scatratimint->myrank_;
 
@@ -2724,7 +2724,7 @@ void ScaTra::OutputScalarsStrategyCondition::init_strategy_specific(
 /*--------------------------------------------------------------------------------------*
  |  Initialize output class                                            kremheller 11/19 |
  *--------------------------------------------------------------------------------------*/
-void ScaTra::OutputDomainIntegralStrategy::Init(const ScaTraTimIntImpl* const scatratimint)
+void ScaTra::OutputDomainIntegralStrategy::init(const ScaTraTimIntImpl* const scatratimint)
 {
   // extract conditions for calculation of total and mean values of transported scalars
   scatratimint->discretization()->GetCondition("DomainIntegral", conditionsdomain_);

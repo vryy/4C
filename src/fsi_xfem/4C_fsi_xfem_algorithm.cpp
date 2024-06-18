@@ -117,7 +117,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
   fluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluid>(fluid->fluid_field());
   if (fluid_ == Teuchos::null)
     FOUR_C_THROW("Cast of Fluid to XFluid failed! - Everything fine in setup_fluid()?");
-  fluid_->Init(false);
+  fluid_->init(false);
 
   // Do setup of the fields here
   structureporo_->setup();

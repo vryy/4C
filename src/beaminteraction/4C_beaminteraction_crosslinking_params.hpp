@@ -41,7 +41,7 @@ namespace BEAMINTERACTION
     virtual ~CrosslinkingParams() = default;
 
     //! initialize with the stuff coming from input file
-    void Init(STR::TimeInt::BaseDataGlobalState const& gstate);
+    void init(STR::TimeInt::BaseDataGlobalState const& gstate);
 
     //! setup member variables
     void setup();
@@ -55,13 +55,13 @@ namespace BEAMINTERACTION
     //! Checks the init and setup status
     inline void check_init_setup() const
     {
-      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call init() and setup() first!");
     }
 
     //! Checks the init status
     inline void check_init() const
     {
-      if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
+      if (!is_init()) FOUR_C_THROW("init() has not been called, yet!");
     }
 
     /// number of crosslinkers per type

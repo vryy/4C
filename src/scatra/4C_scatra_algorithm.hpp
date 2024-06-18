@@ -40,7 +40,7 @@ namespace ScaTra
 
     void setup() override;
 
-    void Init() override;
+    void init() override;
 
     /// outer level time loop
     void TimeLoop() override;

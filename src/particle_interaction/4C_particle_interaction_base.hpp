@@ -69,7 +69,7 @@ namespace ParticleInteraction
     virtual ~ParticleInteractionBase() = default;
 
     //! init particle interaction handler
-    virtual void Init();
+    virtual void init();
 
     //! setup particle interaction handler
     virtual void setup(

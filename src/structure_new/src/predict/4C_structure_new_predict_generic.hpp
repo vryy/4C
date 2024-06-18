@@ -55,7 +55,7 @@ namespace STR
       virtual ~Generic() = default;
 
       //! initialize the base class variables
-      virtual void Init(const enum Inpar::STR::PredEnum& type,
+      virtual void init(const enum Inpar::STR::PredEnum& type,
           const Teuchos::RCP<STR::IMPLICIT::Generic>& implint_ptr,
           const Teuchos::RCP<STR::Dbc>& dbc_ptr,
           const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
@@ -119,7 +119,7 @@ namespace STR
       Teuchos::ParameterList& nox_params();
 
      protected:
-      //! indicates if the Init() function has been called
+      //! indicates if the init() function has been called
       bool isinit_;
 
       //! indicates if the setup() function has been called

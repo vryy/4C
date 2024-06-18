@@ -85,7 +85,7 @@ namespace
       pair_elements.push_back(&(*beam_element));
       pair_elements.push_back(&(*solid_element));
       contact_pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);
-      contact_pair.Init(Teuchos::null, pair_elements);
+      contact_pair.init(Teuchos::null, pair_elements);
 
       // Evaluate the local matrices.
       Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> local_D(false);

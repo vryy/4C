@@ -105,7 +105,7 @@ namespace PoroMultiPhaseScaTra
         Teuchos::RCP<const Epetra_Vector>& vec_art) = 0;
 
     //! init the strategy
-    virtual void Init() = 0;
+    virtual void init() = 0;
 
     //! setup the strategy
     virtual void setup() = 0;

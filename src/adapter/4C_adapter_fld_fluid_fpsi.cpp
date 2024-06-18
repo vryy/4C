@@ -29,10 +29,10 @@ Adapter::FluidFPSI::FluidFPSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::
 
 
 /* initialization */
-void Adapter::FluidFPSI::Init()
+void Adapter::FluidFPSI::init()
 {
   // call base class init
-  FluidFSI::Init();
+  FluidFSI::init();
 
   fpsiinterface_->setup(*dis_, true, true);  // Always Create overlapping FPSI Interface
 

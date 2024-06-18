@@ -45,7 +45,7 @@ FLD::TimIntStationaryHDG::TimIntStationaryHDG(const Teuchos::RCP<Core::FE::Discr
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                      als 01/18 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntStationaryHDG::Init()
+void FLD::TimIntStationaryHDG::init()
 {
   Core::FE::DiscretizationHDG* hdgdis = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
@@ -91,9 +91,9 @@ void FLD::TimIntStationaryHDG::Init()
       new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->Comm()));
   velpressplitter_->setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
 
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  FLD::TimIntStationary::Init();
+  FLD::TimIntStationary::init();
 }
 
 

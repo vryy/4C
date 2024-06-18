@@ -31,7 +31,7 @@ ParticleInteraction::SPHRecoilPressureEvaporation::SPHRecoilPressureEvaporation(
   // empty constructor
 }
 
-void ParticleInteraction::SPHRecoilPressureEvaporation::Init()
+void ParticleInteraction::SPHRecoilPressureEvaporation::init()
 {
   // nothing to do
 }

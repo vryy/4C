@@ -25,7 +25,7 @@ ParticleRigidBody::RigidBodyResultTest::RigidBodyResultTest() : Core::UTILS::Res
   // empty constructor
 }
 
-void ParticleRigidBody::RigidBodyResultTest::Init()
+void ParticleRigidBody::RigidBodyResultTest::init()
 {
   // nothing to do
 }

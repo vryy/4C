@@ -70,7 +70,7 @@ namespace ParticleInteraction
     ~SPHInterfaceViscosity();
 
     //! init interface viscosity handler
-    void Init();
+    void init();
 
     //! setup interface viscosity handler
     void setup(

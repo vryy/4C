@@ -32,7 +32,7 @@ namespace ParticleInteraction
     explicit SPHArtificialViscosity();
 
     //! init artificial viscosity handler
-    void Init();
+    void init();
 
     //! setup artificial viscosity handler
     void setup();

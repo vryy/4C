@@ -82,7 +82,7 @@ namespace EleMag
     virtual ~ElemagTimeInt() = default;
 
     /// Initialization routine.
-    virtual void Init();
+    virtual void init();
 
     /*!
     \brief Prints information about the discretization and time integration to screen.

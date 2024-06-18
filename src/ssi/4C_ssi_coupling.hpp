@@ -45,7 +45,7 @@ namespace SSI
     //! \param ndim                        dimension of the problem
     //! \param structdis                   underlying structure discretization
     //! \param ssi_base                    underlying scatra-structure time integrator
-    virtual void Init(const int ndim, Teuchos::RCP<Core::FE::Discretization> structdis,
+    virtual void init(const int ndim, Teuchos::RCP<Core::FE::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) = 0;
 
     //! \brief setup this class
@@ -107,7 +107,7 @@ namespace SSI
   {
    public:
     SSICouplingMatchingVolume() : issetup_(false), isinit_(false){};
-    void Init(const int ndim, Teuchos::RCP<Core::FE::Discretization> structdis,
+    void init(const int ndim, Teuchos::RCP<Core::FE::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
     void setup() override;
@@ -144,7 +144,7 @@ namespace SSI
     //! returns true if setup() was called and is still valid
     bool is_setup() { return issetup_; };
 
-    //! returns true if Init(..) was called and is still valid
+    //! returns true if init(..) was called and is still valid
     bool is_init() { return isinit_; };
 
     //! returns true if class was setup and setup is still valid
@@ -156,7 +156,7 @@ namespace SSI
     //! returns true if class was init and init is still valid
     void check_is_init()
     {
-      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("init(...) was not called.");
     };
 
    public:
@@ -176,7 +176,7 @@ namespace SSI
           extractor_(Teuchos::null),
           issetup_(false),
           isinit_(false){};
-    void Init(const int ndim, Teuchos::RCP<Core::FE::Discretization> structdis,
+    void init(const int ndim, Teuchos::RCP<Core::FE::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
     void setup() override;
@@ -235,7 +235,7 @@ namespace SSI
     //! returns true if setup() was called and is still valid
     bool is_setup() { return issetup_; };
 
-    //! returns true if Init(..) was called and is still valid
+    //! returns true if init(..) was called and is still valid
     bool is_init() { return isinit_; };
 
     //! returns true if class was setup and setup is still valid
@@ -247,7 +247,7 @@ namespace SSI
     //! returns true if class was init and init is still valid
     void check_is_init()
     {
-      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("init(...) was not called.");
     };
 
    public:
@@ -264,7 +264,7 @@ namespace SSI
    public:
     SSICouplingNonMatchingVolume()
         : volcoupl_structurescatra_(Teuchos::null), issetup_(false), isinit_(false){};
-    void Init(const int ndim, Teuchos::RCP<Core::FE::Discretization> structdis,
+    void init(const int ndim, Teuchos::RCP<Core::FE::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
     void setup() override;
@@ -311,7 +311,7 @@ namespace SSI
     //! returns true if setup() was called and is still valid
     bool is_setup() { return issetup_; };
 
-    //! returns true if Init(..) was called and is still valid
+    //! returns true if init(..) was called and is still valid
     bool is_init() { return isinit_; };
 
     //! returns true if class was setup and setup is still valid
@@ -323,7 +323,7 @@ namespace SSI
     //! returns true if class was init and init is still valid
     void check_is_init()
     {
-      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("init(...) was not called.");
     };
 
    public:
@@ -339,7 +339,7 @@ namespace SSI
   {
    public:
     SSICouplingMatchingVolumeAndBoundary() : issetup_(false), isinit_(false){};
-    void Init(const int ndim, Teuchos::RCP<Core::FE::Discretization> structdis,
+    void init(const int ndim, Teuchos::RCP<Core::FE::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
     void setup() override;
@@ -380,7 +380,7 @@ namespace SSI
     //! returns true if setup() was called and is still valid
     bool is_setup() { return issetup_; };
 
-    //! returns true if Init(..) was called and is still valid
+    //! returns true if init(..) was called and is still valid
     bool is_init() { return isinit_; };
 
     //! returns true if class was setup and setup is still valid
@@ -392,7 +392,7 @@ namespace SSI
     //! returns true if class was init and init is still valid
     void check_is_init()
     {
-      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("init(...) was not called.");
     };
 
    public:

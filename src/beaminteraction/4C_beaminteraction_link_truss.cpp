@@ -71,14 +71,14 @@ Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkTruss::Clone() 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::Init(int id, const std::vector<std::pair<int, int>>& eleids,
+void BEAMINTERACTION::BeamLinkTruss::init(int id, const std::vector<std::pair<int, int>>& eleids,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
     Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
 {
   issetup_ = false;
 
-  BeamLinkPinJointed::Init(id, eleids, initpos, inittriad, linkertype, timelinkwasset);
+  BeamLinkPinJointed::init(id, eleids, initpos, inittriad, linkertype, timelinkwasset);
 }
 
 /*----------------------------------------------------------------------------*

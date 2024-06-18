@@ -59,7 +59,7 @@ FS3I::FS3IBase::FS3IBase()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::Init()
+void FS3I::FS3IBase::init()
 {
   set_is_setup(false);
 
@@ -813,7 +813,7 @@ void FS3I::FS3IBase::check_is_setup()
 /*----------------------------------------------------------------------*/
 void FS3I::FS3IBase::check_is_init()
 {
-  if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
+  if (not is_init()) FOUR_C_THROW("init(...) was not called.");
 };
 
 FOUR_C_NAMESPACE_CLOSE

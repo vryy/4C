@@ -66,7 +66,7 @@ namespace Adapter
     virtual ~ScaTraBaseAlgorithm() = default;
 
     /// initialize this class
-    virtual void Init();
+    virtual void init();
 
     /// setup this class
     virtual void setup();
@@ -92,13 +92,13 @@ namespace Adapter
     //! returns true if setup() was called and is still valid
     bool is_setup() const { return issetup_; };
 
-    //! returns true if Init(..) was called and is still valid
+    //! returns true if init(..) was called and is still valid
     bool is_init() const { return isinit_; };
 
     //! check if \ref setup() was called
     void check_is_setup() const;
 
-    //! check if \ref Init() was called
+    //! check if \ref init() was called
     void check_is_init() const;
 
    private:

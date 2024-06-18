@@ -26,7 +26,7 @@ ParticleInteraction::DEMAdhesionSurfaceEnergyBase::DEMAdhesionSurfaceEnergyBase(
   // empty constructor
 }
 
-void ParticleInteraction::DEMAdhesionSurfaceEnergyBase::Init()
+void ParticleInteraction::DEMAdhesionSurfaceEnergyBase::init()
 {
   // nothing to do
 }

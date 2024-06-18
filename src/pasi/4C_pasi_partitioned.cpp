@@ -37,7 +37,7 @@ PaSI::PartitionedAlgo::PartitionedAlgo(
   // empty constructor
 }
 
-void PaSI::PartitionedAlgo::Init()
+void PaSI::PartitionedAlgo::init()
 {
   // reset setup flag
   set_is_setup(false);
@@ -250,7 +250,7 @@ void PaSI::PartitionedAlgo::init_structure_field()
   {
     // create and init structure base algorithm
     struct_adapterbase_ptr_ = Adapter::build_structure_algorithm(params);
-    struct_adapterbase_ptr_->Init(params, const_cast<Teuchos::ParameterList&>(params), structdis);
+    struct_adapterbase_ptr_->init(params, const_cast<Teuchos::ParameterList&>(params), structdis);
   }
   else if (params.get<std::string>("INT_STRATEGY") == "Old")
     FOUR_C_THROW(
@@ -278,7 +278,7 @@ void PaSI::PartitionedAlgo::init_particle_algorithm()
 
   // create and init particle algorithm
   particlealgorithm_ = Teuchos::rcp(new PARTICLEALGORITHM::ParticleAlgorithm(Comm(), params));
-  particlealgorithm_->Init(initialparticles);
+  particlealgorithm_->init(initialparticles);
 }
 
 void PaSI::PartitionedAlgo::build_structure_model_evaluator()

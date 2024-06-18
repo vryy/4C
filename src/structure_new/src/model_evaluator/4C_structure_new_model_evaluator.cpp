@@ -46,16 +46,16 @@ STR::ModelEvaluator::ModelEvaluator()
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!"); }
+void STR::ModelEvaluator::check_init() const { FOUR_C_ASSERT(is_init(), "Call init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
+void STR::ModelEvaluator::init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
     const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_ptr,
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
     const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
@@ -89,7 +89,7 @@ void STR::ModelEvaluator::setup()
   int dof_offset = 0;
   for (me_iter = me_map_ptr_->begin(); me_iter != me_map_ptr_->end(); ++me_iter)
   {
-    me_iter->second->Init(eval_data_ptr_, gstate_ptr_, gio_ptr_, int_ptr_, timint_ptr_, dof_offset);
+    me_iter->second->init(eval_data_ptr_, gstate_ptr_, gio_ptr_, int_ptr_, timint_ptr_, dof_offset);
     me_iter->second->setup();
     // setup the block information for saddle point problems
     dof_offset = gstate_ptr_->setup_block_information(*(me_iter->second), me_iter->first);

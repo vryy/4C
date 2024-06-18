@@ -30,7 +30,7 @@ ParticleInteraction::DEMContactRollingBase::DEMContactRollingBase(
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactRollingBase::Init()
+void ParticleInteraction::DEMContactRollingBase::init()
 {
   // safety checks for contact parameters
   if (nue_ <= -1.0 or nue_ > 0.5)
@@ -59,10 +59,10 @@ ParticleInteraction::DEMContactRollingViscous::DEMContactRollingViscous(
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactRollingViscous::Init()
+void ParticleInteraction::DEMContactRollingViscous::init()
 {
   // call base class init
-  DEMContactRollingBase::Init();
+  DEMContactRollingBase::init();
 
   // safety checks for contact parameters
   if (young_ <= 0.0)

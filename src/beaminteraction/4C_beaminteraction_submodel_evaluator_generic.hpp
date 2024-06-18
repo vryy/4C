@@ -90,7 +90,7 @@ namespace BEAMINTERACTION
       virtual ~Generic() = default;
 
       //! initialize the class variables
-      virtual void Init(Teuchos::RCP<Core::FE::Discretization> const& ia_discret,
+      virtual void init(Teuchos::RCP<Core::FE::Discretization> const& ia_discret,
           Teuchos::RCP<Core::FE::Discretization> const& bindis,
           Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> const& gstate,
           Teuchos::RCP<STR::TimeInt::BaseDataIO> const& gio_ptr,
@@ -104,13 +104,13 @@ namespace BEAMINTERACTION
       virtual void setup() = 0;
 
      protected:
-      //! Returns true, if Init() has been called
+      //! Returns true, if init() has been called
       inline const bool& is_init() const { return isinit_; };
 
       //! Returns true, if setup() has been called
       inline const bool& is_setup() const { return issetup_; };
 
-      //! Checks, if Init() and setup() have been called
+      //! Checks, if init() and setup() have been called
       virtual void check_init_setup() const;
 
       virtual void check_init() const;

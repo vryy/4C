@@ -38,7 +38,7 @@ ParticleInteraction::SPHHeatLossEvaporation::SPHHeatLossEvaporation(
   // empty constructor
 }
 
-void ParticleInteraction::SPHHeatLossEvaporation::Init()
+void ParticleInteraction::SPHHeatLossEvaporation::init()
 {
   // safety check
   if (Core::UTILS::IntegralValue<Inpar::PARTICLE::SurfaceTensionFormulation>(

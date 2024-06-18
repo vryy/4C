@@ -42,7 +42,7 @@ STR::TimeInt::NoxInterface::NoxInterface()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::NoxInterface::Init(
+void STR::TimeInt::NoxInterface::init(
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
     const Teuchos::RCP<STR::Integrator>& int_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
     const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr)
@@ -72,13 +72,13 @@ void STR::TimeInt::NoxInterface::setup()
  *----------------------------------------------------------------------------*/
 void STR::TimeInt::NoxInterface::check_init() const
 {
-  FOUR_C_ASSERT(is_init(), "Call Init() first!");
+  FOUR_C_ASSERT(is_init(), "Call init() first!");
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TimeInt::NoxInterface::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*

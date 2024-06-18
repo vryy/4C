@@ -110,14 +110,14 @@ STR::TimeInt::BaseDataSDyn::BaseDataSDyn()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataSDyn::Init(const Teuchos::RCP<Core::FE::Discretization> discret,
+void STR::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     const Teuchos::RCP<std::set<enum Inpar::STR::ModelType>> modeltypes,
     const Teuchos::RCP<std::set<enum Inpar::STR::EleTech>> eletechs,
     const Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
         linsolvers)
 {
-  // We have to call setup() after Init()
+  // We have to call setup() after init()
   issetup_ = false;
 
   // ---------------------------------------------------------------------------
@@ -325,7 +325,7 @@ void STR::TimeInt::BaseDataSDyn::setup()
       case Inpar::STR::model_browniandyn:
       {
         periodic_boundingbox_ = Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
-        periodic_boundingbox_->Init(Global::Problem::Instance()->binning_strategy_params());
+        periodic_boundingbox_->init(Global::Problem::Instance()->binning_strategy_params());
         Teuchos::RCP<Core::FE::Discretization> boundingbox_dis =
             Global::Problem::Instance()->DoesExistDis("boundingbox")
                 ? Global::Problem::Instance()->GetDis("boundingbox")

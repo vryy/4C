@@ -43,7 +43,7 @@ namespace Adapter
     explicit PoroFluidMultiphaseWrapper(Teuchos::RCP<PoroFluidMultiphase> porofluid);
 
     /// initialization
-    void Init(const bool isale,         ///< ALE flag
+    void init(const bool isale,         ///< ALE flag
         const int nds_disp,             ///< number of dofset associated with displacements
         const int nds_vel,              ///< number of dofset associated with fluid velocities
         const int nds_solidpressure,    ///< number of dofset associated with solid pressure

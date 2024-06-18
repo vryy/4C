@@ -47,7 +47,7 @@ namespace CONTACT
     \brief Initialize the unbiased self binary tree
 
     */
-    void Init() final;
+    void init() final;
 
    private:
     //! @name Evaluation methods

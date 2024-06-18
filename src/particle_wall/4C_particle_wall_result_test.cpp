@@ -25,7 +25,7 @@ PARTICLEWALL::WallResultTest::WallResultTest() : Core::UTILS::ResultTest("PARTIC
   // empty constructor
 }
 
-void PARTICLEWALL::WallResultTest::Init()
+void PARTICLEWALL::WallResultTest::init()
 {
   // nothing to do
 }

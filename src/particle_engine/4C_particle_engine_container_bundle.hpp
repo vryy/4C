@@ -55,7 +55,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void Init();
+    void init();
 
     /*!
      * \brief setup particle container bundle

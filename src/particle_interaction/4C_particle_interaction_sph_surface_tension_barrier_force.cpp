@@ -37,7 +37,7 @@ ParticleInteraction::SPHBarrierForce::SPHBarrierForce(const Teuchos::ParameterLi
   // empty constructor
 }
 
-void ParticleInteraction::SPHBarrierForce::Init()
+void ParticleInteraction::SPHBarrierForce::init()
 {
   // init fluid particle types
   fluidtypes_ = {liquidtype_, gastype_};

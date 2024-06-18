@@ -86,7 +86,7 @@ void levelset_dyn(int restart)
 
   // first we initialize the base algorithm
   // time integrator is initialized inside.
-  scatrabase->Init();
+  scatrabase->init();
 
   // only now we must call setup() on the base algo.
   // all objects relying on the parallel distribution are

@@ -34,7 +34,7 @@ ParticleInteraction::SPHPhaseChangeBase::SPHPhaseChangeBase(const Teuchos::Param
   // empty constructor
 }
 
-void ParticleInteraction::SPHPhaseChangeBase::Init()
+void ParticleInteraction::SPHPhaseChangeBase::init()
 {
   // read from input file
   std::string word;

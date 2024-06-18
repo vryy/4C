@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolume::Init(const int ndim,
+void SSI::SSICouplingMatchingVolume::init(const int ndim,
     Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);
@@ -183,7 +183,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetTemperatureField(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
+void SSI::SSICouplingNonMatchingBoundary::init(const int ndim,
     Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);
@@ -312,7 +312,7 @@ void SSI::SSICouplingNonMatchingBoundary::SetScalarFieldMicro(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
+void SSI::SSICouplingNonMatchingVolume::init(const int ndim,
     Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);
@@ -357,10 +357,10 @@ void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
   volcoupl_structurescatra_ = Teuchos::rcp(new Core::Adapter::MortarVolCoupl());
 
   // init projection matrices (use default material strategy)
-  volcoupl_structurescatra_->Init(ndim, structdis, scatradis);
+  volcoupl_structurescatra_->init(ndim, structdis, scatradis);
 
   // parallel redistribution is performed in the global control
-  // algorithm. We redistribute between Init(...) and setup().
+  // algorithm. We redistribute between init(...) and setup().
   // volcoupl_structurescatra_->Redistribute();
 
   set_is_init(true);
@@ -428,7 +428,7 @@ void SSI::SSICouplingNonMatchingVolume::SetScalarFieldMicro(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
+void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
     Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);

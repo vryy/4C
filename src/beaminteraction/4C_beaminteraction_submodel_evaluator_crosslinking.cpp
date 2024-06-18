@@ -70,7 +70,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup()
 
   // construct, init and setup data container for crosslinking
   crosslinking_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::CrosslinkingParams());
-  crosslinking_params_ptr_->Init(GState());
+  crosslinking_params_ptr_->init(GState());
   crosslinking_params_ptr_->setup();
 
   // set binding spot positions on filament elements according input file specifications
@@ -538,7 +538,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_
   std::vector<bool> dummy(3, false);
   Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> linker_init_box =
       Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
-  linker_init_box->Init(
+  linker_init_box->init(
       crosslinking_params_ptr_->linker_initialization_box(), dummy);  // no setup() call needed here
 
   // loop over bspotpairs and make decision
@@ -706,7 +706,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::add_crosslinker_to_bin_di
   std::vector<bool> dummy(3, false);
   Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> linker_init_box =
       Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
-  linker_init_box->Init(
+  linker_init_box->init(
       crosslinking_params_ptr_->linker_initialization_box(), dummy);  // no setup() call needed here
 
   // loop over all linker types that should be added to simulation volume
@@ -2482,7 +2482,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(Core::Nod
       Teuchos::RCP<BEAMINTERACTION::Data::BindEventData> bindeventdata =
           Teuchos::rcp(new BEAMINTERACTION::Data::BindEventData());
       // default permission is true, is changed if owner of cl has something against it
-      bindeventdata->Init(crosslinker_i->Id(), nbbeam->Id(), locnbspot, GState().get_my_rank(), 1);
+      bindeventdata->init(crosslinker_i->Id(), nbbeam->Id(), locnbspot, GState().get_my_rank(), 1);
 
       // in case myrank is owner, we add it to the mybonds map
       if (crosslinker_i->Owner() == GState().get_my_rank())
@@ -3139,7 +3139,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
           BEAMINTERACTION::BeamLinkPinJointed::Create(cl_node->GetMaterial()->JointType());
 
     // finally initialize and setup object
-    linkelepairptr->Init(iter.first, newdoublebond_i.eleids, newdoublebond_i.bspotposs,
+    linkelepairptr->init(iter.first, newdoublebond_i.eleids, newdoublebond_i.bspotposs,
         newdoublebond_i.bspottriads, cl_node->GetMaterial()->LinkerType(), GState().get_time_np());
     linkelepairptr->setup(cl_node->GetMaterial()->beam_elast_hyper_mat_num());
 

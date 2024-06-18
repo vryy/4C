@@ -29,7 +29,7 @@ ParticleInteraction::InteractionWriter::InteractionWriter(
   // empty constructor
 }
 
-void ParticleInteraction::InteractionWriter::Init()
+void ParticleInteraction::InteractionWriter::init()
 {
   // nothing to do
 }

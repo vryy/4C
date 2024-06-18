@@ -103,7 +103,7 @@ namespace STR
        * @param timint_ptr
        * @param[in] dof_offset
        */
-      virtual void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
+      virtual void init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
           const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
           const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
           const Teuchos::RCP<STR::Integrator>& int_ptr,
@@ -113,16 +113,16 @@ namespace STR
       virtual void setup() = 0;
 
      protected:
-      //! Returns true, if Init() has been called
+      //! Returns true, if init() has been called
       inline const bool& is_init() const { return isinit_; };
 
       //! Returns true, if setup() has been called
       inline const bool& is_setup() const { return issetup_; };
 
-      //! Check if Init() and setup() have been called
+      //! Check if init() and setup() have been called
       virtual void check_init_setup() const;
 
-      //! Check if Init() has been called
+      //! Check if init() has been called
       virtual void check_init() const;
 
      public:

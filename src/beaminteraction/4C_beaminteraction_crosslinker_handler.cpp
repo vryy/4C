@@ -30,7 +30,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::BeamCrosslinkerHandler()
   // empty constructor
 }
 
-void BEAMINTERACTION::BeamCrosslinkerHandler::Init(
+void BEAMINTERACTION::BeamCrosslinkerHandler::init(
     int myrank, Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy)
 {
   binstrategy_ = binstrategy;

@@ -58,7 +58,7 @@ namespace FLD
     \brief initialization
 
     */
-    void Init() override;
+    void init() override;
 
     /*!
     \brief evaluate problem-dependent bounadry consitions: update the 3D-to-reduced_D coupling data

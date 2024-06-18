@@ -82,7 +82,7 @@ CONTACT::Aug::PenaltyUpdate* CONTACT::Aug::PenaltyUpdate::Create(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::PenaltyUpdate::Init(
+void CONTACT::Aug::PenaltyUpdate::init(
     CONTACT::Aug::Strategy* const strategy, CONTACT::Aug::DataContainer* const data)
 {
   strategy_ptr_ = strategy;
@@ -94,7 +94,7 @@ void CONTACT::Aug::PenaltyUpdate::Init(
  *----------------------------------------------------------------------------*/
 void CONTACT::Aug::PenaltyUpdate::throw_if_not_initialized() const
 {
-  if (not isinit_) FOUR_C_THROW("Call Init() first!");
+  if (not isinit_) FOUR_C_THROW("Call init() first!");
 }
 
 /*----------------------------------------------------------------------------*

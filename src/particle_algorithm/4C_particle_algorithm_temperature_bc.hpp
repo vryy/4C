@@ -57,7 +57,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 09/2018
      */
-    void Init();
+    void init();
 
     /*!
      * \brief setup temperature boundary condition handler

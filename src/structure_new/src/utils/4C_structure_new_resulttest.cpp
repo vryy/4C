@@ -153,7 +153,7 @@ STR::ResultTest::ResultTest()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ResultTest::Init(
+void STR::ResultTest::init(
     const STR::TimeInt::BaseDataGlobalState& gstate, const STR::MODELEVALUATOR::Data& data)
 {
   issetup_ = false;

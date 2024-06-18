@@ -34,12 +34,12 @@ FLD::TimIntLomaGenAlpha::TimIntLomaGenAlpha(const Teuchos::RCP<Core::FE::Discret
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntLomaGenAlpha::Init()
+void FLD::TimIntLomaGenAlpha::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntGenAlpha::Init();
-  TimIntLoma::Init();
+  TimIntGenAlpha::init();
+  TimIntLoma::init();
 
   return;
 }

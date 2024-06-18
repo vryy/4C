@@ -35,7 +35,7 @@ namespace ParticleInteraction
     virtual ~SPHMomentumFormulationBase() = default;
 
     //! init momentum formulation handler
-    virtual void Init();
+    virtual void init();
 
     //! setup momentum formulation handler
     virtual void setup();

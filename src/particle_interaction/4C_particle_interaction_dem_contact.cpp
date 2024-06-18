@@ -49,7 +49,7 @@ ParticleInteraction::DEMContact::DEMContact(const Teuchos::ParameterList& params
 
 ParticleInteraction::DEMContact::~DEMContact() = default;
 
-void ParticleInteraction::DEMContact::Init()
+void ParticleInteraction::DEMContact::init()
 {
   // init normal contact handler
   init_normal_contact_handler();
@@ -264,7 +264,7 @@ void ParticleInteraction::DEMContact::init_normal_contact_handler()
   }
 
   // init normal contact handler
-  contactnormal_->Init();
+  contactnormal_->init();
 }
 
 void ParticleInteraction::DEMContact::init_tangential_contact_handler()
@@ -297,7 +297,7 @@ void ParticleInteraction::DEMContact::init_tangential_contact_handler()
   }
 
   // init tangential contact handler
-  if (contacttangential_) contacttangential_->Init();
+  if (contacttangential_) contacttangential_->init();
 }
 
 void ParticleInteraction::DEMContact::init_rolling_contact_handler()
@@ -334,7 +334,7 @@ void ParticleInteraction::DEMContact::init_rolling_contact_handler()
   }
 
   // init rolling contact handler
-  if (contactrolling_) contactrolling_->Init();
+  if (contactrolling_) contactrolling_->init();
 }
 
 void ParticleInteraction::DEMContact::setup_particle_interaction_writer()

@@ -202,7 +202,7 @@ void FSI::DirichletNeumannVel::Timeloop(
   if (get_kinematic_coupling()) constraint_manager_->PrepareFluidSolve();
   visualization_output_writer_ =
       Teuchos::rcp(new BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter());
-  visualization_output_writer_->Init();
+  visualization_output_writer_->init();
   visualization_output_writer_->setup(
       Core::IO::VisualizationParametersFactory(
           Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),

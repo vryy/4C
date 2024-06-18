@@ -48,7 +48,7 @@ namespace ParticleInteraction
     explicit SPHPressure();
 
     //! init pressure handler
-    void Init();
+    void init();
 
     //! setup pressure handler
     void setup(

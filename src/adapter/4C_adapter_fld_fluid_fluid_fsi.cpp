@@ -35,7 +35,7 @@ Adapter::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> xfluidfluid, Teuchos::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidFluidFSI::Init()
+void Adapter::FluidFluidFSI::init()
 {
   // determine the type of monolithic approach
   const Teuchos::ParameterList& xfluiddyn = params_->sublist("XFLUID DYNAMIC/GENERAL");
@@ -59,7 +59,7 @@ void Adapter::FluidFluidFSI::Init()
   // (to distinguish between FSI interface DOF / merged inner embedded & background fluid DOF)
   mergedfluidinterface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
   // call base class init
-  FluidFSI::Init();
+  FluidFSI::init();
 }
 
 /*----------------------------------------------------------------------*/

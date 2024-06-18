@@ -67,7 +67,7 @@ namespace ParticleInteraction
     ~DEMAdhesion();
 
     //! init contact handler
-    void Init();
+    void init();
 
     //! setup contact handler
     void setup(

@@ -24,7 +24,7 @@ PARTICLEALGORITHM::GravityHandler::GravityHandler(const Teuchos::ParameterList& 
   // empty constructor
 }
 
-void PARTICLEALGORITHM::GravityHandler::Init(const std::vector<double>& gravity)
+void PARTICLEALGORITHM::GravityHandler::init(const std::vector<double>& gravity)
 {
   // set gravity acceleration vector
   gravity_ = gravity;

@@ -78,7 +78,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLine2PinJ
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Init(int id,
+void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::init(int id,
     const std::vector<std::pair<int, int>>& eleids,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
@@ -86,7 +86,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Init(int id,
 {
   issetup_ = false;
 
-  BeamLinkPinJointed::Init(id, eleids, initpos, inittriad, linkertype, timelinkwasset);
+  BeamLinkPinJointed::init(id, eleids, initpos, inittriad, linkertype, timelinkwasset);
 
   // *** initialization of the two triads of the connecting element ***
   /* they are determined such that:
@@ -446,7 +446,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
    * axis in every new configuration given here from outside;
    * to keep the Reisner element shear-, bending- and torsion-free, we use the
    * same strategy to determine the nodal triads as for initialization of any
-   * linker (see Init() ) */
+   * linker (see init() ) */
 
 
 

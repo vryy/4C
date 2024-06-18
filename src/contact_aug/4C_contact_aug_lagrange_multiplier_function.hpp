@@ -45,7 +45,7 @@ namespace CONTACT
       LagrangeMultiplierFunction();
 
 
-      void Init(const Strategy* const strategy, CONTACT::Aug::DataContainer& data);
+      void init(const Strategy* const strategy, CONTACT::Aug::DataContainer& data);
 
       void setup();
 
@@ -65,7 +65,7 @@ namespace CONTACT
 
       inline void check_init() const
       {
-        if (not isinit_) FOUR_C_THROW("Call Init() first!");
+        if (not isinit_) FOUR_C_THROW("Call init() first!");
       }
 
       inline void check_init_setup() const

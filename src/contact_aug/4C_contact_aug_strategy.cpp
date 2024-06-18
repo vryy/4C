@@ -112,7 +112,7 @@ void CONTACT::Aug::DataContainer::init_matrix_row_col_transformer()
   unredistributed_col[CONTACT::MatBlockType::lm_displ] = &ProbDofsPtr();
   unredistributed_col[CONTACT::MatBlockType::lm_lm] = &PGLmDofRowMapPtr();
 
-  mat_row_col_transformer_->Init(
+  mat_row_col_transformer_->init(
       redistributed_row, redistributed_col, unredistributed_row, unredistributed_col);
 }
 

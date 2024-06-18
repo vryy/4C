@@ -108,10 +108,10 @@ STR::TimeInt::BaseDataGlobalState& STR::TimeInt::BaseDataGlobalState::operator=(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataGlobalState::Init(const Teuchos::RCP<Core::FE::Discretization> discret,
+void STR::TimeInt::BaseDataGlobalState::init(const Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::ParameterList& sdynparams, const Teuchos::RCP<const BaseDataSDyn> datasdyn)
 {
-  // We have to call setup() after Init()
+  // We have to call setup() after init()
   issetup_ = false;
 
   // ----------------------------------------------------------

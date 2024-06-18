@@ -61,7 +61,7 @@ namespace ParticleInteraction
     virtual ~SPHDensityBase() = default;
 
     //! init density handler
-    virtual void Init();
+    virtual void init();
 
     //! setup density handler
     virtual void setup(
@@ -217,7 +217,7 @@ namespace ParticleInteraction
     ~SPHDensityPredictCorrect() override;
 
     //! init density handler
-    void Init() override;
+    void init() override;
 
     //! setup density handler
     void setup(

@@ -23,7 +23,7 @@ PARTICLEENGINE::ParticleContainer::ParticleContainer()
   // empty constructor
 }
 
-void PARTICLEENGINE::ParticleContainer::Init()
+void PARTICLEENGINE::ParticleContainer::init()
 {
   // nothing to do
 }

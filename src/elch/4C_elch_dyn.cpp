@@ -94,9 +94,9 @@ void elch_dyn(int restart)
       // finalize discretization
       scatradis->fill_complete(true, true, true);
 
-      // now we can call Init() on the base algorithm
+      // now we can call init() on the base algorithm
       // scatra time integrator is constructed and initialized inside
-      scatraonly->Init();
+      scatraonly->init();
 
       // now me may redistribute or ghost the scatra discretization
       // finalize discretization
@@ -209,8 +209,8 @@ void elch_dyn(int restart)
           FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
         elch->ScaTraField()->set_number_of_dof_set_displacement(2);
 
-        // now we must call Init()
-        elch->Init();
+        // now we must call init()
+        elch->init();
 
         // NOTE : At this point we may redistribute and/or
         //        ghost our discretizations at will.
@@ -254,8 +254,8 @@ void elch_dyn(int restart)
           FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
         elch->ScaTraField()->set_number_of_dof_set_velocity(1);
 
-        // now we must call Init()
-        elch->Init();
+        // now we must call init()
+        elch->init();
 
         // NOTE : At this point we may redistribute and/or
         //        ghost our discretizations at will.

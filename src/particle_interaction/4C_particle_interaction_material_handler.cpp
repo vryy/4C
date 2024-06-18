@@ -26,7 +26,7 @@ ParticleInteraction::MaterialHandler::MaterialHandler(const Teuchos::ParameterLi
   // empty constructor
 }
 
-void ParticleInteraction::MaterialHandler::Init()
+void ParticleInteraction::MaterialHandler::init()
 {
   // init map relating particle types to material ids
   std::map<PARTICLEENGINE::TypeEnum, int> typetomatidmap;

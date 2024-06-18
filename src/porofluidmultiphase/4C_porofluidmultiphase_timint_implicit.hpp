@@ -86,7 +86,7 @@ namespace POROFLUIDMULTIPHASE
 
 
     //! initialize time integration
-    void Init(bool isale, int nds_disp, int nds_vel, int nds_solidpressure, int nds_scalar,
+    void init(bool isale, int nds_disp, int nds_vel, int nds_solidpressure, int nds_scalar,
         const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     /*========================================================================*/

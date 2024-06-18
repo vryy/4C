@@ -239,7 +239,7 @@ namespace Mortar
     \brief Initialize the base binary tree
 
     */
-    void Init() override;
+    void init() override;
 
     /*!
     \brief Calculate minimal element length / inflation factor "enlarge"

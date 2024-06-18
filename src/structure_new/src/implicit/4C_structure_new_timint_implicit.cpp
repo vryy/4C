@@ -50,7 +50,7 @@ void STR::TimeInt::Implicit::setup()
   // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TimeInt::NoxInterface> noxinterface_ptr =
       Teuchos::rcp(new STR::TimeInt::NoxInterface);
-  noxinterface_ptr->Init(
+  noxinterface_ptr->init(
       data_global_state_ptr(), implint_ptr_, dbc_ptr(), Teuchos::rcp(this, false));
   noxinterface_ptr->setup();
 
@@ -59,7 +59,7 @@ void STR::TimeInt::Implicit::setup()
   // ---------------------------------------------------------------------------
   const enum Inpar::STR::PredEnum& predtype = data_sdyn().get_predictor_type();
   predictor_ptr_ = STR::Predict::build_predictor(predtype);
-  predictor_ptr_->Init(predtype, implint_ptr_, dbc_ptr(), data_global_state_ptr(), data_io_ptr(),
+  predictor_ptr_->init(predtype, implint_ptr_, dbc_ptr(), data_global_state_ptr(), data_io_ptr(),
       data_sdyn().get_nox_params_ptr());
   predictor_ptr_->setup();
 
@@ -73,7 +73,7 @@ void STR::TimeInt::Implicit::setup()
                  "Please use NLNSOL as \"fullnewton\" for reliable result."
               << std::endl;
   nlnsolver_ptr_ = STR::Nln::SOLVER::build_nln_solver(nlnSolverType);
-  nlnsolver_ptr_->Init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, implint_ptr_,
+  nlnsolver_ptr_->init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, implint_ptr_,
       Teuchos::rcp(this, false));
   nlnsolver_ptr_->setup();
 

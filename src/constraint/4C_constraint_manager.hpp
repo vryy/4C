@@ -63,13 +63,13 @@ namespace CONSTRAINTS
 
 
     //! initialize this class
-    void Init(Teuchos::RCP<Core::FE::Discretization> discr, const Teuchos::ParameterList& params);
+    void init(Teuchos::RCP<Core::FE::Discretization> discr, const Teuchos::ParameterList& params);
 
     /*! \brief Setup all class internal objects and members
 
      setup() is not supposed to have any input arguments !
 
-     Must only be called after Init().
+     Must only be called after init().
 
      Construct all objects depending on the parallel distribution and
      relying on valid maps like, e.g. the state vectors, system matrices, etc.
@@ -342,7 +342,7 @@ namespace CONSTRAINTS
     //! returns true if setup() was called and is still valid
     bool is_setup() { return issetup_; };
 
-    //! returns true if Init(..) was called and is still valid
+    //! returns true if init(..) was called and is still valid
     bool is_init() { return isinit_; };
 
     //! check if \ref setup() was called
@@ -351,10 +351,10 @@ namespace CONSTRAINTS
       if (not is_setup()) FOUR_C_THROW("setup() was not called.");
     };
 
-    //! check if \ref Init() was called
+    //! check if \ref init() was called
     void check_is_init()
     {
-      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("init(...) was not called.");
     };
 
    public:

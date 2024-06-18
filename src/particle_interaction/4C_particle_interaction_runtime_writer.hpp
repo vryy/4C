@@ -48,7 +48,7 @@ namespace ParticleInteraction
     explicit InteractionWriter(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! init interaction writer
-    void Init();
+    void init();
 
     //! setup interaction writer
     void setup();

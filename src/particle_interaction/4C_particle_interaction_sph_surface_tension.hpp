@@ -64,7 +64,7 @@ namespace ParticleInteraction
     ~SPHSurfaceTension();
 
     //! init surface tension handler
-    void Init();
+    void init();
 
     //! setup surface tension handler
     void setup(

@@ -33,7 +33,7 @@ STR::MODELEVALUATOR::ContactData::ContactData()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::ContactData::Init(
+void STR::MODELEVALUATOR::ContactData::init(
     const Teuchos::RCP<const STR::MODELEVALUATOR::Data>& str_data_ptr)
 {
   issetup_ = false;

@@ -132,7 +132,7 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretizatio
 /*------------------------------------------------------------------------*
  | initialize time integration                                vuong 08/16 |
  *------------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel,
+void POROFLUIDMULTIPHASE::TimIntImpl::init(bool isale, int nds_disp, int nds_vel,
     int nds_solidpressure, int nds_scalar, const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // set flags
@@ -315,7 +315,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   strategy_->initialize_linear_solver(solver_);
 
   return;
-}  // TimIntImpl::Init()
+}  // TimIntImpl::init()
 
 
 

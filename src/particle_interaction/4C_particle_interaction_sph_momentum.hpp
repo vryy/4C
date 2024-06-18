@@ -78,7 +78,7 @@ namespace ParticleInteraction
     ~SPHMomentum();
 
     //! init momentum handler
-    void Init();
+    void init();
 
     //! setup momentum handler
     void setup(

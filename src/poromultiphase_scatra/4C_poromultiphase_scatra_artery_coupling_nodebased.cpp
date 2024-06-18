@@ -44,7 +44,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::PoroMultiPhaseScaTr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::init()
 {
   // ARTERY COUPLING CONDITIONS
   std::vector<std::vector<int>> condIDs;

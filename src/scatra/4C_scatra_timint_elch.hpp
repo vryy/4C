@@ -52,7 +52,7 @@ namespace ScaTra
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     //! initialize algorithm
-    void Init() override;
+    void init() override;
 
     //! initialize algorithm
     void setup() override;

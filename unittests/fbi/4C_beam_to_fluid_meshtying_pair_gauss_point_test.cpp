@@ -99,7 +99,7 @@ namespace
       pair_elements.push_back(&(*beam_element));
       pair_elements.push_back(&(*fluid_element));
       pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);
-      pair.Init(intersection_params, pair_elements);
+      pair.init(intersection_params, pair_elements);
 
       pair.ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam_type, scalar_type>::Initialize(
           beam_element.get());

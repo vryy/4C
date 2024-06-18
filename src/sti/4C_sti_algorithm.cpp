@@ -46,7 +46,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
   // initialize scatra time integrator
   scatra_ = Teuchos::rcp(
       new Adapter::ScaTraBaseAlgorithm(*fieldparameters_, *fieldparameters_, solverparams_scatra));
-  scatra_->Init();
+  scatra_->init();
   scatra_->ScaTraField()->set_number_of_dof_set_velocity(1);
   scatra_->ScaTraField()->set_number_of_dof_set_thermo(2);
   scatra_->setup();
@@ -57,7 +57,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
   // initialize thermo time integrator
   thermo_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
       *fieldparameters_, *fieldparameters_, solverparams_thermo, "thermo"));
-  thermo_->Init();
+  thermo_->init();
   thermo_->ScaTraField()->set_number_of_dof_set_velocity(1);
   thermo_->ScaTraField()->set_number_of_dof_set_sca_tra(2);
   thermo_->setup();

@@ -29,7 +29,7 @@ PARTICLEALGORITHM::InitialFieldHandler::InitialFieldHandler(const Teuchos::Param
   // empty constructor
 }
 
-void PARTICLEALGORITHM::InitialFieldHandler::Init()
+void PARTICLEALGORITHM::InitialFieldHandler::init()
 {
   // get control parameters for initial/boundary conditions
   const Teuchos::ParameterList& params_conditions =

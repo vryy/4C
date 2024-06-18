@@ -35,7 +35,7 @@ namespace ScaTra
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
-    void Init() override;
+    void init() override;
 
     void setup() override;
 
@@ -72,7 +72,7 @@ namespace ScaTra
 
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
-    void Init() override;
+    void init() override;
 
     void post_calc_initial_potential_field() override;
 
@@ -108,7 +108,7 @@ namespace ScaTra
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
-    void Init() override;
+    void init() override;
 
     void setup() override;
 
@@ -142,7 +142,7 @@ namespace ScaTra
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
-    void Init() override;
+    void init() override;
 
     void setup() override;
 
@@ -174,7 +174,7 @@ namespace ScaTra
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
-    void Init() override;
+    void init() override;
 
     void setup() override;
 

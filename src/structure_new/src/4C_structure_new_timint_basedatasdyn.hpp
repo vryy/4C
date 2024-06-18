@@ -73,7 +73,7 @@ namespace STR
       virtual ~BaseDataSDyn() = default;
 
       /// initialize class variables (already existing)
-      virtual void Init(const Teuchos::RCP<Core::FE::Discretization> discret,
+      virtual void init(const Teuchos::RCP<Core::FE::Discretization> discret,
           const Teuchos::ParameterList& sDynParams, const Teuchos::ParameterList& xparams,
           const Teuchos::RCP<std::set<enum Inpar::STR::ModelType>> modeltypes,
           const Teuchos::RCP<std::set<enum Inpar::STR::EleTech>> eletechs,
@@ -91,16 +91,16 @@ namespace STR
       /// get the indicator state
       inline const bool& is_setup() const { return issetup_; };
 
-      /// Check if Init() has been called, yet.
+      /// Check if init() has been called, yet.
       inline void check_init() const
       {
-        FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
+        FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
       }
 
-      /// Check if Init() and setup() have been called, yet.
+      /// Check if init() and setup() have been called, yet.
       inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
       }
 
      public:

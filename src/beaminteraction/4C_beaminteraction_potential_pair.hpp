@@ -60,7 +60,7 @@ namespace BEAMINTERACTION
     */
     virtual ~BeamPotentialPair() = default;
     //! Initialization
-    void Init(const Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> params_ptr,
+    void init(const Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> params_ptr,
         Core::Elements::Element const* element1, Core::Elements::Element const* element2);
 
     //! Setup
@@ -185,7 +185,7 @@ namespace BEAMINTERACTION
    protected:
     //! @name member variables
 
-    //! indicates if the Init() function has been called
+    //! indicates if the init() function has been called
     bool isinit_;
 
     //! indicates if the setup() function has been called

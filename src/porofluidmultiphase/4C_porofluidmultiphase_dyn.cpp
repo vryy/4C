@@ -129,7 +129,7 @@ void porofluidmultiphase_dyn(int restart)
       timintscheme, actdis, linsolvernumber, porodyn, porodyn, output);
 
   // initialize
-  algo->Init(false,       // eulerian formulation
+  algo->init(false,       // eulerian formulation
       -1,                 //  no displacements
       -1,                 // no velocities
       nds_solidpressure,  // dof set for post processing solid pressure

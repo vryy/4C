@@ -48,14 +48,14 @@ STR::MODELEVALUATOR::Meshtying::Meshtying() : strategy_ptr_(Teuchos::null)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::Init(
+void STR::MODELEVALUATOR::Meshtying::init(
     const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
     const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
     const Teuchos::RCP<STR::Integrator>& int_ptr,
     const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset)
 {
-  STR::MODELEVALUATOR::Generic::Init(
+  STR::MODELEVALUATOR::Generic::init(
       eval_data_ptr, gstate_ptr, gio_ptr, int_ptr, timint_ptr, dof_offset);
 }
 
@@ -67,7 +67,7 @@ void STR::MODELEVALUATOR::Meshtying::setup()
 
   // create the meshtying factory
   Mortar::STRATEGY::FactoryMT factory;
-  factory.Init(global_state_ptr()->get_discret());
+  factory.init(global_state_ptr()->get_discret());
   factory.setup();
 
   // check the problem dimension
@@ -112,7 +112,7 @@ void STR::MODELEVALUATOR::Meshtying::setup()
       integrator().get_dbc().GetZerosPtr());  // ToDo redistribute_meshtying??
   strategy_ptr_->MortarCoupling(integrator().get_dbc().GetZerosPtr());
 
-  strategy_ptr_->nox_interface_ptr()->Init(global_state_ptr());
+  strategy_ptr_->nox_interface_ptr()->init(global_state_ptr());
   strategy_ptr_->nox_interface_ptr()->setup();
 
   if (!global_state().get_restart_step())

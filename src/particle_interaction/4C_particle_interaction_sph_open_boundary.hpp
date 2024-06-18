@@ -54,7 +54,7 @@ namespace ParticleInteraction
     virtual ~SPHOpenBoundaryBase() = default;
 
     //! init open boundary handler
-    virtual void Init();
+    virtual void init();
 
     //! setup open boundary handler
     virtual void setup(
@@ -121,7 +121,7 @@ namespace ParticleInteraction
     explicit SPHOpenBoundaryDirichlet(const Teuchos::ParameterList& params);
 
     //! init open boundary handler
-    void Init() override;
+    void init() override;
 
     //! setup open boundary handler
     void setup(
@@ -145,7 +145,7 @@ namespace ParticleInteraction
     explicit SPHOpenBoundaryNeumann(const Teuchos::ParameterList& params);
 
     //! init open boundary handler
-    void Init() override;
+    void init() override;
 
     //! setup open boundary handler
     void setup(

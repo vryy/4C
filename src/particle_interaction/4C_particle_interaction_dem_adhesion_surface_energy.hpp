@@ -37,7 +37,7 @@ namespace ParticleInteraction
     virtual ~DEMAdhesionSurfaceEnergyBase() = default;
 
     //! init adhesion surface energy handler
-    virtual void Init();
+    virtual void init();
 
     //! setup adhesion surface energy handler
     virtual void setup();

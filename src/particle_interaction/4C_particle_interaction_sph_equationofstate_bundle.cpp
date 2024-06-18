@@ -27,7 +27,7 @@ ParticleInteraction::SPHEquationOfStateBundle::SPHEquationOfStateBundle(
   // empty constructor
 }
 
-void ParticleInteraction::SPHEquationOfStateBundle::Init(
+void ParticleInteraction::SPHEquationOfStateBundle::init(
     const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial)
 {
   // get type of smoothed particle hydrodynamics equation of state
@@ -87,7 +87,7 @@ void ParticleInteraction::SPHEquationOfStateBundle::Init(
     }
 
     // init equation of state handler
-    phasetypetoequationofstate_[type_i]->Init();
+    phasetypetoequationofstate_[type_i]->init();
   }
 }
 

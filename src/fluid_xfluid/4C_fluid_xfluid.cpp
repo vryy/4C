@@ -165,12 +165,12 @@ void FLD::XFluid::check_initialized_dof_set_coupling_map()
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                   schott 11/14 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::Init(bool createinitialstate)
+void FLD::XFluid::init(bool createinitialstate)
 {
   check_initialized_dof_set_coupling_map();
 
 
-  FluidImplicitTimeInt::Init();
+  FluidImplicitTimeInt::init();
 
   // -------------------------------------------------------------------
   // get input params and print Xfluid specific configurations
@@ -198,7 +198,7 @@ void FLD::XFluid::Init(bool createinitialstate)
   condition_manager_ = Teuchos::rcp(new XFEM::ConditionManager(
       dofset_coupling_map_, discret_, meshcoupl_dis_, levelsetcoupl_dis_, time_, step_));
 
-  condition_manager_->Init();
+  condition_manager_->init();
 
   // build the whole object which then can be used
   condition_manager_->setup();
@@ -302,7 +302,7 @@ void FLD::XFluid::Init(bool createinitialstate)
   if (createinitialstate and (not restart)) CreateInitialState();
 
   return;
-}  // Init()
+}  // init()
 
 
 void FLD::XFluid::setup_fluid_discretization()

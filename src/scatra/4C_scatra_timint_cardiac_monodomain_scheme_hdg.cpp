@@ -38,7 +38,7 @@ ScaTra::TimIntCardiacMonodomainHDG::TimIntCardiacMonodomainHDG(
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntCardiacMonodomainHDG::setup()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
   TimIntHDG::setup();
   TimIntCardiacMonodomain::setup();

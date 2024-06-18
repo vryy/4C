@@ -36,7 +36,7 @@ ParticleInteraction::SPHVirtualWallParticle::SPHVirtualWallParticle(
   // empty constructor
 }
 
-void ParticleInteraction::SPHVirtualWallParticle::Init()
+void ParticleInteraction::SPHVirtualWallParticle::init()
 {
   // init with potential fluid particle types
   allfluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::DirichletPhase,

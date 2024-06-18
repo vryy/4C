@@ -70,7 +70,7 @@ void fs3i_dyn()
       break;
   }
 
-  fs3i->Init();
+  fs3i->init();
   fs3i->setup();
 
   // read the restart information, set vectors and variables ---

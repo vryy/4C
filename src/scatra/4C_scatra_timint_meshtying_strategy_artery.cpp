@@ -56,7 +56,7 @@ void ScaTra::MeshtyingStrategyArtery::InitMeshtying()
 
   // initialize the base algo.
   // scatra time integrator is initialized inside.
-  art_scatra->Init();
+  art_scatra->init();
 
   // only now we must call setup() on the scatra time integrator.
   // all objects relying on the parallel distribution are

@@ -188,7 +188,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
 
 
   //-------------------------------------------------------------------------
-  // Finish standard fluid_field()->Init()!
+  // Finish standard fluid_field()->init()!
   // REMARK: We don't want to do this at the beginning, to be able to use std
   // Adapter::Coupling for FA-Coupling
   //-------------------------------------------------------------------------

@@ -51,12 +51,12 @@ STR::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& timeparams,  //! time 
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntExpl::Init(const Teuchos::ParameterList& timeparams,
+void STR::TimIntExpl::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
-  // call Init() in base class
-  STR::TimInt::Init(timeparams, sdynparams, xparams, actdis, solver);
+  // call init() in base class
+  STR::TimInt::init(timeparams, sdynparams, xparams, actdis, solver);
 
   // get away
   return;

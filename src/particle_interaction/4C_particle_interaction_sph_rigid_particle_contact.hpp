@@ -57,7 +57,7 @@ namespace ParticleInteraction
     virtual ~SPHRigidParticleContactBase() = default;
 
     //! init rigid particle contact handler
-    virtual void Init();
+    virtual void init();
 
     //! setup rigid particle contact handler
     virtual void setup(

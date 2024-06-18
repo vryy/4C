@@ -38,7 +38,7 @@ void STR::Predict::ConstDisVelAccPress::setup()
 
   // fallback predictor
   tangdis_ptr_ = STR::Predict::build_predictor(Inpar::STR::pred_tangdis);
-  tangdis_ptr_->Init(
+  tangdis_ptr_->init(
       get_type(), impl_int_ptr(), dbc_ptr(), global_state_ptr(), io_data_ptr(), nox_params_ptr());
   tangdis_ptr_->setup();
 

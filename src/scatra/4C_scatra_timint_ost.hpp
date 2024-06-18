@@ -37,7 +37,7 @@ namespace ScaTra
     /// copy constructor
     TimIntOneStepTheta(const TimIntOneStepTheta& old) = delete;
 
-    void Init() override;
+    void init() override;
 
     void setup() override;
 

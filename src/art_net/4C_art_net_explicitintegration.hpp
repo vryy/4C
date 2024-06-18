@@ -62,7 +62,7 @@ namespace Arteries
     \brief Initialization
 
     */
-    void Init(const Teuchos::ParameterList& globaltimeparams,
+    void init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     // create field test

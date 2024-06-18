@@ -33,13 +33,13 @@ namespace SSI
     Hand in all objects/parameters/etc. from outside.
     Construct and manipulate internal objects.
 
-    \note Try to only perform actions in Init(), which are still valid
+    \note Try to only perform actions in init(), which are still valid
           after parallel redistribution of discretizations.
           If you have to perform an action depending on the parallel
           distribution, make sure you adapt the affected objects after
           parallel redistribution.
           Example: cloning a discretization from another discretization is
-          OK in Init(...). However, after redistribution of the source
+          OK in init(...). However, after redistribution of the source
           discretization do not forget to also redistribute the cloned
           discretization.
           All objects relying on the parallel distribution are supposed to
@@ -49,7 +49,7 @@ namespace SSI
     \return int
     \date 08/16
     \author rauch  */
-    void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    void init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
@@ -57,7 +57,7 @@ namespace SSI
 
      setup() is not supposed to have any input arguments !
 
-     Must only be called after Init().
+     Must only be called after init().
 
      Construct all objects depending on the parallel distribution and
      relying on valid maps like, e.g. the state vectors, system matrices, etc.
@@ -157,7 +157,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    void init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
@@ -187,7 +187,7 @@ namespace SSI
 
     setup() is not supposed to have any input arguments !
 
-    Must only be called after Init().
+    Must only be called after init().
 
     Construct all objects depending on the parallel distribution and
     relying on valid maps like, e.g. the state vectors, system matrices, etc.
@@ -234,7 +234,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    void init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
@@ -264,7 +264,7 @@ namespace SSI
 
     setup() is not supposed to have any input arguments !
 
-    Must only be called after Init().
+    Must only be called after init().
 
     Construct all objects depending on the parallel distribution and
     relying on valid maps like, e.g. the state vectors, system matrices, etc.

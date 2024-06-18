@@ -89,7 +89,7 @@ void ScaTra::HeterogeneousReactionStrategy::EvaluateMeshtying()
  *----------------------------------------------------------------------*/
 void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
 {
-  // call Init() of base class
+  // call init() of base class
   ScaTra::MeshtyingStrategyStd::setup_meshtying();
 
   // make sure we set up everything properly
@@ -172,7 +172,7 @@ void ScaTra::HeterogeneousReactionStrategy::InitMeshtying()
 {
   set_is_setup(false);
 
-  // call Init() of base class
+  // call init() of base class
   ScaTra::MeshtyingStrategyStd::InitMeshtying();
 
   set_is_init(true);

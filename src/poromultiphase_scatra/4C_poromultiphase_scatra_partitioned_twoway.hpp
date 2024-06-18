@@ -27,7 +27,7 @@ namespace PoroMultiPhaseScaTra
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// initialization
-    void Init(const Teuchos::ParameterList& globaltimeparams,
+    void init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& poroparams,
         const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
         const Teuchos::ParameterList& scatraparams, const std::string& struct_disname,
@@ -100,7 +100,7 @@ namespace PoroMultiPhaseScaTra
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// initialization
-    void Init(const Teuchos::ParameterList& globaltimeparams,
+    void init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& poroparams,
         const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
         const Teuchos::ParameterList& scatraparams, const std::string& struct_disname,
@@ -131,7 +131,7 @@ namespace PoroMultiPhaseScaTra
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// initialization
-    void Init(const Teuchos::ParameterList& globaltimeparams,
+    void init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& poroparams,
         const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
         const Teuchos::ParameterList& scatraparams, const std::string& struct_disname,

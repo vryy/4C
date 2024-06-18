@@ -54,7 +54,7 @@ namespace ParticleInteraction
     explicit SPHVirtualWallParticle(const Teuchos::ParameterList& params);
 
     //! init virtual wall particle handler
-    void Init();
+    void init();
 
     //! setup virtual wall particle handler
     void setup(

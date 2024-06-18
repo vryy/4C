@@ -87,7 +87,7 @@ namespace STR
      * \param[in] dpc_ptr Pointer to the dirichlet boundary condition object
      * \param[in] timint_ptr Pointer to the underlying time integrator (read-only)
      */
-    virtual void Init(const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_ptr,
+    virtual void init(const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_ptr,
         const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
         const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
         const Teuchos::RCP<STR::Dbc>& dbc_ptr,
@@ -396,7 +396,7 @@ namespace STR
         const enum ::NOX::Abstract::Vector::NormType& normtype, double& mynorm) const;
 
    protected:
-    //! indicates if the Init() function has been called
+    //! indicates if the init() function has been called
     bool isinit_;
 
     //! indicates if the setup() function has been called

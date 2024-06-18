@@ -76,7 +76,7 @@ namespace Core::Geo
 
       virtual ~BackMesh() = default;
 
-      void Init(const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
+      void init(const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
           const Teuchos::RCP<const Epetra_Vector>& back_levelset_col);
 
       const Teuchos::RCP<Core::FE::Discretization>& GetPtr() { return back_discret_; }

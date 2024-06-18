@@ -50,7 +50,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 07/2018
      */
-    void Init();
+    void init();
 
     /*!
      * \brief setup particle result test

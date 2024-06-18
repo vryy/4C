@@ -100,7 +100,7 @@ void XFEM::MultiFieldMapExtractor::reset(unsigned num_dis, bool full)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_reserved_dofs_per_node)
+void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_reserved_dofs_per_node)
 {
   // reset flags
   isinit_ = false;
@@ -700,7 +700,7 @@ void XFEM::MultiFieldMapExtractor::build_interface_coupling_adapters()
   {
     /* Set the slave discretization to the discretization with minimum number
      * of DoF's at each interface node. This is true by construction. */
-    (*it)->Init(XFEM::XFieldField::Coupling::min_dof_slave);
+    (*it)->init(XFEM::XFieldField::Coupling::min_dof_slave);
 
     /* Setup the interface coupling objects. The interface discretization
      * is always the master discretization. Since the GID's at the interface

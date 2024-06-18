@@ -61,9 +61,9 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*
  | Init                                                     rauch 09/16 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::Init()
+void FS3I::ACFSI::init()
 {
-  FS3I::PartFS3I::Init();
+  FS3I::PartFS3I::init();
 
   // Some AC FSI specific testings:
 

@@ -164,7 +164,7 @@ void electromagnetics_drt()
   }
 
   // Initialize the evolution algorithm
-  elemagalgo->Init();
+  elemagalgo->init();
 
   // set initial field
   if (restart)
@@ -316,7 +316,7 @@ void electromagnetics_drt()
 
             // scatraparams->print(std::cout);
 
-            scatraalgo->Init();
+            scatraalgo->init();
             scatraalgo->set_number_of_dof_set_velocity(1);
             scatraalgo->setup();
             scatraalgo->set_velocity_field();

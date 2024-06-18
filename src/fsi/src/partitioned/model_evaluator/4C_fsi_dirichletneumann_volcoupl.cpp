@@ -85,7 +85,7 @@ void FSI::DirichletNeumannVolCoupl::setup_coupling_struct_ale(
   std::pair<int, int> dofsets21(0, 0);
 
   // initialize coupling adapter
-  coupsa_->Init(ndim, structure_field()->discretization(),
+  coupsa_->init(ndim, structure_field()->discretization(),
       fluidale->ale_field()->write_access_discretization(), &coupleddof12, &coupleddof21,
       &dofsets12, &dofsets21, Teuchos::null, false);
 

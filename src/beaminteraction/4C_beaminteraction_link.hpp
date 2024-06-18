@@ -79,7 +79,7 @@ namespace BEAMINTERACTION
     BeamLink(const BeamLink& old);
 
     //! Initialization
-    virtual void Init(const int id, const std::vector<std::pair<int, int>>& eleids,
+    virtual void init(const int id, const std::vector<std::pair<int, int>>& eleids,
         const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
         const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
         Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset);
@@ -213,13 +213,13 @@ namespace BEAMINTERACTION
     //! Check the init state
     inline void check_init() const
     {
-      if (not is_init()) FOUR_C_THROW("Call Init() first!");
+      if (not is_init()) FOUR_C_THROW("Call init() first!");
     }
 
     //! Check the init and setup state
     inline void check_init_setup() const
     {
-      if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
+      if (not is_init() or not is_setup()) FOUR_C_THROW("Call init() and setup() first!");
     }
 
 
@@ -227,7 +227,7 @@ namespace BEAMINTERACTION
    protected:
     //! @name member variables
 
-    //! indicates if the Init() function has been called
+    //! indicates if the init() function has been called
     bool isinit_;
 
     //! indicates if the setup() function has been called

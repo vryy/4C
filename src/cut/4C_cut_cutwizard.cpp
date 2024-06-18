@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::CutWizard::BackMesh::Init(const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
+void Core::Geo::CutWizard::BackMesh::init(const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
     const Teuchos::RCP<const Epetra_Vector>& back_levelset_col)
 {
   back_disp_col_ = back_disp_col;
@@ -139,7 +139,7 @@ void Core::Geo::CutWizard::SetBackgroundState(
 )
 {
   // set state vectors used in cut
-  back_mesh_->Init(back_disp_col, back_levelset_col);
+  back_mesh_->init(back_disp_col, back_levelset_col);
   level_set_sid_ = level_set_sid;
 
   do_levelset_intersection_ = back_mesh_->IsLevelSet();

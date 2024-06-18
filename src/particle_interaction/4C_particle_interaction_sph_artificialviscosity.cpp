@@ -25,7 +25,7 @@ ParticleInteraction::SPHArtificialViscosity::SPHArtificialViscosity()
   // empty constructor
 }
 
-void ParticleInteraction::SPHArtificialViscosity::Init()
+void ParticleInteraction::SPHArtificialViscosity::init()
 {
   // nothing to do
 }

@@ -160,9 +160,9 @@ void scatra_cardiac_monodomain_dyn(int restart)
         }
       }
 
-      // now we can call Init() on the base algo.
+      // now we can call init() on the base algo.
       // time integrator is constructed and initialized inside
-      scatraonly->Init();
+      scatraonly->init();
 
       // NOTE : At this point we may redistribute and/or
       //        ghost our discretizations at will.
@@ -323,7 +323,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
           scatradyn, fdyn, "scatra", Global::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // init algo (init fluid time integrator and scatra time integrator inside)
-      algo->Init();
+      algo->init();
 
       // setup algo (setup fluid time integrator and scatra time integrator inside)
       algo->setup();

@@ -40,10 +40,10 @@ Adapter::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::
 
 /*======================================================================*/
 /* initialization */
-void Adapter::FluidLung::Init()
+void Adapter::FluidLung::init()
 {
   // call base class init
-  FluidFSI::Init();
+  FluidFSI::init();
 
   // get lung fluid-structure volume constraints
 

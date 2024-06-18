@@ -74,7 +74,7 @@ void test_unit_intersection_touch()
     Teuchos::RCP<Core::Geo::Cut::IntersectionBase> intersection =
         Core::Geo::Cut::IntersectionBase::Create(
             Core::FE::CellType::line2, Core::FE::CellType::quad4);
-    intersection->Init(&mesh, e, s1, false, false, false);
+    intersection->init(&mesh, e, s1, false, false, false);
 
     Core::Geo::Cut::PointSet cuts;
     intersection->Intersect(cuts);

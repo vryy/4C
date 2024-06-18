@@ -37,11 +37,11 @@ FLD::TimIntBDF2::TimIntBDF2(const Teuchos::RCP<Core::FE::Discretization>& actdis
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntBDF2::Init()
+void FLD::TimIntBDF2::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  FLD::FluidImplicitTimeInt::Init();
+  FLD::FluidImplicitTimeInt::init();
 
   // check, if starting algorithm is desired
   if (numstasteps_ > 0)

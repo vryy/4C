@@ -93,7 +93,7 @@ void STR::MODELEVALUATOR::BeamInteraction::setup()
   myrank_ = discret_ptr()->Comm().MyPID();
 
   beaminteraction_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionParams());
-  beaminteraction_params_ptr_->Init();
+  beaminteraction_params_ptr_->init();
   beaminteraction_params_ptr_->setup();
 
   // print logo
@@ -121,7 +121,7 @@ void STR::MODELEVALUATOR::BeamInteraction::setup()
 
   // init data container
   ia_state_ptr_ = Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteractionDataState());
-  ia_state_ptr_->Init();
+  ia_state_ptr_->init();
   ia_state_ptr_->setup(ia_discret_);
 
   ia_state_ptr_->GetDisNp() = Teuchos::rcp(new Epetra_Vector(*global_state_ptr()->get_dis_np()));
@@ -163,7 +163,7 @@ void STR::MODELEVALUATOR::BeamInteraction::setup()
   if (HaveSubModelType(Inpar::BEAMINTERACTION::submodel_crosslinking))
   {
     beam_crosslinker_handler_ = Teuchos::rcp(new BEAMINTERACTION::BeamCrosslinkerHandler());
-    beam_crosslinker_handler_->Init(global_state().get_my_rank(), binstrategy_);
+    beam_crosslinker_handler_->init(global_state().get_my_rank(), binstrategy_);
     beam_crosslinker_handler_->setup();
   }
 
@@ -318,7 +318,7 @@ void STR::MODELEVALUATOR::BeamInteraction::init_and_setup_sub_model_evaluators()
   Vector::iterator sme_iter;
   for (sme_iter = (*me_vec_ptr_).begin(); sme_iter != (*me_vec_ptr_).end(); ++sme_iter)
   {
-    (*sme_iter)->Init(ia_discret_, bindis_, global_state_ptr(), global_in_output_ptr(),
+    (*sme_iter)->init(ia_discret_, bindis_, global_state_ptr(), global_in_output_ptr(),
         ia_state_ptr_, beam_crosslinker_handler_, binstrategy_,
         tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(),
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::UTILS::MapExtractor>(eletypeextractor_, true));

@@ -35,12 +35,12 @@ ScaTra::ScaTraTimIntElchOST::ScaTraTimIntElchOST(Teuchos::RCP<Core::FE::Discreti
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElchOST::Init()
+void ScaTra::ScaTraTimIntElchOST::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntOneStepTheta::Init();
-  ScaTraTimIntElch::Init();
+  TimIntOneStepTheta::init();
+  ScaTraTimIntElch::init();
 }
 
 
@@ -353,12 +353,12 @@ ScaTra::ScaTraTimIntElchBDF2::ScaTraTimIntElchBDF2(Teuchos::RCP<Core::FE::Discre
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElchBDF2::Init()
+void ScaTra::ScaTraTimIntElchBDF2::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntBDF2::Init();
-  ScaTraTimIntElch::Init();
+  TimIntBDF2::init();
+  ScaTraTimIntElch::init();
 }
 
 /*----------------------------------------------------------------------*
@@ -627,12 +627,12 @@ ScaTra::ScaTraTimIntElchGenAlpha::ScaTraTimIntElchGenAlpha(
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElchGenAlpha::Init()
+void ScaTra::ScaTraTimIntElchGenAlpha::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntGenAlpha::Init();
-  ScaTraTimIntElch::Init();
+  TimIntGenAlpha::init();
+  ScaTraTimIntElch::init();
 }
 
 
@@ -894,12 +894,12 @@ ScaTra::ScaTraTimIntElchStationary::ScaTraTimIntElchStationary(
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElchStationary::Init()
+void ScaTra::ScaTraTimIntElchStationary::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntStationary::Init();
-  ScaTraTimIntElch::Init();
+  TimIntStationary::init();
+  ScaTraTimIntElch::init();
 }
 
 
@@ -1068,12 +1068,12 @@ ScaTra::ScaTraTimIntElchSCLOST::ScaTraTimIntElchSCLOST(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElchSCLOST::Init()
+void ScaTra::ScaTraTimIntElchSCLOST::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntOneStepTheta::Init();
-  ScaTraTimIntElchSCL::Init();
+  TimIntOneStepTheta::init();
+  ScaTraTimIntElchSCL::init();
 }
 
 

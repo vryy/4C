@@ -41,7 +41,7 @@ namespace Discret
       virtual ~BeamRuntimeOutputParams() = default;
 
       /// initialize the class variables
-      void Init(const Teuchos::ParameterList& IO_vtk_structure_beams_paramslist);
+      void init(const Teuchos::ParameterList& IO_vtk_structure_beams_paramslist);
 
       /// setup new class variables
       void setup();
@@ -174,7 +174,7 @@ namespace Discret
       /// get the setup indicator status
       const bool& is_setup() const { return issetup_; };
 
-      /// Check if Init() and setup() have been called, yet.
+      /// Check if init() and setup() have been called, yet.
       void check_init_setup() const;
 
 

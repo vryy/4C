@@ -24,9 +24,9 @@ namespace Adapter
    public:
     explicit FluidWrapper(Teuchos::RCP<Fluid> fluid) : fluid_(fluid) {}
 
-    void Init() override
+    void init() override
     {
-      fluid_->Init();
+      fluid_->init();
       return;
     }
     Teuchos::RCP<const Epetra_Vector> initial_guess() override { return fluid_->initial_guess(); }

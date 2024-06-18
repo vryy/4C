@@ -62,7 +62,7 @@ namespace Mortar
       Factory();
 
       //! initialization of class variables
-      void Init(Teuchos::RCP<Core::FE::Discretization> dis);
+      void init(Teuchos::RCP<Core::FE::Discretization> dis);
 
       /*! \brief Setup of class variables
        *
@@ -99,16 +99,16 @@ namespace Mortar
        */
       inline void set_is_setup(const bool issetup = true) { issetup_ = issetup; };
 
-      //! Returns true, if Init() has been called
+      //! Returns true, if init() has been called
       inline const bool& is_init() const { return isinit_; };
 
       //! Returns true, if setup() has been called
       inline const bool& is_setup() const { return issetup_; };
 
-      //! Checks, if Init() and setup() have been called
+      //! Checks, if init() and setup() have been called
       void check_init_setup() const;
 
-      //! Checks if Init() has been called
+      //! Checks if init() has been called
       void check_init() const;
 
       //! @name NURBS related stuff

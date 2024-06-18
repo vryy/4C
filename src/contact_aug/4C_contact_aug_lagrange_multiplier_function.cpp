@@ -43,7 +43,7 @@ CONTACT::Aug::LagrangeMultiplierFunction::LagrangeMultiplierFunction()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::LagrangeMultiplierFunction::Init(
+void CONTACT::Aug::LagrangeMultiplierFunction::init(
     const Strategy* const strategy, CONTACT::Aug::DataContainer& data)
 {
   issetup_ = false;

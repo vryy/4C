@@ -94,7 +94,7 @@ namespace LUBRICATION
     virtual ~TimIntImpl() = default;
 
     //! initialize time integration
-    virtual void Init();
+    virtual void init();
 
     /*========================================================================*/
     //! @name general framework

@@ -44,11 +44,11 @@ FLD::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::RCP<Core::FE::Discretization>
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::Init()
+void FLD::TimIntGenAlpha::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  FLD::FluidImplicitTimeInt::Init();
+  FLD::FluidImplicitTimeInt::init();
 
   // starting algorithm only for af-generalized-alpha so far
   // -> check for time-integration scheme and reasonable number of steps

@@ -40,7 +40,7 @@ FLD::TimIntHDGWeakComp::TimIntHDGWeakComp(const Teuchos::RCP<Core::FE::Discretiz
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                  laspina 08/19 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDGWeakComp::Init()
+void FLD::TimIntHDGWeakComp::init()
 {
   Core::FE::DiscretizationHDG* hdgdis = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
@@ -108,9 +108,9 @@ void FLD::TimIntHDGWeakComp::Init()
   timealgoset_ = timealgo_;
   timealgo_ = Inpar::FLUID::timeint_afgenalpha;
 
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  FLD::TimIntGenAlpha::Init();
+  FLD::TimIntGenAlpha::init();
 }
 
 

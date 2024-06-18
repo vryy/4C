@@ -30,7 +30,7 @@ ParticleInteraction::SPHBoundaryParticleBase::SPHBoundaryParticleBase(
   // empty constructor
 }
 
-void ParticleInteraction::SPHBoundaryParticleBase::Init()
+void ParticleInteraction::SPHBoundaryParticleBase::init()
 {
   // init with potential fluid particle types
   fluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::DirichletPhase,

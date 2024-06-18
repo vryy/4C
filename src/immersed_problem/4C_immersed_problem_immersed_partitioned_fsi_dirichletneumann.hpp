@@ -53,7 +53,7 @@ namespace Immersed
     \return int
     \date 08/16
     \author rauch  */
-    int Init(const Teuchos::ParameterList& params) override;
+    int init(const Teuchos::ParameterList& params) override;
 
     /*! \brief Setup all class internal objects and members
 

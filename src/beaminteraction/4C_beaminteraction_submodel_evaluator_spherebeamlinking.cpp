@@ -62,7 +62,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::setup()
 
   // construct, init and setup data container for crosslinking
   spherebeamlinking_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::SphereBeamLinkingParams());
-  spherebeamlinking_params_ptr_->Init(GState());
+  spherebeamlinking_params_ptr_->init(GState());
   spherebeamlinking_params_ptr_->setup();
 
   random_number_sphere_beam_linking_step_ = -1;
@@ -977,7 +977,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_spher
       std::vector<Core::LinAlg::Matrix<3, 3>> dummy_triad(2, Core::LinAlg::Matrix<3, 3>(true));
 
       // finally initialize and setup object
-      linkelepairptr->Init(id, eleids, pos, dummy_triad,
+      linkelepairptr->init(id, eleids, pos, dummy_triad,
           spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(), GState().get_time_np());
       // material id
       linkelepairptr->setup(

@@ -39,10 +39,10 @@ LUBRICATION::TimIntStationary::TimIntStationary(Teuchos::RCP<Core::FE::Discretiz
 /*----------------------------------------------------------------------*
  |  initialize time integration                             wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::Init()
+void LUBRICATION::TimIntStationary::init()
 {
   // initialize base class
-  TimIntImpl::Init();
+  TimIntImpl::init();
 
   // -------------------------------------------------------------------
   // set element parameters

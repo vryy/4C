@@ -68,8 +68,8 @@ namespace FLD
     );
 
     /// initialization
-    void Init() override { Init(true); }
-    void Init(bool createinitialstate) override;
+    void init() override { init(true); }
+    void init(bool createinitialstate) override;
 
     void CreateInitialState() override;
 

@@ -145,7 +145,7 @@ namespace PoroMultiPhaseScaTra
         Teuchos::RCP<const Epetra_Vector> phinp_art) override;
 
     //! init the strategy
-    void Init() override;
+    void init() override;
 
     //! set the element pairs that are close as found by search algorithm
     void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs) override;

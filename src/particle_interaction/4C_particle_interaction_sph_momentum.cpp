@@ -53,7 +53,7 @@ ParticleInteraction::SPHMomentum::SPHMomentum(const Teuchos::ParameterList& para
 
 ParticleInteraction::SPHMomentum::~SPHMomentum() = default;
 
-void ParticleInteraction::SPHMomentum::Init()
+void ParticleInteraction::SPHMomentum::init()
 {
   // init momentum formulation handler
   init_momentum_formulation_handler();
@@ -221,7 +221,7 @@ void ParticleInteraction::SPHMomentum::init_momentum_formulation_handler()
   }
 
   // init momentum formulation handler
-  momentumformulation_->Init();
+  momentumformulation_->init();
 }
 
 void ParticleInteraction::SPHMomentum::init_artificial_viscosity_handler()
@@ -231,7 +231,7 @@ void ParticleInteraction::SPHMomentum::init_artificial_viscosity_handler()
       new ParticleInteraction::SPHArtificialViscosity());
 
   // init artificial viscosity handler
-  artificialviscosity_->Init();
+  artificialviscosity_->init();
 }
 
 void ParticleInteraction::SPHMomentum::setup_particle_interaction_writer()

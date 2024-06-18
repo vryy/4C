@@ -47,7 +47,7 @@ FLD::TimIntRedModels::TimIntRedModels(const Teuchos::RCP<Core::FE::Discretizatio
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::Init()
+void FLD::TimIntRedModels::init()
 {
   // Vectors associated to boundary conditions
   // -----------------------------------------

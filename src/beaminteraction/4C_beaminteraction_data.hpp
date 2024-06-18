@@ -52,7 +52,7 @@ namespace BEAMINTERACTION
     virtual ~BeamInteractionParams() = default;
 
     //! initialize with the stuff coming from input file
-    void Init();
+    void init();
 
     //! setup member variables
     void setup();
@@ -66,13 +66,13 @@ namespace BEAMINTERACTION
     //! Checks the init and setup status
     inline void check_init_setup() const
     {
-      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call init() and setup() first!");
     }
 
     //! Checks the init status
     inline void check_init() const
     {
-      if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
+      if (!is_init()) FOUR_C_THROW("init() has not been called, yet!");
     }
 
     /// number of crosslinkers per type
@@ -329,7 +329,7 @@ namespace BEAMINTERACTION
       virtual ~BindEventData() = default;
 
       //! Init
-      void Init(int clgid, int elegid, int bspotlocn, int requestproc, int permission);
+      void init(int clgid, int elegid, int bspotlocn, int requestproc, int permission);
 
 
       //!@name data access functions

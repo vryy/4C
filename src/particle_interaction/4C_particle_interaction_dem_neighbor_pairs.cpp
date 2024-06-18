@@ -31,7 +31,7 @@ ParticleInteraction::DEMNeighborPairs::DEMNeighborPairs()
   // empty constructor
 }
 
-void ParticleInteraction::DEMNeighborPairs::Init()
+void ParticleInteraction::DEMNeighborPairs::init()
 {
   // nothing to do
 }

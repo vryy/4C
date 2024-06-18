@@ -45,7 +45,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::Init(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
     const Teuchos::ParameterList& poroparams, const Teuchos::ParameterList& structparams,
     const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
@@ -115,7 +115,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::Init(
       POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(solschemeporo, globaltimeparams, Comm());
 
   // initialize
-  poromulti_->Init(globaltimeparams, poroparams, structparams, fluidparams, struct_disname,
+  poromulti_->init(globaltimeparams, poroparams, structparams, fluidparams, struct_disname,
       fluid_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra,
       nearbyelepairs);
 
@@ -128,7 +128,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::Init(
 
   // initialize the base algo.
   // scatra time integrator is constructed and initialized inside.
-  scatra_->Init();
+  scatra_->init();
   scatra_->ScaTraField()->set_number_of_dof_set_displacement(1);
   scatra_->ScaTraField()->set_number_of_dof_set_velocity(1);
   scatra_->ScaTraField()->set_number_of_dof_set_pressure(2);

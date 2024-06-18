@@ -74,7 +74,7 @@ namespace PaSI
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    virtual void Init();
+    virtual void init();
 
     /*!
      * \brief setup pasi algorithm

@@ -40,7 +40,7 @@ namespace Adapter
     virtual ~ArtNet() = default;
 
     /// initialization
-    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+    virtual void init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) = 0;
 
     /// initialization

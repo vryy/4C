@@ -53,9 +53,9 @@ FS3I::PartFpS3I1Wc::PartFpS3I1Wc(const Epetra_Comm& comm) : PartFPS3I(comm)
 /*----------------------------------------------------------------------*
  |  Init                                                    rauch 09/16 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFpS3I1Wc::Init()
+void FS3I::PartFpS3I1Wc::init()
 {
-  FS3I::PartFPS3I::Init();
+  FS3I::PartFPS3I::init();
 
 
 

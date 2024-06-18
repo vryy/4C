@@ -42,7 +42,7 @@ FLD::TimIntHDG::TimIntHDG(const Teuchos::RCP<Core::FE::Discretization>& actdis,
 /*----------------------------------------------------------------------*
  |  initialize algorithm                              kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDG::Init()
+void FLD::TimIntHDG::init()
 {
   Core::FE::DiscretizationHDG* hdgdis = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
@@ -107,9 +107,9 @@ void FLD::TimIntHDG::Init()
   timealgoset_ = timealgo_;
   timealgo_ = Inpar::FLUID::timeint_afgenalpha;
 
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  FLD::TimIntGenAlpha::Init();
+  FLD::TimIntGenAlpha::init();
 }
 
 

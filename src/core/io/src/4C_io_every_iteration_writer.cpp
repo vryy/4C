@@ -41,7 +41,7 @@ Core::IO::EveryIterationWriter::EveryIterationWriter()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::IO::EveryIterationWriter::Init(const Core::IO::DiscretizationWriter* parent_writer,
+void Core::IO::EveryIterationWriter::init(const Core::IO::DiscretizationWriter* parent_writer,
     Core::IO::EveryIterationWriterInterface* interface, const Teuchos::ParameterList& params)
 {
   issetup_ = false;

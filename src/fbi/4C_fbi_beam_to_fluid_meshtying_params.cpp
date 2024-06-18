@@ -36,7 +36,7 @@ FBI::BeamToFluidMeshtyingParams::BeamToFluidMeshtyingParams()
 /**
  *
  */
-void FBI::BeamToFluidMeshtyingParams::Init()
+void FBI::BeamToFluidMeshtyingParams::init()
 {
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_to_fluid_meshtying_params_list =
@@ -74,7 +74,7 @@ void FBI::BeamToFluidMeshtyingParams::Init()
   // Create and get visualization output parameter
   output_params_ = Teuchos::rcp<FBI::BeamToFluidMeshtyingVtkOutputParams>(
       new FBI::BeamToFluidMeshtyingVtkOutputParams());
-  output_params_->Init();
+  output_params_->init();
   output_params_->setup();
 }
 

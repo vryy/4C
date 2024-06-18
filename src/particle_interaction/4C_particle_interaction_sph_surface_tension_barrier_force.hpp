@@ -48,7 +48,7 @@ namespace ParticleInteraction
     explicit SPHBarrierForce(const Teuchos::ParameterList& params);
 
     //! init barrier force handler
-    void Init();
+    void init();
 
     //! setup barrier force handler
     void setup(

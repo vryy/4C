@@ -94,13 +94,13 @@ namespace SSI
     Hand in all objects/parameters/etc. from outside.
     Construct and manipulate internal objects.
 
-    \note Try to only perform actions in Init(), which are still valid
+    \note Try to only perform actions in init(), which are still valid
           after parallel redistribution of discretizations.
           If you have to perform an action depending on the parallel
           distribution, make sure you adapt the affected objects after
           parallel redistribution.
           Example: cloning a discretization from another discretization is
-          OK in Init(...). However, after redistribution of the source
+          OK in init(...). However, after redistribution of the source
           discretization do not forget to also redistribute the cloned
           discretization.
           All objects relying on the parallel distribution are supposed to
@@ -110,7 +110,7 @@ namespace SSI
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    virtual void init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) = 0;
 
@@ -118,7 +118,7 @@ namespace SSI
 
      setup() is not supposed to have any input arguments !
 
-     Must only be called after Init().
+     Must only be called after init().
 
      Construct all objects depending on the parallel distribution and
      relying on valid maps like, e.g. the state vectors, system matrices, etc.
@@ -278,10 +278,10 @@ namespace SSI
       if (not is_setup()) FOUR_C_THROW("setup() was not called.");
     }
 
-    //! check if \ref Init() was called
+    //! check if \ref init() was called
     void check_is_init() const
     {
-      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("init(...) was not called.");
     }
 
     //! copy modified time step from scatra to scatra manifold field
@@ -365,7 +365,7 @@ namespace SSI
      */
     void check_ssi_interface_conditions(const std::string& struct_disname) const;
 
-    //! returns true if Init(..) was called and is still valid
+    //! returns true if init(..) was called and is still valid
     bool is_init() const { return isinit_; }
 
     /// set structure mesh displacement on scatra field

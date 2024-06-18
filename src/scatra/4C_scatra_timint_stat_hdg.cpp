@@ -33,10 +33,10 @@ ScaTra::TimIntStationaryHDG::TimIntStationaryHDG(Teuchos::RCP<Core::FE::Discreti
 /*----------------------------------------------------------------------*
  |  initialize time integration                        berardocco 05/20 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntStationaryHDG::Init()
+void ScaTra::TimIntStationaryHDG::init()
 {
   // initialize base class
-  TimIntHDG::Init();
+  TimIntHDG::init();
 
   return;
 }

@@ -111,7 +111,7 @@ namespace STR
         Teuchos::RCP<::NOX::Solver::Generic> nlnsolver_;
 
        private:
-        //! @name Variables which stay constant after Init() and setup() call
+        //! @name Variables which stay constant after init() and setup() call
         //!@{
 
         //!@}

@@ -60,7 +60,7 @@ Arteries::ArtNetImplStationary::ArtNetImplStationary(Teuchos::RCP<Core::FE::Disc
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimeparams,
+void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname)
 {
   // time measurement: initialization
@@ -70,7 +70,7 @@ void Arteries::ArtNetImplStationary::Init(const Teuchos::ParameterList& globalti
     FOUR_C_THROW("this type of coupling is only available for explicit time integration");
 
   // call base class
-  TimInt::Init(globaltimeparams, arteryparams, scatra_disname);
+  TimInt::init(globaltimeparams, arteryparams, scatra_disname);
 
   // ensure that degrees of freedom in the discretization have been set
   if ((not discret_->Filled()) or (not discret_->HaveDofs())) discret_->fill_complete();
@@ -146,7 +146,7 @@ void Arteries::ArtNetImplStationary::Init(const Teuchos::ParameterList& globalti
 
     // initialize the base algo.
     // scatra time integrator is initialized inside.
-    scatra_->Init();
+    scatra_->init();
 
     // only now we must call setup() on the scatra time integrator.
     // all objects relying on the parallel distribution are

@@ -68,7 +68,7 @@ namespace SSTI
     //! Clone Discretizations, init and setup subproblems, setup coupling adapters at interfaces,
     //! setup submatrices for coupling between fields
     //@{
-    virtual void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& sstitimeparams,
+    virtual void init(const Epetra_Comm& comm, const Teuchos::ParameterList& sstitimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams,
         const Teuchos::ParameterList& structparams) = 0;
     virtual void setup();

@@ -52,7 +52,7 @@ namespace ParticleInteraction
     virtual ~SPHPhaseChangeBase() = default;
 
     //! init phase change handler
-    virtual void Init();
+    virtual void init();
 
     //! setup phase change handler
     virtual void setup(

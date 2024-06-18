@@ -34,7 +34,7 @@ namespace FLD
     \brief initialization
 
     */
-    void Init() override;
+    void init() override;
 
     /*!
     \brief call elements to calculate system matrix/rhs and assemble

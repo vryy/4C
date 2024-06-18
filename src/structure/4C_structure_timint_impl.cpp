@@ -136,12 +136,12 @@ STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntImpl::Init(const Teuchos::ParameterList& timeparams,
+void STR::TimIntImpl::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
-  // call Init() in base class
-  STR::TimInt::Init(timeparams, sdynparams, xparams, actdis, solver);
+  // call init() in base class
+  STR::TimInt::init(timeparams, sdynparams, xparams, actdis, solver);
 
   if (itermax_ < 0)
     FOUR_C_THROW("MAXITER has to be greater than or equal to zero. Fix your input file.");

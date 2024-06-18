@@ -38,10 +38,10 @@ ScaTra::TimIntStationary::TimIntStationary(Teuchos::RCP<Core::FE::Discretization
 /*----------------------------------------------------------------------*
  |  initialize time integration                         rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntStationary::Init()
+void ScaTra::TimIntStationary::init()
 {
   // initialize base class
-  ScaTraTimIntImpl::Init();
+  ScaTraTimIntImpl::init();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

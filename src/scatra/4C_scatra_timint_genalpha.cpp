@@ -102,7 +102,7 @@ void ScaTra::TimIntGenAlpha::setup()
   // initialize forcing for homogeneous isotropic turbulence
   // -------------------------------------------------------------------
   // note: this constructor has to be called after the forcing_ vector has
-  //       been initialized; this is done in ScaTraTimIntImpl::Init() called before
+  //       been initialized; this is done in ScaTraTimIntImpl::init() called before
   if (special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence")
   {
     if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING") == "isotropic")

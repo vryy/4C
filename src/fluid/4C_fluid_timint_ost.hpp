@@ -36,7 +36,7 @@ namespace FLD
     \brief initialization
 
     */
-    void Init() override;
+    void init() override;
 
     /*!
     \brief Print information about current time step to screen (reimplementation)

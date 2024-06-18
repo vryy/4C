@@ -31,7 +31,7 @@ namespace CONTACT
     NoxInterface();
 
     /// initialize important member variables
-    void Init(const Teuchos::RCP<CONTACT::AbstractStrategy>& strategy_ptr);
+    void init(const Teuchos::RCP<CONTACT::AbstractStrategy>& strategy_ptr);
 
     /** \brief Setup important new member variables
      *
@@ -92,16 +92,16 @@ namespace CONTACT
     /// get the setup indicator state
     inline const bool& is_setup() const { return issetup_; };
 
-    /// Check if Init() has been called
+    /// Check if init() has been called
     inline void check_init() const
     {
-      if (not is_init()) FOUR_C_THROW("Call Init() first!");
+      if (not is_init()) FOUR_C_THROW("Call init() first!");
     };
 
-    /// Check if Init() and setup() have been called, yet.
+    /// Check if init() and setup() have been called, yet.
     inline void check_init_setup() const
     {
-      if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and setup() first!");
+      if (not is_init() or not is_setup()) FOUR_C_THROW("Call init() and setup() first!");
     };
 
     /// Access the underlying strategy
@@ -112,7 +112,7 @@ namespace CONTACT
     };
 
    protected:
-    /// flag indicating if Init() has been called
+    /// flag indicating if init() has been called
     bool isinit_;
 
     /// flag indicating if setup() has been called

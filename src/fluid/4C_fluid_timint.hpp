@@ -64,7 +64,7 @@ namespace FLD
         const Teuchos::RCP<Core::IO::DiscretizationWriter>& output);
 
 
-    void Init() override = 0;
+    void init() override = 0;
 
     Teuchos::RCP<const Epetra_Vector> initial_guess() override
     {
