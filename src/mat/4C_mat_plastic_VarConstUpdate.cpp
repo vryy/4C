@@ -227,8 +227,8 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
   if (yf <= 0)
   {
     // step is elastic
-    stress->Clear();
-    cmat->Clear();
+    stress->clear();
+    cmat->clear();
 
     Core::LinAlg::Matrix<6, 1> checkStr;
     Core::LinAlg::Matrix<6, 6> checkCmat;
@@ -567,7 +567,7 @@ void Mat::PlasticElastHyperVCU::eval_dce_dlp(const Core::LinAlg::Matrix<3, 3> fp
   add_right_non_symmetric_holzapfel_product(dcedfpi, tmp, id2, 1.0);
 
   // Derivative of inverse plastic deformation gradient
-  dFpiDdeltaDp.Clear();
+  dFpiDdeltaDp.clear();
   for (int A = 0; A < 3; A++)
     for (int a = 0; a < 3; a++)
       for (int b = 0; b < 3; b++)
@@ -728,7 +728,7 @@ void Mat::PlasticElastHyperVCU::matrix_exponential_second_derivative_sym3x3x6(
   da[5](0, 2) = da[5](2, 0) = 0.5;
 
   // prepare
-  exp.Clear();
+  exp.clear();
 
   // start with first entry
   int k = 0;
@@ -843,7 +843,7 @@ void Mat::PlasticElastHyperVCU::matrix_exponential_second_derivative_sym3x3(
   da[4](2, 0) = 1.;
 
   // prepare
-  exp.Clear();
+  exp.clear();
   MatrixExp1stDeriv.resize(5, zeros);
   MatrixExp2ndDeriv.resize(5);
   akmdd.resize(5);
@@ -920,7 +920,7 @@ void Mat::PlasticElastHyperVCU::evaluate_rhs(const int gp, const Core::LinAlg::M
   Core::LinAlg::Matrix<3, 3> zeros;
   Core::LinAlg::Matrix<6, 6> zeros66;
   // set zero
-  rhs.Clear();
+  rhs.clear();
 
   // Get exp, Dexp and DDexp
   Core::LinAlg::Matrix<3, 3> dLpIn(dLp);
@@ -1034,7 +1034,7 @@ void Mat::PlasticElastHyperVCU::evaluate_kin_quant_plast(const int gp, const int
     Core::LinAlg::Matrix<3, 3>& FpiCe, Core::LinAlg::Matrix<9, 1>& CFpiCe,
     Core::LinAlg::Matrix<6, 1>& CpiCCpi)
 {
-  id2.Clear();
+  id2.clear();
   for (int i = 0; i < 3; i++) id2(i, i) = 1.;
 
   Core::LinAlg::Matrix<3, 3> fe;

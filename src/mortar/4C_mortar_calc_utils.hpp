@@ -457,8 +457,8 @@ namespace Mortar
       while (!converged and j < 10)
       {
         // reset matriced
-        xjm.Clear();
-        deriv.Clear();
+        xjm.clear();
+        deriv.clear();
 
         if (ndim == 2)
         {
@@ -584,8 +584,8 @@ namespace Mortar
       while (!converged and j < 10)
       {
         // reset matriced
-        xjm.Clear();
-        deriv.Clear();
+        xjm.clear();
+        deriv.clear();
 
         if (ndim == 2)
         {
@@ -688,8 +688,8 @@ namespace Mortar
       while (!converged and j < 50)
       {
         // reset matrices
-        xjm.Clear();
-        deriv.Clear();
+        xjm.clear();
+        deriv.clear();
 
         if (ndim == 2)
         {

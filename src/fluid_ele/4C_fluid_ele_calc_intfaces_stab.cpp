@@ -677,13 +677,13 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
 
   // element matrices in block structure master vs. slave
-  elematrix_mm_.Clear();  // element matrix master-master block
-  elematrix_ms_.Clear();  // element matrix master-slave block
-  elematrix_sm_.Clear();  // element matrix slave-master block
-  elematrix_ss_.Clear();  // element matrix slave-slave block
+  elematrix_mm_.clear();  // element matrix master-master block
+  elematrix_ms_.clear();  // element matrix master-slave block
+  elematrix_sm_.clear();  // element matrix slave-master block
+  elematrix_ss_.clear();  // element matrix slave-slave block
 
-  elevector_m_.Clear();  // element vector master block
-  elevector_s_.Clear();  // element vector slave block
+  elevector_m_.clear();  // element vector master block
+  elevector_s_.clear();  // element vector slave block
 
 
   //-----------------------------------------------------------------------
@@ -876,8 +876,8 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   }
   else if (fldintfacepara.PhysicalType() == Inpar::FLUID::stokes)
   {
-    peconvvelaf_.Clear();
-    neconvvelaf_.Clear();
+    peconvvelaf_.clear();
+    neconvvelaf_.clear();
 
     // zero convective terms
     if (pele->IsAle()) FOUR_C_THROW("is ALE for Stokes really reasonable");
@@ -1761,8 +1761,8 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   }
   else
   {
-    pderxy2_.Clear();
-    nderxy2_.Clear();
+    pderxy2_.clear();
+    nderxy2_.clear();
   }
 
 
@@ -2187,8 +2187,8 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   }
   else
   {
-    pderxy2_.Clear();
-    nderxy2_.Clear();
+    pderxy2_.clear();
+    nderxy2_.clear();
   }
 
 
@@ -2224,7 +2224,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     }
     case Inpar::FLUID::stokes:
     {
-      convvelint_.Clear();
+      convvelint_.clear();
       break;
     }
     default:

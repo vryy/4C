@@ -826,7 +826,7 @@ void Mat::PlasticLinElast::setup_cmat(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_ST
   const double mfac = young / ((1.0 + nu) * (1.0 - 2.0 * nu));  // factor
 
   // clear the material tangent
-  cmat.Clear();
+  cmat.clear();
   // write non-zero components
   cmat(0, 0) = mfac * (1.0 - nu);
   cmat(0, 1) = mfac * nu;
@@ -990,7 +990,7 @@ void Mat::PlasticLinElast::fd_check(
   // *******************************************************************
 
   // clear the material tangent
-  cmatFD.Clear();
+  cmatFD.clear();
 
   // alloc the matrix that will store the perturbed values
   // strain matrices

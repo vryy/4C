@@ -644,7 +644,7 @@ int Discret::ELEMENTS::SoHex18::init_jacobian_mapping()
   for (int gp = 0; gp < NUMGPT_SOH18; ++gp)
   {
     // reset
-    invJ_[gp].Clear();
+    invJ_[gp].clear();
     detJ_[gp] = 0.;
 
     Core::LinAlg::Matrix<NUMDIM_SOH18, NUMNOD_SOH18> deriv;

@@ -294,7 +294,7 @@ namespace Discret
           diffdirectiontensor_(2, 2) = 1.0 - velocity(2, 0) * velocity(2, 0) / vel_norm_sq;
         }
         else
-          diffdirectiontensor_.Clear();
+          diffdirectiontensor_.clear();
 
         // indicate that crosswind diffusion has to be used
         have_cross_wind_diff_ = true;
@@ -309,7 +309,7 @@ namespace Discret
           diff_[kk] = 0.0;
           sgdiff_[kk] = 0.0;
         }
-        diffdirectiontensor_.Clear();
+        diffdirectiontensor_.clear();
         have_cross_wind_diff_ = false;
 
         return;
@@ -444,11 +444,11 @@ namespace Discret
         {
           my::phinp_[kk] = 0.0;
           my::phin_[kk] = 0.0;
-          (my::gradphi_[kk]).Clear();
+          (my::gradphi_[kk]).clear();
           my::conv_phi_[kk] = 0.0;
           my::hist_[kk] = 0.0;
-          my::convelint_[kk].Clear();
-          my::conv_[kk].Clear();
+          my::convelint_[kk].clear();
+          my::conv_[kk].clear();
         }
 
 

@@ -2996,7 +2996,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     compute2_d3_d_coords_and_derivs_ref<double>(x2, x2_xi, N2, N2_xi);
 
     // Evaluate f at current xi1, xi2, alpha
-    f.Clear();
+    f.clear();
     for (unsigned int i = 0; i < numdim_; i++) f(i) = x2(i) - r1(i);
 
     // Compute scalar residuum
@@ -3005,7 +3005,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     residual = sqrt(residual);
     if (iter == 0) first_residual = std::max(first_residual, residual);
 
-    J.Clear();
+    J.clear();
 
     if (fixedPar == 0)  // xi1 fixed --> we need x_{,xi2} (and x_{,xi3} in case of 3D)
     {
@@ -3305,7 +3305,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     compute2_d3_d_coords_and_derivs_ref<T>(x2, x2_xi, N2, N2_xi);
 
     // Evaluate f at current xi1, xi2, alpha
-    f.Clear();
+    f.clear();
     for (unsigned int i = 0; i < numdim_; i++) f(i) = x2(i) - r1(i);
 
     residual = Core::FADUtils::VectorNorm(f);
@@ -3469,8 +3469,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     Core::LinAlg::Matrix<1, numnodesart_, T>& N1_eta, const T& eta)
 {
   // Clear shape functions and derivatives
-  N1.Clear();
-  N1_eta.Clear();
+  N1.clear();
+  N1_eta.clear();
 
   // Get discretization type
   const Core::FE::CellType distype = element1_->Shape();
@@ -3491,8 +3491,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     Core::LinAlg::Matrix<numdim_, numnodescont_, T>& N2_xi, const std::vector<T>& xi)
 {
   // Clear shape functions and derivatives
-  N2.Clear();
-  N2_xi.Clear();
+  N2.clear();
+  N2_xi.clear();
 
   switch (element2_->Shape())
   {
@@ -3528,8 +3528,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     Core::LinAlg::Matrix<numdim_, 1, T>& r1_eta, const Core::LinAlg::Matrix<1, numnodesart_, T>& N1,
     const Core::LinAlg::Matrix<1, numnodesart_, T>& N1_eta)
 {
-  r1.Clear();
-  r1_eta.Clear();
+  r1.clear();
+  r1_eta.clear();
 
   for (unsigned int j = 0; j < numnodesart_; j++)
   {
@@ -3552,8 +3552,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     const Core::LinAlg::Matrix<1, numnodescont_, T>& N2,
     const Core::LinAlg::Matrix<numdim_, numnodescont_, T>& N2_xi)
 {
-  x2.Clear();
-  x2_xi.Clear();
+  x2.clear();
+  x2_xi.clear();
 
   for (unsigned int j = 0; j < numnodescont_; j++)
   {

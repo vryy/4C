@@ -71,10 +71,10 @@ bool BEAMINTERACTION::BeamToSolidCondition::IdsInCondition(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidCondition::Clear()
+void BEAMINTERACTION::BeamToSolidCondition::clear()
 {
-  BeamInteractionConditionBase::Clear();
-  geometry_evaluation_data_->Clear();
+  BeamInteractionConditionBase::clear();
+  geometry_evaluation_data_->clear();
   condition_contact_pairs_.clear();
 }
 
@@ -515,7 +515,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::set_state(
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
         beaminteraction_data_state)
 {
-  // For contact we reset the evaluation data in each iteration (we don't call Clear() here, since
+  // For contact we reset the evaluation data in each iteration (we don't call clear() here, since
   // we want to keep the contact pairs).
   if (is_contact())
   {

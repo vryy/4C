@@ -274,7 +274,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::ResetState(
   currenttriad.Multiply(bspottriad[0], lambdarel1_);
   Core::LargeRotations::triadtoquaternion<double>(currenttriad, bspottriad1_);
 
-  currenttriad.Clear();
+  currenttriad.clear();
   currenttriad.Multiply(bspottriad[1], lambdarel2_);
   Core::LargeRotations::triadtoquaternion<double>(currenttriad, bspottriad2_);
 }

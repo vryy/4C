@@ -115,7 +115,7 @@ namespace XFEM
 
           ivel.Update(sl_visc_fac, tmp_itraction, 1.0);
 
-          itraction.Clear();
+          itraction.clear();
         }
       }
 

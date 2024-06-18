@@ -532,7 +532,7 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_char_ele_length(
         velino.Update(1.0 / vel_norm, convelint);
       else
       {
-        velino.Clear();
+        velino.clear();
         velino(0, 0) = 1.0;
       }
 
@@ -1015,20 +1015,20 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
         if (*condtype == "neum_dead" or *condtype == "neum_live")
           nodebodyforce(isd, jnode) = num * functfac;
         else
-          nodebodyforce.Clear();
+          nodebodyforce.clear();
 
         // compute prescribed pressure gradient
         if (*condtype == "neum_pgrad")
           nodepressuregrad(isd, jnode) = num * functfac;
         else
-          nodepressuregrad.Clear();
+          nodepressuregrad.clear();
       }
     }
   }
   else
   {
-    nodebodyforce.Clear();
-    nodepressuregrad.Clear();
+    nodebodyforce.clear();
+    nodepressuregrad.clear();
   }
 
   // get fluid body force
@@ -1062,7 +1062,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
          N_y .. y-line of N                                             */
     calc_subgr_velocity_visc(epsilonvel);
   else
-    epsilonvel.Clear();
+    epsilonvel.clear();
 
   //--------------------------------------------------------------------
   // calculation of subgrid-scale velocity based on momentum residual

@@ -214,11 +214,11 @@ namespace
 
     void set_ref_values_evaluate_invariants_derivative()
     {
-      dPIe_ref_.Clear();
+      dPIe_ref_.clear();
       dPIe_ref_(0) = 28.846153846153847;
       dPIe_ref_(2) = -4.644432669839725;
 
-      ddPIIe_ref_.Clear();
+      ddPIIe_ref_.clear();
       ddPIIe_ref_(2) = 2.862458189907485;
     }
 

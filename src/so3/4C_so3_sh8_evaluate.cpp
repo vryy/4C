@@ -929,8 +929,8 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
       soh8_error_handling(
           detJ_cur, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
 
-      if (stiffmatrix) stiffmatrix->Clear();
-      if (force) force->Clear();
+      if (stiffmatrix) stiffmatrix->clear();
+      if (force) force->clear();
 
       return;
     }
@@ -972,8 +972,8 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
       soh8_error_handling(
           I3, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
 
-      if (stiffmatrix) stiffmatrix->Clear();
-      if (force) force->Clear();
+      if (stiffmatrix) stiffmatrix->clear();
+      if (force) force->clear();
 
       return;
     }

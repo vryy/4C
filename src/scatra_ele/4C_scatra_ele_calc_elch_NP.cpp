@@ -1180,7 +1180,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_tau_der_pot_taylor_hu
   */
 
   // Initialization
-  tauderpot.Clear();
+  tauderpot.clear();
 
   // Compute entries of covariant metric tensor
   double G;

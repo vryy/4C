@@ -1394,7 +1394,7 @@ void CONTACT::Interface::initialize()
     }
 
     // just do ehl relevant stuff!
-    if (ehl_) cnode->EhlData().Clear();
+    if (ehl_) cnode->EhlData().clear();
   }
 
   //**********************************************************************
@@ -1445,7 +1445,7 @@ void CONTACT::Interface::initialize()
     for (int e = 0; e < Discret().ElementColMap()->NumMyElements(); ++e)
       dynamic_cast<Mortar::Element*>(Discret().gElement(Discret().ElementColMap()->GID(e)))
           ->GetNitscheContainer()
-          .Clear();
+          .clear();
 
   // reset s/m pairs and intcell counters
   smpairs_ = 0;

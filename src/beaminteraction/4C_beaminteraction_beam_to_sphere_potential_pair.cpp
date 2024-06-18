@@ -58,13 +58,13 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::setup
   BeamPotentialPair::setup();
 
 
-  ele1pos_.Clear();
-  ele2pos_.Clear();
+  ele1pos_.clear();
+  ele2pos_.clear();
 
-  fpot1_.Clear();
-  fpot2_.Clear();
-  stiffpot1_.Clear();
-  stiffpot2_.Clear();
+  fpot1_.clear();
+  fpot2_.clear();
+  stiffpot1_.clear();
+  stiffpot2_.clear();
 
 
   // cast first element to Beam3Base
@@ -109,10 +109,10 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::evalu
   if (k == 0.0) return false;
 
   // reset fpot and stiffpot class variables
-  fpot1_.Clear();
-  fpot2_.Clear();
-  stiffpot1_.Clear();
-  stiffpot2_.Clear();
+  fpot1_.clear();
+  fpot2_.clear();
+  stiffpot1_.clear();
+  stiffpot2_.clear();
 
   unsigned int dim1 = 3 * numnodes * numnodalvalues;
   unsigned int dim2 = 3;
@@ -555,7 +555,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::compu
     const Core::LinAlg::Matrix<1, numnodes * numnodalvalues>& N_i,
     const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos)
 {
-  r.Clear();
+  r.clear();
 
   // compute output variable
   for (unsigned int i = 0; i < 3; i++)

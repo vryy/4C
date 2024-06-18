@@ -325,8 +325,8 @@ void Mat::Elastic::RemodelFiber::evaluate_anisotropic_stress_cmat(
     double const& dt, int const eleGID)
 {
   // clear some variables
-  stress.Clear();
-  cmat.Clear();
+  stress.clear();
+  cmat.clear();
 
   for (auto& k : potsumfiber_)
   {
@@ -385,8 +385,8 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives_cauchy_green(
 
   for (unsigned k = 0; k < potsumfiber_.size(); ++k)
   {
-    dEdC[nr_grf_proc + k].Clear();
-    dWdC[nr_grf_proc + k].Clear();
+    dEdC[nr_grf_proc + k].clear();
+    dWdC[nr_grf_proc + k].clear();
     potsumfiber_[k]->UpdateNewton(gp, dt);
 
     evaluated_evolution_equationd_c(dWdC[nr_grf_proc + k], dEdC[nr_grf_proc + k], CM, iFgM, dt,
@@ -402,7 +402,7 @@ void Mat::Elastic::RemodelFiber::evaluate_additional_growth_remodel_cmat(
     int const gp, int const eleGID) const
 {
   // clear some variables
-  cmat.Clear();
+  cmat.clear();
 
   static Core::LinAlg::Matrix<3, 3> CM(true);
   CM.MultiplyTN(1.0, *defgrd, *defgrd, 0.0);
@@ -452,7 +452,7 @@ void Mat::Elastic::RemodelFiber::derivd_c(Core::LinAlg::Matrix<3, 3, T> const& C
     Core::LinAlg::Matrix<3, 3, T>& dfuncdC) const
 {
   // clear some variables
-  dfuncdC.Clear();
+  dfuncdC.clear();
 
   static Core::LinAlg::FADMatrix<3, 3> iFinM_fad(true);
   iFinM_fad = iFinM;
@@ -482,7 +482,7 @@ void Mat::Elastic::RemodelFiber::derivd_c(Core::LinAlg::Matrix<3, 3, T> const& C
     FUNC const& func, const int gp, int const eleGID, Core::LinAlg::Matrix<3, 3, T>& dfuncdC) const
 {
   // clear some variables
-  dfuncdC.Clear();
+  dfuncdC.clear();
 
   // elastic right Cauchy-Green in matrix notation
   static Core::LinAlg::Matrix<3, 3, T> tmp(true);
@@ -510,7 +510,7 @@ void Mat::Elastic::RemodelFiber::derivd_cd_c(Core::LinAlg::Matrix<3, 3, T> const
     Core::LinAlg::Matrix<6, 6, T>& dfuncdCdC) const
 {
   // clear some variables
-  dfuncdCdC.Clear();
+  dfuncdCdC.clear();
 
   static Core::LinAlg::FADMatrix<3, 3> iFinM_fad(true);
   iFinM_fad = iFinM;
@@ -543,7 +543,7 @@ void Mat::Elastic::RemodelFiber::derivd_cd_c(Core::LinAlg::Matrix<3, 3, T> const
     Core::LinAlg::Matrix<6, 6, T>& dfuncdCdC) const
 {
   // clear some variables
-  dfuncdCdC.Clear();
+  dfuncdCdC.clear();
 
   // elastic right Cauchy-Green in matrix notation
   static Core::LinAlg::Matrix<3, 3, T> tmp(true);
@@ -645,7 +645,7 @@ void Mat::Elastic::RemodelFiber::evaluatedsigd_ce(Core::LinAlg::Matrix<3, 3, T> 
     const int gp, int const eleGID, Core::LinAlg::Matrix<3, 3, T>& dsigdCe) const
 {
   // clear some variables
-  dsigdCe.Clear();
+  dsigdCe.clear();
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
   Teuchos::RCP<Mat::Elastic::CoupAnisoExpo> t1;
@@ -686,7 +686,7 @@ void Mat::Elastic::RemodelFiber::evaluatedsigd_ced_c(Core::LinAlg::Matrix<3, 3> 
     const int gp, ForceAnalytical const eleGID, Core::LinAlg::Matrix<6, 6>& dsigdCedC) const
 {
   // clear some variables
-  dsigdCedC.Clear();
+  dsigdCedC.clear();
 
   static Core::LinAlg::FADMatrix<3, 3> CM_fad(true);
   CM_fad = CM;
@@ -730,7 +730,7 @@ void Mat::Elastic::RemodelFiber::evaluatedsigd_ced_c(Core::LinAlg::Matrix<3, 3> 
     const int gp, int const eleGID, Core::LinAlg::Matrix<6, 6>& dsigdCedC) const
 {
   // clear some variables
-  dsigdCedC.Clear();
+  dsigdCedC.clear();
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
   Teuchos::RCP<Mat::Elastic::CoupAnisoExpo> t1;
@@ -779,7 +779,7 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives_cauchy_growth(
 {
   // clear some variables
   dsigdrho = 0.0;
-  dsigdCedrhoM.Clear();
+  dsigdCedrhoM.clear();
 
   static Core::LinAlg::FADMatrix<3, 3> iFinM_fad(true);
   static Core::LinAlg::FADMatrix<3, 3> iFgM_fad(true);
@@ -829,7 +829,7 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives_cauchy_growth(
 {
   // clear some variables
   dsigdrho = 0.0;
-  dsigdCedrhoM.Clear();
+  dsigdCedrhoM.clear();
 
   static Core::LinAlg::Matrix<3, 3> CAM(true);
   CAM.MultiplyNN(1.0, CM, fiberdat.AM, 0.0);
@@ -907,7 +907,7 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives_cauchy_remodel(
 {
   // clear some variables
   dsigdlambr = 0.0;
-  dsigdCedlambrM.Clear();
+  dsigdCedlambrM.clear();
 
   static Core::LinAlg::FADMatrix<3, 3> iFinM_fad(true);
   static Core::LinAlg::FADMatrix<3, 3> iFgM_fad(true);
@@ -956,7 +956,7 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives_cauchy_remodel(
 {
   // clear some variables
   dsigdlambr = 0.0;
-  dsigdCedlambrM.Clear();
+  dsigdCedlambrM.clear();
 
   static Core::LinAlg::Matrix<3, 3> CAFinTM(true);
   static Core::LinAlg::Matrix<3, 3> tmp1(true);
@@ -1039,7 +1039,7 @@ void Mat::Elastic::RemodelFiber::evaluatedsigd_c(Core::LinAlg::Matrix<3, 3, T> c
     Core::LinAlg::Matrix<3, 3, T>& dsigdC) const
 {
   // clear some variables
-  dsigdC.Clear();
+  dsigdC.clear();
 
   static Core::LinAlg::FADMatrix<3, 3> iFinM_fad(true);
   iFinM_fad = iFinM;
@@ -1064,7 +1064,7 @@ void Mat::Elastic::RemodelFiber::evaluatedsigd_c(Core::LinAlg::Matrix<3, 3, T> c
     Core::LinAlg::Matrix<3, 3, T>& dsigdC) const
 {
   // clear some variables
-  dsigdC.Clear();
+  dsigdC.clear();
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
   Teuchos::RCP<Mat::Elastic::CoupAnisoExpo> t1;
@@ -1299,7 +1299,7 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives2nd_piola_kirchhoff_growth_
   static Core::LinAlg::Matrix<6, 1> Sactv(true);
   static Core::LinAlg::Matrix<6, 6> cmatact(true);
   static Core::LinAlg::FADMatrix<3, 3> S_fad(true);
-  S_fad.Clear();
+  S_fad.clear();
   if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiberdat.fiber)).getRawPtr())
   {
     derivd_c(CM_fad, iFinM_fad, AM_fad, *t1, eleGID, firstderivM_fad);
@@ -1352,9 +1352,9 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives2nd_piola_kirchhoff_growth_
     FiberData const& fiberdat, int const gp, int const eleGID) const
 {
   // Clear some variables
-  dSidrhoi.Clear();
-  dSidrhoj.Clear();
-  dSdlambr.Clear();
+  dSidrhoi.clear();
+  dSidrhoj.clear();
+  dSdlambr.clear();
 
   // Derivative w.r.t. the mass density
   static Core::LinAlg::Matrix<3, 3> tmp(true);

@@ -677,7 +677,7 @@ namespace Core::FE
     |   metrictensor(1,1) = dxyzdrs(1,2) * dxyzdrs(1,2)^T
      */
 
-    metrictensor.Clear();
+    metrictensor.clear();
     metrictensor.MultiplyNT(dxyzdrs, dxyzdrs);
 
     /*

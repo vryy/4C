@@ -1573,8 +1573,8 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
           pressure_part(1, 1) = interpolationresult[6];
           pressure_part(2, 2) = interpolationresult[6];
 
-          tempmat.Clear();
-          tempvec.Clear();
+          tempmat.clear();
+          tempvec.clear();
 
           tempmat.MultiplyNT(pressure_part, defgrd_inv);
           tempvec.MultiplyNN(tempmat, unitnormal);

@@ -550,7 +550,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_hyperbol
     double phizero = 0.0;
     phizero = my::funct_.Dot(ephizero_[0]);
     // and corresponding gradient
-    gradphizero.Clear();
+    gradphizero.clear();
     gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
     // scalar at integration point at time step n
@@ -1007,7 +1007,7 @@ double Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_char_ele
         // TODO: clearify this
         FOUR_C_THROW("gradphi_norm=0: cannot compute characteristic element length");
         gradphi_scaled.Update(1.0, gradphizero);
-        // gradphi_scaled.Clear();
+        // gradphi_scaled.clear();
         // gradphi_scaled(0,0) = 1.0;
       }
 
@@ -1194,7 +1194,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_penalty_te
   // --------------------------------------------------------------------------
   // evaluate shape functions at the cut position
   // --------------------------------------------------------------------------
-  my::funct_.Clear();
+  my::funct_.clear();
   Core::FE::shape_function<distype>(posXiDomain, my::funct_);
 
   //--------------------------------------------------------------------------
@@ -1263,7 +1263,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_penalty_te
 
     // calculate dxi3Ddeta2D
     static Core::LinAlg::Matrix<nsd, nsd_cell> dXi3Ddeta2D;
-    dXi3Ddeta2D.Clear();
+    dXi3Ddeta2D.clear();
 
     for (unsigned i = 0; i < nsd; i++)         // dimensions
       for (unsigned j = 0; j < nsd_cell; j++)  // derivatives
@@ -1274,7 +1274,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_penalty_te
 
     // transform Gauss point to xi3D space (element parameter space)
     static Core::LinAlg::Matrix<nsd, 1> gpinXi3D;
-    gpinXi3D.Clear();
+    gpinXi3D.clear();
 
     // coordinates of this integration point in element coordinates \xi^domain
     Core::Geo::mapEtaBToXiD(cell, gpinEta2D, gpinXi3D);
@@ -1285,21 +1285,21 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_penalty_te
 
     // calculate dx3Ddxi3D
     static Core::LinAlg::Matrix<nsd, nsd> dX3DdXi3D;
-    dX3DdXi3D.Clear();
+    dX3DdXi3D.clear();
     for (unsigned i = 0; i < nsd; i++)    // dimensions
       for (unsigned j = 0; j < nsd; j++)  // derivatives
         for (unsigned k = 0; k < nen_; k++) dX3DdXi3D(i, j) += my::xyze_(i, k) * deriv_xi3D(j, k);
 
     // get the coupled Jacobian dx3Ddeta2D
     static Core::LinAlg::Matrix<3, 2> dx3Ddeta2D;
-    dx3Ddeta2D.Clear();
+    dx3Ddeta2D.clear();
     for (unsigned i = 0; i < nsd; i++)         // dimensions
       for (unsigned j = 0; j < nsd_cell; j++)  // derivatives
         for (unsigned k = 0; k < nsd; k++) dx3Ddeta2D(i, j) += dX3DdXi3D(i, k) * dXi3Ddeta2D(k, j);
 
     // get deformation factor
     static Core::LinAlg::Matrix<nsd_cell, nsd_cell> Jac_tmp;  // J^T*J
-    Jac_tmp.Clear();
+    Jac_tmp.clear();
     Jac_tmp.MultiplyTN(dx3Ddeta2D, dx3Ddeta2D);
 
     if (Jac_tmp.Determinant() == 0.0)
@@ -1309,17 +1309,17 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_penalty_te
     const double fac = intpoints.qwgt[iquad] * deform_factor;
 
     Core::LinAlg::Matrix<nsd_cell, 1> posEtaBoundary;
-    posEtaBoundary.Clear();
+    posEtaBoundary.clear();
     for (unsigned i = 0; i < nsd_cell; i++) posEtaBoundary(i, 0) = gpinEta2D(i, 0);
 
     Core::LinAlg::Matrix<nsd, 1> posXiDomain;
-    posXiDomain.Clear();
+    posXiDomain.clear();
     for (unsigned i = 0; i < nsd; i++) posXiDomain(i, 0) = gpinXi3D(i, 0);
 
     //--------------------------------------------------------------------------------------------
     // evaluate shape functions and their first derivatives at this Gaussian point
     //--------------------------------------------------------------------------------------------
-    my::funct_.Clear();
+    my::funct_.clear();
     Core::FE::shape_function_3D(
         my::funct_, posXiDomain(0), posXiDomain(1), posXiDomain(2), distype);
 

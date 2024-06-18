@@ -210,7 +210,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAtNodesMean
   {
     static Core::LinAlg::Matrix<nsd, 1>
         node_gradphi_smoothed;  // set whole 3D vector also for 2D examples
-    node_gradphi_smoothed.Clear();
+    node_gradphi_smoothed.clear();
 
     // get local processor id of current node and pointer to current node
     // int lid_node = it_node->first;
@@ -414,7 +414,7 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
       // TODO: Implement for other elements than HEX
       // get Xi-coordinates of current node in current adjacent element
       static Core::LinAlg::Matrix<dim, 1> node_Xicoordinates;
-      node_Xicoordinates.Clear();
+      node_Xicoordinates.clear();
       for (int icomp = 0; icomp < dim; ++icomp)
       {
         node_Xicoordinates(icomp) =
@@ -465,7 +465,7 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
       // compute gradient of phi at node for current element
       //----------------------------------------------------
       static Core::LinAlg::Matrix<dim, 1> nodal_grad_tmp;
-      nodal_grad_tmp.Clear();
+      nodal_grad_tmp.clear();
 
       // get xyz-gradient
       nodal_grad_tmp.Multiply(deriv3Dele_xyz, ephi_adj);

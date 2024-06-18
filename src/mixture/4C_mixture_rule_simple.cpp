@@ -60,8 +60,8 @@ void MIXTURE::SimpleMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
   for (std::size_t i = 0; i < constituents().size(); ++i)
   {
     MixtureConstituent& constituent = *constituents()[i];
-    cstress.Clear();
-    ccmat.Clear();
+    cstress.clear();
+    ccmat.clear();
     constituent.evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
 
     // Add stress contribution to global stress

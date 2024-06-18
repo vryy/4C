@@ -837,7 +837,7 @@ void CONTACT::TSIInterface::initialize()
     CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscret_->lColNode(i));
     node->initialize_tsi_data_container(
         imortar_.get<double>("TEMP_REF"), imortar_.get<double>("TEMP_DAMAGE"));
-    node->TSIData().Clear();
+    node->TSIData().clear();
   }
   return;
 }

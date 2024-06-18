@@ -299,7 +299,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
     */
 
     static Core::LinAlg::Matrix<1, nsd_> sgvelintaf(true);
-    sgvelintaf.Clear();
+    sgvelintaf.clear();
     for (int rr = 0; rr < nsd_; ++rr)
     {
       my::tds_->update_svelnp_in_one_direction(fac1, fac2, fac3, my::momres_old_(rr),
@@ -340,7 +340,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
       my::fldpara_->ContiReynolds() != Inpar::FLUID::reynolds_stress_stab_none)
     my::sgconv_c_.MultiplyTN(my::derxy_, my::sgvelint_);
   else
-    my::sgconv_c_.Clear();
+    my::sgconv_c_.clear();
 
   return;
 }

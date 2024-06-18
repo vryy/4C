@@ -397,7 +397,7 @@ void XFEM::UTILS::ComputeSurfaceTransformation(double &drs,  ///< surface transf
     bool referencepos  ///< use the bc reference position for transformation
 )
 {
-  normal.Clear();
+  normal.clear();
 
   // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface
   // transformation factor
@@ -1051,7 +1051,7 @@ void XFEM::UTILS::EvaluteStateatGP(const Core::Elements::Element *sele,
     const Core::LinAlg::Matrix<3, 1> &selexsi, const Core::FE::Discretization &discret,
     const std::string &state, Core::LinAlg::Matrix<3, 1> &vel_s)
 {
-  vel_s.Clear();
+  vel_s.clear();
 
   std::vector<double> ivel;
   Core::Elements::Element::LocationArray las(1);

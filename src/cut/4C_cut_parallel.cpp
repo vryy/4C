@@ -1159,7 +1159,7 @@ void Core::Geo::Cut::Parallel::unpack_points(std::vector<char>::size_type& posin
 
   for (int i = 0; i < num_points; i++)
   {
-    coords.Clear();
+    coords.clear();
 
     // pack xyz-coordinates for point
     Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, coords);

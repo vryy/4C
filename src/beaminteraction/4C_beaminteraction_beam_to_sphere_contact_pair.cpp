@@ -47,18 +47,18 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::setup()
   BeamContactPair::setup();
 
 
-  ele1pos_.Clear();
-  ele2pos_.Clear();
+  ele1pos_.clear();
+  ele2pos_.clear();
 
-  fc1_.Clear();
-  fc2_.Clear();
+  fc1_.clear();
+  fc2_.clear();
 
   gap_ = 0.0;
 
   // initialize class variables for contact point coordinates
-  x1_.Clear();
-  x2_.Clear();
-  normal_.Clear();
+  x1_.clear();
+  x2_.clear();
+  normal_.clear();
 
 
   // cast first element to Beam3Base
@@ -341,9 +341,9 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::closest
   for (int i = 0; i < BEAMCONTACTMAXITER; ++i)
   {
     // reset shape function variables to zero
-    N1_i.Clear();
-    N1_i_xi.Clear();
-    N1_i_xixi.Clear();
+    N1_i.clear();
+    N1_i_xi.clear();
+    N1_i_xixi.clear();
 
     // update shape functions and their derivatives
     get_shape_functions(N1_i, N1_i_xi, N1_i_xixi, eta);
@@ -482,8 +482,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
     const double& pp, const TYPE& gap, const Core::LinAlg::Matrix<3, 1, TYPE>& normal,
     const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i, const bool contactactive)
 {
-  fc1_.Clear();
-  fc2_.Clear();
+  fc1_.clear();
+  fc2_.clear();
 
   // get dimensions for vectors fc1 and fc2
   const unsigned int dim1 = 3 * numnodes * numnodalvalues;
@@ -595,7 +595,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
       compute_lin_xi(delta_xi, x1, x2, dx1, ddx1, N1_i, N1_i_xi);
     else
     {
-      delta_xi.Clear();
+      delta_xi.clear();
     }
 
     // evaluation of distance
@@ -854,10 +854,10 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
     const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi)
 {
   // reset input variables
-  x1.Clear();
-  x2.Clear();
-  dx1.Clear();
-  ddx1.Clear();
+  x1.clear();
+  x2.clear();
+  dx1.clear();
+  ddx1.clear();
 
 #ifdef AUTOMATICDIFF
   // The 3*numnodes*numnodalvalues+3 primary DoFs are the components of the nodal positions /

@@ -2276,12 +2276,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::closest_point_projectio
 
     iter++;
     // reset shape function variables to zero
-    N1.Clear();
-    N2.Clear();
-    N1_xi.Clear();
-    N2_xi.Clear();
-    N1_xixi.Clear();
-    N2_xixi.Clear();
+    N1.clear();
+    N2.clear();
+    N1_xi.clear();
+    N2_xi.clear();
+    N1_xixi.clear();
+    N2_xixi.clear();
 
     // update shape functions and their derivatives
     get_shape_functions(N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, eta1, eta2);
@@ -2893,12 +2893,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_coords_and_deri
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi)
 {
-  r1.Clear();
-  r2.Clear();
-  r1_xi.Clear();
-  r2_xi.Clear();
-  r1_xixi.Clear();
-  r2_xixi.Clear();
+  r1.clear();
+  r2.clear();
+  r1_xi.clear();
+  r2_xi.clear();
+  r1_xixi.clear();
+  r2_xixi.clear();
 
 #ifdef AUTOMATICDIFF
   BEAMCONTACT::SetFADDispDofs<numnodes, numnodalvalues>(ele1pos_, ele2pos_);
@@ -2945,10 +2945,10 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_old_coords_and_
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi)
 {
-  r1_old.Clear();
-  r2_old.Clear();
-  r1_xi_old.Clear();
-  r2_xi_old.Clear();
+  r1_old.clear();
+  r2_old.clear();
+  r1_xi_old.clear();
+  r2_xi_old.clear();
 
   // compute old position vectors
   // important: in order to compute the derivatives correctely, the current parameter coordinates xi
@@ -2981,7 +2981,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_orthogonality_
     const Core::LinAlg::Matrix<3, 1, TYPE>& t2)
 {
   // reset f
-  f.Clear();
+  f.clear();
 
   // evaluate f
   // see Wriggers, Computational Contact Mechanics, equation (12.5)
@@ -3029,8 +3029,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_lin_orthogonal
 
 {
   // reset df and dfinv
-  df.Clear();
-  dfinv.Clear();
+  df.clear();
+  dfinv.clear();
 
   // evaluate df
   // see Wriggers, Computational Contact Mechanics, equation (12.7)
@@ -3559,7 +3559,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::update_ele_smooth_tange
   nodaltangentssmooth1_ = BEAMINTERACTION::Beam3TangentSmoothing::CalculateNodalTangents<numnodes>(
       currentpositions, elepos_aux, element1_, neighbors1_);
 
-  elepos_aux.Clear();
+  elepos_aux.clear();
   // Tangent smoothing only possible with data type double (not with Sacado FAD)
   for (int i = 0; i < 3 * numnodes; i++) elepos_aux(i) = Core::FADUtils::CastToDouble(ele2pos_(i));
 

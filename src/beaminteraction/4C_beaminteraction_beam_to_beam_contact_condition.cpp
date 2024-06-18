@@ -63,9 +63,9 @@ bool BEAMINTERACTION::BeamToBeamContactCondition::IdsInCondition(
 /**
  *
  */
-void BEAMINTERACTION::BeamToBeamContactCondition::Clear()
+void BEAMINTERACTION::BeamToBeamContactCondition::clear()
 {
-  BeamInteractionConditionBase::Clear();
+  BeamInteractionConditionBase::clear();
   condition_contact_pairs_.clear();
 }
 

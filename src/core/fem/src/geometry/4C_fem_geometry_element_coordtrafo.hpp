@@ -42,7 +42,7 @@ namespace Core::Geo
     Core::FE::shape_function<DISTYPE>(xsi, funct);
 
     // set to zero
-    x.Clear();
+    x.clear();
     for (int i = 0; i < numNodes; i++)
       for (unsigned j = 0; j < probDim; j++) x(j) += xyze(j, i) * funct(i);
 
@@ -131,7 +131,7 @@ namespace Core::Geo
       case FE::CellType::hex20:
       case FE::CellType::hex27:
       {
-        xsi.Clear();
+        xsi.clear();
         break;
       }
       case FE::CellType::tet4:
@@ -144,7 +144,7 @@ namespace Core::Geo
       case FE::CellType::quad8:
       case FE::CellType::quad9:
       {
-        xsi.Clear();
+        xsi.clear();
         break;
       }
       case FE::CellType::tri3:
@@ -156,14 +156,14 @@ namespace Core::Geo
       case FE::CellType::line2:
       case FE::CellType::line3:
       {
-        xsi.Clear();
+        xsi.clear();
         break;
       }
       case FE::CellType::wedge6:
       case FE::CellType::wedge15:
       case FE::CellType::pyramid5:
       {
-        xsi.Clear();
+        xsi.clear();
         break;
       }
       default:
@@ -590,7 +590,7 @@ namespace Core::Geo
     static Core::LinAlg::Matrix<dim, numNodes> deriv1;
     Core::FE::shape_function_deriv1<DISTYPE>(xsi, deriv1);
 
-    A.Clear();
+    A.clear();
     for (int isd = 0; isd < 3; ++isd)
       for (int jsd = 0; jsd < dim; ++jsd)
         for (int inode = 0; inode < numNodes; ++inode)
@@ -612,7 +612,7 @@ namespace Core::Geo
   {
     const int numNodes = Core::FE::num_nodes<DISTYPE>;
     static Core::LinAlg::Matrix<numNodes, 1> funct;
-    funct.Clear();
+    funct.clear();
     Core::FE::shape_function<DISTYPE>(xsi, funct);
 
     for (int isd = 0; isd < 3; ++isd)
@@ -663,9 +663,9 @@ namespace Core::Geo
     static Core::LinAlg::Matrix<3, 1> b;
     static Core::LinAlg::Matrix<3, 1> dx;
 
-    A.Clear();
-    b.Clear();
-    dx.Clear();
+    A.clear();
+    b.clear();
+    dx.clear();
 
     // initial guess
     if (fastinitguess == false)
@@ -822,7 +822,7 @@ namespace Core::Geo
     static Core::LinAlg::Matrix<2, numNodes> deriv1;
     Core::FE::shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), DISTYPE);
 
-    Jacobi.Clear();
+    Jacobi.clear();
     for (int isd = 0; isd < 3; isd++)
       for (int jsd = 0; jsd < 2; jsd++)
         for (int inode = 0; inode < numNodes; inode++)
@@ -848,7 +848,7 @@ namespace Core::Geo
     static Core::LinAlg::Matrix<numNodes, 1> funct;
     Core::FE::shape_function_2D(funct, xsi(0), xsi(1), DISTYPE);
 
-    F.Clear();
+    F.clear();
     for (int isd = 0; isd < 3; ++isd)
       for (int inode = 0; inode < numNodes; inode++)
         F(isd) += xyze_surfaceElement(isd, inode) * funct(inode);
@@ -877,7 +877,7 @@ namespace Core::Geo
 
     // third order tensor 3 x 2 x 2 stored as 3x2 and 3x2 so 3x4
     static Core::LinAlg::Matrix<3, 4> tensor3order;
-    tensor3order.Clear();
+    tensor3order.clear();
 
     for (int i = 0; i < 3; ++i)
       for (int j = 0; j < 2; ++j)
@@ -886,7 +886,7 @@ namespace Core::Geo
             tensor3order(i, k * 2 + j) += xyze_surfaceElement(i, inode) * deriv2(j, inode);
 
 
-    A.Clear();
+    A.clear();
     for (int i = 0; i < 2; ++i)
       for (int j = 0; j < 2; ++j)
         for (int k = 0; k < 3; ++k)
@@ -918,7 +918,7 @@ namespace Core::Geo
       updateJacobianForMap3To2<DISTYPE>(Jacobi, eleCoord, xyze_surfaceElement);
       updateFForMap3To2<DISTYPE>(F, eleCoord, physCoord, xyze_surfaceElement);
       static Core::LinAlg::Matrix<2, 1> b;
-      b.Clear();
+      b.clear();
 
       for (int i = 0; i < 2; ++i)
         for (int j = 0; j < 3; ++j) b(i) -= Jacobi(j, i) * F(j);
@@ -1030,9 +1030,9 @@ namespace Core::Geo
       // compute first derivative of r
       static Core::LinAlg::Matrix<3, 1> F_deriv2;
 
-      F.Clear();
-      F_deriv1.Clear();
-      F_deriv2.Clear();
+      F.clear();
+      F_deriv1.clear();
+      F_deriv2.clear();
 
       for (int i = 0; i < 3; i++)
         for (int inode = 0; inode < numNodes; inode++)
@@ -1138,7 +1138,7 @@ namespace Core::Geo
       Core::FE::shape_function_deriv1<DISTYPE>(xsi, deriv1);
 
       // get the jacobian
-      A.Clear();
+      A.clear();
       for (int isd = 0; isd < numDim; ++isd)
         for (int jsd = 0; jsd < numDim; ++jsd)
           for (int inode = 0; inode < numNodes; ++inode)
@@ -1160,7 +1160,7 @@ namespace Core::Geo
       }
 
       // update of local coordinates
-      dx.Clear();
+      dx.clear();
       dx.Multiply(A_inv, b);
       for (int i = 0; i < numDim; i++) xsi(i, 0) += dx(i);
 

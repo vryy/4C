@@ -41,7 +41,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Clear data in this evaluation container.
      */
-    virtual void Clear(){};
+    virtual void clear(){};
   };
 }  // namespace GEOMETRYPAIR
 

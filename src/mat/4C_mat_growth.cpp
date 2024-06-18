@@ -676,13 +676,13 @@ void Mat::GrowthVolumetric::EvaluateNonLinMass(const Core::LinAlg::Matrix<3, 3>*
     const double density_deriv_scale = Parameter()->growthlaw_->DensityDerivScale(theta);
     linmass_disp->Scale(density_deriv_scale * Matelastic()->Density());
 
-    linmass_vel->Clear();
+    linmass_vel->clear();
   }
   else
   {
     // no growth, set to zero
-    linmass_disp->Clear();
-    linmass_vel->Clear();
+    linmass_disp->clear();
+    linmass_vel->clear();
   }
 }
 

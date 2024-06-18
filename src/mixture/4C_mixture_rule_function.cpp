@@ -112,8 +112,8 @@ void MIXTURE::FunctionMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
 
     // add stress contribution to global stress
     MixtureConstituent& constituent = *constituents()[i];
-    cstress.Clear();
-    ccmat.Clear();
+    cstress.clear();
+    ccmat.clear();
     constituent.evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
 
     S_stress.Update(constituent_density, cstress, 1.0);

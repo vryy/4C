@@ -941,7 +941,7 @@ void Mat::ThermoPlasticLinElast::setup_cmat(
   const double mfac = young / ((1.0 + nu) * (1.0 - 2.0 * nu));  // factor
 
   // clear the material tangent
-  cmat.Clear();
+  cmat.clear();
   // write non-zero components
   cmat(0, 0) = mfac * (1.0 - nu);
   cmat(0, 1) = mfac * nu;
@@ -1358,7 +1358,7 @@ void Mat::ThermoPlasticLinElast::setup_cthermo(Core::LinAlg::Matrix<NUM_STRESS_3
   // write non-zero components
 
   // clear the material tangent
-  ctemp.Clear();
+  ctemp.clear();
 
   // loop over the element nodes
   for (int i = 0; i < 3; ++i) ctemp(i, 0) = m;  // non-zero entries only in main directions

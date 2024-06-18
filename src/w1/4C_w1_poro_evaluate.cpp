@@ -1877,7 +1877,7 @@ void Discret::ELEMENTS::Wall1Poro<
 
     // gradient of displacements
     static Core::LinAlg::Matrix<numdim_, numdim_> dispgrad;
-    dispgrad.Clear();
+    dispgrad.clear();
     // gradient of displacements
     dispgrad.MultiplyNT(nodaldisp, N_XYZ);
 
@@ -1912,7 +1912,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_jacobian_determinant_volume_
 
     // gradient of displacements
     static Core::LinAlg::Matrix<numdim_, numdim_> dispgrad;
-    dispgrad.Clear();
+    dispgrad.clear();
     // gradient of displacements
     dispgrad.MultiplyNT(nodaldisp, N_XYZ);
 
@@ -1957,7 +1957,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_def_gradient(
   }
   else if (kintype_ == Inpar::STR::KinemType::linear)
   {
-    defgrd.Clear();
+    defgrd.clear();
     for (int i = 0; i < numdim_; i++) defgrd(i, i) = 1.0;
   }
   else

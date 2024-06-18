@@ -47,16 +47,16 @@ GEOMETRYPAIR::LineTo3DEvaluationData::LineTo3DEvaluationData(
   }
 
   // Initialize evaluation data structures.
-  Clear();
+  clear();
 }
 
 /**
  *
  */
-void GEOMETRYPAIR::LineTo3DEvaluationData::Clear()
+void GEOMETRYPAIR::LineTo3DEvaluationData::clear()
 {
   // Call reset on the base method.
-  GeometryEvaluationDataBase::Clear();
+  GeometryEvaluationDataBase::clear();
 
   // Initialize evaluation data structures.
   {

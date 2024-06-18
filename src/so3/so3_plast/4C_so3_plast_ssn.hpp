@@ -1093,7 +1093,7 @@ namespace Discret
         if (det_f() < 0. || det_f_0() < 0.) FOUR_C_THROW("element distortion too large");
         set_fbar_fac() = pow(det_f_0() / det_f(), 1. / 3.);
         set_defgrd_mod().Update(set_fbar_fac(), defgrd());
-        set_htensor().Clear();
+        set_htensor().clear();
 
         for (int n = 0; n < numdofperelement_; n++)
           for (int i = 0; i < 3; i++)

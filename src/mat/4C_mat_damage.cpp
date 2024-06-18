@@ -2325,7 +2325,7 @@ void Mat::Damage::setup_cmat(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
   const double mfac = young / ((1.0 + nu) * (1.0 - 2.0 * nu));
 
   // clear the material tangent
-  cmat.Clear();
+  cmat.clear();
   // write non-zero components
   cmat(0, 0) = mfac * (1.0 - nu);
   cmat(0, 1) = mfac * nu;
@@ -2628,7 +2628,7 @@ void Mat::Damage::setup_cmat_elasto_plastic(Core::LinAlg::Matrix<NUM_STRESS_3D, 
       // ------------------------------- assemble elasto-plastic material tangent
 
       // empty consistent tangent operator
-      cmat.Clear();
+      cmat.clear();
       // constitutive tensor
       // I_d = id4sharp - 1/3 Id \otimes Id
       // contribution: Id4^#

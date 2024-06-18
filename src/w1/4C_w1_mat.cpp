@@ -254,8 +254,8 @@ void Discret::ELEMENTS::Wall1::material_response3d_plane(Core::LinAlg::SerialDen
       gl(5) += 2.0 * ir(2);  // NOT SURE ABOUT 2.0, LACKED TESTING MATERIAL
 
       // call for new 3d stress response
-      pk2.Clear();   // must be blanked!!
-      cmat.Clear();  // must be blanked!!
+      pk2.clear();   // must be blanked!!
+      cmat.clear();  // must be blanked!!
       material_response3d(&pk2, &cmat, &gl, params, gp);
 
       // current plane stress error

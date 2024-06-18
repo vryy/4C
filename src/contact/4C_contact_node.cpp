@@ -359,7 +359,7 @@ void CONTACT::NodeTSIDataContainer::unpack(
  |  clear data                                                 (public) |
  |                                                           seitz 08/15|
  *----------------------------------------------------------------------*/
-void CONTACT::NodeTSIDataContainer::Clear()
+void CONTACT::NodeTSIDataContainer::clear()
 {
   temp_master_ = -1.e12;
   derivTempMasterDisp_.clear();

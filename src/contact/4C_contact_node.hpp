@@ -868,7 +868,7 @@ namespace CONTACT
     std::map<int, double>& DerivTempMasterDisp() { return derivTempMasterDisp_; }
     std::map<int, double>& DerivTempMasterTemp() { return derivTempMasterTemp_; }
 
-    void Clear();
+    void clear();
 
 
    protected:
@@ -914,16 +914,16 @@ namespace CONTACT
     };
 
     //! clear all stored data
-    void Clear()
+    void clear()
     {
-      weighted_relTangVel_.Clear();
+      weighted_relTangVel_.clear();
       deriv_weighted_relTangVel_.clear();
-      weighted_avTangVel_.Clear();
+      weighted_avTangVel_.clear();
       deriv_weighted_avTangVel_.clear();
       tang_grad_.clear();
       tang_grad_deriv_.clear();
-      weighted_relTangVel_.Clear();
-      weighted_avTangVel_.Clear();
+      weighted_relTangVel_.clear();
+      weighted_avTangVel_.clear();
     }
 
     Core::LinAlg::Matrix<3, 1>& get_weighted_rel_tang_vel() { return weighted_relTangVel_; }

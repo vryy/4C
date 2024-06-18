@@ -977,7 +977,7 @@ void XFEM::MeshCouplingWeakDirichlet::evaluate_coupling_conditions(Core::LinAlg:
   evaluate_dirichlet_function(ivel, x, cond, time_);
 
   // no interface traction to be evaluated
-  itraction.Clear();
+  itraction.clear();
 }
 
 /*--------------------------------------------------------------------------*
@@ -990,7 +990,7 @@ void XFEM::MeshCouplingWeakDirichlet::evaluate_coupling_conditions_old_state(
   evaluate_dirichlet_function(ivel, x, cond, time_ - dt_);
 
   // no interface traction to be evaluated
-  itraction.Clear();
+  itraction.clear();
 }
 
 /*--------------------------------------------------------------------------*
@@ -1142,7 +1142,7 @@ void XFEM::MeshCouplingNeumann::evaluate_coupling_conditions(Core::LinAlg::Matri
     const Core::Conditions::Condition* cond)
 {
   // no interface velocity to be evaluated
-  ivel.Clear();
+  ivel.clear();
 
   // evaluate interface traction (given by Neumann condition)
   evaluate_neumann_function(itraction, x, cond, time_);
@@ -1155,7 +1155,7 @@ void XFEM::MeshCouplingNeumann::evaluate_coupling_conditions(Core::LinAlg::Matri
     const Core::Conditions::Condition* cond)
 {
   // no interface velocity to be evaluated
-  ivel.Clear();
+  ivel.clear();
 
   // evaluate interface traction (given by Neumann condition)
   evaluate_neumann_function(itraction, x, cond, time_);
@@ -1168,7 +1168,7 @@ void XFEM::MeshCouplingNeumann::evaluate_coupling_conditions_old_state(
     const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond)
 {
   // no interface velocity to be evaluated
-  ivel.Clear();
+  ivel.clear();
 
   // evaluate interface traction (given by Neumann condition)
   evaluate_neumann_function(itraction, x, cond, time_ - dt_);
@@ -1291,7 +1291,7 @@ void XFEM::MeshCouplingNavierSlip::evaluate_coupling_conditions(Core::LinAlg::Ma
 
       ivel.Update(sl_visc_fac, tmp_itraction, 1.0);
 
-      itraction.Clear();
+      itraction.clear();
     }
   }
 
@@ -2371,7 +2371,7 @@ void XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress(Core::Elements::El
   solid_stress[1].reshape(NUMDOF_SOH8, NUMDIM_SOH8);
   Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> dtraction_dd_l(solid_stress[1].values(), true);
 
-  traction.Clear();
+  traction.clear();
 
   static Core::LinAlg::SerialDenseMatrix dtraction_dd_i;
   for (int i = 0; i < NUMDIM_SOH8; ++i)

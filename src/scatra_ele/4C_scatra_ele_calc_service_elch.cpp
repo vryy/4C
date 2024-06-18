@@ -531,7 +531,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_elch_bound
   }
 
   // manipulate shape function array according to node position
-  my::funct_.Clear();
+  my::funct_.clear();
   my::funct_(position) = 1.;
 
   // loop over all scalars
@@ -634,7 +634,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_electrode_
   }
 
   // manipulate shape function array according to node position
-  my::funct_.Clear();
+  my::funct_.clear();
   my::funct_(position) = 1.;
 
   // index of reactive species (starting from zero)

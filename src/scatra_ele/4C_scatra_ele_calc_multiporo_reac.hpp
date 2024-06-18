@@ -492,7 +492,7 @@ namespace Discret
         for (int i_phase = 0; i_phase < numfluidphases; ++i_phase)
         {
           // current pressure gradient
-          pressuregrad_[i_phase].Clear();
+          pressuregrad_[i_phase].clear();
 
           // phase density
           density_[i_phase] = phasemanager_->Density(i_phase);
@@ -509,7 +509,7 @@ namespace Discret
           abspressuregrad_[i_phase] = sqrt(abspressuregrad_[i_phase]);
 
           // diffusion tensor
-          difftensorsfluid_[i_phase].Clear();
+          difftensorsfluid_[i_phase].clear();
           phasemanager_->PermeabilityTensor(i_phase, difftensorsfluid_[i_phase]);
           difftensorsfluid_[i_phase].Scale(phasemanager_->RelPermeability(i_phase) /
                                            phasemanager_->DynViscosity(i_phase,
@@ -540,7 +540,7 @@ namespace Discret
           density_[i_volfrac] = phasemanager_->VolFracDensity(i_volfrac - numfluidphases);
 
           // diffusion tensor
-          difftensorsfluid_[i_volfrac].Clear();
+          difftensorsfluid_[i_volfrac].clear();
           phasemanager_->permeability_tensor_vol_frac_pressure(
               i_volfrac - numfluidphases, difftensorsfluid_[i_volfrac]);
           difftensorsfluid_[i_volfrac].Scale(
@@ -1298,7 +1298,7 @@ namespace Discret
       void GetRefGradPres(const int k, const Core::LinAlg::Matrix<NSD, NSD>& xjm,
           Core::LinAlg::Matrix<NSD, 1>& refgradpres, const int phase)
       {
-        refgradpres.Clear();
+        refgradpres.clear();
 
         const int numfluidphases = phasemanager_->NumFluidPhases();
         const int numvolfrac = phasemanager_->NumVolFrac();

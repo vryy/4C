@@ -116,7 +116,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Clear not reusable data.
      */
-    virtual void Clear();
+    virtual void clear();
 
     /**
      * \brief Check if a combination of a beam element ID and another element (beam, solid, ...)
@@ -197,7 +197,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Clear not reusable data in the conditions.
      */
-    virtual void Clear();
+    virtual void clear();
 
     /**
      * \brief Create the correct pair for the given element pointers.

@@ -226,7 +226,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_displac
   }
   else
   {
-    edispnp_.Clear();
+    edispnp_.clear();
     eparentdispnp_.clear();
   }
 }
@@ -3048,7 +3048,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
       //--------------------------      |                    |
 
       Core::LinAlg::Matrix<1, pnen> derxy_normal;
-      derxy_normal.Clear();
+      derxy_normal.clear();
       derxy_normal.MultiplyTN(bnormal, pderxy);
 
       for (int vi = 0; vi < pnen; ++vi)
@@ -3093,7 +3093,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
       grad_dist_npi.Multiply(pderxy, ephinp[dofindex]);
 
       Core::LinAlg::Matrix<1, 1> grad_dist_npi_normal;
-      grad_dist_npi_normal.Clear();
+      grad_dist_npi_normal.clear();
       grad_dist_npi_normal.MultiplyTN(bnormal, grad_dist_npi);
 
       double Grad_Dpsi_normal = grad_dist_npi_normal(0, 0) - grad_dist_n_normal(0, 0);

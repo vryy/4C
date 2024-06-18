@@ -322,9 +322,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
       // Get the shape function matrices.
-      N_mortar.Clear();
-      N_beam.Clear();
-      N_solid.Clear();
+      N_mortar.clear();
+      N_beam.clear();
+      N_solid.clear();
       GEOMETRYPAIR::EvaluateShapeFunction<mortar>::evaluate(
           N_mortar, projected_gauss_point.GetEta());
       GEOMETRYPAIR::EvaluateShapeFunction<beam>::evaluate(

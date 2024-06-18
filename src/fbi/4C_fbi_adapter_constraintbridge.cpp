@@ -92,11 +92,11 @@ void Adapter::FBIConstraintBridge::ResetPair(const std::vector<double> beam_cent
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FBIConstraintBridge::Clear()
+void Adapter::FBIConstraintBridge::clear()
 {
   // Delete all pairs and segmentation information
   meshtying_pairs_->clear();
-  geometry_evaluation_data_->Clear();
+  geometry_evaluation_data_->clear();
 }
 
 FOUR_C_NAMESPACE_CLOSE

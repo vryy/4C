@@ -385,8 +385,8 @@ void Discret::ELEMENTS::SoHex8P1J1::force_stiff_mass(const std::vector<int>& lm,
       if (error_tol)
       {
         params.set<bool>("eval_error", true);
-        stiffmatrix->Clear();
-        force->Clear();
+        stiffmatrix->clear();
+        force->clear();
         return;
       }
       else

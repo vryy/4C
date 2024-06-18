@@ -126,7 +126,7 @@ namespace Core::Geo
       /*!
       \brief Delete all the points of this boundarycell
        */
-      void Clear();
+      void clear();
 
       bool IsValid() const;
 

@@ -3228,8 +3228,8 @@ namespace Discret
       // get additional state vectors for ALE case: grid displacement and vel.
       // ---------------------------------------------------------------------
 
-      my::edispnp_.Clear();
-      my::egridv_.Clear();
+      my::edispnp_.clear();
+      my::egridv_.clear();
 
       if (ele->IsAle()) my::get_grid_disp_vel_ale(dis, lm, my::edispnp_, my::egridv_);
 
@@ -3248,13 +3248,13 @@ namespace Discret
       // ---------------------------------------------------------------------
 
       // get element-wise velocity/pressure field for current time step
-      evelaf_.Clear();
-      epreaf_.Clear();
+      evelaf_.clear();
+      epreaf_.clear();
       my::extract_values_from_global_vector(dis, lm, *my::rotsymmpbc_, &evelaf_, &epreaf_, "velaf");
 
       // get element-wise velocity/pressure field for previous time step
-      eveln_.Clear();
-      epren_.Clear();
+      eveln_.clear();
+      epren_.clear();
       if (my::fldparatimint_->is_new_ost_implementation())
         my::extract_values_from_global_vector(dis, lm, *my::rotsymmpbc_, &eveln_, &epren_, "veln");
 
@@ -3356,9 +3356,9 @@ namespace Discret
         //-----------------------------------------------------------------------------------
 
         // interface normal vector, pointing from background domain into the interface
-        normal_.Clear();
+        normal_.clear();
         // gauss-point coordinates
-        x_side_.Clear();
+        x_side_.clear();
 
         // we need an interface to the boundary element (for projection)
         Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
@@ -3754,10 +3754,10 @@ namespace Discret
             //-----------------------------------------------------------------------------
             // define the prescribed interface jump vectors for velocity and traction
 
-            ivelint_jump_.Clear();
-            itraction_jump_.Clear();
-            proj_tangential_.Clear();
-            lb_proj_matrix_.Clear();
+            ivelint_jump_.clear();
+            itraction_jump_.clear();
+            proj_tangential_.clear();
+            lb_proj_matrix_.clear();
 
             get_interface_jump_vectors(coupcond, coupling, ivelint_jump_, itraction_jump_,
                 proj_tangential_, lb_proj_matrix_, x_gp_lin_, normal_, si, rst_, kappa_m,
@@ -3860,8 +3860,8 @@ namespace Discret
                 // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
                 my::vderxyn_.MultiplyNT(eveln_, my::derxy_);
 
-                ivelintn_jump_.Clear();
-                itractionn_jump_.Clear();
+                ivelintn_jump_.clear();
+                itractionn_jump_.clear();
 
                 // Safety check
                 if (cond_type == Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP or
@@ -3904,7 +3904,7 @@ namespace Discret
                 if (fldparaxfem_->interface_terms_previous_state() ==
                     Inpar::XFEM::PreviousState_full)
                 {
-                  velintn_s_.Clear();
+                  velintn_s_.clear();
                   ci->GetInterfaceVeln(velintn_s_);
 
                   XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
@@ -4025,7 +4025,7 @@ namespace Discret
           {
             // evaluate function at Gaussian point at current time
             coupling->evaluate_coupling_conditions(
-                ivelint_jump, itraction_jump, x, cond);  // itraction_jump.Clear() called here...
+                ivelint_jump, itraction_jump, x, cond);  // itraction_jump.clear() called here...
           }
           else
           {
@@ -4592,11 +4592,11 @@ namespace Discret
       // Initiate dummy variables:
       //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       // get element-wise velocity/pressure field for current time step
-      my::evelaf_.Clear();
+      my::evelaf_.clear();
       // Scatra field
-      my::escabofoaf_.Clear();
-      my::escaaf_.Clear();
-      my::escaam_.Clear();
+      my::escabofoaf_.clear();
+      my::escaaf_.clear();
+      my::escaam_.clear();
       // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
       // its time derivative at n+alpha_M/n+1 (LOMA specific!!)
       const double thermpressaf = 1.0;

@@ -378,13 +378,13 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
     if (fixed_par == 2)
     {
       // Set directional derivative of contact interval border to zero
-      eta_d.Clear();
+      eta_d.clear();
     }
     else
     {
-      xi1_d.Clear();
-      xi2_d.Clear();
-      eta_d.Clear();
+      xi1_d.clear();
+      xi2_d.clear();
+      eta_d.clear();
 
       // Compute directional derivatives of not fixed parameters at contact interval border,
       // only the directional derivative eta_d is needed
@@ -464,7 +464,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
     eta = 0.5 * (eta_b - eta_a) * x_gp + 0.5 * (eta_a + eta_b);
 
     // Calculate directional derivative of eta at Gauss point
-    eta_d.Clear();
+    eta_d.clear();
     for (int i = 0; i < dim1 + dim2; i++)
     {
       eta_d(i) = 0.5 * (1 - x_gp) * eta_a_d(i) + 0.5 * (1 + x_gp) * eta_b_d(i);
@@ -1108,7 +1108,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::comput
   // Clear not fixed directional derivatives
   for (int i = 0; i < 2; i++)
   {
-    par_d[par_i[i]].Clear();
+    par_d[par_i[i]].clear();
   }
 
   // Initialize matrices
@@ -1232,7 +1232,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::comput
   // with rD_d = r1_eta * eta_d - x2_xi1 * xi1_d - x2_xi2 * xi2_d + [N1, -N2] and gap_d = n2 * rD_d
 
   // First compute directional derivative of distance vector rD
-  rD_d.Clear();
+  rD_d.clear();
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < dim1 + dim2; j++)
       rD_d(i, j) += r1_eta(i) * eta_d(j) - x2_xi1(i) * xi1_d(j) - x2_xi2(i) * xi2_d(j);
@@ -1246,7 +1246,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::comput
 
   // TODO: Old/alternative linearization
   // Finally compute directional derivative of gap
-  // gap_d.Clear();
+  // gap_d.clear();
   // for (int i = 0; i < 3; i++)
   //  for (int j = 0; j < dim1+dim2; j++)
   //    gap_d(j) += sgn * rD(i) * rD_d(i,j) / norm_rD;
@@ -1256,7 +1256,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::comput
   // Finally compute directional derivative of gap (new linearization)
   // TODO: Use directly gap_d = n2 * r1_eta * eta_d + n2 * [N1, -N2] instead of
   // gap_d = n2 * rD_d using rD_d, because n2 * x2_xi1 * xi1_d = n2 * x2_xi2 * xi2_d = 0
-  gap_d.Clear();
+  gap_d.clear();
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < dim1 + dim2; j++) gap_d(j) += n2(i) * rD_d(i, j);
   // std::cout << "gap_d (new linearization): " << gap_d << std::endl;
@@ -1310,7 +1310,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::comput
     for (int j = 0; j < 3; j++) auxiliary_matrix(i, j) += -nD(i) * nD(j) / norm_rD;
   }
   // Finally compute derivatives of unit distance vector
-  nD_d.Clear();
+  nD_d.clear();
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
       for (int k = 0; k < dim1 + dim2; k++) nD_d(i, k) += auxiliary_matrix(i, j) * rD_d(j, k);
@@ -1354,7 +1354,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::comput
         a2_d(i, j + dim1) += x2_xi1_tilde(i, k) * N2_xi2(k, j) - x2_xi2_tilde(i, k) * N2_xi1(k, j);
 
   // Compute auxiliary_matrix
-  auxiliary_matrix.Clear();
+  auxiliary_matrix.clear();
   for (int i = 0; i < 3; i++)
   {
     auxiliary_matrix(i, i) += 1.0 / norm_a2;
@@ -1362,7 +1362,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::comput
   }
 
   // Finally compute directional derivative of surface unit normal vector n2 (new linearization)
-  n2_d.Clear();
+  n2_d.clear();
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
       for (int k = 0; k < dim1 + dim2; k++) n2_d(i, k) += auxiliary_matrix(i, j) * a2_d(j, k);
@@ -1962,7 +1962,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::projec
     }
 
     // Evaluate f at current xi1, xi2, eta
-    f.Clear();
+    f.clear();
     for (int i = 0; i < 3; i++)
     {
       f(0) += rD(i) * x2_xi1(i) / norm_rD_scale;
@@ -1973,9 +1973,9 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::projec
     residual = Core::FADUtils::VectorNorm<2>(f);
 
     // Reset matrices
-    J.Clear();
-    Jpar.Clear();
-    Jinv.Clear();
+    J.clear();
+    Jpar.clear();
+    Jinv.clear();
 
     // Evaluate derivatives of f at current xi1, xi2, eta
     for (int i = 0; i < 3; i++)
@@ -2171,9 +2171,9 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::get_be
     Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_etaeta, const TYPEBTS& eta)
 {
   // Clear shape functions and derivatives
-  N.Clear();
-  N_eta.Clear();
-  N_etaeta.Clear();
+  N.clear();
+  N_eta.clear();
+  N_etaeta.clear();
 
   // Get discretization type
   const Core::FE::CellType distype = element1_->Shape();
@@ -2232,13 +2232,13 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::get_su
     const TYPEBTS& xi2)
 {
   // Clear shape functions and derivatives
-  N.Clear();
-  N_xi1.Clear();
-  N_xi2.Clear();
-  N_xi1xi1.Clear();
-  N_xi2xi2.Clear();
-  N_xi1xi2.Clear();
-  N_xi2xi1.Clear();
+  N.clear();
+  N_xi1.clear();
+  N_xi2.clear();
+  N_xi1xi1.clear();
+  N_xi2xi2.clear();
+  N_xi1xi2.clear();
+  N_xi2xi1.clear();
 
   Core::LinAlg::Matrix<1, numnodessol, TYPEBTS> N_i(true);
   Core::LinAlg::Matrix<2, numnodessol, TYPEBTS> N_i_xi(true);
@@ -2401,9 +2401,9 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_eta,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_etaeta)
 {
-  r.Clear();
-  r_eta.Clear();
-  r_etaeta.Clear();
+  r.clear();
+  r_eta.clear();
+  r_etaeta.clear();
 
   // Compute output variable
   for (int i = 0; i < 3; i++)
@@ -2440,13 +2440,13 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
     Core::LinAlg::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi2,
     Core::LinAlg::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2xi1)
 {
-  r.Clear();
-  r_xi1.Clear();
-  r_xi2.Clear();
-  r_xi1xi1.Clear();
-  r_xi2xi2.Clear();
-  r_xi1xi2.Clear();
-  r_xi2xi1.Clear();
+  r.clear();
+  r_xi1.clear();
+  r_xi2.clear();
+  r_xi1xi1.clear();
+  r_xi2xi2.clear();
+  r_xi1xi2.clear();
+  r_xi2xi1.clear();
 
   // Compute output variable
   for (int i = 0; i < 3; i++)
@@ -2480,9 +2480,9 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::comput
     Core::LinAlg::Matrix<3, 1, TYPEBTS>& nD)
 {
   // Reset variables
-  rD.Clear();
+  rD.clear();
   norm_rD = 0.0;
-  nD.Clear();
+  nD.clear();
 
   // Compute distance vector rD = r1 - x2 (not normalized)
   for (int i = 0; i < 3; i++)
@@ -2521,9 +2521,9 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::comput
     TYPEBTS& norm_a2, Core::LinAlg::Matrix<3, 1, TYPEBTS>& n2)
 {
   // Reset variables
-  n2.Clear();
+  n2.clear();
   norm_a2 = 0;
-  a2.Clear();
+  a2.clear();
 
   // Compute surface normal vector (not normalized)
   a2(0) = x2_xi1(1) * x2_xi2(2) - x2_xi1(2) * x2_xi2(1);
@@ -2742,7 +2742,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   //  nodaltangentssmooth1_=CONTACT::Beam3TangentSmoothing::CalculateNodalTangents<numnodes>(currentpositions,elepos_aux
   //  ,element1_,neighbors1_);
   //
-  //  elepos_aux.Clear();
+  //  elepos_aux.clear();
   //  //Tangent smoothing only possible with data type double (not with Sacado FAD)
   //  for (int i=0;i<3*numnodes;i++)
   //    elepos_aux(i)=Core::FADUtils::CastToDouble(ele2pos_(i));
@@ -3062,7 +3062,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::fad_ch
   // Clear not fixed directional derivatives
   for (int i = 0; i < 2; i++)
   {
-    par_d_FAD[par_i[i]].Clear();
+    par_d_FAD[par_i[i]].clear();
   }
 
   // Compute norm of distance vector rD to scale the equations (this yields better conditioning)

@@ -707,7 +707,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::gauss_point_loop(Teuchos::Par
 
     // non-linear B-operator
     static Core::LinAlg::Matrix<numstr_, numdof_> bop;
-    bop.Clear();
+    bop.clear();
     compute_b_operator(bop, defgrd, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
@@ -818,7 +818,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::gauss_point_loop_pressure_bas
 
     // non-linear B-operator
     Core::LinAlg::Matrix<numstr_, numdof_> bop;
-    bop.Clear();
+    bop.clear();
     compute_b_operator(bop, defgrd, N_XYZ);
 
     // derivative of press w.r.t. displacements (only in case of vol fracs)
@@ -1734,7 +1734,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::compute_jacobian_determinant_
 
     // gradient of displacements
     static Core::LinAlg::Matrix<numdim_, numdim_> dispgrad;
-    dispgrad.Clear();
+    dispgrad.clear();
     // gradient of displacements
     dispgrad.MultiplyNT(nodaldisp, N_XYZ);
 
@@ -1773,7 +1773,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele,
 
     // gradient of displacements
     static Core::LinAlg::Matrix<numdim_, numdim_> dispgrad;
-    dispgrad.Clear();
+    dispgrad.clear();
     // gradient of displacements
     dispgrad.MultiplyNT(nodaldisp, N_XYZ);
 
@@ -1805,7 +1805,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::compute_auxiliary_values(
   if (so3_ele::kintype_ != Inpar::STR::KinemType::linear)
   {
     // dF^-T/dus
-    dFinvTdus.Clear();
+    dFinvTdus.clear();
     for (int i = 0; i < numdim_; i++)
     {
       for (int n = 0; n < numnod_; n++)
@@ -1821,7 +1821,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::compute_auxiliary_values(
     }
 
     // dF^-T/dus * Grad p
-    dFinvdus_gradp.Clear();
+    dFinvdus_gradp.clear();
     for (int i = 0; i < numdim_; i++)
     {
       for (int n = 0; n < numnod_; n++)
@@ -1836,7 +1836,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::compute_auxiliary_values(
     }
   }
 
-  dCinv_dus.Clear();
+  dCinv_dus.clear();
   for (int n = 0; n < numnod_; ++n)
   {
     for (int k = 0; k < numdim_; ++k)
@@ -1953,7 +1953,7 @@ inline void Discret::ELEMENTS::So3Poro<so3_ele, distype>::compute_linearization_
   else if (so3_ele::kintype_ == Inpar::STR::KinemType::linear)  // linear kinematics
   {
     // J=1 -> no linearization
-    dJ_dus.Clear();
+    dJ_dus.clear();
   }
   else
     FOUR_C_THROW("invalid kinematic type!");
@@ -2776,7 +2776,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::compute_def_gradient(
   }
   else if (so3_ele::kintype_ == Inpar::STR::KinemType::linear)  // linear kinematics
   {
-    defgrd.Clear();
+    defgrd.clear();
     for (int i = 0; i < numdim_; i++) defgrd(i, i) = 1.0;
   }
   else

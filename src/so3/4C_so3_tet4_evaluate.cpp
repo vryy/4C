@@ -1777,7 +1777,7 @@ void Discret::ELEMENTS::SoTet4::compute_deformation_gradient(
   if (kintype_ == Inpar::STR::KinemType::linear)
   {
     // in the linear case, the deformation gradient is the identity matrix
-    defgrd.Clear();
+    defgrd.clear();
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
@@ -2051,8 +2051,8 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
       true);  // reference coord. of element
   static Core::LinAlg::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xcurr(
       true);  // current  coord. of element
-  xrefe.Clear();
-  xcurr.Clear();
+  xrefe.clear();
+  xcurr.clear();
   Core::Nodes::Node** nodes = Nodes();
 
   for (int i = 0; i < NUMNOD_SOTET4; ++i)
@@ -2066,7 +2066,7 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
   }
 
   static Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> deriv(true);
-  deriv.Clear();
+  deriv.clear();
   Core::FE::shape_function_deriv1<Core::FE::CellType::tet4>(xi, deriv);
 
   static Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> N_XYZ(true);
@@ -2079,7 +2079,7 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
 
   // linearization of deformation gradient F w.r.t. displacements
   static Core::LinAlg::Matrix<9, NUMDOF_SOTET4> d_F_dd(true);
-  d_F_dd.Clear();
+  d_F_dd.clear();
   if (d_cauchyndir_dd || d2_cauchyndir_dd_dn || d2_cauchyndir_dd_ddir || d2_cauchyndir_dd2 ||
       d2_cauchyndir_dd_dxi)
   {
@@ -2145,8 +2145,8 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
       NUMNOD_SOTET4>
       deriv2(true);
   static Core::LinAlg::Matrix<9, NUMDIM_SOTET4> d_F_dxi(true);
-  deriv2.Clear();
-  d_F_dxi.Clear();
+  deriv2.clear();
+  d_F_dxi.clear();
 
   if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
   {
@@ -2199,7 +2199,7 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
     d2_cauchyndir_dd_dxi_mat.MultiplyTN(1.0, d2_cauchyndir_dF2_d_F_dd, d_F_dxi, 0.0);
 
     static Core::LinAlg::Matrix<9, NUMDIM_SOTET4 * NUMDOF_SOTET4> d2_F_dxi_dd(true);
-    d2_F_dxi_dd.Clear();
+    d2_F_dxi_dd.clear();
     for (int i = 0; i < NUMDIM_SOTET4; ++i)
     {
       for (int j = 0; j < NUMDIM_SOTET4; ++j)

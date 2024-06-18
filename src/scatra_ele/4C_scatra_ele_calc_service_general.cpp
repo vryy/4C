@@ -130,7 +130,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
       {
         int k = writefluxid - 1;
         // calculate flux vectors for actual scalar
-        eflux.Clear();
+        eflux.clear();
         calculate_flux(eflux, ele, fluxtype, k);
         // assembly
         for (unsigned inode = 0; inode < nen_; inode++)
@@ -638,7 +638,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
       for (int idof = 0; idof < numdofpernode_; idof++)
       {
         // no bodyforce
-        bodyforce_[idof].Clear();
+        bodyforce_[idof].clear();
       }
 
       calc_hetero_reac_mat_and_rhs(ele, elemat1_epetra, elevec1_epetra);
@@ -772,7 +772,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(
     update_node_coordinates();
   }
   else
-    edispnp_.Clear();
+    edispnp_.clear();
 
   // evaluate action
   evaluate_action(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
@@ -1651,13 +1651,13 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
             {
               // std::cout<<"Warning: Gradient of analytical solution cannot be evaluated correctly
               // for transport on curved surfaces!"<<std::endl;
-              gradphi_exact.Clear();
+              gradphi_exact.clear();
             }
           }
           else
           {
             std::cout << "Warning: Gradient of analytical solution was not evaluated!" << std::endl;
-            gradphi_exact.Clear();
+            gradphi_exact.clear();
           }
 
           // error at gauss point

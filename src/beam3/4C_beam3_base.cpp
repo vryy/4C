@@ -334,9 +334,9 @@ void Discret::ELEMENTS::Beam3Base::UnShiftNodePosition(
   // loop through all nodes except for the first node which remains
   // fixed as reference node
   static Core::LinAlg::Matrix<3, 1> d(true), ref(true), X(true);
-  d.Clear();
-  ref.Clear();
-  X.Clear();
+  d.clear();
+  ref.clear();
+  X.clear();
   for (unsigned int i = 1; i < nnodecl; ++i)
   {
     for (int dim = 0; dim < 3; ++dim)
@@ -374,9 +374,9 @@ void Discret::ELEMENTS::Beam3Base::get_directions_of_shifts(std::vector<double>&
   // loop through all nodes except for the first node which remains
   // fixed as reference node
   static Core::LinAlg::Matrix<3, 1> d(true), ref(true), X(true);
-  d.Clear();
-  ref.Clear();
-  X.Clear();
+  d.clear();
+  ref.clear();
+  X.clear();
   for (unsigned int i = 1; i < nnodecl; ++i)
   {
     for (int dim = 0; dim < 3; ++dim)

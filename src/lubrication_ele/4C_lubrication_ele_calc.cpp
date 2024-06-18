@@ -1369,13 +1369,13 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared
             std::cout << "Warning: Gradient of analytical solution cannot be evaluated correctly "
                          "for lubrication on curved surfaces!"
                       << std::endl;
-            gradpre_exact.Clear();
+            gradpre_exact.clear();
           }
         }
         else
         {
           std::cout << "Warning: Gradient of analytical solution was not evaluated!" << std::endl;
-          gradpre_exact.Clear();
+          gradpre_exact.clear();
         }
 
         // error at gauss point

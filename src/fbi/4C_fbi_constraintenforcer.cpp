@@ -123,7 +123,7 @@ void Adapter::FBIConstraintenforcer::evaluate()
   geometrycoupler_->UpdateBinning(discretizations_[0], column_structure_displacement_);
 
   // Before each search we delete all pair and segment information
-  bridge_->Clear();
+  bridge_->clear();
   bridge_->ResetBridge();
 
   // Do the search in the geometrycoupler_ and return the possible pair ids

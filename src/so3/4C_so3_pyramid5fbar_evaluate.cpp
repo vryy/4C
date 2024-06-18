@@ -815,8 +815,8 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
       if (error_tol)
       {
         params.set<bool>("eval_error", true);
-        stiffmatrix->Clear();
-        force->Clear();
+        stiffmatrix->clear();
+        force->clear();
         return;
       }
       else

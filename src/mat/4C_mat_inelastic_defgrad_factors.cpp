@@ -507,7 +507,7 @@ void Mat::InelasticDefgradLinScalarAniso::evaluate_inverse_inelastic_def_grad(
 {
   // init and clear variable
   static Core::LinAlg::Matrix<3, 3> FinM(true);
-  FinM.Clear();
+  FinM.clear();
 
   // get parameters
   const int sc1 = Parameter()->Scalar1();
@@ -744,7 +744,7 @@ void Mat::InelasticDefgradPolyIntercalFracAniso::evaluate_inverse_inelastic_def_
 {
   // init and clear variable
   static Core::LinAlg::Matrix<3, 3> FinM(true);
-  FinM.Clear();
+  FinM.clear();
 
   // get parameters
   const int sc1 = Parameter()->Scalar1();

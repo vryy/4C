@@ -1167,7 +1167,7 @@ void Mat::ThermoPlasticHyperElast::SetupCmatThermo(const Core::LinAlg::Matrix<1,
   invRCG.Invert(RCG);
 
   // clear the material tangent
-  cmat_T.Clear();
+  cmat_T.clear();
 
   // cmat_T = 2 . dS_vol,dT/dd
   //        = (T - T_0) . m_0/2 . (J - 1/J) (C^{-1} \otimes C^{-1})
@@ -1208,7 +1208,7 @@ void Mat::ThermoPlasticHyperElast::setup_cthermo(
   const double m = m_0 * (J + 1.0 / J);
 
   // clear the material tangent
-  ctemp.Clear();
+  ctemp.clear();
 
   // C_T = m_0/2.0 . (J + 1/J) . Cinv
   ctemp.Update((m / 2.0), Cinv);
@@ -1355,7 +1355,7 @@ void Mat::ThermoPlasticHyperElast::fd_check(
       // double m = m_0 * (J + 1.0 / J);
       // clear the material tangent
       Core::LinAlg::Matrix<NUM_STRESS_3D, 1> disturb_ctemp(true);
-      disturb_ctemp.Clear();
+      disturb_ctemp.clear();
       // C_T = m_0/2.0 . (J + 1/J) . Cinv
       disturb_ctemp.Update((m / 2.0), disturb_Cinv_vct);
       // in case of testing only factor, use undisturbed Cinv_vct

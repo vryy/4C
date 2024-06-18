@@ -116,11 +116,11 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SetupCalc(
   var_manager()->Reset();
 
   // clear all unused variables
-  my::edispnp_.Clear();
-  my::weights_.Clear();
-  my::evelnp_.Clear();
-  my::eaccnp_.Clear();
-  my::eprenp_.Clear();
+  my::edispnp_.clear();
+  my::weights_.clear();
+  my::evelnp_.clear();
+  my::eaccnp_.clear();
+  my::eprenp_.clear();
 
   // call base class routine
   return my::SetupCalc(ele, discretization);
@@ -173,7 +173,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_correcti
     double phizero = 0.0;
     phizero = my::funct_.Dot(ephizero_[0]);
     // and corresponding gradient
-    gradphizero.Clear();
+    gradphizero.clear();
     gradphizero.Multiply(my::derxy_, ephizero_[0]);
     double norm_gradphizero = gradphizero.Norm2();
 
@@ -269,7 +269,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalt
     double phizero = 0.0;
     phizero = my::funct_.Dot(ephizero_[0]);
     // and corresponding gradient
-    gradphizero.Clear();
+    gradphizero.clear();
     gradphizero.Multiply(my::derxy_, ephizero_[0]);
     double norm_gradphizero = gradphizero.Norm2();
 
@@ -377,7 +377,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_ve
     double phizero = 0.0;
     phizero = my::funct_.Dot(ephizero_[0]);
     // and corresponding gradient
-    gradphizero.Clear();
+    gradphizero.clear();
     gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
     // current phi at Gauss point

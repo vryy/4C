@@ -417,8 +417,8 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
     xyze(1, inode) = x[1];
     xyze(2, inode) = x[2];
   }
-  rhs.Clear();
-  sysmat.Clear();
+  rhs.clear();
+  sysmat.clear();
 
   // Define Geometric variables
   double Ao1 = 0.0;
@@ -484,15 +484,15 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
 
   // Defining the shape functions
   Core::LinAlg::Matrix<2 * my::iel_, 2> Nxi;
-  Nxi.Clear();
+  Nxi.clear();
   // Defining the derivative of shape functions
   Core::LinAlg::Matrix<2 * my::iel_, 2> dNdxi;
-  dNdxi.Clear();
+  dNdxi.clear();
 
   Core::LinAlg::Matrix<2 * my::iel_, 1> temp1;
   Core::LinAlg::Matrix<2, 1> temp2;
   Core::LinAlg::Matrix<2 * my::iel_, 1> rhs_temp;
-  rhs_temp.Clear();
+  rhs_temp.clear();
 
   Core::LinAlg::Matrix<2, 1> BLW;
   Core::LinAlg::Matrix<2, 1> FLW;

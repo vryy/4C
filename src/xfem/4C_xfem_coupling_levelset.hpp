@@ -381,7 +381,7 @@ namespace XFEM
           // Project this into tangential direction!!!
           ivel.Update(sl_visc_fac, tmp_itraction, 1.0);
         }
-        itraction.Clear();
+        itraction.clear();
       }
 
       /*Here one could do a projection of ivel to only point in the tangential direction.

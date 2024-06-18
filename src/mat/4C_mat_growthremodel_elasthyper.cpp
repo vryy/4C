@@ -550,7 +550,7 @@ void Mat::GrowthRemodelElastHyper::setup_axi_cir_rad_cylinder(
     Core::LinAlg::Matrix<3, 1> elecenter, double const dt)
 {
   // Clear dummy directions
-  radaxicirc_.Clear();
+  radaxicirc_.clear();
   Core::LinAlg::Matrix<3, 1> axdir;
   Core::LinAlg::Matrix<3, 1> raddir;
   Core::LinAlg::Matrix<3, 1> cirdir;
@@ -798,8 +798,8 @@ void Mat::GrowthRemodelElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* de
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
-  stress->Clear();
-  cmat->Clear();
+  stress->clear();
+  cmat->clear();
 
   // some static variables
   static Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressaniso(true);
@@ -1065,7 +1065,7 @@ void Mat::GrowthRemodelElastHyper::solve_fordrhod_cdlambrd_c(
   solver.factorWithEquilibration(true);
   solver.solve();
 
-  sum_drhodC.Clear();
+  sum_drhodC.clear();
   for (unsigned i = 0; i < nr_rf_tot_; ++i)
   {
     for (unsigned j = 0; j < 6; ++j)
@@ -1086,9 +1086,9 @@ void Mat::GrowthRemodelElastHyper::evaluate_stress_cmat_iso(
     Core::LinAlg::Matrix<6, 9>& dSdiFg, int const gp, int const eleGID) const
 {
   // clear some variables
-  stressiso.Clear();
-  cmatiso.Clear();
-  dSdiFg.Clear();
+  stressiso.clear();
+  cmatiso.clear();
+  dSdiFg.clear();
 
   // Evaluate elastin matrix
   // some variables
@@ -1206,8 +1206,8 @@ void Mat::GrowthRemodelElastHyper::evaluate_invariant_derivatives(
   // derivatives of strain energy function w.r.t. principal invariants
   for (const auto& p : potsumeliso_)
   {
-    dPgrowthI.Clear();
-    ddPgrowthII.Clear();
+    dPgrowthI.clear();
+    ddPgrowthII.clear();
     p->add_derivatives_principal(dPgrowthI, ddPgrowthII, prinv, gp, eleGID);
     dPIw.Update(cur_rho_el_[gp], dPgrowthI, 1.0);
     ddPIIw.Update(cur_rho_el_[gp], ddPgrowthII, 1.0);
@@ -1221,16 +1221,16 @@ void Mat::GrowthRemodelElastHyper::evaluate_invariant_derivatives(
   Core::LinAlg::Matrix<6, 1> ddPmodII(true);
   for (const auto& p : potsumeliso_)
   {
-    dPgrowthI.Clear();
-    ddPgrowthII.Clear();
+    dPgrowthI.clear();
+    ddPgrowthII.clear();
     p->add_derivatives_modified(dPgrowthI, ddPgrowthII, modinv, gp, eleGID);
     dPmodI.Update(cur_rho_el_[gp], dPgrowthI, 1.0);
     ddPmodII.Update(cur_rho_el_[gp], ddPgrowthII, 1.0);
   }
 
   // volpenalty
-  dPgrowthI.Clear();
-  ddPgrowthII.Clear();
+  dPgrowthI.clear();
+  ddPgrowthII.clear();
   potsumelpenalty_->add_derivatives_modified(dPgrowthI, ddPgrowthII, modinv, gp, eleGID);
   dPmodI.Update(cur_rho_el_[gp], dPgrowthI, 1.0);
   ddPmodII.Update(cur_rho_el_[gp], ddPgrowthII, 1.0);
@@ -1332,12 +1332,12 @@ void Mat::GrowthRemodelElastHyper::evaluated_sdi_fg(Core::LinAlg::Matrix<6, 9>& 
     Core::LinAlg::Matrix<3, 3> const& iFinCeM, int const gp) const
 {
   // clear some variables
-  dSdiFg.Clear();
+  dSdiFg.clear();
 
   static Core::LinAlg::Matrix<3, 3> id(true);
   for (int i = 0; i < 3; ++i) id(i, i) = 1.0;
   static Core::LinAlg::Matrix<6, 9> dSdiFin(true);
-  dSdiFin.Clear();
+  dSdiFin.clear();
 
   // derivative of second Piola Kirchhoff stress w.r.t. inverse growth deformation gradient
   Mat::add_right_non_symmetric_holzapfel_product(dSdiFin, id, iFinM, gamma(0));
@@ -1355,7 +1355,7 @@ void Mat::GrowthRemodelElastHyper::evaluated_sdi_fg(Core::LinAlg::Matrix<6, 9>& 
 
   // diFin/diFg
   static Core::LinAlg::Matrix<9, 9> diFindiFg(true);
-  diFindiFg.Clear();
+  diFindiFg.clear();
   Mat::add_non_symmetric_product(1.0, id, gm_[gp], diFindiFg);
 
   dSdiFg.MultiplyNN(1.0, dSdiFin, diFindiFg, 0.0);
@@ -1369,7 +1369,7 @@ void Mat::GrowthRemodelElastHyper::evaluate_additional_cmat(Core::LinAlg::Matrix
     Core::LinAlg::Matrix<6, 9> const& dSdiFg, int const gp) const
 {
   // clear some variables
-  cmatadd.Clear();
+  cmatadd.clear();
 
   // diFg/dC
   Core::LinAlg::Matrix<9, 6> diFgdC(true);
@@ -1390,9 +1390,9 @@ void Mat::GrowthRemodelElastHyper::evaluate_stress_cmat_membrane(
     Core::LinAlg::Matrix<6, 9>& dSdiFg, const int gp, const int eleGID) const
 {
   // clear some variables
-  stress.Clear();
-  cmat.Clear();
-  dSdiFg.Clear();
+  stress.clear();
+  cmat.clear();
+  dSdiFg.clear();
 
   // 2nd Piola Kirchhoff stress
   Core::LinAlg::FADMatrix<3, 3> iFgM_fad(true);
@@ -1493,7 +1493,7 @@ void Mat::GrowthRemodelElastHyper::evaluate_stress_cmat_membrane(
   static Core::LinAlg::Matrix<6, 1> Yv(true);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(YM, Yv);
   static Core::LinAlg::Matrix<6, 6> dYdC(true);
-  dYdC.Clear();
+  dYdC.clear();
   Mat::add_holzapfel_product(dYdC, Yv, -0.5);
 
   cmat.MultiplyNT(0.5 * mue_el_mem * cur_rho_el_[gp] * mue_frac_[gp] / X_det.val(), Yv, Yv, 0.0);
@@ -1609,8 +1609,8 @@ void Mat::GrowthRemodelElastHyper::EvaluateMembrane(Core::LinAlg::Matrix<3, 3> c
   double dt = params.get<double>("delta time");
 
   // blank resulting quantities
-  pk2M_glob.Clear();
-  cmat_glob.Clear();
+  pk2M_glob.clear();
+  cmat_glob.clear();
 
   // Evaluate growth deformation gradient
   Core::LinAlg::Matrix<3, 3> FgM(true);
@@ -1625,7 +1625,7 @@ void Mat::GrowthRemodelElastHyper::EvaluateMembrane(Core::LinAlg::Matrix<3, 3> c
 
   // Evaluate anisotropic remodel fibers
   static Core::LinAlg::Matrix<6, 1> pk2v_glob(true);
-  pk2v_glob.Clear();
+  pk2v_glob.clear();
   static Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressaniso(true);
   static Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmataniso(true);
   for (auto& p : potsumrf_)

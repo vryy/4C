@@ -37,7 +37,7 @@ int Discret::ELEMENTS::SoSh18::init_jacobian_mapping()
   for (int gp = 0; gp < NUMGPT_SOH18; ++gp)
   {
     // reset
-    invJ_[gp].Clear();
+    invJ_[gp].clear();
     detJ_[gp] = 0.;
 
     // in-plane shape functions and derivatives
@@ -124,9 +124,9 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
 
     // prepare EAS***************************************
     eas_setup(M_gp, G3_0_contra, xrefe);
-    feas_.Clear();
-    KaaInv_.Clear();
-    Kad_.Clear();
+    feas_.clear();
+    KaaInv_.clear();
+    Kad_.clear();
     // prepare EAS***************************************
   }
 
@@ -1138,7 +1138,7 @@ void Discret::ELEMENTS::SoSh18::calc_consistent_defgrd(
 void Discret::ELEMENTS::SoSh18::integrate_dsg_shear_r(
     const int gp, Core::LinAlg::Matrix<9, 9>& dsg_shear_r)
 {
-  dsg_shear_r.Clear();
+  dsg_shear_r.clear();
   const std::array<double, 2> coord_refNode = {0., 0.};
 
   Core::LinAlg::Matrix<2, 9> deriv;
@@ -1184,7 +1184,7 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_shear_r(
 void Discret::ELEMENTS::SoSh18::integrate_dsg_shear_s(
     const int gp, Core::LinAlg::Matrix<9, 9>& dsg_shear_s)
 {
-  dsg_shear_s.Clear();
+  dsg_shear_s.clear();
   const std::array<double, 2> coord_refNode = {0., 0.};
 
   Core::LinAlg::Matrix<2, 9> deriv;
@@ -1231,7 +1231,7 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_shear_s(
 void Discret::ELEMENTS::SoSh18::integrate_dsg_membrane_rs(
     const int gp, Core::LinAlg::Matrix<9, 9>& dsg_membrane_rs)
 {
-  dsg_membrane_rs.Clear();
+  dsg_membrane_rs.clear();
 
   // integration
   const std::array<double, 2> coord_refNode = {0., 0.};
@@ -1283,7 +1283,7 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_membrane_rs(
 void Discret::ELEMENTS::SoSh18::integrate_dsg_membrane_r(
     const int gp, Core::LinAlg::Matrix<9, 9>& dsg_membrane_r)
 {
-  dsg_membrane_r.Clear();
+  dsg_membrane_r.clear();
   const std::array<double, 2> coord_refNode = {0., 0.};
 
   Core::LinAlg::Matrix<2, 9> deriv;
@@ -1328,7 +1328,7 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_membrane_r(
 void Discret::ELEMENTS::SoSh18::integrate_dsg_membrane_s(
     const int gp, Core::LinAlg::Matrix<9, 9>& dsg_membrane_s)
 {
-  dsg_membrane_s.Clear();
+  dsg_membrane_s.clear();
   const std::array<double, 2> coord_refNode = {0., 0.};
 
   Core::LinAlg::Matrix<2, 9> deriv;
@@ -1374,7 +1374,7 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_transverse_t(
     const int gp, Core::LinAlg::Matrix<9, 9>& dsg_transverse_t)
 {
   // reset
-  dsg_transverse_t.Clear();
+  dsg_transverse_t.clear();
   Core::LinAlg::Matrix<9, 1> shape;
   Core::FE::shape_function<Core::FE::CellType::quad9>(xsi_[gp], shape);
 
@@ -1579,9 +1579,9 @@ void Discret::ELEMENTS::SoSh18::update()
     alpha_eas_delta_over_last_timestep_.Update(alpha_eas_last_timestep_);
     alpha_eas_delta_over_last_timestep_.Update(1., alpha_eas_, -1.);
     alpha_eas_last_timestep_.Update(alpha_eas_);
-    Kad_.Clear();
-    KaaInv_.Clear();
-    feas_.Clear();
+    Kad_.clear();
+    KaaInv_.clear();
+    feas_.clear();
   }
 }
 

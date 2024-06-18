@@ -1383,7 +1383,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::setup(
     constdynviscosity_[iphase] = singlephasemat.has_constant_viscosity();
 
     // TODO only isotropic, constant permeability for now
-    permeabilitytensors_[iphase].Clear();
+    permeabilitytensors_[iphase].clear();
     const double permeability = multiphasemat.Permeability();
     for (int i = 0; i < nsd; i++) (permeabilitytensors_[iphase])(i, i) = permeability;
   }
@@ -1398,7 +1398,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::setup(
 
     constdynviscosityvolfracpress_[ivolfrac] = volfracpressmat.has_constant_viscosity();
     // clear
-    permeabilitytensorsvolfracpress_[ivolfrac].Clear();
+    permeabilitytensorsvolfracpress_[ivolfrac].clear();
 
     // TODO only isotropic, constant permeability for now
     const double permeability = volfracpressmat.Permeability();
@@ -1714,7 +1714,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::setup(
             material, ivolfrac + numfluidphases);
 
     // clear
-    difftensorsvolfrac_[ivolfrac].Clear();
+    difftensorsvolfrac_[ivolfrac].clear();
 
     // TODO only isotropic, constant diffusivity for now
     const double diffusivity = singlevolfracmat.Diffusivity();

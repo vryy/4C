@@ -95,9 +95,9 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
       // Get the shape function matrices.
-      N_mortar.Clear();
-      N_beam.Clear();
-      N_fluid.Clear();
+      N_mortar.clear();
+      N_beam.clear();
+      N_fluid.clear();
       GEOMETRYPAIR::EvaluateShapeFunction<mortar>::evaluate(
           N_mortar, projected_gauss_point.GetEta());
       GEOMETRYPAIR::EvaluateShapeFunction<beam>::evaluate(

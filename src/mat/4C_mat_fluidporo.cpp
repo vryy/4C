@@ -31,7 +31,7 @@ namespace Mat::FLUIDPORO
   void CreateStructureTensorFromVector(
       const std::vector<double>& direction_vector, Core::LinAlg::Matrix<dim, dim>& structure_tensor)
   {
-    structure_tensor.Clear();
+    structure_tensor.clear();
 
     // Factor to normalize the structure tensor
     const double square_length = std::inner_product(
@@ -142,8 +142,8 @@ namespace Mat::FLUIDPORO
     {
       // Derivative is zero, clearing the tensors is enough
       // This is the standard case, so it is implemented in the base class
-      linreac_dphi.Clear();
-      linreac_dJ.Clear();
+      linreac_dphi.clear();
+      linreac_dJ.clear();
     };
 
     /*! @brief Compute the derivatives of the material reaction tensor - 3D
@@ -164,8 +164,8 @@ namespace Mat::FLUIDPORO
     {
       // Derivative is zero, clearing the tensors is enough
       // This is the standard case, so it is implemented in the base class
-      linreac_dphi.Clear();
-      linreac_dJ.Clear();
+      linreac_dphi.clear();
+      linreac_dJ.clear();
     };
 
    protected:
@@ -251,7 +251,7 @@ namespace Mat::FLUIDPORO
       const double permeability_correction_factor = params_->permeability_correction_factor_;
       const auto permeability_function = params_->permeability_func_;
 
-      reaction_tensor.Clear();
+      reaction_tensor.clear();
 
       if (permeability_function == Mat::PAR::kozeny_carman)
       {
@@ -302,8 +302,8 @@ namespace Mat::FLUIDPORO
       const double permeability_correction_factor = params_->permeability_correction_factor_;
       const auto permeability_function = params_->permeability_func_;
 
-      linreac_dphi.Clear();
-      linreac_dJ.Clear();
+      linreac_dphi.clear();
+      linreac_dJ.clear();
 
       if (permeability_function == Mat::PAR::constant)
       {
@@ -412,7 +412,7 @@ namespace Mat::FLUIDPORO
       if (anisotropic_permeability_directions.empty())
         FOUR_C_THROW("orthotropy directions not specified");
 
-      reaction_tensor.Clear();
+      reaction_tensor.clear();
 
       Core::LinAlg::Matrix<dim, dim> permeability_tensor(true);
       Core::LinAlg::Matrix<dim, dim> structure_tensor(true);
@@ -489,7 +489,7 @@ namespace Mat::FLUIDPORO
       if (anisotropic_permeability_directions.empty())
         FOUR_C_THROW("orthotropy directions not specified");
 
-      reaction_tensor.Clear();
+      reaction_tensor.clear();
 
       Core::LinAlg::Matrix<3, 3> permeability_tensor(true);
       Core::LinAlg::Matrix<3, 3> structure_tensor(true);
@@ -603,7 +603,7 @@ namespace Mat::FLUIDPORO
       if (anisotropic_permeability_coeffs.empty())
         FOUR_C_THROW("orthotropy coefficients not specified");
 
-      reaction_tensor.Clear();
+      reaction_tensor.clear();
 
       Core::LinAlg::Matrix<dim, dim> permeability_tensor(true);
       Core::LinAlg::Matrix<dim, dim> structure_tensor(true);

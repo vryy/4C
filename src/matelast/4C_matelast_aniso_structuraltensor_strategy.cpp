@@ -152,7 +152,7 @@ void Mat::Elastic::StructuralTensorStrategyByDistributionFunction::setup_structu
   aux_fiber_vector(2) = gausspoints.qxg[numbgp - 1][0];  // = cos(theta_aux)
 
   // ensure that the structural tensor is empty on input
-  structural_tensor_stress.Clear();
+  structural_tensor_stress.clear();
 
   // gauss integration over sphere
   // see Atkinson 1982
@@ -261,7 +261,7 @@ void Mat::Elastic::StructuralTensorStrategyByDistributionFunction::setup_structu
 
     Core::LinAlg::Matrix<3, 3> temp(true);
     temp.MultiplyNN(rotation, tensor3x3);
-    tensor3x3.Clear();
+    tensor3x3.clear();
     tensor3x3.MultiplyNT(temp, rotation);
 
     structural_tensor_stress(0) = tensor3x3(0, 0);

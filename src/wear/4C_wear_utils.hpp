@@ -88,8 +88,8 @@ namespace Wear
       while (!converged and j < 10)
       {
         // reset matriced
-        xjm.Clear();
-        deriv.Clear();
+        xjm.clear();
+        deriv.clear();
 
         if (ndim == 2)
         {

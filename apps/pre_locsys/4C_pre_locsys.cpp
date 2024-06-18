@@ -23,9 +23,9 @@ int main(int argc, char** argv)
   Core::LinAlg::Matrix<3, 1> vector1;
   Core::LinAlg::Matrix<3, 1> vector2;
   Core::LinAlg::Matrix<3, 1> vector3;
-  vector1.Clear();
-  vector2.Clear();
-  vector3.Clear();
+  vector1.clear();
+  vector2.clear();
+  vector3.clear();
 
   for (int i = 0; i < 3; i++)
   {

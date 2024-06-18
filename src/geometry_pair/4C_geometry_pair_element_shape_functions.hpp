@@ -241,7 +241,7 @@ namespace GEOMETRYPAIR
     EvaluateShapeFunction<element_type>::evaluate(N_flat, xi, shape_function_data...);
 
     // Fill up the full shape function matrix.
-    N.Clear();
+    N.clear();
     for (unsigned int node = 0; node < element_type::n_nodes_; node++)
       for (unsigned int dim = 0; dim < element_type::spatial_dim_; dim++)
         for (unsigned int val = 0; val < element_type::n_val_; val++)

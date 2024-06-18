@@ -1233,7 +1233,7 @@ void EvalNurbs3DInterpolation(Core::LinAlg::Matrix<n_val, 1, double>& r,
   Core::FE::Nurbs::nurbs_get_3D_funct(N, xi, myknots, weights, distype);
 
   // Multiply the shape functions with the control point values.
-  r.Clear();
+  r.clear();
   for (unsigned int i_node_nurbs = 0; i_node_nurbs < n_points; i_node_nurbs++)
   {
     for (unsigned int i_dim = 0; i_dim < n_val; i_dim++)

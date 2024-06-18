@@ -362,7 +362,7 @@ Mat::ViscoPlasticNoYieldSurface::calculate_elastic_stiffness(
 {
   // init and clear elastic stiffness matrix
   static Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> Ce;
-  Ce.Clear();
+  Ce.clear();
   const double eps(1.0e-12);
 
   // elastic parameters
@@ -701,7 +701,7 @@ void Mat::ViscoPlasticNoYieldSurface::setup_cmat(
   //
   const double mfac = youngs_mod / ((1.0 + nue) * (1.0 - 2.0 * nue));  // factor
 
-  cmat.Clear();
+  cmat.clear();
   // write non-zero components --- axial
   cmat(0, 0) = mfac * (1.0 - nue);
   cmat(0, 1) = mfac * nue;

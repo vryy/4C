@@ -245,7 +245,7 @@ namespace Core::LinAlg::Voigt
    */
   inline void identity_matrix(Core::LinAlg::Matrix<6, 1>& id)
   {
-    id.Clear();
+    id.clear();
     for (unsigned i = 0; i < 3; ++i) id(i) = 1.0;
   }
 

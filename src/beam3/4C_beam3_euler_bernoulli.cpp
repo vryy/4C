@@ -476,7 +476,7 @@ void Discret::ELEMENTS::Beam3eb::set_up_reference_geometry(
       // difference between theses to types of interpolation functions.
       Core::FE::shape_function_1D_deriv1(shapefuncderiv, xi, distype);
 
-      Tref_[numgp].Clear();
+      Tref_[numgp].clear();
 
       // calculate vector dxdxi
       for (int node = 0; node < nnode; node++)
@@ -505,9 +505,9 @@ void Discret::ELEMENTS::Beam3eb::set_up_reference_geometry(
 
     for (int node = 0; node < nnode; node++)
     {
-      Tref_[node].Clear();
+      Tref_[node].clear();
 #if NODALDOFS == 3
-      Kref_[node].Clear();
+      Kref_[node].clear();
 #endif
       for (int dof = 0; dof < 3; dof++)
       {
@@ -562,7 +562,7 @@ void Discret::ELEMENTS::Beam3eb::GetTriadAtXi(
   Core::LinAlg::Matrix<12, 1> disp_totlag(true);
   update_disp_totlag<2, 6>(disp, disp_totlag);
 
-  triad.Clear();
+  triad.clear();
 
   /* note: this beam formulation (Beam3eb = torsion-free, isotropic Kirchhoff beam)
    *       does not need to track material triads and therefore can not provide it here;

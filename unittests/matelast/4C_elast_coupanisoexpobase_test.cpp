@@ -215,17 +215,17 @@ namespace
     EXPECT_NEAR(dPIaniso(0), 0.6000375695574949, 1e-10);
     EXPECT_NEAR(dPIaniso(1), 0.0, 1e-10);
 
-    dPIaniso.Clear();
+    dPIaniso.clear();
     summand_.evaluate_first_derivatives_aniso(dPIaniso, C2_, 0, 0);
     EXPECT_NEAR(dPIaniso(0), -0.1603915791546372, 1e-10);
     EXPECT_NEAR(dPIaniso(1), 0.0, 1e-10);
 
-    dPIaniso.Clear();
+    dPIaniso.clear();
     summand_.evaluate_first_derivatives_aniso(dPIaniso, C1_, 1, 0);
     EXPECT_NEAR(dPIaniso(0), 0.4435645526048857, 1e-10);
     EXPECT_NEAR(dPIaniso(1), 0.0, 1e-10);
 
-    dPIaniso.Clear();
+    dPIaniso.clear();
     summand_.evaluate_first_derivatives_aniso(dPIaniso, C2_, 1, 0);
     EXPECT_NEAR(dPIaniso(0), -0.15968456768492822, 1e-10);
     EXPECT_NEAR(dPIaniso(1), 0.0, 1e-10);
@@ -240,19 +240,19 @@ namespace
     EXPECT_NEAR(ddPIaniso(1), 0.0, 1e-10);
     EXPECT_NEAR(ddPIaniso(2), 0.0, 1e-10);
 
-    ddPIaniso.Clear();
+    ddPIaniso.clear();
     summand_.evaluate_second_derivatives_aniso(ddPIaniso, C2_, 0, 0);
     EXPECT_NEAR(ddPIaniso(0), 1.4808816133878135, 1e-10);
     EXPECT_NEAR(ddPIaniso(1), 0.0, 1e-10);
     EXPECT_NEAR(ddPIaniso(2), 0.0, 1e-10);
 
-    ddPIaniso.Clear();
+    ddPIaniso.clear();
     summand_.evaluate_second_derivatives_aniso(ddPIaniso, C1_, 1, 0);
     EXPECT_NEAR(ddPIaniso(0), 1.9509145858930543, 1e-10);
     EXPECT_NEAR(ddPIaniso(1), 0.0, 1e-10);
     EXPECT_NEAR(ddPIaniso(2), 0.0, 1e-10);
 
-    ddPIaniso.Clear();
+    ddPIaniso.clear();
     summand_.evaluate_second_derivatives_aniso(ddPIaniso, C2_, 1, 0);
     EXPECT_NEAR(ddPIaniso(0), 1.480185139428871, 1e-10);
     EXPECT_NEAR(ddPIaniso(1), 0.0, 1e-10);
@@ -279,9 +279,9 @@ namespace
     EXPECT_NEAR(dddPIaniso(2), 0.0, 1e-10);
     EXPECT_NEAR(dddPIaniso(3), 0.0, 1e-10);
 
-    dPIaniso.Clear();
-    ddPIaniso.Clear();
-    dddPIaniso.Clear();
+    dPIaniso.clear();
+    ddPIaniso.clear();
+    dddPIaniso.clear();
     summand_.GetDerivativesAniso(dPIaniso, ddPIaniso, dddPIaniso, C2_, 0, 0);
     EXPECT_NEAR(dPIaniso(0), -0.1603915791546372, 1e-10);
     EXPECT_NEAR(dPIaniso(1), 0.0, 1e-10);
@@ -295,9 +295,9 @@ namespace
     EXPECT_NEAR(dddPIaniso(2), 0.0, 1e-10);
     EXPECT_NEAR(dddPIaniso(3), 0.0, 1e-10);
 
-    dPIaniso.Clear();
-    ddPIaniso.Clear();
-    dddPIaniso.Clear();
+    dPIaniso.clear();
+    ddPIaniso.clear();
+    dddPIaniso.clear();
     summand_.GetDerivativesAniso(dPIaniso, ddPIaniso, dddPIaniso, C1_, 1, 0);
     EXPECT_NEAR(dPIaniso(0), 0.4435645526048857, 1e-10);
     EXPECT_NEAR(dPIaniso(1), 0.0, 1e-10);
@@ -311,9 +311,9 @@ namespace
     EXPECT_NEAR(dddPIaniso(2), 0.0, 1e-10);
     EXPECT_NEAR(dddPIaniso(3), 0.0, 1e-10);
 
-    dPIaniso.Clear();
-    ddPIaniso.Clear();
-    dddPIaniso.Clear();
+    dPIaniso.clear();
+    ddPIaniso.clear();
+    dddPIaniso.clear();
     summand_.GetDerivativesAniso(dPIaniso, ddPIaniso, dddPIaniso, C2_, 1, 0);
     EXPECT_NEAR(dPIaniso(0), -0.15968456768492822, 1e-10);
     EXPECT_NEAR(dPIaniso(1), 0.0, 1e-10);
@@ -378,8 +378,8 @@ namespace
     EXPECT_NEAR(cmat(5, 4), 0.052954221524692355, 1e-10);
     EXPECT_NEAR(cmat(5, 5), 0.028324351048091223, 1e-10);
 
-    S_stress.Clear();
-    cmat.Clear();
+    S_stress.clear();
+    cmat.clear();
     summand_.add_stress_aniso_principal(C2_strain_, cmat, S_stress, dummyParams, 0, 0);
     EXPECT_NEAR(S_stress(0), -0.010764777955497356, 1e-10);
     EXPECT_NEAR(S_stress(1), -0.03998346097756192, 1e-10);
@@ -424,8 +424,8 @@ namespace
     EXPECT_NEAR(cmat(5, 4), 0.0336594942921618, 1e-10);
     EXPECT_NEAR(cmat(5, 5), 0.018003915551621407, 1e-10);
 
-    S_stress.Clear();
-    cmat.Clear();
+    S_stress.clear();
+    cmat.clear();
     summand_.add_stress_aniso_principal(C1_strain_, cmat, S_stress, dummyParams, 1, 0);
     EXPECT_NEAR(S_stress(0), 0.015011340776480562, 1e-10);
     EXPECT_NEAR(S_stress(1), 0.07880953907652338, 1e-10);
@@ -470,8 +470,8 @@ namespace
     EXPECT_NEAR(cmat(5, 4), 0.020877801751530922, 1e-10);
     EXPECT_NEAR(cmat(5, 5), 0.008208366500601876, 1e-10);
 
-    S_stress.Clear();
-    cmat.Clear();
+    S_stress.clear();
+    cmat.clear();
     summand_.add_stress_aniso_principal(C2_strain_, cmat, S_stress, dummyParams, 1, 0);
     EXPECT_NEAR(S_stress(0), -0.005404127647681264, 1e-10);
     EXPECT_NEAR(S_stress(1), -0.028371670150326794, 1e-10);

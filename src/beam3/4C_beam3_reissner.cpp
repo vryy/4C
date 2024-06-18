@@ -529,8 +529,8 @@ void Discret::ELEMENTS::Beam3r::unpack(const std::vector<char>& data)
   ekintorsion_ = 0.0;
   ekinbending_ = 0.0;
   ekintrans_ = 0.0;
-  l_.Clear();
-  p_.Clear();
+  l_.clear();
+  p_.clear();
   kmax_ = 0.0;
   axial_strain_gp_elastf_.clear();
   shear_strain_2_gp_elastf_.clear();
@@ -862,7 +862,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
        * the angles theta0node_. So far the initial value for the relative angle is set to zero,
        * i.e. material coordinate system and reference system in the reference configuration
        * coincidence (only at the nodes)*/
-      Gref.Clear();
+      Gref.clear();
       Core::LargeRotations::quaterniontotriad(qnewnode_[node], Gref);
       // store initial nodal tangents in class variable
       for (int i = 0; i < 3; i++) (Tref_[node])(i) = (Gref)(i, 0);
@@ -934,7 +934,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
     spatial_z_force_3_gp_elastf_.resize(gausspoints_elast_force.nquad);
     std::fill(spatial_z_force_3_gp_elastf_.begin(), spatial_z_force_3_gp_elastf_.end(), 0.0);
 
-    dummy.Clear();
+    dummy.clear();
 
     // Loop through all GPs for under-integration and calculate jacobi determinants at the GPs
     for (int numgp = 0; numgp < gausspoints_elast_force.nquad; ++numgp)
@@ -1002,7 +1002,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
     std::fill(spatial_z_moment_3_gp_elastm_.begin(), spatial_z_moment_3_gp_elastm_.end(), 0.0);
 
 
-    dummy.Clear();
+    dummy.clear();
 
     // Loop through all GPs for under-integration and calculate jacobi determinants at the GPs
     for (int numgp = 0; numgp < gausspoints_elast_moment.nquad; numgp++)
@@ -1077,18 +1077,18 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
       // copy QnewGPmass_ to QconvGPmass_
       qconv_gp_mass_[numgp] = qnew_gp_mass_[numgp];
 
-      wconv_gp_mass_[numgp].Clear();
-      wnew_gp_mass_[numgp].Clear();
-      aconv_gp_mass_[numgp].Clear();
-      anew_gp_mass_[numgp].Clear();
-      amodconv_gp_mass_[numgp].Clear();
-      amodnew_gp_mass_[numgp].Clear();
-      rttconv_gp_mass_[numgp].Clear();
-      rttnew_gp_mass_[numgp].Clear();
-      rttmodconv_gp_mass_[numgp].Clear();
-      rttmodnew_gp_mass_[numgp].Clear();
-      rtconv_gp_mass_[numgp].Clear();
-      rtnew_gp_mass_[numgp].Clear();
+      wconv_gp_mass_[numgp].clear();
+      wnew_gp_mass_[numgp].clear();
+      aconv_gp_mass_[numgp].clear();
+      anew_gp_mass_[numgp].clear();
+      amodconv_gp_mass_[numgp].clear();
+      amodnew_gp_mass_[numgp].clear();
+      rttconv_gp_mass_[numgp].clear();
+      rttnew_gp_mass_[numgp].clear();
+      rttmodconv_gp_mass_[numgp].clear();
+      rttmodnew_gp_mass_[numgp].clear();
+      rtconv_gp_mass_[numgp].clear();
+      rtnew_gp_mass_[numgp].clear();
       rconv_gp_mass_[numgp] = r0;
       rnew_gp_mass_[numgp] = r0;
     }
@@ -1436,7 +1436,7 @@ void Discret::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_
   Discret::UTILS::Beam::EvaluateShapeFunctionsAtXi<nnodecl, vpernode>(
       xi, H_i, this->Shape(), this->RefLength());
 
-  Ivar.Clear();
+  Ivar.clear();
 
   for (unsigned int idim = 0; idim < 3; ++idim)
   {
@@ -1561,7 +1561,7 @@ void Discret::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_
   compute_generalized_nodal_rotation_interpolation_matrix_from_nodal_triads<nnodetriad, double>(
       Qnode, xi, Itilde);
 
-  Iinc.Clear();
+  Iinc.clear();
 
   for (unsigned int idim = 0; idim < 3; ++idim)
   {

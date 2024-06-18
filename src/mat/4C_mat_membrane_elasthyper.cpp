@@ -126,8 +126,8 @@ void Mat::MembraneElastHyper::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3>&
     Core::LinAlg::Matrix<3, 3>& cmat, const int gp, const int eleGID)
 {
   // blank resulting quantities
-  stress.Clear();
-  cmat.Clear();
+  stress.clear();
+  cmat.clear();
 
   // kinematic quantities and identity tensors
   Core::LinAlg::Matrix<3, 1> id2(true);

@@ -1026,7 +1026,7 @@ void XFEM::LevelSetCouplingWeakDirichlet::evaluate_coupling_conditions(
   evaluate_dirichlet_function(ivel, x, cond, time_);
 
   // no interface traction to be evaluated
-  itraction.Clear();
+  itraction.clear();
 }
 
 // TODO: remove old state implementation?!
@@ -1038,7 +1038,7 @@ void XFEM::LevelSetCouplingWeakDirichlet::evaluate_coupling_conditions_old_state
   evaluate_dirichlet_function(ivel, x, cond, time_ - dt_);
 
   // no interface traction to be evaluated
-  itraction.Clear();
+  itraction.clear();
 }
 
 /*--------------------------------------------------------------------------*
@@ -1179,7 +1179,7 @@ void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions(Core::LinAlg::M
     const Core::Conditions::Condition* cond)
 {
   // no interface velocity to be evaluated
-  ivel.Clear();
+  ivel.clear();
 
   // evaluate interface traction (given by Neumann condition)
   evaluate_neumann_function(itraction, x, cond, time_);
@@ -1192,7 +1192,7 @@ void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions(Core::LinAlg::M
     const Core::Conditions::Condition* cond)
 {
   // no interface velocity to be evaluated
-  ivel.Clear();
+  ivel.clear();
 
   // evaluate interface traction (given by Neumann condition)
   evaluate_neumann_function(itraction, x, cond, time_);
@@ -1206,7 +1206,7 @@ void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions_old_state(
     const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond)
 {
   // no interface velocity to be evaluated
-  ivel.Clear();
+  ivel.clear();
 
   // evaluate interface traction (given by Neumann condition)
   evaluate_neumann_function(itraction, x, cond, time_ - dt_);

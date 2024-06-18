@@ -4491,7 +4491,7 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::eval_shape_func_at_slave_node(
     FOUR_C_THROW("Couldn't find out index of slave-side node w.r.t. slave-side element!");
 
   // set slave-side shape function array according to node position
-  funct_slave_.Clear();
+  funct_slave_.clear();
   funct_slave_(index) = 1.;
 
   // project slave-side node onto master-side element

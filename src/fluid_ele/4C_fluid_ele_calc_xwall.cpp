@@ -485,9 +485,9 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::
         double gpweight         // actual integration point (weight)
     )
 {
-  funct_.Clear();
-  derxy_.Clear();
-  derxy2_.Clear();
+  funct_.clear();
+  derxy_.clear();
+  derxy2_.clear();
 
   // put the geometry in the local copy
   for (int inode = 0; inode < enren_; ++inode)
@@ -510,7 +510,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::
     Core::FE::shape_function_deriv2<distype>(my::xsi_, deriv2_);
   }
   else
-    deriv2_.Clear();
+    deriv2_.clear();
 
   // get Jacobian matrix and determinant
   // actually compute its transpose....
@@ -551,7 +551,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::
     Core::FE::gder2<distype, enren_>(my::xjm_, derxy_, deriv2_, xyze_, derxy2_);
   }
   else
-    derxy2_.Clear();
+    derxy2_.clear();
 
   return;
 }
@@ -563,9 +563,9 @@ template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType e
 void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::eval_enrichment()
 {
   // first clear everything
-  functenr_.Clear();
-  derxyenr_.Clear();
-  derxyenr2_.Clear();
+  functenr_.clear();
+  derxyenr_.clear();
+  derxyenr2_.clear();
 
   Core::LinAlg::Matrix<nsd_, 1> derpsigp(true);
   Core::LinAlg::Matrix<numderiv2_, 1> der2psigp(true);
@@ -1203,8 +1203,8 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(
     //----------------------------------------------------------------------------
     //                         RHS
     //----------------------------------------------------------------------------
-    estif_u.Clear();
-    lin_resM_Du.Clear();
+    estif_u.clear();
+    lin_resM_Du.clear();
 
     for (int ui = 1; ui < nen_; ui += 2)
     {

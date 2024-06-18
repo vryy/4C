@@ -445,7 +445,7 @@ void Mat::BeamPlasticMaterial<T>::get_constitutive_matrix_of_forces_material_fra
 {
   // defining material constitutive matrix CN between Gamma and N
   // according to Jelenic 1999, section 2.4
-  C_N.Clear();
+  C_N.clear();
 
   C_N(0, 0) = this->Params().GetAxialRigidity();
   C_N(1, 1) = this->Params().GetShearRigidity2();
@@ -460,7 +460,7 @@ void Mat::BeamPlasticMaterial<T>::get_constitutive_matrix_of_moments_material_fr
 {
   // defining material constitutive matrix CM between curvature and moment
   // according to Jelenic 1999, section 2.4
-  C_M.Clear();
+  C_M.clear();
 
   C_M(0, 0) = this->Params().get_torsional_rigidity();
   C_M(1, 1) = this->Params().GetBendingRigidity2();
@@ -489,7 +489,7 @@ template <typename T>
 void Mat::BeamPlasticMaterial<T>::get_hardening_constitutive_matrix_of_forces_material_frame(
     Core::LinAlg::Matrix<3, 3, T>& CN_eff) const
 {
-  CN_eff.Clear();
+  CN_eff.clear();
 
   CN_eff(0, 0) = this->Params().get_hardening_axial_rigidity();
   CN_eff(1, 1) = this->Params().get_hardening_shear_rigidity2();
@@ -502,7 +502,7 @@ template <typename T>
 void Mat::BeamPlasticMaterial<T>::get_hardening_constitutive_matrix_of_moments_material_frame(
     Core::LinAlg::Matrix<3, 3, T>& CM_eff) const
 {
-  CM_eff.Clear();
+  CM_eff.clear();
   if (this->Params().get_torsion_plasticity())
     CM_eff(0, 0) = this->Params().get_hardening_momental_rigidity();
   else

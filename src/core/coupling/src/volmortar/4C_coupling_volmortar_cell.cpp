@@ -76,7 +76,7 @@ double Core::VolMortar::Cell::CalcJac(const double* xi)
   }
 
   Core::LinAlg::Matrix<3, 3> invJ;
-  invJ.Clear();
+  invJ.clear();
 
   invJ.Multiply(derivs, xrefe);
   jac = invJ.Invert();

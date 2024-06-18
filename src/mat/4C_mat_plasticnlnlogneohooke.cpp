@@ -570,7 +570,7 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
     // strain return mapping
     // b_{e,n+1} = sum_i^3 ( lambda_{n+1}^2 . n \otimes n )
     // lambda_{n+1} = lambda_{n+1}^{trial} / exp(Dgamma . flow_vector)
-    Be.Clear();
+    Be.clear();
     for (int i = 0; i < 3; i++)
     {
       tmp1.MultiplyNT(spatial_principal_directions.at(i), spatial_principal_directions.at(i));
@@ -609,7 +609,7 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 
   // ---------------------------------------------------- tangent modulus
   // express coefficents of tangent in Kirchhoff stresses
-  cmat->Clear();
+  cmat->clear();
   for (int a = 0; a < 3; a++)
   {
     // - sum_1^3 (2 * tau N_aaaa)

@@ -73,7 +73,7 @@ namespace FLD
       // clean everything
       rotangle_ = 0.0;
       slavenodelids_.clear();
-      rotmat_.Clear();
+      rotmat_.clear();
 
       Core::Nodes::Node** nodes = ele->Nodes();
       slavenodelids_.reserve(elenumnodereal);

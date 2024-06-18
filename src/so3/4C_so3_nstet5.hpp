@@ -497,7 +497,7 @@ namespace Discret
       inline void shape_function_derivatives(Core::LinAlg::Matrix<4, 4>& deriv)
       {
         // Ni,j = 1.0 for i==j, otherwise 0.0
-        deriv.Clear();
+        deriv.clear();
         deriv(0, 0) = 1.0;
         deriv(1, 1) = 1.0;
         deriv(2, 2) = 1.0;

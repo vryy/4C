@@ -140,8 +140,8 @@ void MIXTURE::GrowthRemodelMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3
   for (std::size_t i = 0; i < constituents().size(); ++i)
   {
     MixtureConstituent& constituent = *constituents()[i];
-    cstress.Clear();
-    ccmat.Clear();
+    cstress.clear();
+    ccmat.clear();
     if (growth_strategy_->has_inelastic_growth_deformation_gradient())
       constituent.evaluate_elastic_part(F, iF_gM, params, cstress, ccmat, gp, eleGID);
     else
@@ -163,8 +163,8 @@ void MIXTURE::GrowthRemodelMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3
         cstress, dGrowthScalarDC, 1.0);
   }
 
-  cstress.Clear();
-  ccmat.Clear();
+  cstress.clear();
+  ccmat.clear();
 
 
   const auto [currentReferenceGrowthScalar, dCurrentReferenceGrowthScalarDC] = std::invoke(

@@ -429,7 +429,7 @@ namespace Mat
     /**
      * Set all flags to false
      */
-    void Clear()
+    void clear()
     {
       isoprinc = false;
       isomod = false;

@@ -1219,7 +1219,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ma
 
     // current pressure gradient
     static Core::LinAlg::Matrix<nsd, 1> gradpres(true);
-    gradpres.Clear();
+    gradpres.clear();
 
     // compute the pressure gradient from the phi gradients
     for (int idof = 0; idof < numfluidphases; ++idof)
@@ -1345,7 +1345,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ve
 
   // current pressure gradient
   static Core::LinAlg::Matrix<nsd, 1> gradpres(true);
-  gradpres.Clear();
+  gradpres.clear();
 
   // compute the pressure gradient from the phi gradients
   for (int idof = 0; idof < numfluidphases; ++idof)
@@ -1400,7 +1400,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd,
 
   // current pressure gradient
   static Core::LinAlg::Matrix<nsd, 1> gradpres(true);
-  gradpres.Clear();
+  gradpres.clear();
 
   // compute the pressure gradient from the phi gradients
   for (int idof = 0; idof < numfluidphases; ++idof)
@@ -1426,7 +1426,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd,
 
   // gradient of pressure w.r.t. reference coordinates
   static Core::LinAlg::Matrix<nsd, 1> refgradpres(true);
-  refgradpres.Clear();
+  refgradpres.clear();
 
   // gradient of phi w.r.t. reference coordinates
   std::vector<Core::LinAlg::Matrix<nsd, 1>> refgradphi(numfluidphases,
@@ -3160,7 +3160,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
 
   // current pressure gradient
   Core::LinAlg::Matrix<nsd, 1> gradpres(true);
-  gradpres.Clear();
+  gradpres.clear();
 
   // compute the pressure gradient from the phi gradients
   for (int idof = 0; idof < numfluidphases; ++idof)
@@ -3285,7 +3285,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPhaseVelocities<nsd,
         // hence we need to employ the chain rule:
         // d p(psi_1, psi_2, psi_3)/dx = sum_i ( (p(psi_1, psi_2, psi_3)/d psi_i) * (d psi_i/dx) )
         Core::LinAlg::Matrix<nsd, 1> pressure_gradient(true);
-        pressure_gradient.Clear();
+        pressure_gradient.clear();
         for (int i = 0; i < numfluidphases; ++i)
           pressure_gradient.Update(phasemanager.PressureDeriv(curphase, i), gradient_phi[i], 1.0);
 

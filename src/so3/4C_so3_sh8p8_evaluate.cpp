@@ -1869,7 +1869,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     if (stab_ != stab_puredisp)
       incomp->MultiplyNN(1.0, *stabmatrix, pres, 1.0);
     else
-      incomp->Clear();
+      incomp->clear();
   }
 
   // copy grad-matrix onto drag-matrix
@@ -1965,11 +1965,11 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
   // fake pure-disp based approach (ANS might be active)
   if (stab_ == stab_puredisp)
   {
-    if (gradmatrix != nullptr) gradmatrix->Clear();
-    if (dargmatrix != nullptr) dargmatrix->Clear();
+    if (gradmatrix != nullptr) gradmatrix->clear();
+    if (dargmatrix != nullptr) dargmatrix->clear();
     if (stabmatrix != nullptr)
     {
-      stabmatrix->Clear();
+      stabmatrix->clear();
       for (int i = 0; i < NUMPRES_; ++i) (*stabmatrix)(i, i) = 1.0;
     }
   }
@@ -2142,7 +2142,7 @@ void Discret::ELEMENTS::SoSh8p8::ass_def_grad(double& detdefgrad,
     rgtstrD.MultiplyNT(aux, NdT);
 
     // inverse disp-based right stretch tensor
-    invrgtstrD.Clear();
+    invrgtstrD.clear();
     // double detdefgradD = 1.0;
     for (int al = 0; al < NUMDIM_; ++al)
     {
@@ -2210,7 +2210,7 @@ void Discret::ELEMENTS::SoSh8p8::ass_def_grad(double& detdefgrad,
     aux.MultiplyNN(NaT, lama);
     rgtstr.MultiplyNT(aux, NaT);
 
-    invrgtstr.Clear();
+    invrgtstr.clear();
     detdefgrad = 1.0;
     for (int al = 0; al < NUMDIM_; ++al)
     {

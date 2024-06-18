@@ -350,10 +350,10 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_cauchy_n_dir_and_deriva
     // calculation of \partial b_{el} / \partial F (elastic left cauchy-green w.r.t. deformation
     // gradient)
     static Core::LinAlg::Matrix<6, 9> d_be_dFe(true);
-    d_be_dFe.Clear();
+    d_be_dFe.clear();
     add_right_non_symmetric_holzapfel_product_strain_like(d_be_dFe, idM, FeM, 1.0);
     static Core::LinAlg::Matrix<9, 9> d_Fe_dF(true);
-    d_Fe_dF.Clear();
+    d_Fe_dF.clear();
     add_non_symmetric_product(1.0, idM, iFinM, d_Fe_dF);
     static Core::LinAlg::Matrix<6, 9> d_be_dF(true);
     d_be_dF.Multiply(1.0, d_be_dFe, d_Fe_dF, 0.0);
@@ -451,7 +451,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_linearization_od(
 
   // calculate the derivative of the deformation gradient w.r.t. the inelastic deformation gradient
   static Core::LinAlg::Matrix<9, 9> d_F_dFin(true);
-  d_F_dFin.Clear();
+  d_F_dFin.clear();
   add_non_symmetric_product(1.0, FeM, idM, d_F_dFin);
 
   static Core::LinAlg::Matrix<9, 1> d_Fin_dx(true);
@@ -477,8 +477,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_stress_cmat_iso(
     Core::LinAlg::Matrix<6, 1>& stress, Core::LinAlg::Matrix<6, 6>& cmatiso) const
 {
   // clear variables
-  stress.Clear();
-  cmatiso.Clear();
+  stress.clear();
+  cmatiso.clear();
 
   // 2nd Piola Kirchhoff stresses
   stress.Update(gamma(0), iCinV, 1.0);
@@ -571,8 +571,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_invariant_derivatives(
     Core::LinAlg::Matrix<3, 1>& dPI, Core::LinAlg::Matrix<6, 1>& ddPII) const
 {
   // clear variables
-  dPI.Clear();
-  ddPII.Clear();
+  dPI.clear();
+  ddPII.clear();
 
   // loop over map of associated potential summands
   // derivatives of strain energy function w.r.t. principal invariants
@@ -594,7 +594,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::EvaluatedSdiFin(
     Core::LinAlg::Matrix<6, 9>& dSdiFin) const
 {
   // clear variable
-  dSdiFin.Clear();
+  dSdiFin.clear();
 
   // calculate identity tensor
   static Core::LinAlg::Matrix<3, 3> id(true);
@@ -644,7 +644,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
     const Core::LinAlg::Matrix<6, 9>& dSdiFin, Core::LinAlg::Matrix<6, 6>& cmatadd)
 {
   // clear variable
-  cmatadd.Clear();
+  cmatadd.clear();
 
   const auto& facdefgradin = inelastic_->FacDefGradIn();
   const auto& iFinjM = inelastic_->GetiFinj();
@@ -682,7 +682,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
     for (int i = 0; i < num_contributions; ++i)
     {
       // clear static variable
-      diFindiFinj.Clear();
+      diFindiFinj.clear();
 
       // multiply all inelastic deformation gradients except for range between first and current
       producta = id;
@@ -742,7 +742,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::EvaluateODStiffMat(PAR::Inelasti
     Core::LinAlg::Matrix<6, 1>& dstressdx)
 {
   // clear variable
-  dstressdx.Clear();
+  dstressdx.clear();
 
   // References to vector of inelastic contributions and inelastic deformation gradients
   const auto& facdefgradin = inelastic_->FacDefGradIn();
@@ -785,7 +785,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::EvaluateODStiffMat(PAR::Inelasti
       if (facdefgradin[i].first == source)
       {
         // clear static variable
-        diFindiFinj.Clear();
+        diFindiFinj.clear();
 
         // multiply all inelastic deformation gradients except for range between first and current
         // in reverse order
@@ -891,15 +891,15 @@ void Mat::InelasticFactorsHandler::evaluate_inverse_inelastic_def_grad(
   static Core::LinAlg::Matrix<3, 3> iFin_init_store(true);
 
   // clear variables
-  iFinM.Clear();
-  iFin_init_store.Clear();
+  iFinM.clear();
+  iFin_init_store.clear();
 
   for (int i = 0; i < 3; ++i) iFin_init_store(i, i) = 1.0;
 
   for (int i = 0; i < NumInelasticDefGrad(); ++i)
   {
     // clear tmp variable
-    iFinp.Clear();
+    iFinp.clear();
 
     // calculate inelastic deformation gradient and its inverse
     facdefgradin_[i].second->evaluate_inverse_inelastic_def_grad(defgrad, iFinp);

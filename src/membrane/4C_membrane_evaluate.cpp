@@ -1409,7 +1409,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_defgrd_global(
     const double& lambda3, Core::LinAlg::Matrix<noddof_, noddof_>& defgrd_glob) const
 {
   // clear
-  defgrd_glob.Clear();
+  defgrd_glob.clear();
 
   // determine cross product x,1 x x,2
   Core::LinAlg::Matrix<noddof_, 1> xcurr_cross(true);

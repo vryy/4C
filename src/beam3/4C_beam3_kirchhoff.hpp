@@ -1123,7 +1123,7 @@ namespace Discret
       {
         Core::LinAlg::Matrix<3, 3, T> Tinv = Core::LargeRotations::Tinvmatrix(theta);
 
-        K.Clear();
+        K.clear();
         K.MultiplyTN(Tinv, theta_deriv);
       }
 
@@ -1285,16 +1285,16 @@ namespace Discret
 
         scalar_aux.MultiplyTN(kappacl, gref1);
         KR1 = -scalar_aux(0, 0);
-        scalar_aux.Clear();
+        scalar_aux.clear();
         scalar_aux.MultiplyTN(g1, gref1);
         KR1 = KR1 / (1.0 + scalar_aux(0, 0));
         K(0) = KR1 + phi_s;
 
-        scalar_aux.Clear();
+        scalar_aux.clear();
         scalar_aux.MultiplyTN(kappacl, g2);
         K(1) = scalar_aux(0, 0);
 
-        scalar_aux.Clear();
+        scalar_aux.clear();
         scalar_aux.MultiplyTN(kappacl, g3);
         K(2) = scalar_aux(0, 0);
 
@@ -1335,22 +1335,22 @@ namespace Discret
       void set_initial_dynamic_class_variables(const int& num,
           const Core::LinAlg::Matrix<3, 3>& triad_mat, const Core::LinAlg::Matrix<3, 1>& r)
       {
-        qconvmass_[num].Clear();
-        qnewmass_[num].Clear();
-        rconvmass_[num].Clear();
-        rnewmass_[num].Clear();
-        wconvmass_[num].Clear();
-        wnewmass_[num].Clear();
-        aconvmass_[num].Clear();
-        anewmass_[num].Clear();
-        amodconvmass_[num].Clear();
-        amodnewmass_[num].Clear();
-        rtconvmass_[num].Clear();
-        rtnewmass_[num].Clear();
-        rttconvmass_[num].Clear();
-        rttnewmass_[num].Clear();
-        rttmodconvmass_[num].Clear();
-        rttmodnewmass_[num].Clear();
+        qconvmass_[num].clear();
+        qnewmass_[num].clear();
+        rconvmass_[num].clear();
+        rnewmass_[num].clear();
+        wconvmass_[num].clear();
+        wnewmass_[num].clear();
+        aconvmass_[num].clear();
+        anewmass_[num].clear();
+        amodconvmass_[num].clear();
+        amodnewmass_[num].clear();
+        rtconvmass_[num].clear();
+        rtnewmass_[num].clear();
+        rttconvmass_[num].clear();
+        rttnewmass_[num].clear();
+        rttmodconvmass_[num].clear();
+        rttmodnewmass_[num].clear();
 
         Core::LargeRotations::triadtoquaternion(triad_mat, qconvmass_[num]);
         qnewmass_[num] = qconvmass_[num];

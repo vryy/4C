@@ -589,8 +589,8 @@ void XFEM::XfluidTimeintBase::eval_shape_and_deriv(
   const int nsd = 3;                           // dimension
 
   // clear data that shall be filled
-  shapeFcn.Clear();
-  shapeFcnDerivXY.Clear();
+  shapeFcn.clear();
+  shapeFcnDerivXY.clear();
 
   //-------------------------------------------------------
   Core::FE::shape_function_3D(
@@ -636,7 +636,7 @@ void XFEM::XfluidTimeintBase::eval_shape_and_deriv(
 
     Core::LinAlg::Matrix<nsd, nsd> xjm(true);   // jacobi matrix
     xjm.MultiplyNT(shapeFcnDeriv, nodecoords);  // jacobian J = (dx/dxi)^T
-    xji.Clear();
+    xji.clear();
     xji.Invert(xjm);  // jacobian inverted J^(-1) = dxi/dx
 
     shapeFcnDerivXY.Multiply(xji, shapeFcnDeriv);  // (dN/dx)^T = (dN/dxi)^T * J^(-T)
@@ -1178,7 +1178,7 @@ void XFEM::XfluidStd::getGPValuesT(Core::Elements::Element* ele,  ///< pointer t
 
   //-------------------------------------------------------
   // interpolate velocity and pressure values at starting point
-  vel.Clear();  // set to zero
+  vel.clear();  // set to zero
   vel.Multiply(evel, shapeFcn);
 
   pres = epre.Dot(shapeFcn);
@@ -2866,7 +2866,7 @@ bool XFEM::XfluidStd::project_on_side(
     sysmat.Invert();
 
     // solve Newton iteration
-    incr.Clear();
+    incr.clear();
     incr.Multiply(-1.0, sysmat, residuum);  // incr = -Systemmatrix^-1 * residuum
 
     // update solution

@@ -256,7 +256,7 @@ void Mat::ElastHyper::setup(int numgp, Input::LineDefinition* linedef)
   {
     p->setup(numgp, linedef);
   }
-  summandProperties_.Clear();
+  summandProperties_.clear();
   ElastHyperProperties(potsum_, summandProperties_);
 
   if (summandProperties_.viscoGeneral)
@@ -322,11 +322,11 @@ void Mat::ElastHyper::StrainEnergy(
     const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   static Core::LinAlg::Matrix<6, 1> C_strain(true);
-  C_strain.Clear();
+  C_strain.clear();
   static Core::LinAlg::Matrix<3, 1> prinv(true);
-  prinv.Clear();
+  prinv.clear();
   static Core::LinAlg::Matrix<3, 1> modinv(true);
-  modinv.Clear();
+  modinv.clear();
 
   EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
   Core::LinAlg::Voigt::Strains::invariants_principal(prinv, C_strain);
@@ -411,9 +411,9 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
   static Core::LinAlg::Matrix<3, 1> dPI(true);
   static Core::LinAlg::Matrix<6, 1> ddPII(true);
   static Core::LinAlg::Matrix<10, 1> dddPIII(true);
-  dPI.Clear();
-  ddPII.Clear();
-  dddPIII.Clear();
+  dPI.clear();
+  ddPII.clear();
+  dddPIII.clear();
   evaluate_cauchy_derivs(prinv, gp, eleGID, dPI, ddPII, dddPIII, temp);
 
   const double prefac = 2.0 / std::sqrt(prinv(2));
@@ -638,12 +638,12 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
     static Core::LinAlg::Matrix<9, 9> d2_I1_dF2(true);
     static Core::LinAlg::Matrix<9, 9> d2_I2_dF2(true);
     static Core::LinAlg::Matrix<9, 9> d2_I3_dF2(true);
-    d_iFT_dF.Clear();
-    d2_bdnddir_dF2.Clear();
-    d2_ibdnddir_dF2.Clear();
-    d2_I1_dF2.Clear();
-    d2_I2_dF2.Clear();
-    d2_I3_dF2.Clear();
+    d_iFT_dF.clear();
+    d2_bdnddir_dF2.clear();
+    d2_ibdnddir_dF2.clear();
+    d2_I1_dF2.clear();
+    d2_I2_dF2.clear();
+    d2_I3_dF2.clear();
 
     static Core::LinAlg::Matrix<3, 3> C(true);
     C.MultiplyTN(1.0, defgrd, defgrd, 0.0);

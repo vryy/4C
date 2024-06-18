@@ -349,7 +349,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_stress_c_mat
 
   // Compute constitutive tensor
   static Core::LinAlg::Matrix<6, 6> dAradgriXAradgr_symdC(false);
-  dAradgriXAradgr_symdC.Clear();
+  dAradgriXAradgr_symdC.clear();
 
   Mat::add_holzapfel_product(dAradgriXAradgr_symdC, iFinTAorthgrTiXTAorthgriFin_sym_stress, -2.0);
 

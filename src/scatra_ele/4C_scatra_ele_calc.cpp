@@ -271,7 +271,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
   }
   else
   {
-    edispnp_.Clear();
+    edispnp_.clear();
 
     // velocity = convective velocity for the non-ale case
     evelnp_ = econvelnp_;
@@ -885,7 +885,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::body_force(
     for (int idof = 0; idof < numdofpernode_; idof++)
     {
       // no bodyforce
-      bodyforce_[idof].Clear();
+      bodyforce_[idof].clear();
     }
   }
 }
@@ -978,7 +978,7 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_d
     Core::FE::gder2<distype, nen_, probdim>(xjm_, derxy_, deriv2_, xyze_, derxy2_);
   }
   else
-    derxy2_.Clear();
+    derxy2_.clear();
 
   // return integration factor for current GP: fac = Gauss weight * det(J)
   return fac;
@@ -1296,7 +1296,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_laplacian_strong_form(
     Core::LinAlg::Matrix<nen_, 1>& diff)
 {
-  diff.Clear();
+  diff.clear();
   // compute N,xx  +  N,yy +  N,zz for each shape function at integration point
   for (unsigned i = 0; i < nen_; ++i)
   {

@@ -687,9 +687,9 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_nonlinear_f
   }
 
   // clear for integration
-  eas_iteration_data_.invKaa_.Clear();
-  eas_iteration_data_.Kda_.Clear();
-  eas_iteration_data_.s_.Clear();
+  eas_iteration_data_.invKaa_.clear();
+  eas_iteration_data_.Kda_.clear();
+  eas_iteration_data_.s_.clear();
 
   evaluate_centroid_coordinates_and_add_to_parameter_list<celltype>(nodal_coordinates, params);
 

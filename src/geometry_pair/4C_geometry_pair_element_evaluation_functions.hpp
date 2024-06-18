@@ -36,7 +36,7 @@ namespace GEOMETRYPAIR
     EvaluateShapeFunction<element_type>::evaluate(N, xi, element_data.shape_function_data_);
 
     // Calculate the field function
-    r.Clear();
+    r.clear();
     for (unsigned int node = 0; node < element_type::n_nodes_; node++)
       for (unsigned int dim = 0; dim < element_type::spatial_dim_; dim++)
         for (unsigned int val = 0; val < element_type::n_val_; val++)
@@ -63,7 +63,7 @@ namespace GEOMETRYPAIR
     EvaluateShapeFunction<element_type>::EvaluateDeriv1(dN, xi, element_data.shape_function_data_);
 
     // Calculate the derivative of the field function
-    dr.Clear();
+    dr.clear();
     for (unsigned int dim = 0; dim < element_type::spatial_dim_; dim++)
       for (unsigned int direction = 0; direction < element_type::element_dim_; direction++)
         for (unsigned int node = 0; node < element_type::n_nodes_; node++)
@@ -127,7 +127,7 @@ namespace GEOMETRYPAIR
       // Calculate the normal as a interpolation of nodal normals
       Core::LinAlg::Matrix<1, surface::n_nodes_, typename T::scalar_type> N(true);
       EvaluateShapeFunction<surface>::evaluate(N, xi, element_data_surface.shape_function_data_);
-      normal.Clear();
+      normal.clear();
       for (unsigned int node = 0; node < surface::n_nodes_; node++)
         for (unsigned int dim = 0; dim < surface::spatial_dim_; dim++)
           normal(dim) +=
@@ -194,10 +194,10 @@ namespace GEOMETRYPAIR
     // Director 2 is the one in the y-axis (reference configuration)
     // Director 3 is the one in the z-axis (reference configuration)
     tangent.Scale(1. / Core::FADUtils::VectorNorm(tangent));
-    cross_section_director_2.Clear();
+    cross_section_director_2.clear();
     cross_section_director_2(0) = -tangent(1);
     cross_section_director_2(1) = tangent(0);
-    cross_section_director_3.Clear();
+    cross_section_director_3.clear();
     cross_section_director_3(2) = 1.;
 
     // Set the triad
@@ -225,7 +225,7 @@ namespace GEOMETRYPAIR
     // transposed Jacobi matrix.
     Core::LinAlg::Matrix<3, 3, scalar_type> dXdxi(true);
     EvaluatePositionDerivative1<volume>(xi, X_volume, dXdxi);
-    J.Clear();
+    J.clear();
     J.UpdateT(dXdxi);
   }
 
@@ -263,7 +263,7 @@ namespace GEOMETRYPAIR
           dNdX(i_row, i_col) += inv_J(i_row, i_sum) * dNdxi(i_sum, i_col);
 
     // Calculate F
-    F.Clear();
+    F.clear();
     for (unsigned int i_row = 0; i_row < 3; i_row++)
       for (unsigned int i_col = 0; i_col < 3; i_col++)
         for (unsigned int i_sum = 0; i_sum < volume::n_nodes_ * volume::n_val_; i_sum++)

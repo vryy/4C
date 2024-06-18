@@ -618,7 +618,7 @@ void Core::Conditions::LocsysManager::calc_rotation_vector_for_normal_system(
     Core::LinAlg::Matrix<3, 1> nodeNormal;  // massConsistentNodeNormals contains (dim_+1) dofs
                                             // in the fluid case and (dim_) dofs in the ale case,
                                             // but only the first (dim_) are used.
-    nodeNormal.Clear();                     // if dim_==2, then the third component is just not used
+    nodeNormal.clear();                     // if dim_==2, then the third component is just not used
     double length = 0.0;
     for (int jdim = 0; jdim < dim_; jdim++)
     {

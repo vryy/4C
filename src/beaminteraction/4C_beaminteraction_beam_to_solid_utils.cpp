@@ -620,7 +620,7 @@ void BEAMINTERACTION::GetSolidRotationVectorPolarDecomposition2D(
     U_times_U.MultiplyTN(F, F);
 
     // We have to calculate the square root of the matrix U*U here.
-    U.Clear();
+    U.clear();
     if (abs(Core::FADUtils::CastToDouble(U_times_U(0, 0) - U_times_U(1, 1))) < 1e-10 and
         abs(Core::FADUtils::CastToDouble(U_times_U(0, 1))) < 1e-10)
     {

@@ -3556,7 +3556,7 @@ namespace Core::LinAlg
       Sets every value in this matrix to zero. This is equivalent to
       PutScalar(0.0), but it should be faster.
      */
-    inline void Clear() { DenseFunctions::clearMatrix<value_type, rows, cols>(A()); }
+    inline void clear() { DenseFunctions::clearMatrix<value_type, rows, cols>(A()); }
 
     // Epetra-style Functions
     /// Fill with scalar

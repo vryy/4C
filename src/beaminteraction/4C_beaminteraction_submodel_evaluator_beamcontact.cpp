@@ -964,7 +964,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
   assembly_managers_.clear();
 
   // clear the geometry evaluation data
-  beam_interaction_conditions_ptr_->Clear();
+  beam_interaction_conditions_ptr_->clear();
 
   std::map<int, std::set<Core::Elements::Element*>>::const_iterator nearbyeleiter;
 

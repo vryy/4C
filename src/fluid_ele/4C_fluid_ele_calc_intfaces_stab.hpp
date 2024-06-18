@@ -516,7 +516,7 @@ namespace Discret
       )
       {
         static Core::LinAlg::Matrix<nsd_, numnode> xyz_surf(true);
-        xyz_surf.Clear();
+        xyz_surf.clear();
 
         if (connectivity.size() != numnode)
           FOUR_C_THROW("wrong number of nodes for parent's surface");
@@ -619,7 +619,7 @@ namespace Discret
       )
       {
         static Core::LinAlg::Matrix<nsd_, numnode> xyz_surf(true);
-        xyz_surf.Clear();
+        xyz_surf.clear();
 
         if (connectivity.size() != numnode)
           FOUR_C_THROW("wrong number of nodes for parent's surface");
@@ -677,7 +677,7 @@ namespace Discret
         // matrix that contains the coordinates of the start and end point of the connecting lines
         // between the two opposite surfaces
         static Core::LinAlg::Matrix<nsd_, numlines * 2> xyze_distance_lines;
-        xyze_distance_lines.Clear();
+        xyze_distance_lines.clear();
 
         if (master == true)  // is parent element the master element?
         {

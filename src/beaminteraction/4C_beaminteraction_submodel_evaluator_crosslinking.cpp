@@ -599,7 +599,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_
           Teuchos::rcp(new BEAMINTERACTION::Data::CrosslinkerData());
 
       // set positions
-      clpos.Clear();
+      clpos.clear();
       set_position_of_double_bonded_crosslinker_pb_cconsistent(clpos,
           beam_data_[DiscretPtr()->gElement(iter.GetEleGid1())->LID()]->GetBSpotPosition(
               linkertype, iter.GetLocBspotId1()),
@@ -1005,8 +1005,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::pre_update_step_element(b
 
   for (int i = 0; i < BinDiscret().NumMyRowNodes(); ++i)
   {
-    d.Clear();
-    ref.Clear();
+    d.clear();
+    ref.clear();
 
     // get a pointer at i-th row node
     Core::Nodes::Node* node = BinDiscret().lRowNode(i);

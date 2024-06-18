@@ -899,8 +899,8 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         {
           str_params_interface().set_ele_eval_error_flag(
               STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
-          stiffmatrix->Clear();
-          force->Clear();
+          stiffmatrix->clear();
+          force->clear();
           return;
         }
         else
@@ -914,8 +914,8 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         if (error_tol)
         {
           params.set<bool>("eval_error", true);
-          stiffmatrix->Clear();
-          force->Clear();
+          stiffmatrix->clear();
+          force->clear();
           return;
         }
         else
@@ -1154,7 +1154,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
       params.set("gp_coords_ref", point);
 
       // center of element in reference configuration
-      point.Clear();
+      point.clear();
       soh8_element_center_refe_coords(point, xrefe);
       params.set("elecenter_coords_ref", point);
     }
@@ -1692,7 +1692,7 @@ void Discret::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
 
     // center of element in reference configuration
     Core::LinAlg::Matrix<NUMDIM_SOH8, 1> point(false);
-    point.Clear();
+    point.clear();
     soh8_element_center_refe_coords(point, xrefe);
     params.set("elecenter_coords_ref", point);
 

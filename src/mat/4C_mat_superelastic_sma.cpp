@@ -955,7 +955,7 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     }
 
     // express coefficents of tangent in Kirchhoff stresses
-    cmat->Clear();
+    cmat->clear();
     for (int a = 0; a < 3; a++)
     {
       // - sum_1^3 (2 * tau N_aaaa)

@@ -1328,30 +1328,30 @@ bool ScaTra::LevelSetAlgorithm::project_node_on_patch(const Core::LinAlg::Matrix
   {
     // evaluate shape functions in boundary cell space at current position \eta_1,\eta_2 on the
     // patch
-    funct.Clear();
+    funct.clear();
     Core::FE::shape_function_2D(funct, eta(0), eta(1), patch.Shape());
     // evaluate derivatives of shape functions in boundary cell space at current position
     // \eta_1,\eta_2 on the patch
-    deriv.Clear();
+    deriv.clear();
     Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), patch.Shape());
 
     // evaluate projection X of node P at current position \eta_1,\eta_2 on the patch
     // projX(i,j) = patchcoord(i,k)*funct(k,1)
-    projX.Clear();
+    projX.clear();
     projX.MultiplyNN(patchcoordfix, funct);
 
     // evaluate gradient of projection X of node P at current position \eta_1,\eta_2 on the patch
     // gradprojX(i,j) = patchcoord(i,k)*deriv(j,k)
-    gradprojX.Clear();
+    gradprojX.clear();
     gradprojX.MultiplyNT(patchcoordfix, deriv);
 
     //---------------------------------------------------
     // build system of equations F and its gradient gradF
     //---------------------------------------------------
     // TODO documentaton missing
-    f.Clear();
-    gradf.Clear();
-    incr.Clear();
+    f.clear();
+    gradf.clear();
+    incr.clear();
     for (size_t icoord = 0; icoord < nsd; ++icoord)
     {
       // evaluate function f

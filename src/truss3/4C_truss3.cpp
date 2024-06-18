@@ -357,7 +357,7 @@ void Discret::ELEMENTS::Truss3::LocationVector(
   const int numnode = num_node();
   const Core::Nodes::Node* const* nodes = Nodes();
 
-  la.Clear();
+  la.clear();
 
   // we need to look at all DofSets of our discretization
   for (int dofset = 0; dofset < la.Size(); ++dofset)

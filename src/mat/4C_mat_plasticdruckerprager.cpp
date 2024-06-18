@@ -146,7 +146,7 @@ void Mat::PlasticDruckerPrager::update()
   strainpllast_ = strainplcurr_;
   strainbarpllast_ = strainbarplcurr_;
 
-  std::for_each(strainplcurr_.begin(), strainplcurr_.end(), [](auto& item) { item.Clear(); });
+  std::for_each(strainplcurr_.begin(), strainplcurr_.end(), [](auto& item) { item.clear(); });
   std::fill(strainbarplcurr_.begin(), strainbarplcurr_.end(), 0.0);
 }
 
@@ -164,7 +164,7 @@ void Mat::PlasticDruckerPrager::setup_cmat_elasto_plastic_cone(
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstrain, double xi, double Hiso, double eta,
     double etabar)
 {
-  cmat.Clear();
+  cmat.clear();
 
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> id2(true);
   Core::LinAlg::Voigt::identity_matrix(id2);
@@ -231,7 +231,7 @@ void Mat::PlasticDruckerPrager::setup_cmat_elasto_plastic_apex(
   for (int i = 0; i < 3; i++) id2(i) = 1.0;
   double epfac = 0.0;
   epfac = Kappa * (1 - Kappa / (Kappa + xi / eta * xi / etabar * Hiso));
-  cmat.Clear();
+  cmat.clear();
   cmat.MultiplyNT(epfac, id2, id2, 0.0);
 }
 

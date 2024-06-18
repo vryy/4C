@@ -171,7 +171,7 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
 
     for (unsigned int ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
     {
-      interpolated_position.Clear();
+      interpolated_position.clear();
       xi = -1.0 + ipoint * 2.0 / n_subsegments_;
 
       if (use_absolute_positions_)
@@ -303,8 +303,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_displacement_field(
     {
       xi = -1.0 + ipoint * 2.0 / n_subsegments_;
 
-      pos_visualization_point.Clear();
-      refpos_visualization_point.Clear();
+      pos_visualization_point.clear();
+      refpos_visualization_point.clear();
 
       // interpolate
       beamele->GetRefPosAtXi(refpos_visualization_point, xi);
@@ -399,7 +399,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendTriadField(
     {
       xi = -1.0 + ipoint * 2.0 / n_subsegments_;
 
-      triad_visualization_point.Clear();
+      triad_visualization_point.clear();
 
       beamele->GetTriadAtXi(triad_visualization_point, xi, beamelement_displacement_vector);
 
@@ -746,7 +746,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_point_circular_cross_section_
     {
       xi = -1.0 + ipoint * 2.0 / n_subsegments_;
 
-      triad_visualization_point.Clear();
+      triad_visualization_point.clear();
 
       beamele->GetTriadAtXi(triad_visualization_point, xi, beamelement_displacement_vector);
 
@@ -1385,7 +1385,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_paramater
     for (int unsigned ibase = 0; ibase < 3; ++ibase)
     {
       // init current base vector
-      unit_base_vec.Clear();
+      unit_base_vec.clear();
       unit_base_vec(ibase) = 1.0;
 
       double cos_squared = dirvec.Dot(unit_base_vec) / curr_lin_ele_length;

@@ -51,8 +51,8 @@ namespace Mat
           "An additional inelastic part is not yet implemented for anisotropic materials.");
     }
 
-    S_stress.Clear();
-    cmat.Clear();
+    S_stress.clear();
+    cmat.clear();
 
     // Variables needed for the computation of the stress resultants
     static Core::LinAlg::Matrix<3, 3> C(true);

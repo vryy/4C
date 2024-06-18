@@ -125,7 +125,7 @@ void Mat::FourierIso::evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp,
     Core::LinAlg::Matrix<2, 2>& cmat, Core::LinAlg::Matrix<2, 1>& heatflux) const
 {
   // conductivity tensor
-  cmat.Clear();
+  cmat.clear();
   for (int i = 0; i < 2; ++i) cmat(i, i) = params_->conduct_;
 
   // heatflux
@@ -139,7 +139,7 @@ void Mat::FourierIso::evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp,
     Core::LinAlg::Matrix<3, 3>& cmat, Core::LinAlg::Matrix<3, 1>& heatflux) const
 {
   // conductivity tensor
-  cmat.Clear();
+  cmat.clear();
   for (int i = 0; i < 3; ++i) cmat(i, i) = params_->conduct_;
 
   // heatflux

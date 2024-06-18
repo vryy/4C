@@ -415,8 +415,8 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
-  stress->Clear();
-  cmat->Clear();
+  stress->clear();
+  cmat->clear();
 
   // get passive material parameters
   const double alpha = params_->alpha_;
@@ -790,7 +790,7 @@ Core::LinAlg::Matrix<3, 3> Mat::MuscleGiantesio::d_act_def_grad_d_act_level(
   }
   else
   {
-    dFadomegaa.Clear();
+    dFadomegaa.clear();
   }
   return dFadomegaa;
 }
@@ -807,7 +807,7 @@ Core::LinAlg::Matrix<3, 3> Mat::MuscleGiantesio::dd_act_def_grad_dd_act_level(
   }
   else
   {
-    ddFaddomegaa.Clear();
+    ddFaddomegaa.clear();
   }
   return ddFaddomegaa;
 }

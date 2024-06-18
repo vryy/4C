@@ -1854,8 +1854,8 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
         {
           str_params_interface().set_ele_eval_error_flag(
               STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
-          stiffmatrix->Clear();
-          force->Clear();
+          stiffmatrix->clear();
+          force->clear();
           return;
         }
         else
@@ -2160,7 +2160,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
       params.set("gp_coords_ref", point);
 
       // center of element in reference configuration
-      point.Clear();
+      point.clear();
       soh8_element_center_refe_coords(point, xrefe);
       params.set("elecenter_coords_ref", point);
     }
@@ -2833,7 +2833,7 @@ void Discret::ELEMENTS::SoHex8::update_element(std::vector<double>& disp,
 
     // center of element in reference configuration
     Core::LinAlg::Matrix<NUMDIM_SOH8, 1> point(false);
-    point.Clear();
+    point.clear();
     soh8_element_center_refe_coords(point, xrefe);
     params.set("elecenter_coords_ref", point);
 
@@ -3230,8 +3230,8 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
 
   static Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(true);  // reference coord. of element
   static Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr(true);  // current  coord. of element
-  xrefe.Clear();
-  xcurr.Clear();
+  xrefe.clear();
+  xcurr.clear();
   Core::Nodes::Node** nodes = Nodes();
 
   for (int i = 0; i < NUMNOD_SOH8; ++i)
@@ -3245,7 +3245,7 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
   }
 
   static Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv(true);
-  deriv.Clear();
+  deriv.clear();
   Core::FE::shape_function_deriv1<Core::FE::CellType::hex8>(xi, deriv);
 
   static Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ(true);
@@ -3258,7 +3258,7 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
 
   // linearization of deformation gradient F w.r.t. displacements
   static Core::LinAlg::Matrix<9, NUMDOF_SOH8> d_F_dd(true);
-  d_F_dd.Clear();
+  d_F_dd.clear();
   if (d_cauchyndir_dd || d2_cauchyndir_dd_dn || d2_cauchyndir_dd_ddir || d2_cauchyndir_dd2 ||
       d2_cauchyndir_dd_dxi)
   {
@@ -3324,8 +3324,8 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
   static Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<Core::FE::CellType::hex8>::numderiv2,
       NUMNOD_SOH8>
       deriv2(true);
-  d_F_dxi.Clear();
-  deriv2.Clear();
+  d_F_dxi.clear();
+  deriv2.clear();
 
   if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
   {
@@ -3367,7 +3367,7 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
     static Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<Core::FE::CellType::hex8>::numderiv2,
         NUMNOD_SOH8>
         deriv2(true);
-    deriv2.Clear();
+    deriv2.clear();
     Core::FE::shape_function_deriv2<Core::FE::CellType::hex8>(xi, deriv2);
 
     static Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<Core::FE::CellType::hex8>::numderiv2,
@@ -3384,7 +3384,7 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
     d2_cauchyndir_dd_dxi_mat.MultiplyTN(1.0, d2_cauchyndir_dF2_d_F_dd, d_F_dxi, 0.0);
 
     static Core::LinAlg::Matrix<9, NUMDIM_SOH8 * NUMDOF_SOH8> d2_F_dxi_dd(true);
-    d2_F_dxi_dd.Clear();
+    d2_F_dxi_dd.clear();
     for (int i = 0; i < NUMDIM_SOH8; ++i)
     {
       for (int j = 0; j < NUMDIM_SOH8; ++j)

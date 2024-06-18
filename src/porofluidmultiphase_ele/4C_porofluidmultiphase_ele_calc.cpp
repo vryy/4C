@@ -409,12 +409,12 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::node_loop(Core::Ele
   //       are set in such a way that the standard routines can be used
 
   // dummy derivative matrix as zero
-  derxy_.Clear();
+  derxy_.clear();
 
   for (int inode = 0; inode < nen_; ++inode)
   {
     // dummy shape function matrix (set to zero)
-    funct_.Clear();
+    funct_.clear();
     // set value at current node to 1
     funct_(inode) = 1.0;
 
@@ -461,8 +461,8 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate_only_eleme
   //       variable and phase-managers are required
 
   // dummy derivative matrix as zero
-  derxy_.Clear();
-  funct_.Clear();
+  derxy_.clear();
+  funct_.clear();
 
   //----------------------------------------------------------------
   // 1) element matrix
@@ -575,7 +575,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::eval_shape_func_and_deri
     Core::FE::gder2<distype, nen_>(xjm_, derxy_, deriv2_, xyze_, derxy2_);
   }
   else
-    derxy2_.Clear();
+    derxy2_.clear();
 
   //------------------------get determinant of Jacobian dX / ds
   // transposed jacobian "dX/ds"

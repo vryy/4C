@@ -31,10 +31,10 @@ GEOMETRYPAIR::LineToSurfaceEvaluationData::LineToSurfaceEvaluationData(
 /**
  *
  */
-void GEOMETRYPAIR::LineToSurfaceEvaluationData::Clear()
+void GEOMETRYPAIR::LineToSurfaceEvaluationData::clear()
 {
   // Call reset on the base method.
-  LineTo3DEvaluationData::Clear();
+  LineTo3DEvaluationData::clear();
   face_elements_.clear();
 }
 

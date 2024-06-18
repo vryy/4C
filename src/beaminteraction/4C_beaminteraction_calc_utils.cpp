@@ -129,8 +129,8 @@ namespace BEAMINTERACTION
 
       for (int i = 0; i < discret->NumMyRowNodes(); ++i)
       {
-        d.Clear();
-        X.Clear();
+        d.clear();
+        X.clear();
 
         // get a pointer at i-th row node
         Core::Nodes::Node* node = discret->lRowNode(i);

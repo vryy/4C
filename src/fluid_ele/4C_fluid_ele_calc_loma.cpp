@@ -148,7 +148,7 @@ int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Discret::ELEMENTS:
   my::extract_values_from_global_vector(
       discretization, lm, *my::rotsymmpbc_, &eveln, &escaam, "scaam");
 
-  if (not my::fldparatimint_->IsGenalpha()) eaccam.Clear();
+  if (not my::fldparatimint_->IsGenalpha()) eaccam.clear();
 
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
@@ -410,7 +410,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
     //  evaluate temperature-based residual vector for continuity equation
     //----------------------------------------------------------------------
     // set residual vector for continuity equation to zero
-    lin_resC_DT.Clear();
+    lin_resC_DT.clear();
 
     // transient term
     if (not my::fldparatimint_->IsStationary())
@@ -469,7 +469,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
       if (my::is_higher_order_ele_)
         my::calc_div_eps(evelaf, eveln);
       else
-        my::visc_old_.Clear();
+        my::visc_old_.clear();
 
       // compute residual of momentum equation and subgrid-scale velocity
       // -> residual of momentum equation different for generalized-alpha
@@ -542,7 +542,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
       //  evaluate residual vector for energy-conservation equation
       //----------------------------------------------------------------------
       // set residual vector for energy-conservation equation to zero
-      lin_resE_DT.Clear();
+      lin_resE_DT.clear();
 
       // transient term
       if (not my::fldparatimint_->IsStationary())
@@ -566,7 +566,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
       {
         // compute second derivatives of shape functions
         Core::LinAlg::Matrix<nen_, 1> diff;
-        diff.Clear();
+        diff.clear();
         // compute N,xx + N,yy + N,zz for each shape function
         for (int i = 0; i < nen_; ++i)
         {

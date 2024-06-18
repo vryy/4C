@@ -140,7 +140,7 @@ namespace Adapter
     };
 
     /// Clears the pair vector and segmentation information
-    virtual void Clear();
+    virtual void clear();
 
     /// Resets class members of the bridge
     virtual void ResetBridge() = 0;

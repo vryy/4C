@@ -113,7 +113,7 @@ namespace Core::Elements
     {
      public:
       /// clear all vectors
-      void Clear()
+      void clear()
       {
         lm_.clear();
         lmdirich_.clear();
@@ -154,9 +154,9 @@ namespace Core::Elements
       explicit LocationArray(int size) : data_(size) {}
 
       /// clear all location entries
-      void Clear()
+      void clear()
       {
-        for (unsigned i = 0; i < data_.size(); ++i) data_[i].Clear();
+        for (unsigned i = 0; i < data_.size(); ++i) data_[i].clear();
       }
 
       /// access location entry

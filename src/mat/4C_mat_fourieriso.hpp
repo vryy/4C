@@ -157,11 +157,11 @@ namespace Mat
     void evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
         Core::LinAlg::Matrix<3, 1>& heatflux) const override;
 
-    void ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const override { dCondDT.Clear(); }
+    void ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const override { dCondDT.clear(); }
 
-    void ConductivityDerivT(Core::LinAlg::Matrix<2, 2>& dCondDT) const override { dCondDT.Clear(); }
+    void ConductivityDerivT(Core::LinAlg::Matrix<2, 2>& dCondDT) const override { dCondDT.clear(); }
 
-    void ConductivityDerivT(Core::LinAlg::Matrix<1, 1>& dCondDT) const override { dCondDT.Clear(); }
+    void ConductivityDerivT(Core::LinAlg::Matrix<1, 1>& dCondDT) const override { dCondDT.clear(); }
 
     double CapacityDerivT() const override { return 0; }
 

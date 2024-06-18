@@ -80,7 +80,7 @@ void MIXTURE::AnisotropicGrowthStrategy::evaluate_growth_stress_cmat(
     Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
     Core::LinAlg::Matrix<6, 6>& cmat, const int gp, const int eleGID) const
 {
-  S_stress.Clear();
-  cmat.Clear();
+  S_stress.clear();
+  cmat.clear();
 }
 FOUR_C_NAMESPACE_CLOSE

@@ -247,8 +247,8 @@ void Mat::MembraneActiveStrain::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3
     Core::LinAlg::Matrix<3, 3>& cmat, const int gp, const int eleGID)
 {
   // blank resulting quantities
-  stress.Clear();
-  cmat.Clear();
+  stress.clear();
+  cmat.clear();
 
   // get pointer to vector containing the scalar states at the gauss points
   Teuchos::RCP<std::vector<std::vector<double>>> gpscalar =

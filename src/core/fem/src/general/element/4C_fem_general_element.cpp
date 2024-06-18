@@ -463,7 +463,7 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
     FOUR_C_THROW("wrong number of nodes");
   }
 
-  la.Clear();
+  la.clear();
 
   // we need to look at all DofSets of our discretization
   for (int dofset = 0; dofset < la.Size(); ++dofset)
@@ -576,7 +576,7 @@ void Core::Elements::Element::LocationVector(
   const int numnode = num_node();
   const Core::Nodes::Node* const* nodes = Nodes();
 
-  la.Clear();
+  la.clear();
 
   // we need to look at all DofSets of our discretization
   for (int dofset = 0; dofset < la.Size(); ++dofset)

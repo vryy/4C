@@ -40,7 +40,7 @@ namespace
       dSdiFin_(5, 0) = -1.40e+02; dSdiFin_(5, 1) = -1.37e+02; dSdiFin_(5, 2) = -1.40e+02; dSdiFin_(5, 3) = -1.28e+00; dSdiFin_(5, 4) = -4.09e-02; dSdiFin_(5, 5) =  3.85e+03; dSdiFin_(5, 6) = -1.36e-01; dSdiFin_(5, 7) = -3.85e+00; dSdiFin_(5, 8) =  3.84e+03;
 
       // set up reference solution of inverse inelastic deformation gradient of InelasticDefgradLinScalarIso
-      iFin_lin_scalar_iso_solution_.Clear();
+      iFin_lin_scalar_iso_solution_.clear();
       iFin_lin_scalar_iso_solution_(0, 0) = iFin_lin_scalar_iso_solution_(1, 1) = iFin_lin_scalar_iso_solution_(2, 2) = 0.9948803003804159;
 
       // set up reference solution of inverse inelastic deformation gradient of InelasticDefgradLinScalarAniso
@@ -49,7 +49,7 @@ namespace
       iFin_lin_scalar_aniso_solution_(2, 0) = -0.0034210296448376; iFin_lin_scalar_aniso_solution_(2, 1) = -0.0017105148224188; iFin_lin_scalar_aniso_solution_(2, 2) =  0.9989736911065487;
 
       // set up reference solution of inverse inelastic deformation gradient of InelasticDefgradPolyIntercalFracIso
-      iFin_poly_intercal_frac_iso_solution_.Clear();
+      iFin_poly_intercal_frac_iso_solution_.clear();
       iFin_poly_intercal_frac_iso_solution_(0, 0) = iFin_poly_intercal_frac_iso_solution_(1, 1) = iFin_poly_intercal_frac_iso_solution_(2, 2) = 0.9991151119224016;
 
       // set up reference solution of inverse inelastic deformation gradient of InelasticDefgradPolyIntercalFracAniso
@@ -58,7 +58,7 @@ namespace
       iFin_poly_intercal_frac_aniso_solution_(2, 0) = -0.0005938020548410; iFin_poly_intercal_frac_aniso_solution_(2, 1) = -0.0002969010274205; iFin_poly_intercal_frac_aniso_solution_(2, 2) =  0.9998218593835476;
 
       // set up reference solution of inverse inelastic deformation gradient of InelasticDefgradLinTemIso
-      iFin_lin_temp_iso_solution_.Clear();
+      iFin_lin_temp_iso_solution_.clear();
       iFin_lin_temp_iso_solution_(0, 0) = iFin_lin_temp_iso_solution_(1, 1) = iFin_lin_temp_iso_solution_(2, 2) = 1.006073023359708;
 
       // clang-format on
@@ -405,8 +405,8 @@ namespace
     FOUR_C_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
 
     // clear variables and next test
-    DFinDx.Clear();
-    DFinDx_ref.Clear();
+    DFinDx.clear();
+    DFinDx_ref.clear();
     lin_scalar_aniso_->evaluate_inelastic_def_grad_derivative(detF, DFinDx);
     DFinDx_ref(0) = 6.734163313433e-07;
     DFinDx_ref(1) = 1.683540828358e-07;
@@ -417,15 +417,15 @@ namespace
     FOUR_C_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
 
     // clear variables and next test
-    DFinDx.Clear();
-    DFinDx_ref.Clear();
+    DFinDx.clear();
+    DFinDx_ref.clear();
     poly_intercal_frac_iso_->evaluate_inelastic_def_grad_derivative(detF, DFinDx);
     DFinDx_ref(0) = DFinDx_ref(1) = DFinDx_ref(2) = 3.399216373729e-07;
     FOUR_C_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
 
     // clear variables and next test
-    DFinDx.Clear();
-    DFinDx_ref.Clear();
+    DFinDx.clear();
+    DFinDx_ref.clear();
     poly_intercal_frac_aniso_->evaluate_inelastic_def_grad_derivative(detF, DFinDx);
     DFinDx_ref(0) = 7.623672134952e-07;
     DFinDx_ref(1) = 1.905918033738e-07;
@@ -436,8 +436,8 @@ namespace
     FOUR_C_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
 
     // clear variables and next test
-    DFinDx.Clear();
-    DFinDx_ref.Clear();
+    DFinDx.clear();
+    DFinDx_ref.clear();
     lin_temp_iso_->evaluate_inelastic_def_grad_derivative(detF, DFinDx);
     DFinDx_ref(0) = DFinDx_ref(1) = DFinDx_ref(2) = 3.373943094440e-04;
     FOUR_C_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
@@ -455,7 +455,7 @@ namespace
     FOUR_C_EXPECT_NEAR(iFin, iFin_lin_scalar_iso_solution_, 1.0e-10);
 
     // clear matrix to be filled again
-    iFin.Clear();
+    iFin.clear();
 
     // test InelasticDefgradLinScalarAniso evaluate the method
     lin_scalar_aniso_->evaluate_inverse_inelastic_def_grad(&FM_, iFin);
@@ -464,7 +464,7 @@ namespace
     FOUR_C_EXPECT_NEAR(iFin, iFin_lin_scalar_aniso_solution_, 1.0e-10);
 
     // clear matrix to be filled again
-    iFin.Clear();
+    iFin.clear();
 
     // test InelasticDefgradPolyIntercalFracIso evaluate the method
     poly_intercal_frac_iso_->evaluate_inverse_inelastic_def_grad(&FM_, iFin);
@@ -473,7 +473,7 @@ namespace
     FOUR_C_EXPECT_NEAR(iFin, iFin_poly_intercal_frac_iso_solution_, 1.0e-10);
 
     // clear matrix to be filled again
-    iFin.Clear();
+    iFin.clear();
 
     // test InelasticDefgradPolyIntercalFracAniso evaluate the method
     poly_intercal_frac_aniso_->evaluate_inverse_inelastic_def_grad(&FM_, iFin);
@@ -482,7 +482,7 @@ namespace
     FOUR_C_EXPECT_NEAR(iFin, iFin_poly_intercal_frac_aniso_solution_, 1.0e-10);
 
     // clear matrix to be filled again
-    iFin.Clear();
+    iFin.clear();
 
     // test InelasticDefgradLinTempIso: evaluate the method
     lin_temp_iso_->evaluate_inverse_inelastic_def_grad(&FM_, iFin);
@@ -523,7 +523,7 @@ namespace
     FOUR_C_EXPECT_NEAR(CMatAdd, CMatAdd_ref_solution, 1.0e-10);
 
     // clear matrix before test of next method
-    CMatAdd.Clear();
+    CMatAdd.clear();
 
     // test InelasticDefgradLinScalarAniso set up reference solution
     // clang-format off
@@ -543,7 +543,7 @@ namespace
     FOUR_C_EXPECT_NEAR(CMatAdd, CMatAdd_ref_solution, 1.0e-10);
 
     // clear matrix before test of next method
-    CMatAdd.Clear();
+    CMatAdd.clear();
 
     // test InelasticDefgradPolyIntercalFracIso set up reference solution
     // clang-format off
@@ -563,7 +563,7 @@ namespace
     FOUR_C_EXPECT_NEAR(CMatAdd, CMatAdd_ref_solution, 1.0e-10);
 
     // clear matrix before test of next method
-    CMatAdd.Clear();
+    CMatAdd.clear();
 
     // test InelasticDefgradPolyIntercalFracAniso set up reference solution
     // clang-format off
@@ -583,7 +583,7 @@ namespace
     FOUR_C_EXPECT_NEAR(CMatAdd, CMatAdd_ref_solution, 1.0e-10);
 
     // clear matrix before test of next method
-    CMatAdd.Clear();
+    CMatAdd.clear();
 
     // test InelasticDefgradLinTempIso: set up reference solution
     CMatAdd_ref_solution.PutScalar(0.0);
@@ -613,7 +613,7 @@ namespace
     FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
 
     // clear the derivative to be refilled again by next method to be tested
-    dSdc.Clear();
+    dSdc.clear();
 
     // test InelasticDefgradLinScalarAniso set up reference solution
     // clang-format off
@@ -627,7 +627,7 @@ namespace
     FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
 
     // clear the derivative to be refilled again by next method to be tested
-    dSdc.Clear();
+    dSdc.clear();
 
     // test InelasticDefgradPolyIntercalFracIso set up reference solution
     // clang-format off
@@ -642,7 +642,7 @@ namespace
     FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
 
     // clear the derivative to be refilled again by next method to be tested
-    dSdc.Clear();
+    dSdc.clear();
 
     // test InelasticDefgradPolyIntercalFracAniso set up reference solution
     // clang-format off
@@ -657,7 +657,7 @@ namespace
     FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
 
     // clear the derivative to be refilled again by next method to be tested
-    dSdc.Clear();
+    dSdc.clear();
 
     // test InelasticDefgradTempIso: set up reference solution
     // clang-format off

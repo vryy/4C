@@ -43,7 +43,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Clear not reusable data (derived).
      */
-    void Clear() override;
+    void clear() override;
 
     /**
      * \brief Create the beam contact pairs needed for this condition (derived).

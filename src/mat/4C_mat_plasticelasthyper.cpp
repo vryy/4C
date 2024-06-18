@@ -350,7 +350,7 @@ void Mat::PlasticElastHyper::setup(int numgp, Input::LineDefinition* linedef)
 
   // find out which formulations are used
 
-  summandProperties_.Clear();
+  summandProperties_.clear();
 
   ElastHyperProperties(potsum_, summandProperties_);
 
@@ -444,7 +444,7 @@ void Mat::PlasticElastHyper::SetupHillPlasticity(Input::LineDefinition* linedef)
   if (MatParams()->rY_11_ == 0. && MatParams()->rY_22_ == 0. && MatParams()->rY_33_ == 0. &&
       MatParams()->rY_12_ == 0. && MatParams()->rY_23_ == 0. && MatParams()->rY_13_ == 0.)
   {
-    PlAniso_full_.Clear();
+    PlAniso_full_.clear();
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++)
         if (i == j)
@@ -540,7 +540,7 @@ void Mat::PlasticElastHyper::SetupHillPlasticity(Input::LineDefinition* linedef)
     double alpha6 = 1. / 3. / MatParams()->rY_13_ / MatParams()->rY_13_;
 
     // calculate plastic anisotropy tensor
-    PlAniso_full_.Clear();
+    PlAniso_full_.clear();
     add_elasticity_tensor_product(PlAniso_full_, alpha1, M0, M0, 1.);
     add_elasticity_tensor_product(PlAniso_full_, alpha2, M1, M1, 1.);
     add_elasticity_tensor_product(PlAniso_full_, alpha3, M2, M2, 1.);
@@ -599,8 +599,8 @@ void Mat::PlasticElastHyper::EvaluateElast(const Core::LinAlg::Matrix<3, 3>* def
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
-  pk2->Clear();
-  cmat->Clear();
+  pk2->clear();
+  cmat->clear();
 
   // isotropic elasticity in coupled strain energy format
   // isotropic elasticity in decoupled ("mod") format go here as well
@@ -743,8 +743,8 @@ void Mat::PlasticElastHyper::EvaluateCTvol(const Core::LinAlg::Matrix<3, 3>* def
   }
 
   // clear
-  cTvol->Clear();
-  dCTvoldE->Clear();
+  cTvol->clear();
+  dCTvoldE->clear();
 
   // inverse RCG
   Core::LinAlg::Matrix<3, 3> invRCG;
@@ -826,11 +826,11 @@ void Mat::PlasticElastHyper::EvaluatePlast(const Core::LinAlg::Matrix<3, 3>* def
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
-  dPK2dDp->Clear();
-  NCP->Clear();
-  dNCPdC->Clear();
-  dNCPdDp->Clear();
-  if (dNCPdT != nullptr) dNCPdT->Clear();
+  dPK2dDp->clear();
+  NCP->clear();
+  dNCPdC->clear();
+  dNCPdDp->clear();
+  if (dNCPdT != nullptr) dNCPdT->clear();
 
   // new temporary matrices
   Core::LinAlg::Matrix<3, 3> mStr;  // Mandel stress tensor
@@ -1313,7 +1313,7 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
       // in the elastic realm. this is a slightly inconsistent linearization for s!=0
       // however, that way we can ensure that deltaLp=0 (exactly) at any Newton iteration
 
-      if (dNCPdT != nullptr) dNCPdT->Clear();
+      if (dNCPdT != nullptr) dNCPdT->clear();
     }
   }
   // elastic gp
@@ -1356,11 +1356,11 @@ void Mat::PlasticElastHyper::EvaluatePlast(const Core::LinAlg::Matrix<3, 3>* def
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
-  dPK2dLp->Clear();
-  NCP->Clear();
-  dNCPdC->Clear();
-  dNCPdLp->Clear();
-  if (dNCPdT != nullptr) dNCPdT->Clear();
+  dPK2dLp->clear();
+  NCP->clear();
+  dNCPdC->clear();
+  dNCPdLp->clear();
+  if (dNCPdT != nullptr) dNCPdT->clear();
 
   // new temporary matrices
   Core::LinAlg::Matrix<3, 3> mStr;  // Mandel stress tensor
@@ -1796,10 +1796,10 @@ void Mat::PlasticElastHyper::EvaluateCauchyPlast(const Core::LinAlg::Matrix<3, 1
     Core::LinAlg::Matrix<6, 6>& d_cauchy_dC, Core::LinAlg::Matrix<6, 9>& d_cauchy_dF,
     Core::LinAlg::Matrix<6, 1>* d_cauchy_dT)
 {
-  cauchy.Clear();
-  d_cauchy_dC.Clear();
-  d_cauchy_dF.Clear();
-  d_cauchy_dFpi.Clear();
+  cauchy.clear();
+  d_cauchy_dC.clear();
+  d_cauchy_dF.clear();
+  d_cauchy_dFpi.clear();
 
   cauchy.Update(sqrt(prinv_(2)) * dPI(2), id2V_, 1.);
   cauchy.Update((dPI(0) + prinv_(0) * dPI(1)) / sqrt(prinv_(2)), bev_, 1.);
@@ -1861,7 +1861,7 @@ void Mat::PlasticElastHyper::EvaluateCauchyPlast(const Core::LinAlg::Matrix<3, 1
 
   if (d_cauchy_dT)
   {
-    d_cauchy_dT->Clear();
+    d_cauchy_dT->clear();
 
     const double j = sqrt(prinv_(2));
     double d_dPI2_dT = 0.;
@@ -1938,8 +1938,8 @@ void Mat::PlasticElastHyper::evaluate_cauchy_temp_deriv(const Core::LinAlg::Matr
   // than just thermal expansion
   static Core::LinAlg::Matrix<3, 1> dPI(true);
   static Core::LinAlg::Matrix<6, 1> ddPII(true);
-  dPI.Clear();
-  ddPII.Clear();
+  dPI.clear();
+  ddPII.clear();
 
   const double fac = -3.0 * Cte();
   dPI(2) += fac * 0.5 / sqI3 * ddPmodII;
@@ -2080,8 +2080,8 @@ void Mat::PlasticElastHyper::evaluate_kin_quant_elast(const Core::LinAlg::Matrix
 int Mat::PlasticElastHyper::evaluate_kin_quant_plast(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<3, 3>* deltaLp, const int gp, Teuchos::ParameterList& params)
 {
-  id2_.Clear();
-  id2V_.Clear();
+  id2_.clear();
+  id2V_.clear();
   for (int i = 0; i < 3; i++)
   {
     id2V_(i) = 1.;
@@ -2457,7 +2457,7 @@ void Mat::PlasticElastHyper::matrix_exponential3x3(Core::LinAlg::Matrix<3, 3>& M
   // direct calculation for zero-matrix
   if (Norm == 0.)
   {
-    MatrixInOut.Clear();
+    MatrixInOut.clear();
     for (int i = 0; i < 3; i++) MatrixInOut(i, i) = 1.;
     return;
   }
@@ -2468,7 +2468,7 @@ void Mat::PlasticElastHyper::matrix_exponential3x3(Core::LinAlg::Matrix<3, 3>& M
   Core::LinAlg::Matrix<3, 3> In(MatrixInOut);
   int n = 0;
   int facn = 1;
-  MatrixInOut.Clear();
+  MatrixInOut.clear();
   for (int i = 0; i < 3; i++) MatrixInOut(i, i) = 1.;
   Core::LinAlg::Matrix<3, 3> tmp(MatrixInOut);
   Core::LinAlg::Matrix<3, 3> tmp2(MatrixInOut);
@@ -2538,7 +2538,7 @@ void Mat::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
     nmax = nIter;
 
     // compose derivative of matrix exponential (symmetric Voigt-notation)
-    MatrixExpDeriv.Clear();
+    MatrixExpDeriv.clear();
     for (int n = 1; n <= nmax; n++)
     {
       for (int m = 1; m <= n / 2; m++)
@@ -2561,7 +2561,7 @@ void Mat::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
     Core::LinAlg::Matrix<3, 3> tmp1;
     Core::LinAlg::Matrix<3, 3> tmp2;
 
-    MatrixExpDeriv.Clear();
+    MatrixExpDeriv.clear();
     // souza eq. (A.52)
     // note: EW stored in ascending order
 
@@ -2728,7 +2728,7 @@ void Mat::PlasticElastHyper::matrix_exponential_derivative3x3(
   nmax = nIter;
 
   // compose derivative of matrix exponential (non-symmetric Voigt-notation)
-  MatrixExpDeriv.Clear();
+  MatrixExpDeriv.clear();
   for (int n = 1; n <= nmax; n++)
     for (int m = 1; m <= n; m++)
       add_non_symmetric_product(1. / fac[n], Xn.at(m - 1), Xn.at(n - m), MatrixExpDeriv);

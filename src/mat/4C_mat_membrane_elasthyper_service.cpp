@@ -95,8 +95,8 @@ void Mat::MembraneElastHyperEvaluateIsotropicStressCmat(
     const SummandProperties& properties)
 {
   // blank resulting quantities
-  stress.Clear();
-  cmat.Clear();
+  stress.clear();
+  cmat.clear();
 
   // kinematic quantities and identity tensors
   Core::LinAlg::Matrix<3, 1> id2(true);

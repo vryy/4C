@@ -322,7 +322,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_r
     const Core::LinAlg::Matrix<4, 1, T>& Q_nodeI, const Core::LinAlg::Matrix<4, 1, T>& Q_nodeJ,
     Core::LinAlg::Matrix<4, 1, T>& Q_r) const
 {
-  Q_r.Clear();
+  Q_r.clear();
   Core::LinAlg::Matrix<3, 1, T> Phi_IJ(true);
 
   // compute angle of relative rotation between node I and J
@@ -346,7 +346,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_p
     Core::LinAlg::Matrix<3, 1, T>& Phi_IJ) const
 {
   // angle and quaternion of relative rotation between node I and J
-  Phi_IJ.Clear();
+  Phi_IJ.clear();
   Core::LinAlg::Matrix<4, 1, T> QIJ(true);
 
   // computation according to (3.10), Jelenic 1999
@@ -363,7 +363,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_p
     Core::LinAlg::Matrix<3, 1, T>& Psi_li) const
 {
   // angle and quaternion of local rotation vectors at nodes i=0...numnodes
-  Psi_li.Clear();
+  Psi_li.clear();
   Core::LinAlg::Matrix<4, 1, T> Q_li(true);
 
   Core::LargeRotations::quaternionproduct(
@@ -379,7 +379,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_p
     const Core::LinAlg::Matrix<1, numnodes, double>& func,
     Core::LinAlg::Matrix<3, 1, T>& Psi_l) const
 {
-  Psi_l.Clear();
+  Psi_l.clear();
 
   for (unsigned int dof = 0; dof < 3; ++dof)
     for (unsigned int node = 0; node < numnodes; ++node)
@@ -394,7 +394,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_p
     const Core::LinAlg::Matrix<1, numnodes, double>& deriv_xi, const double& jacobi,
     Core::LinAlg::Matrix<3, 1, T>& Psi_l_s) const
 {
-  Psi_l_s.Clear();
+  Psi_l_s.clear();
 
   for (unsigned int dof = 0; dof < 3; ++dof)
     for (unsigned int node = 0; node < numnodes; ++node)
@@ -413,7 +413,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_l
     const Core::LinAlg::Matrix<3, 1, T>& Psi_l, const Core::LinAlg::Matrix<4, 1, T>& Q_r,
     Core::LinAlg::Matrix<3, 3, T>& Lambda) const
 {
-  Lambda.Clear();
+  Lambda.clear();
 
   Core::LinAlg::Matrix<4, 1, T> Ql;
   Core::LinAlg::Matrix<4, 1, T> Qgauss;
@@ -436,7 +436,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_q
     const Core::LinAlg::Matrix<3, 1, T>& Psi_l, const Core::LinAlg::Matrix<4, 1, T>& Q_r,
     Core::LinAlg::Matrix<4, 1, T>& Qgauss) const
 {
-  Qgauss.Clear();
+  Qgauss.clear();
 
   Core::LinAlg::Matrix<4, 1, T> Ql;
 
@@ -471,7 +471,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
 
   for (unsigned int node = 0; node < numnodes; ++node)
   {
-    auxmatrix.Clear();
+    auxmatrix.clear();
 
     auxmatrix = Core::LargeRotations::Tmatrix(Psili[node]);
     auxmatrix.Scale(funct(node));
@@ -488,7 +488,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
   for (unsigned int node = 0; node < numnodes; ++node)
   {
     // compute rightmost term in curley brackets in (3.18), Jelenic 1999
-    Itilde[node].Clear();
+    Itilde[node].clear();
     Itilde[node].Multiply(Tinv_Psil, Core::LargeRotations::Tmatrix(Psili[node]));
     Itilde[node].Scale(funct(node));
 
@@ -569,7 +569,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
     Itildeprime[node].Scale(funct(node));
 
     // compute second term in second squared brackets
-    auxmatrix.Clear();
+    auxmatrix.clear();
     auxmatrix += Core::LargeRotations::Tinvmatrix(Psil);
     auxmatrix.Scale(deriv_s(node));
 
@@ -608,7 +608,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_v
     Core::LinAlg::Matrix<3, 3, T>& vI, const Core::LinAlg::Matrix<3, 1, T>& phiIJ) const
 {
   // matrix v_I
-  vI.Clear();
+  vI.clear();
 
   Core::LargeRotations::computespin(vI, phiIJ);
   // Fixme @grill: think about introducing a tolerance here to avoid singularity
@@ -630,7 +630,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_v
     Core::LinAlg::Matrix<3, 3, T>& vJ, const Core::LinAlg::Matrix<3, 1, T>& phiIJ) const
 {
   // matrix v_J
-  vJ.Clear();
+  vJ.clear();
 
   Core::LargeRotations::computespin(vJ, phiIJ);
   // Fixme @grill: think about introducing a tolerance here to avoid singularity

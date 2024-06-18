@@ -257,8 +257,8 @@ void CONTACT::Element::OldUnitNormalAtXi(
   // get shape function values and derivatives at xi
   evaluate_shape(xi, val, deriv, nnodes);
 
-  n_old.Clear();
-  d_n_old_dxi.Clear();
+  n_old.clear();
+  d_n_old_dxi.clear();
 
   Core::LinAlg::Matrix<3, 1> tmp_n;
   Core::LinAlg::Matrix<3, 2> tmp_n_deriv;

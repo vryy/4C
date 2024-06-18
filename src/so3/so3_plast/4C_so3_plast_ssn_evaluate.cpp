@@ -1238,7 +1238,7 @@ void Discret::ELEMENTS::So3Plast<distype>::condense_plasticity(
       dFdd(7, k * nsd_ + 2) = (*N_XYZ)(1, k);
       dFdd(8, k * nsd_ + 2) = (*N_XYZ)(0, k);
     }
-    cauchy_deriv_.at(gp).Clear();
+    cauchy_deriv_.at(gp).clear();
     if (fbar_)
     {
       if (RCG == nullptr) FOUR_C_THROW("condense_plasticity(...) requires RCG in case of FBAR");
@@ -1271,7 +1271,7 @@ void Discret::ELEMENTS::So3Plast<distype>::condense_plasticity(
 
   if (d_cauchy_dT_ptr)
   {
-    cauchy_deriv_T_.at(gp).Clear();
+    cauchy_deriv_T_.at(gp).clear();
     cauchy_deriv_T_.at(gp).MultiplyNT(1., d_cauchy_dT, shape_function(), 1.);
   }
 
@@ -2154,9 +2154,9 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
   static Core::LinAlg::Matrix<nen_, nsd_> xrefe(true);  // reference coord. of element
   static Core::LinAlg::Matrix<nen_, nsd_> xcurr(true);  // current  coord. of element
   static Core::LinAlg::Matrix<nen_, 1> ele_temp(true);
-  xrefe.Clear();
-  xcurr.Clear();
-  ele_temp.Clear();
+  xrefe.clear();
+  xcurr.clear();
+  ele_temp.clear();
   Core::Nodes::Node** nodes = Nodes();
 
   for (int i = 0; i < nen_; ++i)
@@ -2189,7 +2189,7 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
 
   // linearization of deformation gradient F w.r.t. displacements
   static Core::LinAlg::Matrix<9, numdofperelement_> d_F_dd(true);
-  d_F_dd.Clear();
+  d_F_dd.clear();
   if (d_cauchyndir_dd || d2_cauchyndir_dd_dn || d2_cauchyndir_dd_ddir || d2_cauchyndir_dd_dxi ||
       d2_cauchyndir_dd_dT)
   {
@@ -2279,8 +2279,8 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
   // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
   static Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<distype>::numderiv2, nen_> deriv2(true);
   static Core::LinAlg::Matrix<9, nsd_> d_F_dxi(true);
-  deriv2.Clear();
-  d_F_dxi.Clear();
+  deriv2.clear();
+  d_F_dxi.clear();
 
   if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
   {
@@ -2342,7 +2342,7 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
     }
 
     static Core::LinAlg::Matrix<9, nsd_ * numdofperelement_> d2_F_dxi_dd(true);
-    d2_F_dxi_dd.Clear();
+    d2_F_dxi_dd.clear();
     for (int i = 0; i < nsd_; ++i)
     {
       for (int j = 0; j < nsd_; ++j)
@@ -2403,7 +2403,7 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
     FOUR_C_THROW("have you evaluated the cauchy stress???");
 
   cauchy_n_dir = 0.0;
-  if (d_cauchyndir_dxi) d_cauchyndir_dxi->Clear();
+  if (d_cauchyndir_dxi) d_cauchyndir_dxi->clear();
   if (d_cauchyndir_dT) d_cauchyndir_dT->shape(nen_, 1);
   if (d2_cauchyndir_dd_dT) d2_cauchyndir_dd_dT->shape(numdofperelement_, nen_);
 

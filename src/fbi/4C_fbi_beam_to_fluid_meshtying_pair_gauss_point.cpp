@@ -102,8 +102,8 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::evaluate(
       GEOMETRYPAIR::EvaluatePosition<beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam);
       GEOMETRYPAIR::EvaluatePosition<fluid>(projected_gauss_point.GetXi(), this->ele2pos_, r_fluid);
 
-      N_beam.Clear();
-      N_fluid.Clear();
+      N_beam.clear();
+      N_fluid.clear();
 
       // Evaluate the chapefunctions at the current gauss point
       GEOMETRYPAIR::EvaluateShapeFunction<beam>::evaluate(

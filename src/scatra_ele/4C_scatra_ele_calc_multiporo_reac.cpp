@@ -396,7 +396,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and
   }
   else
   {
-    my::edispnp_.Clear();
+    my::edispnp_.clear();
   }
 
   //---------------------------------------------------------------------------------------------

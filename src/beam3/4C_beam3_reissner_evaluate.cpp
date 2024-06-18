@@ -1272,8 +1272,8 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
     triad_interpolation_scheme_ptr->get_nodal_generalized_rotation_interpolation_matrices(
         Itilde, Psi_l, I_i[gp]);
 
-    Lambdanewmass.Clear();
-    Lambdaconvmass.Clear();
+    Lambdanewmass.clear();
+    Lambdaconvmass.clear();
     // compute current and old triad at Gauss point
     Core::LargeRotations::quaterniontotriad<double>(qnew_gp_mass_[gp], Lambdanewmass);
     Core::LargeRotations::quaterniontotriad<double>(qconv_gp_mass_[gp], Lambdaconvmass);
@@ -1948,7 +1948,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
         for (unsigned int j = 0; j < 3; ++j)
           tempmat(i, j) = stiffmatrix(dofpercombinode * inode + i, dofpercombinode * jnode + 3 + j);
 
-      newstiffmat.Clear();
+      newstiffmat.clear();
       newstiffmat.MultiplyNN(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
@@ -1962,7 +1962,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
           tempmat(i, j) =
               stiffmatrix(dofpercombinode * inode + 3 + i, dofpercombinode * jnode + 3 + j);
 
-      newstiffmat.Clear();
+      newstiffmat.clear();
       newstiffmat.MultiplyNN(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
@@ -1978,7 +1978,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
             tempmat(i, j) =
                 stiffmatrix(dofpercombinode * inode + 6 + i, dofpercombinode * jnode + 3 + j);
 
-        newstiffmat.Clear();
+        newstiffmat.clear();
         newstiffmat.MultiplyNN(tempmat, Tmat);
 
         for (unsigned int i = 0; i < 3; ++i)
@@ -1996,7 +1996,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
           tempmat(i, j) = stiffmatrix(dofperclnode * nnodecl + dofpertriadnode * inode + i,
               dofpercombinode * jnode + 3 + j);
 
-      newstiffmat.Clear();
+      newstiffmat.clear();
       newstiffmat.MultiplyNN(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
@@ -2023,7 +2023,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
           tempmat(i, j) = stiffmatrix(
               dofpercombinode * inode + i, dofperclnode * nnodecl + dofpertriadnode * jnode + j);
 
-      newstiffmat.Clear();
+      newstiffmat.clear();
       newstiffmat.MultiplyNN(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
@@ -2037,7 +2037,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
           tempmat(i, j) = stiffmatrix(dofpercombinode * inode + 3 + i,
               dofperclnode * nnodecl + dofpertriadnode * jnode + j);
 
-      newstiffmat.Clear();
+      newstiffmat.clear();
       newstiffmat.MultiplyNN(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
@@ -2053,7 +2053,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
             tempmat(i, j) = stiffmatrix(dofpercombinode * inode + 6 + i,
                 dofperclnode * nnodecl + dofpertriadnode * jnode + j);
 
-        newstiffmat.Clear();
+        newstiffmat.clear();
         newstiffmat.MultiplyNN(tempmat, Tmat);
 
         for (unsigned int i = 0; i < 3; ++i)
@@ -2070,7 +2070,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
           tempmat(i, j) = stiffmatrix(dofperclnode * nnodecl + dofpertriadnode * inode + i,
               dofperclnode * nnodecl + dofpertriadnode * jnode + j);
 
-      newstiffmat.Clear();
+      newstiffmat.clear();
       newstiffmat.MultiplyNN(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
@@ -2744,7 +2744,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_stochastic_forces(Teuchos::ParameterLis
     }
 
     // compute stochastic force vector per unit length at current GP
-    f_stoch.Clear();
+    f_stoch.clear();
     for (unsigned int idim = 0; idim < ndim; idim++)
       for (unsigned int jdim = 0; jdim < ndim; jdim++)
         f_stoch(idim) += (sqrt_gamma(1) * (idim == jdim) +

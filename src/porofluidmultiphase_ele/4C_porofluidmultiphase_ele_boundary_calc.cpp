@@ -140,7 +140,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
     xyze_ += edispnp_;
   }
   else
-    edispnp_.Clear();
+    edispnp_.clear();
 }
 
 /*----------------------------------------------------------------------*

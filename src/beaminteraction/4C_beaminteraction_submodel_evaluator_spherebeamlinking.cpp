@@ -851,7 +851,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
 
       // criterion: distance
       // get current position at binding spot xi
-      bspotpos.Clear();
+      bspotpos.clear();
       beamele->GetPosOfBindingSpot(bspotpos, beameledisp,
           spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(), rand_bsp[bspot_i],
           PeriodicBoundingBox());
@@ -879,7 +879,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
        * this case */
 
       // get current triad at binding spot xi
-      bspottriad.Clear();
+      bspottriad.clear();
       beamele->get_triad_of_binding_spot(bspottriad, beameledisp,
           spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(), rand_bsp[bspot_i]);
 

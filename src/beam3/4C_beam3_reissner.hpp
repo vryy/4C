@@ -792,7 +792,7 @@ namespace Discret
           const Core::LinAlg::Matrix<3, 1, T>& Psi_l_s,
           const Core::LinAlg::Matrix<3, 1, double>& Kref, Core::LinAlg::Matrix<3, 1, T>& K) const
       {
-        K.Clear();
+        K.clear();
 
         /* Calculation of material curvature vector according to Crisfield 1999, eq. (4.2) (this
          * equation has been derived for a different beam element formulation but is also valid for
@@ -817,7 +817,7 @@ namespace Discret
           const Core::LinAlg::Matrix<3, 1, double>& Gammaref,
           Core::LinAlg::Matrix<3, 1, T>& Gamma) const
       {
-        Gamma.Clear();
+        Gamma.clear();
 
         // convected strain gamma according to Crisfield 1999, eq. (3.4)
         Gamma.MultiplyTN(Lambda, r_s);

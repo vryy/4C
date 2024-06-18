@@ -60,8 +60,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::setu
   BeamPotentialPair::setup();
 
 
-  ele1pos_.Clear();
-  ele2pos_.Clear();
+  ele1pos_.clear();
+  ele2pos_.clear();
 
   /* take care of how to assign the role of master and slave (only applicable to
    * "SingleLengthSpecific" approach). Immediately before this setup(), the element with smaller GID
@@ -1671,7 +1671,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   cos_alpha_deriv_r_xi_master_deriv_r_xi_master.Update(
       -1.0 * norm_r_xi_master_inverse * t_slave_dot_t_master, t_master_partial_r_xi_master, 1.0);
 
-  tmp_mat.Clear();
+  tmp_mat.clear();
   tmp_mat.MultiplyTN(t_slave_tensorproduct_t_master, t_master_partial_r_xi_master);
   cos_alpha_deriv_r_xi_master_deriv_r_xi_master.Update(
       -1.0 * norm_r_xi_master_inverse, tmp_mat, 1.0);
@@ -2479,7 +2479,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     norm_normal_bl_tilde = Core::FADUtils::VectorNorm(normal_bl);
     normal_bl.Scale(1.0 / norm_normal_bl_tilde);
 
-    aux_plane_normal.Clear();
+    aux_plane_normal.clear();
     x = 0.0;
   }
   else
@@ -2703,7 +2703,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   // Todo: check and remove: the following term should vanish since r_xi_master \perp normal_bl
   gap_bl_partial_xi_master = -1.0 * signum_dist_bl_tilde * r_xi_master.Dot(normal_bl);
 
-  v_mat_tmp.Clear();
+  v_mat_tmp.clear();
   for (unsigned int i = 0; i < 3; ++i)
   {
     v_mat_tmp(i, i) += 1.0;
@@ -2718,11 +2718,11 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   {
     // Todo: check and remove: signum_dist_bl_tilde should always be +1.0 in this case!
 
-    gap_bl_partial_r_xi_slave.Clear();
+    gap_bl_partial_r_xi_slave.clear();
 
     gap_bl_partial_r_slave.Update(signum_dist_bl_tilde / norm_normal_bl_tilde, vec_tmp, 1.0);
 
-    gap_bl_partial_r_xi_master.Clear();
+    gap_bl_partial_r_xi_master.clear();
 
     gap_bl_partial_r_master.Update(
         -1.0 * signum_dist_bl_tilde / norm_normal_bl_tilde, vec_tmp, 1.0);
@@ -2746,7 +2746,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   // components from variation of cosine of enclosed angle
   T signum_tangentsscalarproduct = Core::FADUtils::Signum(r_xi_slave.Dot(r_xi_master));
 
-  v_mat_tmp.Clear();
+  v_mat_tmp.clear();
   for (unsigned int i = 0; i < 3; ++i)
   {
     v_mat_tmp(i, i) += 1.0;
@@ -2756,7 +2756,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   cos_alpha_partial_r_xi_slave.Multiply(
       signum_tangentsscalarproduct / Core::FADUtils::VectorNorm(r_xi_slave), v_mat_tmp, t1_master);
 
-  v_mat_tmp.Clear();
+  v_mat_tmp.clear();
   for (unsigned int i = 0; i < 3; ++i)
   {
     v_mat_tmp(i, i) += 1.0;
@@ -2774,10 +2774,10 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   {
     /* set the following quantities to zero since they are not required in this case
      * because pot_ia_partial_x is zero anyway */
-    x_partial_r_slave.Clear();
-    x_partial_r_master.Clear();
-    x_partial_r_xi_slave.Clear();
-    x_partial_r_xi_master.Clear();
+    x_partial_r_slave.clear();
+    x_partial_r_master.clear();
+    x_partial_r_xi_slave.clear();
+    x_partial_r_xi_master.clear();
     x_partial_xi_master = 0.0;
   }
   else
@@ -2785,7 +2785,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     x_partial_r_slave.Update(-1.0 / t1_slave.Dot(aux_plane_normal), aux_plane_normal);
     x_partial_r_master.Update(1.0 / t1_slave.Dot(aux_plane_normal), aux_plane_normal);
 
-    v_mat_tmp.Clear();
+    v_mat_tmp.clear();
     for (unsigned int i = 0; i < 3; ++i)
     {
       v_mat_tmp(i, i) += 1.0;
@@ -2800,7 +2800,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     x_partial_aux_plane_normal.Update(-1.0 / t1_slave.Dot(aux_plane_normal), dist_ul,
         dist_ul.Dot(aux_plane_normal) / std::pow(t1_slave.Dot(aux_plane_normal), 2), t1_slave);
 
-    v_mat_tmp.Clear();
+    v_mat_tmp.clear();
     for (unsigned int i = 0; i < 3; ++i)
       for (unsigned int j = 0; j < 3; ++j) v_mat_tmp(i, j) += r_xi_master(i) * r_xi_master(j);
 
@@ -2811,7 +2811,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
     x_partial_r_xi_master.Update(-1.0 * r_xi_master.Dot(r_xi_slave), x_partial_aux_plane_normal);
 
-    v_mat_tmp.Clear();
+    v_mat_tmp.clear();
     for (unsigned int i = 0; i < 3; ++i)
       for (unsigned int j = 0; j < 3; ++j)
       {
@@ -2939,7 +2939,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   //********************************************************************
   // calculate fpot1: force/residual vector on slave element
   //********************************************************************
-  force_pot_slave_GP.Clear();
+  force_pot_slave_GP.clear();
   // sum up the contributions of all nodes (in all dimensions)
   for (unsigned int idofperdim = 0; idofperdim < (numnodes * numnodalvalues); ++idofperdim)
   {
@@ -2975,7 +2975,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   //********************************************************************
   // calculate fpot2: force/residual vector on master element
   //********************************************************************
-  force_pot_master_GP.Clear();
+  force_pot_master_GP.clear();
   // sum up the contributions of all nodes (in all dimensions)
   for (unsigned int idofperdim = 0; idofperdim < (numnodes * numnodalvalues); ++idofperdim)
   {
@@ -3283,7 +3283,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   cos_alpha_partial_r_xi_slave.Multiply(
       signum_tangentsscalarproduct / Core::FADUtils::VectorNorm(r_xi_slave), v_mat_tmp, t_master);
 
-  v_mat_tmp.Clear();
+  v_mat_tmp.clear();
   for (unsigned int i = 0; i < 3; ++i)
   {
     v_mat_tmp(i, i) += 1.0;
@@ -3396,8 +3396,8 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   //********************************************************************
   // calculate force/residual vector of slave and master element
   //********************************************************************
-  force_pot_slave_GP.Clear();
-  force_pot_master_GP.Clear();
+  force_pot_slave_GP.clear();
+  force_pot_master_GP.clear();
 
   // sum up the contributions of all nodes (in all dimensions)
   for (unsigned int idofperdim = 0; idofperdim < (numnodes * numnodalvalues); ++idofperdim)
@@ -3703,10 +3703,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Rese
   // reset interaction potential as well as interaction forces and moments of this pair
   interaction_potential_ = 0.0;
 
-  for (auto& forcevec : forces_pot_gp_1_) forcevec.Clear();
-  for (auto& forcevec : forces_pot_gp_2_) forcevec.Clear();
-  for (auto& momentvec : moments_pot_gp_1_) momentvec.Clear();
-  for (auto& momentvec : moments_pot_gp_2_) momentvec.Clear();
+  for (auto& forcevec : forces_pot_gp_1_) forcevec.clear();
+  for (auto& forcevec : forces_pot_gp_2_) forcevec.clear();
+  for (auto& momentvec : moments_pot_gp_1_) momentvec.clear();
+  for (auto& momentvec : moments_pot_gp_2_) momentvec.clear();
 }
 
 /*-----------------------------------------------------------------------------------------------*

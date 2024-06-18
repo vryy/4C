@@ -2725,7 +2725,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::radiation(
     Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
     if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
-    radiation_.Clear();
+    radiation_.clear();
 
     // compute the Jacobian matrix
     Core::LinAlg::Matrix<nsd_, nsd_> jac;
@@ -2776,7 +2776,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::radiation(
   }
   else
   {
-    radiation_.Clear();
+    radiation_.clear();
   }
 }
 
@@ -3389,7 +3389,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::fd_check_coupl_nln_fint_cond_capa(
   // loop over rows and disturb corresponding temperature
   for (int j = 0; j < nen_ * numdofpernode_; j++)
   {
-    efint_disturb.Clear();
+    efint_disturb.clear();
     // disturb column dof and evaluate fint
     etempn_(j, 0) += delta;
     nonlinear_thermo_disp_contribution(ele, time, disp, vel,
@@ -3525,7 +3525,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::fd_check_capalin(
   // loop over rows and disturb corresponding temperature
   for (int j = 0; j < nen_ * numdofpernode_; j++)
   {
-    ecapa_disturb.Clear();
+    ecapa_disturb.clear();
     // disturb column dof and evaluate fint
     etempn_(j, 0) += delta;
     nonlinear_thermo_disp_contribution(ele, time, disp, vel, nullptr,

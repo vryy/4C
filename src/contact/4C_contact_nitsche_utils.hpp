@@ -39,7 +39,7 @@ namespace Mortar
 
     ElementNitscheContainer() = default;
 
-    virtual void Clear() = 0;
+    virtual void clear() = 0;
 
     virtual void AssembleRHS(Mortar::Element* mele, CONTACT::VecBlockType row,
         Teuchos::RCP<Epetra_FEVector> fc) const = 0;
@@ -79,9 +79,9 @@ namespace Mortar
   class ElementNitscheDataTsi
   {
    public:
-    void Clear()
+    void clear()
     {
-      rhs_t_.Clear();
+      rhs_t_.clear();
       k_tt_.clear();
       k_td_.clear();
       k_dt_.clear();
@@ -101,9 +101,9 @@ namespace Mortar
   class ElementNitscheDataPoro
   {
    public:
-    void Clear()
+    void clear()
     {
-      rhs_p_.Clear();
+      rhs_p_.clear();
       k_pp_.clear();
       k_pd_.clear();
       k_dp_.clear();
@@ -124,9 +124,9 @@ namespace Mortar
   class ElementNitscheDataSsi
   {
    public:
-    void Clear()
+    void clear()
     {
-      rhs_s_.Clear();
+      rhs_s_.clear();
       k_ss_.clear();
       k_sd_.clear();
       k_ds_.clear();
@@ -146,9 +146,9 @@ namespace Mortar
   class ElementNitscheDataSsiElch
   {
    public:
-    void Clear()
+    void clear()
     {
-      rhs_e_.Clear();
+      rhs_e_.clear();
       k_ee_.clear();
       k_ed_.clear();
       k_de_.clear();
@@ -218,14 +218,14 @@ namespace Mortar
         std::vector<int>& dofs, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) const;
 
 
-    void Clear() override
+    void clear() override
     {
-      rhs_.Clear();
+      rhs_.clear();
       k_.clear();
-      tsi_data_.Clear();
-      poro_data_.Clear();
-      ssi_data_.Clear();
-      ssi_elch_data_.Clear();
+      tsi_data_.clear();
+      poro_data_.clear();
+      ssi_data_.clear();
+      ssi_elch_data_.clear();
     }
 
    private:

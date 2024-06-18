@@ -130,8 +130,8 @@ void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
     Teuchos::RCP<const Core::Mat::Material> material)
 {
   // clear
-  rhs.Clear();
-  sysmat.Clear();
+  rhs.clear();
+  sysmat.clear();
 
   // set element data
   const int numnode = my::iel_;

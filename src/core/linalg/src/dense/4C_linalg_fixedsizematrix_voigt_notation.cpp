@@ -40,7 +40,7 @@ void Core::LinAlg::Voigt::matrix_9x1_to_3x3(
 template <NotationType rows_notation, NotationType cols_notation>
 void Core::LinAlg::Voigt::fourth_order_identity_matrix(Core::LinAlg::Matrix<6, 6>& id)
 {
-  id.Clear();
+  id.clear();
 
   for (unsigned int i = 0; i < 3; ++i) id(i, i) = 1.0;
 

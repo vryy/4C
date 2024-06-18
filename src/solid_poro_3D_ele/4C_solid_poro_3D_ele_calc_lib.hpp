@@ -134,7 +134,7 @@ namespace Discret::ELEMENTS
           discretization, 0, lm, &mydisp, nullptr, "displacement", ele);
 
       Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> dispgrad;
-      dispgrad.Clear();
+      dispgrad.clear();
       // gradient of displacements
       dispgrad.MultiplyNT(mydisp, jacobian_mapping.N_XYZ_);
 
@@ -174,7 +174,7 @@ namespace Discret::ELEMENTS
 
     if (kinematictype == Inpar::STR::KinemType::linear)
     {
-      dDetDefGrad_dDisp.Clear();
+      dDetDefGrad_dDisp.clear();
       return dDetDefGrad_dDisp;
     }
     else

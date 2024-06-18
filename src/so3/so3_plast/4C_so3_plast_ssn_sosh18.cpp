@@ -314,9 +314,9 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
   if (eas_)
   {
     SoSh18::eas_setup(M_gp, G3_0_contra, xrefe);
-    SoSh18::feas_.Clear();
-    SoSh18::KaaInv_.Clear();
-    SoSh18::Kad_.Clear();
+    SoSh18::feas_.clear();
+    SoSh18::KaaInv_.clear();
+    SoSh18::Kad_.clear();
   }
   // prepare EAS***************************************
 

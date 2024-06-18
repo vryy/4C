@@ -46,7 +46,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Reset the evaluation data (derived).
      */
-    void Clear() override;
+    void clear() override;
 
     /**
      * \brief Setup the surface data.

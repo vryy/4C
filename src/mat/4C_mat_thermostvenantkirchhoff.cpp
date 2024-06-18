@@ -373,7 +373,7 @@ void Mat::ThermoStVenantKirchhoff::FillCthermo(Core::LinAlg::Matrix<6, 1>& ctemp
   // write non-zero components
 
   // clear the material tangent, equal to PutScalar(0.0), but faster
-  ctemp.Clear();
+  ctemp.clear();
 
   // loop over the element nodes, non-zero entries only in main directions
   for (int i = 0; i < 3; ++i) ctemp(i, 0) = m;
@@ -509,7 +509,7 @@ double Mat::ThermoStVenantKirchhoff::get_st_modulus_t() const
 void Mat::ThermoStVenantKirchhoff::get_cmat_at_tempnp_t(Core::LinAlg::Matrix<6, 6>& derivcmat)
 {
   // clear the material tangent, identical to PutScalar(0.0)
-  derivcmat.Clear();
+  derivcmat.clear();
 
   if (youngs_is_temp_dependent())
   {

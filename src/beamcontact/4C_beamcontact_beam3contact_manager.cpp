@@ -2585,7 +2585,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
               theta(0) = nodaltangents(0, j);
               theta(1) = nodaltangents(1, j);
               theta(2) = nodaltangents(2, j);
-              R.Clear();
+              R.clear();
               Core::LargeRotations::angletotriad(theta, R);
               std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[j]);
               double lt = disccol[BTSolDiscret().DofColMap()->LID(dofnode[6])];

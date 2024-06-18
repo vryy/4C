@@ -1444,7 +1444,7 @@ namespace Mortar
 
             // evaluate dual shape functions
             Core::LinAlg::Matrix<nnodes, 1> valtemp;
-            valtemp.Clear();
+            valtemp.clear();
             for (int i = 0; i < nnodes; ++i)
               for (int j = 0; j < nnodes; ++j) valtemp(i) += ae(i, j) * stdval(j);
 

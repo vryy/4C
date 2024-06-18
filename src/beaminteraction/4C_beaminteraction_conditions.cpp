@@ -60,7 +60,7 @@ void BEAMINTERACTION::BeamInteractionConditionBase::setup(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditionBase::Clear() {}
+void BEAMINTERACTION::BeamInteractionConditionBase::clear() {}
 
 /**
  *
@@ -267,10 +267,10 @@ void BEAMINTERACTION::BeamInteractionConditions::setup(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::Clear()
+void BEAMINTERACTION::BeamInteractionConditions::clear()
 {
   for (auto const& map_pair : condition_map_)
-    for (auto const& condition : map_pair.second) condition->Clear();
+    for (auto const& condition : map_pair.second) condition->clear();
 }
 
 /**

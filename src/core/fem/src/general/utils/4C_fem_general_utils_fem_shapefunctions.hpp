@@ -1733,7 +1733,7 @@ namespace Core::FE
       }
       case Core::FE::CellType::tet4:
       {
-        deriv2.Clear();
+        deriv2.clear();
         break;
       }
       case Core::FE::CellType::tet10:
