@@ -384,7 +384,7 @@ namespace GEOMETRYPAIR
      * compile time.
      */
     template <typename T>
-    static void Set(T& xi)
+    static void set(T& xi)
     {
       std::string error_string =
           "This is the default implementation of StartValues::Set and should never be called, "
@@ -400,7 +400,7 @@ namespace GEOMETRYPAIR
    */
   template <>
   template <typename T>
-  void StartValues<DiscretizationTypeGeometry::line>::Set(T& xi)
+  void StartValues<DiscretizationTypeGeometry::line>::set(T& xi)
   {
     xi = 0.0;
   }
@@ -410,7 +410,7 @@ namespace GEOMETRYPAIR
    */
   template <>
   template <typename T>
-  void StartValues<DiscretizationTypeGeometry::triangle>::Set(T& xi)
+  void StartValues<DiscretizationTypeGeometry::triangle>::set(T& xi)
   {
     // We do not use xi.PutScalar(0.25) here, since this might be a surface element which has a
     // normal direction and we do not want to set an initial value in the normal direction
@@ -423,7 +423,7 @@ namespace GEOMETRYPAIR
    */
   template <>
   template <typename T>
-  void StartValues<DiscretizationTypeGeometry::quad>::Set(T& xi)
+  void StartValues<DiscretizationTypeGeometry::quad>::set(T& xi)
   {
     xi.PutScalar(0.0);
   }
@@ -433,7 +433,7 @@ namespace GEOMETRYPAIR
    */
   template <>
   template <typename T>
-  void StartValues<DiscretizationTypeGeometry::tetraeder>::Set(T& xi)
+  void StartValues<DiscretizationTypeGeometry::tetraeder>::set(T& xi)
   {
     xi.PutScalar(0.25);
   }
@@ -443,7 +443,7 @@ namespace GEOMETRYPAIR
    */
   template <>
   template <typename T>
-  void StartValues<DiscretizationTypeGeometry::hexahedron>::Set(T& xi)
+  void StartValues<DiscretizationTypeGeometry::hexahedron>::set(T& xi)
   {
     xi.PutScalar(0.0);
   }

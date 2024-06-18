@@ -69,7 +69,7 @@ void STR::MODELEVALUATOR::Contact::setup()
   // ---------------------------------------------------------------------
   // build the solver strategy object
   // ---------------------------------------------------------------------
-  eval_contact_ptr_->Set(&discret(), 0);
+  eval_contact_ptr_->set(&discret(), 0);
   strategy_ptr_ = factory.BuildStrategy(
       cparams, poroslave, poromaster, dof_offset(), interfaces, eval_contact_ptr_.get());
   eval_contact_ptr_->ClearEntry(Core::Gen::AnyDataContainer::DataType::any, 0);
@@ -935,10 +935,10 @@ void STR::MODELEVALUATOR::Contact::run_post_apply_jacobian_inverse(const Epetra_
 {
   check_init_setup();
 
-  eval_contact().Set(&rhs, 0);
-  eval_contact().Set(&result, 1);
-  eval_contact().Set(&xold, 2);
-  eval_contact().Set(&grp, 3);
+  eval_contact().set(&rhs, 0);
+  eval_contact().set(&result, 1);
+  eval_contact().set(&xold, 2);
+  eval_contact().set(&grp, 3);
 
   eval_contact().set_action_type(Mortar::eval_run_post_apply_jacobian_inverse);
   eval_data().set_model_evaluator(this);
@@ -1031,7 +1031,7 @@ bool STR::MODELEVALUATOR::Contact::correct_parameters(NOX::Nln::CorrectionType t
   check_init_setup();
 
   eval_contact().set_action_type(Mortar::eval_correct_parameters);
-  eval_contact().Set(&type, 0);
+  eval_contact().set(&type, 0);
 
   Strategy().evaluate(eval_contact());
 

@@ -227,7 +227,7 @@ namespace CONTACT
               pu_(state.pu_){/* empty */};
 
         /// set state
-        void Set(const Epetra_Vector& xold, const Epetra_Vector& dir,
+        void set(const Epetra_Vector& xold, const Epetra_Vector& dir,
             const CONTACT::Aug::DataContainer& data);
 
         /// get direction

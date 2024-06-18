@@ -37,7 +37,7 @@ void CONTACT::Aug::ParallelDistributionController::setup(CONTACT::ParamsInterfac
   else
     sele_eval_times_->PutScalar(0.0);
 
-  cparams.Set(sele_eval_times_.get(), 0);
+  cparams.set(sele_eval_times_.get(), 0);
 }
 
 /*----------------------------------------------------------------------------*

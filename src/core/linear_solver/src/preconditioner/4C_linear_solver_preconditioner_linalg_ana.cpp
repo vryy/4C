@@ -142,25 +142,25 @@ void Core::LinAlg::Ana::LcVecPointwiseLc::Update(
 #endif
   // we can not avoid extra memory in this case
   Core::LinAlg::Ana::Vector tmp(right_.RangeMap(), false);
-  right_.Set(tmp, 1.0);
+  right_.set(tmp, 1.0);
   v.Multiply(scale, vec_, tmp, 1.0);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Ana::LcLcPointwiseLc::Set(
+void Core::LinAlg::Ana::LcLcPointwiseLc::set(
     Core::LinAlg::Ana::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
-  cout << "Core::LinAlg::Ana::LC_lc_pointwise_lc::Set(Core::LinAlg::Ana::Vector& v, const double& "
+  cout << "Core::LinAlg::Ana::LC_lc_pointwise_lc::set(Core::LinAlg::Ana::Vector& v, const double& "
           "scale)"
        << endl;
   fflush(stdout);
 #endif
-  left_.Set(v, 1.0);
+  left_.set(v, 1.0);
   Core::LinAlg::Ana::Vector tmp(right_.RangeMap(), false);
-  right_.Set(tmp, 1.0);
+  right_.set(tmp, 1.0);
   v.Multiply(scale, v, tmp, 0.0);
 }
 void Core::LinAlg::Ana::LcLcPointwiseLc::Update(
@@ -173,9 +173,9 @@ void Core::LinAlg::Ana::LcLcPointwiseLc::Update(
   fflush(stdout);
 #endif
   Core::LinAlg::Ana::Vector tmp1(left_.RangeMap(), false);
-  left_.Set(tmp1, 1.0);
+  left_.set(tmp1, 1.0);
   Core::LinAlg::Ana::Vector tmp2(right_.RangeMap(), false);
-  right_.Set(tmp2, 1.0);
+  right_.set(tmp2, 1.0);
   v.Multiply(scale, tmp1, tmp2, 1.0);
 }
 
@@ -183,11 +183,11 @@ void Core::LinAlg::Ana::LcLcPointwiseLc::Update(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Ana::LcOperatorTimesLcsv::Set(
+void Core::LinAlg::Ana::LcOperatorTimesLcsv::set(
     Core::LinAlg::Ana::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
-  cout << "Core::LinAlg::Ana::LC_Operator_times_lcsv::Set(Core::LinAlg::Ana::Vector& v, const "
+  cout << "Core::LinAlg::Ana::LC_Operator_times_lcsv::set(Core::LinAlg::Ana::Vector& v, const "
           "double& scale)"
        << endl;
   fflush(stdout);
@@ -223,11 +223,11 @@ void Core::LinAlg::Ana::LcOperatorTimesLcsv::Update(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Ana::LcOperatorTimesLc::Set(
+void Core::LinAlg::Ana::LcOperatorTimesLc::set(
     Core::LinAlg::Ana::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
-  cout << "Core::LinAlg::Ana::LC_Operator_times_lc::Set(Core::LinAlg::Ana::Vector& v, const "
+  cout << "Core::LinAlg::Ana::LC_Operator_times_lc::set(Core::LinAlg::Ana::Vector& v, const "
           "double& scale)"
        << endl;
   fflush(stdout);
@@ -238,7 +238,7 @@ void Core::LinAlg::Ana::LcOperatorTimesLc::Set(
     FOUR_C_THROW("Domain maps don't match - fatal");
 #endif
   Core::LinAlg::Ana::Vector tmp(right_.RangeMap(), false);
-  right_.Set(tmp, scale);
+  right_.set(tmp, scale);
   int err = op_->Apply(tmp, v);
   if (err) FOUR_C_THROW("LightWeightOperatorBase::Apply returned err=%d", err);
 }
@@ -257,7 +257,7 @@ void Core::LinAlg::Ana::LcOperatorTimesLc::Update(
     FOUR_C_THROW("Domain maps don't match - fatal");
 #endif
   Core::LinAlg::Ana::Vector tmp1(right_.RangeMap(), false);
-  right_.Set(tmp1, 1.0);
+  right_.set(tmp1, 1.0);
   Core::LinAlg::Ana::Vector tmp2(op_->OperatorRangeMap(), false);
   int err = op_->Apply(tmp1, tmp2);
   if (err) FOUR_C_THROW("LightWeightOperatorBase::Apply returned err=%d", err);
@@ -296,9 +296,9 @@ double Core::LinAlg::Ana::operator*(
   fflush(stdout);
 #endif
   Core::LinAlg::Ana::Vector tmpleft(left.RangeMap(), false);
-  left.Set(tmpleft, 1.0);
+  left.set(tmpleft, 1.0);
   Core::LinAlg::Ana::Vector tmpright(right.RangeMap(), false);
-  right.Set(tmpright, 1.0);
+  right.set(tmpright, 1.0);
   double result;
   tmpleft.Dot(tmpright, &result);
   return result;
@@ -317,7 +317,7 @@ double Core::LinAlg::Ana::operator*(
   fflush(stdout);
 #endif
   Core::LinAlg::Ana::Vector tmp(right.RangeMap(), false);
-  right.Set(tmp, 1.0);
+  right.set(tmp, 1.0);
   double result;
   vec1.Dot(tmp, &result);
   return result;
@@ -365,19 +365,19 @@ double Core::LinAlg::Ana::operator*(
 double Core::LinAlg::Ana::norm2(const Core::LinAlg::Ana::LCBase& lc)
 {
   Core::LinAlg::Ana::Vector tmp(lc.RangeMap(), false);
-  lc.Set(tmp, 1.0);
+  lc.set(tmp, 1.0);
   return norm2(tmp);
 }
 double Core::LinAlg::Ana::norm1(const Core::LinAlg::Ana::LCBase& lc)
 {
   Core::LinAlg::Ana::Vector tmp(lc.RangeMap(), false);
-  lc.Set(tmp, 1.0);
+  lc.set(tmp, 1.0);
   return norm1(tmp);
 }
 double Core::LinAlg::Ana::norminf(const Core::LinAlg::Ana::LCBase& lc)
 {
   Core::LinAlg::Ana::Vector tmp(lc.RangeMap(), false);
-  lc.Set(tmp, 1.0);
+  lc.set(tmp, 1.0);
   return norminf(tmp);
 }
 

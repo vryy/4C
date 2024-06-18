@@ -381,7 +381,7 @@ namespace GEOMETRYPAIR
   template <typename element_type, typename enable = void>
   struct SetShapeFunctionData
   {
-    static void Set(ShapeFunctionData<element_type>& shape_function_data,
+    static void set(ShapeFunctionData<element_type>& shape_function_data,
         const Core::Elements::Element* element)
     {
       // Per default this is empty, for all shape functions which don't need additional data
@@ -398,7 +398,7 @@ namespace GEOMETRYPAIR
   template <>
   struct SetShapeFunctionData<t_nurbs9>
   {
-    static void Set(
+    static void set(
         ShapeFunctionData<t_nurbs9>& shape_function_data, const Core::Elements::Element* element)
     {
       const auto* discretization = Global::Problem::Instance()->GetDis("structure").get();
@@ -431,7 +431,7 @@ namespace GEOMETRYPAIR
   template <>
   struct SetShapeFunctionData<t_nurbs27>
   {
-    static void Set(
+    static void set(
         ShapeFunctionData<t_nurbs27>& shape_function_data, const Core::Elements::Element* element)
     {
       const auto* discretization = Global::Problem::Instance()->GetDis("structure").get();
@@ -479,7 +479,7 @@ namespace GEOMETRYPAIR
         const Core::Elements::Element* element)
     {
       GEOMETRYPAIR::ElementData<element_type, scalar_type> element_data;
-      SetShapeFunctionData<element_type>::Set(element_data.shape_function_data_, element);
+      SetShapeFunctionData<element_type>::set(element_data.shape_function_data_, element);
       return element_data;
     }
   };

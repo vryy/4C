@@ -69,7 +69,7 @@ namespace Core::LinAlg
       \param scale (in): a scaling factor for the linear combination (usually -1.0 or 1.0, used for
       sign changes)
       */
-      virtual void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const = 0;
+      virtual void set(Core::LinAlg::Ana::Vector& v, const double& scale) const = 0;
 
     };  // class LCBase
 
@@ -802,7 +802,7 @@ namespace Core::LinAlg
         cout << "Vector::operator = (const Core::LinAlg::Ana::LCBase& rhs)" << endl;
         fflush(stdout);
 #endif
-        rhs.Set(*this, 1.0);
+        rhs.set(*this, 1.0);
       }
 
       /*!
@@ -875,9 +875,9 @@ namespace Core::LinAlg
         right_.Update(v, scale);
       }
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        left_.Set(v, scale);
+        left_.set(v, scale);
         right_.Update(v, scale);
       }
 
@@ -924,9 +924,9 @@ namespace Core::LinAlg
         right_.Update(v, -scale);
       }
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        left_.Set(v, scale);
+        left_.set(v, scale);
         right_.Update(v, -scale);
       }
 
@@ -973,7 +973,7 @@ namespace Core::LinAlg
         right_.Update(v, scale);
       }
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, 0.0);
         right_.Update(v, scale);
@@ -1023,7 +1023,7 @@ namespace Core::LinAlg
         right_.Update(v, -scale);
       }
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, 0.0);
         right_.Update(v, -scale);
@@ -1072,9 +1072,9 @@ namespace Core::LinAlg
         v.Update(-scale, vec_, 1.0);
       }
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        left_.Set(v, scale);
+        left_.set(v, scale);
         v.Update(-scale, vec_, 1.0);
       }
 
@@ -1120,7 +1120,7 @@ namespace Core::LinAlg
         v.Update(scale * scalar_, vec_, 1.0);
       }
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale * scalar_, vec_, 0.0);
       }
@@ -1173,9 +1173,9 @@ namespace Core::LinAlg
         right_.Update(v, scale * scalar_);
       }
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        right_.Set(v, scale * scalar_);
+        right_.set(v, scale * scalar_);
       }
 
      private:
@@ -1223,7 +1223,7 @@ namespace Core::LinAlg
             scale * left_.Scalar(), left_.Vector(), scale * right_.Scalar(), right_.Vector(), 1.0);
       }
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(
             scale * left_.Scalar(), left_.Vector(), scale * right_.Scalar(), right_.Vector(), 0.0);
@@ -1274,7 +1274,7 @@ namespace Core::LinAlg
         v.Update(scale, vec_, scale * right_.Scalar(), right_.Vector(), 1.0);
       }
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, scale * right_.Scalar(), right_.Vector(), 0.0);
       }
@@ -1323,7 +1323,7 @@ namespace Core::LinAlg
             scale * left_.Scalar(), left_.Vector(), -scale * right_.Scalar(), right_.Vector(), 1.0);
       }
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(
             scale * left_.Scalar(), left_.Vector(), -scale * right_.Scalar(), right_.Vector(), 0.0);
@@ -1374,7 +1374,7 @@ namespace Core::LinAlg
         v.Update(scale, vec_, -scale * right_.Scalar(), right_.Vector(), 1.0);
       }
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, -scale * right_.Scalar(), right_.Vector(), 0.0);
       }
@@ -1423,7 +1423,7 @@ namespace Core::LinAlg
         v.Update(-scale, vec_, scale * left_.Scalar(), left_.Vector(), 1.0);
       }
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(-scale, vec_, scale * left_.Scalar(), left_.Vector(), 0.0);
       }
@@ -1477,7 +1477,7 @@ namespace Core::LinAlg
         v.Multiply(scale, vec1_, vec2_, 1.0);
       }
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Multiply(scale, vec1_, vec2_, 0.0);
       }
@@ -1526,9 +1526,9 @@ namespace Core::LinAlg
       // perform 'v +=' operations
       void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        right_.Set(v, 1.0);
+        right_.set(v, 1.0);
         v.Multiply(scale, vec_, v, 0.0);
       }
 
@@ -1581,7 +1581,7 @@ namespace Core::LinAlg
         v.Multiply(scale * right_.Scalar(), vec_, right_.Vector(), 1.0);
       }
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Multiply(scale * right_.Scalar(), vec_, right_.Vector(), 0.0);
       }
@@ -1631,7 +1631,7 @@ namespace Core::LinAlg
       // perform 'v +=' operations
       void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
       // perform 'v =' operations
-      void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
+      void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
 
      private:
       const Core::LinAlg::Ana::LCBase& left_;
@@ -1681,7 +1681,7 @@ namespace Core::LinAlg
         v.Multiply(scale * left_.Scalar() * right_.Scalar(), left_.Vector(), right_.Vector(), 1.0);
       }
       // perform 'v =' operations
-      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Multiply(scale * left_.Scalar() * right_.Scalar(), left_.Vector(), right_.Vector(), 0.0);
       }
@@ -1729,7 +1729,7 @@ namespace Core::LinAlg
       // perform 'v +=' operations
       void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
       // perform 'v =' operations
-      void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
+      void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
 
      private:
       const Teuchos::RCP<LightWeightOperatorBase> op_;
@@ -1773,7 +1773,7 @@ namespace Core::LinAlg
       // perform 'v +=' operations
       void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
       // perform 'v =' operations
-      void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
+      void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
 
      private:
       const Teuchos::RCP<LightWeightOperatorBase> op_;

@@ -112,7 +112,7 @@ namespace Core::Gen
     /// @{
 
     template <typename T>
-    void Set(const T* data, const unsigned id = 0)
+    void set(const T* data, const unsigned id = 0)
     {
       set_data<T, DataType::any>(data, id);
     }
