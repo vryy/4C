@@ -109,7 +109,7 @@ void STR::MODELEVALUATOR::BrownianDyn::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::BrownianDyn::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 

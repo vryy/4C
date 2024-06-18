@@ -80,7 +80,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::LagPenConstraint::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 

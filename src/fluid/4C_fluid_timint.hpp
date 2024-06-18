@@ -689,7 +689,7 @@ namespace FLD
     }
 
     /// reset data for restart of simulation at beginning
-    void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override
+    void reset(bool completeReset = false, int numsteps = 1, int iter = -1) override
     {
       FOUR_C_THROW("reset function not implemented for this fluid adapter");
     };

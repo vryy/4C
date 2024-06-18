@@ -403,7 +403,7 @@ int Discret::ELEMENTS::Beam3r::evaluate(Teuchos::ParameterList& params,
       rtnew_gp_mass_ = rtconv_gp_mass_;
       rnew_gp_mass_ = rconv_gp_mass_;
       qnew_gp_dampstoch_ = qconv_gp_dampstoch_;
-      get_beam_material().Reset();
+      get_beam_material().reset();
       break;
     }
 
@@ -910,7 +910,7 @@ void Discret::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
           Teuchos::rcp(new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>());
 
   // reset triad interpolation scheme based on nodal quaternions
-  triad_interpolation_scheme_ptr->Reset(Qnode);
+  triad_interpolation_scheme_ptr->reset(Qnode);
 
   // matrix containing contributions to the jacobian depending on the material model
   Core::LinAlg::Matrix<3, 3, T> stiffness_contribution(true);
@@ -1241,7 +1241,7 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
           new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>());
 
   // reset triad interpolation scheme with nodal quaternions
-  triad_interpolation_scheme_ptr->Reset(Qnode);
+  triad_interpolation_scheme_ptr->reset(Qnode);
 
   ekin_ = 0.0;
   l_ = 0.0;
@@ -2305,7 +2305,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
           new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>());
 
   // reset the scheme with nodal quaternions
-  triad_interpolation_scheme_ptr->Reset(Qnode);
+  triad_interpolation_scheme_ptr->reset(Qnode);
 
 
   for (int gp = 0; gp < gausspoints.nquad; gp++)

@@ -120,7 +120,7 @@ namespace Core::IO
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
-  void DiscretizationVisualizationWriterMesh::Reset()
+  void DiscretizationVisualizationWriterMesh::reset()
   {
     // check if parallel distribution of discretization changed
     int map_changed =

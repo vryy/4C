@@ -199,7 +199,7 @@ void FLD::FluidImplicitTimeInt::init()
   // -------------------------------------------------------------------
   // create empty vectors
   // -------------------------------------------------------------------
-  Reset();
+  reset();
 
   // ---------------------------------------------------------------------
   // Set initial ALE mesh displacement and velocity
@@ -3451,7 +3451,7 @@ void FLD::FluidImplicitTimeInt::WriteRuntimeOutput()
   Teuchos::RCP<Epetra_Vector> col_version =
       Teuchos::rcp(new Epetra_Vector(*(discretization()->DofColMap()), true));
 
-  runtime_output_writer_->Reset();
+  runtime_output_writer_->reset();
 
   if (runtime_output_params_.OutputVelocityState())
   {
@@ -6264,7 +6264,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcDivOp()
 /*------------------------------------------------------------------------------------------------*
  |
  *------------------------------------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::Reset(bool completeReset, int numsteps, int iter)
+void FLD::FluidImplicitTimeInt::reset(bool completeReset, int numsteps, int iter)
 {
   if (completeReset)
   {

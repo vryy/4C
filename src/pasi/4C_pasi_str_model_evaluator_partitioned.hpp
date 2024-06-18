@@ -58,7 +58,7 @@ namespace STR
       Inpar::STR::ModelType Type() const override { return Inpar::STR::model_partitioned_coupling; }
 
       //! reset class variables (without jacobian) [derived]
-      void Reset(const Epetra_Vector& x) override { return; };
+      void reset(const Epetra_Vector& x) override { return; };
 
       //! [derived]
       bool evaluate_force() override { return true; };

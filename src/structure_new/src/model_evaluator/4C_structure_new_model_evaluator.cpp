@@ -124,7 +124,7 @@ bool STR::ModelEvaluator::initialize_inertia_and_damping(
   STR::MODELEVALUATOR::Structure& str_model =
       dynamic_cast<STR::MODELEVALUATOR::Structure&>(evaluator(Inpar::STR::model_structure));
 
-  str_model.Reset(x);
+  str_model.reset(x);
 
   return str_model.initialize_inertia_and_damping();
 }
@@ -313,7 +313,7 @@ void STR::ModelEvaluator::reset_states(const Epetra_Vector& x, bool setstate) co
 void STR::ModelEvaluator::reset_states(const Epetra_Vector& x, bool setstate, Vector& me_vec) const
 {
   if (setstate) int_ptr_->set_state(x);
-  for (auto& me_iter : me_vec) me_iter->Reset(x);
+  for (auto& me_iter : me_vec) me_iter->reset(x);
 }
 
 /*----------------------------------------------------------------------------*
@@ -391,7 +391,7 @@ bool STR::ModelEvaluator::apply_stiff(const Inpar::STR::ModelType& mt, const Epe
 
   // update the state variables of the current time integrator
   int_ptr_->set_state(x);
-  model_ptr->Reset(x);
+  model_ptr->reset(x);
 
   // ---------------------------------------------------------------------------
   // evaluate all terms

@@ -50,7 +50,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     virtual void evaluate_coupling_terms(STR::TimeInt::BaseDataGlobalState& gstate);
 
     //! Reset the sub model evaluator
-    virtual void Reset() = 0;
+    virtual void reset() = 0;
 
     //! Return the Penalty-Parameter
     double& get_penalty_parameter_ptr() { return penalty_parameter_; }

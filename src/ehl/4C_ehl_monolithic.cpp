@@ -755,7 +755,7 @@ void EHL::Monolithic::setup_system_matrix()
 
   // Derivative of the lubrication interface force: df_lub/dp = B * dt/dp
 
-  k_sl_->Reset();
+  k_sl_->reset();
   k_sl_->UnComplete();
 
   // linearization of traction w.r.t. fluid pressure
@@ -808,7 +808,7 @@ void EHL::Monolithic::setup_system_matrix()
   // 4. Calculate and assemble k_ls (Linearization of lubrication residual wrt displacements)
   //----------------------------------------------------------------------------------------
 
-  k_ls_->Reset();
+  k_ls_->reset();
   k_ls_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       *(lubrication_->LubricationField()->discretization()->dof_row_map(0)), 81, false, true));
 

@@ -42,7 +42,7 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization
     const int step, const double time) const
 {
   // reset the writer object
-  runtime_vtuwriter_->Reset();
+  runtime_vtuwriter_->reset();
 
   // node displacements
   {

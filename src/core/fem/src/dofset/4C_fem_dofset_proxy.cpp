@@ -73,7 +73,7 @@ void Core::DOFSets::DofSetProxy::NotifyAssigned()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetProxy::Reset()
+void Core::DOFSets::DofSetProxy::reset()
 {
   isassigned_ = false;
   NotifyReset();
@@ -89,7 +89,7 @@ void Core::DOFSets::DofSetProxy::Disconnect(DofSetInterface* dofset)
     FOUR_C_THROW("cannot disconnect from non-connected DofSet");
 
   // clear my Teuchos::rcps.
-  Reset();
+  reset();
 }
 
 

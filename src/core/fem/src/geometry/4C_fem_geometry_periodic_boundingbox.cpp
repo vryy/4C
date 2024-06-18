@@ -640,7 +640,7 @@ void Core::Geo::MeshFree::BoundingBox::runtime_output_step_state(double timen, i
   if (visualization_output_writer_ptr_ == Teuchos::null) return;
 
   // reset the writer object
-  visualization_output_writer_ptr_->Reset();
+  visualization_output_writer_ptr_->reset();
   visualization_output_writer_ptr_->append_dof_based_result_data_vector(
       disn_col_, 3, 0, "displacement");
 

@@ -165,7 +165,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::init_submodel_dependenci
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Reset()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::reset()
 {
   check_init_setup();
 

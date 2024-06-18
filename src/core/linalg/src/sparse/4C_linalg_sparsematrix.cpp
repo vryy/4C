@@ -292,7 +292,7 @@ void Core::LinAlg::SparseMatrix::Zero()
     if (Filled() && !explicitdirichlet_)
       sysmat_->PutScalar(0.);
     else
-      Reset();
+      reset();
   }
   else
   {
@@ -315,7 +315,7 @@ void Core::LinAlg::SparseMatrix::Zero()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::SparseMatrix::Reset()
+void Core::LinAlg::SparseMatrix::reset()
 {
   const Epetra_Map rowmap = sysmat_->RowMap();
   std::vector<int> numentries(rowmap.NumMyElements());

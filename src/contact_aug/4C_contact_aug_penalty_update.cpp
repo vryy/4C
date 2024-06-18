@@ -127,7 +127,7 @@ void CONTACT::Aug::PenaltyUpdate::post_update()
  *----------------------------------------------------------------------------*/
 void CONTACT::Aug::PenaltyUpdate::reset()
 {
-  state_.Reset();
+  state_.reset();
   status_ = Status::unevaluated;
 }
 
@@ -166,7 +166,7 @@ void CONTACT::Aug::PenaltyUpdate::State::set(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::PenaltyUpdate::State::Reset()
+void CONTACT::Aug::PenaltyUpdate::State::reset()
 {
   xold_ = Teuchos::null;
   full_direction_ = Teuchos::null;

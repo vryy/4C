@@ -221,7 +221,7 @@ namespace Adapter
     };
 
     /// reset step and state vectors
-    void Reset() override { structure_->Reset(); }
+    void reset() override { structure_->reset(); }
 
     /// reset last time step, needed for time step size adaptivity in FSI
     void reset_step() override { structure_->reset_step(); }

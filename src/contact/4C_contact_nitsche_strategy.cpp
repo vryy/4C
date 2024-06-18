@@ -199,7 +199,7 @@ void CONTACT::NitscheStrategy::eval_force_stiff(CONTACT::ParamsInterface& cparam
   Integrate(cparams);
 }
 
-void CONTACT::NitscheStrategy::Reset(
+void CONTACT::NitscheStrategy::reset(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp, const Epetra_Vector& xnew)
 {
   set_state(Mortar::state_new_displacement, dispnp);

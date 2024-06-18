@@ -68,7 +68,7 @@ void STR::MODELEVALUATOR::SpringDashpot::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::SpringDashpot::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 

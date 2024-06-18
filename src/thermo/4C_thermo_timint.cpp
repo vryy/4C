@@ -223,7 +223,7 @@ void THR::TimInt::determine_capa_consist_temp_rate()
   // effects (basically managers).
   // BUT: in case of explicit time integration, the conductivity matrix
   // is stored in tang_ which is needed throughout the simulation
-  if (MethodName() != Inpar::THR::dyna_expleuler) tang_->Reset();
+  if (MethodName() != Inpar::THR::dyna_expleuler) tang_->reset();
 
   // leave this hell
   return;

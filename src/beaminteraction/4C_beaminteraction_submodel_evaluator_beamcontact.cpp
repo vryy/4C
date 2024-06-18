@@ -251,7 +251,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_submodel_dependencies
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::reset()
 {
   check_init_setup();
 

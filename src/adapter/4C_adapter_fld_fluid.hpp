@@ -262,7 +262,7 @@ namespace Adapter
     virtual Teuchos::RCP<FLD::Vreman> Vreman() = 0;
 
     /// reset state vectors (needed for biofilm simulations)
-    virtual void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) = 0;
+    virtual void reset(bool completeReset = false, int numsteps = 1, int iter = -1) = 0;
 
     /// set fluid displacement vector due to biofilm growth
     virtual void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp) = 0;

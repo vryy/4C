@@ -97,9 +97,9 @@ void FLD::TimIntStationaryHDG::init()
 }
 
 
-void FLD::TimIntStationaryHDG::Reset(bool completeReset, int numsteps, int iter)
+void FLD::TimIntStationaryHDG::reset(bool completeReset, int numsteps, int iter)
 {
-  FluidImplicitTimeInt::Reset(completeReset, numsteps, iter);
+  FluidImplicitTimeInt::reset(completeReset, numsteps, iter);
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
   intvelnp_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
   if (discret_->Comm().MyPID() == 0)

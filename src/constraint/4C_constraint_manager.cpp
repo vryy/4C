@@ -230,7 +230,7 @@ void CONSTRAINTS::ConstrManager::evaluate_force_stiff(const double time,
   Teuchos::ParameterList p;
   std::vector<Core::Conditions::Condition*> constrcond(0);
   const Epetra_Map* dofrowmap = actdisc_->dof_row_map();
-  constr_matrix_->Reset();  //=Teuchos::rcp(new
+  constr_matrix_->reset();  //=Teuchos::rcp(new
                             // Core::LinAlg::SparseMatrix(*dofrowmap,numConstrID_,false,true));
 
   // other parameters that might be needed by the elements

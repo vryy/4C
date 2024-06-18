@@ -46,7 +46,7 @@ FLD::XFluidOutputService::XFluidOutputService(const Teuchos::RCP<XFEM::Discretiz
 
 void FLD::XFluidOutputService::prepare_output()
 {
-  dofset_out_->Reset();
+  dofset_out_->reset();
   dofset_out_->assign_degrees_of_freedom(*discret_, 0, 0);
   const int ndim = Global::Problem::Instance()->NDim();
   // split based on complete fluid field (standard splitter that handles one dofset)

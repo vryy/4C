@@ -153,7 +153,7 @@ void STR::MODELEVALUATOR::Contact::set_time_integration_info(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::Contact::reset(const Epetra_Vector& x)
 {
   check_init_setup();
   std::vector<Teuchos::RCP<const Epetra_Vector>> eval_vec(2, Teuchos::null);

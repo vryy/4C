@@ -1262,7 +1262,7 @@ void ScaTra::ScaTraTimIntElchSCL::calc_initial_potential_field()
 
   // reset global system matrix and its graph, since we solved a very special problem with a
   // special sparsity pattern
-  system_matrix_elch_scl_->Reset();
+  system_matrix_elch_scl_->reset();
 
   post_calc_initial_potential_field();
 

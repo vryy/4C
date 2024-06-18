@@ -851,7 +851,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
       Qnewnode.push_back(Core::LinAlg::Matrix<4, 1, double>(qnewnode_[inode], true));
 
     // reset triad interpolation with nodal quaternions
-    triad_interpolation_scheme_ptr->Reset(Qnewnode);
+    triad_interpolation_scheme_ptr->reset(Qnewnode);
 
     Core::LinAlg::Matrix<3, 3> Gref;
     Tref_.resize(nnodecl);
@@ -1946,7 +1946,7 @@ void Discret::ELEMENTS::Beam3r::
           Teuchos::rcp(new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>());
 
   // reset triad interpolation scheme with nodal quaternions
-  triad_interpolation_scheme_ptr->Reset(Qnode);
+  triad_interpolation_scheme_ptr->reset(Qnode);
 
   triad_interpolation_scheme_ptr->get_nodal_generalized_rotation_interpolation_matrices_at_xi(
       Itilde, xi);

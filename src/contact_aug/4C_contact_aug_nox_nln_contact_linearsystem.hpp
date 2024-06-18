@@ -99,7 +99,7 @@ namespace NOX
                 p_lhs_(Teuchos::null),
                 p_rhs_(Teuchos::null){/* empty */};
 
-          inline void Reset()
+          inline void reset()
           {
             p_jac_ = Teuchos::null;
             p_lhs_ = Teuchos::null;

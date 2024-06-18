@@ -128,7 +128,7 @@ void STR::MODELEVALUATOR::Structure::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::Structure::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -697,7 +697,7 @@ void STR::MODELEVALUATOR::Structure::write_output_runtime_structure(
       *global_in_output().get_runtime_output_params()->get_structure_params();
 
   // reset time and time step of the writer object
-  vtu_writer_ptr_->Reset();
+  vtu_writer_ptr_->reset();
 
   // append all desired output data to the writer object's storage
 
@@ -1316,7 +1316,7 @@ void STR::MODELEVALUATOR::Structure::run_post_compute_x(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   check_init_setup();
-  Reset(xnew);
+  reset(xnew);
   /* set the class internal displacement increment vector. Check if it is
    * meaningful/necessary in some cases, like incremental strains etc. */
   dis_incr_ptr_ = global_state().extract_displ_entries(dir);

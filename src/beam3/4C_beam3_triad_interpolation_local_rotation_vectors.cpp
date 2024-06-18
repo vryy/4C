@@ -85,7 +85,7 @@ LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::get_dis_typ
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::Reset(
+void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::reset(
     std::vector<Core::LinAlg::Matrix<4, 1, T>> const& nodal_quaternions)
 {
   if (nodal_quaternions.size() != numnodes)
@@ -112,7 +112,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::Reset(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::Reset(
+void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::reset(
     std::vector<Core::LinAlg::Matrix<3, 3, T>> const& nodal_triads)
 {
   if (nodal_triads.size() != numnodes)
@@ -126,7 +126,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::Reset(
     Core::LargeRotations::triadtoquaternion(nodal_triads[inode], nodal_quaternions[inode]);
   }
 
-  Reset(nodal_quaternions);
+  reset(nodal_quaternions);
 }
 
 /*-----------------------------------------------------------------------------------------------*

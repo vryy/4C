@@ -63,7 +63,7 @@ void Core::FE::Discretization::CheckFilledGlobally()
    * zero*/
   Comm().MinAll(&localfilled, &globalfilled, 1);
 
-  // if not Filled() == true on all the processors call Reset()
+  // if not Filled() == true on all the processors call reset()
   if (!globalfilled) reset();
 }
 

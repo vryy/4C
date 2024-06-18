@@ -1541,7 +1541,7 @@ void SSI::SsiMono::calc_initial_time_derivative()
   }
 
   // reset solver
-  solver_->Reset();
+  solver_->reset();
 
   ScaTraField()->post_calc_initial_time_derivative();
   if (is_sca_tra_manifold()) ScaTraManifold()->post_calc_initial_time_derivative();

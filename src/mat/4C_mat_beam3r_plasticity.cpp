@@ -432,7 +432,7 @@ void Mat::BeamPlasticMaterial<T>::update()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void Mat::BeamPlasticMaterial<T>::Reset()
+void Mat::BeamPlasticMaterial<T>::reset()
 {
   gammaplastnew_ = gammaplastconv_;
   kappaplastnew_ = kappaplastconv_;

@@ -399,7 +399,7 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
 
       ///// Fluid_Structure (fluid part / linearization of tangentials with respect to
       /// displacements)
-      k_pf_porofluid->Reset();
+      k_pf_porofluid->reset();
       k_pf_porofluid->UnComplete();
 
       Core::FE::AssembleStrategy structurestrategy2(0,  // porofluiddofset for row

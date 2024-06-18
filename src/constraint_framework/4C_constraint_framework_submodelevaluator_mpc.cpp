@@ -836,7 +836,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::Reset() {}
+void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::reset() {}
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 

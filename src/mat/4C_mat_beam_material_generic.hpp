@@ -81,7 +81,7 @@ namespace Mat
     /** \brief Resets all material related variables i.e. in case of adaptive time stepping
      *
      */
-    virtual void Reset() = 0;
+    virtual void reset() = 0;
   };
 }  // namespace Mat
 

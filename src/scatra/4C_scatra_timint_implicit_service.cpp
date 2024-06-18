@@ -175,7 +175,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::CalcFluxInDomain()
     solver_->Solve(massmatrix->EpetraOperator(), flux_projected, flux, solver_params);
 
     // reset solver
-    solver_->Reset();
+    solver_->reset();
   }
 
   return flux_projected;
@@ -401,7 +401,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::CalcFluxAtBoundary(
           solver_params);
 
       // reset solver
-      solver_->Reset();
+      solver_->reset();
 
       // overwrite action in parameter list
       Core::UTILS::AddEnumClassToParameterList<ScaTra::BoundaryAction>(
@@ -662,10 +662,10 @@ void ScaTra::ScaTraTimIntImpl::calc_initial_time_derivative()
 
   // reset global system matrix and its graph, since we solved a very special problem with a special
   // sparsity pattern
-  sysmat_->Reset();
+  sysmat_->reset();
 
   // reset solver
-  solver_->Reset();
+  solver_->reset();
 
   // reset true residual vector computed during assembly of the standard global system of equations,
   // since not yet needed

@@ -120,7 +120,7 @@ namespace BEAMINTERACTION
       virtual Inpar::BEAMINTERACTION::SubModelType Type() const = 0;
 
       //! \brief reset model specific variables (without jacobian)
-      virtual void Reset() = 0;
+      virtual void reset() = 0;
 
       //! \brief Evaluate the current right-hand-side at \f$t_{n+1}\f$
       virtual bool evaluate_force() = 0;

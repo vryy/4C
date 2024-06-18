@@ -104,7 +104,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_submodel_depend
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Reset()
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::reset()
 {
   check_init_setup();
 

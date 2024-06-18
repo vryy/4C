@@ -505,8 +505,8 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   if (assemblevecdd) solver->Solve(massmatrix->EpetraOperator(), dbcvectordd, rhsdd, solver_params);
 
   // perform resets for solver and matrix
-  solver->Reset();
-  massmatrix->Reset();
+  solver->reset();
+  massmatrix->reset();
 
   // insert nodal values to sysvec
   auxdbcmapextractor->InsertCondVector(dbcvector, systemvectors[0]);

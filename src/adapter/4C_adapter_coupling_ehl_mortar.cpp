@@ -325,7 +325,7 @@ void Adapter::CouplingEhlMortar::CondenseContact(
   // if there are no active nodes, we can leave now
   if (interface_->ActiveNodes()->NumGlobalElements() == 0)
   {
-    sysmat->Reset();
+    sysmat->reset();
     sysmat->Assign(0, 0, Core::LinAlg::Copy, *kss);
     sysmat->Assign(0, 1, Core::LinAlg::Copy, *kst);
     sysmat->Assign(1, 0, Core::LinAlg::Copy, *kts);
@@ -508,8 +508,8 @@ void Adapter::CouplingEhlMortar::CondenseContact(
   // get references to the blocks (just for convenience)
   Core::LinAlg::SparseMatrix& kss_new = sysmat->Matrix(0, 0);
   Core::LinAlg::SparseMatrix& kst_new = sysmat->Matrix(0, 1);
-  kss_new.Reset();
-  kst_new.Reset();
+  kss_new.reset();
+  kst_new.reset();
   // reynolds equation blocks remain untouched
 
   // reset rhs

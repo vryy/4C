@@ -246,7 +246,7 @@ namespace CONTACT
         const Epetra_Vector& get_inactive_tributary_area() const;
 
         /// reset the state variables
-        void Reset();
+        void reset();
 
         /// print the state
         void Print(std::ostream& os) const;

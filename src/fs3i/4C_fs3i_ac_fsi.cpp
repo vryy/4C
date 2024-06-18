@@ -334,7 +334,7 @@ void FS3I::ACFSI::small_time_scale_prepare_time_step()
   // iff this is the beginning of a new fsi cycle
   if (step_ > 1 and modulo_is_realtive_zero(time_ - dt_, fsiperiod_, time_))
   {
-    meanmanager_->Reset();  // Reset mean Manager
+    meanmanager_->reset();  // Reset mean Manager
     if (Comm().MyPID() == 0)
     {
       std::cout << "Reseting mean manager\n" << std::endl;

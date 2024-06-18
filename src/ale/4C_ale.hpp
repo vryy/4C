@@ -335,7 +335,7 @@ namespace ALE
     );
 
     /// Reset state vectors to zero
-    void Reset() override;
+    void reset() override;
 
     //! Set time and step
     void SetTimeStep(const double time, const int step) override

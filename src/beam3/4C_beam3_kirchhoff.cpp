@@ -1054,7 +1054,7 @@ void Discret::ELEMENTS::Beam3k::GetTriadAtXi(
               double>());
 
   // reset scheme with nodal triads
-  triad_interpolation_scheme_ptr->Reset(triad_mat_cp);
+  triad_interpolation_scheme_ptr->reset(triad_mat_cp);
 
   triad_interpolation_scheme_ptr->get_interpolated_triad_at_xi(triad, xi);
 }
@@ -1552,7 +1552,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_increments_
               double>());
 
   // reset scheme with nodal triads
-  triad_interpolation_scheme_ptr->Reset(triad_mat_cp);
+  triad_interpolation_scheme_ptr->reset(triad_mat_cp);
 
   // compute Itilde matrices required for re-interpolation of CP values of lin_theta
   triad_interpolation_scheme_ptr->get_nodal_generalized_rotation_interpolation_matrices_at_xi(

@@ -1144,7 +1144,7 @@ void FSI::MortarMonolithicFluidSplit::unscale_solution(
   utils()->out().flags(flags);
 
   if (structure_field()->get_stc_algo() != Inpar::STR::stc_none)
-    structure_field()->system_matrix()->Reset();
+    structure_field()->system_matrix()->reset();
 }
 
 
@@ -1573,7 +1573,7 @@ void FSI::MortarMonolithicFluidSplit::prepare_time_step()
   prepare_time_step_preconditioner();
 
   if (structure_field()->get_stc_algo() != Inpar::STR::stc_none)
-    structure_field()->system_matrix()->Reset();
+    structure_field()->system_matrix()->reset();
 
   prepare_time_step_fields();
 

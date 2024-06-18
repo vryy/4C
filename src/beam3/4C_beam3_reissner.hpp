@@ -760,7 +760,7 @@ namespace Discret
                 new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>());
 
         // reset scheme with nodal quaternions
-        triad_interpolation_scheme_ptr->Reset(Qnode);
+        triad_interpolation_scheme_ptr->reset(Qnode);
 
         triad_interpolation_scheme_ptr->get_interpolated_triad_at_xi(triad, xi);
       }

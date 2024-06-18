@@ -47,7 +47,7 @@ namespace STR
       Inpar::STR::ModelType Type() const override { return Inpar::STR::model_beam_interaction_old; }
 
       //! derived
-      void Reset(const Epetra_Vector& x) override;
+      void reset(const Epetra_Vector& x) override;
 
       //! derived
       bool evaluate_force() override;

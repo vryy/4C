@@ -46,11 +46,11 @@ void STR::MODELEVALUATOR::Multiphysics::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Multiphysics::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::Multiphysics::reset(const Epetra_Vector& x)
 {
   check_active_model_type();
 
-  get_model_evaluator_from_map(active_mt_)->Reset(x);
+  get_model_evaluator_from_map(active_mt_)->reset(x);
 }
 
 

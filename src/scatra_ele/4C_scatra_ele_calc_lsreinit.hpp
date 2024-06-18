@@ -302,7 +302,7 @@ namespace Discret
         return;
       }
 
-      void Reset()
+      void reset()
       {
         for (std::size_t kk = 0; kk < diff_.size(); kk++)
         {
@@ -438,7 +438,7 @@ namespace Discret
       //! @name reset default values
       /*========================================================================*/
 
-      void Reset()
+      void reset()
       {
         for (int kk = 0; kk < my::numscal_; kk++)
         {

@@ -163,7 +163,7 @@ namespace Core::LinAlg
 
     All data is destroyed except the parameter list
     */
-    void Reset();
+    void reset();
 
     //! get tolerance from Belos solver
     double GetTolerance() const

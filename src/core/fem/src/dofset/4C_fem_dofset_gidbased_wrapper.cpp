@@ -42,7 +42,7 @@ Core::DOFSets::DofSetGIDBasedWrapper::~DofSetGIDBasedWrapper()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetGIDBasedWrapper::Reset()
+void Core::DOFSets::DofSetGIDBasedWrapper::reset()
 {
   isassigned_ = false;
   NotifyReset();
@@ -83,7 +83,7 @@ void Core::DOFSets::DofSetGIDBasedWrapper::Disconnect(DofSetInterface* dofset)
     FOUR_C_THROW("cannot disconnect from non-connected DofSet");
 
   // clear my Teuchos::rcps.
-  Reset();
+  reset();
 }
 
 /*----------------------------------------------------------------------*

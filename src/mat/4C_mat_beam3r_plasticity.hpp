@@ -253,7 +253,7 @@ namespace Mat
 
     /** \brief reset the values for current plastic strain and curvature
      */
-    void Reset() override;
+    void reset() override;
 
     /** \brief get hardening constitutive parameters depending on the type of plasticity
      */

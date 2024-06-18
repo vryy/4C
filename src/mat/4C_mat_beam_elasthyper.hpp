@@ -233,7 +233,7 @@ namespace Mat
 
     void update() override{};
 
-    void Reset() override{};
+    void reset() override{};
 
    protected:
     void set_parameter(Mat::PAR::BeamElastHyperMaterialParameterGeneric* parameter)

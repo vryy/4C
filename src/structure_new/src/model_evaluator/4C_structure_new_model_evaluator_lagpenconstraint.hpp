@@ -49,7 +49,7 @@ namespace STR
       Inpar::STR::ModelType Type() const override { return Inpar::STR::model_lag_pen_constraint; }
 
       //! reset class variables (without jacobian) [derived]
-      void Reset(const Epetra_Vector& x) override;
+      void reset(const Epetra_Vector& x) override;
 
       //! derived
       bool evaluate_force() override;

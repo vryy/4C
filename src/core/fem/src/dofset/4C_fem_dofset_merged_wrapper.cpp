@@ -198,7 +198,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetMergedWrapper::Reset()
+void Core::DOFSets::DofSetMergedWrapper::reset()
 {
   master_nodegids_col_layout_ = Teuchos::null;
   slave_nodegids_col_layout_ = Teuchos::null;
@@ -222,7 +222,7 @@ void Core::DOFSets::DofSetMergedWrapper::Disconnect(DofSetInterface* dofset)
     FOUR_C_THROW("cannot disconnect from non-connected DofSet");
 
   // clear my Teuchos::rcps.
-  Reset();
+  reset();
 }
 
 FOUR_C_NAMESPACE_CLOSE

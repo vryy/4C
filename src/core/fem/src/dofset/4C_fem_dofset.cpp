@@ -106,7 +106,7 @@ void Core::DOFSets::DofSet::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  reset everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSet::Reset()
+void Core::DOFSets::DofSet::reset()
 {
   dofrowmap_ = Teuchos::null;
   dofcolmap_ = Teuchos::null;

@@ -673,7 +673,7 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_wk(
               T>());
 
   // reset scheme with nodal triads
-  triad_interpolation_scheme_ptr->Reset(triad_mat_cp);
+  triad_interpolation_scheme_ptr->reset(triad_mat_cp);
 
 
   //********begin: evaluate quantities at collocation points********************************
@@ -3172,7 +3172,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_rotational_damping(
               T>());
 
   // reset scheme with nodal triads
-  triad_interpolation_scheme_ptr->Reset(triad_mat_cp);
+  triad_interpolation_scheme_ptr->reset(triad_mat_cp);
 
 
   //********begin: evaluate quantities at collocation points********************************

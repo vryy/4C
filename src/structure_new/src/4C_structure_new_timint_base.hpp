@@ -73,7 +73,7 @@ namespace STR
       [[nodiscard]] bool not_finished() const override;
 
       /// reset everything (needed for biofilm simulations)
-      void Reset() override;
+      void reset() override;
 
       /** \brief reset step configuration after time step
        *

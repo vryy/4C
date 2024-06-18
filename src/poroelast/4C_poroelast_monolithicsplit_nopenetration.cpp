@@ -255,7 +255,7 @@ void PoroElast::MonolithicSplitNoPenetration::setup_system_matrix(
   /*----------------------------------------------------------------------*/
 
   // just to play it safe ...
-  mat.Reset();
+  mat.reset();
 
   // build block matrix
   // The maps of the block matrix have to match the maps of the blocks we

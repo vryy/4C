@@ -231,7 +231,7 @@ namespace Adapter
     virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
 
     //! reset state vectors to zero
-    virtual void Reset() = 0;
+    virtual void reset() = 0;
 
     /*! \brief Create System matrix
      *

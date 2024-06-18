@@ -400,7 +400,7 @@ void STR::MODELEVALUATOR::BeamInteraction::partition_problem()
   rowbins_ =
       binstrategy_->weighted_distribution_of_bins_to_procs(discret_vec, disnp, nodesinbin, weight);
 
-  // extract noderowmap because it will be called Reset() after adding elements
+  // extract noderowmap because it will be called reset() after adding elements
   Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*bindis_->NodeRowMap()));
   // delete old bins ( in case you partition during your simulation or after a restart)
   bindis_->DeleteElements();
@@ -528,7 +528,7 @@ void STR::MODELEVALUATOR::BeamInteraction::extend_ghosting()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::BeamInteraction::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -556,7 +556,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
   // submodel loop
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->Reset();
+    (*sme_iter)->reset();
 
   // Zero out force and stiffness contributions
   force_beaminteraction_->PutScalar(0.0);

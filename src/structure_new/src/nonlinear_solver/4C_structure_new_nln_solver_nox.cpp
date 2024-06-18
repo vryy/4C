@@ -124,7 +124,7 @@ void STR::Nln::SOLVER::Nox::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::Nox::Reset()
+void STR::Nln::SOLVER::Nox::reset()
 {
   // safety check
   check_init_setup();

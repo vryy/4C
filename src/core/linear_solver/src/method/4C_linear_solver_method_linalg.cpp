@@ -43,11 +43,11 @@ void Core::LinAlg::Solver::setup() { solver_ = Teuchos::null; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::LinAlg::Solver::~Solver() { Reset(); }
+Core::LinAlg::Solver::~Solver() { reset(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Solver::Reset() { solver_ = Teuchos::null; }
+void Core::LinAlg::Solver::reset() { solver_ = Teuchos::null; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -173,7 +173,7 @@ void Core::LinAlg::Solver::setup(Teuchos::RCP<Epetra_Operator> matrix,
   bool refactor = params.refactor;
   if (params.reset)
   {
-    Reset();
+    reset();
     refactor = true;
   }
 

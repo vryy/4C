@@ -68,13 +68,13 @@ namespace LargeRotations
      *
      *  \author grill
      *  \date 01/17 */
-    void Reset(std::vector<Core::LinAlg::Matrix<4, 1, T>> const& nodal_quaternions) override;
+    void reset(std::vector<Core::LinAlg::Matrix<4, 1, T>> const& nodal_quaternions) override;
 
     /** \brief reset interpolation scheme with nodal triads
      *
      *  \author grill
      *  \date 01/17 */
-    void Reset(std::vector<Core::LinAlg::Matrix<3, 3, T>> const& nodal_triads) override;
+    void reset(std::vector<Core::LinAlg::Matrix<3, 3, T>> const& nodal_triads) override;
 
     /** \brief compute the interpolated triad at any point \xi \in [-1,1] in parameter space
      *

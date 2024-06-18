@@ -186,7 +186,7 @@ namespace Mat
     void update() override;
 
     //! reset internal stress variables
-    void Reset();
+    void reset();
 
     //! evaluate material
     void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,

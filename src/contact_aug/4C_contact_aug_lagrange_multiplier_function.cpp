@@ -175,7 +175,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::get_struct
  *----------------------------------------------------------------------------*/
 void CONTACT::Aug::LagrangeMultiplierFunction::create_b_matrix()
 {
-  bmat_->Reset();
+  bmat_->reset();
 
   bmat_->Add(data_->DMatrix(), true, 1.0, 0.0);
   bmat_->Add(data_->MMatrix(), true, 1.0, 1.0);

@@ -64,7 +64,7 @@ namespace BEAMINTERACTION
       }
 
       //! derived
-      void Reset() override;
+      void reset() override;
 
       //! derived
       bool evaluate_force() override;

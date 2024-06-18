@@ -442,12 +442,12 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
 
   // solve for disi_
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-  solver_->Reset();
+  solver_->reset();
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
   solver_->Solve(stiff_->EpetraMatrix(), disi_, fresn_, solver_params);
-  solver_->Reset();
+  solver_->reset();
 
   // store norm of displacement increments
   normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);

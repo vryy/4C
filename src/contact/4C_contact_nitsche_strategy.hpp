@@ -209,7 +209,7 @@ namespace CONTACT
 
     void eval_force_stiff(CONTACT::ParamsInterface& cparams) override;
 
-    void Reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
+    void reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
         const Epetra_Vector& xnew) override;
 
     void run_post_compute_x(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,

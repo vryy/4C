@@ -217,10 +217,10 @@ void CONTACT::Aug::ComboStrategy::run_pre_solve(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::ComboStrategy::Reset(
+void CONTACT::Aug::ComboStrategy::reset(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp, const Epetra_Vector& xnew)
 {
-  get().Reset(cparams, dispnp, xnew);
+  get().reset(cparams, dispnp, xnew);
 }
 
 /*----------------------------------------------------------------------------*
@@ -431,7 +431,7 @@ void CONTACT::Aug::ComboStrategy::GlobalNoDbc::Assemble(
 
   slMaMap_ = Core::LinAlg::SplitMap(gSlMaDofRowMap, *gSlMaDbcDofRowMap);
 
-  Reset(*slMaMap_, data);
+  reset(*slMaMap_, data);
 }
 
 /*----------------------------------------------------------------------------*
@@ -441,12 +441,12 @@ void CONTACT::Aug::ComboStrategy::GlobalNoDbc::Redistribute(const CONTACT::Aug::
   slMaMap_ =
       Core::Rebalance::RebalanceInAccordanceWithReference(*data.GSlMaDofRowMapPtr(), *slMaMap_);
 
-  Reset(*slMaMap_, data);
+  reset(*slMaMap_, data);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::ComboStrategy::GlobalNoDbc::Reset(
+void CONTACT::Aug::ComboStrategy::GlobalNoDbc::reset(
     const Epetra_Map& slMaMap, const CONTACT::Aug::DataContainer& data)
 {
   slMap_ = Core::LinAlg::IntersectMap(slMaMap, *data.GSlDofRowMapPtr());

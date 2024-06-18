@@ -1009,7 +1009,7 @@ namespace STR
     //@{
 
     // reset everything (needed for biofilm simulations)
-    void Reset() override;
+    void reset() override;
 
     // set structure displacement vector due to biofilm growth
     void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override;

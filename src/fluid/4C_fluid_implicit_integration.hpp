@@ -573,7 +573,7 @@ namespace FLD
         Teuchos::RCP<const Epetra_Vector> velpres) override;
 
     /// Reset state vectors
-    void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
+    void reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
 
     /*!
     \brief calculate error between a analytical solution and the

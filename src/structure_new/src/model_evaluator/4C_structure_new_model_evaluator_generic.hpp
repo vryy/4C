@@ -141,7 +141,7 @@ namespace STR
        *
        *  \date 07/2016
        *  \author hiermeier */
-      virtual void Reset(const Epetra_Vector& x) = 0;
+      virtual void reset(const Epetra_Vector& x) = 0;
 
       /*! \brief Evaluate the current right-hand-side at \f$t_{n+1}\f$
        *
@@ -271,7 +271,7 @@ namespace STR
        *
        *  This method is supposed to be used to recover condensed solution variables.
        *  Typical examples are the EAS degrees of freedom or the dual Lagrange multipliers.
-       *  Do NOT use it to reset your model variables! Use the Reset() method instead.
+       *  Do NOT use it to reset your model variables! Use the reset() method instead.
        *
        *  \author hiermeier \date 07/2016 */
       virtual void run_post_compute_x(

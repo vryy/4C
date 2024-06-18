@@ -124,12 +124,12 @@ void STR::TimeInt::Base::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Base::Reset()
+void STR::TimeInt::Base::reset()
 {
   FOUR_C_THROW(
       "Reset of all class variables is not yet implemented for "
       "the modelevaluator!");
-  // ModelEvaluator().Reset();
+  // ModelEvaluator().reset();
 }
 
 /*----------------------------------------------------------------------------*

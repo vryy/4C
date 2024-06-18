@@ -66,7 +66,7 @@ namespace BEAMINTERACTION
       //! @{
       //! \brief reset submodel specific variables
       //! derived
-      void Reset() override;
+      void reset() override;
 
       //! derived
       bool evaluate_force() override;

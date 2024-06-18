@@ -413,9 +413,9 @@ namespace Adapter
     {
       return fluid_->CreateFieldTest();
     }
-    void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override
+    void reset(bool completeReset = false, int numsteps = 1, int iter = -1) override
     {
-      return fluid_->Reset(completeReset, numsteps, iter);
+      return fluid_->reset(completeReset, numsteps, iter);
     };
     void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp) override
     {

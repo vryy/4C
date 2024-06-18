@@ -724,7 +724,7 @@ void ALE::Ale::apply_dirichlet_bc(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::Reset()
+void ALE::Ale::reset()
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 

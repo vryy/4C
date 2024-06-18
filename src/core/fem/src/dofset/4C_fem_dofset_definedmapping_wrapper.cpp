@@ -183,7 +183,7 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetDefinedMappingWrapper::Reset()
+void Core::DOFSets::DofSetDefinedMappingWrapper::reset()
 {
   targetlidtosourcegidmapping_ = Teuchos::null;
   filled_ = false;
@@ -205,7 +205,7 @@ void Core::DOFSets::DofSetDefinedMappingWrapper::Disconnect(DofSetInterface* dof
     FOUR_C_THROW("cannot disconnect from non-connected DofSet");
 
   // clear my Teuchos::rcps.
-  Reset();
+  reset();
 }
 
 /*----------------------------------------------------------------------*

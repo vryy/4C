@@ -62,7 +62,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::BeamInteractionOld::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 

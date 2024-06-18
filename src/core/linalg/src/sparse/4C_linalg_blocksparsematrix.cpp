@@ -113,13 +113,13 @@ void Core::LinAlg::BlockSparseMatrixBase::Zero()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::BlockSparseMatrixBase::Reset()
+void Core::LinAlg::BlockSparseMatrixBase::reset()
 {
   for (int i = 0; i < Rows(); ++i)
   {
     for (int j = 0; j < Cols(); ++j)
     {
-      Matrix(i, j).Reset();
+      Matrix(i, j).reset();
     }
   }
 }

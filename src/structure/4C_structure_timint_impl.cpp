@@ -4288,7 +4288,7 @@ void STR::TimIntImpl::use_block_matrix(
   // We need to reset the stiffness matrix because its graph (topology)
   // is not finished yet in case of constraints and posssibly other side
   // effects (basically managers).
-  stiff_->Reset();
+  stiff_->reset();
 }
 
 /*----------------------------------------------------------------------*

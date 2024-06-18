@@ -1275,7 +1275,7 @@ namespace CONTACT
      *
      *  \date 02/2016
      *  \author hiermeier */
-    virtual void Reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
+    virtual void reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
         const Epetra_Vector& xnew);
 
     /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class

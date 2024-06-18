@@ -2119,10 +2119,10 @@ void POROFLUIDMULTIPHASE::TimIntImpl::calc_initial_time_derivative()
 
   // reset global system matrix and its graph, since we solved a very special problem with a special
   // sparsity pattern
-  sysmat_->Reset();
+  sysmat_->reset();
 
   // reset solver
-  solver_->Reset();
+  solver_->reset();
 
   // reset true residual vector computed during assembly of the standard global system of equations,
   // since not yet needed

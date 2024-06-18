@@ -72,7 +72,7 @@ namespace STR
         void setup() override;
 
         //! derived from the base class
-        void Reset() override;
+        void reset() override;
 
         //! derived from the base class
         Inpar::STR::ConvergenceStatus Solve() override;

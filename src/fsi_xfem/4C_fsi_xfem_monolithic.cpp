@@ -437,7 +437,7 @@ void FSI::MonolithicXFEM::setup_system_matrix()
   // note: Zero() is not sufficient for the coupling blocks,
   // as the couplings between fluid and structure can change (structure moves between iterations)
   // while the fluid dofsets remain unchanged
-  //  systemmatrix_->Reset();
+  //  systemmatrix_->reset();
 
   /*----------------------------------------------------------------------*/
   // extract Jacobian matrices and put them into composite system
@@ -2312,7 +2312,7 @@ void FSI::MonolithicXFEM::linear_solve()
   // TODO: can we do this?!
   // reset the solver (frees the pointer to the Core::LinAlg:: matrix' EpetraOperator and vectors
   // also!) std::cout << "reset the solver" << std::endl;
-  solver_->Reset();
+  solver_->reset();
 
   //---------------------------------------------
   // permute the increment and rhs vector back to the reference configuration w.r.t which iterinc_

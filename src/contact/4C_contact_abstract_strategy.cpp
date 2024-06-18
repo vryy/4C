@@ -2948,7 +2948,7 @@ void CONTACT::AbstractStrategy::collect_maps_for_preconditioner(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::Reset(
+void CONTACT::AbstractStrategy::reset(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp, const Epetra_Vector& xnew)
 {
   set_state(Mortar::state_new_displacement, dispnp);
@@ -3015,7 +3015,7 @@ void CONTACT::AbstractStrategy::evaluate(CONTACT::ParamsInterface& cparams,
             eval_vec->size());
       const Epetra_Vector& dispnp = *((*eval_vec)[0]);
       const Epetra_Vector& xnew = *((*eval_vec)[1]);
-      Reset(cparams, dispnp, xnew);
+      reset(cparams, dispnp, xnew);
 
       break;
     }

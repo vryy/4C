@@ -106,7 +106,7 @@ namespace Adapter
     }
 
     //! reset state vectors to zero
-    void Reset() override { ale_->Reset(); }
+    void reset() override { ale_->reset(); }
 
     //! reset last time step, needed for time step size adaptivity of FSI
     void reset_step() override { ale_->reset_step(); }

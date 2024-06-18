@@ -546,7 +546,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
 
   if (gactivenodes_->NumGlobalElements() == 0)
   {
-    sysmat->Reset();
+    sysmat->reset();
     sysmat->Assign(0, 0, Core::LinAlg::Copy, *kss);
     sysmat->Assign(0, 1, Core::LinAlg::Copy, *kst);
     sysmat->Assign(1, 0, Core::LinAlg::Copy, *kts);
@@ -651,7 +651,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
 
   // reset the tangent stiffness
   // (for the condensation we have constructed copies above)
-  sysmat->Reset();
+  sysmat->reset();
   sysmat->UnComplete();
 
   // need diagonal block kss with explicitdirichtlet_=true

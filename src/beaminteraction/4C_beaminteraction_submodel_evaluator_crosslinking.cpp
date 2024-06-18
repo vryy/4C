@@ -744,7 +744,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::add_crosslinker_to_bin_di
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Reset()
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::reset()
 {
   check_init_setup();
 
@@ -777,7 +777,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Reset()
       if (DiscretPtr()->ElementColMap()->LID(elegid) < 0)
       {
         elepairptr->Print(std::cout);
-        FOUR_C_THROW("Reset(): elegid %i not there on proc %i ", elegid, GState().get_my_rank());
+        FOUR_C_THROW("reset(): elegid %i not there on proc %i ", elegid, GState().get_my_rank());
       }
 
       int locbspotnum = elepairptr->GetLocBSpotNum(i);

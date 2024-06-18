@@ -52,7 +52,7 @@ namespace Core::LinAlg
     graph before you apply Dirichlet conditions. This way you can call Zero()
     and get an already Filled() matrix. You cannot alter its graph afterwards,
     but Assemble() is much faster if your matrix is already Filled(). Of course
-    you can always Reset() you matrix, that is throw away the matrix graph and
+    you can always reset() you matrix, that is throw away the matrix graph and
     start anew with an empty matrix.
 
     If FE_MATRIX is set as a flag, the implementation is based on an Epetra_FECrsMatrix.
@@ -130,7 +130,7 @@ namespace Core::LinAlg
     /*!
       \warning A view assignment will have your matrix use the same internal
       data as the original matrix. Changes on one side will affect the
-      other. However, some methods like Zero() or Reset() can, depending on
+      other. However, some methods like Zero() or reset() can, depending on
       the SparseMatrix flags, cut the connection. Do not rely on the view if
       you change one of these matrices! The view assignment is meant to
       provide a slim copy operation that transfers ownership from one matrix
@@ -153,7 +153,7 @@ namespace Core::LinAlg
 
       \warning A view assignment will have your matrix use the same internal
       data as the original matrix. Changes on one side will affect the
-      other. However, some methods like Zero() or Reset() can, depending on
+      other. However, some methods like Zero() or reset() can, depending on
       the SparseMatrix flags, cut the connection. Do not rely on the view if
       you change one of these matrices! The view assignment is meant to
       provide a slim copy operation that transfers ownership from one matrix
@@ -172,7 +172,7 @@ namespace Core::LinAlg
     void Zero() override;
 
     /// throw away the matrix and its graph and start anew
-    void Reset() override;
+    void reset() override;
 
     /// destroy the underlying Epetra objects
     virtual bool Destroy(bool throw_exception = true);

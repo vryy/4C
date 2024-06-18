@@ -77,7 +77,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::Cardiovascular0D::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 

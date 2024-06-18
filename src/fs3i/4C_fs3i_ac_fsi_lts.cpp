@@ -917,7 +917,7 @@ void FS3I::MeanManager::AddValue(
 /*----------------------------------------------------------------------*
  | reset mean manager                                        Thon 10/15 |
  *----------------------------------------------------------------------*/
-void FS3I::MeanManager::Reset()
+void FS3I::MeanManager::reset()
 {
   // first some checking
   if (abs(sum_dt_wss_ - sum_dt_phi_) > 1e-14 or abs(sum_dt_wss_ - sum_dt_pres_) > 1e-14)

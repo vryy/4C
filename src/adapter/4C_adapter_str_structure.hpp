@@ -511,7 +511,7 @@ namespace Adapter
     virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
 
     /// reset time and state vectors (needed for biofilm growth simulations)
-    virtual void Reset() = 0;
+    virtual void reset() = 0;
 
     /// set structure displacement vector due to biofilm growth
     virtual void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) = 0;

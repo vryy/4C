@@ -149,7 +149,7 @@ namespace STR
        *
        * \param[in] x Current full state vector
        */
-      void Reset(const Epetra_Vector& x) override{};
+      void reset(const Epetra_Vector& x) override{};
 
       //! \brief Perform actions just before the evaluate() call [derived]
       void pre_evaluate() override{};

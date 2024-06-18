@@ -57,7 +57,7 @@ void Adapter::FBIConstraintBridgePenalty::evaluate(
 void Adapter::FBIConstraintBridgePenalty::ResetBridge()
 {
   fs_->PutScalar(0.0);
-  cff_->Reset();
+  cff_->reset();
   ff_->PutScalar(0.0);
   fluid_scaled_ = false;
   structure_scaled_ = false;

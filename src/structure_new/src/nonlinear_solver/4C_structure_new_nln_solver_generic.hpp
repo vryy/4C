@@ -74,7 +74,7 @@ namespace STR
          *  \warning It is not fully clear how rebuilding the nonlinear solver affects a possible
          *           re-use of the preconditioner for the linear system.
          */
-        virtual void Reset() = 0;
+        virtual void reset() = 0;
 
         //! Solve the non-linear problem
         virtual Inpar::STR::ConvergenceStatus Solve() = 0;

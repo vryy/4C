@@ -112,8 +112,8 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SetupCalc(
     Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
   // reset all managers to their default values (I feel better this way)
-  diff_manager()->Reset();
-  var_manager()->Reset();
+  diff_manager()->reset();
+  var_manager()->reset();
 
   // clear all unused variables
   my::edispnp_.clear();

@@ -538,8 +538,8 @@ namespace
     solver.Solve(massmatrix->EpetraOperator(), initialvals, rhs, solver_params);
 
     // perform resets for solver and matrix
-    solver.Reset();
-    massmatrix->Reset();
+    solver.reset();
+    massmatrix->reset();
 
     if (myrank == 0)
     {

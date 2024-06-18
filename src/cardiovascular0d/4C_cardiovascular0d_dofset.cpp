@@ -29,7 +29,7 @@ UTILS::Cardiovascular0DDofSet::Cardiovascular0DDofSet() : Core::DOFSets::DofSet(
 /*----------------------------------------------------------------------*
  |  reset everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DDofSet::Reset()
+void UTILS::Cardiovascular0DDofSet::reset()
 {
   dofrowmap_ = Teuchos::null;
   dofcolmap_ = Teuchos::null;

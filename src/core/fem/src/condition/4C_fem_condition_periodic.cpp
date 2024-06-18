@@ -1313,7 +1313,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       // the discretization already has a pbc dofset, we merely need to update it
       // (a replace dofset is also not needed since we are working on pointer)
       pbcdofset_->SetCoupledNodes(allcoupledcolnodes_);
-      pbcdofset_->Reset();
+      pbcdofset_->reset();
     }
 
     //--------------------------------------------------

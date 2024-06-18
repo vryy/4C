@@ -2541,7 +2541,7 @@ void FLD::XFluid::Solve()
           solver_params);
 
       // TODO: here needed because of apply Dirichlet with explicit Dirichlet flag!? CHECK THIS
-      solver_->Reset();
+      solver_->reset();
 
 
       // unscale solution
@@ -2583,7 +2583,7 @@ void FLD::XFluid::Solve()
 
   // Reset the solver and so release the system matrix' pointer (enables to delete the
   // state_->systemmatrix)
-  solver_->Reset();
+  solver_->reset();
 }
 
 bool FLD::XFluid::convergence_check(int itnum, int itemax, const double velrestol,
@@ -5057,7 +5057,7 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
   state_->incvel_->PutScalar(0.0);
 
   // free the system matrix to get the matrix deleted
-  solver_->Reset();
+  solver_->reset();
 
   return;
 }

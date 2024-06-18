@@ -769,7 +769,7 @@ namespace CONTACT
        *
        *  \date 02/2016
        *  \author hiermeier */
-      void Reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
+      void reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
           const Epetra_Vector& xnew) override;
 
       //! @name Accessors

@@ -145,7 +145,7 @@ Inpar::STR::ConvergenceStatus STR::TimeInt::Implicit::Solve()
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
   // reset the non-linear solver
-  nln_solver().Reset();
+  nln_solver().reset();
   // solve the non-linear problem
   Inpar::STR::ConvergenceStatus convstatus = nln_solver().Solve();
   // return convergence status

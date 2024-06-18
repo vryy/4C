@@ -1174,7 +1174,7 @@ void STR::TimInt::determine_mass_damp_consist_accel()
   // We need to reset the stiffness matrix because its graph (topology)
   // is not finished yet in case of constraints and possibly other side
   // effects (basically managers).
-  stiff_->Reset();
+  stiff_->reset();
 }
 
 /*----------------------------------------------------------------------*/
@@ -3340,7 +3340,7 @@ const Epetra_Map* STR::TimInt::dof_row_map_view() { return discret_->dof_row_map
 
 /*----------------------------------------------------------------------*/
 /* reset everything (needed for biofilm simulations)                    */
-void STR::TimInt::Reset()
+void STR::TimInt::reset()
 {
   // displacements D_{n}
   dis_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));

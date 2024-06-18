@@ -52,7 +52,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     /*!
      * \brief Reset the constraint stiffness matrix and delete node pairs
      */
-    void Reset() override;
+    void reset() override;
 
     //@}
 

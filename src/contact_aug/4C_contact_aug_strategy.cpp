@@ -405,15 +405,15 @@ void CONTACT::Aug::Strategy::split_mortar()
 void CONTACT::Aug::Strategy::zeroize_stiffness_state()
 {
   // *** zeroize existing global matrices ***
-  data().DGLmLinMatrix().Reset();
-  data().DGGLinMatrix().Reset();
+  data().DGLmLinMatrix().reset();
+  data().DGGLinMatrix().reset();
 
-  data().DLmNWGapLinMatrix().Reset();
-  data().DLmTLmTMatrix().Reset();
-  data().DLmTLmTLinMatrix().Reset();
+  data().DLmNWGapLinMatrix().reset();
+  data().DLmTLmTMatrix().reset();
+  data().DLmTLmTLinMatrix().reset();
 
-  data().InactiveLinMatrix().Reset();
-  data().InactiveDDMatrix().Reset();
+  data().InactiveLinMatrix().reset();
+  data().InactiveDDMatrix().reset();
   data().InactiveDiagMatrix().PutScalar(0.0);
 }
 
@@ -707,11 +707,11 @@ void CONTACT::Aug::Strategy::run_post_compute_x(const CONTACT::ParamsInterface& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::Reset(
+void CONTACT::Aug::Strategy::reset(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp, const Epetra_Vector& xnew)
 {
   data().set_current_eval_state(Mortar::eval_none);
-  CONTACT::AbstractStrategy::Reset(cparams, dispnp, xnew);
+  CONTACT::AbstractStrategy::reset(cparams, dispnp, xnew);
 }
 
 /*----------------------------------------------------------------------*

@@ -323,10 +323,10 @@ void FS3I::BiofilmFSI::Timeloop()
       ScatraOutput();
 
       // reset step and state vectors
-      fsi_->structure_field()->Reset();
+      fsi_->structure_field()->reset();
       // fluid reset can be bypassed, in this way the next step starts from a solution closer to the
-      // final one fsi_->fluid_field()->Reset(false, false, step_bio);
-      fsi_->ale_field()->Reset();
+      // final one fsi_->fluid_field()->reset(false, false, step_bio);
+      fsi_->ale_field()->reset();
 
       fsi_->ale_field()->create_system_matrix(fsi_->ale_field()->Interface());
     }

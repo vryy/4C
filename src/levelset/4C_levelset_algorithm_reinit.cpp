@@ -441,9 +441,9 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
       solver_params.reset = true;
       solver_->Solve(sysmat_->EpetraOperator(), velcomp, residual_, solver_params);
 
-      SystemMatrix()->Reset();
+      SystemMatrix()->reset();
       // reset the solver as well
-      solver_->Reset();
+      solver_->reset();
 
       // TODO: add simple ILU/SGS/... for projection case, such that the standard system can be
       // solved by efficient AMG methods
@@ -525,9 +525,9 @@ void ScaTra::LevelSetAlgorithm::correction_reinit()
 
   // phinp_->Print(std::cout);
 
-  SystemMatrix()->Reset();
+  SystemMatrix()->reset();
   // reset the solver as well
-  solver_->Reset();
+  solver_->reset();
 
   return;
 }
