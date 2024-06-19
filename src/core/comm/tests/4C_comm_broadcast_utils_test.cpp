@@ -6,7 +6,7 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "4C_comm_utils_gid_vector.hpp"
+#include "4C_comm_broadcast_utils.hpp"
 
 #include <Epetra_MpiComm.h>
 

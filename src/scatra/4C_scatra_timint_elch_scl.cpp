@@ -9,6 +9,7 @@
 #include "4C_scatra_timint_elch_scl.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
+#include "4C_comm_broadcast_utils.hpp"
 #include "4C_comm_utils_gid_vector.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"

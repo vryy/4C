@@ -2,7 +2,7 @@ set(TESTNAME unittests_comm)
 
 set(SOURCE_LIST
     # cmake-format: sortable
-    4C_comm_utils_gid_vector_test.cpp
+    4C_comm_broadcast_utils_test.cpp
     4C_comm_utils_test.cpp
     )
 

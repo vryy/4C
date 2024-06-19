@@ -18,6 +18,7 @@
 #include "4C_beaminteraction_potential_params.hpp"
 #include "4C_beaminteraction_potential_runtime_visualization_output_params.hpp"
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
+#include "4C_comm_broadcast_utils.hpp"
 #include "4C_comm_utils_gid_vector.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
