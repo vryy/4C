@@ -247,12 +247,6 @@ namespace Input
      */
     std::optional<Core::IO::InputParameterContainer> read(std::istream& stream);
 
-    /**
-     * If reading succeeds, returns the data. Otherwise, returns an empty std::optional.
-     */
-    std::optional<Core::IO::InputParameterContainer> read(
-        std::istream& stream, const std::string* name);
-
     /// tell if there is a named component with the given name
     [[nodiscard]] bool has_named(const std::string& name) const;
 

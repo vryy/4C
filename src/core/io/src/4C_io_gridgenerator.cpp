@@ -150,6 +150,23 @@ namespace Core::IO::GridGenerator
       elementRowMap = Teuchos::rcp(new Epetra_Map(-1, nummynewele, mynewele.data(), 0, comm));
     }
 
+    // Build an input line that matches what is expected from a dat file.
+    // Prepend the distype which is not part of the user-supplied arguments but must be parsed.
+    // The distype is followed by nodal ids, which are set to dummy values of -1 here.
+    const std::string argument_line = std::invoke(
+        [&]()
+        {
+          std::stringstream eleargstream(inputData.distype_);
+          const int num_nodes = Core::FE::CellTypeSwitch(
+              distype_enum, [](auto cell_type_t) { return Core::FE::num_nodes<cell_type_t()>; });
+          for (int i = 0; i < num_nodes; ++i)
+          {
+            eleargstream << " " << -1;
+          }
+          eleargstream << " " << inputData.elearguments_;
+          return eleargstream.str();
+        });
+
     // Create the actual elements according to the row map
     for (int lid = 0; lid < elementRowMap->NumMyElements(); ++lid)
     {
@@ -163,8 +180,8 @@ namespace Core::IO::GridGenerator
         FOUR_C_THROW("a matching line definition is needed for %s %s",
             inputData.elementtype_.c_str(), inputData.distype_.c_str());
 
-      std::istringstream eleargstream(inputData.elearguments_);
-      if (not linedef->read(eleargstream, &inputData.distype_))
+      std::istringstream eleargstream(argument_line);
+      if (not linedef->read(eleargstream))
       {
         Core::IO::cout << "\n"
                        << eleid << " " << inputData.elementtype_ << " " << inputData.distype_
