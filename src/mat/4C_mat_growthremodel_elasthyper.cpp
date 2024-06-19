@@ -38,25 +38,25 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::GrowthRemodelElastHyper::GrowthRemodelElastHyper(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      nummat_remodelfiber_(matdata.parameters.Get<int>("NUMMATRF")),
-      nummat_elastiniso_(matdata.parameters.Get<int>("NUMMATEL3D")),
-      nummat_elastinmem_(matdata.parameters.Get<int>("NUMMATEL2D")),
-      matids_remodelfiber_(matdata.parameters.Get<std::vector<int>>("MATIDSRF")),
-      matids_elastiniso_(matdata.parameters.Get<std::vector<int>>("MATIDSEL3D")),
-      matids_elastinmem_(matdata.parameters.Get<std::vector<int>>("MATIDSEL2D")),
-      matid_penalty_(matdata.parameters.Get<int>("MATIDELPENALTY")),
-      init_w_el_(matdata.parameters.Get<double>("ELMASSFRAC")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      lamb_prestretch_cir_(matdata.parameters.Get<double>("PRESTRETCHELASTINCIR")),
-      lamb_prestretch_ax_(matdata.parameters.Get<double>("PRESTRETCHELASTINAX")),
-      t_ref_(matdata.parameters.Get<double>("THICKNESS")),
-      p_mean_(matdata.parameters.Get<double>("MEANPRESSURE")),
-      ri_(matdata.parameters.Get<double>("RADIUS")),
-      damage_(matdata.parameters.Get<int>("DAMAGE")),
-      growthtype_(matdata.parameters.Get<int>("GROWTHTYPE")),
-      loctimeint_(matdata.parameters.Get<int>("LOCTIMEINT")),
-      membrane_(matdata.parameters.Get<int>("MEMBRANE")),
-      cylinder_(matdata.parameters.Get<int>("CYLINDER"))
+      nummat_remodelfiber_(matdata.parameters.get<int>("NUMMATRF")),
+      nummat_elastiniso_(matdata.parameters.get<int>("NUMMATEL3D")),
+      nummat_elastinmem_(matdata.parameters.get<int>("NUMMATEL2D")),
+      matids_remodelfiber_(matdata.parameters.get<std::vector<int>>("MATIDSRF")),
+      matids_elastiniso_(matdata.parameters.get<std::vector<int>>("MATIDSEL3D")),
+      matids_elastinmem_(matdata.parameters.get<std::vector<int>>("MATIDSEL2D")),
+      matid_penalty_(matdata.parameters.get<int>("MATIDELPENALTY")),
+      init_w_el_(matdata.parameters.get<double>("ELMASSFRAC")),
+      density_(matdata.parameters.get<double>("DENS")),
+      lamb_prestretch_cir_(matdata.parameters.get<double>("PRESTRETCHELASTINCIR")),
+      lamb_prestretch_ax_(matdata.parameters.get<double>("PRESTRETCHELASTINAX")),
+      t_ref_(matdata.parameters.get<double>("THICKNESS")),
+      p_mean_(matdata.parameters.get<double>("MEANPRESSURE")),
+      ri_(matdata.parameters.get<double>("RADIUS")),
+      damage_(matdata.parameters.get<int>("DAMAGE")),
+      growthtype_(matdata.parameters.get<int>("GROWTHTYPE")),
+      loctimeint_(matdata.parameters.get<int>("LOCTIMEINT")),
+      membrane_(matdata.parameters.get<int>("MEMBRANE")),
+      cylinder_(matdata.parameters.get<int>("CYLINDER"))
 {
   // check if sizes fit
   if (nummat_remodelfiber_ != (int)matids_remodelfiber_.size())
@@ -113,7 +113,7 @@ Core::Communication::ParObject* Mat::GrowthRemodelElastHyperType::Create(
     const std::vector<char>& data)
 {
   Mat::GrowthRemodelElastHyper* gr_elhy = new Mat::GrowthRemodelElastHyper();
-  gr_elhy->Unpack(data);
+  gr_elhy->unpack(data);
 
   return gr_elhy;
 }
@@ -212,7 +212,7 @@ Mat::GrowthRemodelElastHyper::GrowthRemodelElastHyper(Mat::PAR::GrowthRemodelEla
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::Pack(Core::Communication::PackBuffer& data) const
+void Mat::GrowthRemodelElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -267,7 +267,7 @@ void Mat::GrowthRemodelElastHyper::Pack(Core::Communication::PackBuffer& data) c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
+void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   params_ = nullptr;
@@ -406,7 +406,7 @@ void Mat::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::GrowthRemodelElastHyper::setup(int numgp, Input::LineDefinition* linedef)
 {
   // read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
@@ -429,18 +429,18 @@ void Mat::GrowthRemodelElastHyper::Setup(int numgp, Input::LineDefinition* lined
 
   // Setup summands
   // remodelfiber
-  for (auto& p : potsumrf_) p->Setup(numgp, params_->density_, linedef);
+  for (auto& p : potsumrf_) p->setup(numgp, params_->density_, linedef);
 
   // 2D elastin matrix
-  for (auto& p : potsumelmem_) p->Setup(numgp, linedef);
+  for (auto& p : potsumelmem_) p->setup(numgp, linedef);
 
   if (params_->membrane_ != 1)
   {
     // 3D elastin matrix
-    for (auto& p : potsumeliso_) p->Setup(numgp, linedef);
+    for (auto& p : potsumeliso_) p->setup(numgp, linedef);
 
     // volpenalty
-    potsumelpenalty_->Setup(numgp, linedef);
+    potsumelpenalty_->setup(numgp, linedef);
   }
 
   // Setup circumferential, radial and axial structural tensor
@@ -550,7 +550,7 @@ void Mat::GrowthRemodelElastHyper::setup_axi_cir_rad_cylinder(
     Core::LinAlg::Matrix<3, 1> elecenter, double const dt)
 {
   // Clear dummy directions
-  radaxicirc_.Clear();
+  radaxicirc_.clear();
   Core::LinAlg::Matrix<3, 1> axdir;
   Core::LinAlg::Matrix<3, 1> raddir;
   Core::LinAlg::Matrix<3, 1> cirdir;
@@ -587,18 +587,18 @@ void Mat::GrowthRemodelElastHyper::Update(Core::LinAlg::Matrix<3, 3> const& defg
 
   // loop map of associated potential summands
   // remodelfiber
-  for (auto& p : potsumrf_) p->Update();
+  for (auto& p : potsumrf_) p->update();
 
   // 2D elastin matrix
-  for (auto& p : potsumelmem_) p->Update();
+  for (auto& p : potsumelmem_) p->update();
 
   if (params_->membrane_ != 1)
   {
     // 3D elastin matrix
-    for (auto& p : potsumeliso_) p->Update();
+    for (auto& p : potsumeliso_) p->update();
 
     // volpenalty
-    potsumelpenalty_->Update();
+    potsumelpenalty_->update();
   }
 
 
@@ -779,7 +779,7 @@ void Mat::GrowthRemodelElastHyper::setup_g_r3_d(Core::LinAlg::Matrix<3, 3> const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::GrowthRemodelElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -798,8 +798,8 @@ void Mat::GrowthRemodelElastHyper::Evaluate(const Core::LinAlg::Matrix<3, 3>* de
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
-  stress->Clear();
-  cmat->Clear();
+  stress->clear();
+  cmat->clear();
 
   // some static variables
   static Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressaniso(true);
@@ -1065,7 +1065,7 @@ void Mat::GrowthRemodelElastHyper::solve_fordrhod_cdlambrd_c(
   solver.factorWithEquilibration(true);
   solver.solve();
 
-  sum_drhodC.Clear();
+  sum_drhodC.clear();
   for (unsigned i = 0; i < nr_rf_tot_; ++i)
   {
     for (unsigned j = 0; j < 6; ++j)
@@ -1086,9 +1086,9 @@ void Mat::GrowthRemodelElastHyper::evaluate_stress_cmat_iso(
     Core::LinAlg::Matrix<6, 9>& dSdiFg, int const gp, int const eleGID) const
 {
   // clear some variables
-  stressiso.Clear();
-  cmatiso.Clear();
-  dSdiFg.Clear();
+  stressiso.clear();
+  cmatiso.clear();
+  dSdiFg.clear();
 
   // Evaluate elastin matrix
   // some variables
@@ -1206,8 +1206,8 @@ void Mat::GrowthRemodelElastHyper::evaluate_invariant_derivatives(
   // derivatives of strain energy function w.r.t. principal invariants
   for (const auto& p : potsumeliso_)
   {
-    dPgrowthI.Clear();
-    ddPgrowthII.Clear();
+    dPgrowthI.clear();
+    ddPgrowthII.clear();
     p->add_derivatives_principal(dPgrowthI, ddPgrowthII, prinv, gp, eleGID);
     dPIw.Update(cur_rho_el_[gp], dPgrowthI, 1.0);
     ddPIIw.Update(cur_rho_el_[gp], ddPgrowthII, 1.0);
@@ -1221,16 +1221,16 @@ void Mat::GrowthRemodelElastHyper::evaluate_invariant_derivatives(
   Core::LinAlg::Matrix<6, 1> ddPmodII(true);
   for (const auto& p : potsumeliso_)
   {
-    dPgrowthI.Clear();
-    ddPgrowthII.Clear();
+    dPgrowthI.clear();
+    ddPgrowthII.clear();
     p->add_derivatives_modified(dPgrowthI, ddPgrowthII, modinv, gp, eleGID);
     dPmodI.Update(cur_rho_el_[gp], dPgrowthI, 1.0);
     ddPmodII.Update(cur_rho_el_[gp], ddPgrowthII, 1.0);
   }
 
   // volpenalty
-  dPgrowthI.Clear();
-  ddPgrowthII.Clear();
+  dPgrowthI.clear();
+  ddPgrowthII.clear();
   potsumelpenalty_->add_derivatives_modified(dPgrowthI, ddPgrowthII, modinv, gp, eleGID);
   dPmodI.Update(cur_rho_el_[gp], dPgrowthI, 1.0);
   ddPmodII.Update(cur_rho_el_[gp], ddPgrowthII, 1.0);
@@ -1332,12 +1332,12 @@ void Mat::GrowthRemodelElastHyper::evaluated_sdi_fg(Core::LinAlg::Matrix<6, 9>& 
     Core::LinAlg::Matrix<3, 3> const& iFinCeM, int const gp) const
 {
   // clear some variables
-  dSdiFg.Clear();
+  dSdiFg.clear();
 
   static Core::LinAlg::Matrix<3, 3> id(true);
   for (int i = 0; i < 3; ++i) id(i, i) = 1.0;
   static Core::LinAlg::Matrix<6, 9> dSdiFin(true);
-  dSdiFin.Clear();
+  dSdiFin.clear();
 
   // derivative of second Piola Kirchhoff stress w.r.t. inverse growth deformation gradient
   Mat::add_right_non_symmetric_holzapfel_product(dSdiFin, id, iFinM, gamma(0));
@@ -1355,7 +1355,7 @@ void Mat::GrowthRemodelElastHyper::evaluated_sdi_fg(Core::LinAlg::Matrix<6, 9>& 
 
   // diFin/diFg
   static Core::LinAlg::Matrix<9, 9> diFindiFg(true);
-  diFindiFg.Clear();
+  diFindiFg.clear();
   Mat::add_non_symmetric_product(1.0, id, gm_[gp], diFindiFg);
 
   dSdiFg.MultiplyNN(1.0, dSdiFin, diFindiFg, 0.0);
@@ -1369,7 +1369,7 @@ void Mat::GrowthRemodelElastHyper::evaluate_additional_cmat(Core::LinAlg::Matrix
     Core::LinAlg::Matrix<6, 9> const& dSdiFg, int const gp) const
 {
   // clear some variables
-  cmatadd.Clear();
+  cmatadd.clear();
 
   // diFg/dC
   Core::LinAlg::Matrix<9, 6> diFgdC(true);
@@ -1390,9 +1390,9 @@ void Mat::GrowthRemodelElastHyper::evaluate_stress_cmat_membrane(
     Core::LinAlg::Matrix<6, 9>& dSdiFg, const int gp, const int eleGID) const
 {
   // clear some variables
-  stress.Clear();
-  cmat.Clear();
-  dSdiFg.Clear();
+  stress.clear();
+  cmat.clear();
+  dSdiFg.clear();
 
   // 2nd Piola Kirchhoff stress
   Core::LinAlg::FADMatrix<3, 3> iFgM_fad(true);
@@ -1493,7 +1493,7 @@ void Mat::GrowthRemodelElastHyper::evaluate_stress_cmat_membrane(
   static Core::LinAlg::Matrix<6, 1> Yv(true);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(YM, Yv);
   static Core::LinAlg::Matrix<6, 6> dYdC(true);
-  dYdC.Clear();
+  dYdC.clear();
   Mat::add_holzapfel_product(dYdC, Yv, -0.5);
 
   cmat.MultiplyNT(0.5 * mue_el_mem * cur_rho_el_[gp] * mue_frac_[gp] / X_det.val(), Yv, Yv, 0.0);
@@ -1609,8 +1609,8 @@ void Mat::GrowthRemodelElastHyper::EvaluateMembrane(Core::LinAlg::Matrix<3, 3> c
   double dt = params.get<double>("delta time");
 
   // blank resulting quantities
-  pk2M_glob.Clear();
-  cmat_glob.Clear();
+  pk2M_glob.clear();
+  cmat_glob.clear();
 
   // Evaluate growth deformation gradient
   Core::LinAlg::Matrix<3, 3> FgM(true);
@@ -1625,7 +1625,7 @@ void Mat::GrowthRemodelElastHyper::EvaluateMembrane(Core::LinAlg::Matrix<3, 3> c
 
   // Evaluate anisotropic remodel fibers
   static Core::LinAlg::Matrix<6, 1> pk2v_glob(true);
-  pk2v_glob.Clear();
+  pk2v_glob.clear();
   static Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressaniso(true);
   static Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmataniso(true);
   for (auto& p : potsumrf_)

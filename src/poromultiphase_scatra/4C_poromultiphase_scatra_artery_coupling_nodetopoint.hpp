@@ -42,7 +42,7 @@ namespace PoroMultiPhaseScaTra
         Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art) override;
 
     //! setup the strategy
-    void Setup() override;
+    void setup() override;
 
     //! apply mesh movement (on artery elements)
     void ApplyMeshMovement() override;
@@ -51,7 +51,7 @@ namespace PoroMultiPhaseScaTra
     Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction() override;
 
     //! Evaluate the 1D-3D coupling
-    void Evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    void evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs) override;
 
     /*!

@@ -63,7 +63,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::init()
 {
   // we do not have a moving mesh
   if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::porofluidmultiphase)
@@ -104,7 +104,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
   fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
   /// dof row map of coupled problem splitted in (field) blocks
   globalex_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
-  globalex_->Setup(*fullmap_, maps);
+  globalex_->setup(*fullmap_, maps);
 
   FEmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       *fullmap_, 81, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
@@ -117,7 +117,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup()
 {
   // get the coupling method
   auto arterycoupl =
@@ -172,10 +172,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::get_coupli
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
-  if (!issetup_) FOUR_C_THROW("Setup() has not been called");
+  if (!issetup_) FOUR_C_THROW("setup() has not been called");
 
   if (!porofluidmanagersset_)
   {
@@ -266,7 +266,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
         Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase> newpair =
             PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
                 create_new_artery_coupling_pair(ele_ptrs);
-        newpair->Init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
+        newpair->init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
             coupleddofs_art_, scale_vec_, funct_vec_, condname_,
             couplingparams_.get<double>("PENALTY"));
 
@@ -332,13 +332,13 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::create_cou
           std::vector<Core::Conditions::Condition*> coupcond;
           arterydis_->GetCondition(condname_, coupcond);
           std::string coupling_element_type_ =
-              (coupcond[j])->parameters().Get<std::string>("coupling_type");
+              (coupcond[j])->parameters().get<std::string>("coupling_type");
 
           // recompute coupling dofs
           recompute_coupled_do_fs_for_ntp(coupcond, j);
 
           // get penalty parameter
-          const auto penalty = coupcond[j]->parameters().Get<double>("PENALTY");
+          const auto penalty = coupcond[j]->parameters().get<double>("PENALTY");
 
           // get eta (parameter coordinate of corresponding node)
           const int eta_ntp = (i == 0) ? -1 : 1;
@@ -357,7 +357,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::create_cou
               Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>
                   newpair = PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
                       create_new_artery_coupling_pair(ele_ptrs);
-              newpair->Init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
+              newpair->init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
                   coupleddofs_art_, scale_vec_, funct_vec_, condname_, penalty,
                   coupling_element_type_, eta_ntp);
               // add to list of current contact pairs
@@ -476,7 +476,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate_c
     const std::vector<double> seglengths = get_ele_segment_lengths(coupl_elepairs_[i]->Ele1GID());
 
     // evaluate
-    const double integrated_diam = coupl_elepairs_[i]->Evaluate(&(eleforce[0]), &(eleforce[1]),
+    const double integrated_diam = coupl_elepairs_[i]->evaluate(&(eleforce[0]), &(eleforce[1]),
         &(elestiff[0][0]), &(elestiff[0][1]), &(elestiff[1][0]), &(elestiff[1][1]), &D_ele, &M_ele,
         &Kappa_ele, seglengths);
 

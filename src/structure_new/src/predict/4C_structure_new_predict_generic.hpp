@@ -55,7 +55,7 @@ namespace STR
       virtual ~Generic() = default;
 
       //! initialize the base class variables
-      virtual void Init(const enum Inpar::STR::PredEnum& type,
+      virtual void init(const enum Inpar::STR::PredEnum& type,
           const Teuchos::RCP<STR::IMPLICIT::Generic>& implint_ptr,
           const Teuchos::RCP<STR::Dbc>& dbc_ptr,
           const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
@@ -63,7 +63,7 @@ namespace STR
           const Teuchos::RCP<Teuchos::ParameterList>& noxparams_ptr);
 
       //! setup of the specific predictor
-      virtual void Setup() = 0;
+      virtual void setup() = 0;
 
       //! Get the predictor type enum
       const Inpar::STR::PredEnum& get_type() const { return type_; };
@@ -119,10 +119,10 @@ namespace STR
       Teuchos::ParameterList& nox_params();
 
      protected:
-      //! indicates if the Init() function has been called
+      //! indicates if the init() function has been called
       bool isinit_;
 
-      //! indicates if the Setup() function has been called
+      //! indicates if the setup() function has been called
       bool issetup_;
 
      private:

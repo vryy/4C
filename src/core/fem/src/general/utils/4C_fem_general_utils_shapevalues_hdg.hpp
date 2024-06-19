@@ -121,7 +121,7 @@ namespace Core::FE
     \brief Compute element-dependent data, like gradients in real cell, integration weights, for
     element dofs
     */
-    void Evaluate(const Core::Elements::Element &ele, const std::vector<double> &aleDis = {});
+    void evaluate(const Core::Elements::Element &ele, const std::vector<double> &aleDis = {});
 
     /// polynomial degree
     unsigned int degree_;

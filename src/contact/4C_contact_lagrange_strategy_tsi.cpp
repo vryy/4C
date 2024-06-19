@@ -109,7 +109,7 @@ void CONTACT::LagrangeStrategyTsi::set_state(
 }
 
 
-void CONTACT::LagrangeStrategyTsi::Evaluate(
+void CONTACT::LagrangeStrategyTsi::evaluate(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
     Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<Core::Adapter::Coupling> coupST,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> temp)
@@ -119,7 +119,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   // set the new displacements
   set_state(Mortar::state_new_displacement, *dis);
 
-  for (unsigned i = 0; i < interface_.size(); ++i) interface_[i]->Initialize();
+  for (unsigned i = 0; i < interface_.size(); ++i) interface_[i]->initialize();
 
   // set new temperatures
   Teuchos::RCP<Epetra_Vector> temp2 = coupST()->SlaveToMaster(temp);
@@ -142,7 +142,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   update_active_set_semi_smooth();
 
   // init lin-matrices
-  Initialize();
+  initialize();
 
   // get the necessary maps on the thermo dofs
   Teuchos::RCP<Epetra_Map> gactive_themo_dofs = coupST->MasterToSlaveMap(gactivedofs_);
@@ -546,7 +546,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
 
   if (gactivenodes_->NumGlobalElements() == 0)
   {
-    sysmat->Reset();
+    sysmat->reset();
     sysmat->Assign(0, 0, Core::LinAlg::Copy, *kss);
     sysmat->Assign(0, 1, Core::LinAlg::Copy, *kst);
     sysmat->Assign(1, 0, Core::LinAlg::Copy, *kts);
@@ -651,7 +651,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
 
   // reset the tangent stiffness
   // (for the condensation we have constructed copies above)
-  sysmat->Reset();
+  sysmat->reset();
   sysmat->UnComplete();
 
   // need diagonal block kss with explicitdirichtlet_=true

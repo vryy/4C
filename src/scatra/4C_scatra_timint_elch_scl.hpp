@@ -67,11 +67,11 @@ namespace ScaTra
 
     void read_restart_problem_specific(int step, Core::IO::DiscretizationReader& reader) override;
 
-    void Setup() override;
+    void setup() override;
 
     void TestResults() override;
 
-    void Update() override;
+    void update() override;
 
    protected:
     void add_problem_specific_parameters_and_vectors(Teuchos::ParameterList& params) override;

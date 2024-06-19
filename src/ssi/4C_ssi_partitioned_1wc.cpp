@@ -27,18 +27,18 @@ SSI::SSIPart1WC::SSIPart1WC(const Epetra_Comm& comm, const Teuchos::ParameterLis
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call he setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart1WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SSIPart1WC::init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
-  SSI::SSIPart::Init(
+  SSI::SSIPart::init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 }
 
@@ -57,9 +57,9 @@ void SSI::SSIPart1WC::do_struct_step()
   constexpr bool force_prepare = false;
   structure_field()->prepare_output(force_prepare);
   // update all single field solvers
-  structure_field()->Update();
+  structure_field()->update();
   // write output to files
-  structure_field()->Output();
+  structure_field()->output();
   // write output to screen
   structure_field()->print_step();
   // clean up
@@ -132,7 +132,7 @@ void SSI::SSIPart1WC::do_scatra_step()
   //                         update solution
   //        current solution becomes old solution of next timestep
   // -------------------------------------------------------------------
-  ScaTraField()->Update();
+  ScaTraField()->update();
 
   // -------------------------------------------------------------------
   // evaluate error for problems with analytical solution
@@ -184,19 +184,19 @@ SSI::SSIPart1WCSolidToScatra::SSIPart1WCSolidToScatra(
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call he setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart1WCSolidToScatra::Init(const Epetra_Comm& comm,
+void SSI::SSIPart1WCSolidToScatra::init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams, const std::string& struct_disname,
     const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
-  SSI::SSIPart1WC::Init(
+  SSI::SSIPart1WC::init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // do some checks
@@ -256,19 +256,19 @@ SSI::SSIPart1WCScatraToSolid::SSIPart1WCScatraToSolid(
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call he setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart1WCScatraToSolid::Init(const Epetra_Comm& comm,
+void SSI::SSIPart1WCScatraToSolid::init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams, const std::string& struct_disname,
     const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
-  SSI::SSIPart1WC::Init(
+  SSI::SSIPart1WC::init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // Flag for reading scatra result from restart file instead of computing it

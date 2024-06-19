@@ -1882,7 +1882,7 @@ namespace FLD
 
       interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
-      ele->Evaluate(params, *discret_, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
+      ele->evaluate(params, *discret_, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
       // sum values on nodes into vectors and record the touch count (build average of values)
       for (int i = 0; i < 5 * 5 * 5; ++i)

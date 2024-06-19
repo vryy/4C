@@ -53,7 +53,7 @@ namespace Discret::ELEMENTS
    * @p add_internal_force_vector(...) and @p add_stiffness_matrix(...) are adding the gauss point
    * contribution to the force vector or stiffness matrix, respectively. Some element formulations
    * require to store data @p HistoryData. This type needs to be default constructable. The static
-   * member functions @p Pack(...) and @p Unpack(...) need to be defined to allow parallel
+   * member functions @p pack(...) and @p unpack(...) need to be defined to allow parallel
    * distribution and restarts.
    *
    * @tparam celltype : celltype of the evaluator
@@ -66,11 +66,11 @@ namespace Discret::ELEMENTS
    public:
     SolidEleCalc();
 
-    void Pack(Core::Communication::PackBuffer& data) const;
+    void pack(Core::Communication::PackBuffer& data) const;
 
-    void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
-    void Setup(Mat::So3Material& solid_material, Input::LineDefinition* linedef);
+    void setup(Mat::So3Material& solid_material, Input::LineDefinition* linedef);
 
     void material_post_setup(const Core::Elements::Element& ele, Mat::So3Material& solid_material);
 

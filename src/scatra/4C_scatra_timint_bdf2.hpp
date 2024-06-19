@@ -30,7 +30,7 @@ namespace ScaTra
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     /// Setup time integration scheme
-    void Setup() override;
+    void setup() override;
 
     /// compute values at intermediate time steps (required for generalized-alpha)
     void compute_intermediate_values() override{};
@@ -47,7 +47,7 @@ namespace ScaTra
 
     /// Update the solution after convergence of the nonlinear iteration.
     /// Current solution becomes old solution of next timestep.
-    void Update() override;
+    void update() override;
 
     /// read restart data
     void read_restart(

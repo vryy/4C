@@ -201,7 +201,7 @@ void FS3I::ACFSI::finish_large_time_scale_loop()
   scatravec_[1]->ScaTraField()->SetTimeStep(time_, step_);
 
   // we now have to fix the time_ and step_ of the structure field, since this is not shifted
-  // in prepare_time_step(), but in Update(), which we here will not call. So..
+  // in prepare_time_step(), but in update(), which we here will not call. So..
   fsi_->structure_field()->set_time(time_);
   fsi_->structure_field()->SetTimen(time_ + fsi_->fluid_field()->Dt());
   fsi_->structure_field()->SetStep(step_);
@@ -616,7 +616,7 @@ void FS3I::ACFSI::large_time_scale_do_growth_update()
   //----------------------------------------------------------------------
   // finish present structure scatra time step (no output)
   //----------------------------------------------------------------------
-  structurescatra->Update();
+  structurescatra->update();
 
   //----------------------------------------------------------------------
   // Switch time step of scatra fields
@@ -636,7 +636,7 @@ void FS3I::ACFSI::large_time_scale_do_growth_update()
   structurescatra->SetTimeStep(time_ - dt_, step_ - 1);
 
   // we now have to fix the time_ and step_ of the structure field, since this is not shifted
-  // in prepare_time_step(), but in Update(), which we here will not call. So..
+  // in prepare_time_step(), but in update(), which we here will not call. So..
   fsi_->structure_field()->set_time(time_ - dt_);
   fsi_->structure_field()->SetTimen(time_);
   fsi_->structure_field()->SetStep(step_ - 1);
@@ -672,7 +672,7 @@ void FS3I::ACFSI::large_time_scale_do_growth_update()
   fsi_->update();
   FsiOutput();
   // fluid scatra update. Structure scatra is done later
-  fluidscatra->Update();
+  fluidscatra->update();
   fluidscatra->check_and_write_output_and_restart();
 
   //----------------------------------------------------------------------
@@ -766,7 +766,7 @@ void FS3I::ACFSI::large_time_scale_update_and_output()
   // NOTE: fluid scatra is already updated and written in large_time_scale_do_growth_update()
 
   // now update and output the structure scatra field
-  scatravec_[1]->ScaTraField()->Update();
+  scatravec_[1]->ScaTraField()->update();
   scatravec_[1]->ScaTraField()->check_and_write_output_and_restart();
 }
 
@@ -825,7 +825,7 @@ std::vector<Teuchos::RCP<Core::LinAlg::MapExtractor>> FS3I::ACFSI::BuildMapExtra
     otherdofmapvec.clear();
 
     Teuchos::RCP<Core::LinAlg::MapExtractor> getjdof = Teuchos::rcp(new Core::LinAlg::MapExtractor);
-    getjdof->Setup(*dis->dof_row_map(), conddofmap, otherdofmap);
+    getjdof->setup(*dis->dof_row_map(), conddofmap, otherdofmap);
     extractjthscalar.push_back(getjdof);
   }
 
@@ -917,7 +917,7 @@ void FS3I::MeanManager::AddValue(
 /*----------------------------------------------------------------------*
  | reset mean manager                                        Thon 10/15 |
  *----------------------------------------------------------------------*/
-void FS3I::MeanManager::Reset()
+void FS3I::MeanManager::reset()
 {
   // first some checking
   if (abs(sum_dt_wss_ - sum_dt_phi_) > 1e-14 or abs(sum_dt_wss_ - sum_dt_pres_) > 1e-14)

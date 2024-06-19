@@ -67,21 +67,21 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
         Teuchos::rcp(new UTILS::PoroMaterialStrategy());
 
     // setup projection matrices
-    volcoupl_->Init(Global::Problem::Instance()->NDim(), structdis, fluiddis, nullptr, nullptr,
+    volcoupl_->init(Global::Problem::Instance()->NDim(), structdis, fluiddis, nullptr, nullptr,
         nullptr, nullptr, materialstrategy);
     Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
     Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
         binning_params);
     volcoupl_->Redistribute(binning_params, Global::Problem::Instance()->OutputControlFile());
-    volcoupl_->Setup(Global::Problem::Instance()->VolmortarParams());
+    volcoupl_->setup(Global::Problem::Instance()->VolmortarParams());
   }
 
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
   const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
 
-  // create the structural time integrator (Init() called inside)
+  // create the structural time integrator (init() called inside)
   // clean up as soon as old time integration is unused!
   if (oldstructimint_)
   {
@@ -90,14 +90,14 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
             timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
     structure_ =
         Teuchos::rcp_dynamic_cast<Adapter::FPSIStructureWrapper>(structure->structure_field());
-    structure_->Setup();
+    structure_->setup();
   }
   else
   {
     Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr =
         Adapter::build_structure_algorithm(sdyn);
-    adapterbase_ptr->Init(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
-    adapterbase_ptr->Setup();
+    adapterbase_ptr->init(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+    adapterbase_ptr->setup();
     structure_ = Teuchos::rcp_dynamic_cast<Adapter::FPSIStructureWrapper>(
         adapterbase_ptr->structure_field());
   }
@@ -240,7 +240,7 @@ void PoroElast::PoroBase::read_restart(const int step)
 {
   if (step)
   {
-    if (not oldstructimint_) structure_->Setup();
+    if (not oldstructimint_) structure_->setup();
 
     // apply current velocity and pressures to structure
     set_fluid_solution();
@@ -307,10 +307,10 @@ void PoroElast::PoroBase::prepare_time_step()
   fluid_field()->prepare_time_step();
 }
 
-void PoroElast::PoroBase::Update()
+void PoroElast::PoroBase::update()
 {
-  structure_field()->Update();
-  fluid_field()->Update();
+  structure_field()->update();
+  fluid_field()->update();
   // clean up as soon as old time integration is unused!
   if (oldstructimint_)
   {
@@ -406,14 +406,14 @@ void PoroElast::PoroBase::TimeLoop()
   }
 }
 
-void PoroElast::PoroBase::Output(bool forced_writerestart)
+void PoroElast::PoroBase::output(bool forced_writerestart)
 {
   // Note: The order is important here! In here control file entries are
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
   fluid_field()->StatisticsAndOutput();
-  structure_field()->Output(forced_writerestart);
+  structure_field()->output(forced_writerestart);
 }
 
 void PoroElast::PoroBase::setup_coupling()
@@ -594,7 +594,7 @@ void PoroElast::NoPenetrationConditionHandle::Clear(PoroElast::Coupltype couplty
   }
 }
 
-void PoroElast::NoPenetrationConditionHandle::Setup(
+void PoroElast::NoPenetrationConditionHandle::setup(
     Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid)
 {
   if (has_cond_)

@@ -121,7 +121,7 @@ namespace UTILS
 
     /// initialization routine called by the manager ctor to get correct reference base values and
     /// activating the right conditions at the beginning
-    void Initialize(
+    void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vector that may be filled by assembly
@@ -132,7 +132,7 @@ namespace UTILS
 
     //! Evaluate routine to call from outside. In here the right action is determined and the
     //! #EvaluateCardiovascular0D routine is called
-    void Evaluate(
+    void evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix

@@ -474,7 +474,7 @@ namespace Core::VolMortar
           }
 
           Core::LinAlg::Matrix<ndim, ndim> invJ;
-          invJ.Clear();
+          invJ.clear();
 
           invJ.Multiply(derivs, xrefe);
           jac = invJ.Invert();
@@ -580,7 +580,7 @@ namespace Core::VolMortar
           }
 
           Core::LinAlg::Matrix<ndim, ndim> invJ;
-          invJ.Clear();
+          invJ.clear();
 
           invJ.Multiply(deriv, xrefe);
           jac = invJ.Invert();

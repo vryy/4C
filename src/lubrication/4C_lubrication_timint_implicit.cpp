@@ -91,7 +91,7 @@ LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdi
 /*------------------------------------------------------------------------*
  | initialize time integration                                wirtz 11/15 |
  *------------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::Init()
+void LUBRICATION::TimIntImpl::init()
 {
   // -------------------------------------------------------------------
   // always nonlinear solver
@@ -161,7 +161,7 @@ void LUBRICATION::TimIntImpl::Init()
   prei_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   return;
-}  // TimIntImpl::Init()
+}  // TimIntImpl::init()
 
 
 
@@ -189,7 +189,7 @@ void LUBRICATION::TimIntImpl::set_element_general_parameters() const
   eleparams.set("roughnessdeviation", roughness_deviation_);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   return;
@@ -211,7 +211,7 @@ void LUBRICATION::TimIntImpl::prepare_time_loop()
   if (step_ == 0)
   {
     // write out initial state
-    Output();
+    output();
 
     // compute error for problems with analytical solution (initial field!)
     evaluate_error_compared_to_analytical_sol();
@@ -298,7 +298,7 @@ void LUBRICATION::TimIntImpl::set_height_field_pure_lub(const int nds)
       double heightfuncvalue =
           Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(heightfuncno - 1)
-              .Evaluate(lnode->X().data(), time_, index);
+              .evaluate(lnode->X().data(), time_, index);
 
       // get global and local dof IDs
       const int gid = nodedofs[index];
@@ -341,7 +341,7 @@ void LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
     {
       double velfuncvalue = Global::Problem::Instance()
                                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
-                                .Evaluate(lnode->X().data(), time_, index);
+                                .evaluate(lnode->X().data(), time_, index);
 
       // get global and local dof IDs
       const int gid = nodedofs[index];
@@ -402,7 +402,7 @@ void LUBRICATION::TimIntImpl::TimeLoop()
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    Output();
+    output();
 
   }  // while
 
@@ -468,7 +468,7 @@ inline void LUBRICATION::TimIntImpl::print_time_step_info()
 /*----------------------------------------------------------------------*
  | output of solution vector to BINIO                       wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::Output(const int num)
+void LUBRICATION::TimIntImpl::output(const int num)
 {
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:    + output of solution");
@@ -499,7 +499,7 @@ void LUBRICATION::TimIntImpl::Output(const int num)
     Core::LinAlg::PrintVectorInMatlabFormat(filename.str(), *prenp_);
   }
   // NOTE:
-  // statistics output for normal fluxes at boundaries was already done during Update()
+  // statistics output for normal fluxes at boundaries was already done during update()
 
   return;
 }  // TimIntImpl::Output
@@ -648,7 +648,7 @@ void LUBRICATION::TimIntImpl::assemble_mat_and_rhs()
   add_time_integration_specific_vectors();
 
   // call loop over elements
-  discret_->Evaluate(eleparams, sysmat_, residual_);
+  discret_->evaluate(eleparams, sysmat_, residual_);
   discret_->ClearState();
 
   // add cavitation penalty
@@ -1234,7 +1234,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> LUBRICATION::TimIntImpl::SystemMatrix()
  | build linear system tangent matrix, rhs/force residual   wirtz 01/16 |
  | Monolithic EHL accesses the linearised lubrication problem           |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::Evaluate()
+void LUBRICATION::TimIntImpl::evaluate()
 {
   // put zero pressure value, where no gap is defined
   if (inf_gap_toggle_lub_ != Teuchos::null)

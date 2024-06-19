@@ -42,7 +42,7 @@ BEAMINTERACTION::BeamLinkPinJointed::BeamLinkPinJointed(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkPinJointed::Init(int id,
+void BEAMINTERACTION::BeamLinkPinJointed::init(int id,
     const std::vector<std::pair<int, int>>& eleids,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
@@ -50,14 +50,14 @@ void BEAMINTERACTION::BeamLinkPinJointed::Init(int id,
 {
   issetup_ = false;
 
-  BeamLink::Init(id, eleids, initpos, inittriad, linkertype, timelinkwasset);
+  BeamLink::init(id, eleids, initpos, inittriad, linkertype, timelinkwasset);
 
   issetup_ = true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkPinJointed::Setup(const int matnum)
+void BEAMINTERACTION::BeamLinkPinJointed::setup(const int matnum)
 {
   check_init();
 
@@ -66,7 +66,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::Setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkPinJointed::Pack(Core::Communication::PackBuffer& data) const
+void BEAMINTERACTION::BeamLinkPinJointed::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -74,14 +74,14 @@ void BEAMINTERACTION::BeamLinkPinJointed::Pack(Core::Communication::PackBuffer& 
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  BeamLink::Pack(data);
+  BeamLink::pack(data);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkPinJointed::Unpack(const std::vector<char>& data)
+void BEAMINTERACTION::BeamLinkPinJointed::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -90,7 +90,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  BeamLink::Unpack(basedata);
+  BeamLink::unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

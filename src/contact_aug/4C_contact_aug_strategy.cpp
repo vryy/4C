@@ -112,7 +112,7 @@ void CONTACT::Aug::DataContainer::init_matrix_row_col_transformer()
   unredistributed_col[CONTACT::MatBlockType::lm_displ] = &ProbDofsPtr();
   unredistributed_col[CONTACT::MatBlockType::lm_lm] = &PGLmDofRowMapPtr();
 
-  mat_row_col_transformer_->Init(
+  mat_row_col_transformer_->init(
       redistributed_row, redistributed_col, unredistributed_row, unredistributed_col);
 }
 
@@ -255,10 +255,10 @@ void CONTACT::Aug::Strategy::post_setup(bool redistributed, bool init)
   data().SetVectorMapsValid(false);
 
   // setup the potential class with the current maps
-  data().Potential().Setup();
+  data().Potential().setup();
 
   // setup the row column transformer object
-  if (ParRedist()) data().matrix_row_col_transformer().Setup();
+  if (ParRedist()) data().matrix_row_col_transformer().setup();
 
   return;
 }
@@ -405,15 +405,15 @@ void CONTACT::Aug::Strategy::split_mortar()
 void CONTACT::Aug::Strategy::zeroize_stiffness_state()
 {
   // *** zeroize existing global matrices ***
-  data().DGLmLinMatrix().Reset();
-  data().DGGLinMatrix().Reset();
+  data().DGLmLinMatrix().reset();
+  data().DGGLinMatrix().reset();
 
-  data().DLmNWGapLinMatrix().Reset();
-  data().DLmTLmTMatrix().Reset();
-  data().DLmTLmTLinMatrix().Reset();
+  data().DLmNWGapLinMatrix().reset();
+  data().DLmTLmTMatrix().reset();
+  data().DLmTLmTLinMatrix().reset();
 
-  data().InactiveLinMatrix().Reset();
-  data().InactiveDDMatrix().Reset();
+  data().InactiveLinMatrix().reset();
+  data().InactiveDDMatrix().reset();
   data().InactiveDiagMatrix().PutScalar(0.0);
 }
 
@@ -488,7 +488,7 @@ void CONTACT::Aug::Strategy::create_rhs_state(const Epetra_Map& gAugInactiveSlav
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::Initialize(enum Mortar::ActionType actiontype)
+void CONTACT::Aug::Strategy::initialize(enum Mortar::ActionType actiontype)
 {
   // get inactive slave dofs
   Teuchos::RCP<Epetra_Map> gAugInactiveSlaveDofs = Teuchos::null;
@@ -584,7 +584,7 @@ void CONTACT::Aug::Strategy::InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInter
     CONTACT::Aug::Interface& interface = dynamic_cast<CONTACT::Aug::Interface&>(**cit);
 
     // initialize / reset interfaces
-    interface.Initialize();
+    interface.initialize();
 
     // store required integration time
     data().IntTime() += interface.Inttime();
@@ -653,7 +653,7 @@ void CONTACT::Aug::Strategy::eval_interface(CONTACT::Aug::Interface& interface, 
     case Mortar::eval_force_stiff:
     {
       // evaluate averaged weighted gap
-      interface.Evaluate(rriter, cparams_ptr);
+      interface.evaluate(rriter, cparams_ptr);
 
       // evaluate remaining entities and linearization
       interface.RedEvaluate(cparams_ptr);
@@ -707,11 +707,11 @@ void CONTACT::Aug::Strategy::run_post_compute_x(const CONTACT::ParamsInterface& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::Reset(
+void CONTACT::Aug::Strategy::reset(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp, const Epetra_Vector& xnew)
 {
   data().set_current_eval_state(Mortar::eval_none);
-  CONTACT::AbstractStrategy::Reset(cparams, dispnp, xnew);
+  CONTACT::AbstractStrategy::reset(cparams, dispnp, xnew);
 }
 
 /*----------------------------------------------------------------------*
@@ -787,7 +787,7 @@ void CONTACT::Aug::Strategy::pre_eval_force(CONTACT::ParamsInterface& cparams)
   split_mortar();
 
   // initialize all rhs vectors and linearization matrices
-  Initialize(cparams.get_action_type());
+  initialize(cparams.get_action_type());
 }
 
 /*----------------------------------------------------------------------------*
@@ -1057,7 +1057,7 @@ void CONTACT::Aug::Strategy::eval_static_constraint_rhs(CONTACT::ParamsInterface
   InitEvalInterface(cparams);
 
   // --- Assemble the gap vectors ---------------------------------------------
-  Initialize(cparams.get_action_type());
+  initialize(cparams.get_action_type());
   assemble_gap();
 
   // --- Evaluate only the forces coming from the constraints -----------------
@@ -1934,20 +1934,20 @@ double CONTACT::Aug::Strategy::GetPotentialValue(
   {
     case NOX::Nln::MeritFunction::mrtfct_lagrangian:
     {
-      return data().Potential().Get(POTENTIAL::Type::lagrangian, POTENTIAL::SetType::all);
+      return data().Potential().get(POTENTIAL::Type::lagrangian, POTENTIAL::SetType::all);
     }
     case NOX::Nln::MeritFunction::mrtfct_lagrangian_active:
     {
-      return data().Potential().Get(POTENTIAL::Type::lagrangian, POTENTIAL::SetType::active);
+      return data().Potential().get(POTENTIAL::Type::lagrangian, POTENTIAL::SetType::active);
     }
     case NOX::Nln::MeritFunction::mrtfct_infeasibility_two_norm:
     {
-      return data().Potential().Get(
+      return data().Potential().get(
           POTENTIAL::Type::infeasibility_measure, POTENTIAL::SetType::all);
     }
     case NOX::Nln::MeritFunction::mrtfct_infeasibility_two_norm_active:
     {
-      return data().Potential().Get(
+      return data().Potential().get(
           POTENTIAL::Type::infeasibility_measure, POTENTIAL::SetType::active);
     }
     default:

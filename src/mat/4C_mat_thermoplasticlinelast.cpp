@@ -51,17 +51,17 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::ThermoPlasticLinElast::ThermoPlasticLinElast(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      thermexpans_(matdata.parameters.Get<double>("THEXPANS")),
-      thetainit_(matdata.parameters.Get<double>("INITTEMP")),
-      yield_(matdata.parameters.Get<double>("YIELD")),
-      isohard_(matdata.parameters.Get<double>("ISOHARD")),
-      kinhard_(matdata.parameters.Get<double>("KINHARD")),
-      sigma_y_((matdata.parameters.Get<std::vector<double>>("SIGMA_Y"))),
-      strainbar_p_ref_((matdata.parameters.Get<std::vector<double>>("EPSBAR_P"))),
-      abstol_(matdata.parameters.Get<double>("TOL"))
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      thermexpans_(matdata.parameters.get<double>("THEXPANS")),
+      thetainit_(matdata.parameters.get<double>("INITTEMP")),
+      yield_(matdata.parameters.get<double>("YIELD")),
+      isohard_(matdata.parameters.get<double>("ISOHARD")),
+      kinhard_(matdata.parameters.get<double>("KINHARD")),
+      sigma_y_((matdata.parameters.get<std::vector<double>>("SIGMA_Y"))),
+      strainbar_p_ref_((matdata.parameters.get<std::vector<double>>("EPSBAR_P"))),
+      abstol_(matdata.parameters.get<double>("TOL"))
 {
 }
 
@@ -85,7 +85,7 @@ Core::Communication::ParObject* Mat::ThermoPlasticLinElastType::Create(
     const std::vector<char>& data)
 {
   Mat::ThermoPlasticLinElast* plastic = new Mat::ThermoPlasticLinElast();
-  plastic->Unpack(data);
+  plastic->unpack(data);
   return plastic;
 }
 
@@ -109,7 +109,7 @@ Mat::ThermoPlasticLinElast::ThermoPlasticLinElast(Mat::PAR::ThermoPlasticLinElas
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 08/11 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ThermoPlasticLinElast::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -155,13 +155,13 @@ void Mat::ThermoPlasticLinElast::Pack(Core::Communication::PackBuffer& data) con
 
   return;
 
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack (public)                                           dano 08/11 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::Unpack(const std::vector<char>& data)
+void Mat::ThermoPlasticLinElast::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -249,13 +249,13 @@ void Mat::ThermoPlasticLinElast::Unpack(const std::vector<char>& data)
 
   return;
 
-}  // Unpack()
+}  // unpack()
 
 
 /*---------------------------------------------------------------------*
  | initialise / allocate internal stress variables (public) dano 08/11 |
  *---------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ThermoPlasticLinElast::setup(int numgp, Input::LineDefinition* linedef)
 {
   // initialise history variables
   strainpllast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
@@ -311,13 +311,13 @@ void Mat::ThermoPlasticLinElast::Setup(int numgp, Input::LineDefinition* linedef
 
   return;
 
-}  // Setup()
+}  // setup()
 
 
 /*---------------------------------------------------------------------*
  | update internal stress variables (public)                dano 08/11 |
  *---------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::Update()
+void Mat::ThermoPlasticLinElast::update()
 {
   // make current values at time step t_n+1 to values of last step t_n
   strainpllast_ = strainplcurr_;
@@ -349,13 +349,13 @@ void Mat::ThermoPlasticLinElast::Update()
   }
 
   return;
-}  // Update()
+}  // update()
 
 
 /*----------------------------------------------------------------------*
  | evaluate material (public)                                dano 08/11 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain,
     Teuchos::ParameterList& params,                  // parameter list for communication & HISTORY
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,  // 2nd PK-stress
@@ -785,7 +785,7 @@ void Mat::ThermoPlasticLinElast::Evaluate(const Core::LinAlg::Matrix<3, 3>* defg
     //  - back stress
     //    (--> relative stress)
 
-    // as current history vectors are set to zero in Update(), the old values
+    // as current history vectors are set to zero in update(), the old values
     // need to be set instead, otherwise no constant plastic values are possible
     strainplcurr_->at(gp) = strainpllast_->at(gp);
     strainbarplcurr_->at(gp) = strainbarpllast_->at(gp);
@@ -881,7 +881,7 @@ void Mat::ThermoPlasticLinElast::Evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 
   return;
 
-}  // Evaluate()
+}  // evaluate()
 
 
 /*----------------------------------------------------------------------*
@@ -941,7 +941,7 @@ void Mat::ThermoPlasticLinElast::setup_cmat(
   const double mfac = young / ((1.0 + nu) * (1.0 - 2.0 * nu));  // factor
 
   // clear the material tangent
-  cmat.Clear();
+  cmat.clear();
   // write non-zero components
   cmat(0, 0) = mfac * (1.0 - nu);
   cmat(0, 1) = mfac * nu;
@@ -1305,7 +1305,7 @@ void Mat::ThermoPlasticLinElast::dissipation_coupl_cond(
 /*----------------------------------------------------------------------*
  | calculate stresses by evaluating the temperature tangent  dano 08/11 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::Evaluate(
+void Mat::ThermoPlasticLinElast::evaluate(
     const Core::LinAlg::Matrix<1, 1>& Ntemp,  // shapefcts . temperatures
     Core::LinAlg::Matrix<6, 1>& ctemp, Core::LinAlg::Matrix<6, 1>& stresstemp)
 {
@@ -1358,7 +1358,7 @@ void Mat::ThermoPlasticLinElast::setup_cthermo(Core::LinAlg::Matrix<NUM_STRESS_3
   // write non-zero components
 
   // clear the material tangent
-  ctemp.Clear();
+  ctemp.clear();
 
   // loop over the element nodes
   for (int i = 0; i < 3; ++i) ctemp(i, 0) = m;  // non-zero entries only in main directions

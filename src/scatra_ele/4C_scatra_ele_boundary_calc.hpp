@@ -110,7 +110,7 @@ namespace Discret
           for (size_t i_end = i_start + 1; i_end < numnode - 1; ++i_end)
           {
             Core::LinAlg::Matrix<3, 1> direction;
-            direction.Clear();
+            direction.clear();
             direction(0) = xyze(0, i_start) - xyze(0, i_end);
             direction(1) = xyze(1, i_start) - xyze(1, i_end);
             direction(2) = xyze(2, i_start) - xyze(2, i_end);
@@ -153,7 +153,7 @@ namespace Discret
           Core::Elements::Element::LocationArray& la);
 
       //! Evaluate the element (using location array)
-      int Evaluate(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+      int evaluate(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

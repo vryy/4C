@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SoPyramid5fbar::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -263,7 +263,7 @@ int Discret::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_update_istep:
     {
       // Update of history for materials
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
     }
     break;
 
@@ -311,7 +311,7 @@ int Discret::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       // Update constraintmixture material
       if (Material()->MaterialType() == Core::Materials::m_constraintmixture)
       {
-        SolidMaterial()->Update();
+        SolidMaterial()->update();
       }
     }
     break;
@@ -548,8 +548,8 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate_neumann(Teuchos::ParameterList& 
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
@@ -565,7 +565,7 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate_neumann(Teuchos::ParameterList& 
       });
 
   // (SPATIAL) FUNCTION BUSINESS
-  const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* funct = &condition.parameters().get<std::vector<int>>("funct");
   Core::LinAlg::Matrix<NUMDIM_SOP5, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
@@ -625,7 +625,7 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate_neumann(Teuchos::ParameterList& 
       const double functfac =
           (functnum > 0) ? Global::Problem::Instance()
                                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                               .Evaluate(xrefegp.A(), time, dim)
+                               .evaluate(xrefegp.A(), time, dim)
                          : 1.0;
       const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
       for (int nodid = 0; nodid < NUMNOD_SOP5; ++nodid)
@@ -815,8 +815,8 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
       if (error_tol)
       {
         params.set<bool>("eval_error", true);
-        stiffmatrix->Clear();
-        force->Clear();
+        stiffmatrix->clear();
+        force->clear();
         return;
       }
       else
@@ -1058,7 +1058,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
       params.set("gp_coords_ref", point);
     }
 
-    SolidMaterial()->Evaluate(&defgrd_bar, &glstrain_bar, params, &stress_bar, &cmat, gp, Id());
+    SolidMaterial()->evaluate(&defgrd_bar, &glstrain_bar, params, &stress_bar, &cmat, gp, Id());
     // end of call material law
 
     // print plastic strains
@@ -1345,7 +1345,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoPyramid5fbarType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoPyramid5fbarType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

@@ -79,13 +79,13 @@ namespace BEAMINTERACTION
     BeamLinkRigidJointed(const BeamLinkRigidJointed& old);
 
     //! Initialization
-    void Init(const int id, const std::vector<std::pair<int, int>>& eleids,
+    void init(const int id, const std::vector<std::pair<int, int>>& eleids,
         const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
         const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
         Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset) override;
 
     //! Setup
-    void Setup(const int matnum) override;
+    void setup(const int matnum) override;
 
     /*!
     \brief Return unique ParObject id
@@ -98,18 +98,18 @@ namespace BEAMINTERACTION
     /*!
     \brief Pack this class so it can be communicated
 
-    \ref Pack and \ref Unpack are used to communicate this element
+    \ref pack and \ref unpack are used to communicate this element
 
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
 
-    \ref Pack and \ref Unpack are used to communicate this element
+    \ref pack and \ref unpack are used to communicate this element
 
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 

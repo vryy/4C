@@ -175,7 +175,7 @@ namespace Core::DOFSets
         const Core::FE::Discretization& dis, const unsigned dspos, const int start) = 0;
 
     /// reset all internal variables
-    virtual void Reset() = 0;
+    virtual void reset() = 0;
 
     //@}
 

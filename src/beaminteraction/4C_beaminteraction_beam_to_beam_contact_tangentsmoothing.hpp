@@ -183,8 +183,8 @@ namespace BEAMINTERACTION
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N_xi)
     {
-      t.Clear();
-      t_xi.Clear();
+      t.clear();
+      t_xi.clear();
 
       for (int i = 0; i < 3; i++)
       {

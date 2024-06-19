@@ -28,7 +28,7 @@ Discret::ELEMENTS::SoSh8Type& Discret::ELEMENTS::SoSh8Type::Instance() { return 
 Core::Communication::ParObject* Discret::ELEMENTS::SoSh8Type::Create(const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoSh8(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -142,7 +142,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoSh8::Clone() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoSh8::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -150,7 +150,7 @@ void Discret::ELEMENTS::SoSh8::Pack(Core::Communication::PackBuffer& data) const
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class So_hex8 Element
-  Discret::ELEMENTS::SoHex8::Pack(data);
+  Discret::ELEMENTS::SoHex8::pack(data);
   // thickdir
   add_to_pack(data, thickdir_);
   add_to_pack(data, thickvec_);
@@ -164,7 +164,7 @@ void Discret::ELEMENTS::SoSh8::Pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoSh8::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -173,7 +173,7 @@ void Discret::ELEMENTS::SoSh8::Unpack(const std::vector<char>& data)
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::SoHex8::Unpack(basedata);
+  Discret::ELEMENTS::SoHex8::unpack(basedata);
   // thickdir
   thickdir_ = static_cast<ThicknessDirection>(extract_int(position, data));
   extract_from_pack(position, data, thickvec_);

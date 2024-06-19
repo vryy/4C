@@ -74,7 +74,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -165,18 +165,18 @@ namespace Discret
       /*!
       \brief Pack this class so it can be communicated
 
-      \ref Pack and \ref Unpack are used to communicate this element
+      \ref pack and \ref unpack are used to communicate this element
 
       */
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
 
-      \ref Pack and \ref Unpack are used to communicate this element
+      \ref pack and \ref unpack are used to communicate this element
 
       */
-      void Unpack(const std::vector<char>& data) override;
+      void unpack(const std::vector<char>& data) override;
 
       Core::Elements::ElementType& ElementType() const override { return Beam3rType::Instance(); }
 
@@ -501,7 +501,7 @@ namespace Discret
                                   given in params
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+      int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -760,7 +760,7 @@ namespace Discret
                 new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>());
 
         // reset scheme with nodal quaternions
-        triad_interpolation_scheme_ptr->Reset(Qnode);
+        triad_interpolation_scheme_ptr->reset(Qnode);
 
         triad_interpolation_scheme_ptr->get_interpolated_triad_at_xi(triad, xi);
       }
@@ -792,7 +792,7 @@ namespace Discret
           const Core::LinAlg::Matrix<3, 1, T>& Psi_l_s,
           const Core::LinAlg::Matrix<3, 1, double>& Kref, Core::LinAlg::Matrix<3, 1, T>& K) const
       {
-        K.Clear();
+        K.clear();
 
         /* Calculation of material curvature vector according to Crisfield 1999, eq. (4.2) (this
          * equation has been derived for a different beam element formulation but is also valid for
@@ -817,7 +817,7 @@ namespace Discret
           const Core::LinAlg::Matrix<3, 1, double>& Gammaref,
           Core::LinAlg::Matrix<3, 1, T>& Gamma) const
       {
-        Gamma.Clear();
+        Gamma.clear();
 
         // convected strain gamma according to Crisfield 1999, eq. (3.4)
         Gamma.MultiplyTN(Lambda, r_s);

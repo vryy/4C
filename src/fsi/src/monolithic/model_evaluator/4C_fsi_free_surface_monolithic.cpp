@@ -94,8 +94,8 @@ void FSI::MonolithicBaseFS::prepare_time_step()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBaseFS::update()
 {
-  fluid_field()->Update();
-  ale_field()->Update();
+  fluid_field()->update();
+  ale_field()->update();
 }
 
 
@@ -107,8 +107,8 @@ void FSI::MonolithicBaseFS::output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  fluid_field()->Output();
-  ale_field()->Output();
+  fluid_field()->output();
+  ale_field()->output();
 }
 
 
@@ -190,7 +190,7 @@ void FSI::MonolithicMainFS::Timeloop(
     // This initializes the field algorithms and creates the first linear
     // systems. And this is the reason we know the initial linear system is
     // there when we create the NOX::Group.
-    Evaluate(Teuchos::null);
+    evaluate(Teuchos::null);
 
     // Get initial guess.
     // The initial system is there, so we can happily extract the
@@ -248,7 +248,7 @@ void FSI::MonolithicMainFS::Timeloop(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
+void FSI::MonolithicMainFS::evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicMainFS::Evaluate");
 
@@ -269,7 +269,7 @@ void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> step_incr
 
   {
     Teuchos::Time ta("ale", true);
-    ale_field()->Evaluate(ax);
+    ale_field()->evaluate(ax);
     utils()->out() << "ale      : " << ta.totalElapsedTime(true) << " sec\n";
   }
 
@@ -279,7 +279,7 @@ void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> step_incr
 
   {
     Teuchos::Time tf("fluid", true);
-    fluid_field()->Evaluate(fx);
+    fluid_field()->evaluate(fx);
     utils()->out() << "fluid    : " << tf.totalElapsedTime(true) << " sec\n";
   }
 
@@ -293,7 +293,7 @@ void FSI::MonolithicMainFS::set_dof_row_maps(
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
-  blockrowdofmap_.Setup(*fullmap, maps);
+  blockrowdofmap_.setup(*fullmap, maps);
 }
 
 
@@ -373,7 +373,7 @@ bool FSI::MonolithicMainFS::computeF(
     const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicMainFS::computeF");
-  Evaluate(Teuchos::rcp(&x, false));
+  evaluate(Teuchos::rcp(&x, false));
   setup_rhs(F);
   return true;
 }
@@ -411,7 +411,7 @@ FSI::BlockMonolithicFS::BlockMonolithicFS(
 bool FSI::BlockMonolithicFS::computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithicFS::computeJacobian");
-  Evaluate(Teuchos::rcp(&x, false));
+  evaluate(Teuchos::rcp(&x, false));
   Core::LinAlg::BlockSparseMatrixBase& mat =
       Teuchos::dyn_cast<Core::LinAlg::BlockSparseMatrixBase>(Jac);
   setup_system_matrix(mat);
@@ -1079,14 +1079,14 @@ void FSI::BlockPreconditioningMatrixFS::SetupPreconditioner()
 #ifdef BLOCKMATRIXMERGE
   // this is really evil :)
   sparse_ = Merge();
-  fluidsolver_->Setup(sparse_->EpetraMatrix());
+  fluidsolver_->setup(sparse_->EpetraMatrix());
 
 #else
   const Core::LinAlg::SparseMatrix& fluidInnerOp = Matrix(0, 0);
   const Core::LinAlg::SparseMatrix& aleInnerOp = Matrix(1, 1);
 
-  fluidsolver_->Setup(fluidInnerOp.EpetraMatrix());
-  if (constalesolver_ == Teuchos::null) alesolver_->Setup(aleInnerOp.EpetraMatrix());
+  fluidsolver_->setup(fluidInnerOp.EpetraMatrix());
+  if (constalesolver_ == Teuchos::null) alesolver_->setup(aleInnerOp.EpetraMatrix());
 #endif
 }
 
@@ -1146,7 +1146,7 @@ void FSI::OverlappingBlockMatrixFS::SetupPreconditioner()
 
   // this is really evil :)
   sparse_ = Merge();
-  fluidsolver_->Setup(sparse_->EpetraMatrix());
+  fluidsolver_->setup(sparse_->EpetraMatrix());
 
 #else
   const Core::LinAlg::SparseMatrix& fluidInnerOp = Matrix(0, 0);
@@ -1155,9 +1155,9 @@ void FSI::OverlappingBlockMatrixFS::SetupPreconditioner()
   Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex = Teuchos::null;
   Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
 
-  fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(), fsidofmapex, fluid_.discretization(), irownodes,
+  fluidsolver_->setup(fluidInnerOp.EpetraMatrix(), fsidofmapex, fluid_.discretization(), irownodes,
       structuresplit_);
-  if (constalesolver_ == Teuchos::null) alesolver_->Setup(aleInnerOp.EpetraMatrix());
+  if (constalesolver_ == Teuchos::null) alesolver_->setup(aleInnerOp.EpetraMatrix());
 #endif
 }
 

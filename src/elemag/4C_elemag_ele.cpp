@@ -44,7 +44,7 @@ Discret::ELEMENTS::ElemagIntFaceType& Discret::ELEMENTS::ElemagIntFaceType::Inst
 Core::Communication::ParObject* Discret::ELEMENTS::ElemagType::Create(const std::vector<char>& data)
 {
   Discret::ELEMENTS::Elemag* object = new Discret::ELEMENTS::Elemag(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -168,7 +168,7 @@ Core::Elements::Element* Discret::ELEMENTS::Elemag::Clone() const
  |  Pack data                                                  (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Elemag::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Elemag::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -177,7 +177,7 @@ void Discret::ELEMENTS::Elemag::Pack(Core::Communication::PackBuffer& data) cons
   add_to_pack(data, type);
 
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
 
   // Discretisation type
   add_to_pack(data, distype_);
@@ -193,7 +193,7 @@ void Discret::ELEMENTS::Elemag::Pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Elemag::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Elemag::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -202,7 +202,7 @@ void Discret::ELEMENTS::Elemag::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
 
   // distype
   distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
@@ -354,7 +354,7 @@ Core::FE::CellType Discret::ELEMENTS::ElemagBoundary::Shape() const
  |  Pack data                                                  (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagBoundary::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::ElemagBoundary::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -362,7 +362,7 @@ void Discret::ELEMENTS::ElemagBoundary::Pack(Core::Communication::PackBuffer& da
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
 
   // Discretisation type
   // add_to_pack(data,distype_);
@@ -375,7 +375,7 @@ void Discret::ELEMENTS::ElemagBoundary::Pack(Core::Communication::PackBuffer& da
  |  Unpack data                                                (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagBoundary::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ElemagBoundary::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -384,7 +384,7 @@ void Discret::ELEMENTS::ElemagBoundary::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
 
   // distype
   // distype_ = static_cast<Core::FE::CellType>( extract_int(position,data) );
@@ -429,13 +429,13 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagBoun
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                      berardocco 02/18 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::ElemagBoundary::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::ElemagBoundary::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  Discret::ELEMENTS::ElemagBoundaryImplInterface::Impl(this)->Evaluate(
+  Discret::ELEMENTS::ElemagBoundaryImplInterface::Impl(this)->evaluate(
       this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
   return 0;
 }
@@ -551,7 +551,7 @@ Core::FE::CellType Discret::ELEMENTS::ElemagIntFace::Shape() const
  |  Pack data                                                  (public) |
  |                                                     berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagIntFace::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::ElemagIntFace::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this ElemagIntFace element does not support communication");
   return;
@@ -561,7 +561,7 @@ void Discret::ELEMENTS::ElemagIntFace::Pack(Core::Communication::PackBuffer& dat
  |  Unpack data                                                (public) |
  |                                                     berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagIntFace::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ElemagIntFace::unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this ElemagIntFace element does not support communication");
   return;
@@ -797,7 +797,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagIntF
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                      berardocco 02/18 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::ElemagIntFace::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::ElemagIntFace::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,

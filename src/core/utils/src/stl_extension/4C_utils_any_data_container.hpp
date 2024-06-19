@@ -112,19 +112,19 @@ namespace Core::Gen
     /// @{
 
     template <typename T>
-    void Set(const T* data, const unsigned id = 0)
+    void set(const T* data, const unsigned id = 0)
     {
       set_data<T, DataType::any>(data, id);
     }
 
     template <typename T>
-    T* Get(const unsigned id = 0)
+    T* get(const unsigned id = 0)
     {
       return const_cast<T*>(get_data<T, DataType::any>(id));
     }
 
     template <typename T>
-    const T* Get(const unsigned id = 0) const
+    const T* get(const unsigned id = 0) const
     {
       return get_data<T, DataType::any>(id);
     }

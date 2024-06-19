@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::ScalarDepInterp::ScalarDepInterp(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      id_lambda_zero_(matdata.parameters.Get<int>("IDMATZEROSC")),
-      id_lambda_unit_(matdata.parameters.Get<int>("IDMATUNITSC")){
+      id_lambda_zero_(matdata.parameters.get<int>("IDMATZEROSC")),
+      id_lambda_unit_(matdata.parameters.get<int>("IDMATUNITSC")){
 
       };
 
@@ -49,7 +49,7 @@ Mat::ScalarDepInterpType Mat::ScalarDepInterpType::instance_;
 Core::Communication::ParObject* Mat::ScalarDepInterpType::Create(const std::vector<char>& data)
 {
   Mat::ScalarDepInterp* ScalarDepInterp = new Mat::ScalarDepInterp();
-  ScalarDepInterp->Unpack(data);
+  ScalarDepInterp->unpack(data);
   return ScalarDepInterp;
 }
 
@@ -78,7 +78,7 @@ Mat::ScalarDepInterp::ScalarDepInterp(Mat::PAR::ScalarDepInterp* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ScalarDepInterp::setup(int numgp, Input::LineDefinition* linedef)
 {
   if (isinit_)
     FOUR_C_THROW("This function should just be called, if the material is jet not initialized.");
@@ -86,12 +86,12 @@ void Mat::ScalarDepInterp::Setup(int numgp, Input::LineDefinition* linedef)
   // Setup of elastic material for zero concentration
   lambda_zero_mat_ =
       Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->id_lambda_zero_));
-  lambda_zero_mat_->Setup(numgp, linedef);
+  lambda_zero_mat_->setup(numgp, linedef);
 
   // Setup of elastic material for zero concentration
   lambda_unit_mat_ =
       Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->id_lambda_unit_));
-  lambda_unit_mat_->Setup(numgp, linedef);
+  lambda_unit_mat_->setup(numgp, linedef);
 
   // Some safety check
   const double density1 = lambda_zero_mat_->Density();
@@ -115,7 +115,7 @@ void Mat::ScalarDepInterp::Setup(int numgp, Input::LineDefinition* linedef)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ScalarDepInterp::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -124,14 +124,14 @@ void Mat::ScalarDepInterp::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Core::LinAlg::Matrix<6, 1> stress_lambda_zero = *stress;
   Core::LinAlg::Matrix<6, 6> cmat_zero_conc = *cmat;
 
-  lambda_zero_mat_->Evaluate(
+  lambda_zero_mat_->evaluate(
       defgrd, glstrain, params, &stress_lambda_zero, &cmat_zero_conc, gp, eleGID);
 
   // evaluate elastic material corresponding to infinite concentration
   Core::LinAlg::Matrix<6, 1> stress_lambda_unit = *stress;
   Core::LinAlg::Matrix<6, 6> cmat_infty_conc = *cmat;
 
-  lambda_unit_mat_->Evaluate(
+  lambda_unit_mat_->evaluate(
       defgrd, glstrain, params, &stress_lambda_unit, &cmat_infty_conc, gp, eleGID);
 
   double lambda;
@@ -195,7 +195,7 @@ void Mat::ScalarDepInterp::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ScalarDepInterp::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -223,8 +223,8 @@ void Mat::ScalarDepInterp::Pack(Core::Communication::PackBuffer& data) const
   // Pack data of both elastic materials
   if (lambda_zero_mat_ != Teuchos::null and lambda_unit_mat_ != Teuchos::null)
   {
-    lambda_zero_mat_->Pack(data);
-    lambda_unit_mat_->Pack(data);
+    lambda_zero_mat_->pack(data);
+    lambda_unit_mat_->pack(data);
   }
 
   return;
@@ -233,7 +233,7 @@ void Mat::ScalarDepInterp::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::Unpack(const std::vector<char>& data)
+void Mat::ScalarDepInterp::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -306,10 +306,10 @@ void Mat::ScalarDepInterp::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::Update()
+void Mat::ScalarDepInterp::update()
 {
-  lambda_zero_mat_->Update();
-  lambda_unit_mat_->Update();
+  lambda_zero_mat_->update();
+  lambda_unit_mat_->update();
 }
 
 /*----------------------------------------------------------------------------*/

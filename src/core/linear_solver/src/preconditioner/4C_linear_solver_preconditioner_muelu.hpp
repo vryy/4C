@@ -55,7 +55,7 @@ namespace Core::LinearSolver
      * @param x Solution of the linear system
      * @param b Right-hand side of the linear system
      */
-    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
     //! linear operator used for preconditioning
@@ -96,7 +96,7 @@ namespace Core::LinearSolver
      * @param x Solution of the linear system
      * @param b Right-hand side of the linear system
      */
-    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
    private:
@@ -124,7 +124,7 @@ namespace Core::LinearSolver
      * @param x Solution of the linear system
      * @param b Right-hand side of the linear system
      */
-    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
    private:
@@ -168,7 +168,7 @@ namespace Core::LinearSolver
      * @param x Solution of the linear system
      * @param b Right-hand side of the linear system
      */
-    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
    private:
@@ -207,7 +207,7 @@ namespace Core::LinearSolver
      * @param x Solution of the linear system
      * @param b Right-hand side of the linear system
      */
-    void Setup(
+    void setup(
         bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) final;
 
    private:
@@ -235,7 +235,7 @@ namespace Core::LinearSolver
      * @param x Solution of the linear system
      * @param b Right-hand side of the linear system
      */
-    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
    private:

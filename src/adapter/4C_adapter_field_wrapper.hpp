@@ -86,14 +86,14 @@ namespace Adapter
         ) override;
 
     /// update state and evaluate elements
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
+    void evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
 
     /// update state and evaluate elements
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter) override;
+    void evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter) override;
 
     /// update at time step end
-    void Update() override { field_->Update(); }
+    void update() override { field_->update(); }
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     void prepare_output(bool force_prepare) override
@@ -102,9 +102,9 @@ namespace Adapter
     }
 
     /// output results
-    void Output(bool forced_writerestart = false) override
+    void output(bool forced_writerestart = false) override
     {
-      return field_->Output(forced_writerestart);
+      return field_->output(forced_writerestart);
     }
 
     /// read restart information for given time step

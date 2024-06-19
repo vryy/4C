@@ -70,7 +70,7 @@ namespace CONTACT
      class exists.
 
      */
-    virtual void Pack(Core::Communication::PackBuffer& data) const;
+    virtual void pack(Core::Communication::PackBuffer& data) const;
 
     /*!
      \brief Unpack data from a vector into this class
@@ -80,7 +80,7 @@ namespace CONTACT
      class exists.
 
      */
-    virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
     //@}
 
@@ -425,21 +425,21 @@ namespace CONTACT
 
       virtual ~NodeDataContainer() = default;
 
-      void Setup();
+      void setup();
 
       /*! \brief Pack this class so that it can be communicated
        *
        *  This function packs the datacontainer. This is only called
        *  when the class has been initialized and the pointer to this
        *  class exists. */
-      void Pack(Core::Communication::PackBuffer& data) const;
+      void pack(Core::Communication::PackBuffer& data) const;
 
       /*! \brief Unpack data from a vector into this class
        *
        *  This function unpacks the data container. This is only called
        *  when the class has been initialized and the pointer to this
        *  class exists. */
-      void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+      void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
       void Complete();
       /// @}
@@ -702,7 +702,7 @@ namespace CONTACT
     class exists.
 
     */
-    virtual void Pack(Core::Communication::PackBuffer& data) const;
+    virtual void pack(Core::Communication::PackBuffer& data) const;
 
     /*!
     \brief Unpack data from a vector into this class
@@ -712,7 +712,7 @@ namespace CONTACT
     class exists.
 
     */
-    virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
     //! @name Access methods
 
@@ -825,7 +825,7 @@ namespace CONTACT
     class exists.
 
     */
-    virtual void Pack(Core::Communication::PackBuffer& data) const;
+    virtual void pack(Core::Communication::PackBuffer& data) const;
 
     /*!
     \brief Unpack data from a vector into this class
@@ -835,7 +835,7 @@ namespace CONTACT
     class exists.
 
     */
-    virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
 
     //! @name Access methods
@@ -868,7 +868,7 @@ namespace CONTACT
     std::map<int, double>& DerivTempMasterDisp() { return derivTempMasterDisp_; }
     std::map<int, double>& DerivTempMasterTemp() { return derivTempMasterTemp_; }
 
-    void Clear();
+    void clear();
 
 
    protected:
@@ -904,26 +904,26 @@ namespace CONTACT
     virtual ~NodeEhlDataContainer() = default;
 
     //! pack for parallel communication
-    virtual void Pack(Core::Communication::PackBuffer& data) const {
+    virtual void pack(Core::Communication::PackBuffer& data) const {
         /* no need to pack, since terms are re-evaluated after parallel communication */
     };
 
     //! unpack and re-init after parallel comunication
-    virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data){
+    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data){
         /* no need to pack, since terms are re-evaluated after parallel communication */
     };
 
     //! clear all stored data
-    void Clear()
+    void clear()
     {
-      weighted_relTangVel_.Clear();
+      weighted_relTangVel_.clear();
       deriv_weighted_relTangVel_.clear();
-      weighted_avTangVel_.Clear();
+      weighted_avTangVel_.clear();
       deriv_weighted_avTangVel_.clear();
       tang_grad_.clear();
       tang_grad_deriv_.clear();
-      weighted_relTangVel_.Clear();
-      weighted_avTangVel_.Clear();
+      weighted_relTangVel_.clear();
+      weighted_avTangVel_.clear();
     }
 
     Core::LinAlg::Matrix<3, 1>& get_weighted_rel_tang_vel() { return weighted_relTangVel_; }
@@ -1021,18 +1021,18 @@ namespace CONTACT
     /*!
      \brief Pack this class so it can be communicated
 
-     \ref Pack and \ref Unpack are used to communicate this node
+     \ref pack and \ref unpack are used to communicate this node
 
      */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
 
-     \ref Pack and \ref Unpack are used to communicate this node
+     \ref pack and \ref unpack are used to communicate this node
 
      */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 

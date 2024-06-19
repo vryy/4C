@@ -444,7 +444,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
 
     // call the element evaluate method to integrate functions
     // against heaviside function element
-    int err = ele->Evaluate(
+    int err = ele->evaluate(
         calc_smag_const_params, *discret_, lm, dummym1, dummym2, dummyv1, dummyv2, dummyv3);
     if (err)
       FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret_->Comm().MyPID(), ele->Id(), err);
@@ -824,7 +824,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
 
     // call the element evaluate method to integrate functions
     // against heaviside function element
-    int err = ele->Evaluate(
+    int err = ele->evaluate(
         calc_turb_prandtl_params, *scatradiscret_, la, dummym1, dummym2, dummyv1, dummyv2, dummyv3);
     if (err)
       FOUR_C_THROW(

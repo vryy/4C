@@ -39,13 +39,13 @@ ParticleInteraction::SPHRigidParticleContactBase::SPHRigidParticleContactBase(
   // empty constructor
 }
 
-void ParticleInteraction::SPHRigidParticleContactBase::Init()
+void ParticleInteraction::SPHRigidParticleContactBase::init()
 {
   // init with potential boundary particle types
   boundarytypes_ = {PARTICLEENGINE::BoundaryPhase, PARTICLEENGINE::RigidPhase};
 }
 
-void ParticleInteraction::SPHRigidParticleContactBase::Setup(
+void ParticleInteraction::SPHRigidParticleContactBase::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
     const std::shared_ptr<ParticleInteraction::InteractionWriter> particleinteractionwriter,
@@ -97,14 +97,14 @@ ParticleInteraction::SPHRigidParticleContactElastic::SPHRigidParticleContactElas
   // empty constructor
 }
 
-void ParticleInteraction::SPHRigidParticleContactElastic::Setup(
+void ParticleInteraction::SPHRigidParticleContactElastic::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
     const std::shared_ptr<ParticleInteraction::InteractionWriter> particleinteractionwriter,
     const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // call base class setup
-  SPHRigidParticleContactBase::Setup(
+  SPHRigidParticleContactBase::setup(
       particleengineinterface, particlewallinterface, particleinteractionwriter, neighborpairs);
 
   // safety check

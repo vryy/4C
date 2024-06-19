@@ -100,7 +100,7 @@ void FBI::FBIBinningGeometryCoupler::UpdateBinning(
   binstrategy_->AssignElesToBins(structure_discretization, bintoelemap_);
 }
 /*----------------------------------------------------------------------*/
-void FBI::FBIBinningGeometryCoupler::Setup(
+void FBI::FBIBinningGeometryCoupler::setup(
     std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector> structure_displacement)
 {
@@ -109,7 +109,7 @@ void FBI::FBIBinningGeometryCoupler::Setup(
 
   setup_binning(discretizations, structure_displacement);
 
-  FBI::FBIGeometryCoupler::Setup(discretizations, structure_displacement);
+  FBI::FBIGeometryCoupler::setup(discretizations, structure_displacement);
 }
 /*----------------------------------------------------------------------*/
 

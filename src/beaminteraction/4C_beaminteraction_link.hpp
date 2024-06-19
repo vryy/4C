@@ -79,13 +79,13 @@ namespace BEAMINTERACTION
     BeamLink(const BeamLink& old);
 
     //! Initialization
-    virtual void Init(const int id, const std::vector<std::pair<int, int>>& eleids,
+    virtual void init(const int id, const std::vector<std::pair<int, int>>& eleids,
         const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
         const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
         Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset);
 
     //! Setup
-    virtual void Setup(const int matnum);
+    virtual void setup(const int matnum);
 
     /*!
     \brief Return unique ParObject id
@@ -101,18 +101,18 @@ namespace BEAMINTERACTION
     /*!
     \brief Pack this class so it can be communicated
 
-    \ref Pack and \ref Unpack are used to communicate this element
+    \ref pack and \ref unpack are used to communicate this element
 
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
 
-    \ref Pack and \ref Unpack are used to communicate this element
+    \ref pack and \ref unpack are used to communicate this element
 
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -213,13 +213,13 @@ namespace BEAMINTERACTION
     //! Check the init state
     inline void check_init() const
     {
-      if (not is_init()) FOUR_C_THROW("Call Init() first!");
+      if (not is_init()) FOUR_C_THROW("Call init() first!");
     }
 
     //! Check the init and setup state
     inline void check_init_setup() const
     {
-      if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (not is_init() or not is_setup()) FOUR_C_THROW("Call init() and setup() first!");
     }
 
 
@@ -227,10 +227,10 @@ namespace BEAMINTERACTION
    protected:
     //! @name member variables
 
-    //! indicates if the Init() function has been called
+    //! indicates if the init() function has been called
     bool isinit_;
 
-    //! indicates if the Setup() function has been called
+    //! indicates if the setup() function has been called
     bool issetup_;
 
    private:

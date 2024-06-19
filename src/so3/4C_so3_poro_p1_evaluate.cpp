@@ -46,7 +46,7 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::compute_porosity_and_linear
 }
 
 template <class so3_ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -123,7 +123,7 @@ int Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::Evaluate(Teuchos::ParameterL
         for (int j = 0; j < Base::numdim_; j++) lm_sub.push_back(la[0].lm_[i * noddof_ + j]);
 
       // evaluate parent solid element
-      so3_ele::Evaluate(params, discretization, lm_sub, elemat1_sub, elemat2_sub, elevec1_sub,
+      so3_ele::evaluate(params, discretization, lm_sub, elemat1_sub, elemat2_sub, elevec1_sub,
           elevec2_sub, elevec3_sub);
 
       if (elemat1_epetra.values())

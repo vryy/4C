@@ -41,13 +41,13 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::PlasticLinElast::PlasticLinElast(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      yield_(matdata.parameters.Get<double>("YIELD")),
-      isohard_(matdata.parameters.Get<double>("ISOHARD")),
-      kinhard_(matdata.parameters.Get<double>("KINHARD")),
-      abstol_(matdata.parameters.Get<double>("TOL"))
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      yield_(matdata.parameters.get<double>("YIELD")),
+      isohard_(matdata.parameters.get<double>("ISOHARD")),
+      kinhard_(matdata.parameters.get<double>("KINHARD")),
+      abstol_(matdata.parameters.get<double>("TOL"))
 {
 }
 
@@ -70,7 +70,7 @@ Mat::PlasticLinElastType Mat::PlasticLinElastType::instance_;
 Core::Communication::ParObject* Mat::PlasticLinElastType::Create(const std::vector<char>& data)
 {
   Mat::PlasticLinElast* plastic = new Mat::PlasticLinElast();
-  plastic->Unpack(data);
+  plastic->unpack(data);
   return plastic;
 }
 
@@ -90,7 +90,7 @@ Mat::PlasticLinElast::PlasticLinElast(Mat::PAR::PlasticLinElast* params) : param
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 04/11 |
  *----------------------------------------------------------------------*/
-void Mat::PlasticLinElast::Pack(Core::Communication::PackBuffer& data) const
+void Mat::PlasticLinElast::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -129,13 +129,13 @@ void Mat::PlasticLinElast::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, plastic_step_);
 
   return;
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack (public)                                           dano 04/11 |
  *----------------------------------------------------------------------*/
-void Mat::PlasticLinElast::Unpack(const std::vector<char>& data)
+void Mat::PlasticLinElast::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -210,13 +210,13 @@ void Mat::PlasticLinElast::Unpack(const std::vector<char>& data)
 
   return;
 
-}  // Unpack()
+}  // unpack()
 
 
 /*---------------------------------------------------------------------*
  | initialise / allocate internal stress variables (public)      04/11 |
  *---------------------------------------------------------------------*/
-void Mat::PlasticLinElast::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::PlasticLinElast::setup(int numgp, Input::LineDefinition* linedef)
 {
   // initialise history variables
   strainpllast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
@@ -253,13 +253,13 @@ void Mat::PlasticLinElast::Setup(int numgp, Input::LineDefinition* linedef)
   isinit_ = true;
   return;
 
-}  // Setup()
+}  // setup()
 
 
 /*---------------------------------------------------------------------*
  | update internal stress variables (public)                dano 04/11 |
  *---------------------------------------------------------------------*/
-void Mat::PlasticLinElast::Update()
+void Mat::PlasticLinElast::update()
 {
   // make current values at time step t_n+1 to values of last step t_n
   strainpllast_ = strainplcurr_;
@@ -291,13 +291,13 @@ void Mat::PlasticLinElast::Update()
   }
 
   return;
-}  // Update()
+}  // update()
 
 
 /*----------------------------------------------------------------------*
  | evaluate material (public)                                dano 08/11 |
  *----------------------------------------------------------------------*/
-void Mat::PlasticLinElast::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::PlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* linstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -675,7 +675,7 @@ void Mat::PlasticLinElast::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     //  - back stress
     //    (--> relative stress)
 
-    // as current history vectors are set to zero in Update(), the old values
+    // as current history vectors are set to zero in update(), the old values
     // need to be set instead, otherwise no constant plastic values are possible
     strainplcurr_->at(gp) = strainpllast_->at(gp);
     strainbarplcurr_->at(gp) = strainbarpllast_->at(gp);
@@ -767,7 +767,7 @@ void Mat::PlasticLinElast::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   return;
 
-}  // Evaluate()
+}  // evaluate()
 
 
 /*----------------------------------------------------------------------*
@@ -826,7 +826,7 @@ void Mat::PlasticLinElast::setup_cmat(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_ST
   const double mfac = young / ((1.0 + nu) * (1.0 - 2.0 * nu));  // factor
 
   // clear the material tangent
-  cmat.Clear();
+  cmat.clear();
   // write non-zero components
   cmat(0, 0) = mfac * (1.0 - nu);
   cmat(0, 1) = mfac * nu;
@@ -990,7 +990,7 @@ void Mat::PlasticLinElast::fd_check(
   // *******************************************************************
 
   // clear the material tangent
-  cmatFD.Clear();
+  cmatFD.clear();
 
   // alloc the matrix that will store the perturbed values
   // strain matrices

@@ -45,7 +45,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::Init(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
     const Teuchos::ParameterList& poroparams, const Teuchos::ParameterList& structparams,
     const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
@@ -115,7 +115,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::Init(
       POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(solschemeporo, globaltimeparams, Comm());
 
   // initialize
-  poromulti_->Init(globaltimeparams, poroparams, structparams, fluidparams, struct_disname,
+  poromulti_->init(globaltimeparams, poroparams, structparams, fluidparams, struct_disname,
       fluid_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra,
       nearbyelepairs);
 
@@ -128,7 +128,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::Init(
 
   // initialize the base algo.
   // scatra time integrator is constructed and initialized inside.
-  scatra_->Init();
+  scatra_->init();
   scatra_->ScaTraField()->set_number_of_dof_set_displacement(1);
   scatra_->ScaTraField()->set_number_of_dof_set_velocity(1);
   scatra_->ScaTraField()->set_number_of_dof_set_pressure(2);
@@ -145,11 +145,11 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::Init(
     scatramsht_->SetNearbyElePairs(nearbyelepairs);
   }
 
-  // only now we must call Setup() on the scatra time integrator.
+  // only now we must call setup() on the scatra time integrator.
   // all objects relying on the parallel distribution are
   // created and pointers are set.
-  // calls Setup() on the scatra time integrator inside.
-  scatra_->ScaTraField()->Setup();
+  // calls setup() on the scatra time integrator inside.
+  scatra_->ScaTraField()->setup();
 
   // do we perform coupling with 1D artery
   if (artery_coupl_)
@@ -252,13 +252,13 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::update_and_output()
   poromulti_->update_and_output();
 
   // scatra field
-  scatra_->ScaTraField()->Update();
+  scatra_->ScaTraField()->update();
   scatra_->ScaTraField()->evaluate_error_compared_to_analytical_sol();
   scatra_->ScaTraField()->check_and_write_output_and_restart();
   // artery scatra field
   if (artery_coupl_)
   {
-    scatramsht_->ArtScatraField()->Update();
+    scatramsht_->ArtScatraField()->update();
     scatramsht_->ArtScatraField()->evaluate_error_compared_to_analytical_sol();
     scatramsht_->ArtScatraField()->check_and_write_output_and_restart();
   }

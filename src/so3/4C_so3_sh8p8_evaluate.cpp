@@ -39,7 +39,7 @@ using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            bborn 03/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SoSh8p8::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -376,7 +376,7 @@ int Discret::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
         Core::LinAlg::SerialDenseMatrix* oldfeas = &easdata_.feas;
         oldfeas->putScalar(0.0);
       }
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
     }
     break;
 
@@ -1096,7 +1096,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress_tensor(true);  // 2nd PK stress
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
 
-    SolidMaterial()->Evaluate(&defgrad, &glstrain, params, &stress_tensor, &cmat, gp, Id());
+    SolidMaterial()->evaluate(&defgrad, &glstrain, params, &stress_tensor, &cmat, gp, Id());
     if (iso_ == iso_enforced)
     {
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> pk2gen(
@@ -1869,7 +1869,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     if (stab_ != stab_puredisp)
       incomp->MultiplyNN(1.0, *stabmatrix, pres, 1.0);
     else
-      incomp->Clear();
+      incomp->clear();
   }
 
   // copy grad-matrix onto drag-matrix
@@ -1965,11 +1965,11 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
   // fake pure-disp based approach (ANS might be active)
   if (stab_ == stab_puredisp)
   {
-    if (gradmatrix != nullptr) gradmatrix->Clear();
-    if (dargmatrix != nullptr) dargmatrix->Clear();
+    if (gradmatrix != nullptr) gradmatrix->clear();
+    if (dargmatrix != nullptr) dargmatrix->clear();
     if (stabmatrix != nullptr)
     {
-      stabmatrix->Clear();
+      stabmatrix->clear();
       for (int i = 0; i < NUMPRES_; ++i) (*stabmatrix)(i, i) = 1.0;
     }
   }
@@ -2142,7 +2142,7 @@ void Discret::ELEMENTS::SoSh8p8::ass_def_grad(double& detdefgrad,
     rgtstrD.MultiplyNT(aux, NdT);
 
     // inverse disp-based right stretch tensor
-    invrgtstrD.Clear();
+    invrgtstrD.clear();
     // double detdefgradD = 1.0;
     for (int al = 0; al < NUMDIM_; ++al)
     {
@@ -2210,7 +2210,7 @@ void Discret::ELEMENTS::SoSh8p8::ass_def_grad(double& detdefgrad,
     aux.MultiplyNN(NaT, lama);
     rgtstr.MultiplyNT(aux, NaT);
 
-    invrgtstr.Clear();
+    invrgtstr.clear();
     detdefgrad = 1.0;
     for (int al = 0; al < NUMDIM_; ++al)
     {
@@ -2325,7 +2325,7 @@ void Discret::ELEMENTS::SoSh8p8::do_calc_stc_matrix(Core::LinAlg::Matrix<NUMDOF_
 
     for (auto& conu : cond0)
     {
-      int tmp = conu->parameters().Get<int>("ConditionID");
+      int tmp = conu->parameters().get<int>("ConditionID");
       if (tmp < condnum0) condnum0 = tmp;
     }
     if (condnum0 == stc_layer) current0 = true;
@@ -2333,7 +2333,7 @@ void Discret::ELEMENTS::SoSh8p8::do_calc_stc_matrix(Core::LinAlg::Matrix<NUMDOF_
 
     for (auto& conu : cond1)
     {
-      int tmp = conu->parameters().Get<int>("ConditionID");
+      int tmp = conu->parameters().get<int>("ConditionID");
       if (tmp < condnum1) condnum1 = tmp;
     }
     if (condnum1 == stc_layer) current1 = true;
@@ -2516,7 +2516,7 @@ void Discret::ELEMENTS::SoSh8p8::do_calc_stc_matrix(Core::LinAlg::Matrix<NUMDOF_
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh8p8Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoSh8p8Type::initialize(Core::FE::Discretization& dis)
 {
   // sosh8_gmshplotdis(dis);
 
@@ -2579,7 +2579,7 @@ int Discret::ELEMENTS::SoSh8p8Type::Initialize(Core::FE::Discretization& dis)
         {
           Mat::ViscoAnisotropic* visco =
               dynamic_cast<Mat::ViscoAnisotropic*>(actele->Material().get());
-          visco->Setup(Discret::ELEMENTS::SoSh8p8::NUMGPT_, actele->thickvec_);
+          visco->setup(Discret::ELEMENTS::SoSh8p8::NUMGPT_, actele->thickvec_);
           if (actele->thickvec_.empty())
             FOUR_C_THROW("zero size thickness vector for element %d", actele->Id());
         }

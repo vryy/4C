@@ -22,12 +22,12 @@ PARTICLEENGINE::ParticleContainerBundle::ParticleContainerBundle()
   // empty constructor
 }
 
-void PARTICLEENGINE::ParticleContainerBundle::Init()
+void PARTICLEENGINE::ParticleContainerBundle::init()
 {
   // nothing to do
 }
 
-void PARTICLEENGINE::ParticleContainerBundle::Setup(
+void PARTICLEENGINE::ParticleContainerBundle::setup(
     const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes)
 {
   std::shared_ptr<ParticleContainer> container;
@@ -58,17 +58,17 @@ void PARTICLEENGINE::ParticleContainerBundle::Setup(
 
     // create and init container of owned particles
     container = std::make_shared<ParticleContainer>();
-    container->Init();
+    container->init();
     // setup container of owned particles
-    container->Setup(initialsize, stateset);
+    container->setup(initialsize, stateset);
     // set container of owned particles
     (containers_[type])[Owned] = container;
 
     // create and init container of ghosted particles
     container = std::make_shared<ParticleContainer>();
-    container->Init();
+    container->init();
     // setup container of ghosted particles
-    container->Setup(initialsize, stateset);
+    container->setup(initialsize, stateset);
     // set container of ghosted particles
     (containers_[type])[Ghosted] = container;
   }
@@ -94,7 +94,7 @@ void PARTICLEENGINE::ParticleContainerBundle::get_packed_particle_objects_of_all
 
       // pack data for writing
       Core::Communication::PackBuffer data;
-      particleobject->Pack(data);
+      particleobject->pack(data);
       particlebuffer->insert(particlebuffer->end(), data().begin(), data().end());
     }
   }

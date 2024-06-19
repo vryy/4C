@@ -31,7 +31,7 @@ Adapter::PoroFluidMultiphaseWrapper::PoroFluidMultiphaseWrapper(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::PoroFluidMultiphaseWrapper::Init(const bool isale,  ///< ALE flag
+void Adapter::PoroFluidMultiphaseWrapper::init(const bool isale,  ///< ALE flag
     const int nds_disp,           ///< number of dofset associated with displacements
     const int nds_vel,            ///< number of dofset associated with fluid velocities
     const int nds_solidpressure,  ///< number of dofset associated with solid pressure
@@ -42,7 +42,7 @@ void Adapter::PoroFluidMultiphaseWrapper::Init(const bool isale,  ///< ALE flag
 )
 {
   // initialize algorithm for specific time-integration scheme
-  porofluid_->Init(
+  porofluid_->init(
       isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra, nearbyelepairs);
 
   return;
@@ -191,11 +191,11 @@ void Adapter::PoroFluidMultiphaseWrapper::prepare_time_step() { porofluid_->prep
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::PoroFluidMultiphaseWrapper::Output() { porofluid_->Output(); }
+void Adapter::PoroFluidMultiphaseWrapper::output() { porofluid_->output(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::PoroFluidMultiphaseWrapper::Update() { porofluid_->Update(); }
+void Adapter::PoroFluidMultiphaseWrapper::update() { porofluid_->update(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -253,7 +253,7 @@ void Adapter::PoroFluidMultiphaseWrapper::calculate_phase_velocities()
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::PoroFluidMultiphaseWrapper::Evaluate() { porofluid_->Evaluate(); }
+void Adapter::PoroFluidMultiphaseWrapper::evaluate() { porofluid_->evaluate(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::PoroFluidMultiphaseWrapper::SystemMatrix()

@@ -29,13 +29,13 @@ Adapter::FBIConstraintBridge::FBIConstraintBridge()
       geometry_evaluation_data_(Teuchos::null){};
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
+void Adapter::FBIConstraintBridge::setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
     Teuchos::RCP<Core::LinAlg::SparseOperator> fluidmatrix, bool fluidmeshtying)
 {
   // Create the beaminteraction data container and set the parameters
   beam_interaction_params_ = Teuchos::rcp(new FBI::BeamToFluidMeshtyingParams());
-  beam_interaction_params_->Init();
-  beam_interaction_params_->Setup();
+  beam_interaction_params_->init();
+  beam_interaction_params_->setup();
 
   const Teuchos::ParameterList& geometry_parameter_list =
       Global::Problem::Instance()->FBIParams().sublist("BEAM TO FLUID MESHTYING");
@@ -72,8 +72,8 @@ void Adapter::FBIConstraintBridge::CreatePair(
   // create the underlying geometrypair doing the integration (segment or gauss point projection
   // based)
   newinteractionpair->CreateGeometryPair(elements[0], elements[1], GetGeometryData());
-  newinteractionpair->Init(GetParams(), elements);
-  newinteractionpair->Setup();
+  newinteractionpair->init(GetParams(), elements);
+  newinteractionpair->setup();
 
   // hand in the current position and velocities of the participating elements
   ResetPair(beam_centerline_dofvec, fluid_nodal_dofvec, newinteractionpair);
@@ -92,11 +92,11 @@ void Adapter::FBIConstraintBridge::ResetPair(const std::vector<double> beam_cent
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FBIConstraintBridge::Clear()
+void Adapter::FBIConstraintBridge::clear()
 {
   // Delete all pairs and segmentation information
   meshtying_pairs_->clear();
-  geometry_evaluation_data_->Clear();
+  geometry_evaluation_data_->clear();
 }
 
 FOUR_C_NAMESPACE_CLOSE

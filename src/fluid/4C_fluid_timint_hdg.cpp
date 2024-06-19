@@ -42,7 +42,7 @@ FLD::TimIntHDG::TimIntHDG(const Teuchos::RCP<Core::FE::Discretization>& actdis,
 /*----------------------------------------------------------------------*
  |  initialize algorithm                              kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDG::Init()
+void FLD::TimIntHDG::init()
 {
   Core::FE::DiscretizationHDG* hdgdis = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
@@ -86,7 +86,7 @@ void FLD::TimIntHDG::Init()
   otherdofset.clear();
   Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
       new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->Comm()));
-  velpressplitter_->Setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
+  velpressplitter_->setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
 
   // implement ost and bdf2 through gen-alpha facilities
   if (timealgo_ == Inpar::FLUID::timeint_bdf2)
@@ -107,9 +107,9 @@ void FLD::TimIntHDG::Init()
   timealgoset_ = timealgo_;
   timealgo_ = Inpar::FLUID::timeint_afgenalpha;
 
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  FLD::TimIntGenAlpha::Init();
+  FLD::TimIntGenAlpha::init();
 }
 
 
@@ -372,7 +372,7 @@ void FLD::TimIntHDG::SetInitialFlowField(
         elevec1.size(la[0].lm_.size());
       if (elevec2.numRows() != discret_->NumDof(1, ele)) elevec2.size(discret_->NumDof(1, ele));
 
-      ele->Evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
+      ele->evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
 
       // now fill the ele vector into the discretization
       for (unsigned int i = 0; i < la[0].lm_.size(); ++i)
@@ -439,9 +439,9 @@ Teuchos::RCP<std::vector<double>> FLD::TimIntHDG::evaluate_error_compared_to_ana
 /*------------------------------------------------------------------------------------------------*
  |
  *------------------------------------------------------------------------------------------------*/
-void FLD::TimIntHDG::Reset(bool completeReset, int numsteps, int iter)
+void FLD::TimIntHDG::reset(bool completeReset, int numsteps, int iter)
 {
-  FluidImplicitTimeInt::Reset(completeReset, numsteps, iter);
+  FluidImplicitTimeInt::reset(completeReset, numsteps, iter);
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
   intvelnp_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
   intvelaf_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
@@ -493,7 +493,7 @@ namespace
       Core::Elements::Element* ele = dis.lColElement(el);
       if (interpolVec.numRows() == 0) interpolVec.resize(ele->num_node() * (2 * ndim + 1) + 1);
 
-      ele->Evaluate(params, dis, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
+      ele->evaluate(params, dis, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
       // sum values on nodes into vectors and record the touch count (build average of values)
       for (int i = 0; i < ele->num_node(); ++i)
@@ -527,7 +527,7 @@ namespace
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                  kronbichler 05/14|
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDG::Output()
+void FLD::TimIntHDG::output()
 {
   // output of solution, currently only small subset of functionality
   if (step_ % upres_ == 0)

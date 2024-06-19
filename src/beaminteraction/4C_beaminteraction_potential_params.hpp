@@ -34,10 +34,10 @@ namespace BEAMINTERACTION
     virtual ~BeamPotentialParams() = default;
 
     //! initialize with the stuff coming from input file
-    void Init(double restart_time);
+    void init(double restart_time);
 
     //! setup member variables
-    void Setup();
+    void setup();
 
     //! returns the isinit_ flag
     inline bool is_init() const { return isinit_; }

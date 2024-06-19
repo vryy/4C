@@ -30,10 +30,10 @@ namespace BEAMINTERACTION
     virtual ~BeamToSphereContactParams() = default;
 
     //! initialize with the stuff coming from input file
-    void Init();
+    void init();
 
     //! setup member variables
-    void Setup();
+    void setup();
 
     //! returns the isinit_ flag
     inline const bool& is_init() const { return isinit_; };
@@ -44,13 +44,13 @@ namespace BEAMINTERACTION
     //! Checks the init and setup status
     inline void check_init_setup() const
     {
-      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call init() and setup() first!");
     }
 
     //! Checks the init status
     inline void check_init() const
     {
-      if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
+      if (!is_init()) FOUR_C_THROW("init() has not been called, yet!");
     }
 
     inline double beam_to_sphere_penalty_param() const { return penalty_parameter_; }

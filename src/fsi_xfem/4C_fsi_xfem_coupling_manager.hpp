@@ -69,7 +69,7 @@ namespace XFEM
     virtual void Update(double scaling) = 0;
 
     //! Write Output (For restart or write results on the interface)
-    virtual void Output(Core::IO::DiscretizationWriter& writer) = 0;
+    virtual void output(Core::IO::DiscretizationWriter& writer) = 0;
 
     //! Read Restart (For quantities stored on the interface)
     virtual void read_restart(Core::IO::DiscretizationReader& reader) = 0;

@@ -108,7 +108,7 @@ Core::FE::CellType Discret::ELEMENTS::MembraneLine<distype>::Shape() const
  |                                                             fb 09/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::MembraneLine<distype>::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::MembraneLine<distype>::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this membrane line element does not support communication");
 
@@ -120,7 +120,7 @@ void Discret::ELEMENTS::MembraneLine<distype>::Pack(Core::Communication::PackBuf
  |                                                        fbraeu 06/165 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::MembraneLine<distype>::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::MembraneLine<distype>::unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this membrane line element does not support communication");
   return;

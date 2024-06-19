@@ -1188,7 +1188,7 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_ref_length(
         velino.Update(1.0 / vel_norm, convelint);
       else
       {
-        velino.Clear();
+        velino.clear();
         velino(0, 0) = 1.0;
       }
       Core::LinAlg::Matrix<nen_, 1> tmp;
@@ -1513,7 +1513,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
 
   // reset to zero; used in get_material_params if not incremental -> used to calculate densn which
   // is not required here
-  for (int k = 0; k < numdofpernode_; ++k) ephin_[k].Clear();
+  for (int k = 0; k < numdofpernode_; ++k) ephin_[k].clear();
 
   // get fine-scale values
   if (turbparams_->WhichFssgd() == Inpar::ScaTra::fssugrdiff_smagorinsky_small or

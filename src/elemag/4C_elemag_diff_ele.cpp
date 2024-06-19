@@ -46,7 +46,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::ElemagDiffType::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::ElemagDiff* object = new Discret::ELEMENTS::ElemagDiff(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -281,7 +281,7 @@ Core::Elements::Element* Discret::ELEMENTS::ElemagDiffBoundary::Clone() const
  |  Pack data                                                  (public) |
  |                                                      berardocco 03/19|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagDiffBoundary::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::ElemagDiffBoundary::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -289,7 +289,7 @@ void Discret::ELEMENTS::ElemagDiffBoundary::Pack(Core::Communication::PackBuffer
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
 
   // Discretisation type
   // add_to_pack(data,distype_);
@@ -301,7 +301,7 @@ void Discret::ELEMENTS::ElemagDiffBoundary::Pack(Core::Communication::PackBuffer
  |  Unpack data                                                (public) |
  |                                                      berardocco 03/19|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagDiffBoundary::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ElemagDiffBoundary::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -310,7 +310,7 @@ void Discret::ELEMENTS::ElemagDiffBoundary::Unpack(const std::vector<char>& data
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
 
   // distype
   // distype_ = static_cast<Core::FE::CellType>( extract_int(position,data) );
@@ -334,13 +334,13 @@ void Discret::ELEMENTS::ElemagDiffBoundary::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                      berardocco 03/19 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::ElemagDiffBoundary::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::ElemagDiffBoundary::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  Discret::ELEMENTS::ElemagBoundaryImplInterface::Impl(this)->Evaluate(
+  Discret::ELEMENTS::ElemagBoundaryImplInterface::Impl(this)->evaluate(
       this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
   return 0;
 }

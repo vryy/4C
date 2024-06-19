@@ -25,7 +25,7 @@ namespace GEOMETRYPAIR
   template <>
   struct SetShapeFunctionData<t_hermite>
   {
-    static void Set(
+    static void set(
         ShapeFunctionData<t_hermite>& shape_function_data, const Core::Elements::Element* element)
     {
       // Get the reference length of the beam element

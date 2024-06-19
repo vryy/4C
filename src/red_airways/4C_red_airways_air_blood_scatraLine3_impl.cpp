@@ -63,7 +63,7 @@ Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::RedAirBloodScatraLine3Im
  | evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Evaluate(RedAirBloodScatraLine3* ele,
+int Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::evaluate(RedAirBloodScatraLine3* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

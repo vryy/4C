@@ -68,8 +68,8 @@ namespace FLD
     );
 
     /// initialization
-    void Init() override { Init(true); }
-    void Init(bool createinitialstate) override;
+    void init() override { init(true); }
+    void init(bool createinitialstate) override;
 
     void CreateInitialState() override;
 
@@ -99,7 +99,7 @@ namespace FLD
     void PrepareXFEMSolve() override;
 
     /// Monolithic FSI needs to access the linear fluid problem.
-    void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    void evaluate(Teuchos::RCP<const Epetra_Vector>
             stepinc  ///< solution increment between time step n and n+1
         ) override;
 
@@ -199,7 +199,7 @@ namespace FLD
     Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
     /// write output for both fluid discretizations
-    void Output() override;
+    void output() override;
 
     /// evaluate errors compared to implemented analytical solutions
     Teuchos::RCP<std::vector<double>> evaluate_error_compared_to_analytical_sol() override;

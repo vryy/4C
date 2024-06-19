@@ -339,7 +339,7 @@ namespace
                 for (int rr = 0; rr < dofblock; ++rr)
                 {
                   // important: position has to have always three components!!
-                  initialval(rr) = start_function.Evaluate(position.values(), 0.0, rr);
+                  initialval(rr) = start_function.evaluate(position.values(), 0.0, rr);
                 }
 
 
@@ -464,7 +464,7 @@ namespace
                 for (int rr = 0; rr < dofblock; ++rr)
                 {
                   // important: position has to have always three components!!
-                  initialval(rr) = start_function.Evaluate(position.values(), 0.0, rr);
+                  initialval(rr) = start_function.evaluate(position.values(), 0.0, rr);
                 }
 
                 // check for degenerated elements
@@ -538,8 +538,8 @@ namespace
     solver.Solve(massmatrix->EpetraOperator(), initialvals, rhs, solver_params);
 
     // perform resets for solver and matrix
-    solver.Reset();
-    massmatrix->Reset();
+    solver.reset();
+    massmatrix->reset();
 
     if (myrank == 0)
     {

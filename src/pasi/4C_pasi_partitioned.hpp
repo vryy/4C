@@ -74,14 +74,14 @@ namespace PaSI
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    virtual void Init();
+    virtual void init();
 
     /*!
      * \brief setup pasi algorithm
      *
      * \author Sebastian Fuchs \date 01/2017
      */
-    virtual void Setup();
+    virtual void setup();
 
     /*!
      * \brief read restart information for given time step

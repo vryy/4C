@@ -31,9 +31,9 @@ int Discret::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
   Core::FE::ExtractMyValues(*disp, displacements, dof_index_array);
 
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
-  const auto* spa_func = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
+  const auto* spa_func = &condition.parameters().get<std::vector<int>>("funct");
 
   // time curve buisiness
   // find out whether we will use a time curve
@@ -105,7 +105,7 @@ int Discret::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
           // evaluate function at current gauss point
           functfac = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                         .Evaluate(coordgpref, time, i);
+                         .evaluate(coordgpref, time, i);
         }
 
         const double fac = (*val)[i] * intpoints.qwgt[gp] * dL * functfac;

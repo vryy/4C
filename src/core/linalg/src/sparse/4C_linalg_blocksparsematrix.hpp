@@ -90,7 +90,7 @@ namespace Core::LinAlg
     //@{
 
     void Zero() override;
-    void Reset() override;
+    void reset() override;
 
     void Complete(bool enforce_complete = false) override;
 

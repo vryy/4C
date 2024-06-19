@@ -56,7 +56,7 @@ Mat::PlasticElastHyperVCUType Mat::PlasticElastHyperVCUType::instance_;
 Core::Communication::ParObject* Mat::PlasticElastHyperVCUType::Create(const std::vector<char>& data)
 {
   Mat::PlasticElastHyperVCU* elhy = new Mat::PlasticElastHyperVCU();
-  elhy->Unpack(data);
+  elhy->unpack(data);
 
   return elhy;
 }
@@ -85,7 +85,7 @@ Mat::PlasticElastHyperVCU::PlasticElastHyperVCU(Mat::PAR::PlasticElastHyperVCU* 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyperVCU::Pack(Core::Communication::PackBuffer& data) const
+void Mat::PlasticElastHyperVCU::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -96,7 +96,7 @@ void Mat::PlasticElastHyperVCU::Pack(Core::Communication::PackBuffer& data) cons
   int matid = -1;
   if (MatParams() != nullptr) matid = MatParams()->Id();  // in case we are in post-process mode
   add_to_pack(data, matid);
-  summandProperties_.Pack(data);
+  summandProperties_.pack(data);
 
   if (MatParams() != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -117,7 +117,7 @@ void Mat::PlasticElastHyperVCU::Pack(Core::Communication::PackBuffer& data) cons
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyperVCU::Unpack(const std::vector<char>& data)
+void Mat::PlasticElastHyperVCU::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   params_ = nullptr;
@@ -145,7 +145,7 @@ void Mat::PlasticElastHyperVCU::Unpack(const std::vector<char>& data)
     }
   }
 
-  summandProperties_.Unpack(position, data);
+  summandProperties_.unpack(position, data);
 
   if (MatParams() != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -184,10 +184,10 @@ void Mat::PlasticElastHyperVCU::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyperVCU::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::PlasticElastHyperVCU::setup(int numgp, Input::LineDefinition* linedef)
 {
   // setup the plasticelasthyper data
-  PlasticElastHyper::Setup(numgp, linedef);
+  PlasticElastHyper::setup(numgp, linedef);
 
   // setup history
   plastic_defgrd_inverse_.resize(numgp);
@@ -196,7 +196,7 @@ void Mat::PlasticElastHyperVCU::Setup(int numgp, Input::LineDefinition* linedef)
 }
 
 // MAIN
-void Mat::PlasticElastHyperVCU::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)  ///< Element GID
@@ -215,7 +215,7 @@ void Mat::PlasticElastHyperVCU::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
   // get 2pk stresses
   Core::LinAlg::Matrix<6, 1> etstr;
   Core::LinAlg::Matrix<6, 6> etcmat;
-  ElastHyper::Evaluate(nullptr, &ee_test, params, &etstr, &etcmat, gp, eleGID);
+  ElastHyper::evaluate(nullptr, &ee_test, params, &etstr, &etcmat, gp, eleGID);
 
   double yf;
   double normZero = 0.0;
@@ -227,14 +227,14 @@ void Mat::PlasticElastHyperVCU::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
   if (yf <= 0)
   {
     // step is elastic
-    stress->Clear();
-    cmat->Clear();
+    stress->clear();
+    cmat->clear();
 
     Core::LinAlg::Matrix<6, 1> checkStr;
     Core::LinAlg::Matrix<6, 6> checkCmat;
     Core::LinAlg::Matrix<3, 3> emptymat;
     PlasticElastHyper::EvaluateElast(defgrd, &emptymat, stress, cmat, gp, eleGID);
-    ElastHyper::Evaluate(defgrd, &ee_test, params, &checkStr, &checkCmat, gp, eleGID);
+    ElastHyper::evaluate(defgrd, &ee_test, params, &checkStr, &checkCmat, gp, eleGID);
 
     // push back
     Core::LinAlg::Matrix<3, 3> checkStrMat;
@@ -309,7 +309,7 @@ void Mat::PlasticElastHyperVCU::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
       Core::LinAlg::Matrix<6, 6> elastCmat;
       Core::LinAlg::Matrix<6, 1> elastStressDummy;
       Core::LinAlg::Matrix<6, 6> elastCmatDummy;
-      ElastHyper::Evaluate(nullptr, &eeOut, params, &elastStress, &elastCmat, gp, eleGID);
+      ElastHyper::evaluate(nullptr, &eeOut, params, &elastStress, &elastCmat, gp, eleGID);
 
       Core::LinAlg::Matrix<6, 6> d2ced2lpVoigt[6];
       ce2nd_deriv(defgrd, last_plastic_defgrd_inverse_[gp], dLp, d2ced2lpVoigt);
@@ -528,7 +528,7 @@ void Mat::PlasticElastHyperVCU::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
 
 
 /// update after converged time step
-void Mat::PlasticElastHyperVCU::Update()
+void Mat::PlasticElastHyperVCU::update()
 {
   // update local history data F_n <-- F_{n+1}
   for (unsigned gp = 0; gp < last_plastic_defgrd_inverse_.size(); ++gp)
@@ -567,7 +567,7 @@ void Mat::PlasticElastHyperVCU::eval_dce_dlp(const Core::LinAlg::Matrix<3, 3> fp
   add_right_non_symmetric_holzapfel_product(dcedfpi, tmp, id2, 1.0);
 
   // Derivative of inverse plastic deformation gradient
-  dFpiDdeltaDp.Clear();
+  dFpiDdeltaDp.clear();
   for (int A = 0; A < 3; A++)
     for (int a = 0; a < 3; a++)
       for (int b = 0; b < 3; b++)
@@ -728,7 +728,7 @@ void Mat::PlasticElastHyperVCU::matrix_exponential_second_derivative_sym3x3x6(
   da[5](0, 2) = da[5](2, 0) = 0.5;
 
   // prepare
-  exp.Clear();
+  exp.clear();
 
   // start with first entry
   int k = 0;
@@ -843,7 +843,7 @@ void Mat::PlasticElastHyperVCU::matrix_exponential_second_derivative_sym3x3(
   da[4](2, 0) = 1.;
 
   // prepare
-  exp.Clear();
+  exp.clear();
   MatrixExp1stDeriv.resize(5, zeros);
   MatrixExp2ndDeriv.resize(5);
   akmdd.resize(5);
@@ -920,7 +920,7 @@ void Mat::PlasticElastHyperVCU::evaluate_rhs(const int gp, const Core::LinAlg::M
   Core::LinAlg::Matrix<3, 3> zeros;
   Core::LinAlg::Matrix<6, 6> zeros66;
   // set zero
-  rhs.Clear();
+  rhs.clear();
 
   // Get exp, Dexp and DDexp
   Core::LinAlg::Matrix<3, 3> dLpIn(dLp);
@@ -955,7 +955,7 @@ void Mat::PlasticElastHyperVCU::evaluate_rhs(const int gp, const Core::LinAlg::M
 
   Core::LinAlg::Matrix<6, 1> se;
   Core::LinAlg::Matrix<6, 6> dummy;
-  ElastHyper::Evaluate(nullptr, &eeOut, params, &se, &dummy, gp, eleGID);
+  ElastHyper::evaluate(nullptr, &eeOut, params, &se, &dummy, gp, eleGID);
 
   eval_dce_dlp(last_plastic_defgrd_inverse_[gp], &defgrd, dexpOut_mat, cetrial, expOut, dcedlp,
       dFpiDdeltaDp);
@@ -1034,7 +1034,7 @@ void Mat::PlasticElastHyperVCU::evaluate_kin_quant_plast(const int gp, const int
     Core::LinAlg::Matrix<3, 3>& FpiCe, Core::LinAlg::Matrix<9, 1>& CFpiCe,
     Core::LinAlg::Matrix<6, 1>& CpiCCpi)
 {
-  id2.Clear();
+  id2.clear();
   for (int i = 0; i < 3; i++) id2(i, i) = 1.;
 
   Core::LinAlg::Matrix<3, 3> fe;

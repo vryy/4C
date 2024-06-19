@@ -111,7 +111,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   printscreen_ = (ioflags.get<int>("STDOUTEVRY"));
 
 
-  restart_ = Global::Problem::Instance()->Restart();
+  restart_ = Global::Problem::Instance()->restart();
   restartevry_ = sdyn_macro.get<int>("RESTARTEVRY");
   iodisp_ = Core::UTILS::IntegralValue<int>(ioflags, "STRUCT_DISP");
   resevrydisp_ = sdyn_micro.get<int>("RESULTSEVRY");
@@ -210,7 +210,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
     discret_->set_state("residual displacement", zeros_);
     discret_->set_state("displacement", dis_);
 
-    discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
 
@@ -260,7 +260,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->Evaluate(
+  discret_->evaluate(
       par, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
@@ -327,7 +327,7 @@ void MultiScale::MicroStatic::PredictConstDis(Core::LinAlg::Matrix<3, 3>* defgrd
     discret_->set_state("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
 
     // complete stiffness matrix
@@ -408,7 +408,7 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
     discret_->set_state("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
 
@@ -442,12 +442,12 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
 
   // solve for disi_
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-  solver_->Reset();
+  solver_->reset();
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
   solver_->Solve(stiff_->EpetraMatrix(), disi_, fresn_, solver_params);
-  solver_->Reset();
+  solver_->reset();
 
   // store norm of displacement increments
   normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
@@ -471,7 +471,7 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
     Teuchos::ParameterList p;
     p.set("action", "calc_struct_reset_istep");
     // go to elements
-    discret_->Evaluate(
+    discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -494,7 +494,7 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
     discret_->set_state("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
 
@@ -585,7 +585,7 @@ void MultiScale::MicroStatic::FullNewton()
       discret_->set_state("displacement", disn_);
       fintn_->PutScalar(0.0);  // initialise internal force vector
 
-      discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
+      discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
       discret_->ClearState();
     }
 
@@ -650,7 +650,7 @@ void MultiScale::MicroStatic::prepare_output()
     discret_->ClearState();
     discret_->set_state("residual displacement", zeros_);
     discret_->set_state("displacement", disn_);
-    discret_->Evaluate(
+    discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -660,7 +660,7 @@ void MultiScale::MicroStatic::prepare_output()
 /*----------------------------------------------------------------------*
  |  write output (public)                                       lw 02/08|
  *----------------------------------------------------------------------*/
-void MultiScale::MicroStatic::Output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
+void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
     const double time, const int step, const double dt)
 {
   bool isdatawritten = false;
@@ -754,7 +754,7 @@ void MultiScale::MicroStatic::Output(Teuchos::RCP<Core::IO::DiscretizationWriter
         break;
     }
   }
-}  // MultiScale::MicroStatic::Output()
+}  // MultiScale::MicroStatic::output()
 
 
 /*----------------------------------------------------------------------*
@@ -911,7 +911,7 @@ void MultiScale::MicroStatic::SetEASData()
       Core::LinAlg::SerialDenseVector elevector3;
       std::vector<int> lm;
 
-      actele->Evaluate(
+      actele->evaluate(
           p, *discret_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
     }
   }
@@ -1130,7 +1130,7 @@ void MultiScale::stop_np_multiscale()
 }
 
 
-void MultiScale::MicroStaticParObject::Pack(Core::Communication::PackBuffer& data) const
+void MultiScale::MicroStaticParObject::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -1146,7 +1146,7 @@ void MultiScale::MicroStaticParObject::Pack(Core::Communication::PackBuffer& dat
   add_to_pack(data, micro_data->cmat_);
 }
 
-void MultiScale::MicroStaticParObject::Unpack(const std::vector<char>& data)
+void MultiScale::MicroStaticParObject::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -1172,7 +1172,7 @@ Core::Communication::ParObject* MultiScale::MicroStaticParObjectType::Create(
     const std::vector<char>& data)
 {
   auto* micro = new MultiScale::MicroStaticParObject();
-  micro->Unpack(data);
+  micro->unpack(data);
   return micro;
 }
 

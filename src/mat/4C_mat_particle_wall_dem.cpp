@@ -29,9 +29,9 @@ Mat::ParticleWallMaterialDEMType Mat::ParticleWallMaterialDEMType::instance_;
 Mat::PAR::ParticleWallMaterialDEM::ParticleWallMaterialDEM(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      frictionTang_(matdata.parameters.Get<double>("FRICT_COEFF_TANG")),
-      frictionRoll_(matdata.parameters.Get<double>("FRICT_COEFF_ROLL")),
-      adhesionSurfaceEnergy_(matdata.parameters.Get<double>("ADHESION_SURFACE_ENERGY"))
+      frictionTang_(matdata.parameters.get<double>("FRICT_COEFF_TANG")),
+      frictionRoll_(matdata.parameters.get<double>("FRICT_COEFF_ROLL")),
+      adhesionSurfaceEnergy_(matdata.parameters.get<double>("ADHESION_SURFACE_ENERGY"))
 {
   // empty constructor
 }
@@ -50,7 +50,7 @@ Core::Communication::ParObject* Mat::ParticleWallMaterialDEMType::Create(
     const std::vector<char>& data)
 {
   Mat::ParticleWallMaterialDEM* particlewallmatdem = new Mat::ParticleWallMaterialDEM();
-  particlewallmatdem->Unpack(data);
+  particlewallmatdem->unpack(data);
   return particlewallmatdem;
 }
 
@@ -74,7 +74,7 @@ Mat::ParticleWallMaterialDEM::ParticleWallMaterialDEM(Mat::PAR::ParticleWallMate
 /*---------------------------------------------------------------------------*
  | pack                                                       sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-void Mat::ParticleWallMaterialDEM::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ParticleWallMaterialDEM::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -91,7 +91,7 @@ void Mat::ParticleWallMaterialDEM::Pack(Core::Communication::PackBuffer& data) c
 /*---------------------------------------------------------------------------*
  | unpack                                                     sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-void Mat::ParticleWallMaterialDEM::Unpack(const std::vector<char>& data)
+void Mat::ParticleWallMaterialDEM::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

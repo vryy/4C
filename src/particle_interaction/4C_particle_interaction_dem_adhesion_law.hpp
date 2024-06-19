@@ -37,10 +37,10 @@ namespace ParticleInteraction
     virtual ~DEMAdhesionLawBase() = default;
 
     //! init adhesion law handler
-    virtual void Init();
+    virtual void init();
 
     //! setup adhesion law handler
-    virtual void Setup(const double& k_normal);
+    virtual void setup(const double& k_normal);
 
     //! calculate adhesion force
     virtual void AdhesionForce(const double& gap, const double& surfaceenergy, const double& r_eff,
@@ -79,7 +79,7 @@ namespace ParticleInteraction
     explicit DEMAdhesionLawVdWDMT(const Teuchos::ParameterList& params);
 
     //! init adhesion law handler
-    void Init() override;
+    void init() override;
 
     //! calculate adhesion force
     void AdhesionForce(const double& gap, const double& surfaceenergy, const double& r_eff,

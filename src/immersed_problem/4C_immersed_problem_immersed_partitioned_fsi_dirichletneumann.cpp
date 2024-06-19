@@ -56,7 +56,7 @@ Immersed::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Immersed::ImmersedPartitionedFSIDirichletNeumann::Init(const Teuchos::ParameterList& params)
+int Immersed::ImmersedPartitionedFSIDirichletNeumann::init(const Teuchos::ParameterList& params)
 {
   // reset the setup flag
   set_is_setup(false);
@@ -88,13 +88,13 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::read_restart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Immersed::ImmersedPartitionedFSIDirichletNeumann::Setup()
+void Immersed::ImmersedPartitionedFSIDirichletNeumann::setup()
 {
-  // make sure Init(...) was called first
+  // make sure init(...) was called first
   check_is_init();
 
   // call setup of base class
-  FSI::PartitionedImmersed::Setup();
+  FSI::PartitionedImmersed::setup();
 
   // get pointer to global problem
   globalproblem_ = Global::Problem::Instance();
@@ -328,7 +328,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::fsi_op(
     structure_field()->prepare_output(force_prepare);
 
     Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapperImmersed>(structure_field())
-        ->Output(false, (Step() * 100) + (iter - 1), Time() - Dt() * ((100 - iter) / 100.0));
+        ->output(false, (Step() * 100) + (iter - 1), Time() - Dt() * ((100 - iter) / 100.0));
   }
 
   // perform n steps max; then set converged

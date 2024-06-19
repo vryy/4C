@@ -96,14 +96,14 @@ void loma_dyn(int restart)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       scatraonly->ScaTraField()->set_number_of_dof_set_velocity(1);
 
-      // now we can call Init() on base algo
-      scatraonly->Init();
+      // now we can call init() on base algo
+      scatraonly->init();
 
-      // only now we must call Setup() on the scatra time integrator.
+      // only now we must call setup() on the scatra time integrator.
       // all objects relying on the parallel distribution are
       // created and pointers are set.
-      // calls Setup() on the time integrator inside
-      scatraonly->Setup();
+      // calls setup() on the time integrator inside
+      scatraonly->setup();
 
       // read restart information
       if (restart) (scatraonly->ScaTraField())->read_restart(restart);
@@ -173,9 +173,9 @@ void loma_dyn(int restart)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       loma->ScaTraField()->set_number_of_dof_set_velocity(1);
 
-      loma->Init();
+      loma->init();
 
-      loma->Setup();
+      loma->setup();
 
       // read restart information
       // in case a inflow generation in the inflow section has been performed, there are not any

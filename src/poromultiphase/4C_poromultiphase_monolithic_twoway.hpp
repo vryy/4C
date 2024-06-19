@@ -52,7 +52,7 @@ namespace POROMULTIPHASE
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// initialization
-    void Init(const Teuchos::ParameterList& globaltimeparams,
+    void init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,
         const Teuchos::ParameterList& fluidparams, const std::string& struct_disname,
         const std::string& fluid_disname, bool isale, int nds_disp, int nds_vel,
@@ -72,7 +72,7 @@ namespace POROMULTIPHASE
     }
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx,
+    void evaluate(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx,
         const bool firstcall) override;
 
     //! update all fields after convergence (add increment on displacements and fluid primary
@@ -160,7 +160,7 @@ namespace POROMULTIPHASE
     );
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc);
+    virtual void evaluate(Teuchos::RCP<const Epetra_Vector> iterinc);
 
     //! return structure fluid coupling sparse matrix
     Teuchos::RCP<Core::LinAlg::SparseMatrix> struct_fluid_coupling_matrix();

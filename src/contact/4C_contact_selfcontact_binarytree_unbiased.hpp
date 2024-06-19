@@ -47,7 +47,7 @@ namespace CONTACT
     \brief Initialize the unbiased self binary tree
 
     */
-    void Init() final;
+    void init() final;
 
    private:
     //! @name Evaluation methods
@@ -218,7 +218,7 @@ namespace CONTACT
     geta.Multiply(1.0, gxieta, second, 0.0);
 
     // clear, calculate and scale normal
-    normal.Clear();
+    normal.clear();
     normal.CrossProduct(gxi, geta);
     const double normnormal = normal.Norm2();
     normal.Scale(1.0 / normnormal);

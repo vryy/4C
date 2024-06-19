@@ -147,8 +147,8 @@ void BEAMINTERACTION::GetGlobalCouplingForceResultants(const Core::FE::Discretiz
     Core::LinAlg::Matrix<3, 2, double>& beam_resultant,
     Core::LinAlg::Matrix<3, 2, double>& solid_resultant)
 {
-  beam_resultant.Clear();
-  solid_resultant.Clear();
+  beam_resultant.clear();
+  solid_resultant.clear();
 
   // Initialize variables.
   std::vector<double> local_force;

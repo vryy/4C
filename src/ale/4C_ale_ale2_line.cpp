@@ -66,7 +66,7 @@ Core::FE::CellType Discret::ELEMENTS::Ale2Line::Shape() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2Line::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Ale2Line::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Ale2Line element does not support communication");
 
@@ -75,7 +75,7 @@ void Discret::ELEMENTS::Ale2Line::Pack(Core::Communication::PackBuffer& data) co
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2Line::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Ale2Line::unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this Ale2Line element does not support communication");
   return;

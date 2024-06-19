@@ -37,12 +37,12 @@ ScaTra::LevelSetTimIntStationary::LevelSetTimIntStationary(
 /*----------------------------------------------------------------------*
  |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntStationary::Init()
+void ScaTra::LevelSetTimIntStationary::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntStationary::Init();
-  LevelSetAlgorithm::Init();
+  TimIntStationary::init();
+  LevelSetAlgorithm::init();
 
   if (myrank_ == 0)
   {
@@ -61,12 +61,12 @@ void ScaTra::LevelSetTimIntStationary::Init()
 /*----------------------------------------------------------------------*
  |  setup time integration                                  rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntStationary::Setup()
+void ScaTra::LevelSetTimIntStationary::setup()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntStationary::Setup();
-  LevelSetAlgorithm::Setup();
+  TimIntStationary::setup();
+  LevelSetAlgorithm::setup();
 
   if (myrank_ == 0)
   {

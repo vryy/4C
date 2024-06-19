@@ -52,10 +52,10 @@ namespace BEAMINTERACTION
     virtual ~BeamInteractionParams() = default;
 
     //! initialize with the stuff coming from input file
-    void Init();
+    void init();
 
     //! setup member variables
-    void Setup();
+    void setup();
 
     //! returns the isinit_ flag
     inline const bool& is_init() const { return isinit_; };
@@ -66,13 +66,13 @@ namespace BEAMINTERACTION
     //! Checks the init and setup status
     inline void check_init_setup() const
     {
-      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call init() and setup() first!");
     }
 
     //! Checks the init status
     inline void check_init() const
     {
-      if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
+      if (!is_init()) FOUR_C_THROW("init() has not been called, yet!");
     }
 
     /// number of crosslinkers per type
@@ -144,12 +144,12 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(Core::Communication::PackBuffer& data) const;
+      void pack(Core::Communication::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
       */
-      void Unpack(std::vector<char> const& data);
+      void unpack(std::vector<char> const& data);
 
       //! @}
 
@@ -290,12 +290,12 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(Core::Communication::PackBuffer& data) const;
+      void pack(Core::Communication::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
       */
-      void Unpack(std::vector<char> const& data);
+      void unpack(std::vector<char> const& data);
 
       //! @}
 
@@ -329,7 +329,7 @@ namespace BEAMINTERACTION
       virtual ~BindEventData() = default;
 
       //! Init
-      void Init(int clgid, int elegid, int bspotlocn, int requestproc, int permission);
+      void init(int clgid, int elegid, int bspotlocn, int requestproc, int permission);
 
 
       //!@name data access functions
@@ -363,12 +363,12 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(Core::Communication::PackBuffer& data) const;
+      void pack(Core::Communication::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
       */
-      void Unpack(std::vector<char> const& data);
+      void unpack(std::vector<char> const& data);
 
       //! @}
 
@@ -431,12 +431,12 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(Core::Communication::PackBuffer& data) const;
+      void pack(Core::Communication::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
       */
-      void Unpack(std::vector<char> const& data);
+      void unpack(std::vector<char> const& data);
 
       //! @}
 
@@ -530,7 +530,7 @@ namespace BEAMINTERACTION
     T* CreateDataContainer(std::vector<char> const& data)
     {
       T* new_container = new T();
-      new_container->Unpack(data);
+      new_container->unpack(data);
       return new_container;
     };
 

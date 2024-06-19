@@ -80,7 +80,7 @@ to be able to redistribute a mesh without losing the old vectors.
 <h3>Invariants</h3>
 
 There are two possible states in this class: Reset and setup. To
-change back and forth use assign_degrees_of_freedom() and Reset().
+change back and forth use assign_degrees_of_freedom() and reset().
 
 <h3>Dof number uniqueness</h3>
 
@@ -302,7 +302,7 @@ namespace Core::DOFSets
         const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// reset all internal variables
-    void Reset() override;
+    void reset() override;
 
     //@}
 

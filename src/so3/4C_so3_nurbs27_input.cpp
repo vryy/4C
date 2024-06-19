@@ -25,7 +25,7 @@ bool Discret::ELEMENTS::Nurbs::SoNurbs27::ReadElement(
   SetMaterial(0, Mat::Factory(material));
 
   const int numgp = 27;
-  SolidMaterial()->Setup(numgp, linedef);
+  SolidMaterial()->setup(numgp, linedef);
 
   // read possible gaussian points, obsolete for computation
   std::vector<int> ngp;

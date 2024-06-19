@@ -67,7 +67,7 @@ Mat::ScatraMultiScaleGP::~ScatraMultiScaleGP()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::ScatraMultiScaleGP::Init()
+void Mat::ScatraMultiScaleGP::init()
 {
   // extract micro-scale problem
   Global::Problem* microproblem = Global::Problem::Instance(microdisnum_);
@@ -211,9 +211,9 @@ void Mat::ScatraMultiScaleGP::Init()
     // instantiate and initialize micro-scale time integrator
     microdisnum_microtimint_map_[microdisnum_] = Teuchos::rcp(new ScaTra::TimIntOneStepTheta(
         microdis, solver, sdyn_micro, extraparams, Teuchos::null, microdisnum_));
-    microdisnum_microtimint_map_[microdisnum_]->Init();
+    microdisnum_microtimint_map_[microdisnum_]->init();
     microdisnum_microtimint_map_[microdisnum_]->set_number_of_dof_set_velocity(1);
-    microdisnum_microtimint_map_[microdisnum_]->Setup();
+    microdisnum_microtimint_map_[microdisnum_]->setup();
 
     // set initial velocity field
     microdisnum_microtimint_map_[microdisnum_]->set_velocity_field();
@@ -258,7 +258,7 @@ void Mat::ScatraMultiScaleGP::prepare_time_step(const std::vector<double>& phinp
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::ScatraMultiScaleGP::Evaluate(const std::vector<double>& phinp_macro, double& q_micro,
+void Mat::ScatraMultiScaleGP::evaluate(const std::vector<double>& phinp_macro, double& q_micro,
     std::vector<double>& dq_dphi_micro, const double detFnp, const bool solve)
 {
   // extract micro-scale time integrator
@@ -369,7 +369,7 @@ double Mat::ScatraMultiScaleGP::evaluate_mean_concentration_time_derivative() co
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-void Mat::ScatraMultiScaleGP::Update()
+void Mat::ScatraMultiScaleGP::update()
 {
   if (is_ale_)
   {
@@ -387,7 +387,7 @@ void Mat::ScatraMultiScaleGP::Update()
       Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->Time());
 
   // update micro-scale time integrator
-  microtimint->Update();
+  microtimint->update();
 
   // clear state in micro-scale time integrator
   microtimint->ClearState();
@@ -418,7 +418,7 @@ void Mat::ScatraMultiScaleGP::new_result_file()
   if (eleowner_)
   {
     const int ndim = microproblem->NDim();
-    const int restart = Global::Problem::Instance()->Restart();
+    const int restart = Global::Problem::Instance()->restart();
     bool adaptname = true;
 
     // in case of restart, the new output file name has already been adapted
@@ -478,7 +478,7 @@ std::string Mat::ScatraMultiScaleGP::new_result_file_path(const std::string& new
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::ScatraMultiScaleGP::Output()
+void Mat::ScatraMultiScaleGP::output()
 {
   // skip ghosted macro-scale elements
   if (eleowner_)
@@ -519,7 +519,7 @@ void Mat::ScatraMultiScaleGP::read_restart()
   Teuchos::RCP<ScaTra::TimIntOneStepTheta> microtimint = microdisnum_microtimint_map_[microdisnum_];
 
   // extract restart step
-  step_ = Global::Problem::Instance()->Restart();
+  step_ = Global::Problem::Instance()->restart();
 
   // set current state in micro-scale time integrator
   microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,

@@ -166,7 +166,7 @@ namespace Mat
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out) : char vector to store class information
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -178,7 +178,7 @@ namespace Mat
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -239,7 +239,7 @@ namespace Mat
      * \param gp(in) : Gauss point
      * \param eleGID(in) : Element GID
      */
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
@@ -307,7 +307,7 @@ namespace Mat
     }
 
     /// setup
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /*!
      * Post setup routine that is executed after the input. This class will forward the call to all
@@ -319,7 +319,7 @@ namespace Mat
     void post_setup(Teuchos::ParameterList& params, int eleGID) override;
 
     /// update
-    void Update() override;
+    void update() override;
 
     /// setup patient-specific AAA stuff
     virtual void SetupAAA(Teuchos::ParameterList& params, int eleGID);

@@ -35,11 +35,11 @@ namespace ScaTra
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
-    void Init() override;
+    void init() override;
 
-    void Setup() override;
+    void setup() override;
 
-    void Update() override;
+    void update() override;
 
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
@@ -72,7 +72,7 @@ namespace ScaTra
 
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
-    void Init() override;
+    void init() override;
 
     void post_calc_initial_potential_field() override;
 
@@ -81,9 +81,9 @@ namespace ScaTra
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
-    void Setup() override;
+    void setup() override;
 
-    void Update() override;
+    void update() override;
 
    protected:
     void compute_time_deriv_pot0(const bool init) override{};
@@ -108,11 +108,11 @@ namespace ScaTra
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
-    void Init() override;
+    void init() override;
 
-    void Setup() override;
+    void setup() override;
 
-    void Update() override;
+    void update() override;
 
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
@@ -142,11 +142,11 @@ namespace ScaTra
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
-    void Init() override;
+    void init() override;
 
-    void Setup() override;
+    void setup() override;
 
-    void Update() override;
+    void update() override;
 
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
@@ -174,11 +174,11 @@ namespace ScaTra
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
-    void Init() override;
+    void init() override;
 
-    void Setup() override;
+    void setup() override;
 
-    void Update() override;
+    void update() override;
 
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;

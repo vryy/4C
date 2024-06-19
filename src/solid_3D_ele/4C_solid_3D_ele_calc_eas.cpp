@@ -627,7 +627,7 @@ Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::SolidEleCalcEas()
 }
 
 template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Pack(
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::pack(
     Core::Communication::PackBuffer& data) const
 {
   constexpr int num_dof_per_element = Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>;
@@ -645,7 +645,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Pack(
 };
 
 template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Unpack(
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   Core::Communication::ParObject::extract_from_pack(position, data, eas_iteration_data_.alpha_inc_);
@@ -687,9 +687,9 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_nonlinear_f
   }
 
   // clear for integration
-  eas_iteration_data_.invKaa_.Clear();
-  eas_iteration_data_.Kda_.Clear();
-  eas_iteration_data_.s_.Clear();
+  eas_iteration_data_.invKaa_.clear();
+  eas_iteration_data_.Kda_.clear();
+  eas_iteration_data_.s_.clear();
 
   evaluate_centroid_coordinates_and_add_to_parameter_list<celltype>(nodal_coordinates, params);
 
@@ -862,7 +862,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Update(
         solid_material.Update(consistent_defgrd, gp, params, ele.Id());
       });
 
-  solid_material.Update();
+  solid_material.update();
 }
 
 template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
@@ -961,10 +961,10 @@ double Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::calculate_internal
 }
 
 template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Setup(
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::setup(
     Mat::So3Material& solid_material, Input::LineDefinition* linedef)
 {
-  solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);
+  solid_material.setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }
 
 template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
@@ -1021,12 +1021,12 @@ template class Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
 static_assert(
     Discret::ELEMENTS::IsPackable<Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
         STR::ELEMENTS::EasType::eastype_h8_9>*>,
-    "EAS needs to implement the method Pack(Core::Communication::PackBuffer&) to be able to store "
+    "EAS needs to implement the method pack(Core::Communication::PackBuffer&) to be able to store "
     "history "
     "data!");
 static_assert(
     Discret::ELEMENTS::IsUnpackable<Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
         STR::ELEMENTS::EasType::eastype_h8_9>*>,
-    "EAS needs to implement the method Unpack(std::size_t, std::vector<char>&) to be able to store "
+    "EAS needs to implement the method unpack(std::size_t, std::vector<char>&) to be able to store "
     "history data!");
 FOUR_C_NAMESPACE_CLOSE

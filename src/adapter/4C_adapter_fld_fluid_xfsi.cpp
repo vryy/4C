@@ -48,10 +48,10 @@ Adapter::XFluidFSI::XFluidFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::XFluidFSI::Init()
+void Adapter::XFluidFSI::init()
 {
   // call base class init
-  FluidWrapper::Init();
+  FluidWrapper::init();
 
   // cast fluid to fluidimplicit
   xfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluid>(fluid_);
@@ -71,15 +71,15 @@ void Adapter::XFluidFSI::Init()
 
     // the solid mesh has to match the interface mesh
     // so we have to compute a interface true residual vector itrueresidual_
-    structinterface_->Setup(*mesh_coupling_fsi_->GetCutterDis());
+    structinterface_->setup(*mesh_coupling_fsi_->GetCutterDis());
   }
 
   interface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
 
-  interface_->Setup(
+  interface_->setup(
       *xfluid_->discretization(), false, true);  // Always Create overlapping FSI/FPSI Interface
 
-  fpsiinterface_->Setup(
+  fpsiinterface_->setup(
       *xfluid_->discretization(), true, true);  // Always Create overlapping FSI/FPSI Interface
 
   meshmap_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
@@ -157,7 +157,7 @@ void Adapter::XFluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int
   // check nds_master
   if (nds_master != 0) FOUR_C_THROW("nds_master is supposed to be 0 here");
 
-  meshmap_->Setup(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(), mm,
+  meshmap_->setup(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(), mm,
       Core::LinAlg::SplitMap(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(), *mm));
 }
 

@@ -176,7 +176,7 @@ double Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::compute_struct_chem
 
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
   static Core::LinAlg::Matrix<6, 1> glstrain(true);
-  glstrain.Clear();
+  glstrain.clear();
   // if (kinemtype_ == Inpar::STR::KinemType::nonlinearTotLag)
   {
     // Right Cauchy-Green tensor = F^T * F

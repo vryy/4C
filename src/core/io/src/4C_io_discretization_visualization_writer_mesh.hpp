@@ -65,7 +65,7 @@ namespace Core::IO
     /**
      * @brief Reset state depending if the maps changed or not
      */
-    void Reset();
+    void reset();
 
     /**
      * @brief Append result vector with num_dof values per node to output data

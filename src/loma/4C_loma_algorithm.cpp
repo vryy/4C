@@ -56,10 +56,10 @@ LowMach::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LowMach::Algorithm::Init()
+void LowMach::Algorithm::init()
 {
-  // call Init() in base class
-  Adapter::ScaTraFluidCouplingAlgorithm::Init();
+  // call init() in base class
+  Adapter::ScaTraFluidCouplingAlgorithm::init();
 
   // flag for monolithic solver
   monolithic_ = (Core::UTILS::IntegralValue<int>(probdyn_, "MONOLITHIC"));
@@ -117,10 +117,10 @@ void LowMach::Algorithm::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LowMach::Algorithm::Setup()
+void LowMach::Algorithm::setup()
 {
-  // call Setup() in base class
-  Adapter::ScaTraFluidCouplingAlgorithm::Setup();
+  // call setup() in base class
+  Adapter::ScaTraFluidCouplingAlgorithm::setup();
 
   const Teuchos::ParameterList& fluiddyn = Global::Problem::Instance()->FluidDynamicParams();
 
@@ -165,7 +165,7 @@ void LowMach::Algorithm::Setup()
     Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(dofrowmaps);
 
     // full loma block dofrowmap
-    lomablockdofrowmap_.Setup(*fullmap, dofrowmaps);
+    lomablockdofrowmap_.setup(*fullmap, dofrowmaps);
 
     // get solver number used for LOMA solver
     const int linsolvernumber = probdyn_.get<int>("LINEAR_SOLVER");
@@ -332,7 +332,7 @@ void LowMach::Algorithm::initial_calculations()
       Teuchos::null, ScaTraField()->discretization());
 
   // write initial fields
-  // Output();
+  // output();
 
   return;
 }
@@ -746,7 +746,7 @@ void LowMach::Algorithm::evaluate_loma_od_block_mat_fluid(
       mat_fs, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate off-diagonal matrix block entries for fluid element
-  fluid_field()->discretization()->Evaluate(fparams, fluidstrategy);
+  fluid_field()->discretization()->evaluate(fparams, fluidstrategy);
   fluid_field()->discretization()->ClearState();
 }
 
@@ -845,14 +845,14 @@ bool LowMach::Algorithm::convergence_check(int itnum)
 void LowMach::Algorithm::time_update()
 {
   // update scalar
-  ScaTraField()->Update();
+  ScaTraField()->update();
 
   // in case of non-constant thermodynamic pressure: update
   if (consthermpress_ == "No_energy" or consthermpress_ == "No_mass")
     Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(ScaTraField())->UpdateThermPressure();
 
   // update fluid
-  fluid_field()->Update();
+  fluid_field()->update();
 
   return;
 }

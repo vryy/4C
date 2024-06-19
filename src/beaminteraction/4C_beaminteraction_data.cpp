@@ -32,7 +32,7 @@ BEAMINTERACTION::BeamInteractionParams::BeamInteractionParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamInteractionParams::Init()
+void BEAMINTERACTION::BeamInteractionParams::init()
 {
   issetup_ = false;
 
@@ -50,7 +50,7 @@ void BEAMINTERACTION::BeamInteractionParams::Init()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamInteractionParams::Setup()
+void BEAMINTERACTION::BeamInteractionParams::setup()
 {
   check_init();
 
@@ -69,7 +69,7 @@ BEAMINTERACTION::Data::CrosslinkerData::CrosslinkerData() : id_(-1), pos_(true),
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::CrosslinkerData::Pack(Core::Communication::PackBuffer& data) const
+void BEAMINTERACTION::Data::CrosslinkerData::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -88,7 +88,7 @@ void BEAMINTERACTION::Data::CrosslinkerData::Pack(Core::Communication::PackBuffe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::CrosslinkerData::Unpack(std::vector<char> const& data)
+void BEAMINTERACTION::Data::CrosslinkerData::unpack(std::vector<char> const& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -120,7 +120,7 @@ BEAMINTERACTION::Data::BeamData::BeamData() : id_(-1)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::BeamData::Pack(Core::Communication::PackBuffer& data) const
+void BEAMINTERACTION::Data::BeamData::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -140,7 +140,7 @@ void BEAMINTERACTION::Data::BeamData::Pack(Core::Communication::PackBuffer& data
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::BeamData::Unpack(std::vector<char> const& data)
+void BEAMINTERACTION::Data::BeamData::unpack(std::vector<char> const& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -174,7 +174,7 @@ BEAMINTERACTION::Data::BindEventData::BindEventData()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::BindEventData::Init(
+void BEAMINTERACTION::Data::BindEventData::init(
     int clgid, int elegid, int bspotlocn, int requestproc, int permission)
 {
   clgid_ = clgid;
@@ -186,7 +186,7 @@ void BEAMINTERACTION::Data::BindEventData::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::BindEventData::Pack(Core::Communication::PackBuffer& data) const
+void BEAMINTERACTION::Data::BindEventData::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -205,7 +205,7 @@ void BEAMINTERACTION::Data::BindEventData::Pack(Core::Communication::PackBuffer&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::BindEventData::Unpack(std::vector<char> const& data)
+void BEAMINTERACTION::Data::BindEventData::unpack(std::vector<char> const& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -238,7 +238,7 @@ BEAMINTERACTION::Data::UnBindEventData::UnBindEventData()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::UnBindEventData::Pack(Core::Communication::PackBuffer& data) const
+void BEAMINTERACTION::Data::UnBindEventData::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -253,7 +253,7 @@ void BEAMINTERACTION::Data::UnBindEventData::Pack(Core::Communication::PackBuffe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::UnBindEventData::Unpack(std::vector<char> const& data)
+void BEAMINTERACTION::Data::UnBindEventData::unpack(std::vector<char> const& data)
 {
   std::vector<char>::size_type position = 0;
 

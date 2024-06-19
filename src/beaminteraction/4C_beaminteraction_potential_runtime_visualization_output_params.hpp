@@ -32,10 +32,10 @@ namespace BEAMINTERACTION
     virtual ~BeamToBeamPotentialRuntimeOutputParams() = default;
 
     //! initialize with the stuff coming from input file
-    void Init(const Teuchos::ParameterList& beam_contact_visualization_output_paramslist);
+    void init(const Teuchos::ParameterList& beam_contact_visualization_output_paramslist);
 
     //! setup member variables
-    void Setup();
+    void setup();
 
     /**
      * \brief Return the container holding the general output parameters

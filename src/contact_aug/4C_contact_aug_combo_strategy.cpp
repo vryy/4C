@@ -122,7 +122,7 @@ void CONTACT::Aug::ComboStrategy::create_strategy_linear_solvers(
   if (not cparams_interface)
     FOUR_C_THROW("You have to provide a pointer to the CONTACT::ParamsInterface!");
 
-  Core::FE::Discretization* str_discret = cparams_interface->Get<Core::FE::Discretization>();
+  Core::FE::Discretization* str_discret = cparams_interface->get<Core::FE::Discretization>();
 
   strat_lin_solvers.push_back(STR::SOLVER::Factory::build_meshtying_contact_lin_solver(
       *str_discret, strategy.Type(), strategy.SystemType(), ls_id));
@@ -217,10 +217,10 @@ void CONTACT::Aug::ComboStrategy::run_pre_solve(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::ComboStrategy::Reset(
+void CONTACT::Aug::ComboStrategy::reset(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp, const Epetra_Vector& xnew)
 {
-  get().Reset(cparams, dispnp, xnew);
+  get().reset(cparams, dispnp, xnew);
 }
 
 /*----------------------------------------------------------------------------*
@@ -359,7 +359,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::Aug::ComboStrategy::ConstrRhs() { return ge
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::ComboStrategy::Initialize() { FOUR_C_THROW("Unnecessary in this Strategy."); }
+void CONTACT::Aug::ComboStrategy::initialize() { FOUR_C_THROW("Unnecessary in this Strategy."); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -431,7 +431,7 @@ void CONTACT::Aug::ComboStrategy::GlobalNoDbc::Assemble(
 
   slMaMap_ = Core::LinAlg::SplitMap(gSlMaDofRowMap, *gSlMaDbcDofRowMap);
 
-  Reset(*slMaMap_, data);
+  reset(*slMaMap_, data);
 }
 
 /*----------------------------------------------------------------------------*
@@ -441,12 +441,12 @@ void CONTACT::Aug::ComboStrategy::GlobalNoDbc::Redistribute(const CONTACT::Aug::
   slMaMap_ =
       Core::Rebalance::RebalanceInAccordanceWithReference(*data.GSlMaDofRowMapPtr(), *slMaMap_);
 
-  Reset(*slMaMap_, data);
+  reset(*slMaMap_, data);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::ComboStrategy::GlobalNoDbc::Reset(
+void CONTACT::Aug::ComboStrategy::GlobalNoDbc::reset(
     const Epetra_Map& slMaMap, const CONTACT::Aug::DataContainer& data)
 {
   slMap_ = Core::LinAlg::IntersectMap(slMaMap, *data.GSlDofRowMapPtr());
@@ -469,7 +469,7 @@ void CONTACT::Aug::ComboStrategy::eval_force(CONTACT::ParamsInterface& cparams)
 
 #ifdef DEBUG_COMBO_STRATEGY
   std::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << std::endl;
-  std::cout << Inpar::CONTACT::SolvingStrategy2String(Get().Type()) << "\n";
+  std::cout << Inpar::CONTACT::SolvingStrategy2String(get().Type()) << "\n";
 #endif
 }
 
@@ -509,7 +509,7 @@ void CONTACT::Aug::ComboStrategy::eval_static_constraint_rhs(CONTACT::ParamsInte
   get().set_current_eval_state(cparams);
   get().InitEvalInterface(cparams);
 
-  get().Initialize(cparams.get_action_type());
+  get().initialize(cparams.get_action_type());
   get().assemble_gap();
 
   get().eval_constraint_forces();

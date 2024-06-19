@@ -58,7 +58,7 @@ using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -1104,7 +1104,7 @@ int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
           // Update constraintmixture material
           if (Material()->MaterialType() == Core::Materials::m_constraintmixture)
           {
-            SolidMaterial()->Update();
+            SolidMaterial()->update();
           }
           break;
         }
@@ -1279,8 +1279,8 @@ int Discret::ELEMENTS::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
 {
   set_params_interface_ptr(params);
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
@@ -1304,7 +1304,7 @@ int Discret::ELEMENTS::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
   }
 
   // (SPATIAL) FUNCTION BUSINESS
-  const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* funct = &condition.parameters().get<std::vector<int>>("funct");
   Core::LinAlg::Matrix<NUMDIM_SOH8, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
@@ -1360,7 +1360,7 @@ int Discret::ELEMENTS::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
         const double functfac =
             (functnum > 0) ? Global::Problem::Instance()
                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                 .Evaluate(xrefegp.A(), time, dim)
+                                 .evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
         for (int nodid = 0; nodid < NUMNOD_SOH8; ++nodid)
@@ -1854,8 +1854,8 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
         {
           str_params_interface().set_ele_eval_error_flag(
               STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
-          stiffmatrix->Clear();
-          force->Clear();
+          stiffmatrix->clear();
+          force->clear();
           return;
         }
         else
@@ -2160,7 +2160,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
       params.set("gp_coords_ref", point);
 
       // center of element in reference configuration
-      point.Clear();
+      point.clear();
       soh8_element_center_refe_coords(point, xrefe);
       params.set("elecenter_coords_ref", point);
     }
@@ -2169,7 +2169,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
     params.set<int>("iostress", iostress);
 
     Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_static_cast<Mat::So3Material>(Material());
-    so3mat->Evaluate(&defgrd_mod, &glstrain, params, &stress, &cmat, gp, Id());
+    so3mat->evaluate(&defgrd_mod, &glstrain, params, &stress, &cmat, gp, Id());
 
     // stop if the material evaluation fails
     if (IsParamsInterface() and str_params_interface().is_tolerate_errors())
@@ -2709,7 +2709,7 @@ void Discret::ELEMENTS::SoHex8::soh8_recover_from_eas_backup_state()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 04/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex8Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -2833,7 +2833,7 @@ void Discret::ELEMENTS::SoHex8::update_element(std::vector<double>& disp,
 
     // center of element in reference configuration
     Core::LinAlg::Matrix<NUMDIM_SOH8, 1> point(false);
-    point.Clear();
+    point.clear();
     soh8_element_center_refe_coords(point, xrefe);
     params.set("elecenter_coords_ref", point);
 
@@ -2866,7 +2866,7 @@ void Discret::ELEMENTS::SoHex8::update_element(std::vector<double>& disp,
     Core::LinAlg::SerialDenseMatrix* oldfeas = &easdata_.feas;
     oldfeas->putScalar(0.0);
   }
-  SolidMaterial()->Update();
+  SolidMaterial()->update();
 
   return;
 }
@@ -3126,7 +3126,7 @@ void Discret::ELEMENTS::SoHex8::evaluate_finite_difference_material_tangent(
     }  // ------------------------------------------------------------------ EAS
 
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat_fd;
-    so3mat->Evaluate(&defgrd_fd_mod, &glstrain_fd, params, &stress_fd, &cmat_fd, gp, Id());
+    so3mat->evaluate(&defgrd_fd_mod, &glstrain_fd, params, &stress_fd, &cmat_fd, gp, Id());
 
     // finite difference approximation of partial derivative
     //
@@ -3230,8 +3230,8 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
 
   static Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(true);  // reference coord. of element
   static Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr(true);  // current  coord. of element
-  xrefe.Clear();
-  xcurr.Clear();
+  xrefe.clear();
+  xcurr.clear();
   Core::Nodes::Node** nodes = Nodes();
 
   for (int i = 0; i < NUMNOD_SOH8; ++i)
@@ -3245,7 +3245,7 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
   }
 
   static Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv(true);
-  deriv.Clear();
+  deriv.clear();
   Core::FE::shape_function_deriv1<Core::FE::CellType::hex8>(xi, deriv);
 
   static Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ(true);
@@ -3258,7 +3258,7 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
 
   // linearization of deformation gradient F w.r.t. displacements
   static Core::LinAlg::Matrix<9, NUMDOF_SOH8> d_F_dd(true);
-  d_F_dd.Clear();
+  d_F_dd.clear();
   if (d_cauchyndir_dd || d2_cauchyndir_dd_dn || d2_cauchyndir_dd_ddir || d2_cauchyndir_dd2 ||
       d2_cauchyndir_dd_dxi)
   {
@@ -3324,8 +3324,8 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
   static Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<Core::FE::CellType::hex8>::numderiv2,
       NUMNOD_SOH8>
       deriv2(true);
-  d_F_dxi.Clear();
-  deriv2.Clear();
+  d_F_dxi.clear();
+  deriv2.clear();
 
   if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
   {
@@ -3367,7 +3367,7 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
     static Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<Core::FE::CellType::hex8>::numderiv2,
         NUMNOD_SOH8>
         deriv2(true);
-    deriv2.Clear();
+    deriv2.clear();
     Core::FE::shape_function_deriv2<Core::FE::CellType::hex8>(xi, deriv2);
 
     static Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<Core::FE::CellType::hex8>::numderiv2,
@@ -3384,7 +3384,7 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
     d2_cauchyndir_dd_dxi_mat.MultiplyTN(1.0, d2_cauchyndir_dF2_d_F_dd, d_F_dxi, 0.0);
 
     static Core::LinAlg::Matrix<9, NUMDIM_SOH8 * NUMDOF_SOH8> d2_F_dxi_dd(true);
-    d2_F_dxi_dd.Clear();
+    d2_F_dxi_dd.clear();
     for (int i = 0; i < NUMDIM_SOH8; ++i)
     {
       for (int j = 0; j < NUMDIM_SOH8; ++j)

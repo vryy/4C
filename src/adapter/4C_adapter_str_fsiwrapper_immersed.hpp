@@ -90,9 +90,9 @@ namespace Adapter
       \note This is a pure DEBUG functionality. Originally used in immersed method development.
 
       \warning This method partly re-implements redundantly few lines of the common structure
-      Output() routine. \return void
+      output() routine. \return void
     */
-    virtual void Output(
+    virtual void output(
         bool forced_writerestart = false, const int step = -1, const double time = -1.0);
 
    protected:

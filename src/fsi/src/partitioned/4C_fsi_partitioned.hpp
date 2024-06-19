@@ -91,8 +91,8 @@ namespace FSI
    * residual via computeF(). So the field solvers themselves must be
    * clean, subsequent calls with the same interface input must yield the
    * same results. The time stepping therefore needs the further methods
-   * prepare_time_step() to start a new time step as wellas Update() and
-   * Output() to finish the current step, save the result and write the
+   * prepare_time_step() to start a new time step as wellas update() and
+   * output() to finish the current step, save the result and write the
    * files.
    */
   class Partitioned : public Algorithm, public ::NOX::Epetra::Interface::Required
@@ -105,7 +105,7 @@ namespace FSI
     explicit Partitioned(const Epetra_Comm& comm);
 
     /// setup this object
-    void Setup() override;
+    void setup() override;
 
     /*! \brief Outer level FSI time loop
      *

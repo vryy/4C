@@ -32,26 +32,26 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::PlasticElastHyper::PlasticElastHyper(const Core::Mat::PAR::Parameter::Data& matdata)
     : Mat::PAR::ElastHyper(matdata),
-      inityield_(matdata.parameters.Get<double>("INITYIELD")),
-      isohard_(matdata.parameters.Get<double>("ISOHARD")),
-      expisohard_(matdata.parameters.Get<double>("EXPISOHARD")),
-      infyield_(matdata.parameters.Get<double>("INFYIELD")),
-      kinhard_(matdata.parameters.Get<double>("KINHARD")),
-      visc_(matdata.parameters.Get<double>("VISC")),
-      rate_dependency_(matdata.parameters.Get<double>("RATE_DEPENDENCY")),
-      visc_soft_(matdata.parameters.Get<double>("VISC_SOFT")),
-      cte_(matdata.parameters.Get<double>("CTE")),
-      inittemp_(matdata.parameters.Get<double>("INITTEMP")),
-      yieldsoft_(matdata.parameters.Get<double>("YIELDSOFT")),
-      hardsoft_(matdata.parameters.Get<double>("HARDSOFT")),
-      taylor_quinney_(matdata.parameters.Get<double>("TAYLOR_QUINNEY")),
-      plspin_chi_(-1. * matdata.parameters.Get<double>("PL_SPIN_CHI")),
-      rY_11_(matdata.parameters.Get<double>("rY_11")),
-      rY_22_(matdata.parameters.Get<double>("rY_22")),
-      rY_33_(matdata.parameters.Get<double>("rY_33")),
-      rY_12_(matdata.parameters.Get<double>("rY_12")),
-      rY_23_(matdata.parameters.Get<double>("rY_23")),
-      rY_13_(matdata.parameters.Get<double>("rY_13")),
+      inityield_(matdata.parameters.get<double>("INITYIELD")),
+      isohard_(matdata.parameters.get<double>("ISOHARD")),
+      expisohard_(matdata.parameters.get<double>("EXPISOHARD")),
+      infyield_(matdata.parameters.get<double>("INFYIELD")),
+      kinhard_(matdata.parameters.get<double>("KINHARD")),
+      visc_(matdata.parameters.get<double>("VISC")),
+      rate_dependency_(matdata.parameters.get<double>("RATE_DEPENDENCY")),
+      visc_soft_(matdata.parameters.get<double>("VISC_SOFT")),
+      cte_(matdata.parameters.get<double>("CTE")),
+      inittemp_(matdata.parameters.get<double>("INITTEMP")),
+      yieldsoft_(matdata.parameters.get<double>("YIELDSOFT")),
+      hardsoft_(matdata.parameters.get<double>("HARDSOFT")),
+      taylor_quinney_(matdata.parameters.get<double>("TAYLOR_QUINNEY")),
+      plspin_chi_(-1. * matdata.parameters.get<double>("PL_SPIN_CHI")),
+      rY_11_(matdata.parameters.get<double>("rY_11")),
+      rY_22_(matdata.parameters.get<double>("rY_22")),
+      rY_33_(matdata.parameters.get<double>("rY_33")),
+      rY_12_(matdata.parameters.get<double>("rY_12")),
+      rY_23_(matdata.parameters.get<double>("rY_23")),
+      rY_13_(matdata.parameters.get<double>("rY_13")),
       cpl_(0.),
       stab_s_(0.),
       dis_mode_(Inpar::TSI::pl_multiplier)
@@ -95,7 +95,7 @@ Mat::PlasticElastHyperType Mat::PlasticElastHyperType::instance_;
 Core::Communication::ParObject* Mat::PlasticElastHyperType::Create(const std::vector<char>& data)
 {
   Mat::PlasticElastHyper* elhy = new Mat::PlasticElastHyper();
-  elhy->Unpack(data);
+  elhy->unpack(data);
 
   return elhy;
 }
@@ -168,7 +168,7 @@ Mat::PlasticElastHyper::PlasticElastHyper(Mat::PAR::PlasticElastHyper* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::Pack(Core::Communication::PackBuffer& data) const
+void Mat::PlasticElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -179,7 +179,7 @@ void Mat::PlasticElastHyper::Pack(Core::Communication::PackBuffer& data) const
   int matid = -1;
   if (MatParams() != nullptr) matid = MatParams()->Id();  // in case we are in post-process mode
   add_to_pack(data, matid);
-  summandProperties_.Pack(data);
+  summandProperties_.pack(data);
 
   // plastic anisotropy
   add_to_pack(data, PlAniso_full_);
@@ -227,7 +227,7 @@ void Mat::PlasticElastHyper::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::Unpack(const std::vector<char>& data)
+void Mat::PlasticElastHyper::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   params_ = nullptr;
@@ -255,7 +255,7 @@ void Mat::PlasticElastHyper::Unpack(const std::vector<char>& data)
     }
   }
 
-  summandProperties_.Unpack(position, data);
+  summandProperties_.unpack(position, data);
 
   // plastic anisotropy
   extract_from_pack(position, data, PlAniso_full_);
@@ -336,7 +336,7 @@ void Mat::PlasticElastHyper::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::PlasticElastHyper::setup(int numgp, Input::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
@@ -345,12 +345,12 @@ void Mat::PlasticElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
   // Setup summands
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
-    potsum_[p]->Setup(numgp, linedef);
+    potsum_[p]->setup(numgp, linedef);
   }
 
   // find out which formulations are used
 
-  summandProperties_.Clear();
+  summandProperties_.clear();
 
   ElastHyperProperties(potsum_, summandProperties_);
 
@@ -444,7 +444,7 @@ void Mat::PlasticElastHyper::SetupHillPlasticity(Input::LineDefinition* linedef)
   if (MatParams()->rY_11_ == 0. && MatParams()->rY_22_ == 0. && MatParams()->rY_33_ == 0. &&
       MatParams()->rY_12_ == 0. && MatParams()->rY_23_ == 0. && MatParams()->rY_13_ == 0.)
   {
-    PlAniso_full_.Clear();
+    PlAniso_full_.clear();
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++)
         if (i == j)
@@ -540,7 +540,7 @@ void Mat::PlasticElastHyper::SetupHillPlasticity(Input::LineDefinition* linedef)
     double alpha6 = 1. / 3. / MatParams()->rY_13_ / MatParams()->rY_13_;
 
     // calculate plastic anisotropy tensor
-    PlAniso_full_.Clear();
+    PlAniso_full_.clear();
     add_elasticity_tensor_product(PlAniso_full_, alpha1, M0, M0, 1.);
     add_elasticity_tensor_product(PlAniso_full_, alpha2, M1, M1, 1.);
     add_elasticity_tensor_product(PlAniso_full_, alpha3, M2, M2, 1.);
@@ -599,8 +599,8 @@ void Mat::PlasticElastHyper::EvaluateElast(const Core::LinAlg::Matrix<3, 3>* def
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
-  pk2->Clear();
-  cmat->Clear();
+  pk2->clear();
+  cmat->clear();
 
   // isotropic elasticity in coupled strain energy format
   // isotropic elasticity in decoupled ("mod") format go here as well
@@ -743,8 +743,8 @@ void Mat::PlasticElastHyper::EvaluateCTvol(const Core::LinAlg::Matrix<3, 3>* def
   }
 
   // clear
-  cTvol->Clear();
-  dCTvoldE->Clear();
+  cTvol->clear();
+  dCTvoldE->clear();
 
   // inverse RCG
   Core::LinAlg::Matrix<3, 3> invRCG;
@@ -826,11 +826,11 @@ void Mat::PlasticElastHyper::EvaluatePlast(const Core::LinAlg::Matrix<3, 3>* def
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
-  dPK2dDp->Clear();
-  NCP->Clear();
-  dNCPdC->Clear();
-  dNCPdDp->Clear();
-  if (dNCPdT != nullptr) dNCPdT->Clear();
+  dPK2dDp->clear();
+  NCP->clear();
+  dNCPdC->clear();
+  dNCPdDp->clear();
+  if (dNCPdT != nullptr) dNCPdT->clear();
 
   // new temporary matrices
   Core::LinAlg::Matrix<3, 3> mStr;  // Mandel stress tensor
@@ -1313,7 +1313,7 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
       // in the elastic realm. this is a slightly inconsistent linearization for s!=0
       // however, that way we can ensure that deltaLp=0 (exactly) at any Newton iteration
 
-      if (dNCPdT != nullptr) dNCPdT->Clear();
+      if (dNCPdT != nullptr) dNCPdT->clear();
     }
   }
   // elastic gp
@@ -1356,11 +1356,11 @@ void Mat::PlasticElastHyper::EvaluatePlast(const Core::LinAlg::Matrix<3, 3>* def
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
-  dPK2dLp->Clear();
-  NCP->Clear();
-  dNCPdC->Clear();
-  dNCPdLp->Clear();
-  if (dNCPdT != nullptr) dNCPdT->Clear();
+  dPK2dLp->clear();
+  NCP->clear();
+  dNCPdC->clear();
+  dNCPdLp->clear();
+  if (dNCPdT != nullptr) dNCPdT->clear();
 
   // new temporary matrices
   Core::LinAlg::Matrix<3, 3> mStr;  // Mandel stress tensor
@@ -1796,10 +1796,10 @@ void Mat::PlasticElastHyper::EvaluateCauchyPlast(const Core::LinAlg::Matrix<3, 1
     Core::LinAlg::Matrix<6, 6>& d_cauchy_dC, Core::LinAlg::Matrix<6, 9>& d_cauchy_dF,
     Core::LinAlg::Matrix<6, 1>* d_cauchy_dT)
 {
-  cauchy.Clear();
-  d_cauchy_dC.Clear();
-  d_cauchy_dF.Clear();
-  d_cauchy_dFpi.Clear();
+  cauchy.clear();
+  d_cauchy_dC.clear();
+  d_cauchy_dF.clear();
+  d_cauchy_dFpi.clear();
 
   cauchy.Update(sqrt(prinv_(2)) * dPI(2), id2V_, 1.);
   cauchy.Update((dPI(0) + prinv_(0) * dPI(1)) / sqrt(prinv_(2)), bev_, 1.);
@@ -1861,7 +1861,7 @@ void Mat::PlasticElastHyper::EvaluateCauchyPlast(const Core::LinAlg::Matrix<3, 1
 
   if (d_cauchy_dT)
   {
-    d_cauchy_dT->Clear();
+    d_cauchy_dT->clear();
 
     const double j = sqrt(prinv_(2));
     double d_dPI2_dT = 0.;
@@ -1938,8 +1938,8 @@ void Mat::PlasticElastHyper::evaluate_cauchy_temp_deriv(const Core::LinAlg::Matr
   // than just thermal expansion
   static Core::LinAlg::Matrix<3, 1> dPI(true);
   static Core::LinAlg::Matrix<6, 1> ddPII(true);
-  dPI.Clear();
-  ddPII.Clear();
+  dPI.clear();
+  ddPII.clear();
 
   const double fac = -3.0 * Cte();
   dPI(2) += fac * 0.5 / sqI3 * ddPmodII;
@@ -2080,8 +2080,8 @@ void Mat::PlasticElastHyper::evaluate_kin_quant_elast(const Core::LinAlg::Matrix
 int Mat::PlasticElastHyper::evaluate_kin_quant_plast(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<3, 3>* deltaLp, const int gp, Teuchos::ParameterList& params)
 {
-  id2_.Clear();
-  id2V_.Clear();
+  id2_.clear();
+  id2V_.clear();
   for (int i = 0; i < 3; i++)
   {
     id2V_(i) = 1.;
@@ -2457,7 +2457,7 @@ void Mat::PlasticElastHyper::matrix_exponential3x3(Core::LinAlg::Matrix<3, 3>& M
   // direct calculation for zero-matrix
   if (Norm == 0.)
   {
-    MatrixInOut.Clear();
+    MatrixInOut.clear();
     for (int i = 0; i < 3; i++) MatrixInOut(i, i) = 1.;
     return;
   }
@@ -2468,7 +2468,7 @@ void Mat::PlasticElastHyper::matrix_exponential3x3(Core::LinAlg::Matrix<3, 3>& M
   Core::LinAlg::Matrix<3, 3> In(MatrixInOut);
   int n = 0;
   int facn = 1;
-  MatrixInOut.Clear();
+  MatrixInOut.clear();
   for (int i = 0; i < 3; i++) MatrixInOut(i, i) = 1.;
   Core::LinAlg::Matrix<3, 3> tmp(MatrixInOut);
   Core::LinAlg::Matrix<3, 3> tmp2(MatrixInOut);
@@ -2538,7 +2538,7 @@ void Mat::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
     nmax = nIter;
 
     // compose derivative of matrix exponential (symmetric Voigt-notation)
-    MatrixExpDeriv.Clear();
+    MatrixExpDeriv.clear();
     for (int n = 1; n <= nmax; n++)
     {
       for (int m = 1; m <= n / 2; m++)
@@ -2561,7 +2561,7 @@ void Mat::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
     Core::LinAlg::Matrix<3, 3> tmp1;
     Core::LinAlg::Matrix<3, 3> tmp2;
 
-    MatrixExpDeriv.Clear();
+    MatrixExpDeriv.clear();
     // souza eq. (A.52)
     // note: EW stored in ascending order
 
@@ -2728,7 +2728,7 @@ void Mat::PlasticElastHyper::matrix_exponential_derivative3x3(
   nmax = nIter;
 
   // compose derivative of matrix exponential (non-symmetric Voigt-notation)
-  MatrixExpDeriv.Clear();
+  MatrixExpDeriv.clear();
   for (int n = 1; n <= nmax; n++)
     for (int m = 1; m <= n; m++)
       add_non_symmetric_product(1. / fac[n], Xn.at(m - 1), Xn.at(n - m), MatrixExpDeriv);

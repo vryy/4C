@@ -104,7 +104,7 @@ namespace Discret
            i != intpoints.end(); ++i)
       {
         const Core::FE::GaussIntegration intpoints_cell = *i;
-        err = my::Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+        err = my::evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
             elevec1_epetra, elevec2_epetra, elevec3_epetra, intpoints_cell, offdiag);
         if (err) return err;
       }
@@ -400,10 +400,10 @@ namespace Discret
 
           if (nsd_ == 3)
           {
-            u(0) = function->Evaluate(position, t, 0);
-            u(1) = function->Evaluate(position, t, 1);
-            u(2) = function->Evaluate(position, t, 2);
-            p = function->Evaluate(position, t, 3);
+            u(0) = function->evaluate(position, t, 0);
+            u(1) = function->evaluate(position, t, 1);
+            u(2) = function->evaluate(position, t, 2);
+            p = function->evaluate(position, t, 3);
           }
           else
             FOUR_C_THROW("case 'kimmoin_stat' is a 3D specific case");
@@ -411,17 +411,17 @@ namespace Discret
 
           if (nsd_ == 3)
           {
-            grad_u(0, 0) = function_grad->Evaluate(position, t, 0);  // u,x
-            grad_u(0, 1) = function_grad->Evaluate(position, t, 1);  // u,y
-            grad_u(0, 2) = function_grad->Evaluate(position, t, 2);  // u,z
+            grad_u(0, 0) = function_grad->evaluate(position, t, 0);  // u,x
+            grad_u(0, 1) = function_grad->evaluate(position, t, 1);  // u,y
+            grad_u(0, 2) = function_grad->evaluate(position, t, 2);  // u,z
 
-            grad_u(1, 0) = function_grad->Evaluate(position, t, 3);  // v,x
-            grad_u(1, 1) = function_grad->Evaluate(position, t, 4);  // v,y
-            grad_u(1, 2) = function_grad->Evaluate(position, t, 5);  // v,z
+            grad_u(1, 0) = function_grad->evaluate(position, t, 3);  // v,x
+            grad_u(1, 1) = function_grad->evaluate(position, t, 4);  // v,y
+            grad_u(1, 2) = function_grad->evaluate(position, t, 5);  // v,z
 
-            grad_u(2, 0) = function_grad->Evaluate(position, t, 6);  // w,x
-            grad_u(2, 1) = function_grad->Evaluate(position, t, 7);  // w,y
-            grad_u(2, 2) = function_grad->Evaluate(position, t, 8);  // w,z
+            grad_u(2, 0) = function_grad->evaluate(position, t, 6);  // w,x
+            grad_u(2, 1) = function_grad->evaluate(position, t, 7);  // w,y
+            grad_u(2, 2) = function_grad->evaluate(position, t, 8);  // w,z
           }
           else
             FOUR_C_THROW("case 'kimmoin_stat' is a 3D specific case");
@@ -539,10 +539,10 @@ namespace Discret
 
           if (nsd_ == 3)
           {
-            u(0) = function->Evaluate(position, t, 0);
-            u(1) = function->Evaluate(position, t, 1);
-            u(2) = function->Evaluate(position, t, 2);
-            p = function->Evaluate(position, t, 3);
+            u(0) = function->evaluate(position, t, 0);
+            u(1) = function->evaluate(position, t, 1);
+            u(2) = function->evaluate(position, t, 2);
+            p = function->evaluate(position, t, 3);
           }
           else
             FOUR_C_THROW("case 'kimmoin_stat' is a 3D specific case");
@@ -550,17 +550,17 @@ namespace Discret
 
           if (nsd_ == 3)
           {
-            grad_u(0, 0) = function_grad->Evaluate(position, t, 0);  // u,x
-            grad_u(0, 1) = function_grad->Evaluate(position, t, 1);  // u,y
-            grad_u(0, 2) = function_grad->Evaluate(position, t, 2);  // u,z
+            grad_u(0, 0) = function_grad->evaluate(position, t, 0);  // u,x
+            grad_u(0, 1) = function_grad->evaluate(position, t, 1);  // u,y
+            grad_u(0, 2) = function_grad->evaluate(position, t, 2);  // u,z
 
-            grad_u(1, 0) = function_grad->Evaluate(position, t, 3);  // v,x
-            grad_u(1, 1) = function_grad->Evaluate(position, t, 4);  // v,y
-            grad_u(1, 2) = function_grad->Evaluate(position, t, 5);  // v,z
+            grad_u(1, 0) = function_grad->evaluate(position, t, 3);  // v,x
+            grad_u(1, 1) = function_grad->evaluate(position, t, 4);  // v,y
+            grad_u(1, 2) = function_grad->evaluate(position, t, 5);  // v,z
 
-            grad_u(2, 0) = function_grad->Evaluate(position, t, 6);  // w,x
-            grad_u(2, 1) = function_grad->Evaluate(position, t, 7);  // w,y
-            grad_u(2, 2) = function_grad->Evaluate(position, t, 8);  // w,z
+            grad_u(2, 0) = function_grad->evaluate(position, t, 6);  // w,x
+            grad_u(2, 1) = function_grad->evaluate(position, t, 7);  // w,y
+            grad_u(2, 2) = function_grad->evaluate(position, t, 8);  // w,z
           }
           else
             FOUR_C_THROW("case 'kimmoin_stat' is a 3D specific case");
@@ -660,15 +660,15 @@ namespace Discret
             const double u_exact_x =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(position, t, 0);
+                    .evaluate(position, t, 0);
             const double u_exact_y =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(position, t, 1);
+                    .evaluate(position, t, 1);
             const double p_exact =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(position, t, 2);
+                    .evaluate(position, t, 2);
 
             u(0) = u_exact_x;
             u(1) = u_exact_y;
@@ -703,19 +703,19 @@ namespace Discret
             const double u_exact_x =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(position, t, 0);
+                    .evaluate(position, t, 0);
             const double u_exact_y =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(position, t, 1);
+                    .evaluate(position, t, 1);
             const double u_exact_z =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(position, t, 2);
+                    .evaluate(position, t, 2);
             const double p_exact =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(position, t, 3);
+                    .evaluate(position, t, 3);
 
             u(0) = u_exact_x;
             u(1) = u_exact_y;
@@ -1103,14 +1103,14 @@ namespace Discret
               si->project_on_side(x_gp_lin, x_side, xi_side);
 
               if (cond_type == Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID)
-                ci->Evaluate(x_side);  // evaluate embedded element's shape functions at gauss-point
+                ci->evaluate(x_side);  // evaluate embedded element's shape functions at gauss-point
                                        // coordinates
             }
             else if (is_ls_coupling_side)
             {
               // TODO: do we need this here?
               //          if(cond_manager->IsCoupling( coup_sid, my::eid_ ))
-              //            ci->Evaluate( x_gp_lin ); // evaluate embedded element's shape functions
+              //            ci->evaluate( x_gp_lin ); // evaluate embedded element's shape functions
               //            at gauss-point coordinates
             }
 
@@ -1880,10 +1880,10 @@ namespace Discret
                                                                        // at gauss-point coordinates
               else
               {
-                ci.at(coup_sid)->Evaluate(
+                ci.at(coup_sid)->evaluate(
                     xi_side);  // evaluate side's shape functions at gauss-point coordinates
                 if (add_conv_stab || my::fldparatimint_->is_new_ost_implementation())
-                  si_nit.at(coup_sid)->Evaluate(
+                  si_nit.at(coup_sid)->evaluate(
                       xi_side);  // evaluate side's shape functions at gauss-point coordinates
               }
             }
@@ -3228,8 +3228,8 @@ namespace Discret
       // get additional state vectors for ALE case: grid displacement and vel.
       // ---------------------------------------------------------------------
 
-      my::edispnp_.Clear();
-      my::egridv_.Clear();
+      my::edispnp_.clear();
+      my::egridv_.clear();
 
       if (ele->IsAle()) my::get_grid_disp_vel_ale(dis, lm, my::edispnp_, my::egridv_);
 
@@ -3248,13 +3248,13 @@ namespace Discret
       // ---------------------------------------------------------------------
 
       // get element-wise velocity/pressure field for current time step
-      evelaf_.Clear();
-      epreaf_.Clear();
+      evelaf_.clear();
+      epreaf_.clear();
       my::extract_values_from_global_vector(dis, lm, *my::rotsymmpbc_, &evelaf_, &epreaf_, "velaf");
 
       // get element-wise velocity/pressure field for previous time step
-      eveln_.Clear();
-      epren_.Clear();
+      eveln_.clear();
+      epren_.clear();
       if (my::fldparatimint_->is_new_ost_implementation())
         my::extract_values_from_global_vector(dis, lm, *my::rotsymmpbc_, &eveln_, &epren_, "veln");
 
@@ -3356,9 +3356,9 @@ namespace Discret
         //-----------------------------------------------------------------------------------
 
         // interface normal vector, pointing from background domain into the interface
-        normal_.Clear();
+        normal_.clear();
         // gauss-point coordinates
-        x_side_.Clear();
+        x_side_.clear();
 
         // we need an interface to the boundary element (for projection)
         Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
@@ -3695,16 +3695,16 @@ namespace Discret
               si->project_on_side(x_gp_lin_, x_side_, xi_side);
 
               if (non_xfluid_coupling)
-                ci->Evaluate(x_side_, rst_slave);  // evaluate embedded element's shape functions at
+                ci->evaluate(x_side_, rst_slave);  // evaluate embedded element's shape functions at
                                                    // gauss-point coordinates
               else
-                ci->Evaluate(xi_side,
+                ci->evaluate(xi_side,
                     rst_slave);  // evaluate side's shape functions at gauss-point coordinates
             }
             else if (is_ls_coupling_side)
             {
               if (cond_manager->IsCoupling(coup_sid, my::eid_))
-                ci->Evaluate(x_gp_lin_, rst_slave);  // evaluate embedded element's shape functions
+                ci->evaluate(x_gp_lin_, rst_slave);  // evaluate embedded element's shape functions
                                                      // at gauss-point coordinates
             }
 
@@ -3754,10 +3754,10 @@ namespace Discret
             //-----------------------------------------------------------------------------
             // define the prescribed interface jump vectors for velocity and traction
 
-            ivelint_jump_.Clear();
-            itraction_jump_.Clear();
-            proj_tangential_.Clear();
-            lb_proj_matrix_.Clear();
+            ivelint_jump_.clear();
+            itraction_jump_.clear();
+            proj_tangential_.clear();
+            lb_proj_matrix_.clear();
 
             get_interface_jump_vectors(coupcond, coupling, ivelint_jump_, itraction_jump_,
                 proj_tangential_, lb_proj_matrix_, x_gp_lin_, normal_, si, rst_, kappa_m,
@@ -3860,8 +3860,8 @@ namespace Discret
                 // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
                 my::vderxyn_.MultiplyNT(eveln_, my::derxy_);
 
-                ivelintn_jump_.Clear();
-                itractionn_jump_.Clear();
+                ivelintn_jump_.clear();
+                itractionn_jump_.clear();
 
                 // Safety check
                 if (cond_type == Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP or
@@ -3904,7 +3904,7 @@ namespace Discret
                 if (fldparaxfem_->interface_terms_previous_state() ==
                     Inpar::XFEM::PreviousState_full)
                 {
-                  velintn_s_.Clear();
+                  velintn_s_.clear();
                   ci->GetInterfaceVeln(velintn_s_);
 
                   XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
@@ -4019,13 +4019,13 @@ namespace Discret
       {
         case Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
         {
-          const std::string& evaltype = cond->parameters().Get<std::string>("evaltype");
+          const std::string& evaltype = cond->parameters().get<std::string>("evaltype");
 
           if (evaltype == "funct_gausspoint")
           {
             // evaluate function at Gaussian point at current time
             coupling->evaluate_coupling_conditions(
-                ivelint_jump, itraction_jump, x, cond);  // itraction_jump.Clear() called here...
+                ivelint_jump, itraction_jump, x, cond);  // itraction_jump.clear() called here...
           }
           else
           {
@@ -4045,7 +4045,7 @@ namespace Discret
         case Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN:
         {
           // evaluate condition function at Gaussian point
-          if (cond->parameters().Get<int>("numdof") == 6)
+          if (cond->parameters().get<int>("numdof") == 6)
           {
             Core::LinAlg::Matrix<6, 1> fulltraction(
                 true);  // sigma_xx, sigma_yy, sigma_zz, sigma_xy, sigma_yz, sigma_zx
@@ -4093,7 +4093,7 @@ namespace Discret
         case Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP:
         {
           bool eval_dirich_at_gp =
-              ((cond->parameters().Get<std::string>("evaltype")) == "funct_gausspoint");
+              ((cond->parameters().get<std::string>("evaltype")) == "funct_gausspoint");
 
           // The velocity is evaluated twice in this framework...
           Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlip>(coupling)
@@ -4110,7 +4110,7 @@ namespace Discret
         case Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE:
         {
           bool eval_dirich_at_gp =
-              ((cond->parameters().Get<std::string>("evaltype")) == "funct_gausspoint");
+              ((cond->parameters().get<std::string>("evaltype")) == "funct_gausspoint");
 
           Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlipTwoPhase>(coupling)
               ->evaluate_coupling_conditions<distype>(ivelint_jump, itraction_jump, x, cond,
@@ -4196,7 +4196,7 @@ namespace Discret
       {
         case Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
         {
-          const std::string& evaltype = cond->parameters().Get<std::string>("evaltype");
+          const std::string& evaltype = cond->parameters().get<std::string>("evaltype");
 
           if (evaltype == "funct_gausspoint")
           {
@@ -4592,11 +4592,11 @@ namespace Discret
       // Initiate dummy variables:
       //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       // get element-wise velocity/pressure field for current time step
-      my::evelaf_.Clear();
+      my::evelaf_.clear();
       // Scatra field
-      my::escabofoaf_.Clear();
-      my::escaaf_.Clear();
-      my::escaam_.Clear();
+      my::escabofoaf_.clear();
+      my::escaaf_.clear();
+      my::escaam_.clear();
       // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
       // its time derivative at n+alpha_M/n+1 (LOMA specific!!)
       const double thermpressaf = 1.0;

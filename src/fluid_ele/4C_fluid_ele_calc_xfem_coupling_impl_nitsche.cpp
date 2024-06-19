@@ -121,7 +121,7 @@ namespace Discret
         funct_m_m_dyad_.MultiplyNT(funct_m, funct_m);
 
         // velint_s
-        velint_s_.Clear();
+        velint_s_.clear();
 
         if (eval_coupling_) slave_ele->GetInterfaceVelnp(velint_s_);
 
@@ -265,7 +265,7 @@ namespace Discret
         // get velocity at integration point
         // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
         // interface velocity vector in gausspoint
-        velint_s_.Clear();
+        velint_s_.clear();
 
         if (configmap.at(Inpar::XFEM::X_Adj_Col).first ||
             configmap.at(Inpar::XFEM::X_Pen_Col).first ||
@@ -344,7 +344,7 @@ namespace Discret
         }
 
         // funct_s * timefac * fac
-        funct_s_.Clear();
+        funct_s_.clear();
         if (slave_distype != Core::FE::CellType::dis_none) this->GetSlaveFunct(funct_s_);
 
         // funct_m * timefac * fac * funct_m  * kappa_m (dyadic product)
@@ -869,7 +869,7 @@ namespace Discret
         if (only_rhs) return;
 
         static Core::LinAlg::Matrix<nsd_ * slave_nen_, nsd_> proj_dtraction_vel(true);
-        proj_dtraction_vel.Clear();
+        proj_dtraction_vel.clear();
         for (unsigned col = 0; col < nsd_ * slave_nen_; ++col)
         {
           for (unsigned j = 0; j < nsd_; ++j)
@@ -999,7 +999,7 @@ namespace Discret
         static Core::LinAlg::Matrix<nsd_ * slave_nen_, nsd_> proj_dtraction_vel(true);
         if (!only_rhs)
         {
-          proj_dtraction_vel.Clear();
+          proj_dtraction_vel.clear();
           for (unsigned col = 0; col < nsd_ * slave_nen_; ++col)
           {
             for (unsigned j = 0; j < nsd_; ++j)
@@ -1078,7 +1078,7 @@ namespace Discret
         // get velocity at integration point
         // (values at n)
         // interface velocity vector in gausspoint
-        velint_s_.Clear();
+        velint_s_.clear();
 
         if (configmap.at(Inpar::XFEM::X_Adj_Col).first ||
             configmap.at(Inpar::XFEM::X_Pen_Col).first ||
@@ -1158,7 +1158,7 @@ namespace Discret
         }
 
         // funct_s * timefac * fac
-        funct_s_.Clear();
+        funct_s_.clear();
         if (slave_distype != Core::FE::CellType::dis_none) this->GetSlaveFunct(funct_s_);
 
         // funct_m * funct_m (dyadic product)

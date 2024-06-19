@@ -46,19 +46,19 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::Damage::Damage(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      sigma_y_((matdata.parameters.Get<std::vector<double>>("SIGMA_Y"))),
-      strainbar_p_ref_((matdata.parameters.Get<std::vector<double>>("EPSBAR_P"))),
-      damden_(matdata.parameters.Get<double>("DAMDEN")),
-      damexp_(matdata.parameters.Get<double>("DAMEXP")),
-      epsbarD_(matdata.parameters.Get<double>("DAMTHRESHOLD")),
-      kinhard_(matdata.parameters.Get<double>("KINHARD")),
-      kinhard_rec_(matdata.parameters.Get<double>("KINHARD_REC")),
-      sathardening_(matdata.parameters.Get<double>("SATHARDENING")),
-      hardexpo_(matdata.parameters.Get<double>("HARDEXPO")),
-      abstol_(matdata.parameters.Get<double>("TOL"))
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      sigma_y_((matdata.parameters.get<std::vector<double>>("SIGMA_Y"))),
+      strainbar_p_ref_((matdata.parameters.get<std::vector<double>>("EPSBAR_P"))),
+      damden_(matdata.parameters.get<double>("DAMDEN")),
+      damexp_(matdata.parameters.get<double>("DAMEXP")),
+      epsbarD_(matdata.parameters.get<double>("DAMTHRESHOLD")),
+      kinhard_(matdata.parameters.get<double>("KINHARD")),
+      kinhard_rec_(matdata.parameters.get<double>("KINHARD_REC")),
+      sathardening_(matdata.parameters.get<double>("SATHARDENING")),
+      hardexpo_(matdata.parameters.get<double>("HARDEXPO")),
+      abstol_(matdata.parameters.get<double>("TOL"))
 {
   if (hardexpo_ < 0.0) FOUR_C_THROW("Nonlinear hardening exponent must be non-negative!");
   if (damden_ == 0.0)
@@ -84,7 +84,7 @@ Mat::DamageType Mat::DamageType::instance_;
 Core::Communication::ParObject* Mat::DamageType::Create(const std::vector<char>& data)
 {
   Mat::Damage* plastic = new Mat::Damage();
-  plastic->Unpack(data);
+  plastic->unpack(data);
   return plastic;
 }
 
@@ -104,7 +104,7 @@ Mat::Damage::Damage(Mat::PAR::Damage* params) : params_(params), plastic_step_(f
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 04/11 |
  *----------------------------------------------------------------------*/
-void Mat::Damage::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Damage::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -145,13 +145,13 @@ void Mat::Damage::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, plastic_step_);
 
   return;
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack (public)                                           dano 04/11 |
  *----------------------------------------------------------------------*/
-void Mat::Damage::Unpack(const std::vector<char>& data)
+void Mat::Damage::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -246,13 +246,13 @@ void Mat::Damage::Unpack(const std::vector<char>& data)
 
   return;
 
-}  // Unpack()
+}  // unpack()
 
 
 /*---------------------------------------------------------------------*
  | initialise / allocate internal stress variables (public)      04/11 |
  *---------------------------------------------------------------------*/
-void Mat::Damage::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::Damage::setup(int numgp, Input::LineDefinition* linedef)
 {
   // initialise history variables
   strainpllast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
@@ -308,13 +308,13 @@ void Mat::Damage::Setup(int numgp, Input::LineDefinition* linedef)
   isinit_ = true;
   return;
 
-}  // Setup()
+}  // setup()
 
 
 /*---------------------------------------------------------------------*
  | update internal stress variables (public)                dano 04/11 |
  *---------------------------------------------------------------------*/
-void Mat::Damage::Update()
+void Mat::Damage::update()
 {
   // make current values at time step tlast+1 to values of last step tlast
   strainpllast_ = strainplcurr_;
@@ -354,13 +354,13 @@ void Mat::Damage::Update()
   }
 
   return;
-}  // Update()
+}  // update()
 
 
 /*----------------------------------------------------------------------*
  | evaluate material (public)                                dano 08/11 |
  *----------------------------------------------------------------------*/
-void Mat::Damage::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::Damage::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* linstrain,  // linear strain vector
     Teuchos::ParameterList& params,                  // parameter list for communication & HISTORY
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,  // 2nd PK-stress
@@ -1107,7 +1107,7 @@ void Mat::Damage::evaluate_simplified_lemaitre(const Core::LinAlg::Matrix<3, 3>*
     //  - accumulated (un)damaged plastic strains
     //  - stress
 
-    // as current history vectors are set to zero in Update(), the old values
+    // as current history vectors are set to zero in update(), the old values
     // need to be set instead, otherwise no constant plastic values are possible
     strainplcurr_->at(gp) = strainpllast_->at(gp);
     strainbarplcurr_->at(gp) = strainbarpllast_->at(gp);
@@ -2218,7 +2218,7 @@ void Mat::Damage::evaluate_full_lemaitre(const Core::LinAlg::Matrix<3, 3>* defgr
     //  - back stress
     //    (--> relative stress)
     //  - stress
-    // as current history vectors are set to zero in Update(), the old values
+    // as current history vectors are set to zero in update(), the old values
     // need to be set instead, otherwise no constant plastic values are possible
     strainplcurr_->at(gp) = strainpllast_->at(gp);
     strainbarplcurr_->at(gp) = strainbarpllast_->at(gp);
@@ -2325,7 +2325,7 @@ void Mat::Damage::setup_cmat(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
   const double mfac = young / ((1.0 + nu) * (1.0 - 2.0 * nu));
 
   // clear the material tangent
-  cmat.Clear();
+  cmat.clear();
   // write non-zero components
   cmat(0, 0) = mfac * (1.0 - nu);
   cmat(0, 1) = mfac * nu;
@@ -2628,7 +2628,7 @@ void Mat::Damage::setup_cmat_elasto_plastic(Core::LinAlg::Matrix<NUM_STRESS_3D, 
       // ------------------------------- assemble elasto-plastic material tangent
 
       // empty consistent tangent operator
-      cmat.Clear();
+      cmat.clear();
       // constitutive tensor
       // I_d = id4sharp - 1/3 Id \otimes Id
       // contribution: Id4^#

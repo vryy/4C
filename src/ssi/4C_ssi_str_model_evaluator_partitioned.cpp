@@ -140,11 +140,11 @@ void STR::MODELEVALUATOR::PartitionedSSI::run_pre_compute_x(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedSSI::Setup()
+void STR::MODELEVALUATOR::PartitionedSSI::setup()
 {
   check_init();
 
-  STR::MODELEVALUATOR::BaseSSI::Setup();
+  STR::MODELEVALUATOR::BaseSSI::setup();
 
   // set flag
   issetup_ = true;

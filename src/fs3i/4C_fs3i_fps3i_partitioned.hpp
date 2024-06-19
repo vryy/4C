@@ -66,10 +66,10 @@ namespace FS3I
     PartFPS3I(const Epetra_Comm& comm);
 
     //! initialize this class
-    void Init() override;
+    void init() override;
 
     //! setup this class
-    void Setup() override;
+    void setup() override;
 
     //! time loop to be defined in inherited classes (structure depends on
     //! considered coupling, i.e. one-way or two-way)

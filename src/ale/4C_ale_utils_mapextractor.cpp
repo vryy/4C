@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::UTILS::MapExtractor::Setup(const Core::FE::Discretization& dis, bool overlapping)
+void ALE::UTILS::MapExtractor::setup(const Core::FE::Discretization& dis, bool overlapping)
 {
   const int ndim = Global::Problem::Instance()->NDim();
   Core::Conditions::MultiConditionSelector mcs;
@@ -84,7 +84,7 @@ Teuchos::RCP<std::set<int>> ALE::UTILS::MapExtractor::conditioned_element_map(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ALE::UTILS::FsiMapExtractor::Setup(const Core::FE::Discretization& dis)
+void ALE::UTILS::FsiMapExtractor::setup(const Core::FE::Discretization& dis)
 {
   const int ndim = Global::Problem::Instance()->NDim();
   Core::Conditions::MultiConditionSelector mcs;
@@ -95,7 +95,7 @@ void ALE::UTILS::FsiMapExtractor::Setup(const Core::FE::Discretization& dis)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::UTILS::XFluidFluidMapExtractor::Setup(const Core::FE::Discretization& dis)
+void ALE::UTILS::XFluidFluidMapExtractor::setup(const Core::FE::Discretization& dis)
 {
   const int ndim = Global::Problem::Instance()->NDim();
   Core::Conditions::MultiConditionSelector mcs;

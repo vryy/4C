@@ -25,12 +25,12 @@ PARTICLEALGORITHM::ParticleResultTest::ParticleResultTest() : Core::UTILS::Resul
   // empty constructor
 }
 
-void PARTICLEALGORITHM::ParticleResultTest::Init()
+void PARTICLEALGORITHM::ParticleResultTest::init()
 {
   // nothing to do
 }
 
-void PARTICLEALGORITHM::ParticleResultTest::Setup(
+void PARTICLEALGORITHM::ParticleResultTest::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine

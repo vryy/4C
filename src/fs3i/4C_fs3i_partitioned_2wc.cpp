@@ -45,20 +45,20 @@ FS3I::PartFS3I2Wc::PartFS3I2Wc(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I2Wc::Init()
+void FS3I::PartFS3I2Wc::init()
 {
-  // call Init() in base class
-  FS3I::PartFS3I::Init();
+  // call init() in base class
+  FS3I::PartFS3I::init();
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I2Wc::Setup()
+void FS3I::PartFS3I2Wc::setup()
 {
-  // call Setup() in base class
-  FS3I::PartFS3I::Setup();
+  // call setup() in base class
+  FS3I::PartFS3I::setup();
 
   return;
 }
@@ -77,7 +77,7 @@ void FS3I::PartFS3I2Wc::Timeloop()
   SetFSISolution();
 
   // calculate inital time derivative, when restart was done from a part. FSI simulation
-  if (Global::Problem::Instance()->Restart() and
+  if (Global::Problem::Instance()->restart() and
       Core::UTILS::IntegralValue<int>(
           Global::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
   {

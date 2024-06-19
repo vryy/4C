@@ -46,7 +46,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -91,12 +91,12 @@ namespace Discret
       }
 
       //! Pack this class so it can be communicated
-      //! Pack and \ref Unpack are used to communicate this element
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      //! Pack and \ref unpack are used to communicate this element
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       //! Unpack data from a char vector into this class
-      //! Pack and \ref Unpack are used to communicate this element
-      void Unpack(const std::vector<char>& data) override;
+      //! Pack and \ref unpack are used to communicate this element
+      void unpack(const std::vector<char>& data) override;
 
       //! Print this element
       void Print(std::ostream& os) const override;

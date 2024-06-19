@@ -39,14 +39,14 @@ void particle_drt()
   // create and init particle algorithm
   auto particlealgorithm = std::unique_ptr<PARTICLEALGORITHM::ParticleAlgorithm>(
       new PARTICLEALGORITHM::ParticleAlgorithm(comm, params));
-  particlealgorithm->Init(initialparticles);
+  particlealgorithm->init(initialparticles);
 
   // read restart information
-  const int restart = problem->Restart();
+  const int restart = problem->restart();
   if (restart) particlealgorithm->read_restart(restart);
 
   // setup particle algorithm
-  particlealgorithm->Setup();
+  particlealgorithm->setup();
 
   // solve particle problem
   particlealgorithm->Timeloop();

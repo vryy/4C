@@ -85,8 +85,8 @@ namespace Discret
       void CalcGPStresses(Teuchos::ParameterList& params,
           const std::map<std::string, std::vector<double>>& ele_state) override;
 
-      void Pack(Core::Communication::PackBuffer& data) const override;
-      void Unpack(const std::vector<char>& data) override;
+      void pack(Core::Communication::PackBuffer& data) const override;
+      void unpack(const std::vector<char>& data) override;
 
      protected:
       void extract_elemental_variables(LocationArray& la,

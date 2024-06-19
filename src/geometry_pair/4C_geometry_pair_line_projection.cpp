@@ -107,7 +107,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::project_gauss_points_on_segment_to_o
   projection_points.clear();
   projection_points.reserve(gauss_points.nquad);
   Core::LinAlg::Matrix<3, 1, scalar_type> xi_start;
-  StartValues<other::geometry_type_>::Set(xi_start);
+  StartValues<other::geometry_type_>::set(xi_start);
   for (unsigned int i = 0; i < (unsigned int)gauss_points.nquad; i++)
   {
     scalar_type eta = segment.GetEtaA() +
@@ -191,8 +191,8 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::intersect_line_with_other(const pair
   // Set default values for the parameter coordinates.
   scalar_type eta_start;
   Core::LinAlg::Matrix<3, 1, scalar_type> xi_start;
-  StartValues<line::geometry_type_>::Set(eta_start);
-  StartValues<other::geometry_type_>::Set(xi_start);
+  StartValues<line::geometry_type_>::set(eta_start);
+  StartValues<other::geometry_type_>::set(xi_start);
 
   // Call the intersect function.
   pair->intersect_line_with_other(
@@ -254,7 +254,7 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::pre_evaluate(const p
  *
  */
 template <typename pair_type>
-void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_type* pair,
+void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::evaluate(const pair_type* pair,
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<other, scalar_type>& element_data_other,
     std::vector<LineSegment<scalar_type>>& segments)
@@ -348,7 +348,7 @@ GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::get_line_projection_vecto
  *
  */
 template <typename pair_type>
-void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pair,
+void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::evaluate(const pair_type* pair,
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<other, scalar_type>& element_data_other,
     std::vector<LineSegment<scalar_type>>& segments)
@@ -366,7 +366,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
   std::vector<ProjectionPoint1DTo3D<scalar_type>> search_points;
   search_points.reserve(n_search_points);
   Core::LinAlg::Matrix<3, 1, scalar_type> xi_start;
-  StartValues<other::geometry_type_>::Set(xi_start);
+  StartValues<other::geometry_type_>::set(xi_start);
   scalar_type eta;
   for (unsigned int i_search_point = 0; i_search_point < n_search_points; i_search_point++)
   {

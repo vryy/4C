@@ -41,10 +41,10 @@ PaSI::PasiPartTwoWayCoup::PasiPartTwoWayCoup(
   // empty constructor
 }
 
-void PaSI::PasiPartTwoWayCoup::Init()
+void PaSI::PasiPartTwoWayCoup::init()
 {
   // call base class init
-  PaSI::PartitionedAlgo::Init();
+  PaSI::PartitionedAlgo::init();
 
   // construct interface force
   intfforcenp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
@@ -59,10 +59,10 @@ void PaSI::PasiPartTwoWayCoup::Init()
     FOUR_C_THROW("no convergence tolerance for partitioned iterations set!");
 }
 
-void PaSI::PasiPartTwoWayCoup::Setup()
+void PaSI::PasiPartTwoWayCoup::setup()
 {
   // call base class setup
-  PaSI::PartitionedAlgo::Setup();
+  PaSI::PartitionedAlgo::setup();
 
   // safety check
   {
@@ -480,10 +480,10 @@ PaSI::PasiPartTwoWayCoupDispRelax::PasiPartTwoWayCoupDispRelax(
   // empty constructor
 }
 
-void PaSI::PasiPartTwoWayCoupDispRelax::Init()
+void PaSI::PasiPartTwoWayCoupDispRelax::init()
 {
   // call base class init
-  PaSI::PasiPartTwoWayCoup::Init();
+  PaSI::PasiPartTwoWayCoup::init();
 
   // construct relaxed interface states
   relaxintfdispnp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
@@ -594,10 +594,10 @@ PaSI::PasiPartTwoWayCoupDispRelaxAitken::PasiPartTwoWayCoupDispRelaxAitken(
   // empty constructor
 }
 
-void PaSI::PasiPartTwoWayCoupDispRelaxAitken::Init()
+void PaSI::PasiPartTwoWayCoupDispRelaxAitken::init()
 {
   // call base class init
-  PaSI::PasiPartTwoWayCoupDispRelax::Init();
+  PaSI::PasiPartTwoWayCoupDispRelax::init();
 
   // construct old interface increment state
   intfdispincnpold_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);

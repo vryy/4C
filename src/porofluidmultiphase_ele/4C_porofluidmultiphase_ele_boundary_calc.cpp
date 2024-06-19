@@ -81,7 +81,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::setup_calc(
  * Evaluate element                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(
+int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
@@ -140,7 +140,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
     xyze_ += edispnp_;
   }
   else
-    edispnp_.Clear();
+    edispnp_.clear();
 }
 
 /*----------------------------------------------------------------------*
@@ -192,10 +192,10 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neu
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
-  const int numdof = condition.parameters().Get<int>("numdof");
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
-  const auto* func = &condition.parameters().Get<std::vector<int>>("funct");
+  const int numdof = condition.parameters().get<int>("numdof");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
+  const auto* func = &condition.parameters().get<std::vector<int>>("funct");
 
   if (numdofpernode_ != numdof)
     FOUR_C_THROW(
@@ -230,7 +230,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neu
           // evaluate function at current Gauss point (provide always 3D coordinates!)
           functfac = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                         .Evaluate(coordgpref, time, dof);
+                         .evaluate(coordgpref, time, dof);
         }
         else
           functfac = 1.;

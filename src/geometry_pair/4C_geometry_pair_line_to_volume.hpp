@@ -95,7 +95,7 @@ namespace GEOMETRYPAIR
      * @param element_data_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    virtual void Evaluate(const ElementData<line, scalar_type>& element_data_line,
+    virtual void evaluate(const ElementData<line, scalar_type>& element_data_line,
         const ElementData<volume, scalar_type>& element_data_volume,
         std::vector<LineSegment<scalar_type>>& segments) const {};
 

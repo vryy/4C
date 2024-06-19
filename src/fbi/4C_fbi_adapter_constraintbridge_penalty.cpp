@@ -22,19 +22,19 @@ approach for Fluid-beam interaction.
 
 FOUR_C_NAMESPACE_OPEN
 
-void Adapter::FBIConstraintBridgePenalty::Setup(const Epetra_Map* beam_map,
+void Adapter::FBIConstraintBridgePenalty::setup(const Epetra_Map* beam_map,
     const Epetra_Map* fluid_map, Teuchos::RCP<Core::LinAlg::SparseOperator> fluidmatrix,
     bool fluidmeshtying)
 {
   // Initialize all necessary vectors and matrices
-  FBIConstraintBridge::Setup(beam_map, fluid_map, fluidmatrix, fluidmeshtying);
+  FBIConstraintBridge::setup(beam_map, fluid_map, fluidmatrix, fluidmeshtying);
   fs_ = Teuchos::rcp(new Epetra_FEVector(*beam_map));
   ff_ = Teuchos::rcp(new Epetra_FEVector(*fluid_map));
   cff_ = fluidmatrix;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FBIConstraintBridgePenalty::Evaluate(
+void Adapter::FBIConstraintBridgePenalty::evaluate(
     Teuchos::RCP<const Core::FE::Discretization> discretization1,
     Teuchos::RCP<const Core::FE::Discretization> discretization2,
     Teuchos::RCP<const Epetra_Vector> fluid_vel, Teuchos::RCP<const Epetra_Vector> beam_vel)
@@ -57,7 +57,7 @@ void Adapter::FBIConstraintBridgePenalty::Evaluate(
 void Adapter::FBIConstraintBridgePenalty::ResetBridge()
 {
   fs_->PutScalar(0.0);
-  cff_->Reset();
+  cff_->reset();
   ff_->PutScalar(0.0);
   fluid_scaled_ = false;
   structure_scaled_ = false;

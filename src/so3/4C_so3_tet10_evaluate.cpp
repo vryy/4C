@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -309,7 +309,7 @@ int Discret::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
           // Update constraintmixture material
           if (Material()->MaterialType() == Core::Materials::m_constraintmixture)
           {
-            SolidMaterial()->Update();
+            SolidMaterial()->update();
           }
           break;
         }
@@ -657,8 +657,8 @@ int Discret::ELEMENTS::SoTet10::evaluate_neumann(Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
@@ -685,7 +685,7 @@ int Discret::ELEMENTS::SoTet10::evaluate_neumann(Teuchos::ParameterList& params,
   }
 
   // (SPATIAL) FUNCTION BUSINESS
-  const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* funct = &condition.parameters().get<std::vector<int>>("funct");
   Core::LinAlg::Matrix<NUMDIM_SOTET10, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
@@ -743,7 +743,7 @@ int Discret::ELEMENTS::SoTet10::evaluate_neumann(Teuchos::ParameterList& params,
         const double functfac =
             (functnum > 0) ? Global::Problem::Instance()
                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                 .Evaluate(xrefegp.A(), time, dim)
+                                 .evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
         for (int nodid = 0; nodid < NUMNOD_SOTET10; ++nodid)
@@ -1018,7 +1018,7 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
 
     UTILS::get_temperature_for_structural_material<Core::FE::CellType::tet10>(
         shapefcts_4gp[gp], params);
-    SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
@@ -1458,7 +1458,7 @@ const std::vector<double>& Discret::ELEMENTS::SoTet10::so_tet10_11gp_weights()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet10Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoTet10Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -1598,7 +1598,7 @@ void Discret::ELEMENTS::SoTet10::update_element(std::vector<double>& disp,
     }
   }
   // Update of history for materials
-  SolidMaterial()->Update();
+  SolidMaterial()->update();
 }
 
 FOUR_C_NAMESPACE_CLOSE

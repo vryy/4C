@@ -33,14 +33,14 @@ namespace
           speedofsound, refdensfac, 1.0);
 
       // init equation of state handler
-      equationofstate_->Init();
-      equationofstate_special_->Init();
+      equationofstate_->init();
+      equationofstate_special_->init();
 
       // setup equation of state handler
-      equationofstate_->Setup();
-      equationofstate_special_->Setup();
+      equationofstate_->setup();
+      equationofstate_special_->setup();
     }
-    // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called
+    // note: the public functions init() and setup() of class SPHEquationOfStateGenTait are called
     // in SetUp() and thus implicitly tested by all following unittests
   };
 
@@ -89,12 +89,12 @@ namespace
           std::make_unique<ParticleInteraction::SPHEquationOfStateIdealGas>(speedofsound);
 
       // init equation of state handler
-      equationofstate_->Init();
+      equationofstate_->init();
 
       // setup equation of state handler
-      equationofstate_->Setup();
+      equationofstate_->setup();
     }
-    // note: the public functions Init() and Setup() of class SPHEquationOfStateIdealGas are called
+    // note: the public functions init() and setup() of class SPHEquationOfStateIdealGas are called
     // in SetUp() and thus implicitly tested by all following unittests
   };
 

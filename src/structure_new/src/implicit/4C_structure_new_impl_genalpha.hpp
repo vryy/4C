@@ -42,7 +42,7 @@ namespace STR
       GenAlpha();
 
       //! Setup the class variables
-      void Setup() override;
+      void setup() override;
 
       //! (derived)
       void post_setup() override;

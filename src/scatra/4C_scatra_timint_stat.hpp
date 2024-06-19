@@ -30,7 +30,7 @@ namespace ScaTra
 
 
     /// initialize time integration scheme
-    void Init() override;
+    void init() override;
 
     /// compute values at intermediate time steps (required for generalized-alpha)
     void compute_intermediate_values() override { return; };
@@ -41,11 +41,11 @@ namespace ScaTra
     ///  compute scalar time derivate parameters of the input voltage
     void compute_time_deriv_pot0(const bool init) override { return; };
 
-    void Setup() override;
+    void setup() override;
 
     /// Update the solution after convergence of the nonlinear iteration.
     /// Current solution becomes old solution of next timestep.
-    void Update() override;
+    void update() override;
 
     /// read restart data
     void read_restart(

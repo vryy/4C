@@ -70,7 +70,7 @@ void ScaTra::HeterogeneousReactionStrategy::EvaluateMeshtying()
         scatratimint_->discretization()->GetState(scatratimint_->NdsDisp(), "dispnp"));
   }
 
-  discret_->Evaluate(condparams, scatratimint_->SystemMatrix(), scatratimint_->Residual());
+  discret_->evaluate(condparams, scatratimint_->SystemMatrix(), scatratimint_->Residual());
 
   // now we clear all states.
   // it would be nicer to do this directly before all
@@ -89,7 +89,7 @@ void ScaTra::HeterogeneousReactionStrategy::EvaluateMeshtying()
  *----------------------------------------------------------------------*/
 void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
 {
-  // call Init() of base class
+  // call init() of base class
   ScaTra::MeshtyingStrategyStd::setup_meshtying();
 
   // make sure we set up everything properly
@@ -172,7 +172,7 @@ void ScaTra::HeterogeneousReactionStrategy::InitMeshtying()
 {
   set_is_setup(false);
 
-  // call Init() of base class
+  // call init() of base class
   ScaTra::MeshtyingStrategyStd::InitMeshtying();
 
   set_is_init(true);

@@ -229,7 +229,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::PhaseManagerCore(
       numfluidphases_(numfluidphases),
       numvolfrac_(
           (int)((totalnumdofpernode - numfluidphases) /
-                2)),  // note: check is performed in Mat::PAR::FluidPoroMultiPhase::Initialize()
+                2)),  // note: check is performed in Mat::PAR::FluidPoroMultiPhase::initialize()
       genpressure_(numfluidphases, 0.0),
       volfrac_(numvolfrac_, 0.0),
       volfracpressure_(numvolfrac_, 0.0),
@@ -276,7 +276,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::PhaseManagerCore(const Ph
 /*----------------------------------------------------------------------*
  | setup                                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::Setup(
+void Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::setup(
     const Core::Elements::Element* ele, const int matnum)
 {
   FOUR_C_ASSERT(ele != nullptr, "Element is null pointer for setup of phase manager!");
@@ -1021,11 +1021,11 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::PhaseManagerReaction(
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::Setup(
+void Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::setup(
     const Core::Elements::Element* ele, const int matnum)
 {
   // setup the wrapped class
-  phasemanager_->Setup(ele, matnum);
+  phasemanager_->setup(ele, matnum);
 
   // get material
   const Core::Mat::Material& material = *(phasemanager_->Element()->Material(matnum));
@@ -1345,11 +1345,11 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::PhaseManagerDif
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <int nsd>
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::Setup(
+void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::setup(
     const Core::Elements::Element* ele, const int matnum)
 {
   // setup the wrapped class
-  phasemanager_->Setup(ele, matnum);
+  phasemanager_->setup(ele, matnum);
 
   // get number of phases
   const int numfluidphases = phasemanager_->NumFluidPhases();
@@ -1383,7 +1383,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::Setup(
     constdynviscosity_[iphase] = singlephasemat.has_constant_viscosity();
 
     // TODO only isotropic, constant permeability for now
-    permeabilitytensors_[iphase].Clear();
+    permeabilitytensors_[iphase].clear();
     const double permeability = multiphasemat.Permeability();
     for (int i = 0; i < nsd; i++) (permeabilitytensors_[iphase])(i, i) = permeability;
   }
@@ -1398,7 +1398,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::Setup(
 
     constdynviscosityvolfracpress_[ivolfrac] = volfracpressmat.has_constant_viscosity();
     // clear
-    permeabilitytensorsvolfracpress_[ivolfrac].Clear();
+    permeabilitytensorsvolfracpress_[ivolfrac].clear();
 
     // TODO only isotropic, constant permeability for now
     const double permeability = volfracpressmat.Permeability();
@@ -1679,11 +1679,11 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::PhaseManagerVolFr
  | constructor                                         kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd>
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::Setup(
+void Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::setup(
     const Core::Elements::Element* ele, const int matnum)
 {
   // setup the wrapped class
-  phasemanager_->Setup(ele, matnum);
+  phasemanager_->setup(ele, matnum);
 
   const int totalnumdof = phasemanager_->TotalNumDof();
   const int numfluidphases = phasemanager_->NumFluidPhases();
@@ -1714,7 +1714,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::Setup(
             material, ivolfrac + numfluidphases);
 
     // clear
-    difftensorsvolfrac_[ivolfrac].Clear();
+    difftensorsvolfrac_[ivolfrac].clear();
 
     // TODO only isotropic, constant diffusivity for now
     const double diffusivity = singlevolfracmat.Diffusivity();

@@ -50,7 +50,7 @@ namespace Mat
         /// destructor
         virtual ~ReactionInterface() = default;
         /// initialization (to be called by derived classes)
-        virtual void Initialize(int numscal,     //!< number of scalars
+        virtual void initialize(int numscal,     //!< number of scalars
             const std::vector<double>& couprole  //!< coupling role vector
             ) = 0;
 
@@ -135,7 +135,7 @@ namespace Mat
             : reaction_(reaction), reacstart_(reacstart){};
 
         /// initialization
-        void Initialize(int numscal,             //!< number of scalars
+        void initialize(int numscal,             //!< number of scalars
             const std::vector<double>& couprole  //!< coupling role vector
             ) override;
 
@@ -194,11 +194,11 @@ namespace Mat
         ReactionWithPhiScaling(Teuchos::RCP<ReactionInterface> reaction) : reaction_(reaction){};
 
         /// initialization (to be called by derived classes)
-        void Initialize(int numscal,             //!< number of scalars
+        void initialize(int numscal,             //!< number of scalars
             const std::vector<double>& couprole  //!< coupling role vector
             ) override
         {
-          reaction_->Initialize(numscal, couprole);
+          reaction_->initialize(numscal, couprole);
         };
 
         /// check for initialization
@@ -275,7 +275,7 @@ namespace Mat
         ReactionBase() : isinit_(false){};
 
         /// initialization (to be called by derived classes)
-        void Initialize(int numscal,             //!< number of scalars
+        void initialize(int numscal,             //!< number of scalars
             const std::vector<double>& couprole  //!< coupling role vector
             ) override
         {
@@ -372,7 +372,7 @@ namespace Mat
         SimpleMultiplicative(){};
 
         /// initialization
-        void Initialize(int numscal,             //!< number of scalars
+        void initialize(int numscal,             //!< number of scalars
             const std::vector<double>& couprole  //!< coupling role vector
             ) override;
 
@@ -415,7 +415,7 @@ namespace Mat
         PowerMultiplicative(){};
 
         /// initialization
-        void Initialize(int numscal,             //!< number of scalars
+        void initialize(int numscal,             //!< number of scalars
             const std::vector<double>& couprole  //!< coupling role vector
             ) override;
 
@@ -457,7 +457,7 @@ namespace Mat
         Constant(){};
 
         /// initialization
-        void Initialize(int numscal,             //!< number of scalars
+        void initialize(int numscal,             //!< number of scalars
             const std::vector<double>& couprole  //!< coupling role vector
             ) override;
 
@@ -500,7 +500,7 @@ namespace Mat
         MichaelisMenten(){};
 
         /// initialization
-        void Initialize(int numscal,             //!< number of scalars
+        void initialize(int numscal,             //!< number of scalars
             const std::vector<double>& couprole  //!< coupling role vector
             ) override;
 
@@ -543,7 +543,7 @@ namespace Mat
         ByFunction(){};
 
         /// initialization
-        void Initialize(int numscal,             //!< number of scalars
+        void initialize(int numscal,             //!< number of scalars
             const std::vector<double>& couprole  //!< coupling role vector
             ) override;
 

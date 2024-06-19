@@ -121,7 +121,7 @@ namespace CONTACT
     /*!
     \brief Evaluate this contact element pair
     */
-    virtual bool Evaluate(
+    virtual bool evaluate(
         Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp) = 0;
 
     //! return appropriate internal implementation class (acts as a simple factory)
@@ -291,7 +291,7 @@ namespace CONTACT
     /*!
     \brief Evaluate this contact element pair
     */
-    bool Evaluate(
+    bool evaluate(
         Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp) override;
 
     /*!

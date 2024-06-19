@@ -68,7 +68,7 @@ namespace XFEM
     void Update(double scaling) override { return; }
 
     //! Write Output -- nothing to do here
-    void Output(Core::IO::DiscretizationWriter& writer) override { return; }
+    void output(Core::IO::DiscretizationWriter& writer) override { return; }
 
     //! Read Restart -- nothing to do here
     void read_restart(Core::IO::DiscretizationReader& reader) override { return; }

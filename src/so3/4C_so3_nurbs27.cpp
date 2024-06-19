@@ -33,7 +33,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Nurbs::SoNurbs27Type::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Nurbs::SoNurbs27(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -146,7 +146,7 @@ Core::FE::CellType Discret::ELEMENTS::Nurbs::SoNurbs27::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Nurbs::SoNurbs27::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Nurbs::SoNurbs27::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -154,7 +154,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::Pack(Core::Communication::PackBuffer& 
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  SoBase::Pack(data);
+  SoBase::pack(data);
 
   // detJ_
   add_to_pack(data, detJ_);
@@ -171,7 +171,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::Pack(Core::Communication::PackBuffer& 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Nurbs::SoNurbs27::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Nurbs::SoNurbs27::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -180,7 +180,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  SoBase::Unpack(basedata);
+  SoBase::unpack(basedata);
   // detJ_
   extract_from_pack(position, data, detJ_);
   // invJ_

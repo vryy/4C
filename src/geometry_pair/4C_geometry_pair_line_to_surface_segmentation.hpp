@@ -59,7 +59,7 @@ namespace GEOMETRYPAIR
      * @param element_data_surface (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    void Evaluate(const ElementData<line, scalar_type>& element_data_line,
+    void evaluate(const ElementData<line, scalar_type>& element_data_line,
         const ElementData<surface, scalar_type>& element_data_surface,
         std::vector<LineSegment<scalar_type>>& segments) const override;
   };

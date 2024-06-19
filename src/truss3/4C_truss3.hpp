@@ -46,7 +46,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
       static Truss3Type& Instance();
 
@@ -118,7 +118,7 @@ namespace Discret
 
       Core::Elements::ElementType& ElementType() const override { return Truss3Type::Instance(); }
 
-      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+      int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -176,7 +176,7 @@ namespace Discret
 
       int NumLine() const override { return 1; }
 
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override;
 
@@ -201,7 +201,7 @@ namespace Discret
 
       int UniqueParObjectId() const override { return Truss3Type::Instance().UniqueParObjectId(); }
 
-      void Unpack(const std::vector<char>& data) override;
+      void unpack(const std::vector<char>& data) override;
 
       //! coordinates of nodes in reference configuration
       const Core::LinAlg::Matrix<6, 1>& X() const { return x_; }

@@ -210,29 +210,29 @@ namespace
 
 Mat::PAR::MuscleGiantesio::MuscleGiantesio(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      alpha_(matdata.parameters.Get<double>("ALPHA")),
-      beta_(matdata.parameters.Get<double>("BETA")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
-      kappa_(matdata.parameters.Get<double>("KAPPA")),
-      omega0_(matdata.parameters.Get<double>("OMEGA0")),
-      Na_(matdata.parameters.Get<double>("ACTMUNUM")),
-      muTypesNum_(matdata.parameters.Get<int>("MUTYPESNUM")),
-      I_((matdata.parameters.Get<std::vector<double>>("INTERSTIM"))),
-      rho_((matdata.parameters.Get<std::vector<double>>("FRACACTMU"))),
-      F_((matdata.parameters.Get<std::vector<double>>("FTWITCH"))),
-      T_((matdata.parameters.Get<std::vector<double>>("TTWITCH"))),
-      lambdaMin_(matdata.parameters.Get<double>("LAMBDAMIN")),
-      lambdaOpt_(matdata.parameters.Get<double>("LAMBDAOPT")),
-      dotLambdaMMin_(matdata.parameters.Get<double>("DOTLAMBDAMIN")),
-      ke_(matdata.parameters.Get<double>("KE")),
-      kc_(matdata.parameters.Get<double>("KC")),
-      de_(matdata.parameters.Get<double>("DE")),
-      dc_(matdata.parameters.Get<double>("DC")),
-      actTimesNum_(matdata.parameters.Get<int>("ACTTIMESNUM")),
-      actTimes_((matdata.parameters.Get<std::vector<double>>("ACTTIMES"))),
-      actIntervalsNum_(matdata.parameters.Get<int>("ACTINTERVALSNUM")),
-      actValues_((matdata.parameters.Get<std::vector<double>>("ACTVALUES"))),
-      density_(matdata.parameters.Get<double>("DENS"))
+      alpha_(matdata.parameters.get<double>("ALPHA")),
+      beta_(matdata.parameters.get<double>("BETA")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
+      kappa_(matdata.parameters.get<double>("KAPPA")),
+      omega0_(matdata.parameters.get<double>("OMEGA0")),
+      Na_(matdata.parameters.get<double>("ACTMUNUM")),
+      muTypesNum_(matdata.parameters.get<int>("MUTYPESNUM")),
+      I_((matdata.parameters.get<std::vector<double>>("INTERSTIM"))),
+      rho_((matdata.parameters.get<std::vector<double>>("FRACACTMU"))),
+      F_((matdata.parameters.get<std::vector<double>>("FTWITCH"))),
+      T_((matdata.parameters.get<std::vector<double>>("TTWITCH"))),
+      lambdaMin_(matdata.parameters.get<double>("LAMBDAMIN")),
+      lambdaOpt_(matdata.parameters.get<double>("LAMBDAOPT")),
+      dotLambdaMMin_(matdata.parameters.get<double>("DOTLAMBDAMIN")),
+      ke_(matdata.parameters.get<double>("KE")),
+      kc_(matdata.parameters.get<double>("KC")),
+      de_(matdata.parameters.get<double>("DE")),
+      dc_(matdata.parameters.get<double>("DC")),
+      actTimesNum_(matdata.parameters.get<int>("ACTTIMESNUM")),
+      actTimes_((matdata.parameters.get<std::vector<double>>("ACTTIMES"))),
+      actIntervalsNum_(matdata.parameters.get<int>("ACTINTERVALSNUM")),
+      actValues_((matdata.parameters.get<std::vector<double>>("ACTVALUES"))),
+      density_(matdata.parameters.get<double>("DENS"))
 {
   // error handling for parameter ranges
   // passive material parameters
@@ -293,7 +293,7 @@ Mat::MuscleGiantesioType Mat::MuscleGiantesioType::instance_;
 Core::Communication::ParObject* Mat::MuscleGiantesioType::Create(const std::vector<char>& data)
 {
   auto* muscle_giantesio = new Mat::MuscleGiantesio();
-  muscle_giantesio->Unpack(data);
+  muscle_giantesio->unpack(data);
   return muscle_giantesio;
 }
 
@@ -332,7 +332,7 @@ Mat::MuscleGiantesio::MuscleGiantesio(Mat::PAR::MuscleGiantesio* params)
       Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-void Mat::MuscleGiantesio::Pack(Core::Communication::PackBuffer& data) const
+void Mat::MuscleGiantesio::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -351,7 +351,7 @@ void Mat::MuscleGiantesio::Pack(Core::Communication::PackBuffer& data) const
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::MuscleGiantesio::Unpack(const std::vector<char>& data)
+void Mat::MuscleGiantesio::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -388,7 +388,7 @@ void Mat::MuscleGiantesio::Unpack(const std::vector<char>& data)
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
-void Mat::MuscleGiantesio::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::MuscleGiantesio::setup(int numgp, Input::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
@@ -410,13 +410,13 @@ void Mat::MuscleGiantesio::Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int 
   lambda_m_old_ = Mat::UTILS::Muscle::FiberStretch(C, M);
 }
 
-void Mat::MuscleGiantesio::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
-  stress->Clear();
-  cmat->Clear();
+  stress->clear();
+  cmat->clear();
 
   // get passive material parameters
   const double alpha = params_->alpha_;
@@ -790,7 +790,7 @@ Core::LinAlg::Matrix<3, 3> Mat::MuscleGiantesio::d_act_def_grad_d_act_level(
   }
   else
   {
-    dFadomegaa.Clear();
+    dFadomegaa.clear();
   }
   return dFadomegaa;
 }
@@ -807,7 +807,7 @@ Core::LinAlg::Matrix<3, 3> Mat::MuscleGiantesio::dd_act_def_grad_dd_act_level(
   }
   else
   {
-    ddFaddomegaa.Clear();
+    ddFaddomegaa.clear();
   }
   return ddFaddomegaa;
 }

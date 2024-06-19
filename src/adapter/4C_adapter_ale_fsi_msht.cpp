@@ -23,7 +23,7 @@ Adapter::AleFsiMshtWrapper::AleFsiMshtWrapper(Teuchos::RCP<Ale> ale) : AleFsiWra
 {
   // create the FSI interface
   fsiinterface_ = Teuchos::rcp(new ALE::UTILS::FsiMapExtractor);
-  fsiinterface_->Setup(*discretization());
+  fsiinterface_->setup(*discretization());
 
   return;
 }

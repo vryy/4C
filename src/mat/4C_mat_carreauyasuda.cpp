@@ -23,12 +23,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::CarreauYasuda::CarreauYasuda(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      nu_0_(matdata.parameters.Get<double>("NU_0")),
-      nu_inf_(matdata.parameters.Get<double>("NU_INF")),
-      lambda_(matdata.parameters.Get<double>("LAMBDA")),
-      a_param_(matdata.parameters.Get<double>("APARAM")),
-      b_param_(matdata.parameters.Get<double>("BPARAM")),
-      density_(matdata.parameters.Get<double>("DENSITY"))
+      nu_0_(matdata.parameters.get<double>("NU_0")),
+      nu_inf_(matdata.parameters.get<double>("NU_INF")),
+      lambda_(matdata.parameters.get<double>("LAMBDA")),
+      a_param_(matdata.parameters.get<double>("APARAM")),
+      b_param_(matdata.parameters.get<double>("BPARAM")),
+      density_(matdata.parameters.get<double>("DENSITY"))
 {
 }
 
@@ -44,7 +44,7 @@ Mat::CarreauYasudaType Mat::CarreauYasudaType::instance_;
 Core::Communication::ParObject* Mat::CarreauYasudaType::Create(const std::vector<char>& data)
 {
   Mat::CarreauYasuda* carYas = new Mat::CarreauYasuda();
-  carYas->Unpack(data);
+  carYas->unpack(data);
   return carYas;
 }
 
@@ -60,7 +60,7 @@ Mat::CarreauYasuda::CarreauYasuda(Mat::PAR::CarreauYasuda* params) : params_(par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::CarreauYasuda::Pack(Core::Communication::PackBuffer& data) const
+void Mat::CarreauYasuda::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -76,7 +76,7 @@ void Mat::CarreauYasuda::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::CarreauYasuda::Unpack(const std::vector<char>& data)
+void Mat::CarreauYasuda::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

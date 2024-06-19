@@ -78,7 +78,7 @@ Arteries::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
       // Read in the artery number and the nodes assosiated with the
       // condition
       // ---------------------------------------------------------------
-      const int Artery_Number = myConditions[i]->parameters().Get<int>("ArteryNumber");
+      const int Artery_Number = myConditions[i]->parameters().get<int>("ArteryNumber");
       const std::vector<int>* nodes = myConditions[i]->GetNodes();
 
       // ---------------------------------------------------------------
@@ -96,7 +96,7 @@ Arteries::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
         if (nd->GetCondition("ArtInOutCond"))
         {
           std::string TerminalType =
-              (nd->GetCondition("ArtInOutCond")->parameters().Get<std::string>("terminaltype"));
+              (nd->GetCondition("ArtInOutCond")->parameters().get<std::string>("terminaltype"));
           if (TerminalType == "inlet")
             ndi = nd;
           else

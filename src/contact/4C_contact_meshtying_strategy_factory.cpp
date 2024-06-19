@@ -34,10 +34,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Mortar::STRATEGY::FactoryMT::Setup()
+void Mortar::STRATEGY::FactoryMT::setup()
 {
   check_init();
-  Mortar::STRATEGY::Factory::Setup();
+  Mortar::STRATEGY::Factory::setup();
 
   set_is_setup();
 
@@ -347,14 +347,14 @@ void Mortar::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
 
     // try to build meshtying group around this condition
     currentgroup.push_back(contactconditions[i]);
-    const int groupid1 = currentgroup[0]->parameters().Get<int>("Interface ID");
+    const int groupid1 = currentgroup[0]->parameters().get<int>("Interface ID");
     bool foundit = false;
 
     for (int j = 0; j < (int)contactconditions.size(); ++j)
     {
       if (j == i) continue;  // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
-      const int groupid2 = tempcond->parameters().Get<int>("Interface ID");
+      const int groupid2 = tempcond->parameters().get<int>("Interface ID");
 
       if (groupid1 != groupid2) continue;  // not in the group
       foundit = true;                      // found a group entry
@@ -388,7 +388,7 @@ void Mortar::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
 
     for (int j = 0; j < (int)sides.size(); ++j)
     {
-      sides[j] = &currentgroup[j]->parameters().Get<std::string>("Side");
+      sides[j] = &currentgroup[j]->parameters().get<std::string>("Side");
       if (*sides[j] == "Slave")
       {
         hasslave = true;
@@ -414,7 +414,7 @@ void Mortar::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
 
     for (int j = 0; j < (int)sides.size(); ++j)
     {
-      active[j] = &currentgroup[j]->parameters().Get<std::string>("Initialization");
+      active[j] = &currentgroup[j]->parameters().get<std::string>("Initialization");
       if (*sides[j] == "Slave")
       {
         // slave sides must be initialized as "Active"
@@ -506,7 +506,7 @@ void Mortar::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
           if (contactSymconditions.at(j)->ContainsNode(node->Id()))
           {
             const auto& onoff =
-                contactSymconditions.at(j)->parameters().Get<std::vector<int>>("onoff");
+                contactSymconditions.at(j)->parameters().get<std::vector<int>>("onoff");
             for (unsigned k = 0; k < onoff.size(); k++)
               if (onoff.at(k) == 1) mtnode->DbcDofs()[k] = true;
           }

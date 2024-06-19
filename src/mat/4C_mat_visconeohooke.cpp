@@ -27,12 +27,12 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::ViscoNeoHooke::ViscoNeoHooke(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_slow_(matdata.parameters.Get<double>("YOUNGS_SLOW")),
-      poisson_(matdata.parameters.Get<double>("POISSON")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      youngs_fast_(matdata.parameters.Get<double>("YOUNGS_FAST")),
-      relax_(matdata.parameters.Get<double>("RELAX")),
-      theta_(matdata.parameters.Get<double>("THETA"))
+      youngs_slow_(matdata.parameters.get<double>("YOUNGS_SLOW")),
+      poisson_(matdata.parameters.get<double>("POISSON")),
+      density_(matdata.parameters.get<double>("DENS")),
+      youngs_fast_(matdata.parameters.get<double>("YOUNGS_FAST")),
+      relax_(matdata.parameters.get<double>("RELAX")),
+      theta_(matdata.parameters.get<double>("THETA"))
 {
 }
 
@@ -48,7 +48,7 @@ Mat::ViscoNeoHookeType Mat::ViscoNeoHookeType::instance_;
 Core::Communication::ParObject* Mat::ViscoNeoHookeType::Create(const std::vector<char>& data)
 {
   Mat::ViscoNeoHooke* visco = new Mat::ViscoNeoHooke();
-  visco->Unpack(data);
+  visco->unpack(data);
   return visco;
 }
 
@@ -75,7 +75,7 @@ Mat::ViscoNeoHooke::ViscoNeoHooke(Mat::PAR::ViscoNeoHooke* params) : params_(par
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoNeoHooke::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ViscoNeoHooke::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -111,7 +111,7 @@ void Mat::ViscoNeoHooke::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoNeoHooke::Unpack(const std::vector<char>& data)
+void Mat::ViscoNeoHooke::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -165,7 +165,7 @@ void Mat::ViscoNeoHooke::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Initialise/allocate internal stress variables (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoNeoHooke::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ViscoNeoHooke::setup(int numgp, Input::LineDefinition* linedef)
 {
   histstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
   artstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
@@ -197,7 +197,7 @@ void Mat::ViscoNeoHooke::Setup(int numgp, Input::LineDefinition* linedef)
 /*----------------------------------------------------------------------*
  |  Update internal stress variables              (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoNeoHooke::Update()
+void Mat::ViscoNeoHooke::update()
 {
   histstresslast_ = histstresscurr_;
   artstresslast_ = artstresscurr_;
@@ -219,7 +219,7 @@ void Mat::ViscoNeoHooke::Update()
 /*----------------------------------------------------------------------*
  |  Evaluate Material                             (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoNeoHooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ViscoNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, const int gp, const int eleGID)

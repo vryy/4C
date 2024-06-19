@@ -46,7 +46,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      */
-    void Init();
+    void init();
 
     /*!
      * \brief setup particle container
@@ -56,7 +56,7 @@ namespace PARTICLEENGINE
      * \param[in] containersize size of particle container
      * \param[in] stateset      set of particle states to be stored
      */
-    void Setup(int containersize, const std::set<ParticleState>& stateset);
+    void setup(int containersize, const std::set<ParticleState>& stateset);
 
     //! \name manipulate container size
     //! @{

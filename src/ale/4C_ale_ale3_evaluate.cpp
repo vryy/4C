@@ -93,7 +93,7 @@ Discret::ELEMENTS::Ale3Impl<distype>* Discret::ELEMENTS::Ale3Impl<distype>::Inst
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Ale3::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -226,7 +226,7 @@ int Discret::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
       if (so3mat->MaterialType() == Core::Materials::m_elasthyper)
       {
         so3mat = Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(mat, true);
-        so3mat->Setup(0, nullptr);
+        so3mat->setup(0, nullptr);
       }
       break;  // no setup for St-Venant
     }
@@ -1531,7 +1531,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
     Core::LinAlg::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> fixed_defgrd(defgrd);
     Teuchos::RCP<Mat::So3Material> so3mat =
         Teuchos::rcp_dynamic_cast<Mat::So3Material>(ele->Material());
-    so3mat->Evaluate(&fixed_defgrd, &glstrain_f, params, &stress_f, &cmat_f, iquad, ele->Id());
+    so3mat->evaluate(&fixed_defgrd, &glstrain_f, params, &stress_f, &cmat_f, iquad, ele->Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)

@@ -123,7 +123,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::CalcFluxInDomain()
 
   // evaluate flux vector field inside the whole computational domain (e.g., for visualization of
   // particle path lines)
-  discret_->Evaluate(params, Teuchos::null, Teuchos::null, Teuchos::rcp((*flux)(0), false),
+  discret_->evaluate(params, Teuchos::null, Teuchos::null, Teuchos::rcp((*flux)(0), false),
       Teuchos::rcp((*flux)(1), false), Teuchos::rcp((*flux)(2), false));
 
   if (calcflux_domain_lumped_)
@@ -140,7 +140,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::CalcFluxInDomain()
         Teuchos::rcp(new Core::LinAlg::IntSerialDenseVector(NumDofPerNode()));
     dofids->putScalar(1);  // integrate shape functions for all dofs
     params.set("dofids", dofids);
-    discret_->Evaluate(
+    discret_->evaluate(
         params, Teuchos::null, Teuchos::null, integratedshapefcts, Teuchos::null, Teuchos::null);
 
     // insert values into final flux vector for visualization
@@ -163,7 +163,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::CalcFluxInDomain()
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(dofrowmap, 27, false));
 
     // call loop over elements
-    discret_->Evaluate(params, massmatrix, Teuchos::null);
+    discret_->evaluate(params, massmatrix, Teuchos::null);
 
     // finalize global mass matrix
     massmatrix->Complete();
@@ -175,7 +175,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::CalcFluxInDomain()
     solver_->Solve(massmatrix->EpetraOperator(), flux_projected, flux, solver_params);
 
     // reset solver
-    solver_->Reset();
+    solver_->reset();
   }
 
   return flux_projected;
@@ -250,7 +250,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
       {
         // call standard loop over elements
-        discret_->Evaluate(
+        discret_->evaluate(
             eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
       }
 
@@ -401,7 +401,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::CalcFluxAtBoundary(
           solver_params);
 
       // reset solver
-      solver_->Reset();
+      solver_->reset();
 
       // overwrite action in parameter list
       Core::UTILS::AddEnumClassToParameterList<ScaTra::BoundaryAction>(
@@ -620,7 +620,7 @@ void ScaTra::ScaTraTimIntImpl::calc_initial_time_derivative()
   add_time_integration_specific_vectors();
 
   // modify global system of equations as explained above
-  discret_->Evaluate(eleparams, sysmat_, residual_);
+  discret_->evaluate(eleparams, sysmat_, residual_);
 
   // apply condensation to global system of equations if necessary
   strategy_->CondenseMatAndRHS(sysmat_, residual_, true);
@@ -662,10 +662,10 @@ void ScaTra::ScaTraTimIntImpl::calc_initial_time_derivative()
 
   // reset global system matrix and its graph, since we solved a very special problem with a special
   // sparsity pattern
-  sysmat_->Reset();
+  sysmat_->reset();
 
   // reset solver
-  solver_->Reset();
+  solver_->reset();
 
   // reset true residual vector computed during assembly of the standard global system of equations,
   // since not yet needed
@@ -1215,7 +1215,7 @@ void ScaTra::ScaTraTimIntImpl::output_flux(Teuchos::RCP<Epetra_MultiVector> flux
 {
   // safety checks
   if (flux == Teuchos::null)
-    FOUR_C_THROW("Null pointer for flux vector output. Output() called before Update() ??");
+    FOUR_C_THROW("Null pointer for flux vector output. output() called before update() ??");
   if (fluxtype != "domain" and fluxtype != "boundary")
     FOUR_C_THROW("Unknown flux type. Must be either 'domain' or 'boundary'!");
 
@@ -1294,7 +1294,7 @@ void ScaTra::ScaTraTimIntImpl::OutputIntegrReac(const int num)
         Teuchos::rcp(new std::vector<double>(NumScal(), 0.0));
     eleparams.set<Teuchos::RCP<std::vector<double>>>("local reaction integral", myreacnp);
 
-    discret_->Evaluate(eleparams);
+    discret_->evaluate(eleparams);
 
     myreacnp = eleparams.get<Teuchos::RCP<std::vector<double>>>("local reaction integral");
     // global integral of reaction terms
@@ -1376,7 +1376,7 @@ void ScaTra::ScaTraTimIntImpl::av_m3_preparation()
   add_time_integration_specific_vectors();
 
   // call loop over elements
-  discret_->Evaluate(eleparams, sysmat_sd_, residual_);
+  discret_->evaluate(eleparams, sysmat_sd_, residual_);
 
   // finalize the normalized all-scale subgrid-diffusivity matrix
   sysmat_sd_->Complete();
@@ -1628,7 +1628,7 @@ void ScaTra::ScaTraTimIntImpl::recompute_mean_csgs_b()
       ele->LocationVector(*discret_, la, false);
 
       // call the element evaluate method to integrate functions
-      int err = ele->Evaluate(myparams, *discret_, la, emat1, emat2, evec1, evec2, evec2);
+      int err = ele->evaluate(myparams, *discret_, la, emat1, emat2, evec1, evec2, evec2);
       if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", myrank_, ele->Id(), err);
 
       // get contributions of this element and add it up
@@ -1664,7 +1664,7 @@ void ScaTra::ScaTraTimIntImpl::recompute_mean_csgs_b()
         "action", ScaTra::Action::set_mean_Cai, myparams);
     myparams.set<double>("meanCai", meanCai);
     // call standard loop over elements
-    discret_->Evaluate(
+    discret_->evaluate(
         myparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 }
@@ -2219,14 +2219,14 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
       for (unsigned icond = 0; icond < ncond; ++icond)
       {
         // extract condition ID
-        const int condid = relerrorconditions[icond]->parameters().Get<int>("ConditionID");
+        const int condid = relerrorconditions[icond]->parameters().get<int>("ConditionID");
 
         // create element parameter list for error calculation
         Teuchos::ParameterList eleparams;
         Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
             "action", ScaTra::Action::calc_error, eleparams);
         eleparams.set<int>("calcerrorflag", Inpar::ScaTra::calcerror_byfunction);
-        const int errorfunctnumber = relerrorconditions[icond]->parameters().Get<int>("FunctionID");
+        const int errorfunctnumber = relerrorconditions[icond]->parameters().get<int>("FunctionID");
         if (errorfunctnumber < 1) FOUR_C_THROW("Invalid function number for error calculation!");
         eleparams.set<int>("error function number", errorfunctnumber);
 
@@ -2286,7 +2286,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
             for (unsigned icond = 0; icond < ncond; ++icond)
             {
               // extract condition ID
-              const int condid = relerrorconditions[icond]->parameters().Get<int>("ConditionID");
+              const int condid = relerrorconditions[icond]->parameters().get<int>("ConditionID");
 
               // extend headline
               f << " rel. L2-error in domain " << condid << " | rel. H1-error in domain " << condid
@@ -2308,7 +2308,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
           for (unsigned icond = 0; icond < ncond; ++icond)
           {
             // extract condition ID
-            const int condid = relerrorconditions[icond]->parameters().Get<int>("ConditionID");
+            const int condid = relerrorconditions[icond]->parameters().get<int>("ConditionID");
 
             // extend error line
             f << " " << (*relerrors_)[condid * NumDofPerNode() * 2 + k * 2] << " "
@@ -2408,7 +2408,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_initial_time_derivative(
   // add state vectors according to time integration scheme
   add_time_integration_specific_vectors();
   // modify global system of equations as explained above
-  discret_->Evaluate(eleparams, matrix, rhs);
+  discret_->evaluate(eleparams, matrix, rhs);
 
   // finalize assembly of global mass matrix
   matrix->Complete();
@@ -2487,7 +2487,7 @@ void ScaTra::OutputScalarsStrategyBase::output_total_and_mean_scalars(
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void ScaTra::OutputScalarsStrategyBase::Init(const ScaTraTimIntImpl* const scatratimint)
+void ScaTra::OutputScalarsStrategyBase::init(const ScaTraTimIntImpl* const scatratimint)
 {
   myrank_ = scatratimint->myrank_;
 
@@ -2669,7 +2669,7 @@ void ScaTra::OutputScalarsStrategyCondition::init_strategy_specific(
   for (auto* condition : conditions_)
   {
     // extract condition ID
-    const int condid = condition->parameters().Get<int>("ConditionID");
+    const int condid = condition->parameters().get<int>("ConditionID");
 
     // determine the number of dofs on the current condition
     const int numdofpernode = scatratimint->scalarhandler_->num_dof_per_node_in_condition(
@@ -2724,7 +2724,7 @@ void ScaTra::OutputScalarsStrategyCondition::init_strategy_specific(
 /*--------------------------------------------------------------------------------------*
  |  Initialize output class                                            kremheller 11/19 |
  *--------------------------------------------------------------------------------------*/
-void ScaTra::OutputDomainIntegralStrategy::Init(const ScaTraTimIntImpl* const scatratimint)
+void ScaTra::OutputDomainIntegralStrategy::init(const ScaTraTimIntImpl* const scatratimint)
 {
   // extract conditions for calculation of total and mean values of transported scalars
   scatratimint->discretization()->GetCondition("DomainIntegral", conditionsdomain_);
@@ -2752,7 +2752,7 @@ void ScaTra::OutputScalarsStrategyCondition::print_to_screen()
     for (auto* condition : conditions_)
     {
       // extract condition ID
-      const int condid = condition->parameters().Get<int>("ConditionID");
+      const int condid = condition->parameters().get<int>("ConditionID");
 
       // determine the number of dofs on the current condition
       const int numdofpernode = numdofpernodepercondition_[condid];
@@ -2789,7 +2789,7 @@ ScaTra::OutputScalarsStrategyCondition::prepare_csv_output()
   for (auto* condition : conditions_)
   {
     // extract condition ID
-    const int condid = condition->parameters().Get<int>("ConditionID");
+    const int condid = condition->parameters().get<int>("ConditionID");
 
     FOUR_C_ASSERT(
         runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
@@ -2929,7 +2929,7 @@ void ScaTra::OutputScalarsStrategyCondition::evaluate_integrals(
   for (auto* condition : conditions_)
   {
     // extract condition ID
-    const int condid = condition->parameters().Get<int>("ConditionID");
+    const int condid = condition->parameters().get<int>("ConditionID");
 
     // determine the number of dofs on the current condition
     const int numdofpernode = numdofpernodepercondition_[condid];
@@ -3018,7 +3018,7 @@ void ScaTra::OutputScalarsStrategyDomainAndCondition::evaluate_integrals(
 /*----------------------------------------------------------------------*
  |  set up handler class                                   vuong   04/16|
  *----------------------------------------------------------------------*/
-void ScaTra::ScalarHandler::Setup(const ScaTraTimIntImpl* const scatratimint)
+void ScaTra::ScalarHandler::setup(const ScaTraTimIntImpl* const scatratimint)
 {
   // save reference to discretization for convenience
   const Teuchos::RCP<Core::FE::Discretization>& discret = scatratimint->discretization();
@@ -3145,7 +3145,7 @@ int ScaTra::ScalarHandler::NumDofPerNode() const
  *-----------------------------------------------------------------------------*/
 void ScaTra::ScalarHandler::check_is_setup() const
 {
-  if (not issetup_) FOUR_C_THROW("ScalarHanlder is not set up. Call Setup() first.");
+  if (not issetup_) FOUR_C_THROW("ScalarHanlder is not set up. Call setup() first.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -249,10 +249,10 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
-  const auto* func = &condition.parameters().Get<std::vector<int>>("funct");
-  const std::string* type = &condition.parameters().Get<std::string>("type");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
+  const auto* func = &condition.parameters().get<std::vector<int>>("funct");
+  const std::string* type = &condition.parameters().get<std::string>("type");
 
   // get time factor for Neumann term
   const double timefac = fldparatimint_->TimeFacRhs();
@@ -449,11 +449,11 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
             // evaluate function at current gauss point
             functfac = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                           .Evaluate(coordgpref, time, idim);
+                           .evaluate(coordgpref, time, idim);
             if (fldparatimint_->is_new_ost_implementation())
               functfacn = Global::Problem::Instance()
                               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .Evaluate(coordgpref, time - fldparatimint_->Dt(), idim);
+                              .evaluate(coordgpref, time - fldparatimint_->Dt(), idim);
           }
           else
           {
@@ -488,11 +488,11 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
             // evaluate function at current gauss point
             functfac = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                           .Evaluate(coordgpref, time, idim);
+                           .evaluate(coordgpref, time, idim);
             if (fldparatimint_->is_new_ost_implementation())
               functfacn = Global::Problem::Instance()
                               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .Evaluate(coordgpref, time - fldparatimint_->Dt(), idim);
+                              .evaluate(coordgpref, time - fldparatimint_->Dt(), idim);
           }
           else
           {

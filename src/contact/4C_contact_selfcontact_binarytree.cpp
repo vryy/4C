@@ -438,10 +438,10 @@ CONTACT::SelfBinaryTree::SelfBinaryTree(Core::FE::Discretization& discret,
 /*----------------------------------------------------------------------*
  | initialize the self binary tree                         schmidt 12/18|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::Init()
+void CONTACT::SelfBinaryTree::init()
 {
   // call initialization method of the base class
-  Mortar::BaseBinaryTree::Init();
+  Mortar::BaseBinaryTree::init();
 
   // initialize internal variables
   init_internal_variables();

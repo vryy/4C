@@ -35,7 +35,7 @@ Adapter::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> xfluidfluid, Teuchos::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidFluidFSI::Init()
+void Adapter::FluidFluidFSI::init()
 {
   // determine the type of monolithic approach
   const Teuchos::ParameterList& xfluiddyn = params_->sublist("XFLUID DYNAMIC/GENERAL");
@@ -59,7 +59,7 @@ void Adapter::FluidFluidFSI::Init()
   // (to distinguish between FSI interface DOF / merged inner embedded & background fluid DOF)
   mergedfluidinterface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
   // call base class init
-  FluidFSI::Init();
+  FluidFSI::init();
 }
 
 /*----------------------------------------------------------------------*/
@@ -97,7 +97,7 @@ void Adapter::FluidFluidFSI::Solve()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidFluidFSI::Update()
+void Adapter::FluidFluidFSI::update()
 {
   if (Interface()->FSICondRelevant() && IsAleRelaxationStep(Step()) &&
       (monolithic_approach_ == Inpar::XFEM::XFFSI_FixedALE_Partitioned ||
@@ -125,7 +125,7 @@ void Adapter::FluidFluidFSI::Update()
     prepare_shape_derivatives();
   }
 
-  FluidWrapper::Update();
+  FluidWrapper::update();
 }
 
 /*----------------------------------------------------------------------*/
@@ -168,7 +168,7 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Adapter::FluidFluidFSI::BlockS
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Adapter::FluidFluidFSI::Evaluate(
+void Adapter::FluidFluidFSI::evaluate(
     Teuchos::RCP<const Epetra_Vector> stepinc  ///< solution increment between time step n and n+1
 )
 {
@@ -176,9 +176,9 @@ void Adapter::FluidFluidFSI::Evaluate(
     *xfluidfluid_->write_access_disp_old_state() = *fluidimpl_->Dispnp();
 
   // call the usual routine
-  xfluidfluid_->Evaluate(stepinc);
+  xfluidfluid_->evaluate(stepinc);
 
-  // for fixed ALE approach, we only refresh the global fluid map extractor in Update()
+  // for fixed ALE approach, we only refresh the global fluid map extractor in update()
   if (monolithic_approach_ != Inpar::XFEM::XFFSI_Full_Newton) return;
 
   // this is the case of a full Newton approach: update the map extractor, as fluid DOFs possibly
@@ -282,7 +282,7 @@ void Adapter::FluidFluidFSI::setup_interface(const int nds_master)
   Teuchos::RCP<const Epetra_Map> xfluidmap =
       xfluidfluid_->x_fluid_fluid_map_extractor()->XFluidMap();
   // do the setup
-  mergedfluidinterface_->Setup(xfluidmap, *FluidFSI::Interface());
+  mergedfluidinterface_->setup(xfluidmap, *FluidFSI::Interface());
 
   return;
 }

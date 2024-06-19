@@ -119,7 +119,7 @@ namespace FLD
     \brief initialization
 
     */
-    void Init() override;
+    void init() override;
 
     /*!
     \brief initialization of nonlinear BCs
@@ -412,7 +412,7 @@ namespace FLD
 
       Monolithic FSI needs to access the linear fluid problem.
     */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    void evaluate(Teuchos::RCP<const Epetra_Vector>
             stepinc  ///< solution increment between time step n and n+1
         ) override;
 
@@ -438,7 +438,7 @@ namespace FLD
     virtual void time_update_external_forces();
 
     /// Implement Adapter::Fluid
-    void Update() override { TimeUpdate(); }
+    void update() override { TimeUpdate(); }
 
     //! @name Time step size adaptivity in monolithic FSI
     //@{
@@ -531,7 +531,7 @@ namespace FLD
     \brief update configuration and output to file/screen
 
     */
-    void Output() override;
+    void output() override;
 
     /*
      * \brief Write fluid runtime output
@@ -573,7 +573,7 @@ namespace FLD
         Teuchos::RCP<const Epetra_Vector> velpres) override;
 
     /// Reset state vectors
-    void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
+    void reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
 
     /*!
     \brief calculate error between a analytical solution and the
@@ -1429,7 +1429,7 @@ namespace FLD
     ///< Evaluate mass matrix
     virtual void evaluate_mass_matrix();
 
-    /// mass matrix (not involved in standard Evaluate() since it is invluded in #sysmat_)
+    /// mass matrix (not involved in standard evaluate() since it is invluded in #sysmat_)
     Teuchos::RCP<Core::LinAlg::SparseOperator> massmat_;
 
     /// output stream for energy-file

@@ -65,36 +65,36 @@ namespace STR
     Hand in all objects/parameters/etc. from outside.
     Construct and manipulate internal objects.
 
-    \note Try to only perform actions in Init(), which are still valid
+    \note Try to only perform actions in init(), which are still valid
           after parallel redistribution of discretizations.
           If you have to perform an action depending on the parallel
           distribution, make sure you adapt the affected objects after
           parallel redistribution.
           Example: cloning a discretization from another discretization is
-          OK in Init(...). However, after redistribution of the source
+          OK in init(...). However, after redistribution of the source
           discretization do not forget to also redistribute the cloned
           discretization.
           All objects relying on the parallel distribution are supposed to
-          the constructed in \ref Setup().
+          the constructed in \ref setup().
 
     \warning none
     \return bool
     \date 08/16
     \author rauch  */
-    void Init(const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& sdynparams,
+    void init(const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& sdynparams,
         const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
         Teuchos::RCP<Core::LinAlg::Solver> solver) override;
 
     /*! \brief Setup all class internal objects and members
 
-     Setup() is not supposed to have any input arguments !
+     setup() is not supposed to have any input arguments !
 
-     Must only be called after Init().
+     Must only be called after init().
 
      Construct all objects depending on the parallel distribution and
      relying on valid maps like, e.g. the state vectors, system matrices, etc.
 
-     Call all Setup() routines on previously initialized internal objects and members.
+     Call all setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
           Otherwise, e.g. vectors may have wrong maps.
@@ -103,7 +103,7 @@ namespace STR
     \return void
     \date 08/16
     \author rauch  */
-    void Setup() override;
+    void setup() override;
 
     //@}
 
@@ -246,12 +246,12 @@ namespace STR
     }
 
     //!  Evaluate routine for coupled problems with monolithic approach
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc  ///< iterative solution increment
+    void evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc  ///< iterative solution increment
         ) override
     {
       FOUR_C_THROW(
           "All monolithically coupled problems work with implicit time "
-          "integration schemes. Thus, calling Evaluate() in an explicit scheme "
+          "integration schemes. Thus, calling evaluate() in an explicit scheme "
           "is not possible.");
     }
 
@@ -263,7 +263,7 @@ namespace STR
     );
 
     /// has to be renamed either here or print_step()
-    void Output(bool forced_writerestart) override
+    void output(bool forced_writerestart) override
     {
       OutputStep(forced_writerestart);
       // write Gmsh output
@@ -272,7 +272,7 @@ namespace STR
     }
 
     /// has to be renamed either here or update_step_state() /UpdateStepStateElement()
-    void Update() override
+    void update() override
     {
       PreUpdate();
       UpdateStepState();

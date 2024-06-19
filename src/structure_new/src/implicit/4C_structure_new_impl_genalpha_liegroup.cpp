@@ -36,7 +36,7 @@ STR::IMPLICIT::GenAlphaLieGroup::GenAlphaLieGroup() : accn_mod_(Teuchos::null)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::Setup()
+void STR::IMPLICIT::GenAlphaLieGroup::setup()
 {
   check_init();
 
@@ -45,8 +45,8 @@ void STR::IMPLICIT::GenAlphaLieGroup::Setup()
   // ---------------------------------------------------------------------------
   accn_mod_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view(), true));
 
-  // Call the Setup() of the parent GenAlpha class
-  GenAlpha::Setup();
+  // Call the setup() of the parent GenAlpha class
+  GenAlpha::setup();
 }
 
 /*----------------------------------------------------------------------------*

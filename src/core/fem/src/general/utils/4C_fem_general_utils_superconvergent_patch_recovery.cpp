@@ -141,7 +141,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
 
     // call the element specific evaluate method (elevec1 = velocity gradient, elevec2 = element
     // centroid)
-    actele->Evaluate(params, dis, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);
+    actele->evaluate(params, dis, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);
 
     // store computed values (e.g. velocity gradient) for each element
     for (int j = 0; j < numvec; ++j)
@@ -218,8 +218,8 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           static Core::LinAlg::Matrix<dimp, 1> x;
           static Core::LinAlg::Matrix<dimp, 1> b;
 
-          A.Clear();
-          b.Clear();
+          A.clear();
+          b.clear();
 
           // loop over all surrounding elements
           for (int k = 0; k < numadjacent; ++k)
@@ -285,8 +285,8 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           static Core::LinAlg::Matrix<dimp, 1> x;
           static Core::LinAlg::Matrix<dimp, 1> b;
 
-          A.Clear();
-          b.Clear();
+          A.clear();
+          b.clear();
 
           // loop over all surrounding elements
           for (size_t s = 0; s < adjacenteles.size(); ++s)
@@ -378,8 +378,8 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           static Core::LinAlg::Matrix<dimp, 1> x;
           static Core::LinAlg::Matrix<dimp, 1> b;
 
-          A.Clear();
-          b.Clear();
+          A.clear();
+          b.clear();
 
           // loop over all surrounding elements
           for (int k = 0; k < numadjacent; ++k)
@@ -515,8 +515,8 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           static Core::LinAlg::Matrix<dimp, 1> x;
           static Core::LinAlg::Matrix<dimp, 1> b;
 
-          A.Clear();
-          b.Clear();
+          A.clear();
+          b.clear();
 
           // loop over all surrounding elements
           for (size_t s = 0; s < closestnodeadjacenteles.size(); ++s)

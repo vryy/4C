@@ -41,7 +41,7 @@ namespace Discret
       RedAirBloodScatraLine3ImplInterface() {}
       /// Empty destructor
       virtual ~RedAirBloodScatraLine3ImplInterface() = default;  /// Evaluate the element
-      virtual int Evaluate(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
+      virtual int evaluate(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -106,7 +106,7 @@ namespace Discret
       /*!
         The evaluate function for the general acinus case.
        */
-      int Evaluate(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
+      int evaluate(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

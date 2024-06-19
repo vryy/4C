@@ -37,10 +37,10 @@ namespace ParticleInteraction
     virtual ~DEMContactTangentialBase() = default;
 
     //! init tangential contact handler
-    virtual void Init();
+    virtual void init();
 
     //! setup tangential contact handler
-    virtual void Setup(const double& k_normal);
+    virtual void setup(const double& k_normal);
 
     //! set current step size
     virtual void set_current_step_size(const double currentstepsize) final;
@@ -70,10 +70,10 @@ namespace ParticleInteraction
     explicit DEMContactTangentialLinearSpringDamp(const Teuchos::ParameterList& params);
 
     //! init tangential contact handler
-    void Init() override;
+    void init() override;
 
     //! setup tangential contact handler
-    void Setup(const double& k_normal) override;
+    void setup(const double& k_normal) override;
 
     //! calculate tangential contact force
     void tangential_contact_force(double* gap_tangential, bool& stick_tangential,

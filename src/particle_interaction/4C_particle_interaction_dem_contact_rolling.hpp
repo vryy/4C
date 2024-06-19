@@ -37,10 +37,10 @@ namespace ParticleInteraction
     virtual ~DEMContactRollingBase() = default;
 
     //! init rolling contact handler
-    virtual void Init();
+    virtual void init();
 
     //! setup rolling contact handler
-    virtual void Setup(const double& k_normal);
+    virtual void setup(const double& k_normal);
 
     //! set current step size
     virtual void set_current_step_size(const double currentstepsize) final;
@@ -87,10 +87,10 @@ namespace ParticleInteraction
     explicit DEMContactRollingViscous(const Teuchos::ParameterList& params);
 
     //! init rolling contact handler
-    void Init() override;
+    void init() override;
 
     //! setup rolling contact handler
-    void Setup(const double& k_normal) override;
+    void setup(const double& k_normal) override;
 
     //! calculate effective radius
     void effective_radius_particle(const double* radius_i, const double* radius_j,
@@ -125,7 +125,7 @@ namespace ParticleInteraction
     explicit DEMContactRollingCoulomb(const Teuchos::ParameterList& params);
 
     //! setup rolling contact handler
-    void Setup(const double& k_normal) override;
+    void setup(const double& k_normal) override;
 
     //! calculate effective radius
     void effective_radius_particle(const double* radius_i, const double* radius_j,

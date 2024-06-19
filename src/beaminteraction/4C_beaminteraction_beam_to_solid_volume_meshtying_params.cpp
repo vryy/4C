@@ -36,7 +36,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingPar
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::init()
 {
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_to_solid_contact_params_list =
@@ -85,8 +85,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
   {
     output_params_ptr_ = Teuchos::rcp<BeamToSolidVolumeMeshtyingVisualizationOutputParams>(
         new BeamToSolidVolumeMeshtyingVisualizationOutputParams());
-    output_params_ptr_->Init();
-    output_params_ptr_->Setup();
+    output_params_ptr_->init();
+    output_params_ptr_->setup();
   }
 
   // Sanity checks.

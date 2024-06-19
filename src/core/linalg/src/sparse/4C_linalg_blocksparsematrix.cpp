@@ -113,13 +113,13 @@ void Core::LinAlg::BlockSparseMatrixBase::Zero()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::BlockSparseMatrixBase::Reset()
+void Core::LinAlg::BlockSparseMatrixBase::reset()
 {
   for (int i = 0; i < Rows(); ++i)
   {
     for (int j = 0; j < Cols(); ++j)
     {
-      Matrix(i, j).Reset();
+      Matrix(i, j).reset();
     }
   }
 }
@@ -451,7 +451,7 @@ void Core::LinAlg::BlockSparseMatrixBase::get_partial_extractor(
     full_map = MergeMap(full_map, full_extractor.Map(id), false);
   }
 
-  partial_extractor.Setup(*full_map, p_block_maps);
+  partial_extractor.setup(*full_map, p_block_maps);
 }
 
 /*----------------------------------------------------------------------*

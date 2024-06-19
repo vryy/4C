@@ -63,10 +63,10 @@ namespace Adapter
 
       \note This is a pure DEBUG functionality. Originally used in immersed method development.
 
-      \warning This method partly re-implements redundantly few lines of the common fluid Output()
+      \warning This method partly re-implements redundantly few lines of the common fluid output()
       routine. \return void
     */
-    virtual void Output(const int step = -1, const double time = -1);
+    virtual void output(const int step = -1, const double time = -1);
 
    private:
     /// fluid field

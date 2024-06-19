@@ -67,8 +67,8 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   Teuchos::RCP<Core::IO::DiscretizationWriter> output = stm_->discretization()->Writer();
   //
   Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio = Teuchos::rcp(new STR::TimeInt::BaseDataIO());
-  dataio->Init(*ioflags, adyn, *xparams, output);
-  dataio->Setup();
+  dataio->init(*ioflags, adyn, *xparams, output);
+  dataio->setup();
 
   ///// setup datasdyn
   Teuchos::RCP<std::set<enum Inpar::STR::ModelType>> modeltypes =
@@ -82,23 +82,23 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
       linsolvers = STR::SOLVER::build_lin_solvers(*modeltypes, adyn, *stm_->discretization());
   //
   Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn = STR::TimeInt::build_data_sdyn(adyn);
-  datasdyn->Init(stm_->discretization(), adyn, *xparams, modeltypes, eletechs, linsolvers);
-  datasdyn->Setup();
+  datasdyn->init(stm_->discretization(), adyn, *xparams, modeltypes, eletechs, linsolvers);
+  datasdyn->setup();
 
   // setup global state
   Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> dataglobalstate =
       STR::TimeInt::build_data_global_state();
-  dataglobalstate->Init(stm_->discretization(), adyn, datasdyn);
-  dataglobalstate->Setup();
+  dataglobalstate->init(stm_->discretization(), adyn, datasdyn);
+  dataglobalstate->setup();
 
   // setup auxiliary integrator
-  sta_->Init(dataio, datasdyn, dataglobalstate);
-  sta_->Setup();
+  sta_->init(dataio, datasdyn, dataglobalstate);
+  sta_->setup();
 
   // setup wrapper
   sta_wrapper_ = Teuchos::rcp(new Adapter::StructureTimeLoop(sta_));
 
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     const STR::TimeInt::Base& sti = *stm_;

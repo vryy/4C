@@ -159,10 +159,10 @@ void FLD::XFluidState::init_system_matrix()
   //                                    for subsequent assemblies.
   //                                    However, do not use the savegraph-option when the matrix
   //                                    graph can change during the usage of this object of
-  //                                    SparseMatrix or use the Reset()-function instead of Zero().
+  //                                    SparseMatrix or use the reset()-function instead of Zero().
   //                                    For XFEM-problems, the matrix graph changes between
   //                                    timesteps, however, then a new state class and sparsematrix
-  //                                    is created, otherwise a Reset()-function has to be called
+  //                                    is created, otherwise a reset()-function has to be called
   //                                    instead of the Zero()-function. We are using the save-graph
   //                                    option.
   // * the estimate of the number of nonzero entries is adapted to hex8 elements with 8 adjacent

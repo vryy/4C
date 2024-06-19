@@ -188,11 +188,11 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
 
 
   //-------------------------------------------------------------------------
-  // Finish standard fluid_field()->Init()!
+  // Finish standard fluid_field()->init()!
   // REMARK: We don't want to do this at the beginning, to be able to use std
   // Adapter::Coupling for FA-Coupling
   //-------------------------------------------------------------------------
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (not restart)
     fluid_field()->CreateInitialState();  // otherwise called within the fluid_field-Restart when
                                           // Ale displacements are correct
@@ -437,7 +437,7 @@ void FSI::MonolithicXFEM::setup_system_matrix()
   // note: Zero() is not sufficient for the coupling blocks,
   // as the couplings between fluid and structure can change (structure moves between iterations)
   // while the fluid dofsets remain unchanged
-  //  systemmatrix_->Reset();
+  //  systemmatrix_->reset();
 
   /*----------------------------------------------------------------------*/
   // extract Jacobian matrices and put them into composite system
@@ -697,8 +697,8 @@ void FSI::MonolithicXFEM::set_dof_row_maps(const std::vector<Teuchos::RCP<const 
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps_mergedporo)
 {
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
-  blockrowdofmap_.Setup(*fullmap, maps);
-  blockrowdofmap_mergedporo_.Setup(*fullmap, maps_mergedporo);
+  blockrowdofmap_.setup(*fullmap, maps);
+  blockrowdofmap_mergedporo_.setup(*fullmap, maps_mergedporo);
 }
 
 
@@ -901,9 +901,9 @@ void FSI::MonolithicXFEM::update()
     coupit->second->Update(scaling_F);
 
   // update the single fields
-  StructurePoro()->Update();
-  fluid_field()->Update();
-  if (HaveAle()) ale_field()->Update();
+  StructurePoro()->update();
+  fluid_field()->update();
+  if (HaveAle()) ale_field()->update();
 }
 
 
@@ -916,7 +916,7 @@ void FSI::MonolithicXFEM::output()
   //--------------------------------
   // output for structural field
   //--------------------------------
-  StructurePoro()->Output();
+  StructurePoro()->output();
 
   //--------------------------------
   // output for Lagrange multiplier field (ie forces onto the structure, Robin-type forces
@@ -930,13 +930,13 @@ void FSI::MonolithicXFEM::output()
   {
     for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
          coupit != coup_man_.end(); ++coupit)
-      coupit->second->Output(*StructurePoro()->structure_field()->disc_writer());
+      coupit->second->output(*StructurePoro()->structure_field()->disc_writer());
   }
 
   //--------------------------------
   // output for fluid field - writes the whole GMSH output if switched on
   //--------------------------------
-  fluid_field()->Output();
+  fluid_field()->output();
   fluid_field()->LiftDrag();
 
 
@@ -947,7 +947,7 @@ void FSI::MonolithicXFEM::output()
     if (Comm().MyPID() == 0) StructurePoro()->get_constraint_manager()->PrintMonitorValues();
   }
 
-  if (HaveAle()) ale_field()->Output();
+  if (HaveAle()) ale_field()->output();
 
   return;
 }
@@ -1020,7 +1020,7 @@ bool FSI::MonolithicXFEM::newton()
     //    std::cout << "Evaluate-Call " << "iter_ " << iter_ << "/" << itermax_ << std::endl;
 
     /*----------------------------------------------------------------------*/
-    // Evaluate()- call
+    // evaluate()- call
     // * calls evaluate methods for single fields
     // * assembles single field rhs and system-matrices and fluid-structure coupling blocks
     // * check if dofsets between last two Newton iterations drastically changed or maybe simply
@@ -1542,7 +1542,7 @@ bool FSI::MonolithicXFEM::evaluate()
     coupit->second->SetCouplingStates();
 
   // update ALE
-  if (HaveAle()) ale_field()->Evaluate();
+  if (HaveAle()) ale_field()->evaluate();
 
 
   //-------------------
@@ -1596,7 +1596,7 @@ bool FSI::MonolithicXFEM::evaluate()
         fluid_field()->Set_EvaluateCut(true);
     }
 
-    fluid_field()->Evaluate();
+    fluid_field()->evaluate();
 
     if (Comm().MyPID() == 0)
       Core::IO::cout << "fluid time : " << tf.totalElapsedTime(true) << Core::IO::endl;
@@ -1624,7 +1624,7 @@ bool FSI::MonolithicXFEM::evaluate()
     Teuchos::Time ts("structure", true);
 
     // Evaluate Structure (do not set state again)
-    StructurePoro()->Evaluate(Teuchos::null, iter_ == 1);
+    StructurePoro()->evaluate(Teuchos::null, iter_ == 1);
 
     if (Comm().MyPID() == 0)
       Core::IO::cout << "structure time: " << ts.totalElapsedTime(true) << Core::IO::endl;
@@ -2312,7 +2312,7 @@ void FSI::MonolithicXFEM::linear_solve()
   // TODO: can we do this?!
   // reset the solver (frees the pointer to the Core::LinAlg:: matrix' EpetraOperator and vectors
   // also!) std::cout << "reset the solver" << std::endl;
-  solver_->Reset();
+  solver_->reset();
 
   //---------------------------------------------
   // permute the increment and rhs vector back to the reference configuration w.r.t which iterinc_

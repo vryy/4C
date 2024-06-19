@@ -37,14 +37,14 @@ namespace Adapter
 
     /*! \brief Setup all class internal objects and members
 
-     Setup() is not supposed to have any input arguments !
+     setup() is not supposed to have any input arguments !
 
-     Must only be called after Init().
+     Must only be called after init().
 
      Construct all objects depending on the parallel distribution and
      relying on valid maps like, e.g. the state vectors, system matrices, etc.
 
-     Call all Setup() routines on previously initialized internal objects and members.
+     Call all setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
           Otherwise, e.g. vectors may have wrong maps.
@@ -53,7 +53,7 @@ namespace Adapter
     \return void
     \date 08/16
     \author rauch  */
-    void Setup() override { structure_->Setup(); };
+    void setup() override { structure_->setup(); };
 
     //@}
 
@@ -221,7 +221,7 @@ namespace Adapter
     };
 
     /// reset step and state vectors
-    void Reset() override { structure_->Reset(); }
+    void reset() override { structure_->reset(); }
 
     /// reset last time step, needed for time step size adaptivity in FSI
     void reset_step() override { structure_->reset_step(); }
@@ -301,16 +301,16 @@ namespace Adapter
     void determine_stress_strain() override { structure_->determine_stress_strain(); }
 
     /// update displacement and evaluate elements (implicit only)
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override
+    void evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override
     {
-      structure_->Evaluate(disiterinc);
+      structure_->evaluate(disiterinc);
     }
 
     /// don't update displacement but evaluate elements (implicit only)
-    void Evaluate() override { structure_->Evaluate(); }
+    void evaluate() override { structure_->evaluate(); }
 
     /// update at time step end
-    void Update() override { structure_->Update(); }
+    void update() override { structure_->update(); }
 
     /// update at time step end
     void Update(const double endtime) override { structure_->Update(endtime); }
@@ -350,9 +350,9 @@ namespace Adapter
     }
 
     /// output results
-    void Output(bool forced_writerestart = false) override
+    void output(bool forced_writerestart = false) override
     {
-      structure_->Output(forced_writerestart);
+      structure_->output(forced_writerestart);
     }
 
     /// Write Gmsh output for structural field
@@ -536,9 +536,9 @@ namespace Adapter
 
     void prepare_time_step() override;
 
-    //! Evaluate() routine that can handle NOX step increments by computing the
-    //! last iteration increment needed for structural Evaluate() call
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disstepinc) override;
+    //! evaluate() routine that can handle NOX step increments by computing the
+    //! last iteration increment needed for structural evaluate() call
+    void evaluate(Teuchos::RCP<const Epetra_Vector> disstepinc) override;
 
    private:
     /// sum of displacement increments already applied,

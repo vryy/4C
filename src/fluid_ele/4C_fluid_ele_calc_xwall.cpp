@@ -197,7 +197,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate_service_x_w
  | Action type: Evaluate                                            bk 06/2014 |
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate(Discret::ELEMENTS::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -233,7 +233,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Evaluate(Discret::EL
     if (nodecount != 0)
       FOUR_C_THROW("something is wrong in this element with the number of virtual nodes vs dofs");
 
-    int err = my::Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+    int err = my::evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
         elevec1_epetra, elevec2_epetra, elevec3_epetra, my::intpoints_);
 
     int row1 = 0;
@@ -485,9 +485,9 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::
         double gpweight         // actual integration point (weight)
     )
 {
-  funct_.Clear();
-  derxy_.Clear();
-  derxy2_.Clear();
+  funct_.clear();
+  derxy_.clear();
+  derxy2_.clear();
 
   // put the geometry in the local copy
   for (int inode = 0; inode < enren_; ++inode)
@@ -510,7 +510,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::
     Core::FE::shape_function_deriv2<distype>(my::xsi_, deriv2_);
   }
   else
-    deriv2_.Clear();
+    deriv2_.clear();
 
   // get Jacobian matrix and determinant
   // actually compute its transpose....
@@ -551,7 +551,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::
     Core::FE::gder2<distype, enren_>(my::xjm_, derxy_, deriv2_, xyze_, derxy2_);
   }
   else
-    derxy2_.Clear();
+    derxy2_.clear();
 
   return;
 }
@@ -563,9 +563,9 @@ template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType e
 void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::eval_enrichment()
 {
   // first clear everything
-  functenr_.Clear();
-  derxyenr_.Clear();
-  derxyenr2_.Clear();
+  functenr_.clear();
+  derxyenr_.clear();
+  derxyenr2_.clear();
 
   Core::LinAlg::Matrix<nsd_, 1> derpsigp(true);
   Core::LinAlg::Matrix<numderiv2_, 1> der2psigp(true);
@@ -1203,8 +1203,8 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(
     //----------------------------------------------------------------------------
     //                         RHS
     //----------------------------------------------------------------------------
-    estif_u.Clear();
-    lin_resM_Du.Clear();
+    estif_u.clear();
+    lin_resM_Du.clear();
 
     for (int ui = 1; ui < nen_; ui += 2)
     {

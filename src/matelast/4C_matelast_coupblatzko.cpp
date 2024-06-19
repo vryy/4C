@@ -16,9 +16,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::Elastic::PAR::CoupBlatzKo::CoupBlatzKo(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      mue_(matdata.parameters.Get<double>("MUE")),
-      nue_(matdata.parameters.Get<double>("NUE")),
-      f_(matdata.parameters.Get<double>("F"))
+      mue_(matdata.parameters.get<double>("MUE")),
+      nue_(matdata.parameters.get<double>("NUE")),
+      f_(matdata.parameters.get<double>("F"))
 {
 }
 

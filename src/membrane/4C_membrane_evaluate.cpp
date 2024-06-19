@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public)                          fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -472,8 +472,8 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
   set_params_interface_ptr(params);
 
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
 
   // find out whether we will use a time curve
   double time = -1.0;
@@ -492,7 +492,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
     if ((*onoff)[checkdof] != 0) FOUR_C_THROW("membrane pressure on 1st dof only!");
 
   // find out whether we will use time curves and get the factors
-  const auto* tmp_funct = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* tmp_funct = &condition.parameters().get<std::vector<int>>("funct");
   std::vector<double> functfacs(noddof_, 1.0);
   for (int i = 0; i < noddof_; ++i)
   {
@@ -500,7 +500,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
     if (functnum > 0)
       functfacs[i] = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfTime>(functnum - 1)
-                         .Evaluate(time);
+                         .evaluate(time);
   }
 
   // determine current pressure
@@ -1409,7 +1409,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_defgrd_global(
     const double& lambda3, Core::LinAlg::Matrix<noddof_, noddof_>& defgrd_glob) const
 {
   // clear
-  defgrd_glob.Clear();
+  defgrd_glob.clear();
 
   // determine cross product x,1 x x,2
   Core::LinAlg::Matrix<noddof_, 1> xcurr_cross(true);
@@ -1559,7 +1559,7 @@ void Discret::ELEMENTS::Membrane<distype>::update_element(std::vector<double>& d
     }
   }
 
-  SolidMaterial()->Update();
+  SolidMaterial()->update();
 
   return;
 }

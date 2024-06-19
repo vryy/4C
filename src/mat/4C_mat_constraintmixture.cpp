@@ -46,37 +46,37 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::ConstraintMixture::ConstraintMixture(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      density_(matdata.parameters.Get<double>("DENS")),
-      mue_(matdata.parameters.Get<double>("MUE")),
-      nue_(matdata.parameters.Get<double>("NUE")),
-      phielastin_(matdata.parameters.Get<double>("PHIE")),
-      prestretchelastin_(matdata.parameters.Get<double>("PREELA")),
-      k1_(matdata.parameters.Get<double>("K1")),
-      k2_(matdata.parameters.Get<double>("K2")),
-      numhom_(matdata.parameters.Get<int>("NUMHOM")),
-      prestretchcollagen_((matdata.parameters.Get<std::vector<double>>("PRECOLL"))),
-      damagestretch_(matdata.parameters.Get<double>("DAMAGE")),
-      k1muscle_(matdata.parameters.Get<double>("K1M")),
-      k2muscle_(matdata.parameters.Get<double>("K2M")),
-      phimuscle_(matdata.parameters.Get<double>("PHIM")),
-      prestretchmuscle_(matdata.parameters.Get<double>("PREMUS")),
-      Smax_(matdata.parameters.Get<double>("SMAX")),
-      kappa_(matdata.parameters.Get<double>("KAPPA")),
-      lifetime_(matdata.parameters.Get<double>("LIFETIME")),
-      homstress_((matdata.parameters.Get<std::vector<double>>("HOMSTR"))),
-      sheargrowthfactor_(matdata.parameters.Get<double>("SHEARGROWTHFAC")),
-      homradius_(matdata.parameters.Get<double>("HOMRAD")),
-      starttime_(matdata.parameters.Get<double>("STARTTIME")),
-      integration_(matdata.parameters.Get<std::string>("INTEGRATION")),
-      abstol_(matdata.parameters.Get<double>("TOL")),
-      growthforce_(matdata.parameters.Get<std::string>("GROWTHFORCE")),
-      elastindegrad_(matdata.parameters.Get<std::string>("ELASTINDEGRAD")),
-      massprodfunc_(matdata.parameters.Get<std::string>("MASSPROD")),
-      initstretch_(matdata.parameters.Get<std::string>("INITSTRETCH")),
-      timecurve_(matdata.parameters.Get<int>("CURVE")),
-      degoption_((matdata.parameters.Get<std::string>("DEGOPTION"))),
-      maxmassprodfac_(matdata.parameters.Get<double>("MAXMASSPRODFAC")),
-      storehistory_(matdata.parameters.Get<bool>("STOREHISTORY")),
+      density_(matdata.parameters.get<double>("DENS")),
+      mue_(matdata.parameters.get<double>("MUE")),
+      nue_(matdata.parameters.get<double>("NUE")),
+      phielastin_(matdata.parameters.get<double>("PHIE")),
+      prestretchelastin_(matdata.parameters.get<double>("PREELA")),
+      k1_(matdata.parameters.get<double>("K1")),
+      k2_(matdata.parameters.get<double>("K2")),
+      numhom_(matdata.parameters.get<int>("NUMHOM")),
+      prestretchcollagen_((matdata.parameters.get<std::vector<double>>("PRECOLL"))),
+      damagestretch_(matdata.parameters.get<double>("DAMAGE")),
+      k1muscle_(matdata.parameters.get<double>("K1M")),
+      k2muscle_(matdata.parameters.get<double>("K2M")),
+      phimuscle_(matdata.parameters.get<double>("PHIM")),
+      prestretchmuscle_(matdata.parameters.get<double>("PREMUS")),
+      Smax_(matdata.parameters.get<double>("SMAX")),
+      kappa_(matdata.parameters.get<double>("KAPPA")),
+      lifetime_(matdata.parameters.get<double>("LIFETIME")),
+      homstress_((matdata.parameters.get<std::vector<double>>("HOMSTR"))),
+      sheargrowthfactor_(matdata.parameters.get<double>("SHEARGROWTHFAC")),
+      homradius_(matdata.parameters.get<double>("HOMRAD")),
+      starttime_(matdata.parameters.get<double>("STARTTIME")),
+      integration_(matdata.parameters.get<std::string>("INTEGRATION")),
+      abstol_(matdata.parameters.get<double>("TOL")),
+      growthforce_(matdata.parameters.get<std::string>("GROWTHFORCE")),
+      elastindegrad_(matdata.parameters.get<std::string>("ELASTINDEGRAD")),
+      massprodfunc_(matdata.parameters.get<std::string>("MASSPROD")),
+      initstretch_(matdata.parameters.get<std::string>("INITSTRETCH")),
+      timecurve_(matdata.parameters.get<int>("CURVE")),
+      degoption_((matdata.parameters.get<std::string>("DEGOPTION"))),
+      maxmassprodfac_(matdata.parameters.get<double>("MAXMASSPRODFAC")),
+      storehistory_(matdata.parameters.get<bool>("STOREHISTORY")),
       degtol_(1.0e-6)
 {
   Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::Instance()->GetCommunicators()->LocalComm()));
@@ -84,8 +84,8 @@ Mat::PAR::ConstraintMixture::ConstraintMixture(const Core::Mat::PAR::Parameter::
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
-  matparams_.at(growthfactor)->PutScalar(matdata.parameters.Get<double>("GROWTHFAC"));
-  matparams_.at(elastin_survival)->PutScalar(matdata.parameters.Get<double>("ELASTINFAC"));
+  matparams_.at(growthfactor)->PutScalar(matdata.parameters.get<double>("GROWTHFAC"));
+  matparams_.at(elastin_survival)->PutScalar(matdata.parameters.get<double>("ELASTINFAC"));
 }
 
 
@@ -99,7 +99,7 @@ Mat::ConstraintMixtureType Mat::ConstraintMixtureType::instance_;
 Core::Communication::ParObject* Mat::ConstraintMixtureType::Create(const std::vector<char>& data)
 {
   Mat::ConstraintMixture* comix = new Mat::ConstraintMixture();
-  comix->Unpack(data);
+  comix->unpack(data);
   return comix;
 }
 
@@ -117,7 +117,7 @@ Mat::ConstraintMixture::ConstraintMixture(Mat::PAR::ConstraintMixture* params) :
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         12/10|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ConstraintMixture::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -167,7 +167,7 @@ void Mat::ConstraintMixture::Pack(Core::Communication::PackBuffer& data) const
     add_to_pack(data, minindex);
     int sizehistory = history_->size();
     add_to_pack(data, sizehistory);
-    for (int idpast = 0; idpast < sizehistory; idpast++) history_->at(idpast).Pack(data);
+    for (int idpast = 0; idpast < sizehistory; idpast++) history_->at(idpast).pack(data);
   }
 
   return;
@@ -177,7 +177,7 @@ void Mat::ConstraintMixture::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)         12/10|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::Unpack(const std::vector<char>& data)
+void Mat::ConstraintMixture::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -272,7 +272,7 @@ void Mat::ConstraintMixture::Unpack(const std::vector<char>& data)
   {
     std::vector<char> datahistory;
     extract_from_pack(position, data, datahistory);
-    history_->at(idpast).Unpack(datahistory);
+    history_->at(idpast).unpack(datahistory);
   }
 
   if (position != data.size())
@@ -333,7 +333,7 @@ void Mat::ConstraintMixture::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Setup                                         (public)         12/10|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ConstraintMixture::setup(int numgp, Input::LineDefinition* linedef)
 {
   if (params_->integration_ != "Implicit" && params_->integration_ != "Explicit")
     FOUR_C_THROW("unknown option for integration");
@@ -518,7 +518,7 @@ void Mat::ConstraintMixture::ResetAll(const int numgp)
   if (params_->degoption_ == "ExpVar") expvar = true;
   for (int idpast = 0; idpast < numpast; idpast++)
   {
-    history_->at(idpast).Setup(numgp, massprodbasal_, expvar);
+    history_->at(idpast).setup(numgp, massprodbasal_, expvar);
     history_->at(idpast).set_time(dt - (numpast - 1 - idpast) * dt, dt);
   }
 }
@@ -526,7 +526,7 @@ void Mat::ConstraintMixture::ResetAll(const int numgp)
 /*----------------------------------------------------------------------*
  |  Update internal variables                     (public)         12/10|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::Update()
+void Mat::ConstraintMixture::update()
 {
   // set mass of damaged collagen to zero
   // has to be done before history vector is changed
@@ -576,7 +576,7 @@ void Mat::ConstraintMixture::Update()
 
     // append new collagen
     ConstraintMixtureHistory newhis;
-    newhis.Setup(numgp, massprodbasal_, expvar);
+    newhis.setup(numgp, massprodbasal_, expvar);
     // it is very important to set time and dt to 0.0
     // this makes it clear that this step was created in update and has no reliable content
     // they are not known here either
@@ -711,7 +711,7 @@ void Mat::ConstraintMixture::Update()
     {
       // special case of first time step
       ConstraintMixtureHistory newhis;
-      newhis.Setup(numgp, massprodbasal_, expvar);
+      newhis.setup(numgp, massprodbasal_, expvar);
       newhis.set_time(0.0, 0.0);
       history_->push_back(newhis);
     }
@@ -736,7 +736,7 @@ void Mat::ConstraintMixture::reset_step()
 /*----------------------------------------------------------------------*
  |  Evaluate                                      (public)         12/10|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ConstraintMixture::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -984,7 +984,7 @@ void Mat::ConstraintMixture::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
       if (curvenum)
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum - 1)
-                       .Evaluate(time);
+                       .evaluate(time);
       if (curvefac > (1.0 + eps) || curvefac < (0.0 - eps))
         FOUR_C_THROW("correct your time curve for prestretch, just values in [0,1] are allowed %f",
             curvefac);
@@ -1459,7 +1459,7 @@ void Mat::ConstraintMixture::evaluate_elastin(const Core::LinAlg::Matrix<NUM_STR
     if (curvenum)
       curvefac = Global::Problem::Instance()
                      ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum - 1)
-                     .Evaluate(time);
+                     .evaluate(time);
     if (curvefac > 1.0 || curvefac < 0.0)
       FOUR_C_THROW(
           "correct your time curve for prestretch, just values in [0,1] are allowed %f", curvefac);

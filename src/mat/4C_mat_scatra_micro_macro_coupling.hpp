@@ -72,7 +72,7 @@ namespace Mat
     //! \param[in] ele_id         macro-scale element ID
     //! \param[in] gp_id          macro-scale Gauss point ID
     //! \param[in] is_ale         true, if the underlying macro dis deforms
-    void Initialize(const int ele_id, const int gp_id, bool is_ale);
+    void initialize(const int ele_id, const int gp_id, bool is_ale);
 
     /*!
      * @brief prepare time step on micro scale
@@ -92,7 +92,7 @@ namespace Mat
      * @param[in] detF       determinant of deformation gradient of macro dis at current Gauss point
      * @param[in] solve      flag indicating whether micro-scale problem should be solved
      */
-    void Evaluate(const int gp_id, const std::vector<double>& phinp_macro, double& q_micro,
+    void evaluate(const int gp_id, const std::vector<double>& phinp_macro, double& q_micro,
         std::vector<double>& dq_dphi_micro, double detF, const bool solve = true) const;
 
     /*!
@@ -123,7 +123,7 @@ namespace Mat
      *
      * @param[in] gp_id  macro-scale Gauss point ID
      */
-    void Output(const int gp_id) const;
+    void output(const int gp_id) const;
 
     /*!
      * @brief  read restart on micro scale

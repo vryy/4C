@@ -59,7 +59,7 @@ namespace FSI
 
 
     //! setup
-    virtual void Setup();
+    virtual void setup();
 
     //! outer level time loop (to be implemented by deriving classes)
     virtual void Timeloop() = 0;

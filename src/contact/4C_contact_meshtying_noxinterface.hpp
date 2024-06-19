@@ -31,12 +31,12 @@ namespace CONTACT
     MtNoxInterface();
 
     /// initialize important member variables
-    void Init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr);
+    void init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr);
 
     /** \brief Setup important new member variables
      *
      *  Supposed to be overloaded by derived classes. */
-    virtual void Setup();
+    virtual void setup();
 
     /// @name Supported basic interface functions
     /// @{
@@ -68,24 +68,24 @@ namespace CONTACT
     /// get the setup indicator state
     inline const bool& is_setup() const { return issetup_; };
 
-    /// Check if Init() has been called
+    /// Check if init() has been called
     inline void check_init() const
     {
-      if (not is_init()) FOUR_C_THROW("Call Init() first!");
+      if (not is_init()) FOUR_C_THROW("Call init() first!");
     };
 
-    /// Check if Init() and Setup() have been called, yet.
+    /// Check if init() and setup() have been called, yet.
     inline void check_init_setup() const
     {
-      if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (not is_init() or not is_setup()) FOUR_C_THROW("Call init() and setup() first!");
     };
 
 
    protected:
-    /// flag indicating if Init() has been called
+    /// flag indicating if init() has been called
     bool isinit_;
 
-    /// flag indicating if Setup() has been called
+    /// flag indicating if setup() has been called
     bool issetup_;
 
    private:

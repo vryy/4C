@@ -58,14 +58,14 @@ namespace PARTICLEWALL
      *
      * \param[in] walldiscretization wall discretization
      */
-    void Init(const Teuchos::RCP<Core::FE::Discretization> walldiscretization);
+    void init(const Teuchos::RCP<Core::FE::Discretization> walldiscretization);
 
     /*!
      * \brief setup wall data state container
      *
      * \author Sebastian Fuchs \date 05/2019
      */
-    void Setup();
+    void setup();
 
     /*!
      * \brief check for correct maps

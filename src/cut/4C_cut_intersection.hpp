@@ -108,12 +108,12 @@ namespace Core::Geo
       {
       }
 
-      /** Lean Init() routine w/o mesh, edge or side objects
+      /** Lean init() routine w/o mesh, edge or side objects
        *
-       *  \remark If you use this Init() routine, you won't be able to call
+       *  \remark If you use this init() routine, you won't be able to call
        *  the Intersect() routine. Simply due to the fact, that you haven't
-       *  passed the necessary input objects. Use the 2-nd (standard) Init()
-       *  routine, instead. Anyhow, this Init() routine is the right one,
+       *  passed the necessary input objects. Use the 2-nd (standard) init()
+       *  routine, instead. Anyhow, this init() routine is the right one,
        *  if you want to intersect two edges. Just use the routine
        *  compute_edge_side_intersection() afterwards.
        *
@@ -125,7 +125,7 @@ namespace Core::Geo
        *
        *  \author hiermeier \date 08/16 */
       template <class T1, class T2>
-      void Init(T1& xyze_lineElement, T2& xyze_surfaceElement, bool usescaling, bool useshifting,
+      void init(T1& xyze_lineElement, T2& xyze_surfaceElement, bool usescaling, bool useshifting,
           bool useboundingbox, Options* options)
       {
         isscaled_ = usescaling;
@@ -160,7 +160,7 @@ namespace Core::Geo
         isinit_ = true;
       }
 
-      /** \brief Standard Init() routine
+      /** \brief Standard init() routine
        *
        *  \param mesh_ptr       (in) : pointer to the underlying mesh
        *  \param edge_ptr       (in) : pointer to the intersecting edge object
@@ -170,7 +170,7 @@ namespace Core::Geo
        *  \param useboundingbox (in) : switch the bounding box checks on/off
        *
        *  \author hiermeier \date 08/16 */
-      void Init(Mesh* mesh_ptr, Edge* edge_ptr, Side* side_ptr, bool usescaling, bool useshifting,
+      void init(Mesh* mesh_ptr, Edge* edge_ptr, Side* side_ptr, bool usescaling, bool useshifting,
           bool useboundingbox)
       {
         isscaled_ = usescaling;
@@ -278,7 +278,7 @@ namespace Core::Geo
       inline void check_init() const
       {
         if (not isinit_)
-          FOUR_C_THROW("The intersection object is not initialized! Call Init() first.");
+          FOUR_C_THROW("The intersection object is not initialized! Call init() first.");
       }
 
       virtual unsigned prob_dim() const = 0;
@@ -356,7 +356,7 @@ namespace Core::Geo
       }
 
      private:
-      /// flag which indicates whether the Init() has been called or not.
+      /// flag which indicates whether the init() has been called or not.
       bool isinit_;
 
       /// Did we scale the position vectors?
@@ -388,7 +388,7 @@ namespace Core::Geo
      *
      *  The core class where all the cut points are actually calculated. It is
      *  also meaningful to use this class to calculate the intersection of two
-     *  edges, if the related Init() routine is used.
+     *  edges, if the related init() routine is used.
      *
      *  \author ager, hiermeier */
     template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype,

@@ -47,7 +47,7 @@ namespace STR
     class Implicit : public ImplicitBase
     {
      public:
-      void Setup() override;
+      void setup() override;
 
       int Integrate() override;
 
@@ -111,8 +111,8 @@ namespace STR
       void determine_stress_strain() override;
 
       ///  Evaluate routine for coupled problems with monolithic approach
-      void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
-      void Evaluate() override;
+      void evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
+      void evaluate() override;
 
       /** \brief Print structural jacobian matrix into a text file for later use
        *  in MATLAB

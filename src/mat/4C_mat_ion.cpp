@@ -22,11 +22,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::Ion::Ion(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      valence_(matdata.parameters.Get<double>("VALENCE")),
-      diffusivity_(matdata.parameters.Get<double>("DIFFUSIVITY")),
-      densification_(matdata.parameters.Get<double>("DENSIFICATION")),
-      elimvalence_(matdata.parameters.Get<double>("ELIM_VALENCE")),
-      elimdiffusivity_(matdata.parameters.Get<double>("ELIM_DIFFUSIVITY"))
+      valence_(matdata.parameters.get<double>("VALENCE")),
+      diffusivity_(matdata.parameters.get<double>("DIFFUSIVITY")),
+      densification_(matdata.parameters.get<double>("DENSIFICATION")),
+      elimvalence_(matdata.parameters.get<double>("ELIM_VALENCE")),
+      elimdiffusivity_(matdata.parameters.get<double>("ELIM_DIFFUSIVITY"))
 {
 }
 
@@ -42,7 +42,7 @@ Mat::IonType Mat::IonType::instance_;
 Core::Communication::ParObject* Mat::IonType::Create(const std::vector<char>& data)
 {
   Mat::Ion* ion = new Mat::Ion();
-  ion->Unpack(data);
+  ion->unpack(data);
   return ion;
 }
 
@@ -59,7 +59,7 @@ Mat::Ion::Ion(Mat::PAR::Ion* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Ion::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Ion::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -92,7 +92,7 @@ void Mat::Ion::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Ion::Unpack(const std::vector<char>& data)
+void Mat::Ion::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

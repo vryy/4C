@@ -86,12 +86,12 @@ namespace
       std::vector<double> x(3, 0.0);
       std::vector<int> dofs(3);
 
-      double hurstexponentfunct = container->Get<int>("HurstExponentFunct");
-      double initialtopologystddevfunct = container->Get<int>("InitialTopologyStdDeviationFunct");
-      int resolution = container->Get<int>("Resolution");
-      bool randomtopologyflag = container->Get<bool>("RandomTopologyFlag");
-      bool randomseedflag = container->Get<bool>("RandomSeedFlag");
-      int randomgeneratorseed = container->Get<int>("RandomGeneratorSeed");
+      double hurstexponentfunct = container->get<int>("HurstExponentFunct");
+      double initialtopologystddevfunct = container->get<int>("InitialTopologyStdDeviationFunct");
+      int resolution = container->get<int>("Resolution");
+      bool randomtopologyflag = container->get<bool>("RandomTopologyFlag");
+      bool randomseedflag = container->get<bool>("RandomSeedFlag");
+      int randomgeneratorseed = container->get<int>("RandomGeneratorSeed");
 
       cnode = Teuchos::rcp(new CONTACT::RoughNode(1, x, 1, dofs, true, true, hurstexponentfunct,
           initialtopologystddevfunct, resolution, randomtopologyflag, randomseedflag,
@@ -107,11 +107,11 @@ namespace
   TEST_F(MircoConstitutiveLawForceTest, TestEvaluate)
   {
     // gap < 0
-    EXPECT_ANY_THROW(coconstlaw_->Evaluate(1.0, cnode.get()));
+    EXPECT_ANY_THROW(coconstlaw_->evaluate(1.0, cnode.get()));
     // 0< gap < offset
-    EXPECT_ANY_THROW(coconstlaw_->Evaluate(-0.25, cnode.get()));
+    EXPECT_ANY_THROW(coconstlaw_->evaluate(-0.25, cnode.get()));
     // offset < gap
-    EXPECT_NEAR(coconstlaw_->Evaluate(-12.0, cnode.get()), -0.0005942101230076477, 1.e-10);
+    EXPECT_NEAR(coconstlaw_->evaluate(-12.0, cnode.get()), -0.0005942101230076477, 1.e-10);
   }
 
   //! test member function EvaluateDeriv

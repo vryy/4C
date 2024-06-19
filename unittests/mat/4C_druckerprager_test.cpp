@@ -67,7 +67,7 @@ namespace
   TEST_F(DruckerPragerTest, TestPackUnpack)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1> input_strain;
     for (int i = 0; i < 6; ++i) input_strain(i) = .1;
     Teuchos::ParameterList paras;
@@ -81,13 +81,13 @@ namespace
           (1.0 / ((1.0 + 0.25) * (1.0 - (2.0 * 0.25)))) * ((1.0 - (2.0 * 0.25)) / 2.0) * .1;
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1> result_stress(true);
-    druckprag_->Pack(data);
+    druckprag_->pack(data);
     std::vector<char> dataSend;
     swap(dataSend, data());
     for (int i = 0; i < 4; i++) dataSend.erase(dataSend.begin());
     auto plastic = Teuchos::rcp(new Mat::PlasticDruckerPrager());
-    plastic->Unpack(dataSend);
-    plastic->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    plastic->unpack(dataSend);
+    plastic->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };
 
@@ -95,7 +95,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluate)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1> input_strain;
     for (int i = 0; i < 6; ++i) input_strain(i) = .1;
     Teuchos::ParameterList paras;
@@ -109,7 +109,7 @@ namespace
           (1.0 / ((1.0 + 0.25) * (1.0 - (2.0 * 0.25)))) * ((1.0 - (2.0 * 0.25)) / 2.0) * .1;
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };
 
@@ -117,7 +117,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateReturnToCone)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1> input_strain;
     for (int i = 0; i < 3; ++i) input_strain(i) = 0.0;
     for (int i = 3; i < 6; ++i) input_strain(i) = 2.2;
@@ -131,7 +131,7 @@ namespace
                       (1 - ((1.0 / (2 * (1.0 + 0.25))) * Dgamma / (2.2 * sqrt(3) / 2.5))) * 2.2;
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };
 
@@ -139,7 +139,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateReturnToApex)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1> input_strain;
     for (int i = 0; i < 3; ++i) input_strain(i) = 1.0;
     for (int i = 3; i < 6; ++i) input_strain(i) = 0.0;
@@ -149,7 +149,7 @@ namespace
     for (int i = 0; i < 3; ++i) ref_stress(i) = 2.0 - (10. / 15.) * (3. / 5.);
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };
 
@@ -157,7 +157,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateHistory)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1, FAD> input_strain;
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 0.1);
     for (int i = 3; i < 6; ++i) input_strain(i) = FAD(6, i, 0.1);
@@ -166,7 +166,7 @@ namespace
     Core::LinAlg::Matrix<6, 1, FAD> ref_stress(true);
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1, FAD> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     Core::LinAlg::Matrix<6, 6> ref_cmat(true);
     for (int i = 0; i < 6; i++)
     {
@@ -176,10 +176,10 @@ namespace
       }
     }
     FOUR_C_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
-    druckprag_->Update();
+    druckprag_->update();
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 1.0);
     for (int i = 3; i < 6; ++i) input_strain(i) = FAD(6, i, 0.0);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     for (int i = 0; i < 6; i++)
     {
       for (int j = 0; j < 6; j++)
@@ -188,10 +188,10 @@ namespace
       }
     }
     FOUR_C_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
-    druckprag_->Update();
+    druckprag_->update();
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 0.2);
     for (int i = 3; i < 6; ++i) input_strain(i) = FAD(6, i, 0.0);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     for (int i = 0; i < 6; i++)
     {
       for (int j = 0; j < 6; j++)
@@ -207,7 +207,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateRandomStrain)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1> input_strain;
     input_strain(0) = 1.1;
     input_strain(1) = 2.0;
@@ -226,7 +226,7 @@ namespace
     ref_stress(5) = 0.2613249104715;
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };
 
@@ -234,7 +234,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateCmat)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1, FAD> input_strain;
     for (int i = 0; i < 6; ++i) input_strain(i) = FAD(6, i, .1 * i);
     Teuchos::ParameterList paras;
@@ -248,7 +248,7 @@ namespace
           FAD((1.0 / ((1.0 + 0.25) * (1.0 - (2.0 * 0.25)))) * ((1.0 - (2.0 * 0.25)) / 2.0) * .1);
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1, FAD> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     Core::LinAlg::Matrix<6, 6> ref_cmat(true);
     for (int i = 0; i < 6; i++)
     {
@@ -264,7 +264,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateReturnToConeCmat)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1, FAD> input_strain;
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 0.1 * i);
     for (int i = 3; i < 6; ++i) input_strain(i) = FAD(6, i, 2.2 * i);
@@ -272,7 +272,7 @@ namespace
     Core::LinAlg::Matrix<3, 3> defgrad(true);
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1, FAD> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     Core::LinAlg::Matrix<6, 6> ref_cmat(true);
     for (int i = 0; i < 6; i++)
     {
@@ -286,7 +286,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateReturnToApexCmat)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1, FAD> input_strain;
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 1.0);
     for (int i = 3; i < 6; ++i) input_strain(i) = FAD(6, i, 0.0);
@@ -294,7 +294,7 @@ namespace
     Core::LinAlg::Matrix<3, 3> defgrad(true);
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1, FAD> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     Core::LinAlg::Matrix<6, 6> ref_cmat(true);
     for (int i = 0; i < 6; i++)
     {
@@ -310,7 +310,7 @@ namespace
   TEST_F(DruckerPragerTest, TestEvaluateRandomStrainCmat)
   {
     Input::LineDefinition linedef;
-    druckprag_->Setup(1, &linedef);
+    druckprag_->setup(1, &linedef);
     Core::LinAlg::Matrix<6, 1, FAD> input_strain;
     input_strain(0) = FAD(6, 0, 1.1);
     input_strain(1) = FAD(6, 1, 2.0);
@@ -329,7 +329,7 @@ namespace
     ref_stress(5) = FAD(0.2460641017516);
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1, FAD> result_stress(true);
-    druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
+    druckprag_->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     Core::LinAlg::Matrix<6, 6> ref_cmat(true);
     for (int i = 0; i < 6; i++)
     {

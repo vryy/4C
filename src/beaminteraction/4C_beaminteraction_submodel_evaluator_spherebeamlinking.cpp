@@ -56,14 +56,14 @@ BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::SphereBeamLinking()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Setup()
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::setup()
 {
   check_init();
 
   // construct, init and setup data container for crosslinking
   spherebeamlinking_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::SphereBeamLinkingParams());
-  spherebeamlinking_params_ptr_->Init(GState());
-  spherebeamlinking_params_ptr_->Setup();
+  spherebeamlinking_params_ptr_->init(GState());
+  spherebeamlinking_params_ptr_->setup();
 
   random_number_sphere_beam_linking_step_ = -1;
 
@@ -104,7 +104,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_submodel_depend
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Reset()
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::reset()
 {
   check_init_setup();
 
@@ -851,7 +851,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
 
       // criterion: distance
       // get current position at binding spot xi
-      bspotpos.Clear();
+      bspotpos.clear();
       beamele->GetPosOfBindingSpot(bspotpos, beameledisp,
           spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(), rand_bsp[bspot_i],
           PeriodicBoundingBox());
@@ -879,7 +879,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
        * this case */
 
       // get current triad at binding spot xi
-      bspottriad.Clear();
+      bspottriad.clear();
       beamele->get_triad_of_binding_spot(bspottriad, beameledisp,
           spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(), rand_bsp[bspot_i]);
 
@@ -977,10 +977,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_spher
       std::vector<Core::LinAlg::Matrix<3, 3>> dummy_triad(2, Core::LinAlg::Matrix<3, 3>(true));
 
       // finally initialize and setup object
-      linkelepairptr->Init(id, eleids, pos, dummy_triad,
+      linkelepairptr->init(id, eleids, pos, dummy_triad,
           spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(), GState().get_time_np());
       // material id
-      linkelepairptr->Setup(
+      linkelepairptr->setup(
           spherebeamlinking_params_ptr_->GetLinkerMaterial()->beam_elast_hyper_mat_num());
 
       // set on status on element level

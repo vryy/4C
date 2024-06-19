@@ -510,24 +510,24 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::ScaTraBaseAlgorithm::Init()
+void Adapter::ScaTraBaseAlgorithm::init()
 {
   set_is_setup(false);
 
   // initialize scatra time integrator
-  scatra_->Init();
+  scatra_->init();
 
   set_is_init(true);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::ScaTraBaseAlgorithm::Setup()
+void Adapter::ScaTraBaseAlgorithm::setup()
 {
   check_is_init();
 
   // setup the time integrator
-  scatra_->Setup();
+  scatra_->setup();
 
   // get the parameter list
   auto scatradyn = scatra_->ScatraParameterList();
@@ -596,14 +596,14 @@ Teuchos::RCP<Core::UTILS::ResultTest> Adapter::ScaTraBaseAlgorithm::create_sca_t
 /*----------------------------------------------------------------------*/
 void Adapter::ScaTraBaseAlgorithm::check_is_setup() const
 {
-  if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
+  if (not is_setup()) FOUR_C_THROW("setup() was not called.");
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::ScaTraBaseAlgorithm::check_is_init() const
 {
-  if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
+  if (not is_init()) FOUR_C_THROW("init(...) was not called.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

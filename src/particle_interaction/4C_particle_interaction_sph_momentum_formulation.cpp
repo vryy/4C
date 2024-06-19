@@ -25,12 +25,12 @@ ParticleInteraction::SPHMomentumFormulationBase::SPHMomentumFormulationBase()
   // empty constructor
 }
 
-void ParticleInteraction::SPHMomentumFormulationBase::Init()
+void ParticleInteraction::SPHMomentumFormulationBase::init()
 {
   // nothing to do
 }
 
-void ParticleInteraction::SPHMomentumFormulationBase::Setup()
+void ParticleInteraction::SPHMomentumFormulationBase::setup()
 {
   // nothing to do
 }

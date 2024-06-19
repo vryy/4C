@@ -28,7 +28,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8ScatraType::Create(
 {
   auto* object =
       new Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -70,9 +70,9 @@ void Discret::ELEMENTS::SoHex8ScatraType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8ScatraType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex8ScatraType::initialize(Core::FE::Discretization& dis)
 {
-  SoHex8Type::Initialize(dis);
+  SoHex8Type::initialize(dis);
 
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -104,7 +104,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8fbarScatraType::Create(
   auto* object =
       new Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>(
           -1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -146,9 +146,9 @@ void Discret::ELEMENTS::SoHex8fbarScatraType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8fbarScatraType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex8fbarScatraType::initialize(Core::FE::Discretization& dis)
 {
-  SoHex8fbarType::Initialize(dis);
+  SoHex8fbarType::initialize(dis);
 
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -179,7 +179,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex27ScatraType::Create(
   auto* object =
       new Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>(
           -1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -222,9 +222,9 @@ void Discret::ELEMENTS::SoHex27ScatraType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex27ScatraType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex27ScatraType::initialize(Core::FE::Discretization& dis)
 {
-  SoHex27Type::Initialize(dis);
+  SoHex27Type::initialize(dis);
 
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -256,7 +256,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet4ScatraType::Create(
 {
   auto* object =
       new Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -298,9 +298,9 @@ void Discret::ELEMENTS::SoTet4ScatraType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet4ScatraType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoTet4ScatraType::initialize(Core::FE::Discretization& dis)
 {
-  SoTet4Type::Initialize(dis);
+  SoTet4Type::initialize(dis);
 
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -333,7 +333,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet10ScatraType::Create(
   auto* object =
       new Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>(
           -1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -376,9 +376,9 @@ void Discret::ELEMENTS::SoTet10ScatraType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet10ScatraType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoTet10ScatraType::initialize(Core::FE::Discretization& dis)
 {
-  SoTet10Type::Initialize(dis);
+  SoTet10Type::initialize(dis);
 
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -411,7 +411,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoWeg6ScatraType::Create(
   auto* object =
       new Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoWeg6, Core::FE::CellType::wedge6>(
           -1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -455,9 +455,9 @@ void Discret::ELEMENTS::SoWeg6ScatraType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoWeg6ScatraType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoWeg6ScatraType::initialize(Core::FE::Discretization& dis)
 {
-  SoWeg6Type::Initialize(dis);
+  SoWeg6Type::initialize(dis);
 
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

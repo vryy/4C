@@ -68,10 +68,10 @@ ScaTra::LevelSetAlgorithm::LevelSetAlgorithm(Teuchos::RCP<Core::FE::Discretizati
 /*----------------------------------------------------------------------*
  | initialize algorithm                                     rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::Init()
+void ScaTra::LevelSetAlgorithm::init()
 {
   // todo #initsetupissue
-  // DO NOT CALL Init() IN ScaTraTimIntImpl
+  // DO NOT CALL init() IN ScaTraTimIntImpl
   // issue with writeflux and probably scalarhandler_
   // this should not be
 
@@ -82,10 +82,10 @@ void ScaTra::LevelSetAlgorithm::Init()
 /*----------------------------------------------------------------------*
  | setup algorithm                                          rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::Setup()
+void ScaTra::LevelSetAlgorithm::setup()
 {
   // todo #initsetupissue
-  // DO NOT CALL Setup() IN ScaTraTimIntImpl
+  // DO NOT CALL setup() IN ScaTraTimIntImpl
   // issue with writeflux and probably scalarhandler_
   // this should not be
 

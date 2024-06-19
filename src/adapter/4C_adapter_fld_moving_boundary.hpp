@@ -71,13 +71,13 @@ namespace Adapter
     virtual void prepare_time_step() = 0;
 
     /// evaluate elements with given displacement
-    // virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) = 0;
+    // virtual void evaluate(Teuchos::RCP<const Epetra_Vector> vel) = 0;
 
     /// update at time step end
-    virtual void Update() = 0;
+    virtual void update() = 0;
 
     /// output results
-    virtual void Output() = 0;
+    virtual void output() = 0;
 
     /// read restart information for given time step
     virtual double read_restart(int step) = 0;

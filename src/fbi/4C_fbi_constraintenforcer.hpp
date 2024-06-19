@@ -93,7 +93,7 @@ namespace Adapter
      *\param[in] structure wrapper for the structure solver
      *\param[in] fluid moving boundary wrapper for the fluid solver
      */
-    virtual void Setup(Teuchos::RCP<Adapter::FSIStructureWrapper> structure,
+    virtual void setup(Teuchos::RCP<Adapter::FSIStructureWrapper> structure,
         Teuchos::RCP<Adapter::FluidMovingBoundary> fluid);
 
     /** \brief Hand the binning strategy used for the distribution of the fluid mesh
@@ -110,7 +110,7 @@ namespace Adapter
      * of the structure elements, the fluid elements and their position relative to each other
      */
 
-    virtual void Evaluate();
+    virtual void evaluate();
 
     /**
      * \brief Recomputes all coupling related quantities without performing a search
@@ -157,7 +157,7 @@ namespace Adapter
     Teuchos::RCP<const Adapter::FBIConstraintBridge> GetBridge() const { return bridge_; };
 
     /// Handle fbi specific output
-    virtual void Output(double time, int step) = 0;
+    virtual void output(double time, int step) = 0;
 
    protected:
     /** \brief You will have to use the Adapter::ConstraintEnforcerFactory

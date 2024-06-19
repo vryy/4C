@@ -50,7 +50,7 @@ namespace
     std::vector<std::pair<std::string, double>> dp;
     dp.emplace_back("epsp", accplstrain + Dgamma);
 
-    const double y_d = hardeningfunction.Evaluate(dp, {}, 0);
+    const double y_d = hardeningfunction.evaluate(dp, {}, 0);
     double y_d_visc = y_d * pow(visc * Dgamma / dt + 1., eps);
 
     const std::vector<double> dy_d_dgvector = hardeningfunction.EvaluateDerivative(dp, {}, 0);
@@ -115,7 +115,7 @@ namespace
     //! vector for input of accumulated strain to function
     std::vector<std::pair<std::string, double>> dp;
     dp.emplace_back("epsp", accplstrain_last + Dgamma);
-    const double y_d = hardening_function.Evaluate(dp, {}, 0);
+    const double y_d = hardening_function.evaluate(dp, {}, 0);
 
     std::vector<double> dy_d_dgvector = hardening_function.EvaluateDerivative(dp, {}, 0);
     double dy_d_dgamma = dy_d_dgvector[0] * pow(visc * Dgamma / dt + 1., eps) +
@@ -166,16 +166,16 @@ namespace
 Mat::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      yield_(matdata.parameters.Get<double>("YIELD")),
-      isohard_(matdata.parameters.Get<double>("ISOHARD")),
-      infyield_(matdata.parameters.Get<double>("SATHARDENING")),
-      hardexp_(matdata.parameters.Get<double>("HARDEXPO")),
-      visc_(matdata.parameters.Get<double>("VISC")),
-      rate_dependency_(matdata.parameters.Get<double>("RATE_DEPENDENCY")),
-      functionID_hardening_(matdata.parameters.Get<int>("HARDENING_FUNC")),
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      yield_(matdata.parameters.get<double>("YIELD")),
+      isohard_(matdata.parameters.get<double>("ISOHARD")),
+      infyield_(matdata.parameters.get<double>("SATHARDENING")),
+      hardexp_(matdata.parameters.get<double>("HARDEXPO")),
+      visc_(matdata.parameters.get<double>("VISC")),
+      rate_dependency_(matdata.parameters.get<double>("RATE_DEPENDENCY")),
+      functionID_hardening_(matdata.parameters.get<int>("HARDENING_FUNC")),
       max_iterations_(10),
       tolerance_nr_(1.e-12)
 {
@@ -205,7 +205,7 @@ Core::Communication::ParObject* Mat::PlasticNlnLogNeoHookeType::Create(
     const std::vector<char>& data)
 {
   Mat::PlasticNlnLogNeoHooke* plasticneo = new Mat::PlasticNlnLogNeoHooke();
-  plasticneo->Unpack(data);
+  plasticneo->unpack(data);
   return plasticneo;
 }
 
@@ -228,7 +228,7 @@ Mat::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(Mat::PAR::PlasticNlnLogNeoHook
 /*----------------------------------------------------------------------*
  | pack (public)                                                        |
  *----------------------------------------------------------------------*/
-void Mat::PlasticNlnLogNeoHooke::Pack(Core::Communication::PackBuffer& data) const
+void Mat::PlasticNlnLogNeoHooke::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -262,13 +262,13 @@ void Mat::PlasticNlnLogNeoHooke::Pack(Core::Communication::PackBuffer& data) con
   }
 
   return;
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack (public)                                                      |
  *----------------------------------------------------------------------*/
-void Mat::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
+void Mat::PlasticNlnLogNeoHooke::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -321,13 +321,13 @@ void Mat::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
 
   return;
 
-}  // Unpack()
+}  // unpack()
 
 
 /*---------------------------------------------------------------------*
  | initialise / allocate internal variables (public)                   |
  *---------------------------------------------------------------------*/
-void Mat::PlasticNlnLogNeoHooke::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::PlasticNlnLogNeoHooke::setup(int numgp, Input::LineDefinition* linedef)
 {
   // Extract the function for hardening only once because this is expensive.
   const int functionID_hardening =
@@ -358,13 +358,13 @@ void Mat::PlasticNlnLogNeoHooke::Setup(int numgp, Input::LineDefinition* linedef
   }
 
   isinit_ = true;
-}  // Setup()
+}  // setup()
 
 
 /*----------------------------------------------------------------------*
  | update internal variables                                            |
  *----------------------------------------------------------------------*/
-void Mat::PlasticNlnLogNeoHooke::Update()
+void Mat::PlasticNlnLogNeoHooke::update()
 {
   // make current values at time step t_n+1 to values of last step t_n
   invplrcglast_ = invplrcgcurr_;
@@ -388,13 +388,13 @@ void Mat::PlasticNlnLogNeoHooke::Update()
     accplstraincurr_.at(i) = 0.0;
   }
   return;
-}  // Update()
+}  // update()
 
 
 /*----------------------------------------------------------------------*
  | calculate stress and constitutive tensor                             |
  *----------------------------------------------------------------------*/
-void Mat::PlasticNlnLogNeoHooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -525,7 +525,7 @@ void Mat::PlasticNlnLogNeoHooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defg
   std::vector<std::pair<std::string, double>> dp;
   dp.emplace_back("epsp", accplstrainlast_.at(gp));
   const double y_d = hardening_function_
-                         ? hardening_function_->Evaluate(dp, {}, 0)
+                         ? hardening_function_->evaluate(dp, {}, 0)
                          : yield + isohard * accplstrainlast_.at(gp) +
                                (infyield - yield) * (1. - exp(-hardexp * accplstrainlast_.at(gp)));
 
@@ -570,7 +570,7 @@ void Mat::PlasticNlnLogNeoHooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defg
     // strain return mapping
     // b_{e,n+1} = sum_i^3 ( lambda_{n+1}^2 . n \otimes n )
     // lambda_{n+1} = lambda_{n+1}^{trial} / exp(Dgamma . flow_vector)
-    Be.Clear();
+    Be.clear();
     for (int i = 0; i < 3; i++)
     {
       tmp1.MultiplyNT(spatial_principal_directions.at(i), spatial_principal_directions.at(i));
@@ -609,7 +609,7 @@ void Mat::PlasticNlnLogNeoHooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 
   // ---------------------------------------------------- tangent modulus
   // express coefficents of tangent in Kirchhoff stresses
-  cmat->Clear();
+  cmat->clear();
   for (int a = 0; a < 3; a++)
   {
     // - sum_1^3 (2 * tau N_aaaa)
@@ -664,7 +664,7 @@ void Mat::PlasticNlnLogNeoHooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 
   return;
 
-}  // Evaluate()
+}  // evaluate()
 
 
 /*---------------------------------------------------------------------*

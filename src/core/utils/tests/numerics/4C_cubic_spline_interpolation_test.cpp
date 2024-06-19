@@ -53,7 +53,7 @@ namespace
 
     for (double x : x_test)
     {
-      EXPECT_THROW((void)cubic_spline_->Evaluate(x), Core::Exception);
+      EXPECT_THROW((void)cubic_spline_->evaluate(x), Core::Exception);
       EXPECT_THROW((void)cubic_spline_->EvaluateDerivative(x, 1), Core::Exception);
       EXPECT_THROW((void)cubic_spline_->EvaluateDerivative(x, 2), Core::Exception);
     }
@@ -65,7 +65,7 @@ namespace
     const std::vector<double> reference_solution = {4.33232, 4.29, 4.25, 4.20152};
 
     for (std::size_t i = 0; i < x_test.size(); ++i)
-      EXPECT_NEAR(cubic_spline_->Evaluate(x_test[i]), reference_solution[i], 1.0e-12);
+      EXPECT_NEAR(cubic_spline_->evaluate(x_test[i]), reference_solution[i], 1.0e-12);
   }
 
   TEST_F(CubicSplineInterpolationTest, EvaluateFirstDerivative)

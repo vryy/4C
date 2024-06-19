@@ -62,7 +62,7 @@ namespace XFEM
     void Update(double scaling) override;
 
     //! Write Output (For restart or write results on the interface)
-    void Output(Core::IO::DiscretizationWriter& writer) override;
+    void output(Core::IO::DiscretizationWriter& writer) override;
 
     //! Read Restart (For lambda_)
     void read_restart(Core::IO::DiscretizationReader& reader) override;

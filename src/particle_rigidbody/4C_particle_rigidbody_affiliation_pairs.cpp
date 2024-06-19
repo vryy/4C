@@ -27,12 +27,12 @@ ParticleRigidBody::RigidBodyAffiliationPairs::RigidBodyAffiliationPairs(const Ep
   // empty constructor
 }
 
-void ParticleRigidBody::RigidBodyAffiliationPairs::Init()
+void ParticleRigidBody::RigidBodyAffiliationPairs::init()
 {
   // nothing to do
 }
 
-void ParticleRigidBody::RigidBodyAffiliationPairs::Setup(
+void ParticleRigidBody::RigidBodyAffiliationPairs::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine

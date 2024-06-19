@@ -575,7 +575,7 @@ bool Core::Geo::Cut::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Cut
 {
   Teuchos::RCP<Core::Geo::Cut::IntersectionBase> inter_ptr = intersection_ptr(side.Shape());
 
-  inter_ptr->Init(&mesh, this, &side, false, false, true);
+  inter_ptr->init(&mesh, this, &side, false, false, true);
   return inter_ptr->Intersect(cuts);
 }
 
@@ -587,7 +587,7 @@ bool Core::Geo::Cut::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Jus
 {
   Teuchos::RCP<Core::Geo::Cut::IntersectionBase> inter_ptr = intersection_ptr(side.Shape());
 
-  inter_ptr->Init(&mesh, this, &side, false, false, false);
+  inter_ptr->init(&mesh, this, &side, false, false, false);
   return (inter_ptr->handle_parallel_intersection(cuts, skip_id) > 0);
 }
 
@@ -769,7 +769,7 @@ bool Core::Geo::Cut::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::com
 
   Teuchos::RCP<Core::Geo::Cut::IntersectionBase> inter_ptr = intersection_ptr(other->Shape());
   // other is line element, this is surface
-  inter_ptr->Init(xyze_other, xyze_this, false, false, false, &(mesh->GetOptions()));
+  inter_ptr->init(xyze_other, xyze_this, false, false, false, &(mesh->GetOptions()));
 
   bool edges_parallel =
       HandleParallelCut(other, side, cut_points, mesh->GetOptions().geom_distance_floattype());

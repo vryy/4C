@@ -69,10 +69,10 @@ namespace ParticleInteraction
     ~SPHTemperature();
 
     //! init temperature handler
-    void Init();
+    void init();
 
     //! setup temperature handler
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
         const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs);

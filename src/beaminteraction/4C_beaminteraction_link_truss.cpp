@@ -33,7 +33,7 @@ Core::Communication::ParObject* BEAMINTERACTION::BeamLinkTrussType::Create(
     const std::vector<char>& data)
 {
   BEAMINTERACTION::BeamLinkTruss* my_truss_linker = new BEAMINTERACTION::BeamLinkTruss();
-  my_truss_linker->Unpack(data);
+  my_truss_linker->unpack(data);
   return my_truss_linker;
 }
 
@@ -71,24 +71,24 @@ Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkTruss::Clone() 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::Init(int id, const std::vector<std::pair<int, int>>& eleids,
+void BEAMINTERACTION::BeamLinkTruss::init(int id, const std::vector<std::pair<int, int>>& eleids,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
     Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
 {
   issetup_ = false;
 
-  BeamLinkPinJointed::Init(id, eleids, initpos, inittriad, linkertype, timelinkwasset);
+  BeamLinkPinJointed::init(id, eleids, initpos, inittriad, linkertype, timelinkwasset);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::Setup(const int matnum)
+void BEAMINTERACTION::BeamLinkTruss::setup(const int matnum)
 {
   check_init();
 
   // call setup of base class first
-  BeamLinkPinJointed::Setup(matnum);
+  BeamLinkPinJointed::setup(matnum);
 
   /* the idea is to use a truss element as auxiliary object that provides us with a
    * response force depending on the position of the two material points on the
@@ -129,7 +129,7 @@ void BEAMINTERACTION::BeamLinkTruss::Setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::Pack(Core::Communication::PackBuffer& data) const
+void BEAMINTERACTION::BeamLinkTruss::pack(Core::Communication::PackBuffer& data) const
 {
   check_init_setup();
 
@@ -139,17 +139,17 @@ void BEAMINTERACTION::BeamLinkTruss::Pack(Core::Communication::PackBuffer& data)
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class
-  BeamLinkPinJointed::Pack(data);
+  BeamLinkPinJointed::pack(data);
 
   // pack linker element
-  if (linkele_ != Teuchos::null) linkele_->Pack(data);
+  if (linkele_ != Teuchos::null) linkele_->pack(data);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::Unpack(const std::vector<char>& data)
+void BEAMINTERACTION::BeamLinkTruss::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -158,7 +158,7 @@ void BEAMINTERACTION::BeamLinkTruss::Unpack(const std::vector<char>& data)
   // extract base class
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  BeamLinkPinJointed::Unpack(basedata);
+  BeamLinkPinJointed::unpack(basedata);
 
   // Unpack data of sub material (these lines are copied from element.cpp)
   std::vector<char> dataele;

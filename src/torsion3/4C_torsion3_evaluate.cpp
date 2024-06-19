@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) cyron 08/08|
  *----------------------------------------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Torsion3::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,

@@ -28,8 +28,8 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams::PowerConstitutiveLawParams(
     const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container)
     : CONTACT::CONSTITUTIVELAW::Parameter(container),
-      a_(container->Get<double>("A")),
-      b_(container->Get<double>("B"))
+      a_(container->get<double>("A")),
+      b_(container->get<double>("B"))
 {
 }
 /*----------------------------------------------------------------------*/
@@ -49,7 +49,7 @@ CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::PowerConstitutiveLaw(
 /*----------------------------------------------------------------------*
  |  Evaluate the contact constitutive law|
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::Evaluate(double gap, CONTACT::Node* cnode)
+double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
 {
   if (gap + params_->GetOffset() > 0)
   {

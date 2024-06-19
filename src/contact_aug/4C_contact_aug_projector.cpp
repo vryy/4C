@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::Aug::ProjectorBase* CONTACT::Aug::ProjectorBase::Get(const unsigned probdim,
+CONTACT::Aug::ProjectorBase* CONTACT::Aug::ProjectorBase::get(const unsigned probdim,
     Core::FE::CellType ref_type, Core::FE::CellType tar_type, const bool debug)
 {
   switch (probdim)

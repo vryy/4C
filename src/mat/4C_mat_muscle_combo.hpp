@@ -161,18 +161,18 @@ namespace Mat
       return MuscleComboType::Instance().UniqueParObjectId();
     }
 
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     bool UsesExtendedUpdate() override { return true; };
 
     void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
         Teuchos::ParameterList& params, int const eleGID) override;
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;

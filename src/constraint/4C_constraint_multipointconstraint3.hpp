@@ -38,7 +38,7 @@ namespace CONSTRAINTS
 
     /// initialization routine called by the manager ctor to get correct reference base values and
     /// activating the right conditions at the beginning
-    void Initialize(
+    void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Epetra_Vector> systemvector3  ///< distributed vector that may be filled by
@@ -46,12 +46,12 @@ namespace CONSTRAINTS
         ) override;
 
     /// initialization routine called at restart to activate the right conditions
-    void Initialize(const double& time  ///< current time
+    void initialize(const double& time  ///< current time
         ) override;
 
     //! Evaluate routine to call from outside. In here the right action is determined and the
     //! #evaluate_constraint routine is called
-    void Evaluate(
+    void evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Core::LinAlg::SparseOperator>

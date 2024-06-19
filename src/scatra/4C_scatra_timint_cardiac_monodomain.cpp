@@ -47,7 +47,7 @@ ScaTra::TimIntCardiacMonodomain::TimIntCardiacMonodomain(Teuchos::RCP<Core::FE::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomain::Setup()
+void ScaTra::TimIntCardiacMonodomain::setup()
 {
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -108,7 +108,7 @@ void ScaTra::TimIntCardiacMonodomain::output_state()
         "action", ScaTra::Action::get_material_internal_state, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state",
         material_internal_state_np_);  // Probably do it once at the beginning
-    discret_->Evaluate(params);
+    discret_->evaluate(params);
     material_internal_state_np_ =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
 
@@ -131,7 +131,7 @@ void ScaTra::TimIntCardiacMonodomain::output_state()
         "action", ScaTra::Action::get_material_ionic_currents, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>("material_ionic_currents",
         material_ionic_currents_np_);  // Probably do it once at the beginning
-    discret_->Evaluate(params);
+    discret_->evaluate(params);
     material_internal_state_np_ =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("material_ionic_currents");
 
@@ -164,7 +164,7 @@ void ScaTra::TimIntCardiacMonodomain::element_material_time_update()
   discret_->set_state("phinp", phinp_);
 
   // go to elements
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 }
 

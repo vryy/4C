@@ -56,7 +56,7 @@ namespace Arteries
 
 
     //! initialize time integration
-    void Init(const Teuchos::ParameterList& globaltimeparams,
+    void init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     //! get discretization
@@ -69,7 +69,7 @@ namespace Arteries
 
     int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
 
-    void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override = 0;
+    void output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override = 0;
 
     /*!
     \brief start time loop for startingalgo, normal problems and restarts

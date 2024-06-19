@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 Mat::Elastic::PAR::VolSussmanBathe::VolSussmanBathe(const Core::Mat::PAR::Parameter::Data& matdata)
-    : Parameter(matdata), kappa_(matdata.parameters.Get<double>("KAPPA"))
+    : Parameter(matdata), kappa_(matdata.parameters.get<double>("KAPPA"))
 {
 }
 

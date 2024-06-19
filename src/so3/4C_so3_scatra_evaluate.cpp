@@ -178,7 +178,7 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::pre_evaluate(Teuchos::Param
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::So3Scatra<so3_ele, distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -224,7 +224,7 @@ int Discret::ELEMENTS::So3Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterL
     default:
     {
       // call the base class routine
-      so3_ele::Evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
+      so3_ele::evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
       break;
     }  // default
@@ -365,7 +365,7 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kd_s_ssi(
 
     // get dSdc, hand in nullptr as 'cmat' to evaluate the off-diagonal block
     Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_static_cast<Mat::So3Material>(material());
-    so3mat->Evaluate(&defgrad, &glstrain, params, &dSdc, nullptr, gp, id());
+    so3mat->evaluate(&defgrad, &glstrain, params, &dSdc, nullptr, gp, id());
 
     /*==== end of call material law ===============================================*/
 

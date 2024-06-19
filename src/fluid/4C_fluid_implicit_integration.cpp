@@ -121,7 +121,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::Init()
+void FLD::FluidImplicitTimeInt::init()
 {
   // time measurement: initialization
   TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
@@ -199,7 +199,7 @@ void FLD::FluidImplicitTimeInt::Init()
   // -------------------------------------------------------------------
   // create empty vectors
   // -------------------------------------------------------------------
-  Reset();
+  reset();
 
   // ---------------------------------------------------------------------
   // Set initial ALE mesh displacement and velocity
@@ -384,7 +384,7 @@ void FLD::FluidImplicitTimeInt::Init()
   }
   reconstructder_ = Core::UTILS::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der");
 
-}  // FluidImplicitTimeInt::Init()
+}  // FluidImplicitTimeInt::init()
 
 /*----------------------------------------------------------------------*
  |  create internal faces for the case of EOS stab                      |
@@ -1181,7 +1181,7 @@ void FLD::FluidImplicitTimeInt::evaluate_mat_and_rhs(Teuchos::ParameterList& ele
       // Reshape element matrices and vectors and init to zero
       strategy.ClearElementStorage(la[0].Size(), la[0].Size());
       {
-        int err = actele->Evaluate(eleparams, *discret_, la[0].lm_, strategy.Elematrix1(),
+        int err = actele->evaluate(eleparams, *discret_, la[0].lm_, strategy.Elematrix1(),
             strategy.Elematrix2(), strategy.Elevector1(), strategy.Elevector2(),
             strategy.Elevector3());
 
@@ -1214,7 +1214,7 @@ void FLD::FluidImplicitTimeInt::evaluate_mat_and_rhs(Teuchos::ParameterList& ele
     residual_->Update(1.0, *tmp, 1.0);
   }
   else
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, sysmat_, shapederivatives_, residual_, Teuchos::null, Teuchos::null);
 }
 
@@ -1233,7 +1233,7 @@ void FLD::FluidImplicitTimeInt::evaluate_mass_matrix()
 
   if (alefluid_) discret_->set_state(ndsale_, "dispnp", dispnp_);
 
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, massmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
@@ -1611,7 +1611,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
       if (alefluid_) discret_->set_state(ndsale_, "dispnp", dispnp_);
 
       // set values for elements
-      const int fdp_cond_id = fdpcond[fdpcondid]->parameters().Get<int>("ConditionID");
+      const int fdp_cond_id = fdpcond[fdpcondid]->parameters().get<int>("ConditionID");
       flowdeppressureparams.set<double>("flow rate", flowraterel[fdp_cond_id]);
       flowdeppressureparams.set<double>("flow volume", flowvolumerel[fdp_cond_id]);
 
@@ -1743,7 +1743,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
     {
       // check for already existing ID and add ID
       const int sscbcondid_from_container =
-          sscbcond[sscbcondid]->parameters().Get<int>("ConditionID");
+          sscbcond[sscbcondid]->parameters().get<int>("ConditionID");
       if (sscbcondid_from_container)
       {
         if (sscbcondid_from_container != sscbcondid)
@@ -1830,7 +1830,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
     for (int nscondid = 0; nscondid < (int)nscond.size(); nscondid++)
     {
       // check for already existing ID and add ID
-      const int nscondid_from_container = nscond[nscondid]->parameters().Get<int>("ConditionID");
+      const int nscondid_from_container = nscond[nscondid]->parameters().get<int>("ConditionID");
       if (nscondid_from_container)
       {
         if (nscondid_from_container != nscondid)
@@ -1858,7 +1858,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
 
       // set slip coefficient
       Core::Conditions::Condition* currnavierslip = nscond[nscondid];
-      const double beta = currnavierslip->parameters().Get<double>("slipcoefficient");
+      const double beta = currnavierslip->parameters().get<double>("slipcoefficient");
       navierslipparams.set<double>("beta", beta);
 
       // evaluate navier slip boundary condition
@@ -2100,7 +2100,7 @@ void FLD::FluidImplicitTimeInt::init_krylov_space_projection()
   // check if for fluid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
-    const auto& name = KSPcond[icond]->parameters().Get<std::string>("discretization");
+    const auto& name = KSPcond[icond]->parameters().get<std::string>("discretization");
     if (name == "fluid")
     {
       numfluid++;
@@ -2129,12 +2129,12 @@ void FLD::FluidImplicitTimeInt::init_krylov_space_projection()
 void FLD::FluidImplicitTimeInt::setup_krylov_space_projection(Core::Conditions::Condition* kspcond)
 {
   // confirm that mode flags are number of nodal dofs
-  const int nummodes = kspcond->parameters().Get<int>("NUMMODES");
+  const int nummodes = kspcond->parameters().get<int>("NUMMODES");
   if (nummodes != (numdim_ + 1))
     FOUR_C_THROW("Expecting numdim_+1 modes in Krylov projection definition. Check dat-file!");
 
   // get vector of mode flags as given in dat-file
-  const auto& modeflags = kspcond->parameters().Get<std::vector<int>>("ONOFF");
+  const auto& modeflags = kspcond->parameters().get<std::vector<int>>("ONOFF");
 
   // confirm that only the pressure mode is selected for Krylov projection in dat-file
   for (int rr = 0; rr < numdim_; ++rr)
@@ -2152,10 +2152,10 @@ void FLD::FluidImplicitTimeInt::setup_krylov_space_projection(Core::Conditions::
   kspsplitter_ = Teuchos::rcp(new FLD::UTILS::KSPMapExtractor());
   // create map of nodes involved in Krylov projection
 
-  kspsplitter_->Setup(*discret_);
+  kspsplitter_->setup(*discret_);
 
   // get from dat-file definition how weights are to be computed
-  const auto* weighttype = &kspcond->parameters().Get<std::string>("weight vector definition");
+  const auto* weighttype = &kspcond->parameters().get<std::string>("weight vector definition");
 
   // set flag for projection update true only if ALE and integral weights
   if (alefluid_ and (*weighttype == "integration")) updateprojection_ = true;
@@ -2545,13 +2545,13 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
     }
 
     // Get coupling type
-    std::string coupling = (selectedCond[0]->parameters().Get<std::string>("coupling"));
+    std::string coupling = (selectedCond[0]->parameters().get<std::string>("coupling"));
 
     // Get scaling value
-    const double scalingValue = selectedCond[0]->parameters().Get<double>("val");
+    const double scalingValue = selectedCond[0]->parameters().get<double>("val");
 
     // Get function for node normal calculation
-    const int nodeNormalFunct = selectedCond[0]->parameters().Get<int>("nodenormalfunct");
+    const int nodeNormalFunct = selectedCond[0]->parameters().get<int>("nodenormalfunct");
 
     // Get a vector layout from the discretization to construct matching
     // vectors and matrices
@@ -2690,7 +2690,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
             (*nodeNormals)[dofsLocalInd[i]] =
                 (Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
                      nodeNormalFunct - 1))
-                    .Evaluate(currPos.data(), 0.0, i);
+                    .evaluate(currPos.data(), 0.0, i);
           }
         }
       }
@@ -3039,7 +3039,7 @@ void FLD::FluidImplicitTimeInt::get_dofs_vector_local_indicesfor_node(
  | Call routine from outside of fluid,                                  |
  | e.g. FSI, FPSI, Poro, ...                                            |
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
+void FLD::FluidImplicitTimeInt::evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   // update solution by adding step increment to previous converged solution
   if (stepinc != Teuchos::null)
@@ -3151,7 +3151,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
       eleparams.set("dt", dta_);
 
       // call loop over elements to update subgrid scales
-      discret_->Evaluate(
+      discret_->evaluate(
           eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
       if (myrank_ == 0) std::cout << "(" << Teuchos::Time::wallTime() - tcpu << ")\n";
@@ -3399,7 +3399,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
-  Output();
+  output();
 
   // -------------------------------------------------------------------
   //          dumping of turbulence statistics if required
@@ -3451,7 +3451,7 @@ void FLD::FluidImplicitTimeInt::WriteRuntimeOutput()
   Teuchos::RCP<Epetra_Vector> col_version =
       Teuchos::rcp(new Epetra_Vector(*(discretization()->DofColMap()), true));
 
-  runtime_output_writer_->Reset();
+  runtime_output_writer_->reset();
 
   if (runtime_output_params_.OutputVelocityState())
   {
@@ -3505,7 +3505,7 @@ void FLD::FluidImplicitTimeInt::WriteRuntimeOutput()
  | overloaded in TimIntPoro                                             |
  | overloaded in TimIntRedModels                               bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::Output()
+void FLD::FluidImplicitTimeInt::output()
 {
   // output of solution
   if (upres_ > 0 and step_ % upres_ == 0)
@@ -4118,7 +4118,7 @@ void FLD::FluidImplicitTimeInt::av_m3_assemble_mat_and_rhs(Teuchos::ParameterLis
   // Remark:
   // This is necessary because the fssgv_ flag
   // has already been set in SetParameters()
-  // Therefore, the function Evaluate() already
+  // Therefore, the function evaluate() already
   // expects the state vector "fsvelaf" and "fsscaaf" for loma
   if (fssgv_ != Inpar::FLUID::no_fssgv or turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
   {
@@ -4147,7 +4147,7 @@ void FLD::FluidImplicitTimeInt::av_m3_assemble_mat_and_rhs(Teuchos::ParameterLis
 
   // element evaluation for getting system matrix
   // -> we merely need matrix "structure" below, not the actual contents
-  discret_->Evaluate(eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
   discret_->ClearState();
   // reset the vector modified above
   scaaf_->PutScalar(0.0);
@@ -4276,7 +4276,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
         double initialval = Global::Problem::Instance()
                                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                .Evaluate(lnode->X().data(), time_, index);
+                                .evaluate(lnode->X().data(), time_, index);
 
         velnp_->ReplaceGlobalValues(1, &initialval, &gid);
       }
@@ -5417,7 +5417,7 @@ void FLD::FluidImplicitTimeInt::linear_relaxation_solve(Teuchos::RCP<Epetra_Vect
     SetStateTimInt();
 
     // call loop over elements
-    discret_->Evaluate(eleparams, sysmat_, meshmatrix_, residual_, Teuchos::null, Teuchos::null);
+    discret_->evaluate(eleparams, sysmat_, meshmatrix_, residual_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
 
     // finalize the system matrix
@@ -5569,7 +5569,7 @@ void FLD::FluidImplicitTimeInt::set_element_general_fluid_parameter()
     eleparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -5592,7 +5592,7 @@ void FLD::FluidImplicitTimeInt::set_element_turbulence_parameters()
       params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -6126,7 +6126,7 @@ void FLD::FluidImplicitTimeInt::recompute_mean_csgs_b()
       ele->LocationVector(*discret_, lm, lmowner, lmstride);
 
       // call the element evaluate method to integrate functions
-      int err = ele->Evaluate(myparams, *discret_, lm, emat1, emat2, evec1, evec2, evec2);
+      int err = ele->evaluate(myparams, *discret_, lm, emat1, emat2, evec1, evec2, evec2);
       if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", myrank_, ele->Id(), err);
 
       // get contributions of this element and add it up
@@ -6173,7 +6173,7 @@ void FLD::FluidImplicitTimeInt::recompute_mean_csgs_b()
       ele->LocationVector(*discret_, lm, lmowner, lmstride);
 
       // call the element evaluate method to integrate functions
-      int err = ele->Evaluate(myparams, *discret_, lm, emat1, emat2, evec1, evec2, evec2);
+      int err = ele->evaluate(myparams, *discret_, lm, emat1, emat2, evec1, evec2, evec2);
       if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", myrank_, ele->Id(), err);
     }
   }
@@ -6249,7 +6249,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcDivOp()
   if (alefluid_) discret_->set_state(ndsale_, "dispnp", dispnp_);
 
   // construct the operator on element level as a column vector
-  discret_->Evaluate(params, Teuchos::null, Teuchos::null, divop, Teuchos::null, Teuchos::null);
+  discret_->evaluate(params, Teuchos::null, Teuchos::null, divop, Teuchos::null, Teuchos::null);
 
   // clear column maps after the evaluate call
   discret_->ClearState();
@@ -6264,7 +6264,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcDivOp()
 /*------------------------------------------------------------------------------------------------*
  |
  *------------------------------------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::Reset(bool completeReset, int numsteps, int iter)
+void FLD::FluidImplicitTimeInt::reset(bool completeReset, int numsteps, int iter)
 {
   if (completeReset)
   {
@@ -6377,7 +6377,7 @@ void FLD::FluidImplicitTimeInt::predict_tang_vel_consist_acc()
 
   // compute residual forces residual_ and stiffness sysmat_
   // at velnp_, etc which are unchanged
-  Evaluate(Teuchos::null);
+  evaluate(Teuchos::null);
 
   // add linear reaction forces to residual
   // linear reactions

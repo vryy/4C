@@ -42,7 +42,7 @@ void Discret::ELEMENTS::FluidPoroEleType::pre_evaluate(Core::FE::Discretization&
   }
 }
 
-int Discret::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::FluidPoro::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -78,7 +78,7 @@ int Discret::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
     case FLD::calc_fluid_systemmat_and_residual:
     {
       return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
-          ->Evaluate(
+          ->evaluate(
               this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
     }
     //-----------------------------------------------------------------------
@@ -89,7 +89,7 @@ int Discret::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
     case FLD::calc_porousflow_fluid_coupling:
     {
       return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
-          ->Evaluate(this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2,
+          ->evaluate(this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2,
               elevec3, true);
     }
     //-----------------------------------------------------------------------
@@ -124,7 +124,7 @@ int Discret::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
       break;
     default:
       // call evaluate of standard fluid
-      return Fluid::Evaluate(
+      return Fluid::evaluate(
           params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
   }
 

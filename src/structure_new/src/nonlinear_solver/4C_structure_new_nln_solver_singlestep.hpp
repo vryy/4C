@@ -32,7 +32,7 @@ namespace STR::Nln::SOLVER
   {
    public:
     //! derived from the base class
-    void Setup() override;
+    void setup() override;
 
     //! derived from the base class
     Inpar::STR::ConvergenceStatus Solve() override;

@@ -227,11 +227,11 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
   // determine number of conditioned nodes
   const unsigned nnode = (*nodeids).size();
   // get onoff toggles from condition
-  const auto* onoff = &cond.parameters().Get<std::vector<int>>("onoff");
+  const auto* onoff = &cond.parameters().get<std::vector<int>>("onoff");
   // get val from condition
-  const auto* val = &cond.parameters().Get<std::vector<double>>("val");
+  const auto* val = &cond.parameters().get<std::vector<double>>("val");
   // get funct from condition
-  const auto* funct = &cond.parameters().Get<std::vector<int>>("funct");
+  const auto* funct = &cond.parameters().get<std::vector<int>>("funct");
 
   // loop nodes to identify spatial distributions of Dirichlet boundary conditions
   for (unsigned i = 0; i < nnode; ++i)
@@ -341,7 +341,7 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
           if (funct_num > 0)
             functfac = params.get<const Core::UTILS::FunctionManager*>("function_manager")
                            ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                           .Evaluate(actnode->X().data(), time, onesetj);
+                           .evaluate(actnode->X().data(), time, onesetj);
         }
 
         const double value = (*val)[onesetj] * functfac;
@@ -472,9 +472,9 @@ void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
   // determine number of conditioned nodes
   const unsigned nnode = (*nodeids).size();
   // get onoff, funct, and val from condition
-  const auto* onoff = &cond.parameters().Get<std::vector<int>>("onoff");
-  const auto* funct = &cond.parameters().Get<std::vector<int>>("funct");
-  const auto* val = &cond.parameters().Get<std::vector<double>>("val");
+  const auto* onoff = &cond.parameters().get<std::vector<int>>("onoff");
+  const auto* funct = &cond.parameters().get<std::vector<int>>("funct");
+  const auto* val = &cond.parameters().get<std::vector<double>>("val");
 
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to
@@ -591,7 +591,7 @@ void Core::FE::UTILS::Dbc::build_dbc_map_extractor(const Core::FE::Discretizatio
   Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements,
       discret.dof_row_map()->IndexBase(), discret.dof_row_map()->Comm()));
   // build the map extractor of Dirichlet-conditioned and free DOFs
-  dbcmapextractor->Setup(*(discret.dof_row_map()), dbcmap);
+  dbcmapextractor->setup(*(discret.dof_row_map()), dbcmap);
 }
 
 FOUR_C_NAMESPACE_CLOSE

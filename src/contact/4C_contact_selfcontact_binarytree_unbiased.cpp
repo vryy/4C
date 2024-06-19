@@ -199,10 +199,10 @@ void CONTACT::UnbiasedSelfBinaryTree::get_contracted_node(
 /*----------------------------------------------------------------------*
  | initialize the unbiased self binary tree  (public)      schmidt 01/19|
  *----------------------------------------------------------------------*/
-void CONTACT::UnbiasedSelfBinaryTree::Init()
+void CONTACT::UnbiasedSelfBinaryTree::init()
 {
   // call initialization method of base class
-  Mortar::BaseBinaryTree::Init();
+  Mortar::BaseBinaryTree::init();
 
   // initialize internal variables
   init_internal_variables();

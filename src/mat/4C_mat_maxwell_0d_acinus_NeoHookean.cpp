@@ -52,7 +52,7 @@ Core::Communication::ParObject* Mat::Maxwell0dAcinusNeoHookeanType::Create(
     const std::vector<char>& data)
 {
   Mat::Maxwell0dAcinusNeoHookean* mxwll_0d_acin = new Mat::Maxwell0dAcinusNeoHookean();
-  mxwll_0d_acin->Unpack(data);
+  mxwll_0d_acin->unpack(data);
   return mxwll_0d_acin;
 }
 
@@ -72,7 +72,7 @@ Mat::Maxwell0dAcinusNeoHookean::Maxwell0dAcinusNeoHookean(Mat::PAR::Maxwell0dAci
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusNeoHookean::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Maxwell0dAcinusNeoHookean::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -90,7 +90,7 @@ void Mat::Maxwell0dAcinusNeoHookean::Pack(Core::Communication::PackBuffer& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusNeoHookean::Unpack(const std::vector<char>& data)
+void Mat::Maxwell0dAcinusNeoHookean::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -122,7 +122,7 @@ void Mat::Maxwell0dAcinusNeoHookean::Unpack(const std::vector<char>& data)
  | Setup routine for NeoHookean material                                |
  |                                                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusNeoHookean::Setup(Input::LineDefinition* linedef)
+void Mat::Maxwell0dAcinusNeoHookean::setup(Input::LineDefinition* linedef)
 {
   // do nothing, all parameters are read by base class already
 }
@@ -132,7 +132,7 @@ void Mat::Maxwell0dAcinusNeoHookean::Setup(Input::LineDefinition* linedef)
  | Evaluate NeoHookean material and build system matrix and rhs         |
  |                                                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusNeoHookean::Evaluate(Core::LinAlg::SerialDenseVector& epnp,
+void Mat::Maxwell0dAcinusNeoHookean::evaluate(Core::LinAlg::SerialDenseVector& epnp,
     Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
     Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
     const Discret::ReducedLung::ElemParams& params, const double NumOfAcini, const double Vo,

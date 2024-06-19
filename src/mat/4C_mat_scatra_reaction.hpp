@@ -246,7 +246,7 @@ namespace Mat
       Mat::PAR::ReactionCoupling set_coupling_type(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// Initialize
-      void Initialize();
+      void initialize();
 
       /// number of scalars in this reaction
       const int numscal_;
@@ -334,7 +334,7 @@ namespace Mat
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -348,12 +348,12 @@ namespace Mat
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// initialize
-    virtual void Initialize() { params_->Initialize(); }
+    virtual void initialize() { params_->initialize(); }
 
     /// material type
     Core::Materials::MaterialType MaterialType() const override

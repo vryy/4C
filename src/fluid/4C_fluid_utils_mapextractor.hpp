@@ -43,7 +43,7 @@ namespace FLD
       };
 
       /// setup the whole thing
-      void Setup(const Core::FE::Discretization& dis, bool withpressure = false,
+      void setup(const Core::FE::Discretization& dis, bool withpressure = false,
           bool overlapping = false, const int nds_master = 0);
 
       /*!
@@ -57,7 +57,7 @@ namespace FLD
        * \author kruse
        * \date 05/2014
        */
-      void Setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
+      void setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
           const FLD::UTILS::MapExtractor& extractor);
 
       /// get all element gids those nodes are touched by any condition
@@ -84,7 +84,7 @@ namespace FLD
       };
 
       /// setup the whole thing
-      void Setup(const Core::FE::Discretization& dis);
+      void setup(const Core::FE::Discretization& dis);
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(VolumetricSurfaceFlowCond, cond_vol_surf_flow)
@@ -101,7 +101,7 @@ namespace FLD
       };
 
       /// setup the whole thing
-      void Setup(const Core::FE::Discretization& dis);
+      void setup(const Core::FE::Discretization& dis);
 
       /// get all element gids those nodes are touched by any condition
       Teuchos::RCP<std::set<int>> conditioned_element_map(
@@ -116,7 +116,7 @@ namespace FLD
     {
      public:
       /// setup the whole thing
-      void Setup(const Core::FE::Discretization& dis);
+      void setup(const Core::FE::Discretization& dis);
 
       MAP_EXTRACTOR_VECTOR_METHODS(Velocity, 0)
       MAP_EXTRACTOR_VECTOR_METHODS(Pressure, 1)
@@ -133,9 +133,9 @@ namespace FLD
       };
 
       /// setup the whole thing
-      void Setup(const Core::FE::Discretization& dis);
+      void setup(const Core::FE::Discretization& dis);
 
-      void Setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
+      void setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
           const FLD::UTILS::FsiMapExtractor& extractor);
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
@@ -153,7 +153,7 @@ namespace FLD
       };
 
       /// setup the whole thing
-      void Setup(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> fluidmap,
+      void setup(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> fluidmap,
           Teuchos::RCP<const Epetra_Map> xfluidmap);
 
       MAP_EXTRACTOR_VECTOR_METHODS(Fluid, cond_fluid)

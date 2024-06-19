@@ -30,10 +30,10 @@ namespace BEAMINTERACTION
     virtual ~BeamContactRuntimeVisualizationOutputParams() = default;
 
     //! initialize with the stuff coming from input file
-    void Init();
+    void init();
 
     //! setup member variables
-    void Setup();
+    void setup();
 
     /**
      * \brief Return the container holding the general output parameters

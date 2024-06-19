@@ -86,18 +86,18 @@ namespace Discret
       /*!
       \brief Pack this class so it can be communicated
 
-      \ref Pack and \ref Unpack are used to communicate this element
+      \ref pack and \ref unpack are used to communicate this element
 
       */
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
 
-      \ref Pack and \ref Unpack are used to communicate this element
+      \ref pack and \ref unpack are used to communicate this element
 
       */
-      void Unpack(const std::vector<char>& data) override;
+      void unpack(const std::vector<char>& data) override;
 
       //! Get vector of Teuchos::RCPs to the lines of this element
       std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
@@ -139,7 +139,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(
+      int evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly

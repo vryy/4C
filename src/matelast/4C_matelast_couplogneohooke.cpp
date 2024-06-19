@@ -17,9 +17,9 @@ FOUR_C_NAMESPACE_OPEN
 Mat::Elastic::PAR::CoupLogNeoHooke::CoupLogNeoHooke(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata)
 {
-  std::string parmode = (matdata.parameters.Get<std::string>("MODE"));
-  double c1 = matdata.parameters.Get<double>("C1");
-  double c2 = matdata.parameters.Get<double>("C2");
+  std::string parmode = (matdata.parameters.get<std::string>("MODE"));
+  double c1 = matdata.parameters.get<double>("C1");
+  double c2 = matdata.parameters.get<double>("C2");
 
   if (parmode == "YN")
   {

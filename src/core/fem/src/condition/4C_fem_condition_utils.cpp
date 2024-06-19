@@ -149,7 +149,7 @@ void Core::Conditions::FindConditionedNodes(const Core::FE::Discretization& dis,
   const int myrank = dis.Comm().MyPID();
   for (const auto& cond : conds)
   {
-    int id = use_coupling_id ? cond->parameters().Get<int>("coupling id") : 0;
+    int id = use_coupling_id ? cond->parameters().get<int>("coupling id") : 0;
     for (int gid : *cond->GetNodes())
     {
       if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
@@ -175,7 +175,7 @@ void Core::Conditions::FindConditionedNodes(const Core::FE::Discretization& dis,
   const int myrank = dis.Comm().MyPID();
   for (auto* cond : conds)
   {
-    int id = cond->parameters().Get<int>("coupling id");
+    int id = cond->parameters().get<int>("coupling id");
     for (int gid : *cond->GetNodes())
     {
       if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
@@ -320,7 +320,7 @@ void Core::Conditions::FindConditionObjects(const Core::FE::Discretization& dis,
 
   for (auto& cond : conds)
   {
-    int id = cond->parameters().Get<int>("coupling id");
+    int id = cond->parameters().get<int>("coupling id");
     // get this condition's elements
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& geo = cond->Geometry();
     std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator iter, pos;
@@ -359,7 +359,7 @@ void Core::Conditions::FindConditionObjects(const Core::FE::Discretization& dis,
   {
     if (checklabel)
     {
-      const int condlabel = cond->parameters().Get<int>("label");
+      const int condlabel = cond->parameters().get<int>("label");
 
       if (condlabel != label) continue;  // do not consider conditions with wrong label
     }

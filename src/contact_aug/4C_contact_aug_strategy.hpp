@@ -769,7 +769,7 @@ namespace CONTACT
        *
        *  \date 02/2016
        *  \author hiermeier */
-      void Reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
+      void reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
           const Epetra_Vector& xnew) override;
 
       //! @name Accessors
@@ -1078,9 +1078,9 @@ namespace CONTACT
       void update_active_set_semi_smooth(const CONTACT::ParamsInterface& cparams);
 
       //! Initialize all matrices
-      void Initialize() override { Initialize(Mortar::eval_force_stiff); }
+      void initialize() override { initialize(Mortar::eval_force_stiff); }
       //! Initialize only the necessary member variables
-      void Initialize(enum Mortar::ActionType actiontype);
+      void initialize(enum Mortar::ActionType actiontype);
 
       /*! \brief Projection of the nodal LM values in the nodal normal and tangential direction.
        *
@@ -1119,7 +1119,7 @@ namespace CONTACT
             Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
         /// perform the FD evaluate calls
-        void Evaluate(const Teuchos::RCP<Core::LinAlg::SparseMatrix>& derivMatrixPtr,
+        void evaluate(const Teuchos::RCP<Core::LinAlg::SparseMatrix>& derivMatrixPtr,
             Teuchos::RCP<Epetra_Vector>& rhsVector, CONTACT::ParamsInterface& cparams);
 
        private:

@@ -57,7 +57,7 @@ Mat::Maxwell0dAcinusOgdenType Mat::Maxwell0dAcinusOgdenType::instance_;
 Core::Communication::ParObject* Mat::Maxwell0dAcinusOgdenType::Create(const std::vector<char>& data)
 {
   Mat::Maxwell0dAcinusOgden* mxwll_0d_acin = new Mat::Maxwell0dAcinusOgden();
-  mxwll_0d_acin->Unpack(data);
+  mxwll_0d_acin->unpack(data);
   return mxwll_0d_acin;
 }
 
@@ -77,7 +77,7 @@ Mat::Maxwell0dAcinusOgden::Maxwell0dAcinusOgden(Mat::PAR::Maxwell0dAcinus* param
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusOgden::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Maxwell0dAcinusOgden::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -97,7 +97,7 @@ void Mat::Maxwell0dAcinusOgden::Pack(Core::Communication::PackBuffer& data) cons
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusOgden::Unpack(const std::vector<char>& data)
+void Mat::Maxwell0dAcinusOgden::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -133,7 +133,7 @@ void Mat::Maxwell0dAcinusOgden::Unpack(const std::vector<char>& data)
  | Setup routine to add Ogden material specific parameters kappa and    |
  | beta to material                                         roth 10/2014|
  *----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusOgden::Setup(Input::LineDefinition* linedef)
+void Mat::Maxwell0dAcinusOgden::setup(Input::LineDefinition* linedef)
 {
   linedef->extract_double("KAPPA", kappa_);
   linedef->extract_double("BETA", beta_);
@@ -148,7 +148,7 @@ void Mat::Maxwell0dAcinusOgden::Setup(Input::LineDefinition* linedef)
  | deformation                                                          |
  |                                                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusOgden::Evaluate(Core::LinAlg::SerialDenseVector& epnp,
+void Mat::Maxwell0dAcinusOgden::evaluate(Core::LinAlg::SerialDenseVector& epnp,
     Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
     Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
     const Discret::ReducedLung::ElemParams& params, const double NumOfAcini, const double Vo,

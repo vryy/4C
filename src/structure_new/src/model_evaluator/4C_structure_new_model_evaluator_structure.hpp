@@ -45,7 +45,7 @@ namespace STR
       Structure();
 
 
-      void Setup() override;
+      void setup() override;
 
       //! @name Derived public STR::MODELEVALUATOR::Generic methods
       //! @{
@@ -54,7 +54,7 @@ namespace STR
       Inpar::STR::ModelType Type() const override { return Inpar::STR::model_structure; }
 
       //! derived
-      void Reset(const Epetra_Vector& x) override;
+      void reset(const Epetra_Vector& x) override;
 
       //! derived
       bool evaluate_force() override;

@@ -54,10 +54,10 @@ namespace Adapter
 
 
     /// setup
-    void Setup() override;
+    void setup() override;
 
     /// init
-    void Init() override;
+    void init() override;
 
     /// read restart data (pure virtual)
     void read_restart(int step  ///< step number where the calculation is continued

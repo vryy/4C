@@ -35,7 +35,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex27Type::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoHex27(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -159,7 +159,7 @@ Core::FE::CellType Discret::ELEMENTS::SoHex27::Shape() const { return Core::FE::
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex27::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoHex27::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -167,7 +167,7 @@ void Discret::ELEMENTS::SoHex27::Pack(Core::Communication::PackBuffer& data) con
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  SoBase::Pack(data);
+  SoBase::pack(data);
 
   // detJ_
   add_to_pack(data, detJ_);
@@ -193,7 +193,7 @@ void Discret::ELEMENTS::SoHex27::Pack(Core::Communication::PackBuffer& data) con
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex27::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoHex27::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -202,7 +202,7 @@ void Discret::ELEMENTS::SoHex27::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  SoBase::Unpack(basedata);
+  SoBase::unpack(basedata);
 
   // detJ_
   extract_from_pack(position, data, detJ_);
@@ -222,7 +222,7 @@ void Discret::ELEMENTS::SoHex27::Unpack(const std::vector<char>& data)
     extract_from_pack(position, data, tmpprestress);
     if (prestress_ == Teuchos::null)
       prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOH27, NUMGPT_SOH27));
-    prestress_->Unpack(tmpprestress);
+    prestress_->unpack(tmpprestress);
   }
 
   if (position != data.size())

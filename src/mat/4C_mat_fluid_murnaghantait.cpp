@@ -20,12 +20,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::MurnaghanTaitFluid::MurnaghanTaitFluid(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      viscosity_(matdata.parameters.Get<double>("DYNVISCOSITY")),
-      refdensity_(matdata.parameters.Get<double>("REFDENSITY")),
-      refpressure_(matdata.parameters.Get<double>("REFPRESSURE")),
-      refbulkmodulus_(matdata.parameters.Get<double>("REFBULKMODULUS")),
-      matparameter_(matdata.parameters.Get<double>("MATPARAMETER")),
-      gamma_(matdata.parameters.Get<double>("GAMMA"))
+      viscosity_(matdata.parameters.get<double>("DYNVISCOSITY")),
+      refdensity_(matdata.parameters.get<double>("REFDENSITY")),
+      refpressure_(matdata.parameters.get<double>("REFPRESSURE")),
+      refbulkmodulus_(matdata.parameters.get<double>("REFBULKMODULUS")),
+      matparameter_(matdata.parameters.get<double>("MATPARAMETER")),
+      gamma_(matdata.parameters.get<double>("GAMMA"))
 {
 }
 
@@ -44,7 +44,7 @@ Mat::MurnaghanTaitFluidType Mat::MurnaghanTaitFluidType::instance_;
 Core::Communication::ParObject* Mat::MurnaghanTaitFluidType::Create(const std::vector<char>& data)
 {
   Mat::MurnaghanTaitFluid* fluid = new Mat::MurnaghanTaitFluid();
-  fluid->Unpack(data);
+  fluid->unpack(data);
   return fluid;
 }
 
@@ -62,7 +62,7 @@ Mat::MurnaghanTaitFluid::MurnaghanTaitFluid(Mat::PAR::MurnaghanTaitFluid* params
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::MurnaghanTaitFluid::Pack(Core::Communication::PackBuffer& data) const
+void Mat::MurnaghanTaitFluid::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -79,7 +79,7 @@ void Mat::MurnaghanTaitFluid::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::MurnaghanTaitFluid::Unpack(const std::vector<char>& data)
+void Mat::MurnaghanTaitFluid::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

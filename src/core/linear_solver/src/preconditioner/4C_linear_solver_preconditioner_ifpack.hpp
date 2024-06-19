@@ -31,7 +31,7 @@ namespace Core::LinearSolver
     IFPACKPreconditioner(Teuchos::ParameterList& ifpacklist, Teuchos::ParameterList& solverlist);
 
     //! Setup
-    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
     /// linear operator used for preconditioning

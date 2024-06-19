@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Mat::PAR::StructPoroReaction::StructPoroReaction(const Core::Mat::PAR::Parameter::Data& matdata)
-    : StructPoro(matdata), dofIDReacScalar_(matdata.parameters.Get<int>("DOFIDREACSCALAR"))
+    : StructPoro(matdata), dofIDReacScalar_(matdata.parameters.get<int>("DOFIDREACSCALAR"))
 {
 }
 
@@ -36,7 +36,7 @@ Mat::StructPoroReactionType Mat::StructPoroReactionType::instance_;
 Core::Communication::ParObject* Mat::StructPoroReactionType::Create(const std::vector<char>& data)
 {
   Mat::StructPoroReaction* struct_poro = new Mat::StructPoroReaction();
-  struct_poro->Unpack(data);
+  struct_poro->unpack(data);
   return struct_poro;
 }
 
@@ -60,15 +60,15 @@ Mat::StructPoroReaction::StructPoroReaction(Mat::PAR::StructPoroReaction* params
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::StructPoroReaction::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::StructPoroReaction::setup(int numgp, Input::LineDefinition* linedef)
 {
-  StructPoro::Setup(numgp, linedef);
+  StructPoro::setup(numgp, linedef);
   refporosity_ = params_->init_porosity_;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::StructPoroReaction::Pack(Core::Communication::PackBuffer& data) const
+void Mat::StructPoroReaction::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -85,12 +85,12 @@ void Mat::StructPoroReaction::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, refporosity_);
 
   // add base class material
-  StructPoro::Pack(data);
+  StructPoro::pack(data);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::StructPoroReaction::Unpack(const std::vector<char>& data)
+void Mat::StructPoroReaction::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -119,7 +119,7 @@ void Mat::StructPoroReaction::Unpack(const std::vector<char>& data)
   // extract base class material
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  StructPoro::Unpack(basedata);
+  StructPoro::unpack(basedata);
 }
 
 /*----------------------------------------------------------------------*/
@@ -201,13 +201,13 @@ void Mat::StructPoroReaction::reaction(const double porosity, const double J,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::StructPoroReaction::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::StructPoroReaction::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
   // call base class
-  StructPoro::Evaluate(defgrd, glstrain, params, stress, cmat, gp, eleGID);
+  StructPoro::evaluate(defgrd, glstrain, params, stress, cmat, gp, eleGID);
 
   // scale stresses and cmat
   stress->Scale((1.0 - refporosity_) / (1.0 - params_->init_porosity_));

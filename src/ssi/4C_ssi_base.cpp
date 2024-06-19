@@ -72,13 +72,13 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
  | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SSIBase::init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
@@ -107,13 +107,13 @@ void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIBase::Setup()
+void SSI::SSIBase::setup()
 {
   // check initialization
   check_is_init();
 
   // set up helper class for field coupling
-  ssicoupling_->Setup();
+  ssicoupling_->setup();
 
   // in case of an ssi  multi scale formulation we need to set the displacement here
   auto dummy_vec = Teuchos::rcp(
@@ -121,8 +121,8 @@ void SSI::SSIBase::Setup()
   ssicoupling_->set_mesh_disp(ScaTraBaseAlgorithm(), dummy_vec);
 
   // set up scalar transport field
-  ScaTraField()->Setup();
-  if (is_sca_tra_manifold()) ScaTraManifold()->Setup();
+  ScaTraField()->setup();
+  if (is_sca_tra_manifold()) ScaTraManifold()->setup();
 
   // only relevant for new structural time integration
   // only if adapter base has not already been set up outside
@@ -155,14 +155,14 @@ void SSI::SSIBase::Setup()
       temperature_vector_->PutScalar(
           Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
-              .Evaluate(Time()));
+              .evaluate(Time()));
 
       ssicoupling_->SetTemperatureField(
           *Global::Problem::Instance()->GetDis("structure"), temperature_vector_);
     }
 
     // set up structural base algorithm
-    struct_adapterbase_ptr_->Setup();
+    struct_adapterbase_ptr_->setup();
 
     // get wrapper and cast it to specific type
     // do not do so, in case the wrapper has already been set from outside
@@ -180,7 +180,7 @@ void SSI::SSIBase::Setup()
 
   // for old structural time integration
   else if (use_old_structure_)
-    structure_->Setup();
+    structure_->setup();
 
   if (is_s2_i_kinetics_with_pseudo_contact())
   {
@@ -447,7 +447,7 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
 
   // initialize coupling objects including dof sets
   Global::Problem* problem = Global::Problem::Instance();
-  ssicoupling_->Init(problem->NDim(), problem->GetDis(struct_disname), Teuchos::rcp(this, false));
+  ssicoupling_->init(problem->NDim(), problem->GetDis(struct_disname), Teuchos::rcp(this, false));
 
   return redistribution_required;
 }
@@ -560,7 +560,7 @@ void SSI::SSIBase::evaluate_and_set_temperature_field()
     const double temperature =
         Global::Problem::Instance()
             ->FunctionById<Core::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
-            .Evaluate(Time());
+            .evaluate(Time());
     temperature_vector_->PutScalar(temperature);
 
     // set temperature vector to structure discretization
@@ -749,7 +749,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
       struct_adapterbase_ptr_ = Adapter::build_structure_algorithm(structparams);
 
       // initialize structure base algorithm
-      struct_adapterbase_ptr_->Init(
+      struct_adapterbase_ptr_->init(
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
     }
     // build structure based on old structural time integration
@@ -779,7 +779,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
       SSI::UTILS::ModifyScaTraParams(scatraparams),
       problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle));
 
-  ScaTraBaseAlgorithm()->Init();
+  ScaTraBaseAlgorithm()->init();
 
   // create and initialize scatra base algorithm for manifolds
   if (is_sca_tra_manifold())
@@ -790,7 +790,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
         problem->SolverParams(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
         "scatra_manifold", isAle));
 
-    sca_tra_manifold_base_algorithm()->Init();
+    sca_tra_manifold_base_algorithm()->init();
   }
 
   // do checks if adaptive time stepping is activated
@@ -827,7 +827,7 @@ bool SSI::SSIBase::IsRestart() const
   // get the global problem
   const auto* problem = Global::Problem::Instance();
 
-  const int restartstep = problem->Restart();
+  const int restartstep = problem->restart();
 
   return (restartstep > 0);
 }
@@ -867,17 +867,17 @@ bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
   structdis->GetCondition("SSIInterfaceContact", ssi_contact_conditions);
   for (auto* s2ikinetics_cond : s2ikinetics_conditons)
   {
-    if ((s2ikinetics_cond->parameters().Get<int>("interface side") == Inpar::S2I::side_slave) and
-        (s2ikinetics_cond->parameters().Get<int>("kinetic model") !=
+    if ((s2ikinetics_cond->parameters().get<int>("interface side") == Inpar::S2I::side_slave) and
+        (s2ikinetics_cond->parameters().get<int>("kinetic model") !=
             Inpar::S2I::kinetics_nointerfaceflux) and
-        (s2ikinetics_cond->parameters().Get<int>("is_pseudo_contact") == 1))
+        (s2ikinetics_cond->parameters().get<int>("is_pseudo_contact") == 1))
     {
       is_s2i_kinetic_with_pseudo_contact = true;
-      const int s2i_kinetics_condition_id = s2ikinetics_cond->parameters().Get<int>("ConditionID");
+      const int s2i_kinetics_condition_id = s2ikinetics_cond->parameters().get<int>("ConditionID");
 
       for (auto* contact_condition : ssi_contact_conditions)
       {
-        if (contact_condition->parameters().Get<int>("ConditionID") == s2i_kinetics_condition_id)
+        if (contact_condition->parameters().get<int>("ConditionID") == s2i_kinetics_condition_id)
         {
           FOUR_C_THROW(
               "Pseudo contact formulation of s2i kinetics conditions does not make sense in "

@@ -300,7 +300,7 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> 
 
   // this setup only initialize two sets of identical mortar elements (master and slave)
   // -> projection matrix is a unity matrix
-  coupff_->Setup(fluiddis, fluiddis, Teuchos::null, coupleddof, "FSICoupling", fluiddis->Comm(),
+  coupff_->setup(fluiddis, fluiddis, Teuchos::null, coupleddof, "FSICoupling", fluiddis->Comm(),
       Global::Problem::Instance()->FunctionManager(), false, true);
 }
 
@@ -375,7 +375,7 @@ void FSI::UTILS::SlideAleUtils::EvaluateMortar(Teuchos::RCP<Epetra_Vector> idisp
   if (idispms_->Import(*idispfluid, *slave_importer, Add)) FOUR_C_THROW("Import operation failed.");
 
   // new D,M,Dinv out of disp of struct and fluid side
-  coupsf.Evaluate(idispms_);
+  coupsf.evaluate(idispms_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -384,7 +384,7 @@ void FSI::UTILS::SlideAleUtils::EvaluateFluidMortar(
     Teuchos::RCP<Epetra_Vector> ima, Teuchos::RCP<Epetra_Vector> isl)
 {
   // new D,M,Dinv out of fluid disp before and after sliding
-  coupff_->Evaluate(ima, isl);
+  coupff_->evaluate(ima, isl);
 }
 
 /*----------------------------------------------------------------------*/
@@ -452,7 +452,7 @@ std::vector<double> FSI::UTILS::SlideAleUtils::centerdisp(
     elevector3.size(dim);  // centerdisp part of ele
 
     params.set<std::string>("action", "calc_struct_centerdisp");
-    int err = iele->Evaluate(
+    int err = iele->evaluate(
         params, *structdis, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
     if (err) FOUR_C_THROW("error while evaluating elements");
     mylengthcirc += elevector2[0];
@@ -826,7 +826,7 @@ void FSI::UTILS::SlideAleUtils::rotation(
       params.set<std::string>("action", "calc_struct_rotation");
       params.set<double>("maxcoord", maxcoord);
       params.set<Inpar::FSI::SlideALEProj>("aletype", aletype_);
-      int err = iele->Evaluate(
+      int err = iele->evaluate(
           params, mtrdis, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -868,7 +868,7 @@ void FSI::UTILS::SlideAleUtils::rotation(
       params.set<std::string>("action", "calc_undo_struct_rotation");
       params.set<double>("maxcoord", maxcoord);
       params.set<Inpar::FSI::SlideALEProj>("aletype", aletype_);
-      int err = iele->Evaluate(
+      int err = iele->evaluate(
           params, mtrdis, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 

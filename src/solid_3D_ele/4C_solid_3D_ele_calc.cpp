@@ -83,17 +83,17 @@ Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::SolidEleCalc()
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Pack(
+void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::pack(
     Core::Communication::PackBuffer& data) const
 {
-  Discret::ELEMENTS::Pack<ElementFormulation>(data, history_data_);
+  Discret::ELEMENTS::pack<ElementFormulation>(data, history_data_);
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Unpack(
+void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  Discret::ELEMENTS::Unpack<ElementFormulation>(position, data, history_data_);
+  Discret::ELEMENTS::unpack<ElementFormulation>(position, data, history_data_);
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
@@ -221,7 +221,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Update(
             { solid_material.Update(deformation_gradient, gp, params, ele.Id()); });
       });
 
-  solid_material.Update();
+  solid_material.update();
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
@@ -343,10 +343,10 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::update_prest
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Setup(
+void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::setup(
     Mat::So3Material& solid_material, Input::LineDefinition* linedef)
 {
-  solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);
+  solid_material.setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>

@@ -41,7 +41,7 @@ namespace Arteries
 
 
     // initialization
-    void Init(const Teuchos::ParameterList& globaltimeparams,
+    void init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     // test results
@@ -90,7 +90,7 @@ namespace Arteries
     }
 
     // output
-    void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
+    void output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
 
     //! output of element radius
     void OutputRadius();

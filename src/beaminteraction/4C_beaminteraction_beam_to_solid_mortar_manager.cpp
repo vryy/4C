@@ -101,7 +101,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
+void BEAMINTERACTION::BeamToSolidMortarManager::setup()
 {
   // Get the global ids of all beam centerline nodes on this rank.
   std::vector<int> my_nodes_gid;

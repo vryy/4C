@@ -392,8 +392,8 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
 
     // initialize search tree for matching with template (source,master) elements
     auto elementmatchingtree = Core::COUPLING::ElementMatchingOctree();
-    elementmatchingtree.Init(*dis_from_template_condition, my_template_colelegid_vec, 150, 1e-06);
-    elementmatchingtree.Setup();
+    elementmatchingtree.init(*dis_from_template_condition, my_template_colelegid_vec, 150, 1e-06);
+    elementmatchingtree.setup();
 
     // map that will be filled with matched elements.
     // mapping: redistr. ele gid to (template ele gid, dist.).
@@ -503,8 +503,8 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
 
     // initialize search tree for matching with template (source) nodes
     auto nodematchingtree = Core::COUPLING::NodeMatchingOctree();
-    nodematchingtree.Init(dis_template, my_template_nodegid_vec, 150, 1e-06);
-    nodematchingtree.Setup();
+    nodematchingtree.init(dis_template, my_template_nodegid_vec, 150, 1e-06);
+    nodematchingtree.setup();
 
     // map that will be filled with matched nodes.
     // mapping: redistr. node gid to (template node gid, dist.).
@@ -679,8 +679,8 @@ void Core::Rebalance::MatchElementRowColDistribution(const Core::FE::Discretizat
 
   // initialize search tree for matching with template (source,master) elements
   auto elementmatchingtree = Core::COUPLING::ElementMatchingOctree();
-  elementmatchingtree.Init(dis_template, my_template_elegid_vec, 150, 1e-07);
-  elementmatchingtree.Setup();
+  elementmatchingtree.init(dis_template, my_template_elegid_vec, 150, 1e-07);
+  elementmatchingtree.setup();
 
   // map that will be filled with matched elements.
   // mapping: redistr. ele gid to (template ele gid, dist.).
@@ -736,8 +736,8 @@ void Core::Rebalance::MatchNodalRowColDistribution(const Core::FE::Discretizatio
 
   // initialize search tree for matching with template (source) nodes
   auto nodematchingtree = Core::COUPLING::NodeMatchingOctree();
-  nodematchingtree.Init(dis_template, my_template_nodegid_vec, 150, 1e-07);
-  nodematchingtree.Setup();
+  nodematchingtree.init(dis_template, my_template_nodegid_vec, 150, 1e-07);
+  nodematchingtree.setup();
 
   // map that will be filled with matched nodes.
   // mapping: redistr. node gid to (template node gid, dist.).

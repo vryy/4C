@@ -22,7 +22,7 @@ bool Discret::ELEMENTS::SoHex20::ReadElement(
   linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
-  SolidMaterial()->Setup(NUMGPT_SOH20, linedef);
+  SolidMaterial()->setup(NUMGPT_SOH20, linedef);
 
   std::string buffer;
   linedef->extract_string("KINEM", buffer);

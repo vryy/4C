@@ -32,11 +32,11 @@ namespace LUBRICATION
 
 
     /// initialize time integration scheme
-    void Init() override;
+    void init() override;
 
     /// Update the solution after convergence of the nonlinear iteration.
     /// Current solution becomes old solution of next timestep.
-    void Update(const int num = 0) override;
+    void update(const int num = 0) override;
 
     /// read restart data
     void read_restart(int step) override;

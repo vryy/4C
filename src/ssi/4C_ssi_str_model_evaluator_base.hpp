@@ -71,7 +71,7 @@ namespace STR::MODELEVALUATOR
 
     void read_restart(Core::IO::DiscretizationReader& ioreader) override {}
 
-    void Reset(const Epetra_Vector& x) override {}
+    void reset(const Epetra_Vector& x) override {}
 
     void reset_step_state() override {}
 
@@ -87,7 +87,7 @@ namespace STR::MODELEVALUATOR
     {
     }
 
-    void Setup() override;
+    void setup() override;
 
     [[nodiscard]] Inpar::STR::ModelType Type() const override
     {

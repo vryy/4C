@@ -33,7 +33,7 @@ Mortar::BaseBinaryTree::BaseBinaryTree(Core::FE::Discretization& discret, int di
 /*----------------------------------------------------------------------*
  | initialize the binary tree (public)                     schmidt 01/19|
  *----------------------------------------------------------------------*/
-void Mortar::BaseBinaryTree::Init()
+void Mortar::BaseBinaryTree::init()
 {
   switch (dim_)
   {

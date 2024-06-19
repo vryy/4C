@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::PoroFluidMultiPhase::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -61,7 +61,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& par
 
       return Discret::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
           Shape(), numdofpernode, discretization.Name())
-          ->Evaluate(this, params, discretization, la, elemat, elevec);
+          ->evaluate(this, params, discretization, la, elemat, elevec);
       break;
     }
     case POROFLUIDMULTIPHASE::set_timestep_parameter:

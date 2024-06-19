@@ -52,7 +52,7 @@ void BEAMINTERACTION::BeamInteractionConditionBase::BuildIdSets(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditionBase::Setup(
+void BEAMINTERACTION::BeamInteractionConditionBase::setup(
     const Teuchos::RCP<const Core::FE::Discretization>& discret)
 {
 }
@@ -60,7 +60,7 @@ void BEAMINTERACTION::BeamInteractionConditionBase::Setup(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditionBase::Clear() {}
+void BEAMINTERACTION::BeamInteractionConditionBase::clear() {}
 
 /**
  *
@@ -102,7 +102,7 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
           coupling_id_map;
       for (const auto& condition : condition_lines)
       {
-        const int coupling_id = condition->parameters().Get<int>("COUPLING_ID");
+        const int coupling_id = condition->parameters().get<int>("COUPLING_ID");
         auto& condition_1 = coupling_id_map[coupling_id].first;
         auto& condition_2 = coupling_id_map[coupling_id].second;
         if (condition_1 == Teuchos::null)
@@ -166,9 +166,9 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
                         Teuchos::RCP<const Core::Conditions::Condition>>>
           coupling_id_map;
       for (const auto& condition : condition_line)
-        coupling_id_map[condition->parameters().Get<int>("COUPLING_ID")].first = condition;
+        coupling_id_map[condition->parameters().get<int>("COUPLING_ID")].first = condition;
       for (const auto& condition : condition_other)
-        coupling_id_map[condition->parameters().Get<int>("COUPLING_ID")].second = condition;
+        coupling_id_map[condition->parameters().get<int>("COUPLING_ID")].second = condition;
       for (const auto& map_item : coupling_id_map)
       {
         if (map_item.second.first != Teuchos::null && map_item.second.second != Teuchos::null)
@@ -220,8 +220,8 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
         Teuchos::RCP<BeamInteractionConditionBase> new_condition;
 
         new_condition = Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPointCouplingCondition(
-            condition, condition->parameters().Get<double>("POSITIONAL_PENALTY_PARAMETER"),
-            condition->parameters().Get<double>("ROTATIONAL_PENALTY_PARAMETER")));
+            condition, condition->parameters().get<double>("POSITIONAL_PENALTY_PARAMETER"),
+            condition->parameters().get<double>("ROTATIONAL_PENALTY_PARAMETER")));
 
         interaction_vector.push_back(new_condition);
       }
@@ -257,20 +257,20 @@ void BEAMINTERACTION::BeamInteractionConditions::set_state(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::Setup(
+void BEAMINTERACTION::BeamInteractionConditions::setup(
     const Teuchos::RCP<const Core::FE::Discretization>& discret)
 {
   for (auto const& map_pair : condition_map_)
-    for (auto const& condition : map_pair.second) condition->Setup(discret);
+    for (auto const& condition : map_pair.second) condition->setup(discret);
 }
 
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::Clear()
+void BEAMINTERACTION::BeamInteractionConditions::clear()
 {
   for (auto const& map_pair : condition_map_)
-    for (auto const& condition : map_pair.second) condition->Clear();
+    for (auto const& condition : map_pair.second) condition->clear();
 }
 
 /**

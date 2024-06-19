@@ -54,7 +54,7 @@ namespace CONSTRAINTS
     /*!
       \brief Set it up
      */
-    void Setup(Teuchos::RCP<Core::FE::Discretization> discr, Core::LinAlg::Solver& solver,
+    void setup(Teuchos::RCP<Core::FE::Discretization> discr, Core::LinAlg::Solver& solver,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::ParameterList params);
 
     /*!

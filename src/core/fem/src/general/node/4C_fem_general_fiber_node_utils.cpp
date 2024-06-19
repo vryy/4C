@@ -159,7 +159,7 @@ void Core::Nodes::ProjectQuantityWithShapeFunctions(
 
   for (Core::LinAlg::Matrix<dim, 1>& quantity : quantityProjected)
   {
-    quantity.Clear();
+    quantity.clear();
   }
 
   for (std::size_t i = 0; i < nsd; ++i)

@@ -26,9 +26,9 @@ FOUR_C_NAMESPACE_OPEN
 MIXTURE::PAR::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureConstituent(matdata),
-      matid_prestress_strategy_(matdata.parameters.Get<int>("PRESTRESS_STRATEGY")),
-      nummat_(matdata.parameters.Get<int>("NUMMAT")),
-      matids_(matdata.parameters.Get<std::vector<int>>("MATIDS"))
+      matid_prestress_strategy_(matdata.parameters.get<int>("PRESTRESS_STRATEGY")),
+      nummat_(matdata.parameters.get<int>("NUMMAT")),
+      matids_(matdata.parameters.get<std::vector<int>>("MATIDS"))
 {
   // check, if size of summands fits to the number of summands
   if (nummat_ != (int)matids_.size())
@@ -76,7 +76,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::pack_constituent(
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   Core::Communication::ParObject::add_to_pack(data, matid);
-  summand_properties_.Pack(data);
+  summand_properties_.pack(data);
 
   Core::Communication::ParObject::add_to_pack(data, prestretch_);
 
@@ -124,7 +124,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
     }
   }
 
-  summand_properties_.Unpack(position, data);
+  summand_properties_.unpack(position, data);
 
   Core::Communication::ParObject::extract_from_pack(position, data, prestretch_);
 
@@ -172,7 +172,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::read_element(
   MixtureConstituent::read_element(numgp, linedef);
 
   // Setup summands
-  for (const auto& summand : potsum_) summand->Setup(numgp, linedef);
+  for (const auto& summand : potsum_) summand->setup(numgp, linedef);
 
   // find out which formulations are used
   Mat::ElastHyperProperties(potsum_, summand_properties_);
@@ -190,7 +190,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::update(Core::LinAlg::Matrix<3, 3
   MixtureConstituent::update(defgrd, params, gp, eleGID);
 
   // loop map of associated potential summands
-  for (auto& summand : potsum_) summand->Update();
+  for (auto& summand : potsum_) summand->update();
 
   // do nothing in the default case
   if (params_->get_prestressing_mat_id() > 0)
@@ -242,7 +242,7 @@ bool MIXTURE::MixtureConstituentElastHyperBase::evaluate_output_data(
     for (int gp = 0; gp < num_gp(); ++gp)
     {
       static Core::LinAlg::Matrix<9, 1> tmp(false);
-      tmp.Clear();
+      tmp.clear();
       Core::LinAlg::Voigt::matrix_3x3_to_9x1(prestretch_[gp], tmp);
 
       for (int i = 0; i < 9; ++i)

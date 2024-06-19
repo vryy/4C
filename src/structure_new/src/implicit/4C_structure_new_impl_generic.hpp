@@ -43,7 +43,7 @@ namespace STR
       Generic();
 
       //! Setup (has to be implemented by the derived classes)
-      void Setup() override;
+      void setup() override;
 
       //! derived
       bool apply_correction_system(const enum NOX::Nln::CorrectionType type,

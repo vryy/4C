@@ -99,15 +99,15 @@ namespace
       pair_elements.push_back(&(*beam_element));
       pair_elements.push_back(&(*fluid_element));
       pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);
-      pair.Init(intersection_params, pair_elements);
+      pair.init(intersection_params, pair_elements);
 
-      pair.ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam_type, scalar_type>::Initialize(
+      pair.ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam_type, scalar_type>::initialize(
           beam_element.get());
       pair.ele1posref_ =
-          GEOMETRYPAIR::InitializeElementData<beam_type, double>::Initialize(beam_element.get());
+          GEOMETRYPAIR::InitializeElementData<beam_type, double>::initialize(beam_element.get());
       pair.ele1poscur_ =
-          GEOMETRYPAIR::InitializeElementData<beam_type, double>::Initialize(beam_element.get());
-      pair.ele1vel_ = GEOMETRYPAIR::InitializeElementData<beam_type, scalar_type>::Initialize(
+          GEOMETRYPAIR::InitializeElementData<beam_type, double>::initialize(beam_element.get());
+      pair.ele1vel_ = GEOMETRYPAIR::InitializeElementData<beam_type, scalar_type>::initialize(
           beam_element.get());
       pair.ele1posref_.element_position_ = q_beam;
       pair.ele2posref_.element_position_ = q_fluid;
@@ -126,7 +126,7 @@ namespace
       Core::LinAlg::SerialDenseVector local_ff;
       pair.pre_evaluate();
       bool projects =
-          pair.Evaluate(&local_fs, &local_ff, &local_kss, &local_ksf, &local_kfs, &local_kff);
+          pair.evaluate(&local_fs, &local_ff, &local_kss, &local_ksf, &local_kfs, &local_kff);
 
       EXPECT_TRUE(projects);
       EXPECT_EQ(local_kff.numRows(), fluid_dofs);

@@ -47,7 +47,7 @@ namespace UTILS
   <h3>Invariants</h3>
 
   There are two possible states in this class: Reset and setup. To
-  change back and forth use assign_degrees_of_freedom() and Reset().
+  change back and forth use assign_degrees_of_freedom() and reset().
 
 
   \author tk     */
@@ -83,7 +83,7 @@ namespace UTILS
         const Teuchos::RCP<ModelOrderRed::ProperOrthogonalDecomposition> mor);
 
     /// reset all internal variables
-    void Reset() override;
+    void reset() override;
 
     //@}
 

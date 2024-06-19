@@ -47,9 +47,9 @@ STR::MODELEVALUATOR::BeamInteractionDataState::BeamInteractionDataState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionDataState::Init()
+void STR::MODELEVALUATOR::BeamInteractionDataState::init()
 {
-  // We have to call Setup() after Init()
+  // We have to call setup() after init()
   issetup_ = false;
 
   // clear stl stuff
@@ -63,7 +63,7 @@ void STR::MODELEVALUATOR::BeamInteractionDataState::Init()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionDataState::Setup(
+void STR::MODELEVALUATOR::BeamInteractionDataState::setup(
     Teuchos::RCP<const Core::FE::Discretization> const& ia_discret)
 {
   // safety check

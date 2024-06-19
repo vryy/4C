@@ -33,11 +33,11 @@ Mat::PAR::ScatraMat::ScatraMat(const Core::Mat::PAR::Parameter::Data& matdata) :
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
-  matparams_.at(diff)->PutScalar(matdata.parameters.Get<double>("DIFFUSIVITY"));
-  matparams_.at(reac)->PutScalar(matdata.parameters.Get<double>("REACOEFF"));
-  matparams_.at(densific)->PutScalar(matdata.parameters.Get<double>("DENSIFICATION"));
+  matparams_.at(diff)->PutScalar(matdata.parameters.get<double>("DIFFUSIVITY"));
+  matparams_.at(reac)->PutScalar(matdata.parameters.get<double>("REACOEFF"));
+  matparams_.at(densific)->PutScalar(matdata.parameters.get<double>("DENSIFICATION"));
   matparams_.at(reacts_to_external_force)
-      ->PutScalar(matdata.parameters.Get<bool>("REACTS_TO_EXTERNAL_FORCE"));
+      ->PutScalar(matdata.parameters.get<bool>("REACTS_TO_EXTERNAL_FORCE"));
 }
 
 
@@ -53,7 +53,7 @@ Mat::ScatraMatType Mat::ScatraMatType::instance_;
 Core::Communication::ParObject* Mat::ScatraMatType::Create(const std::vector<char>& data)
 {
   Mat::ScatraMat* scatra_mat = new Mat::ScatraMat();
-  scatra_mat->Unpack(data);
+  scatra_mat->unpack(data);
   return scatra_mat;
 }
 
@@ -70,7 +70,7 @@ Mat::ScatraMat::ScatraMat(Mat::PAR::ScatraMat* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraMat::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ScatraMat::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -87,7 +87,7 @@ void Mat::ScatraMat::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraMat::Unpack(const std::vector<char>& data)
+void Mat::ScatraMat::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

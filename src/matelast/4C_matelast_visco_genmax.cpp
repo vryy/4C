@@ -16,9 +16,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::Elastic::PAR::GenMax::GenMax(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      tau_(matdata.parameters.Get<double>("TAU")),
-      beta_(matdata.parameters.Get<double>("BETA")),
-      solve_(matdata.parameters.Get<std::string>("SOLVE"))
+      tau_(matdata.parameters.get<double>("TAU")),
+      beta_(matdata.parameters.get<double>("BETA")),
+      solve_(matdata.parameters.get<std::string>("SOLVE"))
 {
 }
 

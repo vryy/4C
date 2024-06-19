@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  |evaluate the element (public)                            ismail 01/10|
  *---------------------------------------------------------------------*/
-int Discret::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::RedAirway::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -87,7 +87,7 @@ int Discret::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
   {
     case calc_sys_matrix_rhs:
     {
-      return Discret::ELEMENTS::RedAirwayImplInterface::Impl(this)->Evaluate(
+      return Discret::ELEMENTS::RedAirwayImplInterface::Impl(this)->evaluate(
           this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
     }
     break;

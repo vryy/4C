@@ -50,7 +50,7 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::compute_porosity_and_linearization
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Wall1PoroP1<distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -98,7 +98,7 @@ int Discret::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& pa
       Base::pre_evaluate(params, discretization, la);
 
       // evaluate parent solid element
-      Wall1::Evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
+      Wall1::evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
     }
     break;
@@ -125,7 +125,7 @@ int Discret::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& pa
         for (int j = 0; j < Base::numdim_; j++) lm_sub.push_back(la[0].lm_[i * noddof_ + j]);
 
       // evaluate parent solid element
-      Wall1::Evaluate(params, discretization, lm_sub, elemat1_sub, elemat2_sub, elevec1_sub,
+      Wall1::evaluate(params, discretization, lm_sub, elemat1_sub, elemat2_sub, elevec1_sub,
           elevec2_sub, elevec3_sub);
 
 
@@ -908,9 +908,9 @@ int Discret::ELEMENTS::Wall1PoroP1<distype>::evaluate_neumann(Teuchos::Parameter
 
 
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
-  const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
+  const auto* funct = &condition.parameters().get<std::vector<int>>("funct");
 
 
   Core::LinAlg::Matrix<Base::numdim_, Base::numnod_> N_XYZ;
@@ -961,7 +961,7 @@ int Discret::ELEMENTS::Wall1PoroP1<distype>::evaluate_neumann(Teuchos::Parameter
           // evaluate function at current gauss point
           functfac = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                         .Evaluate(coordgpref, time, i);
+                         .evaluate(coordgpref, time, i);
         }
 
         ar[i] = fac * (*val)[i] * functfac;

@@ -108,7 +108,7 @@ namespace Mat
     /// The first information to be stored in data has to be the
     /// unique parobject id delivered by UniqueParObjectId() which will then
     /// identify the exact class on the receiving processor.
-    void Pack(
+    void pack(
         Core::Communication::PackBuffer& data  ///< (in/out): char vector to store class information
     ) const override;
 
@@ -120,7 +120,7 @@ namespace Mat
     /// parobject id defined at the top of this file and delivered by
     /// UniqueParObjectId().
     ///
-    void Unpack(const std::vector<char>& data  ///< vector storing all data to be unpacked into this
+    void unpack(const std::vector<char>& data  ///< vector storing all data to be unpacked into this
         ) override;
 
     //@}
@@ -148,20 +148,20 @@ namespace Mat
 
     //@}
 
-    void Evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp, Core::LinAlg::Matrix<1, 1>& cmat,
+    void evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp, Core::LinAlg::Matrix<1, 1>& cmat,
         Core::LinAlg::Matrix<1, 1>& heatflux) const override;
 
-    void Evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp, Core::LinAlg::Matrix<2, 2>& cmat,
+    void evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp, Core::LinAlg::Matrix<2, 2>& cmat,
         Core::LinAlg::Matrix<2, 1>& heatflux) const override;
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
+    void evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
         Core::LinAlg::Matrix<3, 1>& heatflux) const override;
 
-    void ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const override { dCondDT.Clear(); }
+    void ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const override { dCondDT.clear(); }
 
-    void ConductivityDerivT(Core::LinAlg::Matrix<2, 2>& dCondDT) const override { dCondDT.Clear(); }
+    void ConductivityDerivT(Core::LinAlg::Matrix<2, 2>& dCondDT) const override { dCondDT.clear(); }
 
-    void ConductivityDerivT(Core::LinAlg::Matrix<1, 1>& dCondDT) const override { dCondDT.Clear(); }
+    void ConductivityDerivT(Core::LinAlg::Matrix<1, 1>& dCondDT) const override { dCondDT.clear(); }
 
     double CapacityDerivT() const override { return 0; }
 

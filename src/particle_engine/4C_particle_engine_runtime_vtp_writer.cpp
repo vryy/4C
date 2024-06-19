@@ -26,7 +26,7 @@ PARTICLEENGINE::ParticleRuntimeVtpWriter::ParticleRuntimeVtpWriter(const Epetra_
   // empty constructor
 }
 
-void PARTICLEENGINE::ParticleRuntimeVtpWriter::Init(
+void PARTICLEENGINE::ParticleRuntimeVtpWriter::init(
     const ParticleContainerBundleShrdPtr particlecontainerbundle)
 {
   // set particle container bundle
@@ -43,7 +43,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Init(
       LastIterDensity, LastIterTemperature});
 }
 
-void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(bool write_ghosted_particles)
+void PARTICLEENGINE::ParticleRuntimeVtpWriter::setup(bool write_ghosted_particles)
 {
   // determine size of vector indexed by particle types
   const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;

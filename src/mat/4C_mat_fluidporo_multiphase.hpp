@@ -44,7 +44,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// initialize the material
-      virtual void Initialize();
+      virtual void initialize();
 
       /// @name material parameters
       //@{
@@ -119,7 +119,7 @@ namespace Mat
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -133,7 +133,7 @@ namespace Mat
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -162,7 +162,7 @@ namespace Mat
     Mat::PAR::FluidPoroMultiPhase* Parameter() const override { return paramsporo_; }
 
     /// initialize the material
-    virtual void Initialize();
+    virtual void initialize();
 
     /// return whether reaction terms need to be evaluated
     virtual bool IsReactive() const { return false; };

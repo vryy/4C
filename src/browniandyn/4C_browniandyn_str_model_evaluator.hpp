@@ -47,7 +47,7 @@ namespace STR
       //! constructor
       BrownianDyn();
 
-      void Setup() override;
+      void setup() override;
 
       //! @name Derived public STR::MODELEVALUATOR::Generic methods
       //! @{
@@ -138,7 +138,7 @@ namespace STR
 
      protected:
       //! derived
-      void Reset(const Epetra_Vector& x) override;
+      void reset(const Epetra_Vector& x) override;
 
      private:
       //! apply brownian (stochastic and damping forces)

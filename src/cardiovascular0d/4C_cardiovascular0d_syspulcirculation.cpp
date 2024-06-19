@@ -108,7 +108,7 @@ UTILS::Cardiovascular0DSysPulCirculation::Cardiovascular0DSysPulCirculation(
  |Experiment-based parameter estimation for patient-specific cardiac     |
  |mechanics", IJNMBE, 2016)                                              |
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& params,
+void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,
@@ -156,11 +156,11 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   if (atrium_act_curve_l_ >= 0 && usetime)
     y_at_l_np = Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfTime>(atrium_act_curve_l_ - 1)
-                    .Evaluate(tim);
+                    .evaluate(tim);
   if (atrium_act_curve_r_ >= 0 && usetime)
     y_at_r_np = Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfTime>(atrium_act_curve_r_ - 1)
-                    .Evaluate(tim);
+                    .evaluate(tim);
   // 0D time-varying atrial elastance
   double E_at_l_np = 0.;
   double E_at_r_np = 0.;
@@ -171,11 +171,11 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   if (ventricle_act_curve_l_ >= 0 && usetime)
     y_v_l_np = Global::Problem::Instance()
                    ->FunctionById<Core::UTILS::FunctionOfTime>(ventricle_act_curve_l_ - 1)
-                   .Evaluate(tim);
+                   .evaluate(tim);
   if (ventricle_act_curve_r_ >= 0 && usetime)
     y_v_r_np = Global::Problem::Instance()
                    ->FunctionById<Core::UTILS::FunctionOfTime>(ventricle_act_curve_r_ - 1)
-                   .Evaluate(tim);
+                   .evaluate(tim);
   // 0D time-varying ventricular elastance
   double E_v_l_np = 0.;
   double E_v_r_np = 0.;
@@ -186,11 +186,11 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   if (atrium_prescr_e_curve_l_ >= 0 && usetime)
     E_at_l_prescr_np = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfTime>(atrium_prescr_e_curve_l_ - 1)
-                           .Evaluate(tim);
+                           .evaluate(tim);
   if (atrium_prescr_e_curve_r_ >= 0 && usetime)
     E_at_r_prescr_np = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfTime>(atrium_prescr_e_curve_r_ - 1)
-                           .Evaluate(tim);
+                           .evaluate(tim);
   // prescribed ventricular elastances
   double E_v_l_prescr_np = 0.0;
   double E_v_r_prescr_np = 0.0;
@@ -198,12 +198,12 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     E_v_l_prescr_np =
         Global::Problem::Instance()
             ->FunctionById<Core::UTILS::FunctionOfTime>(ventricle_prescr_e_curve_l_ - 1)
-            .Evaluate(tim);
+            .evaluate(tim);
   if (ventricle_prescr_e_curve_r_ >= 0 && usetime)
     E_v_r_prescr_np =
         Global::Problem::Instance()
             ->FunctionById<Core::UTILS::FunctionOfTime>(ventricle_prescr_e_curve_r_ - 1)
-            .Evaluate(tim);
+            .evaluate(tim);
 
 
   switch (atrium_model_)
@@ -612,7 +612,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(&cond, false));
 
     const std::string* conditiontype =
-        &cardiovascular0dcond_[i]->parameters().Get<std::string>("type");
+        &cardiovascular0dcond_[i]->parameters().get<std::string>("type");
 
     // define element matrices and vectors
     Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -644,7 +644,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
       elevector3.size(1);
 
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(
+      int err = curr->second->evaluate(
           params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -693,7 +693,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList& params,
+void UTILS::Cardiovascular0DSysPulCirculation::initialize(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> sysvec1, Teuchos::RCP<Epetra_Vector> sysvec2)
 {
   if (!(actdisc_->Filled())) FOUR_C_THROW("fill_complete() was not called");
@@ -759,7 +759,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList
   for (auto* cond : cardiovascular0dcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("id");
+    int condID = cond->parameters().get<int>("id");
     params.set("id", condID);
 
     params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
@@ -771,7 +771,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList
     Core::LinAlg::SerialDenseVector elevector2;
     Core::LinAlg::SerialDenseVector elevector3;
 
-    const std::string conditiontype = cond->parameters().Get<std::string>("type");
+    const std::string conditiontype = cond->parameters().get<std::string>("type");
 
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->Geometry();
     // no check for empty geometry here since in parallel computations
@@ -791,7 +791,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList
       elevector3.size(1);
 
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(
+      int err = curr->second->evaluate(
           params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 

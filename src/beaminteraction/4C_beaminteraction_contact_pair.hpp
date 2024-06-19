@@ -72,11 +72,11 @@ namespace BEAMINTERACTION
     */
     virtual ~BeamContactPair() = default;
     //! Initialization
-    virtual void Init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
+    virtual void init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
         std::vector<Core::Elements::Element const*> elements);
 
     //! Setup
-    virtual void Setup();
+    virtual void setup();
 
     //@}
 
@@ -91,7 +91,7 @@ namespace BEAMINTERACTION
     \brief Evaluate this contact element pair, return value indicates whether pair is active,
            i.e. non-zero values for force and stiffmat are returned
     */
-    virtual bool Evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
+    virtual bool evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
         Core::LinAlg::SerialDenseVector* forcevec2, Core::LinAlg::SerialDenseMatrix* stiffmat11,
         Core::LinAlg::SerialDenseMatrix* stiffmat12, Core::LinAlg::SerialDenseMatrix* stiffmat21,
         Core::LinAlg::SerialDenseMatrix* stiffmat22) = 0;
@@ -402,10 +402,10 @@ namespace BEAMINTERACTION
    protected:
     //! @name member variables
 
-    //! indicates if the Init() function has been called
+    //! indicates if the init() function has been called
     bool isinit_;
 
-    //! indicates if the Setup() function has been called
+    //! indicates if the setup() function has been called
     bool issetup_;
 
     //! pointer to the geometry pair

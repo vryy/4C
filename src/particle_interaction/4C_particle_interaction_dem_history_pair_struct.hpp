@@ -35,7 +35,7 @@ namespace ParticleInteraction
     double gap_t_[3] = {0.0, 0.0, 0.0};
 
     //! pack history pair data
-    void Pack(Core::Communication::PackBuffer& data) const
+    void pack(Core::Communication::PackBuffer& data) const
     {
       data.add_to_pack(stick_);
 
@@ -43,7 +43,7 @@ namespace ParticleInteraction
     }
 
     //! unpack history pair data
-    void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
+    void unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
     {
       Core::Communication::ParObject::extract_from_pack(position, data, stick_);
 
@@ -62,7 +62,7 @@ namespace ParticleInteraction
     double gap_r_[3] = {0.0, 0.0, 0.0};
 
     //! pack history pair data
-    void Pack(Core::Communication::PackBuffer& data) const
+    void pack(Core::Communication::PackBuffer& data) const
     {
       data.add_to_pack(stick_);
 
@@ -70,7 +70,7 @@ namespace ParticleInteraction
     }
 
     //! unpack history pair data
-    void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
+    void unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
     {
       Core::Communication::ParObject::extract_from_pack(position, data, stick_);
 
@@ -89,7 +89,7 @@ namespace ParticleInteraction
     double adhesion_force_ = 0.0;
 
     //! pack history pair data
-    void Pack(Core::Communication::PackBuffer& data) const
+    void pack(Core::Communication::PackBuffer& data) const
     {
       data.add_to_pack(surface_energy_);
 
@@ -97,7 +97,7 @@ namespace ParticleInteraction
     }
 
     //! unpack history pair data
-    void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
+    void unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
     {
       Core::Communication::ParObject::extract_from_pack(position, data, surface_energy_);
 

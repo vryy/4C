@@ -621,7 +621,7 @@ void Discret::ELEMENTS::SoSh8p8::sq_vector6_voigt_twice_diff_by_itself(
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D * Mat::NUM_STRESS_3D>& sqfdderf,
     const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& fmat)
 {
-  sqfdderf.Clear();
+  sqfdderf.clear();
 
   sqfdderf(0, 0) = 2.0;
   sqfdderf(0, 21) = 0.5;
@@ -995,7 +995,7 @@ int Discret::ELEMENTS::SoSh8p8::sym_spectral_decomp_jac_iter(
   // check for trivial problem
   if (asum < 1e-12)
   {
-    ew.Clear();
+    ew.clear();
     return 0;
   }
 
@@ -1231,7 +1231,7 @@ void Discret::ELEMENTS::SoSh8p8::build_element_vector(Core::LinAlg::Matrix<NUMDO
   const int* d2dp = &(DISPTODISPPRES_[0]);
   const int* p2dp = &(PRESTODISPPRES_[0]);
 
-  vct->Clear();
+  vct->clear();
 
   // r_d
   if (vctd != nullptr)

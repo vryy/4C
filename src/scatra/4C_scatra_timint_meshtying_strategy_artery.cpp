@@ -56,13 +56,13 @@ void ScaTra::MeshtyingStrategyArtery::InitMeshtying()
 
   // initialize the base algo.
   // scatra time integrator is initialized inside.
-  art_scatra->Init();
+  art_scatra->init();
 
-  // only now we must call Setup() on the scatra time integrator.
+  // only now we must call setup() on the scatra time integrator.
   // all objects relying on the parallel distribution are
   // created and pointers are set.
-  // calls Setup() on the scatra time integrator inside.
-  art_scatra->ScaTraField()->Setup();
+  // calls setup() on the scatra time integrator inside.
+  art_scatra->ScaTraField()->setup();
   Global::Problem::Instance()->AddFieldTest(art_scatra->create_sca_tra_field_test());
 
   // set the time integrator
@@ -129,7 +129,7 @@ void ScaTra::MeshtyingStrategyArtery::setup_meshtying()
           *arttoscatracoupling_->GlobalExtractor(), *arttoscatracoupling_->GlobalExtractor(), 81,
           false, true));
 
-  arttoscatracoupling_->Setup();
+  arttoscatracoupling_->setup();
 
   return;
 }
@@ -273,7 +273,7 @@ void ScaTra::MeshtyingStrategyArtery::SetupSystem(
       scatratimint_->Phinp(), Teuchos::null, artscatratimint_->Phinp());
 
   // evaluate the 1D-3D coupling
-  arttoscatracoupling_->Evaluate(comb_systemmatrix_, rhs_);
+  arttoscatracoupling_->evaluate(comb_systemmatrix_, rhs_);
 
   // evaluate 1D sub-problem
   artscatratimint_->PrepareLinearSolve();

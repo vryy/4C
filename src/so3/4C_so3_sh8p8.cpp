@@ -29,7 +29,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoSh8p8Type::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoSh8p8(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -160,7 +160,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoSh8p8::Clone() const
  |  Pack data                                                  (public) |
  |                                                          bborn 03/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8p8::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoSh8p8::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -168,7 +168,7 @@ void Discret::ELEMENTS::SoSh8p8::Pack(Core::Communication::PackBuffer& data) con
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class So_sh8 Element
-  Discret::ELEMENTS::SoSh8::Pack(data);
+  Discret::ELEMENTS::SoSh8::pack(data);
   // techniques
   add_to_pack(data, stab_);
   add_to_pack(data, ans_);
@@ -182,7 +182,7 @@ void Discret::ELEMENTS::SoSh8p8::Pack(Core::Communication::PackBuffer& data) con
  |  Unpack data                                                (public) |
  |                                                          bborn 03/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8p8::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoSh8p8::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -191,7 +191,7 @@ void Discret::ELEMENTS::SoSh8p8::Unpack(const std::vector<char>& data)
   // extract base class So_sh8 Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::SoSh8::Unpack(basedata);
+  Discret::ELEMENTS::SoSh8::unpack(basedata);
   // techniques
   stab_ = static_cast<StabilisationType>(extract_int(position, data));
   ans_ = static_cast<AnsType>(extract_int(position, data));

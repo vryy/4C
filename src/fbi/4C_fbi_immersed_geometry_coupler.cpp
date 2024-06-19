@@ -46,7 +46,7 @@ FBI::FBIGeometryCoupler::FBIGeometryCoupler()
                                        "STABTYPE") == Inpar::FLUID::stabtype_edgebased);
 }
 /*----------------------------------------------------------------------*/
-void FBI::FBIGeometryCoupler::Setup(
+void FBI::FBIGeometryCoupler::setup(
     std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector> structure_displacement)
 {

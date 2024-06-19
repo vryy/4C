@@ -40,7 +40,7 @@ namespace POROMULTIPHASE
         const Teuchos::ParameterList& globaltimeparams);  // Problem builder
 
     /// initialization
-    void Init(const Teuchos::ParameterList& globaltimeparams,
+    void init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,
         const Teuchos::ParameterList& fluidparams, const std::string& struct_disname,
         const std::string& fluid_disname, bool isale, int nds_disp, int nds_vel,
@@ -157,10 +157,10 @@ namespace POROMULTIPHASE
     };
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx,
+    void evaluate(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx,
         const bool firstcall) override
     {
-      FOUR_C_THROW("Evaluate() only available for monolithic schemes!");
+      FOUR_C_THROW("evaluate() only available for monolithic schemes!");
       return;
     };
 

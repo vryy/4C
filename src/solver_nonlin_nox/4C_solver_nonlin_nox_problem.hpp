@@ -61,7 +61,7 @@ namespace NOX
       virtual ~Problem() = default;
 
       //! initialize stuff (can be overloaded in derived classes)
-      virtual void Initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
+      virtual void initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
           const Teuchos::RCP<Core::LinAlg::SparseOperator>& A);
 
       //! create the linear system for the NOX framework
@@ -90,7 +90,7 @@ namespace NOX
       {
         if (not isinit_)
           FOUR_C_THROW(
-              "You have to call Initialize() first, before you can use this"
+              "You have to call initialize() first, before you can use this"
               " function!");
       }
 

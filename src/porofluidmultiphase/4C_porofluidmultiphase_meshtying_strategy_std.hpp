@@ -32,10 +32,10 @@ namespace POROFLUIDMULTIPHASE
     void prepare_time_step() override;
 
     //! update
-    void Update() override;
+    void update() override;
 
     //! output
-    void Output() override;
+    void output() override;
 
     //! Initialize the linear solver
     void initialize_linear_solver(Teuchos::RCP<Core::LinAlg::Solver> solver) override;
@@ -56,7 +56,7 @@ namespace POROFLUIDMULTIPHASE
     void read_restart(const int step) override;
 
     //! evaluate mesh tying
-    void Evaluate() override;
+    void evaluate() override;
 
     //! extract increments and update mesh tying
     Teuchos::RCP<const Epetra_Vector> extract_and_update_iter(
@@ -73,7 +73,7 @@ namespace POROFLUIDMULTIPHASE
     void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     //! setup the strategy
-    void Setup() override;
+    void setup() override;
 
     //! apply the mesh movement
     void ApplyMeshMovement() const override;

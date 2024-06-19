@@ -106,7 +106,7 @@ Mat::MicroMaterialGP::~MicroMaterialGP()
 
 void Mat::MicroMaterialGP::read_restart()
 {
-  step_ = Global::Problem::Instance()->Restart();
+  step_ = Global::Problem::Instance()->restart();
   microstaticmap_[microdisnum_]->read_restart(step_, dis_, lastalpha_, restartname_);
 
   *oldalpha_ = *lastalpha_;
@@ -174,7 +174,7 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
   if (eleowner)
   {
     const int ndim = Global::Problem::Instance()->NDim();
-    const int restart = Global::Problem::Instance()->Restart();
+    const int restart = Global::Problem::Instance()->restart();
     bool adaptname = true;
     // in case of restart, the new output file name is already adapted
     if (restart) adaptname = false;
@@ -255,7 +255,7 @@ void Mat::MicroMaterialGP::eas_init()
       Core::LinAlg::SerialDenseVector elevector3;
       std::vector<int> lm;
 
-      actele->Evaluate(p, *discret, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
+      actele->evaluate(p, *discret, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
     }
   }
 
@@ -302,7 +302,7 @@ void Mat::MicroMaterialGP::perform_micro_simulation(Core::LinAlg::Matrix<3, 3>* 
 }
 
 
-void Mat::MicroMaterialGP::Update()
+void Mat::MicroMaterialGP::update()
 {
   // select corresponding "time integration class" for this microstructure
   Teuchos::RCP<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
@@ -342,7 +342,7 @@ void Mat::MicroMaterialGP::prepare_output()
 }
 
 
-void Mat::MicroMaterialGP::Output()
+void Mat::MicroMaterialGP::output()
 {
   // select corresponding "time integration class" for this microstructure
   Teuchos::RCP<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
@@ -350,7 +350,7 @@ void Mat::MicroMaterialGP::Output()
   // set displacements and EAS data of last step
   microstatic->set_state(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
       old_kaainv_, old_kda_);
-  microstatic->Output(micro_output_, time_, step_, dt_);
+  microstatic->output(micro_output_, time_, step_, dt_);
 
   // we don't need these containers anymore
   stress_ = Teuchos::null;

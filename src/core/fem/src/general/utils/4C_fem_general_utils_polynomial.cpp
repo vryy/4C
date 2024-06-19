@@ -134,7 +134,7 @@ namespace Core::FE
    \brief Evaluates the values of the whole polynomial space in the given point
    */
   template <int nsd_, class POLY>
-  void PolynomialSpaceTensor<nsd_, POLY>::Evaluate(
+  void PolynomialSpaceTensor<nsd_, POLY>::evaluate(
       const Core::LinAlg::Matrix<nsd_, 1> &point, Core::LinAlg::SerialDenseVector &values) const
   {
     const unsigned int size = poly_space1d_.size();
@@ -144,7 +144,7 @@ namespace Core::FE
     double evaluation[nsd_][20];
     for (unsigned int i = 0; i < size; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
-        evaluation[d][i] = poly_space1d_[i].Evaluate(point(d));
+        evaluation[d][i] = poly_space1d_[i].evaluate(point(d));
 
     switch (nsd_)
     {
@@ -187,7 +187,7 @@ namespace Core::FE
     for (unsigned int i = 0; i < size; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
-        poly_space1d_[i].Evaluate(point(d), eval);
+        poly_space1d_[i].evaluate(point(d), eval);
         evaluation[d][i] = eval(0);
         gradient[d][i] = eval(1);
       }
@@ -243,7 +243,7 @@ namespace Core::FE
     for (unsigned int i = 0; i < size; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
-        poly_space1d_[i].Evaluate(point(d), eval);
+        poly_space1d_[i].evaluate(point(d), eval);
         evaluation[d][i] = eval(0);
         gradient[d][i] = eval(1);
         hessian[d][i] = eval(2);
@@ -339,7 +339,7 @@ namespace Core::FE
    \brief Evaluates the values of the whole polynomial space in the given point
    */
   template <int nsd_, class POLY>
-  void PolynomialSpaceComplete<nsd_, POLY>::Evaluate(
+  void PolynomialSpaceComplete<nsd_, POLY>::evaluate(
       const Core::LinAlg::Matrix<nsd_, 1> &point, Core::LinAlg::SerialDenseVector &values) const
   {
     const unsigned int size = poly_space1d_.size();
@@ -349,7 +349,7 @@ namespace Core::FE
     double evaluation[nsd_][20];
     for (unsigned int i = 0; i < size; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
-        evaluation[d][i] = poly_space1d_[i].Evaluate(point(d));
+        evaluation[d][i] = poly_space1d_[i].evaluate(point(d));
 
     unsigned int c = 0;
     switch (nsd_)
@@ -394,7 +394,7 @@ namespace Core::FE
     for (unsigned int i = 0; i < size; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
-        poly_space1d_[i].Evaluate(point(d), eval);
+        poly_space1d_[i].evaluate(point(d), eval);
         evaluation[d][i] = eval(0);
         gradient[d][i] = eval(1);
       }
@@ -454,7 +454,7 @@ namespace Core::FE
     for (unsigned int i = 0; i < size; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
-        poly_space1d_[i].Evaluate(point(d), eval);
+        poly_space1d_[i].evaluate(point(d), eval);
         evaluation[d][i] = eval(0);
         gradient[d][i] = eval(1);
         hessian[d][i] = eval(2);
@@ -543,10 +543,10 @@ namespace Core::FE
 
 
   template <int nsd_>
-  void LagrangeBasisTet<nsd_>::Evaluate(
+  void LagrangeBasisTet<nsd_>::evaluate(
       const Core::LinAlg::Matrix<nsd_, 1> &point, Core::LinAlg::SerialDenseVector &values) const
   {
-    legendre_.Evaluate(point, values);
+    legendre_.evaluate(point, values);
     vandermonde_factor_.setVectors(Teuchos::rcpFromRef(values), Teuchos::rcpFromRef(values));
     vandermonde_factor_.solve();
   }
@@ -678,7 +678,7 @@ namespace Core::FE
     {
       for (unsigned int d = 0; d < nsd_; ++d) point(d, 0) = fekete_points_(d, i);
 
-      legendre_.Evaluate(point, values);
+      legendre_.evaluate(point, values);
       for (unsigned int j = 0; j < Size(); ++j) vandermonde_(j, i) = values(j);
     }
 
@@ -693,7 +693,7 @@ namespace Core::FE
     {
       for (unsigned int d = 0; d < nsd_; ++d) point(d, 0) = fekete_points_(d, i);
 
-      Evaluate(point, values);
+      evaluate(point, values);
       for (unsigned int j = 0; j < Size(); ++j)
         if (i != j)
           if (std::abs(values(j)) > 1e-11)

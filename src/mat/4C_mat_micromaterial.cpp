@@ -27,9 +27,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::MicroMaterial::MicroMaterial(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      microfile_((matdata.parameters.Get<std::string>("MICROFILE"))),
-      microdisnum_(matdata.parameters.Get<int>("MICRODIS_NUM")),
-      initvol_(matdata.parameters.Get<double>("INITVOL"))
+      microfile_((matdata.parameters.get<std::string>("MICROFILE"))),
+      microdisnum_(matdata.parameters.get<int>("MICRODIS_NUM")),
+      initvol_(matdata.parameters.get<double>("INITVOL"))
 {
 }
 
@@ -46,7 +46,7 @@ Mat::MicroMaterialType Mat::MicroMaterialType::instance_;
 Core::Communication::ParObject* Mat::MicroMaterialType::Create(const std::vector<char>& data)
 {
   Mat::MicroMaterial* micro = new Mat::MicroMaterial();
-  micro->Unpack(data);
+  micro->unpack(data);
   return micro;
 }
 
@@ -62,7 +62,7 @@ Mat::MicroMaterial::MicroMaterial(Mat::PAR::MicroMaterial* params) : params_(par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::MicroMaterial::Pack(Core::Communication::PackBuffer& data) const
+void Mat::MicroMaterial::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -78,7 +78,7 @@ void Mat::MicroMaterial::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::MicroMaterial::Unpack(const std::vector<char>& data)
+void Mat::MicroMaterial::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

@@ -89,7 +89,7 @@ namespace Mortar
     \brief initialize the binary tree
 
     */
-    virtual void Init() = 0;
+    virtual void init() = 0;
   };  // class AbstractBinaryTree
 }  // namespace Mortar
 

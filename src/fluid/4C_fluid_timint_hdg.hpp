@@ -40,7 +40,7 @@ namespace FLD
     \brief initialization
 
     */
-    void Init() override;
+    void init() override;
 
     /*!
     \brief Set theta_ to its value, dependent on integration method for GenAlpha and BDF2
@@ -122,13 +122,13 @@ namespace FLD
     /*!
     \brief Reset state vectors
      */
-    void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
+    void reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
 
     /*!
     \brief update configuration and output to file/screen
 
     */
-    void Output() override;
+    void output() override;
 
     /*!
     \brief accessor to interior velocity

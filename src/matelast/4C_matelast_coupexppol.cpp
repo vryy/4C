@@ -16,9 +16,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::Elastic::PAR::CoupExpPol::CoupExpPol(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      a_(matdata.parameters.Get<double>("A")),
-      b_(matdata.parameters.Get<double>("B")),
-      c_(matdata.parameters.Get<double>("C"))
+      a_(matdata.parameters.get<double>("A")),
+      b_(matdata.parameters.get<double>("B")),
+      c_(matdata.parameters.get<double>("C"))
 {
 }
 

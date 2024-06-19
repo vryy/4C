@@ -215,14 +215,14 @@ namespace Discret
 
         //! evaluate shape function, derivatives and transformation w.r.t coupling slave element at
         //! gaussian point
-        virtual void Evaluate(Core::LinAlg::Matrix<nsd_, 1>& xside)
+        virtual void evaluate(Core::LinAlg::Matrix<nsd_, 1>& xside)
         {
           FOUR_C_THROW("There is no concrete slave element available.");
         }
 
         //! evaluate shape function, derivatives and transformation w.r.t coupling slave element at
         //! gaussian point
-        virtual void Evaluate(
+        virtual void evaluate(
             Core::LinAlg::Matrix<nsd_, 1>& xside, Core::LinAlg::Matrix<nsd_, 1>& rst_slave)
         {
           FOUR_C_THROW("There is no concrete slave element available.");

@@ -160,15 +160,15 @@ void scatra_cardiac_monodomain_dyn(int restart)
         }
       }
 
-      // now we can call Init() on the base algo.
+      // now we can call init() on the base algo.
       // time integrator is constructed and initialized inside
-      scatraonly->Init();
+      scatraonly->init();
 
       // NOTE : At this point we may redistribute and/or
       //        ghost our discretizations at will.
 
-      // now we must call Setup()
-      scatraonly->Setup();
+      // now we must call setup()
+      scatraonly->setup();
 
       // read the restart information, set vectors and variables
       if (restart) scatraonly->ScaTraField()->read_restart(restart);
@@ -276,7 +276,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
         // since we have to use the binning-strategy before creating the single field we have to do
         // it here :-( We would prefer to to it like the SSI since than we could extended ghosting
         // TODO (thon): make this if-case obsolete and allow for redistribution within
-        // volmortar->Setup() by removing inheitance-building of fields
+        // volmortar->setup() by removing inheitance-building of fields
         {
           // redistribute discr. with help of binning strategy
           if (fluiddis->Comm().NumProc() > 1)
@@ -323,10 +323,10 @@ void scatra_cardiac_monodomain_dyn(int restart)
           scatradyn, fdyn, "scatra", Global::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // init algo (init fluid time integrator and scatra time integrator inside)
-      algo->Init();
+      algo->init();
 
       // setup algo (setup fluid time integrator and scatra time integrator inside)
-      algo->Setup();
+      algo->setup();
 
       // read restart information
       // in case a inflow generation in the inflow section has been performed, there are not any

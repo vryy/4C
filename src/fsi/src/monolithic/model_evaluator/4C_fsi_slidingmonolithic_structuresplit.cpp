@@ -252,7 +252,7 @@ void FSI::SlidingMonolithicStructureSplit::SetupSystem()
      */
     std::vector<int> coupleddof(ndim, 1);
 
-    coupsfm_->Setup(fluid_field()->discretization(), structure_field()->discretization(),
+    coupsfm_->setup(fluid_field()->discretization(), structure_field()->discretization(),
         ale_field()->write_access_discretization(), coupleddof, "FSICoupling", comm_,
         Global::Problem::Instance()->FunctionManager(), false);
 
@@ -914,7 +914,7 @@ void FSI::SlidingMonolithicStructureSplit::update()
     fluid_field()->apply_interface_velocities(unew);
   }
 
-  // call Update()-routine in base class to handle the single fields
+  // call update()-routine in base class to handle the single fields
   FSI::BlockMonolithic::update();
 }
 
@@ -1388,12 +1388,12 @@ void FSI::SlidingMonolithicStructureSplit::extract_field_vectors(
 /*----------------------------------------------------------------------------*/
 void FSI::SlidingMonolithicStructureSplit::output()
 {
-  structure_field()->Output();
+  structure_field()->output();
 
   // output Lagrange multiplier
   OutputLambda();
 
-  fluid_field()->Output();
+  fluid_field()->output();
 
   if (aleproj_ != Inpar::FSI::ALEprojection_none)
   {
@@ -1405,7 +1405,7 @@ void FSI::SlidingMonolithicStructureSplit::output()
       slideale_->output_restart(*fluid_field()->DiscWriter());
     }
   }
-  ale_field()->Output();
+  ale_field()->output();
 
   if (structure_field()->get_constraint_manager()->HaveMonitor())
   {

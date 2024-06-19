@@ -43,7 +43,7 @@ namespace Adapter
     explicit PoroFluidMultiphaseWrapper(Teuchos::RCP<PoroFluidMultiphase> porofluid);
 
     /// initialization
-    void Init(const bool isale,         ///< ALE flag
+    void init(const bool isale,         ///< ALE flag
         const int nds_disp,             ///< number of dofset associated with displacements
         const int nds_vel,              ///< number of dofset associated with fluid velocities
         const int nds_solidpressure,    ///< number of dofset associated with solid pressure
@@ -119,10 +119,10 @@ namespace Adapter
     void prepare_time_step() override;
 
     //! output solution and restart data to file
-    void Output() override;
+    void output() override;
 
     //! update the solution after convergence of the nonlinear iteration.
-    void Update() override;
+    void update() override;
 
     //! calculate error compared to analytical solution
     void evaluate_error_compared_to_analytical_sol() override;
@@ -155,7 +155,7 @@ namespace Adapter
     void calculate_phase_velocities() override;
 
     //! build linear system tangent matrix, rhs/force residual
-    void Evaluate() override;
+    void evaluate() override;
 
     // Assemble Off-Diagonal Fluid-Structure Coupling matrix
     void assemble_fluid_struct_coupling_mat(

@@ -23,16 +23,16 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::Scl::Scl(const Core::Mat::PAR::Parameter::Data& matdata)
     : ElchSingleMat(matdata),
-      valence_(matdata.parameters.Get<double>("VALENCE")),
-      transnrcurve_(matdata.parameters.Get<int>("TRANSNR")),
-      transnrparanum_(matdata.parameters.Get<int>("TRANS_PARA_NUM")),
-      transnr_(matdata.parameters.Get<std::vector<double>>("TRANS_PARA")),
-      cmax_(matdata.parameters.Get<double>("MAX_CONC")),
-      extrapolation_diffussion_coeff_strategy_(matdata.parameters.Get<int>("EXTRAPOL_DIFF")),
-      clim_(matdata.parameters.Get<double>("LIM_CONC")),
-      cbulk_(matdata.parameters.Get<double>("BULK_CONC")),
-      susceptibility_(matdata.parameters.Get<double>("SUSCEPT")),
-      delta_nu_(matdata.parameters.Get<double>("DELTA_NU")),
+      valence_(matdata.parameters.get<double>("VALENCE")),
+      transnrcurve_(matdata.parameters.get<int>("TRANSNR")),
+      transnrparanum_(matdata.parameters.get<int>("TRANS_PARA_NUM")),
+      transnr_(matdata.parameters.get<std::vector<double>>("TRANS_PARA")),
+      cmax_(matdata.parameters.get<double>("MAX_CONC")),
+      extrapolation_diffussion_coeff_strategy_(matdata.parameters.get<int>("EXTRAPOL_DIFF")),
+      clim_(matdata.parameters.get<double>("LIM_CONC")),
+      cbulk_(matdata.parameters.get<double>("BULK_CONC")),
+      susceptibility_(matdata.parameters.get<double>("SUSCEPT")),
+      delta_nu_(matdata.parameters.get<double>("DELTA_NU")),
       faraday_(Global::Problem::Instance()->ELCHControlParams().get<double>("FARADAY_CONSTANT")),
       epsilon_0_(Global::Problem::Instance()
                      ->ELCHControlParams()
@@ -61,7 +61,7 @@ Mat::SclType Mat::SclType::instance_;
 Core::Communication::ParObject* Mat::SclType::Create(const std::vector<char>& data)
 {
   auto* scl = new Mat::Scl();
-  scl->Unpack(data);
+  scl->unpack(data);
   return scl;
 }
 
@@ -75,7 +75,7 @@ Mat::Scl::Scl(Mat::PAR::Scl* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Scl::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Scl::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -91,7 +91,7 @@ void Mat::Scl::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Scl::Unpack(const std::vector<char>& data)
+void Mat::Scl::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -132,7 +132,7 @@ double Mat::Scl::compute_transference_number(const double cint) const
   {
     return Global::Problem::Instance()
         ->FunctionById<Core::UTILS::FunctionOfScalar>(trans_nr_curve() - 1)
-        .Evaluate(cint);
+        .evaluate(cint);
   }
 }
 

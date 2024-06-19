@@ -41,10 +41,10 @@ namespace ScaTra
     // -----------------------------------------------------------------
 
     /// initialize algorithm
-    void Init() override;
+    void init() override;
 
     //! update the solution after convergence of the nonlinear iteration.
-    void Update() override{};
+    void update() override{};
 
     //! set the nodal L2-flux
     virtual void set_l2_flux_of_multi_fluid(Teuchos::RCP<const Epetra_MultiVector> multiflux);
@@ -109,11 +109,11 @@ namespace ScaTra
 
 
     //! initialize time integration scheme
-    void Init() override;
+    void init() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update() override;
+    void update() override;
 
   };  // class TimIntPoroMultiOST
 
@@ -130,11 +130,11 @@ namespace ScaTra
 
 
     //! initialize time integration scheme
-    void Init() override;
+    void init() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update() override;
+    void update() override;
 
   };  // class TimIntPoroMultiBDF2
 
@@ -151,11 +151,11 @@ namespace ScaTra
 
 
     //! initialize time integration scheme
-    void Init() override;
+    void init() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update() override;
+    void update() override;
 
   };  // class TimIntPoroMultiGenAlpha
 
@@ -172,11 +172,11 @@ namespace ScaTra
 
 
     //! initialize time integration scheme
-    void Init() override;
+    void init() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update() override;
+    void update() override;
 
   };  // class TimIntPoroMultiStationary
 }  // namespace ScaTra

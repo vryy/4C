@@ -79,7 +79,7 @@ and a few public methods:
    Core::COMM::ParObject* Mat::MyNewMaterialType::Create(const std::vector<char>& data)
    {
      Mat::MyNewMaterial* mymaterial = new Mat::MyNewMaterial();
-     mymaterial->Unpack(data);
+     mymaterial->unpack(data);
      return mymaterial;
    }
    std::string Name() const { return "MyNewMaterial"; }
@@ -128,11 +128,11 @@ and which have already a virtual representation in the parent class, e.g., here 
 
 -	Constructor
 -	UniqueParObject()
--	Pack()
--	Unpack()
--	Setup()   // -> initialize and allocate internal variables
--	Update()    // -> update internal variables
--	Evaluate()   // calculate stress and constitutive matrix
+-	pack()
+-	unpack()
+-	setup()   // -> initialize and allocate internal variables
+-	update()    // -> update internal variables
+-	evaluate()   // calculate stress and constitutive matrix
 -	VisNames()  // For the names of variables to be visualized (optional; only if extra variables are to be visualized)
 -	VisData()   // For the data of these variables (optional; only if extra variables are to be visualized)
 

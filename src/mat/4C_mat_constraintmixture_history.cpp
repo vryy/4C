@@ -20,14 +20,14 @@ Core::Communication::ParObject* Mat::ConstraintMixtureHistoryType::Create(
     const std::vector<char>& data)
 {
   Mat::ConstraintMixtureHistory* cmhis = new Mat::ConstraintMixtureHistory();
-  cmhis->Unpack(data);
+  cmhis->unpack(data);
   return cmhis;
 }
 
 /*----------------------------------------------------------------------*
  |  History: Pack                                 (public)         03/11|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixtureHistory::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ConstraintMixtureHistory::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -65,7 +65,7 @@ void Mat::ConstraintMixtureHistory::Pack(Core::Communication::PackBuffer& data) 
 /*----------------------------------------------------------------------*
  |  History: Unpack                               (public)         03/11|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixtureHistory::Unpack(const std::vector<char>& data)
+void Mat::ConstraintMixtureHistory::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -139,7 +139,7 @@ void Mat::ConstraintMixtureHistory::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  History: Setup                                (public)         03/11|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixtureHistory::Setup(const int ngp, const double massprodbasal, bool expvar)
+void Mat::ConstraintMixtureHistory::setup(const int ngp, const double massprodbasal, bool expvar)
 {
   dt_ = 0.0;
   depositiontime_ = 0.0;

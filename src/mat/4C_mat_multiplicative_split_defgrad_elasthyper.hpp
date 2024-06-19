@@ -118,7 +118,7 @@ namespace Mat
     int NumInelasticDefGrad() const { return static_cast<int>(facdefgradin_.size()); }
 
     /// Assigns the different inelastic factors to different sources
-    void Setup(Mat::PAR::MultiplicativeSplitDefgradElastHyper* params);
+    void setup(Mat::PAR::MultiplicativeSplitDefgradElastHyper* params);
 
    private:
     /// vector that holds pairs of inelastic contribution and respective source
@@ -157,9 +157,9 @@ namespace Mat
       return MultiplicativeSplitDefgradElastHyperType::Instance().UniqueParObjectId();
     }
 
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
@@ -181,7 +181,7 @@ namespace Mat
 
     Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrad,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrad,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
@@ -199,9 +199,9 @@ namespace Mat
     void evaluate_linearization_od(const Core::LinAlg::Matrix<3, 3>& defgrd, double concentration,
         Core::LinAlg::Matrix<9, 1>* d_F_dx) override;
 
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
-    void Update() override;
+    void update() override;
 
     /*!
      * @brief Evaluate off-diagonal stiffness matrix (required for monolithic algorithms)

@@ -29,7 +29,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8P1J1Type::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoHex8P1J1(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -168,7 +168,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoHex8P1J1::Clone() const
  |  Pack data                                                  (public) |
  |                                                              lw 12/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8P1J1::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoHex8P1J1::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -176,7 +176,7 @@ void Discret::ELEMENTS::SoHex8P1J1::Pack(Core::Communication::PackBuffer& data) 
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class So_hex8 Element
-  Discret::ELEMENTS::SoHex8::Pack(data);
+  Discret::ELEMENTS::SoHex8::pack(data);
 
   return;
 }
@@ -185,7 +185,7 @@ void Discret::ELEMENTS::SoHex8P1J1::Pack(Core::Communication::PackBuffer& data) 
  |  Unpack data                                                (public) |
  |                                                              lw 12/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8P1J1::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoHex8P1J1::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -194,7 +194,7 @@ void Discret::ELEMENTS::SoHex8P1J1::Unpack(const std::vector<char>& data)
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::SoHex8::Unpack(basedata);
+  Discret::ELEMENTS::SoHex8::unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

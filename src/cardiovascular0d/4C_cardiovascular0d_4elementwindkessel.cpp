@@ -44,7 +44,7 @@ UTILS::Cardiovascular0D4ElementWindkessel::Cardiovascular0D4ElementWindkessel(
  |calling element evaluates of a condition and assembing results         |
  |based on this conditions                                               |
  *----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList& params,
+void UTILS::Cardiovascular0D4ElementWindkessel::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,
@@ -83,14 +83,14 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
   for (auto* cond : cardiovascular0dcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("id");
+    int condID = cond->parameters().get<int>("id");
     params.set("id", condID);
 
-    double C = cardiovascular0dcond_[condID]->parameters().Get<double>("C");
-    double R_p = cardiovascular0dcond_[condID]->parameters().Get<double>("R_p");
-    double Z_c = cardiovascular0dcond_[condID]->parameters().Get<double>("Z_c");
-    double L = cardiovascular0dcond_[condID]->parameters().Get<double>("L");
-    double p_ref = cardiovascular0dcond_[condID]->parameters().Get<double>("p_ref");
+    double C = cardiovascular0dcond_[condID]->parameters().get<double>("C");
+    double R_p = cardiovascular0dcond_[condID]->parameters().get<double>("R_p");
+    double Z_c = cardiovascular0dcond_[condID]->parameters().get<double>("Z_c");
+    double L = cardiovascular0dcond_[condID]->parameters().get<double>("L");
+    double p_ref = cardiovascular0dcond_[condID]->parameters().get<double>("p_ref");
 
     // Cardiovascular0D stiffness
     Core::LinAlg::SerialDenseMatrix wkstiff(numdof_per_cond, numdof_per_cond);
@@ -215,7 +215,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
       elevector3.size(numdof_per_cond);
 
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(
+      int err = curr->second->evaluate(
           params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -261,7 +261,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterList& params,
+void UTILS::Cardiovascular0D4ElementWindkessel::initialize(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> sysvec1, Teuchos::RCP<Epetra_Vector> sysvec2)
 {
   if (!(actdisc_->Filled())) FOUR_C_THROW("fill_complete() was not called");
@@ -279,7 +279,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
   for (auto* cond : cardiovascular0dcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("id");
+    int condID = cond->parameters().get<int>("id");
     params.set("id", condID);
 
     // global and local ID of this bc in the redundant vectors
@@ -288,7 +288,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
     gindex[0] = numdof_per_cond * condID + offsetID;
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
-    double p_0 = cardiovascular0dcond_[condID]->parameters().Get<double>("p_0");
+    double p_0 = cardiovascular0dcond_[condID]->parameters().get<double>("p_0");
     double q_0 = 0.;
     double s_0 = 0.;
 
@@ -324,7 +324,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
       elevector3.size(numdof_per_cond);
 
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(
+      int err = curr->second->evaluate(
           params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 

@@ -197,13 +197,13 @@ namespace Discret
       int UniqueParObjectId() const override { return ThermoType::Instance().UniqueParObjectId(); }
 
       //! \brief Pack this class so it can be communicated
-      //! \ref Pack and \ref Unpack are used to communicate this element
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      //! \ref pack and \ref unpack are used to communicate this element
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       //! \brief Unpack data from a char vector into this class
       //!
-      //! \ref Pack and \ref Unpack are used to communicate this element
-      void Unpack(const std::vector<char>& data) override;
+      //! \ref pack and \ref unpack are used to communicate this element
+      void unpack(const std::vector<char>& data) override;
 
 
       //@}
@@ -312,7 +312,7 @@ namespace Discret
       //!                         the controlling method does not expect the element
       //!                         to fill this vector
       //! \return 0 if successful, negative otherwise
-      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+      int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -479,13 +479,13 @@ namespace Discret
 
       //! \brief Pack this class so it can be communicated
       //!
-      //! \ref Pack and \ref Unpack are used to communicate this element
-      virtual void Pack(std::vector<char>& data) const;
+      //! \ref pack and \ref unpack are used to communicate this element
+      virtual void pack(std::vector<char>& data) const;
 
       //! \brief Unpack data from a char vector into this class
       //!
-      //! \ref Pack and \ref Unpack are used to communicate this element
-      void Unpack(const std::vector<char>& data) override;
+      //! \ref pack and \ref unpack are used to communicate this element
+      void unpack(const std::vector<char>& data) override;
 
 
       //@}
@@ -560,7 +560,7 @@ namespace Discret
       //!                         the controlling method does not expect the element
       //!                         to fill this vector
       //! \return 0 if successful, negative otherwise
-      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+      int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,

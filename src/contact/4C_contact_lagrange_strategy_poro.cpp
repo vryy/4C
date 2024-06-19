@@ -75,10 +75,10 @@ void CONTACT::LagrangeStrategyPoro::DoReadRestart(Core::IO::DiscretizationReader
 /*----------------------------------------------------------------------*
  | setup this strategy object                                ager 12/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategyPoro::Setup(bool redistributed, bool init)
+void CONTACT::LagrangeStrategyPoro::setup(bool redistributed, bool init)
 {
   // Call Base Class
-  CONTACT::AbstractStrategy::Setup(redistributed, init);
+  CONTACT::AbstractStrategy::setup(redistributed, init);
 
   if (no_penetration_) setup_no_penetration_condition();
 }

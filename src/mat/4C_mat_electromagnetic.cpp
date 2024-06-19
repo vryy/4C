@@ -31,9 +31,9 @@ Mat::PAR::ElectromagneticMat::ElectromagneticMat(const Core::Mat::PAR::Parameter
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
-  matparams_.at(sigma_)->PutScalar(matdata.parameters.Get<double>("CONDUCTIVITY"));
-  matparams_.at(epsilon_)->PutScalar(matdata.parameters.Get<double>("PERMITTIVITY"));
-  matparams_.at(mu_)->PutScalar(matdata.parameters.Get<double>("PERMEABILITY"));
+  matparams_.at(sigma_)->PutScalar(matdata.parameters.get<double>("CONDUCTIVITY"));
+  matparams_.at(epsilon_)->PutScalar(matdata.parameters.get<double>("PERMITTIVITY"));
+  matparams_.at(mu_)->PutScalar(matdata.parameters.get<double>("PERMEABILITY"));
 
   return;
 }
@@ -49,7 +49,7 @@ Mat::ElectromagneticMatType Mat::ElectromagneticMatType::instance_;
 Core::Communication::ParObject *Mat::ElectromagneticMatType::Create(const std::vector<char> &data)
 {
   Mat::ElectromagneticMat *soundprop = new Mat::ElectromagneticMat();
-  soundprop->Unpack(data);
+  soundprop->unpack(data);
   return soundprop;
 }
 
@@ -68,7 +68,7 @@ Mat::ElectromagneticMat::ElectromagneticMat(Mat::PAR::ElectromagneticMat *params
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Mat::ElectromagneticMat::Pack(Core::Communication::PackBuffer &data) const
+void Mat::ElectromagneticMat::pack(Core::Communication::PackBuffer &data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -85,7 +85,7 @@ void Mat::ElectromagneticMat::Pack(Core::Communication::PackBuffer &data) const
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Mat::ElectromagneticMat::Unpack(const std::vector<char> &data)
+void Mat::ElectromagneticMat::unpack(const std::vector<char> &data)
 {
   std::vector<char>::size_type position = 0;
 

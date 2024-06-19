@@ -105,7 +105,7 @@ void MultiScale::np_support_drt()
         bool eleowner = (bool)micro_data->eleowner_;
 
         // dummy material is used to evaluate the micro material
-        dummymaterials[eleID]->Evaluate(
+        dummymaterials[eleID]->evaluate(
             &defgrd, &cmat, &stress, gp, eleID, microdisnum, V0, eleowner);
         break;
       }
@@ -118,13 +118,13 @@ void MultiScale::np_support_drt()
       case 2:
       {
         // dummy material is used to update the micro material
-        dummymaterials[eleID]->Update();
+        dummymaterials[eleID]->update();
         break;
       }
       case 3:
       {
         // dummy material is used to output the micro material
-        dummymaterials[eleID]->Output();
+        dummymaterials[eleID]->output();
         break;
       }
       case 4:

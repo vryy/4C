@@ -167,8 +167,8 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
 
     // build processor local octree
     auto nodematchingoctree = Core::COUPLING::NodeMatchingOctree();
-    nodematchingoctree.Init(*dis_, masternodeids, maxnodeperleaf, tol);
-    nodematchingoctree.Setup();
+    nodematchingoctree.init(*dis_, masternodeids, maxnodeperleaf, tol);
+    nodematchingoctree.setup();
 
     // create map from gid masternode -> gid corresponding slavenode
     nodematchingoctree.create_global_entity_matching(
@@ -214,7 +214,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       if (time >= 0.0)
       {
         curvefac =
-            Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curve_).Evaluate(
+            Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curve_).evaluate(
                 time);
       }
       else
@@ -315,9 +315,9 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
 void FLD::TransferTurbulentInflowCondition::get_data(
     int& id, int& direction, ToggleType& type, const Core::Conditions::Condition* cond)
 {
-  id = cond->parameters().Get<int>("id");
+  id = cond->parameters().get<int>("id");
 
-  const auto mydirection = cond->parameters().Get<std::string>("transfer direction");
+  const auto mydirection = cond->parameters().get<std::string>("transfer direction");
   if (mydirection == "x")
   {
     direction = 0;
@@ -335,7 +335,7 @@ void FLD::TransferTurbulentInflowCondition::get_data(
     FOUR_C_THROW("unknown direction");
   }
 
-  const auto mytoggle = cond->parameters().Get<std::string>("toggle");
+  const auto mytoggle = cond->parameters().get<std::string>("toggle");
   if (mytoggle == "master")
   {
     type = master;
@@ -728,7 +728,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
       if (time >= 0.0)
       {
         curvefac =
-            Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curve_).Evaluate(
+            Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curve_).evaluate(
                 time);
       }
       else

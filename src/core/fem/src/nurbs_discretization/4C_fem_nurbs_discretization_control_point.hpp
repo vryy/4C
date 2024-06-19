@@ -111,22 +111,22 @@ namespace Core::FE
       /*!
       \brief Pack this class so it can be communicated
 
-      \ref Pack and \ref Unpack are used to communicate this CP
+      \ref pack and \ref unpack are used to communicate this CP
 
       \param data (in/out): a char vector to pack the data into
 
       */
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
 
-      \ref Pack and \ref Unpack are used to communicate this CP
+      \ref pack and \ref unpack are used to communicate this CP
 
       \param data (in): a char vector to unpack the data from
 
       */
-      void Unpack(const std::vector<char>& data) override;
+      void unpack(const std::vector<char>& data) override;
 
       //@}
 

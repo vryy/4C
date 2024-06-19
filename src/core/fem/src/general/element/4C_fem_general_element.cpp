@@ -255,7 +255,7 @@ int Core::Elements::Element::AddMaterial(Teuchos::RCP<Core::Mat::Material> mat)
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::Pack(Core::Communication::PackBuffer& data) const
+void Core::Elements::Element::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -272,7 +272,7 @@ void Core::Elements::Element::Pack(Core::Communication::PackBuffer& data) const
   if (mat_[0] != Teuchos::null)
   {
     // pack only first material
-    mat_[0]->Pack(data);
+    mat_[0]->pack(data);
   }
   else
   {
@@ -288,7 +288,7 @@ void Core::Elements::Element::Pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::Unpack(const std::vector<char>& data)
+void Core::Elements::Element::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -463,7 +463,7 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
     FOUR_C_THROW("wrong number of nodes");
   }
 
-  la.Clear();
+  la.clear();
 
   // we need to look at all DofSets of our discretization
   for (int dofset = 0; dofset < la.Size(); ++dofset)
@@ -503,7 +503,7 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
                 dirich->Type() != Core::Conditions::SurfaceDirichlet &&
                 dirich->Type() != Core::Conditions::VolumeDirichlet)
               FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-            flag = &dirich->parameters().Get<std::vector<int>>("onoff");
+            flag = &dirich->parameters().get<std::vector<int>>("onoff");
           }
           for (unsigned j = 0; j < dof.size(); ++j)
           {
@@ -553,7 +553,7 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
             dirich->Type() != Core::Conditions::SurfaceDirichlet &&
             dirich->Type() != Core::Conditions::VolumeDirichlet)
           FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-        flag = &dirich->parameters().Get<std::vector<int>>("onoff");
+        flag = &dirich->parameters().get<std::vector<int>>("onoff");
       }
       for (unsigned j = 0; j < dof.size(); ++j)
       {
@@ -576,7 +576,7 @@ void Core::Elements::Element::LocationVector(
   const int numnode = num_node();
   const Core::Nodes::Node* const* nodes = Nodes();
 
-  la.Clear();
+  la.clear();
 
   // we need to look at all DofSets of our discretization
   for (int dofset = 0; dofset < la.Size(); ++dofset)
@@ -622,7 +622,7 @@ void Core::Elements::Element::LocationVector(
                 dirich->Type() != Core::Conditions::SurfaceDirichlet &&
                 dirich->Type() != Core::Conditions::VolumeDirichlet)
               FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-            flag = &dirich->parameters().Get<std::vector<int>>("onoff");
+            flag = &dirich->parameters().get<std::vector<int>>("onoff");
           }
           for (int j = 0; j < size; ++j)
           {
@@ -708,7 +708,7 @@ void Core::Elements::Element::LocationVector(
                 dirich->Type() != Core::Conditions::SurfaceDirichlet &&
                 dirich->Type() != Core::Conditions::VolumeDirichlet)
               FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-            flag = &dirich->parameters().Get<std::vector<int>>("onoff");
+            flag = &dirich->parameters().get<std::vector<int>>("onoff");
 
             // Every component gets NumDofPerComponent ones or zeros
             for (unsigned j = 0; j < flag->size(); ++j)
@@ -735,7 +735,7 @@ void Core::Elements::Element::LocationVector(
             dirich->Type() != Core::Conditions::SurfaceDirichlet &&
             dirich->Type() != Core::Conditions::VolumeDirichlet)
           FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-        flag = &dirich->parameters().Get<std::vector<int>>("onoff");
+        flag = &dirich->parameters().get<std::vector<int>>("onoff");
       }
       for (unsigned j = 0; j < dof.size(); ++j)
       {
@@ -797,7 +797,7 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
             dirich->Type() != Core::Conditions::SurfaceDirichlet &&
             dirich->Type() != Core::Conditions::VolumeDirichlet)
           FOUR_C_THROW("condition with name dirichlet is not of type Dirichlet");
-        flag = &dirich->parameters().Get<std::vector<int>>("onoff");
+        flag = &dirich->parameters().get<std::vector<int>>("onoff");
       }
       const int owner = nodes[i]->Owner();
       std::vector<int> dof;
@@ -849,7 +849,7 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
         dirich->Type() != Core::Conditions::SurfaceDirichlet &&
         dirich->Type() != Core::Conditions::VolumeDirichlet)
       FOUR_C_THROW("condition with name dirichlet is not of type Dirichlet");
-    flag = &dirich->parameters().Get<std::vector<int>>("onoff");
+    flag = &dirich->parameters().get<std::vector<int>>("onoff");
   }
   const int owner = Owner();
   std::vector<int> dof = dis.Dof(this);
@@ -982,26 +982,26 @@ void Core::Elements::Element::SetFace(
 /*----------------------------------------------------------------------*
  |  evaluate element dummy (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
-int Core::Elements::Element::Evaluate(Teuchos::ParameterList& params,
+int Core::Elements::Element::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  return Evaluate(params, discretization, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
+  return evaluate(params, discretization, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
 }
 
 /*----------------------------------------------------------------------*
  |  evaluate element dummy (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
-int Core::Elements::Element::Evaluate(Teuchos::ParameterList& params,
+int Core::Elements::Element::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   std::cout << "Core::Elements::Element::Evaluate:\n"
-            << "Base class dummy routine Core::Elements::Element::Evaluate(...) called\n"
+            << "Base class dummy routine Core::Elements::Element::evaluate(...) called\n"
             << __FILE__ << ":" << __LINE__ << std::endl;
   return -1;
 }
@@ -1127,7 +1127,7 @@ Core::Elements::FaceElement::FaceElement(const Core::Elements::FaceElement& old)
  |  Pack data                                                  (public) |
  |                                                           ager 06/15 |
  *----------------------------------------------------------------------*/
-void Core::Elements::FaceElement::Pack(Core::Communication::PackBuffer& data) const
+void Core::Elements::FaceElement::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -1135,7 +1135,7 @@ void Core::Elements::FaceElement::Pack(Core::Communication::PackBuffer& data) co
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Discret::Elememt
-  Core::Elements::Element::Pack(data);
+  Core::Elements::Element::pack(data);
   // add lface_master_
   add_to_pack(data, lface_master_);
   // Pack Parent Id, used to set parent_master_ after parallel communication!
@@ -1149,7 +1149,7 @@ void Core::Elements::FaceElement::Pack(Core::Communication::PackBuffer& data) co
  |  Unpack data                                                (public) |
  |                                                           ager 06/15 |
  *----------------------------------------------------------------------*/
-void Core::Elements::FaceElement::Unpack(const std::vector<char>& data)
+void Core::Elements::FaceElement::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -1158,7 +1158,7 @@ void Core::Elements::FaceElement::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Core::Elements::Element::Unpack(basedata);
+  Core::Elements::Element::unpack(basedata);
 
   // lface_master_
   lface_master_ = extract_int(position, data);

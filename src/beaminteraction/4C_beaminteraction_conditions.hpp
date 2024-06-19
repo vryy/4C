@@ -111,12 +111,12 @@ namespace BEAMINTERACTION
      * \brief Setup geometry data.
      * @param discret (in) discretization.
      */
-    virtual void Setup(const Teuchos::RCP<const Core::FE::Discretization>& discret);
+    virtual void setup(const Teuchos::RCP<const Core::FE::Discretization>& discret);
 
     /**
      * \brief Clear not reusable data.
      */
-    virtual void Clear();
+    virtual void clear();
 
     /**
      * \brief Check if a combination of a beam element ID and another element (beam, solid, ...)
@@ -192,12 +192,12 @@ namespace BEAMINTERACTION
      * \brief Setup data in the conditions.
      * @param discret (in) discretization.
      */
-    virtual void Setup(const Teuchos::RCP<const Core::FE::Discretization>& discret);
+    virtual void setup(const Teuchos::RCP<const Core::FE::Discretization>& discret);
 
     /**
      * \brief Clear not reusable data in the conditions.
      */
-    virtual void Clear();
+    virtual void clear();
 
     /**
      * \brief Create the correct pair for the given element pointers.

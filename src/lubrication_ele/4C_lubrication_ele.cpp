@@ -30,7 +30,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::LubricationType::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Lubrication* object = new Discret::ELEMENTS::Lubrication(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -155,7 +155,7 @@ Core::FE::CellType Discret::ELEMENTS::Lubrication::Shape() const { return distyp
  |  Pack data                                                  (public) |
  |                                                          wirtz 10/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Lubrication::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Lubrication::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -164,7 +164,7 @@ void Discret::ELEMENTS::Lubrication::Pack(Core::Communication::PackBuffer& data)
   add_to_pack(data, type);
 
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
 
   // add internal data
   add_to_pack(data, distype_);
@@ -177,7 +177,7 @@ void Discret::ELEMENTS::Lubrication::Pack(Core::Communication::PackBuffer& data)
  |  Unpack data                                                (public) |
  |                                                          wirtz 10/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Lubrication::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Lubrication::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -186,7 +186,7 @@ void Discret::ELEMENTS::Lubrication::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
 
   // extract internal data
   distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
@@ -325,7 +325,7 @@ Core::FE::CellType Discret::ELEMENTS::LubricationBoundary::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                      wirtz 10/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::LubricationBoundary::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::LubricationBoundary::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("This LubricationBoundary element does not support communication");
 
@@ -335,7 +335,7 @@ void Discret::ELEMENTS::LubricationBoundary::Pack(Core::Communication::PackBuffe
 /*----------------------------------------------------------------------*
  |  Unpack data (public)                                    wirtz 10/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::LubricationBoundary::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::LubricationBoundary::unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("This LubricationBoundary element does not support communication");
   return;

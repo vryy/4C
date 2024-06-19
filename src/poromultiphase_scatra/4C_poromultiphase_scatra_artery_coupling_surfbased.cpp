@@ -176,10 +176,10 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::is_not_active(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::Setup()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::setup()
 {
   // call base class
-  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Setup();
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup();
 
   // error-checks
   if (has_varying_diam_)
@@ -192,10 +192,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::Evaluate(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::evaluate(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
-  if (!issetup_) FOUR_C_THROW("Setup() has not been called");
+  if (!issetup_) FOUR_C_THROW("setup() has not been called");
 
   if (!porofluidmanagersset_)
   {
@@ -204,7 +204,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::Evaluate(
   }
 
   // call base class
-  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(sysmat, rhs);
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate(sysmat, rhs);
 }
 
 /*----------------------------------------------------------------------*

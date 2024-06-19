@@ -109,7 +109,7 @@ namespace Mat
       return Core::Materials::m_linelast1D;
     }
 
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
@@ -118,7 +118,7 @@ namespace Mat
       return LinElast1DType::Instance().UniqueParObjectId();
     }
 
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
    private:
     /// my material parameters
@@ -166,7 +166,7 @@ namespace Mat
       return Core::Materials::m_linelast1D_growth;
     }
 
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     Core::Mat::PAR::Parameter* Parameter() const override { return growth_params_; }
 
@@ -175,7 +175,7 @@ namespace Mat
       return LinElast1DGrowthType::Instance().UniqueParObjectId();
     }
 
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
    private:
     /// polynomial growth factor based on amount of substance (@p conc * @p def_grad)

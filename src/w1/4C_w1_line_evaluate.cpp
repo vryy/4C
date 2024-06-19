@@ -55,7 +55,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
   };
 
   LoadType ltype = neum_none;
-  const std::string& type = condition.parameters().Get<std::string>("type");
+  const std::string& type = condition.parameters().get<std::string>("type");
   if (type == "neum_live")
     ltype = neum_live;
   else if (type == "neum_pseudo_orthopressure")
@@ -66,9 +66,9 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
     FOUR_C_THROW("Unknown type of SurfaceNeumann condition");
 
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
-  const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
+  const auto* funct = &condition.parameters().get<std::vector<int>>("funct");
 
   // check total time
   double time = -1.0;
@@ -229,7 +229,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
               // evaluate function at current gauss point
               functfac = Global::Problem::Instance()
                              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                             .Evaluate(coordgpref, time, i);
+                             .evaluate(coordgpref, time, i);
             }
             else
               functfac = 1.0;
@@ -284,7 +284,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
           // evaluate function at current gauss point
           functfac = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                         .Evaluate(coordgpref, time, 0);
+                         .evaluate(coordgpref, time, 0);
         }
 
         // constant factor for integration
@@ -490,7 +490,7 @@ double Discret::ELEMENTS::Wall1Line::w1_substitution(const Core::LinAlg::SerialD
 }
 
 /*======================================================================*/
-int Discret::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
@@ -665,7 +665,7 @@ int Discret::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  * Evaluate method on mutliple dofsets                       vuong 11/12*
  * ---------------------------------------------------------------------*/
-int Discret::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
@@ -673,7 +673,7 @@ int Discret::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 {
   if (la.Size() == 1)
   {
-    return Evaluate(params, discretization,
+    return evaluate(params, discretization,
         la[0].lm_,  // location vector is build by the first column of la
         elematrix1, elematrix2, elevector1, elevector2, elevector3);
   }

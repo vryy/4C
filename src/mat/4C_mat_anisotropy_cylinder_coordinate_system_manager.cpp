@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::CylinderCoordinateSystemManager::CylinderCoordinateSystemManager() = default;
 
-void Mat::CylinderCoordinateSystemManager::Pack(Core::Communication::PackBuffer& data) const
+void Mat::CylinderCoordinateSystemManager::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::ParObject::add_to_pack(data, radial_);
   Core::Communication::ParObject::add_to_pack(data, axial_);
@@ -29,7 +29,7 @@ void Mat::CylinderCoordinateSystemManager::Pack(Core::Communication::PackBuffer&
   Core::Communication::ParObject::add_to_pack(data, static_cast<int>(is_defined_));
 }
 
-void Mat::CylinderCoordinateSystemManager::Unpack(
+void Mat::CylinderCoordinateSystemManager::unpack(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   Core::Communication::ParObject::extract_from_pack(position, data, radial_);

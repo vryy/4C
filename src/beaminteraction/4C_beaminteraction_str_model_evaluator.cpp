@@ -74,7 +74,7 @@ STR::MODELEVALUATOR::BeamInteraction::BeamInteraction()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::Setup()
+void STR::MODELEVALUATOR::BeamInteraction::setup()
 {
   check_init();
 
@@ -93,8 +93,8 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   myrank_ = discret_ptr()->Comm().MyPID();
 
   beaminteraction_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionParams());
-  beaminteraction_params_ptr_->Init();
-  beaminteraction_params_ptr_->Setup();
+  beaminteraction_params_ptr_->init();
+  beaminteraction_params_ptr_->setup();
 
   // print logo
   Logo();
@@ -121,8 +121,8 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
 
   // init data container
   ia_state_ptr_ = Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteractionDataState());
-  ia_state_ptr_->Init();
-  ia_state_ptr_->Setup(ia_discret_);
+  ia_state_ptr_->init();
+  ia_state_ptr_->setup(ia_discret_);
 
   ia_state_ptr_->GetDisNp() = Teuchos::rcp(new Epetra_Vector(*global_state_ptr()->get_dis_np()));
   BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->GetDisNp(),
@@ -163,8 +163,8 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   if (HaveSubModelType(Inpar::BEAMINTERACTION::submodel_crosslinking))
   {
     beam_crosslinker_handler_ = Teuchos::rcp(new BEAMINTERACTION::BeamCrosslinkerHandler());
-    beam_crosslinker_handler_->Init(global_state().get_my_rank(), binstrategy_);
-    beam_crosslinker_handler_->Setup();
+    beam_crosslinker_handler_->init(global_state().get_my_rank(), binstrategy_);
+    beam_crosslinker_handler_->setup();
   }
 
   // some screen output for binning
@@ -179,10 +179,10 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
 
   // distribute problem according to bin distribution to procs ( in case of restart
   // partitioning is done during read_restart() )
-  if (not Global::Problem::Instance()->Restart()) partition_problem();
+  if (not Global::Problem::Instance()->restart()) partition_problem();
 
   // some actions need a partitioned system followed by a renewal of the partition
-  if (not Global::Problem::Instance()->Restart() and post_partition_problem()) partition_problem();
+  if (not Global::Problem::Instance()->restart() and post_partition_problem()) partition_problem();
 
   post_setup();
 
@@ -318,11 +318,11 @@ void STR::MODELEVALUATOR::BeamInteraction::init_and_setup_sub_model_evaluators()
   Vector::iterator sme_iter;
   for (sme_iter = (*me_vec_ptr_).begin(); sme_iter != (*me_vec_ptr_).end(); ++sme_iter)
   {
-    (*sme_iter)->Init(ia_discret_, bindis_, global_state_ptr(), global_in_output_ptr(),
+    (*sme_iter)->init(ia_discret_, bindis_, global_state_ptr(), global_in_output_ptr(),
         ia_state_ptr_, beam_crosslinker_handler_, binstrategy_,
         tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(),
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::UTILS::MapExtractor>(eletypeextractor_, true));
-    (*sme_iter)->Setup();
+    (*sme_iter)->setup();
   }
 
   // submodels build their pointer to other submodel objects to enable submodel dependencies
@@ -400,7 +400,7 @@ void STR::MODELEVALUATOR::BeamInteraction::partition_problem()
   rowbins_ =
       binstrategy_->weighted_distribution_of_bins_to_procs(discret_vec, disnp, nodesinbin, weight);
 
-  // extract noderowmap because it will be called Reset() after adding elements
+  // extract noderowmap because it will be called reset() after adding elements
   Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*bindis_->NodeRowMap()));
   // delete old bins ( in case you partition during your simulation or after a restart)
   bindis_->DeleteElements();
@@ -528,7 +528,7 @@ void STR::MODELEVALUATOR::BeamInteraction::extend_ghosting()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::BeamInteraction::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -556,7 +556,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
   // submodel loop
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->Reset();
+    (*sme_iter)->reset();
 
   // Zero out force and stiffness contributions
   force_beaminteraction_->PutScalar(0.0);

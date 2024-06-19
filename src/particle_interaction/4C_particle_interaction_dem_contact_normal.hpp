@@ -37,10 +37,10 @@ namespace ParticleInteraction
     virtual ~DEMContactNormalBase() = default;
 
     //! init normal contact handler
-    virtual void Init();
+    virtual void init();
 
     //! setup normal contact handler
-    virtual void Setup(const double& dens_max);
+    virtual void setup(const double& dens_max);
 
     //! get normal contact stiffness
     virtual double get_normal_contact_stiffness() const final { return k_normal_; };
@@ -84,7 +84,7 @@ namespace ParticleInteraction
     explicit DEMContactNormalLinearSpring(const Teuchos::ParameterList& params);
 
     //! setup normal contact handler
-    void Setup(const double& dens_max) override;
+    void setup(const double& dens_max) override;
 
     //! evaluate normal contact force
     void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
@@ -101,10 +101,10 @@ namespace ParticleInteraction
     explicit DEMContactNormalLinearSpringDamp(const Teuchos::ParameterList& params);
 
     //! init normal contact handler
-    void Init() override;
+    void init() override;
 
     //! setup normal contact handler
-    void Setup(const double& dens_max) override;
+    void setup(const double& dens_max) override;
 
     //! evaluate normal contact force
     void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
@@ -128,7 +128,7 @@ namespace ParticleInteraction
     explicit DEMContactNormalNonlinearBase(const Teuchos::ParameterList& params);
 
     //! setup normal contact handler
-    void Setup(const double& dens_max) override;
+    void setup(const double& dens_max) override;
 
     //! evaluate normal contact force
     void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
@@ -157,7 +157,7 @@ namespace ParticleInteraction
     explicit DEMContactNormalNonlinearDampBase(const Teuchos::ParameterList& params);
 
     //! init normal contact handler
-    void Init() override;
+    void init() override;
 
     //! evaluate normal contact force
     void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,

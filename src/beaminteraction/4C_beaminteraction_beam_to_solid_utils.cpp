@@ -187,13 +187,13 @@ void BEAMINTERACTION::GetBeamTriadInterpolationScheme(const Core::FE::Discretiza
   std::vector<Core::LinAlg::Matrix<4, 1, double>> nodal_quaternions(3);
   beam_ele->get_nodal_triads_from_full_disp_vec_or_from_disp_theta<3, double>(
       beam_displacement_vector_full_double, nodal_quaternions);
-  triad_interpolation_scheme.Reset(nodal_quaternions);
+  triad_interpolation_scheme.reset(nodal_quaternions);
 
   std::vector<double> beam_displacement_vector_full_ref(
       beam_displacement_vector_full_double.size(), 0.0);
   beam_ele->get_nodal_triads_from_full_disp_vec_or_from_disp_theta<3, double>(
       beam_displacement_vector_full_ref, nodal_quaternions);
-  ref_triad_interpolation_scheme.Reset(nodal_quaternions);
+  ref_triad_interpolation_scheme.reset(nodal_quaternions);
 }
 
 /**
@@ -620,7 +620,7 @@ void BEAMINTERACTION::GetSolidRotationVectorPolarDecomposition2D(
     U_times_U.MultiplyTN(F, F);
 
     // We have to calculate the square root of the matrix U*U here.
-    U.Clear();
+    U.clear();
     if (abs(Core::FADUtils::CastToDouble(U_times_U(0, 0) - U_times_U(1, 1))) < 1e-10 and
         abs(Core::FADUtils::CastToDouble(U_times_U(0, 1))) < 1e-10)
     {

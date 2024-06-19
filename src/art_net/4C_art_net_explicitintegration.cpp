@@ -62,7 +62,7 @@ Arteries::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::ArtNetExplicitTimeInt::Init(const Teuchos::ParameterList& globaltimeparams,
+void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname)
 {
   // time measurement: initialization
@@ -72,7 +72,7 @@ void Arteries::ArtNetExplicitTimeInt::Init(const Teuchos::ParameterList& globalt
   }
 
   // call base class
-  TimInt::Init(globaltimeparams, arteryparams, scatra_disname);
+  TimInt::init(globaltimeparams, arteryparams, scatra_disname);
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled() || !discret_->HaveDofs()) discret_->fill_complete();
@@ -198,7 +198,7 @@ void Arteries::ArtNetExplicitTimeInt::Init(const Teuchos::ParameterList& globalt
     Wbn_->Update(1.0, *Wbo_, 0.0);
     // eleparams.set("lmowner",lmowner);
     eleparams.set<int>("action", Arteries::get_initial_artery_state);
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
   // Fill the NodeId vector
@@ -312,7 +312,7 @@ void Arteries::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList>
 
 
     // call standard loop over all elements
-    discret_->Evaluate(eleparams, sysmat_, rhs_);
+    discret_->evaluate(eleparams, sysmat_, rhs_);
     discret_->ClearState();
 
     // finalize the complete matrix
@@ -344,7 +344,7 @@ void Arteries::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList>
             "Junctions Parameters", junc_nodal_vals_);
 
     // call standard loop over all elements
-    discret_->Evaluate(eleparams, sysmat_, rhs_);
+    discret_->evaluate(eleparams, sysmat_, rhs_);
   }
 
   // Solve the boundary conditions
@@ -380,7 +380,7 @@ void Arteries::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList>
     artjun_->Solve(eleparams);
 
     // call standard loop over all elements
-    discret_->Evaluate(eleparams, sysmat_, rhs_);
+    discret_->evaluate(eleparams, sysmat_, rhs_);
   }
 
 
@@ -434,7 +434,7 @@ void Arteries::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList>
     eleparams.set("Wfnp", Wfnp_);
     eleparams.set("Wbnp", Wbnp_);
 
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 }  // ArtNetExplicitTimeInt:Solve
@@ -463,7 +463,7 @@ void Arteries::ArtNetExplicitTimeInt::SolveScatra()
     eleparams.set("time step size", dta_);
 
     // call standard loop over all elements
-    discret_->Evaluate(eleparams, scatra_sysmat_, scatra_rhs_);
+    discret_->evaluate(eleparams, scatra_sysmat_, scatra_rhs_);
   }
   {
     scatra_bcval_->PutScalar(0.0);
@@ -484,7 +484,7 @@ void Arteries::ArtNetExplicitTimeInt::SolveScatra()
     eleparams.set("dbctog", scatra_dbctog_);
 
     // call standard loop over all elements
-    discret_->Evaluate(eleparams, scatra_sysmat_, scatra_rhs_);
+    discret_->evaluate(eleparams, scatra_sysmat_, scatra_rhs_);
   }
   scatraO2np_->Update(1.0, *scatra_bcval_, 1.0);
 }
@@ -628,7 +628,7 @@ void Arteries::ArtNetExplicitTimeInt::LoadState()
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                       ismail 07/09|
  *----------------------------------------------------------------------*/
-void Arteries::ArtNetExplicitTimeInt::Output(
+void Arteries::ArtNetExplicitTimeInt::output(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   int step = 0;
@@ -824,7 +824,7 @@ void Arteries::ArtNetExplicitTimeInt::calc_postprocessing_values()
   eleparams.set("flow", qn_);
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro evaluat disc"<<std::endl;
   // call standard loop over all elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro done "<<std::endl;
 }  // Arteries::ArtNetExplicitTimeInt::calc_postprocessing_values
@@ -847,7 +847,7 @@ void Arteries::ArtNetExplicitTimeInt::calc_scatra_from_scatra_fw(
   eleparams.set("scatra_fb", scatra_fb);
 
   // call standard loop over all elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 

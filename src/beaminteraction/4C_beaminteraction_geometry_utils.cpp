@@ -222,8 +222,8 @@ void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoord
 
 
   // finally compute the linearizations / directional derivatives
-  lin_xi_master_slaveDofs.Clear();
-  lin_xi_master_masterDofs.Clear();
+  lin_xi_master_slaveDofs.clear();
+  lin_xi_master_masterDofs.clear();
 
   for (unsigned int idim = 0; idim < 3; ++idim)
     for (unsigned int jdof = 0; jdof < dim1; ++jdof)

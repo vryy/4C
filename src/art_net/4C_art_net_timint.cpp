@@ -70,7 +70,7 @@ Arteries::TimInt::TimInt(Teuchos::RCP<Core::FE::Discretization> actdis, const in
 /*------------------------------------------------------------------------*
  | initialize time integration                            kremheller 03/18 |
  *------------------------------------------------------------------------*/
-void Arteries::TimInt::Init(const Teuchos::ParameterList& globaltimeparams,
+void Arteries::TimInt::init(const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname)
 {
   solver_ = Teuchos::rcp(
@@ -198,7 +198,7 @@ void Arteries::TimInt::TimeLoop(
     // -------------------------------------------------------------------
     if (!CoupledTo3D)
     {
-      Output(CoupledTo3D, CouplingTo3DParams);
+      output(CoupledTo3D, CouplingTo3DParams);
     }
 
     // -------------------------------------------------------------------

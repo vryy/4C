@@ -50,7 +50,7 @@ bool Discret::ELEMENTS::Wall1::ReadElement(
   {
     const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
     const int numgp = intpoints.nquad;
-    SolidMaterial()->Setup(numgp, linedef);
+    SolidMaterial()->setup(numgp, linedef);
   }
 
   std::string buffer;

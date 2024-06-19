@@ -122,8 +122,8 @@ namespace FLD
     static void setup_fluid_discretization();
 
     /// initialization
-    void Init() override { Init(true); }
-    virtual void Init(bool createinitialstate);
+    void init() override { init(true); }
+    virtual void init(bool createinitialstate);
 
     void add_additional_scalar_dofset_and_coupling();
 
@@ -178,14 +178,14 @@ namespace FLD
 
     /// build linear system matrix and rhs
     /// Monolithic FSI needs to access the linear fluid problem.
-    virtual void Evaluate();
+    virtual void evaluate();
 
     /// Update the solution after convergence of the nonlinear
     /// iteration. Current solution becomes old solution of next timestep.
     void TimeUpdate() override;
 
     /// Implement Adapter::Fluid
-    void Update() override { TimeUpdate(); }
+    void update() override { TimeUpdate(); }
 
     /// CUT at new interface position, transform vectors,
     /// perform time integration and set new Vectors
@@ -198,7 +198,7 @@ namespace FLD
     Teuchos::RCP<std::map<int, int>> GetPermutationMap() { return permutation_map_; }
 
     /// update configuration and output to file/screen
-    void Output() override;
+    void output() override;
 
     /// set an initial flow field
     void SetInitialFlowField(

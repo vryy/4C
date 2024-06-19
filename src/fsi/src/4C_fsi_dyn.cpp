@@ -115,7 +115,7 @@ void fluid_ale_drt()
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
-    aledis->Evaluate(params);
+    aledis->evaluate(params);
   }
   else  // filled ale discretization
   {
@@ -127,7 +127,7 @@ void fluid_ale_drt()
   }
 
   Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
-  const int restart = problem->Restart();
+  const int restart = problem->restart();
   if (restart)
   {
     // read the restart information, set vectors and variables
@@ -170,7 +170,7 @@ void fluid_xfem_drt()
       // setup material in every ALE element
       Teuchos::ParameterList params;
       params.set<std::string>("action", "setup_material");
-      aledis->Evaluate(params);
+      aledis->evaluate(params);
     }
     else  // filled ale discretization
     {
@@ -188,7 +188,7 @@ void fluid_xfem_drt()
     Teuchos::RCP<FSI::FluidXFEMAlgorithm> fluidalgo =
         Teuchos::rcp(new FSI::FluidXFEMAlgorithm(comm));
 
-    const int restart = Global::Problem::Instance()->Restart();
+    const int restart = Global::Problem::Instance()->restart();
     if (restart)
     {
       // read the restart information, set vectors and variables
@@ -213,7 +213,7 @@ void fluid_xfem_drt()
 
     //--------------------------------------------------------------
     // restart the simulation
-    const int restart = Global::Problem::Instance()->Restart();
+    const int restart = Global::Problem::Instance()->restart();
     if (restart)
     {
       // read the restart information, set vectors and variables
@@ -263,7 +263,7 @@ void fluid_freesurf_drt()
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
-    aledis->Evaluate(params);
+    aledis->evaluate(params);
   }
   else  // filled ale discretization
   {
@@ -288,7 +288,7 @@ void fluid_freesurf_drt()
 
       fsi = Teuchos::rcp(new FSI::MonolithicFS(comm, fsidyn));
 
-      const int restart = Global::Problem::Instance()->Restart();
+      const int restart = Global::Problem::Instance()->restart();
       if (restart)
       {
         // read the restart information, set vectors and variables
@@ -390,7 +390,7 @@ void fsi_immersed_drt()
   if (method == Inpar::FSI::DirichletNeumann)
   {
     fsi = FSI::DirichletNeumannFactory::CreateAlgorithm(comm, fsidyn);
-    Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->Setup();
+    Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->setup();
   }
   else
     FOUR_C_THROW("unsupported partitioned FSI scheme");
@@ -400,7 +400,7 @@ void fsi_immersed_drt()
     Teuchos::rcp_dynamic_cast<FSI::DirichletNeumannVel>(fsi, true)->SetBinning(binningstrategy);
   }
 
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     // read the restart information, set vectors and variables
@@ -472,7 +472,7 @@ void fsi_ale_drt()
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
-    aledis->Evaluate(params);
+    aledis->evaluate(params);
   }
   else  // filled ale discretization (i.e. read from input file)
   {
@@ -601,7 +601,7 @@ void fsi_ale_drt()
 
       // read the restart information, set vectors and variables ---
       // be careful, dofmaps might be changed here in a Redistribute call
-      const int restart = Global::Problem::Instance()->Restart();
+      const int restart = Global::Problem::Instance()->restart();
       if (restart)
       {
         fsi->read_restart(restart);
@@ -703,7 +703,7 @@ void fsi_ale_drt()
 
       // read the restart information, set vectors and variables ---
       // be careful, dofmaps might be changed here in a Redistribute call
-      const int restart = Global::Problem::Instance()->Restart();
+      const int restart = Global::Problem::Instance()->restart();
       if (restart)
       {
         fsi->read_restart(restart);
@@ -747,13 +747,13 @@ void fsi_ale_drt()
         case Inpar::FSI::DirichletNeumannSlideale:
         case Inpar::FSI::DirichletNeumannVolCoupl:
           fsi = FSI::DirichletNeumannFactory::CreateAlgorithm(comm, fsidyn);
-          Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->Setup();
+          Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->setup();
           break;
         default:
           FOUR_C_THROW("unsupported partitioned FSI scheme");
           break;
       }
-      const int restart = Global::Problem::Instance()->Restart();
+      const int restart = Global::Problem::Instance()->restart();
       if (restart)
       {
         // read the restart information, set vectors and variables
@@ -827,7 +827,7 @@ void xfsi_drt()
       // setup material in every ALE element
       Teuchos::ParameterList params;
       params.set<std::string>("action", "setup_material");
-      aledis->Evaluate(params);
+      aledis->evaluate(params);
     }
     else  // ALE discretization already filled
     {
@@ -858,7 +858,7 @@ void xfsi_drt()
 
       // read the restart information, set vectors and variables ---
       // be careful, dofmaps might be changed here in a Redistribute call
-      const int restart = Global::Problem::Instance()->Restart();
+      const int restart = Global::Problem::Instance()->restart();
       if (restart)
       {
         fsi->read_restart(restart);
@@ -900,14 +900,14 @@ void xfsi_drt()
       {
         case Inpar::FSI::DirichletNeumann:
           fsi = FSI::DirichletNeumannFactory::CreateAlgorithm(comm, fsidyn);
-          Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->Setup();
+          Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->setup();
           break;
         default:
           FOUR_C_THROW("only Dirichlet-Neumann partitioned schemes with XFEM");
           break;
       }
 
-      const int restart = Global::Problem::Instance()->Restart();
+      const int restart = Global::Problem::Instance()->restart();
       if (restart)
       {
         // read the restart information, set vectors and variables
@@ -976,7 +976,7 @@ void xfpsi_drt()
       // setup material in every ALE element
       Teuchos::ParameterList params;
       params.set<std::string>("action", "setup_material");
-      aledis->Evaluate(params);
+      aledis->evaluate(params);
     }
     else  // ALE discretization already filled
     {
@@ -1015,7 +1015,7 @@ void xfpsi_drt()
       // be careful, dofmaps might be changed here in a Redistribute call
       const int restart =
           Global::Problem::Instance()
-              ->Restart();  // not adapated at the moment .... Todo check it .. ChrAg
+              ->restart();  // not adapated at the moment .... Todo check it .. ChrAg
       if (restart)
       {
         fsi->read_restart(restart);

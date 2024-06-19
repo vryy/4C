@@ -105,7 +105,7 @@ namespace Mat
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -119,7 +119,7 @@ namespace Mat
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -143,14 +143,14 @@ namespace Mat
     }
 
     /// evaluate micro material on a processor with macro scale
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
 
     /// evaluate micro material on a processor which only knows about the micro scale (supporting
     /// proc)
-    void Evaluate(Core::LinAlg::Matrix<3, 3>* defgrd, Core::LinAlg::Matrix<6, 6>* cmat,
+    void evaluate(Core::LinAlg::Matrix<3, 3>* defgrd, Core::LinAlg::Matrix<6, 6>* cmat,
         Core::LinAlg::Matrix<6, 1>* stress, const int gp, const int ele_ID, const int microdisnum,
         double V0, bool eleowner);
 
@@ -160,10 +160,10 @@ namespace Mat
     void prepare_output();
 
     /// Write output on micro-scale
-    void Output();
+    void output();
 
     // Update state vectors
-    void Update() override;
+    void update() override;
 
     /// Read restart of micro scale on a processor with macro scale
     void read_restart(const int gp, const int eleID, const bool eleowner);

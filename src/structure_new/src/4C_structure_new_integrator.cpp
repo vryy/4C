@@ -49,7 +49,7 @@ STR::Integrator::Integrator()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::Init(const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_ptr,
+void STR::Integrator::init(const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_ptr,
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
     const Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
     const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr)
@@ -67,32 +67,32 @@ void STR::Integrator::Init(const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::Setup()
+void STR::Integrator::setup()
 {
   check_init();
   // ---------------------------------------------------------------------------
   // build model evaluator data container
   // ---------------------------------------------------------------------------
   eval_data_ptr_ = Teuchos::rcp(new STR::MODELEVALUATOR::Data());
-  eval_data_ptr_->Init(timint_ptr_);
-  eval_data_ptr_->Setup();
+  eval_data_ptr_->init(timint_ptr_);
+  eval_data_ptr_->setup();
 
   // ---------------------------------------------------------------------------
   // build model evaluator
   // ---------------------------------------------------------------------------
   modelevaluator_ptr_ = Teuchos::rcp(new STR::ModelEvaluator());
-  modelevaluator_ptr_->Init(
+  modelevaluator_ptr_->init(
       eval_data_ptr_, sdyn_ptr_, gstate_ptr_, io_ptr_, Teuchos::rcp(this, false), timint_ptr_);
-  modelevaluator_ptr_->Setup();
+  modelevaluator_ptr_->setup();
 
   // ---------------------------------------------------------------------------
   // build monitor for a tensile test
   // ---------------------------------------------------------------------------
   monitor_dbc_ptr_ = Teuchos::rcp(new STR::MonitorDbc);
-  monitor_dbc_ptr_->Init(io_ptr_, *gstate_ptr_->get_discret(), *gstate_ptr_, *dbc_ptr_);
-  monitor_dbc_ptr_->Setup();
+  monitor_dbc_ptr_->init(io_ptr_, *gstate_ptr_->get_discret(), *gstate_ptr_, *dbc_ptr_);
+  monitor_dbc_ptr_->setup();
 
-  mt_energy_.Setup();
+  mt_energy_.setup();
 
   // the issetup_ flag is not set here!!!
 }
@@ -134,7 +134,7 @@ void STR::Integrator::set_initial_displacement(
           const double initialval =
               Global::Problem::Instance()
                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                  .Evaluate(lnode->X().data(), global_state().get_time_n(), d);
+                  .evaluate(lnode->X().data(), global_state().get_time_n(), d);
 
           const int err = global_state().get_dis_n()->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
@@ -153,13 +153,13 @@ void STR::Integrator::set_initial_displacement(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!"); }
+void STR::Integrator::check_init() const { FOUR_C_ASSERT(is_init(), "Call init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::Integrator::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -801,7 +801,7 @@ void STR::Integrator::MidTimeEnergy::CopyNpToN()
  *----------------------------------------------------------------------------*/
 bool STR::Integrator::MidTimeEnergy::is_correctly_configured() const
 {
-  FOUR_C_ASSERT(issetup_, "Call Setup() first.");
+  FOUR_C_ASSERT(issetup_, "Call setup() first.");
 
   if (avg_type_ == Inpar::STR::midavg_vague)
   {
@@ -819,7 +819,7 @@ bool STR::Integrator::MidTimeEnergy::store_energy_n() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::MidTimeEnergy::Setup()
+void STR::Integrator::MidTimeEnergy::setup()
 {
   avg_type_ = integrator_.s_dyn().get_mid_time_energy_type();
   issetup_ = true;

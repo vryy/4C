@@ -106,7 +106,7 @@ namespace Adapter
     virtual ~Fluid() = default;
 
     /// initialize time integration
-    virtual void Init() = 0;
+    virtual void init() = 0;
 
     //! @name Vector access
 
@@ -262,7 +262,7 @@ namespace Adapter
     virtual Teuchos::RCP<FLD::Vreman> Vreman() = 0;
 
     /// reset state vectors (needed for biofilm simulations)
-    virtual void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) = 0;
+    virtual void reset(bool completeReset = false, int numsteps = 1, int iter = -1) = 0;
 
     /// set fluid displacement vector due to biofilm growth
     virtual void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp) = 0;
@@ -291,7 +291,7 @@ namespace Adapter
     /// x^n+1_i+1 = x^n     + stepinc
     ///
     /// with n and i being time and Newton iteration step
-    virtual void Evaluate(
+    virtual void evaluate(
         Teuchos::RCP<const Epetra_Vector> stepinc  ///< increment between time step n and n+1
         ) = 0;
 
@@ -303,7 +303,7 @@ namespace Adapter
     virtual void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment) = 0;
 
     /// update at end of time step
-    virtual void Update() = 0;
+    virtual void update() = 0;
 
     /// update velocity increment after Newton step
     virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel) = 0;
@@ -313,7 +313,7 @@ namespace Adapter
     virtual void StatisticsAndOutput() = 0;
 
     /// output results
-    virtual void Output() = 0;
+    virtual void output() = 0;
 
     /// output statistics
     virtual void StatisticsOutput() = 0;

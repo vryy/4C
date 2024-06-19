@@ -875,7 +875,7 @@ bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
   {
     Core::LinAlg::Matrix<ns_, 1> val;
     Core::LinAlg::Matrix<ndim_, ns_> coord;
-    coord.Clear();
+    coord.clear();
 
     Core::Nodes::Node** mypoints = gpele.Points();
     Core::Nodes::Node** mynodes = gpele.Nodes();

@@ -92,12 +92,12 @@ XFEM::CouplingBase::CouplingBase(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::CouplingBase::Init()
+void XFEM::CouplingBase::init()
 {
   // TODO: correct handling of init and setup flags for derived classes
 
   // ---------------------------------------------------------------------------
-  // We need to call Setup() after Init()
+  // We need to call setup() after init()
   // ---------------------------------------------------------------------------
   issetup_ = false;
 
@@ -146,7 +146,7 @@ void XFEM::CouplingBase::Init()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::CouplingBase::Setup()
+void XFEM::CouplingBase::setup()
 {
   check_init();
 
@@ -341,7 +341,7 @@ void XFEM::CouplingBase::get_condition_by_coupling_id(
   // select the conditions with specified "couplingID"
   for (auto* cond : mycond)
   {
-    const int id = cond->parameters().Get<int>("label");
+    const int id = cond->parameters().get<int>("label");
 
     if (id == coupling_id) mynewcond.push_back(cond);
   }
@@ -379,7 +379,7 @@ void XFEM::CouplingBase::set_averaging_strategy()
     {
       // ask the first cutter element
       const int lid = 0;
-      const int val = cutterele_conds_[lid].second->parameters().Get<int>("COUPSTRATEGY");
+      const int val = cutterele_conds_[lid].second->parameters().get<int>("COUPSTRATEGY");
       averaging_strategy_ = static_cast<Inpar::XFEM::AveragingStrategy>(val);
       // check unhandled cased
       if (averaging_strategy_ == Inpar::XFEM::Mean || averaging_strategy_ == Inpar::XFEM::Harmonic)
@@ -398,7 +398,7 @@ void XFEM::CouplingBase::set_averaging_strategy()
     {
       // ask the first cutter element
       const int lid = 0;
-      const int val = cutterele_conds_[lid].second->parameters().Get<int>("COUPSTRATEGY");
+      const int val = cutterele_conds_[lid].second->parameters().get<int>("COUPSTRATEGY");
       averaging_strategy_ = static_cast<Inpar::XFEM::AveragingStrategy>(val);
       break;
     }
@@ -503,7 +503,7 @@ void XFEM::CouplingBase::evaluate_neumann_function(Core::LinAlg::Matrix<3, 1>& i
   std::vector<double> final_values(3, 0.0);
 
   //---------------------------------------
-  const auto condtype = cond->parameters().Get<std::string>("type");
+  const auto condtype = cond->parameters().get<std::string>("type");
 
   // get usual body force
   if (!(condtype == "neum_dead" or condtype == "neum_live"))
@@ -523,7 +523,7 @@ void XFEM::CouplingBase::evaluate_neumann_function(Core::LinAlg::Matrix<6, 1>& i
   std::vector<double> final_values(6, 0.0);
 
   //---------------------------------------
-  const auto condtype = cond->parameters().Get<std::string>("type");
+  const auto condtype = cond->parameters().get<std::string>("type");
 
   // get usual body force
   if (!(condtype == "neum_dead" or condtype == "neum_live"))
@@ -540,7 +540,7 @@ void XFEM::CouplingBase::evaluate_function(std::vector<double>& final_values, co
 {
   if (cond == nullptr) FOUR_C_THROW("invalid condition");
 
-  const int numdof = cond->parameters().Get<int>("numdof");
+  const int numdof = cond->parameters().get<int>("numdof");
 
   if (numdof != (int)final_values.size())
     FOUR_C_THROW("you specified NUMDOF %i in the input file, however, only %i dofs allowed!",
@@ -548,8 +548,8 @@ void XFEM::CouplingBase::evaluate_function(std::vector<double>& final_values, co
 
   //---------------------------------------
   // get values and switches from the condition
-  const auto* onoff = &cond->parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &cond->parameters().Get<std::vector<double>>("val");
+  const auto* onoff = &cond->parameters().get<std::vector<int>>("onoff");
+  const auto* val = &cond->parameters().get<std::vector<double>>("val");
   const auto* functions = cond->parameters().GetIf<std::vector<int>>("funct");
 
   // uniformly distributed random noise
@@ -577,7 +577,7 @@ void XFEM::CouplingBase::evaluate_function(std::vector<double>& final_values, co
     {
       functionfac = Global::Problem::Instance()
                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                        .Evaluate(x, time, dof % numdof);
+                        .evaluate(x, time, dof % numdof);
     }
 
     // uniformly distributed noise
@@ -634,7 +634,7 @@ void XFEM::CouplingBase::evaluate_scalar_function(double& final_values, const do
     {
       functionfac = Global::Problem::Instance()
                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                        .Evaluate(x, time, dof % numdof);
+                        .evaluate(x, time, dof % numdof);
     }
 
     // uniformly distributed noise

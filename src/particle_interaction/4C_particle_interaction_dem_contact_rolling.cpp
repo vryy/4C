@@ -30,7 +30,7 @@ ParticleInteraction::DEMContactRollingBase::DEMContactRollingBase(
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactRollingBase::Init()
+void ParticleInteraction::DEMContactRollingBase::init()
 {
   // safety checks for contact parameters
   if (nue_ <= -1.0 or nue_ > 0.5)
@@ -40,7 +40,7 @@ void ParticleInteraction::DEMContactRollingBase::Init()
     FOUR_C_THROW("invalid input parameter FRICT_COEFF_ROLL for this kind of contact law!");
 }
 
-void ParticleInteraction::DEMContactRollingBase::Setup(const double& k_normal)
+void ParticleInteraction::DEMContactRollingBase::setup(const double& k_normal)
 {
   // nothing to do
 }
@@ -59,10 +59,10 @@ ParticleInteraction::DEMContactRollingViscous::DEMContactRollingViscous(
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactRollingViscous::Init()
+void ParticleInteraction::DEMContactRollingViscous::init()
 {
   // call base class init
-  DEMContactRollingBase::Init();
+  DEMContactRollingBase::init();
 
   // safety checks for contact parameters
   if (young_ <= 0.0)
@@ -72,10 +72,10 @@ void ParticleInteraction::DEMContactRollingViscous::Init()
     FOUR_C_THROW("invalid input parameter MAX_VELOCITY (expected to be positive)!");
 }
 
-void ParticleInteraction::DEMContactRollingViscous::Setup(const double& k_normal)
+void ParticleInteraction::DEMContactRollingViscous::setup(const double& k_normal)
 {
   // call base class setup
-  DEMContactRollingBase::Setup(k_normal);
+  DEMContactRollingBase::setup(k_normal);
 
   // determine rolling contact damping factor
   const double fac = young_ / (1.0 - UTILS::Pow<2>(nue_));
@@ -130,10 +130,10 @@ ParticleInteraction::DEMContactRollingCoulomb::DEMContactRollingCoulomb(
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactRollingCoulomb::Setup(const double& k_normal)
+void ParticleInteraction::DEMContactRollingCoulomb::setup(const double& k_normal)
 {
   // call base class setup
-  DEMContactRollingBase::Setup(k_normal);
+  DEMContactRollingBase::setup(k_normal);
 
   // rolling to normal stiffness ratio
   const double kappa = (1.0 - nue_) / (1.0 - 0.5 * nue_);

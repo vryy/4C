@@ -29,14 +29,14 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_((matdata.parameters.Get<std::vector<double>>("YOUNG"))),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      thermexpans_(matdata.parameters.Get<double>("THEXPANS")),
-      capa_(matdata.parameters.Get<double>("CAPA")),
-      conduct_(matdata.parameters.Get<double>("CONDUCT")),
-      thetainit_(matdata.parameters.Get<double>("INITTEMP")),
-      thermomat_(matdata.parameters.Get<int>("THERMOMAT"))
+      youngs_((matdata.parameters.get<std::vector<double>>("YOUNG"))),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      thermexpans_(matdata.parameters.get<double>("THEXPANS")),
+      capa_(matdata.parameters.get<double>("CAPA")),
+      conduct_(matdata.parameters.get<double>("CONDUCT")),
+      thetainit_(matdata.parameters.get<double>("INITTEMP")),
+      thermomat_(matdata.parameters.get<int>("THERMOMAT"))
 {
   if (poissonratio_ >= 0.5 || poissonratio_ < -1.)
     FOUR_C_THROW("Poisson's ratio must be in [-1;0.5)");
@@ -62,7 +62,7 @@ Core::Communication::ParObject* Mat::ThermoStVenantKirchhoffType::Create(
     const std::vector<char>& data)
 {
   auto* thrstvenantk = new Mat::ThermoStVenantKirchhoff();
-  thrstvenantk->Unpack(data);
+  thrstvenantk->unpack(data);
   return thrstvenantk;
 }
 
@@ -99,7 +99,7 @@ void Mat::ThermoStVenantKirchhoff::create_thermo_material_if_set()
 /*----------------------------------------------------------------------*
  |  Pack (public)                                            dano 02/10 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoStVenantKirchhoff::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ThermoStVenantKirchhoff::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -111,13 +111,13 @@ void Mat::ThermoStVenantKirchhoff::Pack(Core::Communication::PackBuffer& data) c
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   add_to_pack(data, matid);
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  |  Unpack (public)                                          dano 02/10 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoStVenantKirchhoff::Unpack(const std::vector<char>& data)
+void Mat::ThermoStVenantKirchhoff::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -144,14 +144,14 @@ void Mat::ThermoStVenantKirchhoff::Unpack(const std::vector<char>& data)
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
-}  // Unpack()
+}  // unpack()
 
 
 /*----------------------------------------------------------------------*
  | calculates stresses using one of the above method to      dano 02/10 |
  | evaluate the elasticity tensor                                       |
  *----------------------------------------------------------------------*/
-void Mat::ThermoStVenantKirchhoff::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -189,22 +189,22 @@ void Mat::ThermoStVenantKirchhoff::StrainEnergy(
   psi += .5 * s.Dot(glstrain);
 }
 
-void Mat::ThermoStVenantKirchhoff::Evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp,
+void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp,
     Core::LinAlg::Matrix<3, 3>& cmat, Core::LinAlg::Matrix<3, 1>& heatflux) const
 {
-  thermo_->Evaluate(gradtemp, cmat, heatflux);
+  thermo_->evaluate(gradtemp, cmat, heatflux);
 }
 
-void Mat::ThermoStVenantKirchhoff::Evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp,
+void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp,
     Core::LinAlg::Matrix<2, 2>& cmat, Core::LinAlg::Matrix<2, 1>& heatflux) const
 {
-  thermo_->Evaluate(gradtemp, cmat, heatflux);
+  thermo_->evaluate(gradtemp, cmat, heatflux);
 }
 
-void Mat::ThermoStVenantKirchhoff::Evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp,
+void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp,
     Core::LinAlg::Matrix<1, 1>& cmat, Core::LinAlg::Matrix<1, 1>& heatflux) const
 {
-  thermo_->Evaluate(gradtemp, cmat, heatflux);
+  thermo_->evaluate(gradtemp, cmat, heatflux);
 }
 
 void Mat::ThermoStVenantKirchhoff::ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const
@@ -373,7 +373,7 @@ void Mat::ThermoStVenantKirchhoff::FillCthermo(Core::LinAlg::Matrix<6, 1>& ctemp
   // write non-zero components
 
   // clear the material tangent, equal to PutScalar(0.0), but faster
-  ctemp.Clear();
+  ctemp.clear();
 
   // loop over the element nodes, non-zero entries only in main directions
   for (int i = 0; i < 3; ++i) ctemp(i, 0) = m;
@@ -509,7 +509,7 @@ double Mat::ThermoStVenantKirchhoff::get_st_modulus_t() const
 void Mat::ThermoStVenantKirchhoff::get_cmat_at_tempnp_t(Core::LinAlg::Matrix<6, 6>& derivcmat)
 {
   // clear the material tangent, identical to PutScalar(0.0)
-  derivcmat.Clear();
+  derivcmat.clear();
 
   if (youngs_is_temp_dependent())
   {

@@ -82,7 +82,7 @@ CONTACT::Aug::PenaltyUpdate* CONTACT::Aug::PenaltyUpdate::Create(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::PenaltyUpdate::Init(
+void CONTACT::Aug::PenaltyUpdate::init(
     CONTACT::Aug::Strategy* const strategy, CONTACT::Aug::DataContainer* const data)
 {
   strategy_ptr_ = strategy;
@@ -94,7 +94,7 @@ void CONTACT::Aug::PenaltyUpdate::Init(
  *----------------------------------------------------------------------------*/
 void CONTACT::Aug::PenaltyUpdate::throw_if_not_initialized() const
 {
-  if (not isinit_) FOUR_C_THROW("Call Init() first!");
+  if (not isinit_) FOUR_C_THROW("Call init() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -108,7 +108,7 @@ void CONTACT::Aug::PenaltyUpdate::set_state(
   Core::IO::cout(Core::IO::debug) << __LINE__ << " -- " << CONTACT_FUNC_NAME << Core::IO::endl;
   Core::IO::cout(Core::IO::debug) << std::string(40, '*') << Core::IO::endl;
 
-  state_.Set(xold, dir, data());
+  state_.set(xold, dir, data());
 
   double dir_nrm2 = 0.0;
   dir.Norm2(&dir_nrm2);
@@ -127,7 +127,7 @@ void CONTACT::Aug::PenaltyUpdate::post_update()
  *----------------------------------------------------------------------------*/
 void CONTACT::Aug::PenaltyUpdate::reset()
 {
-  state_.Reset();
+  state_.reset();
   status_ = Status::unevaluated;
 }
 
@@ -147,7 +147,7 @@ void CONTACT::Aug::PenaltyUpdate::PrintInfo(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::PenaltyUpdate::State::Set(
+void CONTACT::Aug::PenaltyUpdate::State::set(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const CONTACT::Aug::DataContainer& data)
 {
   xold_ = Teuchos::rcp(new Epetra_Vector(xold));
@@ -158,7 +158,7 @@ void CONTACT::Aug::PenaltyUpdate::State::Set(
 
   CONTACT::Aug::Potential& pot = pu_.data().Potential();
   pot.Compute();
-  gn_gn_ = pot.Get(POTENTIAL::Type::infeasibility_measure, POTENTIAL::SetType::active);
+  gn_gn_ = pot.get(POTENTIAL::Type::infeasibility_measure, POTENTIAL::SetType::active);
   pot.ComputeLin(dir);
   gn_dgn_ = pot.GetLin(POTENTIAL::Type::infeasibility_measure, POTENTIAL::SetType::active,
       POTENTIAL::LinTerm::wrt_d);
@@ -166,7 +166,7 @@ void CONTACT::Aug::PenaltyUpdate::State::Set(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::PenaltyUpdate::State::Reset()
+void CONTACT::Aug::PenaltyUpdate::State::reset()
 {
   xold_ = Teuchos::null;
   full_direction_ = Teuchos::null;

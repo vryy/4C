@@ -95,18 +95,18 @@ void immersed_problem_drt()
           }
 
           // init algo
-          algo->Init(params);
+          algo->init(params);
 
           // ghost structure redundantly on all procs
           Core::Rebalance::GhostDiscretizationOnAllProcs(problem->GetDis("structure"));
 
           // setup algo
-          algo->Setup();
+          algo->setup();
 
           // PARTITIONED FSI ALGORITHM
 
           // read restart step
-          const int restart = Global::Problem::Instance()->Restart();
+          const int restart = Global::Problem::Instance()->restart();
           if (restart)
             algo->read_restart(restart);
           else

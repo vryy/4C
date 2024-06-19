@@ -20,9 +20,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::PAR::StructPoro::StructPoro(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      matid_(matdata.parameters.Get<int>("MATID")),
-      poro_law_ID_(matdata.parameters.Get<int>("POROLAWID")),
-      init_porosity_(matdata.parameters.Get<double>("INITPOROSITY"))
+      matid_(matdata.parameters.get<int>("MATID")),
+      poro_law_ID_(matdata.parameters.get<int>("POROLAWID")),
+      init_porosity_(matdata.parameters.get<double>("INITPOROSITY"))
 {
   // retrieve problem instance to read from
   const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -85,7 +85,7 @@ Mat::StructPoroType Mat::StructPoroType::instance_;
 Core::Communication::ParObject* Mat::StructPoroType::Create(const std::vector<char>& data)
 {
   auto* struct_poro = new Mat::StructPoro();
-  struct_poro->Unpack(data);
+  struct_poro->unpack(data);
   return struct_poro;
 }
 
@@ -134,7 +134,7 @@ double Mat::StructPoro::Density() const
 
 double Mat::StructPoro::DensitySolidPhase() const { return mat_->Density(); }
 
-void Mat::StructPoro::Pack(Core::Communication::PackBuffer& data) const
+void Mat::StructPoro::pack(Core::Communication::PackBuffer& data) const
 {
   if (not is_initialized_) FOUR_C_THROW("poro material not initialized. Not a poro element?");
 
@@ -169,10 +169,10 @@ void Mat::StructPoro::Pack(Core::Communication::PackBuffer& data) const
   }
 
   // Pack data of underlying material
-  if (mat_ != Teuchos::null) mat_->Pack(data);
+  if (mat_ != Teuchos::null) mat_->pack(data);
 }
 
-void Mat::StructPoro::Unpack(const std::vector<char>& data)
+void Mat::StructPoro::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

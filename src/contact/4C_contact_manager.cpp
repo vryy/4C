@@ -80,7 +80,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
   // Sort out beam-to-solid contact pairs, since these are treated in the beam3contact framework
   for (const auto& beamSolidCondition : beamandsolidcontactconditions)
   {
-    if (beamSolidCondition->parameters().Get<std::string>("Application") != "Beamtosolidcontact")
+    if (beamSolidCondition->parameters().get<std::string>("Application") != "Beamtosolidcontact")
       contactconditions.push_back(beamSolidCondition);
   }
 
@@ -89,7 +89,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
   if (contactconditions.size() < 1) FOUR_C_THROW("Not enough contact conditions in discretization");
   if (contactconditions.size() == 1)
   {
-    const std::string side = contactconditions[0]->parameters().Get<std::string>("Side");
+    const std::string side = contactconditions[0]->parameters().get<std::string>("Side");
     FOUR_C_THROW_UNLESS(side == "Selfcontact", "Not enough contact conditions in discretization");
   }
 
@@ -143,22 +143,22 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
 
     // try to build contact group around this condition
     currentgroup.push_back(contactconditions[i]);
-    const int groupid1 = currentgroup[0]->parameters().Get<int>("Interface ID");
+    const int groupid1 = currentgroup[0]->parameters().get<int>("Interface ID");
 
     // In case of MultiScale contact this is the id of the interface's constitutive contact law
-    int contactconstitutivelawid = currentgroup[0]->parameters().Get<int>("ConstitutiveLawID");
+    int contactconstitutivelawid = currentgroup[0]->parameters().get<int>("ConstitutiveLawID");
 
     bool foundit = false;
 
     // only one surface per group is ok for self contact
-    const std::string& side = contactconditions[i]->parameters().Get<std::string>("Side");
+    const std::string& side = contactconditions[i]->parameters().get<std::string>("Side");
     if (side == "Selfcontact") foundit = true;
 
     for (unsigned j = 0; j < contactconditions.size(); ++j)
     {
       if (j == i) continue;  // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
-      const int groupid2 = tempcond->parameters().Get<int>("Interface ID");
+      const int groupid2 = tempcond->parameters().get<int>("Interface ID");
       if (groupid1 != groupid2) continue;  // not in the group
       foundit = true;                      // found a group entry
       currentgroup.push_back(tempcond);    // store it in currentgroup
@@ -219,7 +219,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
       std::vector<double> frcoeff(currentgroup.size());
 
       for (unsigned j = 0; j < currentgroup.size(); ++j)
-        frcoeff[j] = currentgroup[j]->parameters().Get<double>("FrCoeffOrBound");
+        frcoeff[j] = currentgroup[j]->parameters().get<double>("FrCoeffOrBound");
 
       // check consistency of interface COFs
       for (unsigned j = 1; j < currentgroup.size(); ++j)
@@ -257,7 +257,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
       // read interface COFs
       std::vector<double> ad_bound(currentgroup.size());
       for (unsigned j = 0; j < currentgroup.size(); ++j)
-        ad_bound[j] = currentgroup[j]->parameters().Get<double>("AdhesionBound");
+        ad_bound[j] = currentgroup[j]->parameters().get<double>("AdhesionBound");
 
       // check consistency of interface COFs
       for (unsigned j = 1; j < currentgroup.size(); ++j)
@@ -375,7 +375,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
             if (contactSymconditions.at(l)->ContainsNode(node->Id()))
             {
               const std::vector<int>& onoff =
-                  contactSymconditions.at(l)->parameters().Get<std::vector<int>>("onoff");
+                  contactSymconditions.at(l)->parameters().get<std::vector<int>>("onoff");
               for (unsigned k = 0; k < onoff.size(); k++)
                 if (onoff.at(k) == 1) cnode->DbcDofs()[k] = true;
               if (stype == Inpar::CONTACT::solution_lagmult &&
@@ -433,7 +433,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
             if (contactSymconditions.at(l)->ContainsNode(node->Id()))
             {
               const std::vector<int>& onoff =
-                  contactSymconditions.at(l)->parameters().Get<std::vector<int>>("onoff");
+                  contactSymconditions.at(l)->parameters().get<std::vector<int>>("onoff");
               for (unsigned k = 0; k < onoff.size(); k++)
                 if (onoff.at(k) == 1) cnode->DbcDofs()[k] = true;
               if (stype == Inpar::CONTACT::solution_lagmult &&
@@ -621,7 +621,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
     FOUR_C_THROW("Unrecognized contact strategy");
   }
 
-  dynamic_cast<CONTACT::AbstractStrategy&>(*strategy_).Setup(false, true);
+  dynamic_cast<CONTACT::AbstractStrategy&>(*strategy_).setup(false, true);
 
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
   //**********************************************************************
@@ -897,7 +897,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
 
       for (const auto& condition : contactCondition)
       {
-        const std::string side = condition->parameters().Get<std::string>("Side");
+        const std::string side = condition->parameters().get<std::string>("Side");
         if (side == "Selfcontact") self = true;
       }
     }

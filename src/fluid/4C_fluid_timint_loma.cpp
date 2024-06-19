@@ -42,7 +42,7 @@ FLD::TimIntLoma::TimIntLoma(const Teuchos::RCP<Core::FE::Discretization>& actdis
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::Init()
+void FLD::TimIntLoma::init()
 {
   // conservative formulation currently not supported in low-Mach-number case
   // when using generalized-alpha time-integration scheme
@@ -209,7 +209,7 @@ void FLD::TimIntLoma::set_element_custom_parameter()
       params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   return;
 }

@@ -132,7 +132,7 @@ namespace Airway
 
       \param vel new guess at velocity, cross-sectional area, and pressure
     */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> vel){};
+    void evaluate(Teuchos::RCP<const Epetra_Vector> vel){};
 
     /*!
     \brief Update the solution after convergence of the linear
@@ -163,7 +163,7 @@ namespace Airway
     \brief update configuration and output to file/screen
 
     */
-    void Output(bool CoupledTo3D = false,
+    void output(bool CoupledTo3D = false,
         Teuchos::RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
 
     /*!

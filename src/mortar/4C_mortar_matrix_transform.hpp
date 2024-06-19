@@ -43,12 +43,12 @@ namespace Mortar
     MatrixRowColTransformer(const unsigned num_transformer);
 
 
-    void Init(const plain_block_map_pairs& redistributed_row,
+    void init(const plain_block_map_pairs& redistributed_row,
         const plain_block_map_pairs& redistributed_column,
         const plain_block_map_pairs& unredistributed_row,
         const plain_block_map_pairs& unredistributed_column);
 
-    void Setup();
+    void setup();
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> redistributed_to_unredistributed(
         const CONTACT::MatBlockType bt, const Core::LinAlg::SparseMatrix& src_mat);
@@ -74,13 +74,13 @@ namespace Mortar
 
     inline void throw_if_not_init() const
     {
-      if (not isinit_) FOUR_C_THROW("Call Init() first!");
+      if (not isinit_) FOUR_C_THROW("Call init() first!");
     }
 
     inline void throw_if_not_init_and_setup() const
     {
       throw_if_not_init();
-      if (not issetup_) FOUR_C_THROW("Call Setup() first!");
+      if (not issetup_) FOUR_C_THROW("Call setup() first!");
     }
 
     void reset_exporter(Teuchos::RCP<Epetra_Export>& exporter) const;

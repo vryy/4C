@@ -76,7 +76,7 @@ namespace SSI
     //! return global map of degrees of freedom
     const Teuchos::RCP<const Epetra_Map>& dof_row_map() const;
 
-    void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    void init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
@@ -100,7 +100,7 @@ namespace SSI
 
     void read_restart(int restart) override;
 
-    void Setup() override;
+    void setup() override;
 
     void SetupSystem() override;
 

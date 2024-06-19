@@ -162,7 +162,7 @@ void THR::TimIntExplEuler::UpdateStepElement()
   // --> be careful: this action does nothing
   p.set<int>("action", THR::calc_thermo_update_istep);
   // go to elements and do nothing
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
 }  // update_step_element()
 

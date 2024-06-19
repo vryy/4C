@@ -156,11 +156,11 @@ namespace THR
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> tempi) override = 0;
+    void evaluate(Teuchos::RCP<const Epetra_Vector> tempi) override = 0;
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    void Evaluate() override = 0;
+    void evaluate() override = 0;
 
     //! Update configuration after time step
     //!
@@ -179,7 +179,7 @@ namespace THR
     void UpdateStepTime();
 
     //! update at time step end
-    void Update() override = 0;
+    void update() override = 0;
 
     //! update Newton step
     void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi) override = 0;
@@ -212,7 +212,7 @@ namespace THR
     void OutputStep(bool forced_writerestart);
 
     //! output
-    void Output(bool forced_writerestart = false) override { OutputStep(forced_writerestart); }
+    void output(bool forced_writerestart = false) override { OutputStep(forced_writerestart); }
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07

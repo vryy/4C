@@ -32,7 +32,7 @@ CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
     {
       const double* mypenalty = i->parameters().GetIf<double>("penalty");
       const double* myrho = i->parameters().GetIf<double>("rho");
-      int condID = i->parameters().Get<int>("ConditionID");
+      int condID = i->parameters().get<int>("ConditionID");
       if (mypenalty and myrho)
       {
         penalties_.insert(std::pair<int, double>(condID, *mypenalty));
@@ -67,7 +67,7 @@ CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
   }
 }
 
-void CONSTRAINTS::ConstraintPenalty::Initialize(
+void CONSTRAINTS::ConstraintPenalty::initialize(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   FOUR_C_THROW("method not used for penalty formulation!");
@@ -75,7 +75,7 @@ void CONSTRAINTS::ConstraintPenalty::Initialize(
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintPenalty::Initialize(Teuchos::ParameterList& params)
+void CONSTRAINTS::ConstraintPenalty::initialize(Teuchos::ParameterList& params)
 {
   // choose action
   switch (constrtype_)
@@ -100,12 +100,12 @@ void CONSTRAINTS::ConstraintPenalty::Initialize(Teuchos::ParameterList& params)
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintPenalty::Initialize(const double& time)
+void CONSTRAINTS::ConstraintPenalty::initialize(const double& time)
 {
   for (auto* cond : constrcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
 
     // if current time (at) is larger than activation time of the condition, activate it
     if ((inittimes_.find(condID)->second <= time) && (activecons_.find(condID)->second == false))
@@ -122,7 +122,7 @@ void CONSTRAINTS::ConstraintPenalty::Initialize(const double& time)
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintPenalty::Evaluate(Teuchos::ParameterList& params,
+void CONSTRAINTS::ConstraintPenalty::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -195,7 +195,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
     double scStiff = params.get("scaleStiffEntries", 1.0);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
     params.set("ConditionID", condID);
 
     // is conditions supposed to be active?
@@ -206,7 +206,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
       {
         const std::string action = params.get<std::string>("action");
         // last converged step is used reference
-        Initialize(params);
+        initialize(params);
         params.set("action", action);
       }
 
@@ -218,7 +218,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
       if (curvenum >= 0)
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                       .Evaluate(time);
+                       .evaluate(time);
 
       double diff = (curvefac * (*initerror_)[condID - 1] - (*acterror_)[condID - 1]);
 
@@ -261,7 +261,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
         elevector3.size(1);
 
         // call the element specific evaluate method
-        int err = curr->second->Evaluate(
+        int err = curr->second->evaluate(
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
         if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -317,7 +317,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_error(
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
 
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
     params.set("ConditionID", condID);
 
     // if current time is larger than initialization time of the condition, start computing
@@ -350,7 +350,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_error(
         elevector3.size(1);
 
         // call the element specific evaluate method
-        int err = curr->second->Evaluate(
+        int err = curr->second->evaluate(
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
         if (err) FOUR_C_THROW("error while evaluating elements");
 

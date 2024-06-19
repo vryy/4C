@@ -26,13 +26,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::Newman::Newman(const Core::Mat::PAR::Parameter::Data& matdata)
     : ElchSingleMat(matdata),
-      valence_(matdata.parameters.Get<double>("VALENCE")),
-      transnrcurve_(matdata.parameters.Get<int>("TRANSNR")),
-      thermfaccurve_(matdata.parameters.Get<int>("THERMFAC")),
-      transnrparanum_(matdata.parameters.Get<int>("TRANS_PARA_NUM")),
-      transnrpara_(matdata.parameters.Get<std::vector<double>>("TRANS_PARA")),
-      thermfacparanum_(matdata.parameters.Get<int>("THERM_PARA_NUM")),
-      thermfacpara_(matdata.parameters.Get<std::vector<double>>("THERM_PARA"))
+      valence_(matdata.parameters.get<double>("VALENCE")),
+      transnrcurve_(matdata.parameters.get<int>("TRANSNR")),
+      thermfaccurve_(matdata.parameters.get<int>("THERMFAC")),
+      transnrparanum_(matdata.parameters.get<int>("TRANS_PARA_NUM")),
+      transnrpara_(matdata.parameters.get<std::vector<double>>("TRANS_PARA")),
+      thermfacparanum_(matdata.parameters.get<int>("THERM_PARA_NUM")),
+      thermfacpara_(matdata.parameters.get<std::vector<double>>("THERM_PARA"))
 {
   if (transnrparanum_ != (int)transnrpara_.size())
     FOUR_C_THROW("number of materials %d does not fit to size of material vector %d",
@@ -58,7 +58,7 @@ Mat::NewmanType Mat::NewmanType::instance_;
 Core::Communication::ParObject* Mat::NewmanType::Create(const std::vector<char>& data)
 {
   Mat::Newman* newman = new Mat::Newman();
-  newman->Unpack(data);
+  newman->unpack(data);
   return newman;
 }
 
@@ -75,7 +75,7 @@ Mat::Newman::Newman(Mat::PAR::Newman* params) : params_(params) { return; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Newman::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Newman::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -94,7 +94,7 @@ void Mat::Newman::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Newman::Unpack(const std::vector<char>& data)
+void Mat::Newman::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -137,7 +137,7 @@ double Mat::Newman::compute_transference_number(const double cint) const
   else
     trans = Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfTime>(trans_nr_curve() - 1)
-                .Evaluate(cint);
+                .evaluate(cint);
 
   return trans;
 }
@@ -174,7 +174,7 @@ double Mat::Newman::ComputeThermFac(const double cint) const
   else
     therm = Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfTime>(therm_fac_curve() - 1)
-                .Evaluate(cint);
+                .evaluate(cint);
 
   return therm;
 }

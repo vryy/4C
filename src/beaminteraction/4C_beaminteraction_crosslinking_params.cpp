@@ -34,7 +34,7 @@ BEAMINTERACTION::CrosslinkingParams::CrosslinkingParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::CrosslinkingParams::Init(STR::TimeInt::BaseDataGlobalState const& gstate)
+void BEAMINTERACTION::CrosslinkingParams::init(STR::TimeInt::BaseDataGlobalState const& gstate)
 {
   issetup_ = false;
 
@@ -321,7 +321,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TimeInt::BaseDataGlobalState
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::CrosslinkingParams::Setup()
+void BEAMINTERACTION::CrosslinkingParams::setup()
 {
   check_init();
 

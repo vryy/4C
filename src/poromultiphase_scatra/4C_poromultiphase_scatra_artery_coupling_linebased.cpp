@@ -51,10 +51,10 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::PoroMultiPhaseScaTr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::Setup()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::setup()
 {
   // call base class
-  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Setup();
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup();
 
   // pre-evaluate the pairs
   pre_evaluate_coupling_pairs();

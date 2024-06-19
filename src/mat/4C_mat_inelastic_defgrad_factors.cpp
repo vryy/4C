@@ -35,15 +35,15 @@ Mat::PAR::InelasticDefgradNoGrowth::InelasticDefgradNoGrowth(
 Mat::PAR::InelasticDefgradScalar::InelasticDefgradScalar(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      scalar1_(matdata.parameters.Get<int>("SCALAR1")),
-      scalar1_ref_conc_(matdata.parameters.Get<double>("SCALAR1_RefConc"))
+      scalar1_(matdata.parameters.get<int>("SCALAR1")),
+      scalar1_ref_conc_(matdata.parameters.get<double>("SCALAR1_RefConc"))
 {
   // safety checks
   // in case not all scatra dofs are transported scalars, the last scatra dof is a potential and can
   // not be treated as a concentration but it is treated like that in so3_scatra_evaluate.cpp in the
   // pre_evaluate method!
   if (scalar1_ != 1) FOUR_C_THROW("At the moment it is only possible that SCALAR1 induces growth");
-  if (matdata.parameters.Get<double>("SCALAR1_RefConc") < 0.0)
+  if (matdata.parameters.get<double>("SCALAR1_RefConc") < 0.0)
     FOUR_C_THROW("The reference concentration of SCALAR1 can't be negative");
 }
 
@@ -52,7 +52,7 @@ Mat::PAR::InelasticDefgradScalar::InelasticDefgradScalar(
 Mat::PAR::InelasticDefgradLinScalar::InelasticDefgradLinScalar(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : InelasticDefgradScalar(matdata),
-      scalar1_molar_growth_fac_(matdata.parameters.Get<double>("SCALAR1_MolarGrowthFac"))
+      scalar1_molar_growth_fac_(matdata.parameters.get<double>("SCALAR1_MolarGrowthFac"))
 {
 }
 
@@ -63,7 +63,7 @@ Mat::PAR::InelasticDefgradIntercalFrac::InelasticDefgradIntercalFrac(
     : InelasticDefgradScalar(matdata)
 {
   // get matid
-  const int matid = matdata.parameters.Get<int>("MATID");
+  const int matid = matdata.parameters.get<int>("MATID");
 
   // Check if the material specified by user with MATID is an electrode material
   if (matid > 0)
@@ -77,8 +77,8 @@ Mat::PAR::InelasticDefgradIntercalFrac::InelasticDefgradIntercalFrac(
       case Core::Materials::m_electrode:
       {
         // Get C_max and Chi_max of electrode material
-        c_max_ = curmat->raw_parameters().Get<double>("C_MAX");
-        chi_max_ = curmat->raw_parameters().Get<double>("CHI_MAX");
+        c_max_ = curmat->raw_parameters().get<double>("C_MAX");
+        chi_max_ = curmat->raw_parameters().get<double>("CHI_MAX");
         break;
       }
       default:
@@ -96,13 +96,13 @@ Mat::PAR::InelasticDefgradIntercalFrac::InelasticDefgradIntercalFrac(
 Mat::PAR::InelasticDefgradPolyIntercalFrac::InelasticDefgradPolyIntercalFrac(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : InelasticDefgradIntercalFrac(matdata),
-      poly_coeffs_(matdata.parameters.Get<std::vector<double>>("POLY_PARAMS")),
-      x_max_(matdata.parameters.Get<double>("X_max")),
-      x_min_(matdata.parameters.Get<double>("X_min"))
+      poly_coeffs_(matdata.parameters.get<std::vector<double>>("POLY_PARAMS")),
+      x_max_(matdata.parameters.get<double>("X_max")),
+      x_min_(matdata.parameters.get<double>("X_min"))
 {
   // safety check
   if (poly_coeffs_.size() !=
-      static_cast<unsigned int>(matdata.parameters.Get<int>("POLY_PARA_NUM")))
+      static_cast<unsigned int>(matdata.parameters.get<int>("POLY_PARA_NUM")))
   {
     FOUR_C_THROW(
         "Number of coefficients POLY_PARA_NUM you entered in input file has to match the size "
@@ -116,7 +116,7 @@ Mat::PAR::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : InelasticDefgradLinScalar(matdata),
       growth_dir_(Teuchos::rcp(new InelasticDeformationDirection(
-          matdata.parameters.Get<std::vector<double>>("GrowthDirection"))))
+          matdata.parameters.get<std::vector<double>>("GrowthDirection"))))
 {
 }
 
@@ -126,7 +126,7 @@ Mat::PAR::InelasticDefgradPolyIntercalFracAniso::InelasticDefgradPolyIntercalFra
     const Core::Mat::PAR::Parameter::Data& matdata)
     : InelasticDefgradPolyIntercalFrac(matdata),
       growth_dir_(Teuchos::rcp(new InelasticDeformationDirection(
-          matdata.parameters.Get<std::vector<double>>("GrowthDirection"))))
+          matdata.parameters.get<std::vector<double>>("GrowthDirection"))))
 {
 }
 
@@ -164,8 +164,8 @@ Mat::PAR::InelasticDeformationDirection::InelasticDeformationDirection(
 Mat::PAR::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      ref_temp_(matdata.parameters.Get<double>("RefTemp")),
-      temp_growth_fac_(matdata.parameters.Get<double>("Temp_GrowthFac"))
+      ref_temp_(matdata.parameters.get<double>("RefTemp")),
+      temp_growth_fac_(matdata.parameters.get<double>("Temp_GrowthFac"))
 
 {
   // safety checks
@@ -182,7 +182,7 @@ Mat::PAR::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso(
  *--------------------------------------------------------------------*/
 Mat::PAR::InelasticDefgradTimeFunct::InelasticDefgradTimeFunct(
     const Core::Mat::PAR::Parameter::Data& matdata)
-    : Parameter(matdata), funct_num_(matdata.parameters.Get<int>("FUNCT_NUM"))
+    : Parameter(matdata), funct_num_(matdata.parameters.get<int>("FUNCT_NUM"))
 {
 }
 
@@ -507,7 +507,7 @@ void Mat::InelasticDefgradLinScalarAniso::evaluate_inverse_inelastic_def_grad(
 {
   // init and clear variable
   static Core::LinAlg::Matrix<3, 3> FinM(true);
-  FinM.Clear();
+  FinM.clear();
 
   // get parameters
   const int sc1 = Parameter()->Scalar1();
@@ -744,7 +744,7 @@ void Mat::InelasticDefgradPolyIntercalFracAniso::evaluate_inverse_inelastic_def_
 {
   // init and clear variable
   static Core::LinAlg::Matrix<3, 3> FinM(true);
-  FinM.Clear();
+  FinM.clear();
 
   // get parameters
   const int sc1 = Parameter()->Scalar1();
@@ -1121,6 +1121,6 @@ void Mat::InelasticDefgradTimeFunct::pre_evaluate(Teuchos::ParameterList& params
   auto& funct = Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(
       Parameter()->FunctNum() - 1);
   const double time = params.get<double>("total time");
-  funct_value_ = funct.Evaluate(time);
+  funct_value_ = funct.evaluate(time);
 }
 FOUR_C_NAMESPACE_CLOSE

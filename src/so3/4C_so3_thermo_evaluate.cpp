@@ -31,7 +31,7 @@ template <class so3_ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
-  // if the coupling variables are required before Evaluate() is called the 1st
+  // if the coupling variables are required before evaluate() is called the 1st
   // time
   // here for Robinson's material
   if (la.Size() > 1)
@@ -69,7 +69,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::pre_evaluate(Teuchos::Param
  | evaluate the element (public)                             dano 08/12 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -122,7 +122,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterL
       pre_evaluate(params, discretization, la);
 
       // call the purely structural methods
-      so3_ele::Evaluate(params, discretization,
+      so3_ele::evaluate(params, discretization,
           la[0].lm_,  // only the first column, i.e. the structural field is passed
           elemat1_epetra, elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
@@ -140,7 +140,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterL
   }  // action
 
   return 0;
-}  // Evaluate()
+}  // evaluate()
 
 
 /*----------------------------------------------------------------------*
@@ -213,7 +213,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
       Core::LinAlg::Matrix<numdofperelement_, numdofperelement_> myemat(true);
 
       // initialise the vectors
-      // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the
+      // evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the
       // coupling field is not yet known. Pass coupling vectors filled with zeros
       // the size of the vectors is the length of the location vector/nsd_
       std::vector<double> mytempnp(((la[0].lm_).size()) / nsd_, 0.0);
@@ -303,7 +303,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
       Core::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
-      // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the
+      // evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the
       // coupling field is not yet known. Pass coupling vectors filled with zeros
       // the size of the vectors is the length of the location vector/nsd_
       std::vector<double> mytempnp(((la[0].lm_).size()) / nsd_, 0.0);
@@ -399,7 +399,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
       Core::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
-      // Evaluate() is called the first time in structure_base_algorithm: at this
+      // evaluate() is called the first time in structure_base_algorithm: at this
       // stage the coupling field is not yet known. Pass coupling vectors filled
       // with zeros
       // the size of the vectors is the length of the location vector/nsd_
@@ -505,7 +505,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
       Core::LinAlg::Matrix<numgpt_post, numstr_> couplstress(true);
 
       // initialise the vectors
-      // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the
+      // evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the
       // coupling field is not yet known. Pass coupling vectors filled with zeros
       // the size of the vectors is the length of the location vector/nsd_
       std::vector<double> mytempnp(((la[0].lm_).size()) / nsd_, 0.0);
@@ -710,7 +710,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
       Core::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
-      // Evaluate() is called the first time in structure_base_algorithm: at this
+      // evaluate() is called the first time in structure_base_algorithm: at this
       // stage the coupling field is not yet known. Pass coupling vectors filled
       // with zeros
       // the size of the vectors is the length of the location vector/nsd_
@@ -766,7 +766,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
     // strain energy: the solid element knows what to do...
     case calc_struct_energy:
     {
-      so3_ele::Evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
+      so3_ele::evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
       break;
     }
@@ -2121,7 +2121,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::materialize(
     {
       Teuchos::RCP<Mat::ThermoPlasticLinElast> thrpllinelast =
           Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticLinElast>(material(), true);
-      thrpllinelast->Evaluate(*Ntemp, *ctemp, *couplstress);
+      thrpllinelast->evaluate(*Ntemp, *ctemp, *couplstress);
       return;
       break;
     }
@@ -2137,7 +2137,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::materialize(
     {
       Teuchos::RCP<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
           Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticHyperElast>(material(), true);
-      thermoplhyperelast->Evaluate(*Ntemp, *ctemp, *cmat, *couplstress, params);
+      thermoplhyperelast->evaluate(*Ntemp, *ctemp, *cmat, *couplstress, params);
       return;
       break;
     }
@@ -2424,7 +2424,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::g_lto_ea(
 
 /*----------------------------------------------------------------------*
  | initialise Jacobian                                       dano 08/12 |
- | is called once in Initialize() in so3_thermo_eletypes.cpp            |
+ | is called once in initialize() in so3_thermo_eletypes.cpp            |
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::init_jacobian_mapping_special_for_nurbs(

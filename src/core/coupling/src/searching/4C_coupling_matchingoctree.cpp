@@ -32,7 +32,7 @@ Core::COUPLING::MatchingOctree::MatchingOctree()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::COUPLING::MatchingOctree::Init(const Core::FE::Discretization& actdis,
+int Core::COUPLING::MatchingOctree::init(const Core::FE::Discretization& actdis,
     const std::vector<int>& masternodeids, const int maxnodeperleaf, const double tol)
 {
   set_is_setup(false);
@@ -48,7 +48,7 @@ int Core::COUPLING::MatchingOctree::Init(const Core::FE::Discretization& actdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::COUPLING::MatchingOctree::Setup()
+int Core::COUPLING::MatchingOctree::setup()
 {
   check_is_init();
 
@@ -804,10 +804,10 @@ Core::COUPLING::NodeMatchingOctree::create_octree_element(
   Teuchos::RCP<Core::COUPLING::OctreeElement> newtreeelement =
       Teuchos::rcp(new OctreeNodalElement());
 
-  newtreeelement->Init(
+  newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
 
-  newtreeelement->Setup();
+  newtreeelement->setup();
 
   return newtreeelement;
 }  // NodeMatchingOctree::create_octree_element
@@ -931,10 +931,10 @@ Core::COUPLING::ElementMatchingOctree::create_octree_element(
   Teuchos::RCP<Core::COUPLING::OctreeElement> newtreeelement =
       Teuchos::rcp(new OctreeElementElement());
 
-  newtreeelement->Init(
+  newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
 
-  newtreeelement->Setup();
+  newtreeelement->setup();
 
   return newtreeelement;
 }  // ElementMatchingOctree::create_octree_element
@@ -965,10 +965,10 @@ Core::COUPLING::OctreeNodalElement::create_octree_element(
   Teuchos::RCP<Core::COUPLING::OctreeElement> newtreeelement =
       Teuchos::rcp(new OctreeNodalElement());
 
-  newtreeelement->Init(
+  newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
 
-  newtreeelement->Setup();
+  newtreeelement->setup();
 
   return newtreeelement;
 }  // OctreeNodalElement::create_octree_element
@@ -1004,10 +1004,10 @@ Core::COUPLING::OctreeElementElement::create_octree_element(
   Teuchos::RCP<Core::COUPLING::OctreeElement> newtreeelement =
       Teuchos::rcp(new OctreeElementElement());
 
-  newtreeelement->Init(
+  newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
 
-  newtreeelement->Setup();
+  newtreeelement->setup();
 
   return newtreeelement;
 }  // OctreeElementElement::create_octree_element
@@ -1027,7 +1027,7 @@ Core::COUPLING::OctreeElement::OctreeElement()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::COUPLING::OctreeElement::Init(const Core::FE::Discretization& actdis,
+int Core::COUPLING::OctreeElement::init(const Core::FE::Discretization& actdis,
     std::vector<int>& nodeidstoadd, const Core::LinAlg::SerialDenseMatrix& boundingboxtoadd,
     const int layer, const int maxnodeperleaf, const double tol)
 {
@@ -1046,7 +1046,7 @@ int Core::COUPLING::OctreeElement::Init(const Core::FE::Discretization& actdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::COUPLING::OctreeElement::Setup()
+int Core::COUPLING::OctreeElement::setup()
 {
   check_is_init();
 

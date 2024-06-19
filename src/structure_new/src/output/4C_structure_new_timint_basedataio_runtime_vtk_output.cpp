@@ -20,10 +20,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TimeInt::ParamsRuntimeOutput::Init(
+void STR::TimeInt::ParamsRuntimeOutput::init(
     const Teuchos::ParameterList& IO_vtk_structure_paramslist)
 {
-  // We have to call Setup() after Init()
+  // We have to call setup() after init()
   issetup_ = false;
 
   // initialize the parameter values
@@ -42,8 +42,8 @@ void STR::TimeInt::ParamsRuntimeOutput::Init(
     params_runtime_output_structure_ =
         Teuchos::rcp(new Discret::ELEMENTS::StructureRuntimeOutputParams());
 
-    params_runtime_output_structure_->Init(IO_vtk_structure_paramslist.sublist("STRUCTURE"));
-    params_runtime_output_structure_->Setup();
+    params_runtime_output_structure_->init(IO_vtk_structure_paramslist.sublist("STRUCTURE"));
+    params_runtime_output_structure_->setup();
   }
 
 
@@ -56,8 +56,8 @@ void STR::TimeInt::ParamsRuntimeOutput::Init(
   {
     params_runtime_output_beams_ = Teuchos::rcp(new Discret::ELEMENTS::BeamRuntimeOutputParams());
 
-    params_runtime_output_beams_->Init(IO_vtk_structure_paramslist.sublist("BEAMS"));
-    params_runtime_output_beams_->Setup();
+    params_runtime_output_beams_->init(IO_vtk_structure_paramslist.sublist("BEAMS"));
+    params_runtime_output_beams_->setup();
   }
 
 
@@ -66,9 +66,9 @@ void STR::TimeInt::ParamsRuntimeOutput::Init(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TimeInt::ParamsRuntimeOutput::Setup()
+void STR::TimeInt::ParamsRuntimeOutput::setup()
 {
-  FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
+  FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -79,7 +79,7 @@ void STR::TimeInt::ParamsRuntimeOutput::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void STR::TimeInt::ParamsRuntimeOutput::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

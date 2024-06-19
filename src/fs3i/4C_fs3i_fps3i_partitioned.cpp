@@ -55,9 +55,9 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm) : FS3IBase(), comm_(comm)
 /*----------------------------------------------------------------------*
  |  Init                                                    rauch 09/16 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I::Init()
+void FS3I::PartFPS3I::init()
 {
-  FS3I::FS3IBase::Init();
+  FS3I::FS3IBase::init();
 
   if (comm_.MyPID() == 0)
   {
@@ -224,8 +224,8 @@ void FS3I::PartFPS3I::Init()
   fluidscatra_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
       fs3idyn, scatradyn, problem->SolverParams(linsolver1number), "scatra1", true));
 
-  // now we can call Init() on the scatra time integrator
-  fluidscatra_->Init();
+  // now we can call init() on the scatra time integrator
+  fluidscatra_->init();
   fluidscatra_->ScaTraField()->set_number_of_dof_set_displacement(1);
   fluidscatra_->ScaTraField()->set_number_of_dof_set_velocity(1);
   fluidscatra_->ScaTraField()->set_number_of_dof_set_wall_shear_stress(1);
@@ -234,10 +234,10 @@ void FS3I::PartFPS3I::Init()
   structscatra_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
       fs3idyn, scatradyn, problem->SolverParams(linsolver2number), "scatra2", true));
 
-  // only now we must call Init() on the scatra time integrator.
+  // only now we must call init() on the scatra time integrator.
   // all objects relying on the parallel distribution are
   // created and pointers are set.
-  structscatra_->Init();
+  structscatra_->init();
   structscatra_->ScaTraField()->set_number_of_dof_set_displacement(1);
   structscatra_->ScaTraField()->set_number_of_dof_set_velocity(1);
   structscatra_->ScaTraField()->set_number_of_dof_set_wall_shear_stress(2);
@@ -316,16 +316,16 @@ void FS3I::PartFPS3I::Init()
 /*----------------------------------------------------------------------*
  |  Setup                                                   rauch 09/16 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I::Setup()
+void FS3I::PartFPS3I::setup()
 {
-  FS3I::FS3IBase::Setup();
+  FS3I::FS3IBase::setup();
 
-  // only now we must call Setup() on the scatra base algo.
+  // only now we must call setup() on the scatra base algo.
   // all objects relying on the parallel distribution are
   // created and pointers are set.
-  // calls Setup() on time integrator inside.
-  fluidscatra_->Setup();
-  structscatra_->Setup();
+  // calls setup() on time integrator inside.
+  fluidscatra_->setup();
+  structscatra_->setup();
 
   //---------------------------------------------------------------------
   // check existence of scatra coupling conditions for both
@@ -337,7 +337,7 @@ void FS3I::PartFPS3I::Setup()
   Teuchos::RCP<Core::FE::Discretization> dis = scatravec_[0]->ScaTraField()->discretization();
   std::vector<Core::Conditions::Condition*> coupcond;
   dis->GetCondition("ScaTraCoupling", coupcond);
-  double myconduct = coupcond[0]->parameters().Get<double>(
+  double myconduct = coupcond[0]->parameters().get<double>(
       "hydraulic conductivity");  // here we assume the conductivity to be the same in every BC
 
   // conductivity is not only needed in scatracoupling but also in FPSI coupling!
@@ -360,7 +360,7 @@ void FS3I::PartFPS3I::read_restart()
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
   Global::Problem* problem = Global::Problem::Instance();
-  const int restart = problem->Restart();
+  const int restart = problem->restart();
 
   if (restart)
   {
@@ -471,7 +471,7 @@ void FS3I::PartFPS3I::SetupSystem()
     maps.push_back(scatrafieldexvec_[1]->FullMap());
   }
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
-  scatraglobalex_->Setup(*fullmap, maps);
+  scatraglobalex_->setup(*fullmap, maps);
 
   // create coupling vectors and matrices (only needed for finite surface permeabilities)
   if (not infperm_)

@@ -27,12 +27,12 @@ FLD::TimIntPoroGenAlpha::TimIntPoroGenAlpha(const Teuchos::RCP<Core::FE::Discret
 }
 
 
-void FLD::TimIntPoroGenAlpha::Init()
+void FLD::TimIntPoroGenAlpha::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntGenAlpha::Init();
-  TimIntPoro::Init();
+  TimIntGenAlpha::init();
+  TimIntPoro::init();
 }
 
 void FLD::TimIntPoroGenAlpha::gen_alpha_intermediate_values()

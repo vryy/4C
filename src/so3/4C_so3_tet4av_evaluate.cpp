@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                           seitz 03/16 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SoTet4av::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -167,7 +167,7 @@ int Discret::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_update_istep:
     {
       // Update of history for materials
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
     }
     break;
 
@@ -197,8 +197,8 @@ int Discret::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
@@ -226,7 +226,7 @@ int Discret::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params
 
   // (SPATIAL) FUNCTION BUSINESS
   static_assert(NUMGPT_SOTET4av == 1);
-  const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* funct = &condition.parameters().get<std::vector<int>>("funct");
   Core::LinAlg::Matrix<NUMDIM_SOTET4av, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
@@ -283,7 +283,7 @@ int Discret::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params
         const double functfac =
             (functnum > 0) ? Global::Problem::Instance()
                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                 .Evaluate(xrefegp.A(), time, dim)
+                                 .evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
         for (int nodid = 0; nodid < NUMNOD_SOTET4av; ++nodid)
@@ -419,7 +419,7 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
 
     Core::LinAlg::Matrix<6, 1> pk2;
     Core::LinAlg::Matrix<6, 6> cmat;
-    SolidMaterial()->Evaluate(&defgrd_bar, &gl_bar, params, &pk2, &cmat, gp, Id());
+    SolidMaterial()->evaluate(&defgrd_bar, &gl_bar, params, &pk2, &cmat, gp, Id());
 
     // return gp stresses
     switch (iostress)
@@ -598,7 +598,7 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
 /*----------------------------------------------------------------------*
  |  init the element (public)                               seitz 03/16 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet4avType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoTet4avType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

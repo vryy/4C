@@ -53,10 +53,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::STRATEGY::Factory::Setup()
+void CONTACT::STRATEGY::Factory::setup()
 {
   check_init();
-  Mortar::STRATEGY::Factory::Setup();
+  Mortar::STRATEGY::Factory::setup();
 
   set_is_setup();
 }
@@ -316,7 +316,7 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
 
     for (const auto& condition : contactConditions)
     {
-      const auto& side = condition->parameters().Get<std::string>("Side");
+      const auto& side = condition->parameters().get<std::string>("Side");
       if (side == "Selfcontact") self = true;
     }
 
@@ -735,10 +735,10 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
   for (auto& currentgroup : ccond_grps)
   {
     // initialize a reference to the i-th contact condition group
-    const auto groupid1 = currentgroup[0]->parameters().Get<int>("Interface ID");
+    const auto groupid1 = currentgroup[0]->parameters().get<int>("Interface ID");
 
     // In case of MultiScale contact this is the id of the interface's constitutive contact law
-    int contactconstitutivelaw_id = currentgroup[0]->parameters().Get<int>("ConstitutiveLawID");
+    int contactconstitutivelaw_id = currentgroup[0]->parameters().get<int>("ConstitutiveLawID");
 
     // Initialize a flag to check for MIRCO contact consitutive law
     bool mircolaw = false;
@@ -761,13 +761,13 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       if (coconstlaw->Name() == "CoConstLaw_mirco")
       {
         mircolaw = true;
-        resolution = coconstlaw->Get<int>("Resolution");
-        randomtopologyflag = coconstlaw->Get<bool>("RandomTopologyFlag");
-        randomseedflag = coconstlaw->Get<bool>("RandomSeedFlag");
-        randomgeneratorseed = coconstlaw->Get<int>("RandomGeneratorSeed");
-        hurstexponentfunction = coconstlaw->Get<int>("HurstExponentFunct");
+        resolution = coconstlaw->get<int>("Resolution");
+        randomtopologyflag = coconstlaw->get<bool>("RandomTopologyFlag");
+        randomseedflag = coconstlaw->get<bool>("RandomSeedFlag");
+        randomgeneratorseed = coconstlaw->get<int>("RandomGeneratorSeed");
+        hurstexponentfunction = coconstlaw->get<int>("HurstExponentFunct");
         initialtopologystddeviationfunction =
-            coconstlaw->Get<int>("InitialTopologyStdDeviationFunct");
+            coconstlaw->get<int>("InitialTopologyStdDeviationFunct");
       }
     }
 
@@ -803,7 +803,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       // read interface COFs
       std::vector<double> frcoeff(currentgroup.size());
       for (std::size_t j = 0; j < currentgroup.size(); ++j)
-        frcoeff[j] = currentgroup[j]->parameters().Get<double>("FrCoeffOrBound");
+        frcoeff[j] = currentgroup[j]->parameters().get<double>("FrCoeffOrBound");
 
       // check consistency of interface COFs
       for (std::size_t j = 1; j < currentgroup.size(); ++j)
@@ -839,7 +839,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       // read interface COFs
       std::vector<double> ad_bound(currentgroup.size());
       for (std::size_t j = 0; j < currentgroup.size(); ++j)
-        ad_bound[j] = currentgroup[j]->parameters().Get<double>("AdhesionBound");
+        ad_bound[j] = currentgroup[j]->parameters().get<double>("AdhesionBound");
 
       // check consistency of interface COFs
       for (std::size_t j = 1; j < currentgroup.size(); ++j)
@@ -988,7 +988,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           {
             if (condition->ContainsNode(node->Id()))
             {
-              const auto& onoff = condition->parameters().Get<std::vector<int>>("onoff");
+              const auto& onoff = condition->parameters().get<std::vector<int>>("onoff");
               for (unsigned k = 0; k < onoff.size(); k++)
                 if (onoff.at(k) == 1) cnode->DbcDofs()[k] = true;
               if (stype == Inpar::CONTACT::solution_lagmult &&
@@ -1060,7 +1060,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           {
             if (condition->ContainsNode(node->Id()))
             {
-              const auto& onoff = condition->parameters().Get<std::vector<int>>("onoff");
+              const auto& onoff = condition->parameters().get<std::vector<int>>("onoff");
               for (unsigned k = 0; k < onoff.size(); k++)
               {
                 if (onoff.at(k) == 1)
@@ -1813,7 +1813,7 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrateg
   }
 
   // setup the stategy object
-  strategy_ptr->Setup(false, true);
+  strategy_ptr->setup(false, true);
 
   if (comm_ptr->MyPID() == 0) std::cout << "done!" << std::endl;
 
@@ -2137,10 +2137,10 @@ void CONTACT::STRATEGY::Factory::set_parameters_for_contact_condition(
     for (const auto& s2ikinetics_cond : s2ikinetics_conditions)
     {
       // only add to parameters if condition ID's match
-      if (s2ikinetics_cond->parameters().Get<int>("ConditionID") == conditiongroupid)
+      if (s2ikinetics_cond->parameters().get<int>("ConditionID") == conditiongroupid)
       {
         // only the slave-side stores the parameters
-        if (s2ikinetics_cond->parameters().Get<int>("interface side") == Inpar::S2I::side_slave)
+        if (s2ikinetics_cond->parameters().get<int>("interface side") == Inpar::S2I::side_slave)
         {
           // fill the parameters from the s2i condition
           ScaTra::MeshtyingStrategyS2I::

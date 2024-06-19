@@ -16,9 +16,9 @@ FOUR_C_NAMESPACE_OPEN
 Mat::Elastic::PAR::GeneralizedGenMax::GeneralizedGenMax(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      numbranch_(matdata.parameters.Get<int>("NUMBRANCH")),
-      matids_(matdata.parameters.Get<std::vector<int>>("MATIDS")),
-      solve_(matdata.parameters.Get<std::string>("SOLVE"))
+      numbranch_(matdata.parameters.get<int>("NUMBRANCH")),
+      matids_(matdata.parameters.get<std::vector<int>>("MATIDS")),
+      solve_(matdata.parameters.get<std::string>("SOLVE"))
 
 {
 }
@@ -69,8 +69,8 @@ void Mat::Elastic::GeneralizedGenMax::read_material_parameters(
 // Viscobranch
 Mat::Elastic::PAR::ViscoBranch::ViscoBranch(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      nummat_(matdata.parameters.Get<int>("NUMMAT")),
-      matids_(matdata.parameters.Get<std::vector<int>>("MATIDS"))
+      nummat_(matdata.parameters.get<int>("NUMMAT")),
+      matids_(matdata.parameters.get<std::vector<int>>("MATIDS"))
 {
 }
 
@@ -85,7 +85,7 @@ void Mat::Elastic::ViscoBranch::read_material_parameters(
 
 // Viscopart
 Mat::Elastic::PAR::ViscoPart::ViscoPart(const Core::Mat::PAR::Parameter::Data& matdata)
-    : Parameter(matdata), tau_(matdata.parameters.Get<double>("TAU"))
+    : Parameter(matdata), tau_(matdata.parameters.get<double>("TAU"))
 {
 }
 

@@ -66,7 +66,7 @@ Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::Instance(
 
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::Evaluate(Artery* ele,
+int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -417,8 +417,8 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
     xyze(1, inode) = x[1];
     xyze(2, inode) = x[2];
   }
-  rhs.Clear();
-  sysmat.Clear();
+  rhs.clear();
+  sysmat.clear();
 
   // Define Geometric variables
   double Ao1 = 0.0;
@@ -484,15 +484,15 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
 
   // Defining the shape functions
   Core::LinAlg::Matrix<2 * my::iel_, 2> Nxi;
-  Nxi.Clear();
+  Nxi.clear();
   // Defining the derivative of shape functions
   Core::LinAlg::Matrix<2 * my::iel_, 2> dNdxi;
-  dNdxi.Clear();
+  dNdxi.clear();
 
   Core::LinAlg::Matrix<2 * my::iel_, 1> temp1;
   Core::LinAlg::Matrix<2, 1> temp2;
   Core::LinAlg::Matrix<2 * my::iel_, 1> rhs_temp;
-  rhs_temp.Clear();
+  rhs_temp.clear();
 
   Core::LinAlg::Matrix<2, 1> BLW;
   Core::LinAlg::Matrix<2, 1> FLW;
@@ -1058,7 +1058,7 @@ bool Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
       std::string TerminalType = (ele->Nodes()[i]
                                       ->GetCondition("ArtInOutCond")
                                       ->parameters()
-                                      .Get<std::string>("terminaltype"));
+                                      .get<std::string>("terminaltype"));
       if (TerminalType == "inlet")
         TermIO = -1.0;
       else if (TerminalType == "outlet")
@@ -1261,7 +1261,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
       std::string TerminalType = (ele->Nodes()[i]
                                       ->GetCondition("ArtInOutCond")
                                       ->parameters()
-                                      .Get<std::string>("terminaltype"));
+                                      .get<std::string>("terminaltype"));
       if (TerminalType == "inlet")
         TermIO = -1.0;
       else if (TerminalType == "outlet")
@@ -1490,21 +1490,21 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* e
 
       const auto* curve = condition->parameters().GetIf<int>("curve");
 
-      double curvefac = condition->parameters().Get<double>("val");
+      double curvefac = condition->parameters().get<double>("val");
       int curvenum = -1;
       if (curve) curvenum = *curve;
       if (curvenum > 0)
       {
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                       .Evaluate(time);
+                       .evaluate(time);
       }
 
 
       std::string TerminalType = (ele->Nodes()[i]
                                       ->GetCondition("ArtInOutCond")
                                       ->parameters()
-                                      .Get<std::string>("terminaltype"));
+                                      .get<std::string>("terminaltype"));
       int dof = 0;
       if (TerminalType == "inlet")
       {

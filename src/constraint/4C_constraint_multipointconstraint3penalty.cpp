@@ -36,9 +36,9 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
     // control the constraint by absolute or relative values
     for (auto* conditer : constrcond_)
     {
-      const int condID = conditer->parameters().Get<int>("ConditionID");
-      penalties_[condID] = conditer->parameters().Get<double>("penalty");
-      const std::string type = conditer->parameters().Get<std::string>("control");
+      const int condID = conditer->parameters().get<int>("ConditionID");
+      penalties_[condID] = conditer->parameters().get<double>("penalty");
+      const std::string type = conditer->parameters().get<std::string>("control");
       if (type == "abs")
         absconstraint_[condID] = true;
       else
@@ -82,12 +82,12 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3Penalty::Initialize(const double& time)
+void CONSTRAINTS::MPConstraint3Penalty::initialize(const double& time)
 {
   for (auto* cond : constrcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
 
     // if current time (at) is larger than activation time of the condition, activate it
     if ((inittimes_.find(condID)->second < time) && (!activecons_.find(condID)->second))
@@ -104,7 +104,7 @@ void CONSTRAINTS::MPConstraint3Penalty::Initialize(const double& time)
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3Penalty::Initialize(
+void CONSTRAINTS::MPConstraint3Penalty::initialize(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   FOUR_C_THROW("method not used for penalty formulation!");
@@ -112,13 +112,13 @@ void CONSTRAINTS::MPConstraint3Penalty::Initialize(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3Penalty::Initialize(Teuchos::ParameterList& params)
+void CONSTRAINTS::MPConstraint3Penalty::initialize(Teuchos::ParameterList& params)
 {
   const double time = params.get("total time", -1.0);
 
   for (auto* cond : constrcond_)
   {
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
     // control absolute values
     switch (Type())
     {
@@ -146,7 +146,7 @@ void CONSTRAINTS::MPConstraint3Penalty::Initialize(Teuchos::ParameterList& param
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3Penalty::Evaluate(Teuchos::ParameterList& params,
+void CONSTRAINTS::MPConstraint3Penalty::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -233,14 +233,14 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
       case mpcnodeonplane3d:
       {
         // take three nodes defining plane as specified by user and put them into a set
-        const auto& defnvp = (*conditer)->parameters().Get<std::vector<int>>("planeNodes");
+        const auto& defnvp = (*conditer)->parameters().get<std::vector<int>>("planeNodes");
         defnv = defnvp;
       }
       break;
       case mpcnormalcomp3d:
       {
         // take master node
-        const int defn = (*conditer)->parameters().Get<int>("masterNode");
+        const int defn = (*conditer)->parameters().get<int>("masterNode");
         defnv.push_back(defn);
       }
       break;
@@ -296,7 +296,7 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
         newdis->add_element(constraintele);
       }
       // save the connection between element and condition
-      eletocond_id_[nodeiter + startID] = (*conditer)->parameters().Get<int>("ConditionID");
+      eletocond_id_[nodeiter + startID] = (*conditer)->parameters().get<int>("ConditionID");
       eletocondvecindex_[nodeiter + startID] = index;
     }
     // adjust starting ID for next condition, in this case nodeiter=ngid.size(), hence the counter
@@ -323,7 +323,7 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
     constraintnodecolvec.clear();
     newdis->Redistribute(*constraintnoderowmap, *constraintnodecolmap);
     // put new discretization into the map
-    newdiscmap[(*conditer)->parameters().Get<int>("ConditionID")] = newdis;
+    newdiscmap[(*conditer)->parameters().get<int>("ConditionID")] = newdis;
     // increase counter
     index++;
   }
@@ -377,7 +377,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(
         Teuchos::RCP<Epetra_Vector> displast = params.get<Teuchos::RCP<Epetra_Vector>>("old disp");
         SetConstrState("displacement", displast);
         // last converged step is used reference
-        Initialize(params);
+        initialize(params);
         Teuchos::RCP<Epetra_Vector> disp = params.get<Teuchos::RCP<Epetra_Vector>>("new disp");
         SetConstrState("displacement", disp);
         params.set("action", action);
@@ -397,7 +397,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(
       params.set("ConditionID", eid);
 
       // call the element evaluate method
-      int err = actele->Evaluate(
+      int err = actele->evaluate(
           params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", disc->Comm().MyPID(), eid, err);
 
@@ -411,7 +411,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(
       if (curvenum >= 0 && usetime)
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                       .Evaluate(time);
+                       .evaluate(time);
 
 
       double diff = (curvefac * (*initerror_)[eid] - (*acterror_)[eid]);
@@ -464,12 +464,12 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<Core::FE::Di
 
     if (absconstraint_.find(condID)->second && init)
     {
-      elevector3[0] = cond->parameters().Get<double>("amplitude");
+      elevector3[0] = cond->parameters().get<double>("amplitude");
     }
     else
     {
       // call the element evaluate method
-      int err = actele->Evaluate(
+      int err = actele->evaluate(
           params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", disc->Comm().MyPID(), eid, err);
     }

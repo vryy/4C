@@ -68,7 +68,7 @@ namespace ParticleRigidBody
      *
      * \param[in] rigidbodydatastate rigid body data state container
      */
-    void Init(const std::shared_ptr<ParticleRigidBody::RigidBodyDataState> rigidbodydatastate);
+    void init(const std::shared_ptr<ParticleRigidBody::RigidBodyDataState> rigidbodydatastate);
 
     /*!
      * \brief read restart of runtime vtp writer

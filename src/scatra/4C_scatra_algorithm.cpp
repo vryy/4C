@@ -39,10 +39,10 @@ ScaTra::ScaTraAlgorithm::ScaTraAlgorithm(const Epetra_Comm& comm,  ///< communic
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ScaTra::ScaTraAlgorithm::Setup()
+void ScaTra::ScaTraAlgorithm::setup()
 {
   // call setup in base class
-  Adapter::ScaTraFluidCouplingAlgorithm::Setup();
+  Adapter::ScaTraFluidCouplingAlgorithm::setup();
 
   // create vectors
   velincnp_ = Teuchos::rcp(
@@ -55,10 +55,10 @@ void ScaTra::ScaTraAlgorithm::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ScaTra::ScaTraAlgorithm::Init()
+void ScaTra::ScaTraAlgorithm::init()
 {
   // call init in base class
-  Adapter::ScaTraFluidCouplingAlgorithm::Init();
+  Adapter::ScaTraFluidCouplingAlgorithm::init();
 }
 
 /*----------------------------------------------------------------------*
@@ -376,8 +376,8 @@ void ScaTra::ScaTraAlgorithm::outer_iteration_convection()
 /*----------------------------------------------------------------------*/
 void ScaTra::ScaTraAlgorithm::update()
 {
-  fluid_field()->Update();
-  ScaTraField()->Update();
+  fluid_field()->update();
+  ScaTraField()->update();
 }
 
 /*----------------------------------------------------------------------*/
@@ -385,8 +385,8 @@ void ScaTra::ScaTraAlgorithm::update()
 void ScaTra::ScaTraAlgorithm::update_convection()
 {
   // update scatra and fluid fields
-  ScaTraField()->Update();
-  fluid_field()->Update();
+  ScaTraField()->update();
+  fluid_field()->update();
 }
 
 /*----------------------------------------------------------------------*/

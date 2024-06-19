@@ -41,7 +41,7 @@ Discret::ELEMENTS::ElemagDiffEleCalc<distype>::ElemagDiffEleCalc()
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(Discret::ELEMENTS::Elemag* ele,
+int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::Elemag* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -51,7 +51,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(Discret::ELEMENTS::E
     Core::LinAlg::SerialDenseVector& elevec3_epetra, const Core::FE::GaussIntegration&,
     bool offdiag)
 {
-  return this->Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+  return this->evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra, offdiag);
 }
 
@@ -59,7 +59,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(Discret::ELEMENTS::E
  * Evaluate
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(Discret::ELEMENTS::Elemag* ele,
+int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::Elemag* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix&,
@@ -91,7 +91,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(Discret::ELEMENTS::E
   InitializeShapes(hdgele);
 
   bool updateonly = false;
-  shapes_->Evaluate(*ele);
+  shapes_->evaluate(*ele);
   switch (action)
   {
     case EleMag::project_field:
@@ -490,7 +490,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
     Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
-  shapes_.Evaluate(*ele);
+  shapes_.evaluate(*ele);
 
   // get function
   const int* start_func = params.getPtr<int>("startfuncno");
@@ -614,7 +614,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_electric
     Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
     const Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec)
 {
-  shapes_.Evaluate(*ele);
+  shapes_.evaluate(*ele);
 
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> nodevals_phi =
       params.get<Teuchos::RCP<Core::LinAlg::SerialDenseVector>>("nodevals_phi");
@@ -694,16 +694,16 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_error(
   double error_ele = 0.0, error_ele_post = 0.0, error_mag = 0.0;
   double exact_ele = 0.0, exact_mag = 0.0;
   Core::LinAlg::SerialDenseVector error_ele_grad(2), error_mag_grad(2), error_ele_post_grad(2);
-  shapes_.Evaluate(*ele);
-  postproc_shapes_.Evaluate(*ele);
+  shapes_.evaluate(*ele);
+  postproc_shapes_.evaluate(*ele);
 
   Core::FE::ShapeValues<distype> highshapes(
       ele->Degree(), shapes_.usescompletepoly_, (ele->Degree() + 2) * 2);
-  highshapes.Evaluate(*ele);
+  highshapes.evaluate(*ele);
 
   Core::FE::ShapeValues<distype> highshapes_post(
       ele->Degree() + 1, shapes_.usescompletepoly_, (ele->Degree() + 3) * 2);
-  highshapes_post.Evaluate(*ele);
+  highshapes_post.evaluate(*ele);
   // get function
   const int func = params.get<int>("funcno");
   const double time = params.get<double>("time");
@@ -856,11 +856,11 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
     Discret::ELEMENTS::ElemagDiff& ele)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::ElemagDiffEleCalc::PostProcessing");
-  shapes_.Evaluate(ele);
-  postproc_shapes_.Evaluate(ele);
+  shapes_.evaluate(ele);
+  postproc_shapes_.evaluate(ele);
 
   Core::FE::ShapeValues<distype> k2_shapes(ele.Degree() + 2, false, 2 * (ele.Degree() + 2));
-  k2_shapes.Evaluate(ele);
+  k2_shapes.evaluate(ele);
 
   // Build matrix
   Core::LinAlg::SerialDenseMatrix postproc_mat(
@@ -894,7 +894,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
     const double* gpcoord = k2_shapes.quadrature_->Point(q);
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
     Core::LinAlg::SerialDenseVector values(postproc_shapes_.ndofs_);
-    postproc_shapes_.polySpace_->Evaluate(xsi, values);
+    postproc_shapes_.polySpace_->evaluate(xsi, values);
     for (unsigned int i = 0; i < k2_shapes.ndofs_; ++i)
       for (unsigned int j = 0; j < postproc_shapes_.ndofs_; ++j)
         for (unsigned int d = 0; d < nsd_; ++d)
@@ -910,7 +910,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
     const double* gpcoord = postproc_shapes_.quadrature_->Point(q);
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
     Core::LinAlg::SerialDenseVector values(shapes_.ndofs_);
-    shapes_.polySpace_->Evaluate(xsi, values);
+    shapes_.polySpace_->evaluate(xsi, values);
     for (unsigned int i = 0; i < postproc_shapes_.ndofs_; ++i)
       for (unsigned int j = 0; j < shapes_.ndofs_; ++j)
         for (unsigned int d = 0; d < nsd_; ++d)
@@ -932,7 +932,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
     const double* gpcoord = k2_shapes.quadrature_->Point(q);
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
     Core::LinAlg::SerialDenseVector values(shapes_.ndofs_);
-    shapes_.polySpace_->Evaluate(xsi, values);
+    shapes_.polySpace_->evaluate(xsi, values);
     for (unsigned int i = 0; i < k2_shapes.ndofs_; ++i)
       for (unsigned int j = 0; j < shapes_.ndofs_; ++j)
         for (unsigned int d = 0; d < nsd_; ++d)
@@ -966,8 +966,8 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest
     Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
-  shapes_.Evaluate(*ele);
-  postproc_shapes_.Evaluate(*ele);
+  shapes_.evaluate(*ele);
+  postproc_shapes_.evaluate(*ele);
 
   // reshape elevec2 as matrix
   FOUR_C_ASSERT(elevec2.numRows() == 0 || unsigned(elevec2.numRows()) == nsd_ * shapes_.ndofs_,
@@ -1312,7 +1312,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::evaluate_all(co
   for (int d = 0; d < v.numRows(); ++d)
     v[d] = Global::Problem::Instance()
                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
-               .Evaluate(xyz.A(), t, d % numComp);
+               .evaluate(xyz.A(), t, d % numComp);
 
   return;
 }
@@ -1378,10 +1378,10 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
   for (int d = 0; d < v.numRows(); ++d)
     v[d] = (Global::Problem::Instance()
                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                   .Evaluate(xyz.A(), t + (0.5 * dt), d % numComp) -
+                   .evaluate(xyz.A(), t + (0.5 * dt), d % numComp) -
                Global::Problem::Instance()
                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                   .Evaluate(xyz.A(), t - (0.5 * dt), d % numComp)) /
+                   .evaluate(xyz.A(), t - (0.5 * dt), d % numComp)) /
            dt;
 
   return;
@@ -1427,8 +1427,8 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes
     // Evaluating the polinomials in the point given by "shapes_->xsi".
     // The polynomials are the internal ones.
     // The result of the evaluation is given in "values".
-    shapes_->polySpace_->Evaluate(shapes_->xsi, values);
-    postproc_shapes_->polySpace_->Evaluate(shapes_->xsi, post_values);
+    shapes_->polySpace_->evaluate(shapes_->xsi, values);
+    postproc_shapes_->polySpace_->evaluate(shapes_->xsi, post_values);
 
     // compute values for interior unknown by summing over all basis functions
     for (unsigned int d = 0; d < nsd_; ++d)
@@ -1530,7 +1530,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes
         shapesface_->xsi(idim) = xsishuffle(idim, i);
 
       // Actually evaluating shape polynomials in node
-      shapesface_->polySpace_->Evaluate(shapesface_->xsi, fvalues);
+      shapesface_->polySpace_->evaluate(shapesface_->xsi, fvalues);
 
       // compute values for trace vector by summing over the shape functions
       for (unsigned int d = 0; d < nsd_; ++d)
@@ -1799,7 +1799,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeAbsorbin
   // Get the user defined functions
   Teuchos::RCP<Core::Conditions::Condition>* cond =
 params.getPtr<Teuchos::RCP<Core::Conditions::Condition>>("condition"); const std::vector<int>* funct
-= (cond)->Get<std::vector<int>>("funct"); const double time = params.get<double>("time");
+= (cond)->get<std::vector<int>>("funct"); const double time = params.get<double>("time");
 
   Core::LinAlg::SerialDenseVector tempVec1(shapesface_->nfdofs_ * nsd_);
   Core::LinAlg::SerialDenseVector tempVec2(shapesface_->nfdofs_ * (nsd_ - 1));

@@ -21,11 +21,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::ElchMat::ElchMat(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      numdof_((matdata.parameters.Get<int>("NUMDOF"))),
-      numscal_((matdata.parameters.Get<int>("NUMSCAL"))),
-      numphase_(matdata.parameters.Get<int>("NUMPHASE")),
-      phaseids_(matdata.parameters.Get<std::vector<int>>("PHASEIDS")),
-      local_(matdata.parameters.Get<bool>("LOCAL"))
+      numdof_((matdata.parameters.get<int>("NUMDOF"))),
+      numscal_((matdata.parameters.get<int>("NUMSCAL"))),
+      numphase_(matdata.parameters.get<int>("NUMPHASE")),
+      phaseids_(matdata.parameters.get<std::vector<int>>("PHASEIDS")),
+      local_(matdata.parameters.get<bool>("LOCAL"))
 {
   if (numphase_ != (int)phaseids_.size())
     FOUR_C_THROW(
@@ -57,7 +57,7 @@ Mat::ElchMatType Mat::ElchMatType::instance_;
 Core::Communication::ParObject* Mat::ElchMatType::Create(const std::vector<char>& data)
 {
   Mat::ElchMat* elchmat = new Mat::ElchMat();
-  elchmat->Unpack(data);
+  elchmat->unpack(data);
   return elchmat;
 }
 
@@ -114,7 +114,7 @@ void Mat::ElchMat::clear()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElchMat::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ElchMat::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -131,7 +131,7 @@ void Mat::ElchMat::Pack(Core::Communication::PackBuffer& data) const
     // loop map of associated local materials
     std::vector<int>::const_iterator n;
     for (n = params_->PhaseIds().begin(); n != params_->PhaseIds().end(); n++)
-      (mat_.find(*n))->second->Pack(data);
+      (mat_.find(*n))->second->pack(data);
   }
 
   return;
@@ -140,7 +140,7 @@ void Mat::ElchMat::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElchMat::Unpack(const std::vector<char>& data)
+void Mat::ElchMat::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   clear();
@@ -185,7 +185,7 @@ void Mat::ElchMat::Unpack(const std::vector<char>& data)
       {
         std::vector<char> pbtest;
         extract_from_pack(position, data, pbtest);
-        (mat_.find(*n))->second->Unpack(pbtest);
+        (mat_.find(*n))->second->unpack(pbtest);
       }
     }
     // in the postprocessing mode, we do not unpack everything we have packed

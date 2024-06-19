@@ -25,7 +25,7 @@ bool Discret::ELEMENTS::SoPyramid5::ReadElement(
 
   Teuchos::RCP<Core::Mat::Material> mat = Material();
 
-  SolidMaterial()->Setup(NUMGPT_SOP5, linedef);
+  SolidMaterial()->setup(NUMGPT_SOP5, linedef);
 
   std::string buffer;
   linedef->extract_string("KINEM", buffer);

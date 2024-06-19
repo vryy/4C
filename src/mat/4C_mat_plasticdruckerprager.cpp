@@ -28,17 +28,17 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::PAR::PlasticDruckerPrager::PlasticDruckerPrager(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      isohard_(matdata.parameters.Get<double>("ISOHARD")),
-      abstol_(matdata.parameters.Get<double>("TOL")),
-      cohesion_(matdata.parameters.Get<double>("C")),
-      eta_(matdata.parameters.Get<double>("ETA")),
-      xi_(matdata.parameters.Get<double>("XI")),
-      etabar_(matdata.parameters.Get<double>("ETABAR")),
-      tang_(matdata.parameters.Get<std::string>("TANG")),
-      itermax_(matdata.parameters.Get<int>("MAXITER"))
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      isohard_(matdata.parameters.get<double>("ISOHARD")),
+      abstol_(matdata.parameters.get<double>("TOL")),
+      cohesion_(matdata.parameters.get<double>("C")),
+      eta_(matdata.parameters.get<double>("ETA")),
+      xi_(matdata.parameters.get<double>("XI")),
+      etabar_(matdata.parameters.get<double>("ETABAR")),
+      tang_(matdata.parameters.get<std::string>("TANG")),
+      itermax_(matdata.parameters.get<int>("MAXITER"))
 {
 }
 
@@ -51,7 +51,7 @@ Mat::PlasticDruckerPragerType Mat::PlasticDruckerPragerType::instance_;
 Core::Communication::ParObject* Mat::PlasticDruckerPragerType::Create(const std::vector<char>& data)
 {
   Mat::PlasticDruckerPrager* plastic = new Mat::PlasticDruckerPrager();
-  plastic->Unpack(data);
+  plastic->unpack(data);
   return plastic;
 }
 
@@ -62,7 +62,7 @@ Mat::PlasticDruckerPrager::PlasticDruckerPrager(Mat::PAR::PlasticDruckerPrager* 
 {
 }
 
-void Mat::PlasticDruckerPrager::Pack(Core::Communication::PackBuffer& data) const
+void Mat::PlasticDruckerPrager::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
   int type = UniqueParObjectId();
@@ -79,7 +79,7 @@ void Mat::PlasticDruckerPrager::Pack(Core::Communication::PackBuffer& data) cons
   }
 }
 
-void Mat::PlasticDruckerPrager::Unpack(const std::vector<char>& data)
+void Mat::PlasticDruckerPrager::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -130,7 +130,7 @@ void Mat::PlasticDruckerPrager::Unpack(const std::vector<char>& data)
       FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
   }
 }
-void Mat::PlasticDruckerPrager::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::PlasticDruckerPrager::setup(int numgp, Input::LineDefinition* linedef)
 {
   strainpllast_.resize(numgp);
   strainplcurr_.resize(numgp);
@@ -141,12 +141,12 @@ void Mat::PlasticDruckerPrager::Setup(int numgp, Input::LineDefinition* linedef)
   isinit_ = true;
 }
 
-void Mat::PlasticDruckerPrager::Update()
+void Mat::PlasticDruckerPrager::update()
 {
   strainpllast_ = strainplcurr_;
   strainbarpllast_ = strainbarplcurr_;
 
-  std::for_each(strainplcurr_.begin(), strainplcurr_.end(), [](auto& item) { item.Clear(); });
+  std::for_each(strainplcurr_.begin(), strainplcurr_.end(), [](auto& item) { item.clear(); });
   std::fill(strainbarplcurr_.begin(), strainbarplcurr_.end(), 0.0);
 }
 
@@ -164,7 +164,7 @@ void Mat::PlasticDruckerPrager::setup_cmat_elasto_plastic_cone(
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstrain, double xi, double Hiso, double eta,
     double etabar)
 {
-  cmat.Clear();
+  cmat.clear();
 
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> id2(true);
   Core::LinAlg::Voigt::identity_matrix(id2);
@@ -231,7 +231,7 @@ void Mat::PlasticDruckerPrager::setup_cmat_elasto_plastic_apex(
   for (int i = 0; i < 3; i++) id2(i) = 1.0;
   double epfac = 0.0;
   epfac = Kappa * (1 - Kappa / (Kappa + xi / eta * xi / etabar * Hiso));
-  cmat.Clear();
+  cmat.clear();
   cmat.MultiplyNT(epfac, id2, id2, 0.0);
 }
 

@@ -41,10 +41,10 @@ ScaTra::TimIntBDF2::TimIntBDF2(Teuchos::RCP<Core::FE::Discretization> actdis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntBDF2::Setup()
+void ScaTra::TimIntBDF2::setup()
 {
   // initialize base class
-  ScaTraTimIntImpl::Setup();
+  ScaTraTimIntImpl::setup();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -79,7 +79,7 @@ void ScaTra::TimIntBDF2::Setup()
   // initialize forcing for homogeneous isotropic turbulence
   // -------------------------------------------------------------------
   // note: this constructor has to be called after the forcing_ vector has
-  //       been initialized; this is done in ScaTraTimIntImpl::Init() called before
+  //       been initialized; this is done in ScaTraTimIntImpl::init() called before
 
   if (special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence")
   {
@@ -118,7 +118,7 @@ void ScaTra::TimIntBDF2::set_element_time_parameter(bool forcedincrementalsolver
     eleparams.set<double>("time derivative factor", 3.0 / (2.0 * dta_));
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -267,10 +267,10 @@ void ScaTra::TimIntBDF2::compute_time_derivative()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntBDF2::Update()
+void ScaTra::TimIntBDF2::update()
 {
   // call base class routine
-  ScaTraTimIntImpl::Update();
+  ScaTraTimIntImpl::update();
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!

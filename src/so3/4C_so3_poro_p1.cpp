@@ -39,7 +39,7 @@ Core::Elements::Element* Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::Clone()
 }
 
 template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::Pack(
+void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::pack(
     Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
@@ -54,11 +54,11 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::Pack(
     Core::Communication::ParObject::add_to_pack<Base::numnod_, 1>(data, *init_porosity_);
 
   // add base class Element
-  Base::Pack(data);
+  Base::pack(data);
 }
 
 template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -77,7 +77,7 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::Unpack(const std::vector<ch
   // extract base class Element
   std::vector<char> basedata(0);
   Base::extract_from_pack(position, data, basedata);
-  Base::Unpack(basedata);
+  Base::unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);

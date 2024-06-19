@@ -35,7 +35,7 @@ namespace BINSTRATEGY
         bool initelements, bool doboundaryconditions)
     {
       // make sure that all procs are either filled or unfilled
-      // oldmap in export_column_elements must be Reset() on every proc or nowhere
+      // oldmap in export_column_elements must be reset() on every proc or nowhere
       discret->CheckFilledGlobally();
 
       // adapt layout to extended ghosting in discret
@@ -135,7 +135,7 @@ namespace BINSTRATEGY
         for (iter = p->second.begin(); iter != p->second.end(); ++iter)
         {
           Core::Communication::PackBuffer data;
-          (*iter)->Pack(data);
+          (*iter)->pack(data);
           sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
         }
         targetprocs[p->first] = 1;

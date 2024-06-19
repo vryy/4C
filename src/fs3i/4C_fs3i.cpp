@@ -59,7 +59,7 @@ FS3I::FS3IBase::FS3IBase()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::Init()
+void FS3I::FS3IBase::init()
 {
   set_is_setup(false);
 
@@ -76,7 +76,7 @@ void FS3I::FS3IBase::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::Setup()
+void FS3I::FS3IBase::setup()
 {
   check_is_init();
 
@@ -281,22 +281,22 @@ void FS3I::FS3IBase::CheckFS3IInputs()
 
     for (auto& iter : coupcond)
     {
-      int myID = iter->parameters().Get<int>("coupling id");
+      int myID = iter->parameters().get<int>("coupling id");
       condIDs[i].insert(myID);
 
       if (!infperm_)  // get all FS3I interface condition parameters from the input file
       {
         // initialize a large enough vector
         auto* params = new std::vector<double>(7, true);
-        params->at(0) = iter->parameters().Get<double>("permeability coefficient");
-        params->at(1) = iter->parameters().Get<double>("hydraulic conductivity");
-        params->at(2) = iter->parameters().Get<double>("filtration coefficient");
-        params->at(3) = (double)iter->parameters().Get<int>("wss onoff");
-        const auto& mywsscoeffs = iter->parameters().Get<std::vector<double>>("wss coeffs");
+        params->at(0) = iter->parameters().get<double>("permeability coefficient");
+        params->at(1) = iter->parameters().get<double>("hydraulic conductivity");
+        params->at(2) = iter->parameters().get<double>("filtration coefficient");
+        params->at(3) = (double)iter->parameters().get<int>("wss onoff");
+        const auto& mywsscoeffs = iter->parameters().get<std::vector<double>>("wss coeffs");
         params->at(4) = mywsscoeffs.at(0);
         params->at(5) = mywsscoeffs.at(1);
-        params->at(6) = (double)(iter->parameters().Get<int>("numscal"));
-        const auto& onoffs = iter->parameters().Get<std::vector<int>>("onoff");
+        params->at(6) = (double)(iter->parameters().get<int>("numscal"));
+        const auto& onoffs = iter->parameters().get<std::vector<int>>("onoff");
         for (int k = 0; k < numscal; k++)
         {
           params->push_back((double)(onoffs.at(k)));
@@ -434,7 +434,7 @@ void FS3I::FS3IBase::UpdateScatraFields()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->Update();
+    scatra->ScaTraField()->update();
   }
 }
 
@@ -806,14 +806,14 @@ void FS3I::FS3IBase::extract_scatra_field_vectors(Teuchos::RCP<const Epetra_Vect
 /*----------------------------------------------------------------------*/
 void FS3I::FS3IBase::check_is_setup()
 {
-  if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
+  if (not is_setup()) FOUR_C_THROW("setup() was not called.");
 };
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FS3I::FS3IBase::check_is_init()
 {
-  if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
+  if (not is_init()) FOUR_C_THROW("init(...) was not called.");
 };
 
 FOUR_C_NAMESPACE_CLOSE

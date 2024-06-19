@@ -2196,7 +2196,7 @@ namespace FLD
             velino.Update(1.0 / vel_norm, velint);
           else
           {
-            velino.Clear();
+            velino.clear();
             velino(0, 0) = 1.0;
           }
           Core::LinAlg::Matrix<NEN, 1> tmp;
@@ -2890,7 +2890,7 @@ namespace FLD
               velino.Update(1.0 / vel_norm, velint);
             else
             {
-              velino.Clear();
+              velino.clear();
               velino(0, 0) = 1.0;
             }
             Core::LinAlg::Matrix<NEN, 1> tmp;

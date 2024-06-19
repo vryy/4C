@@ -121,14 +121,14 @@ namespace CONSTRAINTS
     SpringType GetSpringType() { return springtype_; }
 
     //! udpate condition for new time step
-    void Update();
+    void update();
 
     /*!
      * \brief Reset the current state variables to the ones of the previous timestep
      *
      * This method is used in conjuction with
      * STR::MODELEVALUATOR::ModelEvaluator::reset_step_state() and is used to prepare the output of
-     * the previous timestep after calling Update(). This is used for example to output the last
+     * the previous timestep after calling update(). This is used for example to output the last
      * successfull timestep.
      */
     void ResetStepState();

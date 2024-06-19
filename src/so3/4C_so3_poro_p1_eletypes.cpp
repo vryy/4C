@@ -30,7 +30,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8PoroP1Type::Create(
 {
   auto* object =
       new Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -83,9 +83,9 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex8PoroP1Type::ComputeNull
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
-int Discret::ELEMENTS::SoHex8PoroP1Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex8PoroP1Type::initialize(Core::FE::Discretization& dis)
 {
-  SoHex8Type::Initialize(dis);
+  SoHex8Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -114,7 +114,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet4PoroP1Type::Create(
 {
   auto* object =
       new Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -153,9 +153,9 @@ void Discret::ELEMENTS::SoTet4PoroP1Type::setup_element_definition(
   defs["TET4"] = defs_tet4["TET4"];
 }
 
-int Discret::ELEMENTS::SoTet4PoroP1Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoTet4PoroP1Type::initialize(Core::FE::Discretization& dis)
 {
-  SoTet4PoroType::Initialize(dis);
+  SoTet4PoroType::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;

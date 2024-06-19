@@ -45,7 +45,7 @@ Discret::ELEMENTS::FluidEleCalcImmersed<distype>::FluidEleCalcImmersed()
  * Evaluate
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::ELEMENTS::FluidEleCalcImmersed<distype>::evaluate(Discret::ELEMENTS::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -85,12 +85,12 @@ int Discret::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(Discret::ELEMENTS
   // use different integration rule for fluid elements that are cut by the structural boundary
   if (immersedele_->IsBoundaryImmersed())
   {
-    return my::Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+    return my::evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
         elevec1_epetra, elevec2_epetra, elevec3_epetra, intpoints_fluid_bound, offdiag);
   }
   else
   {
-    return my::Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+    return my::evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
         elevec1_epetra, elevec2_epetra, elevec3_epetra, intpoints_std, offdiag);
   }
 }
@@ -299,7 +299,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
     */
 
     static Core::LinAlg::Matrix<1, nsd_> sgvelintaf(true);
-    sgvelintaf.Clear();
+    sgvelintaf.clear();
     for (int rr = 0; rr < nsd_; ++rr)
     {
       my::tds_->update_svelnp_in_one_direction(fac1, fac2, fac3, my::momres_old_(rr),
@@ -340,7 +340,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
       my::fldpara_->ContiReynolds() != Inpar::FLUID::reynolds_stress_stab_none)
     my::sgconv_c_.MultiplyTN(my::derxy_, my::sgvelint_);
   else
-    my::sgconv_c_.Clear();
+    my::sgconv_c_.clear();
 
   return;
 }

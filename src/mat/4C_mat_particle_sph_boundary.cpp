@@ -47,7 +47,7 @@ Core::Communication::ParObject* Mat::ParticleMaterialSPHBoundaryType::Create(
     const std::vector<char>& data)
 {
   Mat::ParticleMaterialSPHBoundary* particlematsphboundary = new Mat::ParticleMaterialSPHBoundary();
-  particlematsphboundary->Unpack(data);
+  particlematsphboundary->unpack(data);
   return particlematsphboundary;
 }
 
@@ -72,7 +72,7 @@ Mat::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
 /*---------------------------------------------------------------------------*
  | pack                                                       sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-void Mat::ParticleMaterialSPHBoundary::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ParticleMaterialSPHBoundary::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -89,7 +89,7 @@ void Mat::ParticleMaterialSPHBoundary::Pack(Core::Communication::PackBuffer& dat
 /*---------------------------------------------------------------------------*
  | unpack                                                     sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-void Mat::ParticleMaterialSPHBoundary::Unpack(const std::vector<char>& data)
+void Mat::ParticleMaterialSPHBoundary::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

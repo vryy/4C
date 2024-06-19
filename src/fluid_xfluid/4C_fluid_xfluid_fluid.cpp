@@ -72,13 +72,13 @@ FLD::XFluidFluid::XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& emb
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluidFluid::Init(bool createinitialstate)
+void FLD::XFluidFluid::init(bool createinitialstate)
 {
   // initialize embedded fluid
-  embedded_fluid_->Init();
+  embedded_fluid_->init();
 
   // base class init
-  XFluid::Init(false);
+  XFluid::init(false);
 
   // set parameters specific for fluid-fluid coupling
   set_x_fluid_fluid_params();
@@ -127,7 +127,7 @@ void FLD::XFluidFluid::CreateInitialState()
   //--------------------------------------------------
   // Create XFluidFluid State
   //-----------------------------------------------
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
 
   if (restart)
   {
@@ -216,7 +216,7 @@ void FLD::XFluidFluid::PrepareXFEMSolve()
       embedded_fluid_->Veln(), xff_state_->xffluidveln_);
 }
 
-void FLD::XFluidFluid::Evaluate(
+void FLD::XFluidFluid::evaluate(
     Teuchos::RCP<const Epetra_Vector> stepinc  ///< solution increment between time step n and n+1
 )
 {
@@ -250,7 +250,7 @@ void FLD::XFluidFluid::Evaluate(
 
   // evaluation of background fluid (new cut for full Newton approach)
   XFluid::UpdateByIncrements(stepinc_xfluid);
-  XFluid::Evaluate();
+  XFluid::evaluate();
 
   // update step increment
   stepinc_->Update(1.0, *xff_state_->xffluidvelnp_, -1.0, *xff_state_->xffluidveln_, 0.0);
@@ -613,10 +613,10 @@ bool FLD::XFluidFluid::x_timint_do_increment_step_transfer(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluidFluid::Output()
+void FLD::XFluidFluid::output()
 {
-  XFluid::Output();
-  embedded_fluid_->Output();
+  XFluid::output();
+  embedded_fluid_->output();
 }
 
 /*----------------------------------------------------------------------*/

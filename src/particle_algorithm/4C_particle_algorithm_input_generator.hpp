@@ -59,7 +59,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 07/2018
      */
-    void Init();
+    void init();
 
     /*!
      * \brief generate particles

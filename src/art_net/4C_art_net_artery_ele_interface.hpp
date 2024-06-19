@@ -52,7 +52,7 @@ namespace Discret
       virtual ~ArteryEleInterface() = default;
 
       //! evaluate the element
-      virtual int Evaluate(Artery* ele, Teuchos::ParameterList& params,
+      virtual int evaluate(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

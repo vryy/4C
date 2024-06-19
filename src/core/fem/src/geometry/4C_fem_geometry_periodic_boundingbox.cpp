@@ -49,7 +49,7 @@ Core::Geo::MeshFree::BoundingBox::BoundingBox()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::Init(const Teuchos::ParameterList& binning_params)
+void Core::Geo::MeshFree::BoundingBox::init(const Teuchos::ParameterList& binning_params)
 {
   issetup_ = false;
 
@@ -114,7 +114,7 @@ void Core::Geo::MeshFree::BoundingBox::Init(const Teuchos::ParameterList& binnin
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::Init(
+void Core::Geo::MeshFree::BoundingBox::init(
     Core::LinAlg::Matrix<3, 2> const& box, std::vector<bool> const& pbconoff)
 {
   issetup_ = false;
@@ -139,7 +139,7 @@ void Core::Geo::MeshFree::BoundingBox::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::Setup(const Teuchos::ParameterList& io_params,
+void Core::Geo::MeshFree::BoundingBox::setup(const Teuchos::ParameterList& io_params,
     Teuchos::RCP<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
     const int n_dim, const Core::IO::OutputControl& output_control)
 {
@@ -250,8 +250,8 @@ bool Core::Geo::MeshFree::BoundingBox::Shift3D(
   for (int dim = 0; dim < 3; ++dim)
     if (shift1_d(dim, x_ud(dim))) shifted = true;
 
-  x.Clear();
-  d.Clear();
+  x.clear();
+  d.clear();
   transform_from_undeformed_bounding_box_system_to_global(x_ud, x);
 
   // d = x - X
@@ -357,8 +357,8 @@ void Core::Geo::MeshFree::BoundingBox::UnShift3D(Core::LinAlg::Matrix<3, 1>& d,
 
   for (int dim = 0; dim < 3; ++dim) un_shift1_d(dim, x_ud(dim), ref_ud(dim));
 
-  x.Clear();
-  d.Clear();
+  x.clear();
+  d.clear();
   transform_from_undeformed_bounding_box_system_to_global(x_ud, x);
 
   // d = x - X
@@ -393,8 +393,8 @@ bool Core::Geo::MeshFree::BoundingBox::check_if_shift_between_points(Core::LinAl
 
   for (int dim = 0; dim < 3; ++dim) shift_in_dim[dim] = un_shift1_d(dim, x_ud(dim), ref_ud(dim));
 
-  x.Clear();
-  d.Clear();
+  x.clear();
+  d.clear();
   transform_from_undeformed_bounding_box_system_to_global(x_ud, x);
 
   // d = x - X
@@ -640,7 +640,7 @@ void Core::Geo::MeshFree::BoundingBox::runtime_output_step_state(double timen, i
   if (visualization_output_writer_ptr_ == Teuchos::null) return;
 
   // reset the writer object
-  visualization_output_writer_ptr_->Reset();
+  visualization_output_writer_ptr_->reset();
   visualization_output_writer_ptr_->append_dof_based_result_data_vector(
       disn_col_, 3, 0, "displacement");
 
@@ -737,7 +737,7 @@ void Core::Geo::MeshFree::BoundingBox::transform_from_undeformed_bounding_box_sy
   }
 
   // reset globcoord variable
-  x.Clear();
+  x.clear();
 
   // Evaluate lagrangian shape functions at xi
   Core::LinAlg::Matrix<8, 1> funct;
@@ -824,9 +824,9 @@ bool Core::Geo::MeshFree::BoundingBox::transform_from_global_to_undeformed_bound
   while (not converged and j < numiter)
   {
     // reset matrices
-    xjm.Clear();
-    deriv.Clear();
-    rhs.Clear();
+    xjm.clear();
+    deriv.clear();
+    rhs.clear();
 
     // evaluate lagrangian shape functions at xi
     lagrange_polynomial_to_map_from_undeformed_bounding_box_system_to_global(
@@ -899,8 +899,8 @@ bool Core::Geo::MeshFree::BoundingBox::transform_from_global_to_undeformed_bound
 
   for (int dim = 0; dim < 3; ++dim) xi[dim] = xi_m(dim);
 
-  x_m.Clear();
-  xi_m.Clear();
+  x_m.clear();
+  xi_m.clear();
   return converged;
 }
 

@@ -93,7 +93,7 @@ namespace STR
       GenAlphaLieGroup();
 
       //! Setup the class variables [derived]
-      void Setup() override;
+      void setup() override;
 
       //! [derived]
       void post_setup() override;

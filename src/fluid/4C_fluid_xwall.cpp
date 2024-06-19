@@ -690,7 +690,7 @@ void FLD::XWall::setup_l2_projection()
           for (unsigned numcondper = 0; numcondper < periodiccond.size(); ++numcondper)
           {
             const std::string& mymasterslavetoggle =
-                periodiccond[numcondper]->parameters().Get<std::string>(
+                periodiccond[numcondper]->parameters().get<std::string>(
                     "Is slave periodic boundary condition");
             if (mymasterslavetoggle == "Slave")
             {
@@ -1055,7 +1055,7 @@ void FLD::XWall::calc_tau_w(
 
       // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
       // elevector1 has to be nullptr here, because I am assuming a dof-based vector otherwise
-      actele->Evaluate(
+      actele->evaluate(
           params, *xwdiscret_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
 
       // get element location vector for nodes
@@ -1205,7 +1205,7 @@ void FLD::XWall::l2_project_vector(Teuchos::RCP<Epetra_Vector> veln,
         numnode * numdf, numberofrhs);  // we have 3 right hand sides for now: 3 velocity components
 
     // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
-    actele->Evaluate(
+    actele->evaluate(
         params, *xwdiscret_, lm, elematrix1, elematrix2, elevectordummy, elevector2, elevector3);
 
     // get element location vector for enriched dofs
@@ -1411,7 +1411,7 @@ void FLD::XWall::overwrite_transferred_values()
         for (std::vector<Core::Conditions::Condition*>::iterator cond = nodecloudstocouple.begin();
              cond != nodecloudstocouple.end(); ++cond)
         {
-          const std::string& mytoggle = (*cond)->parameters().Get<std::string>("toggle");
+          const std::string& mytoggle = (*cond)->parameters().get<std::string>("toggle");
           if (mytoggle == "slave")
           {
             inctauwtmp->ReplaceMyValue(i, 0, (*oldinctauw_)[i]);
@@ -1476,7 +1476,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
         for (unsigned numcondper = 0; numcondper < periodiccond.size(); ++numcondper)
         {
           const std::string& mymasterslavetoggle =
-              periodiccond[numcondper]->parameters().Get<std::string>(
+              periodiccond[numcondper]->parameters().get<std::string>(
                   "Is slave periodic boundary condition");
           if (mymasterslavetoggle == "Slave")
           {
@@ -1501,7 +1501,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
             bool isuglydirnode = false;
             for (unsigned numcond = 0; numcond < dircond.size(); ++numcond)
             {
-              const auto& flag = dircond[numcond]->parameters().Get<std::vector<int>>("onoff");
+              const auto& flag = dircond[numcond]->parameters().get<std::vector<int>>("onoff");
 
               if (flag[4] or flag[5] or flag[6]) isuglydirnode = true;
             }
@@ -1545,7 +1545,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
                     {
                       for (auto& numcond : dircond)
                       {
-                        const auto& flag = numcond->parameters().Get<std::vector<int>>("onoff");
+                        const auto& flag = numcond->parameters().get<std::vector<int>>("onoff");
                         if (flag[4] or flag[5] or flag[6]) isuglydirnode = true;
                       }
                     }

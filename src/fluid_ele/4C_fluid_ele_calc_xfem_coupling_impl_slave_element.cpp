@@ -328,18 +328,18 @@ namespace Discret
        *----------------------------------------------------------------------*/
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::Evaluate(
+      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::evaluate(
           Core::LinAlg::Matrix<nsd_, 1>& xslave)
       {
         Core::LinAlg::Matrix<3, 1> rst_slave(true);
-        Evaluate(xslave, rst_slave);
+        evaluate(xslave, rst_slave);
       }
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::Evaluate(
+      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::evaluate(
           Core::LinAlg::Matrix<nsd_, 1>& xslave, Core::LinAlg::Matrix<nsd_, 1>& rst_slave)
       {
         // coupling with a 2D element

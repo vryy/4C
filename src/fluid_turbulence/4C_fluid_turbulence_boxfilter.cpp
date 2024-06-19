@@ -309,7 +309,7 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
 
     // call the element evaluate method to integrate functions
     // against heaviside function element
-    int err = ele->Evaluate(filterparams, *discret_, lm, emat1, emat2, evec1, evec2, evec2);
+    int err = ele->evaluate(filterparams, *discret_, lm, emat1, emat2, evec1, evec2, evec2);
     if (err)
       FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret_->Comm().MyPID(), ele->Id(), err);
 
@@ -1048,7 +1048,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
 
     // call the element evaluate method to integrate functions
     // against heaviside function element
-    int err = ele->Evaluate(filterparams, *scatradiscret_, la, emat1, emat2, evec1, evec2, evec2);
+    int err = ele->evaluate(filterparams, *scatradiscret_, la, emat1, emat2, evec1, evec2, evec2);
     if (err)
       FOUR_C_THROW(
           "Proc %d: Element %d returned err=%d", scatradiscret_->Comm().MyPID(), ele->Id(), err);

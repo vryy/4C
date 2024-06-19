@@ -89,17 +89,17 @@ PoroElastScaTra::PoroScatraBase::PoroScatraBase(
   scatra_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
       timeparams, scatradyn, problem->SolverParams(linsolvernumber), "scatra", true));
 
-  // now we can call Init() on the base algo.
+  // now we can call init() on the base algo.
   // time integrator is constructed and initialized inside.
-  scatra_->Init();
+  scatra_->init();
   scatra_->ScaTraField()->set_number_of_dof_set_displacement(2);
   scatra_->ScaTraField()->set_number_of_dof_set_velocity(2);
 
-  // only now we must call Setup() on the scatra time integrator.
+  // only now we must call setup() on the scatra time integrator.
   // all objects relying on the parallel distribution are
   // created and pointers are set.
-  // calls Setup() on the time integrator inside.
-  scatra_->Setup();
+  // calls setup() on the time integrator inside.
+  scatra_->setup();
 }
 
 /*----------------------------------------------------------------------*
@@ -297,13 +297,13 @@ void PoroElastScaTra::PoroScatraBase::setup_coupling(
     std::pair<int, int> dofsets21_fluidscatra = std::pair<int, int>(2, 0);
 
     // setup projection matrices (use default material strategy)
-    volcoupl_structurescatra_->Init(Global::Problem::Instance()->NDim(), structdis, scatradis,
+    volcoupl_structurescatra_->init(Global::Problem::Instance()->NDim(), structdis, scatradis,
         nullptr, nullptr, &dofsets12_structurescatra, &dofsets21_structurescatra, Teuchos::null);
-    volcoupl_fluidscatra_->Init(Global::Problem::Instance()->NDim(), fluiddis, scatradis, nullptr,
+    volcoupl_fluidscatra_->init(Global::Problem::Instance()->NDim(), fluiddis, scatradis, nullptr,
         nullptr, &dofsets12_fluidscatra, &dofsets21_fluidscatra, Teuchos::null);
 
-    volcoupl_structurescatra_->Setup(Global::Problem::Instance()->VolmortarParams());
-    volcoupl_fluidscatra_->Setup(Global::Problem::Instance()->VolmortarParams());
+    volcoupl_structurescatra_->setup(Global::Problem::Instance()->VolmortarParams());
+    volcoupl_fluidscatra_->setup(Global::Problem::Instance()->VolmortarParams());
   }
 }
 

@@ -50,7 +50,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 07/2018
      */
-    void Init();
+    void init();
 
     /*!
      * \brief setup particle result test
@@ -59,7 +59,7 @@ namespace PARTICLEALGORITHM
      *
      * \param[in] particleengineinterface interface to particle engine
      */
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     /*!

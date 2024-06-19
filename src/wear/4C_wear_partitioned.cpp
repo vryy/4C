@@ -90,7 +90,7 @@ Wear::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
 
     // init coupling
     Teuchos::rcp_dynamic_cast<Core::Adapter::MortarVolCoupl>(coupalestru_)
-        ->Init(ndim, Global::Problem::Instance()->GetDis("ale"),
+        ->init(ndim, Global::Problem::Instance()->GetDis("ale"),
             Global::Problem::Instance()->GetDis("structure"), &coupleddof12, &coupleddof21,
             &dofset12, &dofset21, Teuchos::null, false);
 
@@ -99,7 +99,7 @@ Wear::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
 
     // setup projection matrices
     Teuchos::rcp_dynamic_cast<Core::Adapter::MortarVolCoupl>(coupalestru_)
-        ->Setup(Global::Problem::Instance()->VolmortarParams());
+        ->setup(Global::Problem::Instance()->VolmortarParams());
   }
 
   // create interface coupling
@@ -380,10 +380,10 @@ void Wear::Partitioned::prepare_time_step()
 void Wear::Partitioned::update()
 {
   // update at time step
-  structure_field()->Update();
+  structure_field()->update();
 
   // update
-  ale_field().Update();
+  ale_field().update();
 
   return;
 }
@@ -477,10 +477,10 @@ void Wear::Partitioned::output()
   structure_field()->prepare_output(force_prepare);
 
   // write strcture output to screen and files
-  structure_field()->Output();
+  structure_field()->output();
 
   // output ale
-  ale_field().Output();
+  ale_field().output();
 
   return;
 }
@@ -659,7 +659,7 @@ void Wear::Partitioned::wear_spatial_master_map(
     winterface->set_state(Mortar::state_new_displacement, *structure_field()->WriteAccessDispnp());
 
     // 2. initialize
-    winterface->Initialize();
+    winterface->initialize();
 
     // 3. calc N and areas
     winterface->set_element_areas();
@@ -1019,7 +1019,7 @@ void Wear::Partitioned::wear_pull_back_slave(Teuchos::RCP<Epetra_Vector>& disint
     interfacesMat_[m]->set_state(Mortar::state_new_displacement, *structure_field()->DispMat());
 
     // 2. initialize
-    interfacesMat_[m]->Initialize();
+    interfacesMat_[m]->initialize();
 
     // 3. calc N and areas
     interfacesMat_[m]->set_element_areas();
@@ -1206,7 +1206,7 @@ void Wear::Partitioned::wear_pull_back_master(Teuchos::RCP<Epetra_Vector>& disin
     winterfaceMat->set_state(Mortar::state_new_displacement, *structure_field()->DispMat());
 
     // 2. initialize
-    winterfaceMat->Initialize();
+    winterfaceMat->initialize();
 
     // 3. calc N and areas
     winterfaceMat->set_element_areas();

@@ -56,7 +56,7 @@ namespace
 
     // The derivative of the solid stress w.r.t. the scalar is implemented in the normal material
     // Evaluate call by not passing the linearization matrix.
-    solid_material.Evaluate(
+    solid_material.evaluate(
         &deformation_gradient, &gl_strain, params, &dStressDScalar, nullptr, gp, eleGID);
 
     return dStressDScalar;
@@ -248,17 +248,17 @@ Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::SolidScatraEl
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
-void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Pack(
+void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::pack(
     Core::Communication::PackBuffer& data) const
 {
-  Discret::ELEMENTS::Pack(data, history_data_);
+  Discret::ELEMENTS::pack(data, history_data_);
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
-void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Unpack(
+void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  Discret::ELEMENTS::Unpack(position, data, history_data_);
+  Discret::ELEMENTS::unpack(position, data, history_data_);
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
@@ -467,7 +467,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Update(
             { solid_material.Update(deformation_gradient, gp, params, ele.Id()); });
       });
 
-  solid_material.Update();
+  solid_material.update();
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
@@ -616,10 +616,10 @@ Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::get_normal_ca
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
-void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Setup(
+void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::setup(
     Mat::So3Material& solid_material, Input::LineDefinition* linedef)
 {
-  solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);
+  solid_material.setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>

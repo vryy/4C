@@ -79,9 +79,9 @@ namespace Mat
 
       int UniqueParObjectId() const override;
 
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      void pack(Core::Communication::PackBuffer& data) const override;
 
-      void Unpack(const std::vector<char>& data) override;
+      void unpack(const std::vector<char>& data) override;
 
       virtual void PackSummand(Core::Communication::PackBuffer& data) const { return; };
 
@@ -119,7 +119,7 @@ namespace Mat
        * @param numgp Number of Gauss points
        * @param linedef Input line of the element
        */
-      virtual void Setup(int numgp, Input::LineDefinition* linedef){};
+      virtual void setup(int numgp, Input::LineDefinition* linedef){};
 
       //! Dummy routine for setup of patient-specific materials
       virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID){};
@@ -132,7 +132,7 @@ namespace Mat
       virtual void post_setup(Teuchos::ParameterList& params){};
 
       //! Dummy routine for setup update of summand
-      virtual void Update() { return; };
+      virtual void update() { return; };
 
       //! add strain energy
       virtual void AddStrainEnergy(double& psi,  ///< strain energy functions

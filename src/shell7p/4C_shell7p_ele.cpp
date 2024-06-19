@@ -39,7 +39,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Shell7pType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Shell7p(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -159,7 +159,7 @@ void Discret::ELEMENTS::Shell7pType::setup_element_definition(
                             .build();
 }
 
-int Discret::ELEMENTS::Shell7pType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::Shell7pType::initialize(Core::FE::Discretization& dis)
 {
   STR::UTILS::Shell::Director::SetupShellElementDirectors(*this, dis);
 
@@ -210,7 +210,7 @@ int Discret::ELEMENTS::Shell7p::NumLine() const
 int Discret::ELEMENTS::Shell7p::NumSurface() const { return 1; }
 
 
-void Discret::ELEMENTS::Shell7p::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Shell7p::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -218,7 +218,7 @@ void Discret::ELEMENTS::Shell7p::Pack(Core::Communication::PackBuffer& data) con
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Core::Elements::Element::Pack(data);
+  Core::Elements::Element::pack(data);
   // discretization type
   add_to_pack(data, (int)distype_);
   // element technology
@@ -232,11 +232,11 @@ void Discret::ELEMENTS::Shell7p::Pack(Core::Communication::PackBuffer& data) con
   // optional data, e.g., EAS data, current thickness,..
   std::shared_ptr<Shell::Serializable> serializable_interface =
       std::dynamic_pointer_cast<Shell::Serializable>(shell_interface_);
-  if (serializable_interface != nullptr) serializable_interface->Pack(data);
+  if (serializable_interface != nullptr) serializable_interface->pack(data);
 }
 
 
-void Discret::ELEMENTS::Shell7p::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Shell7p::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -245,7 +245,7 @@ void Discret::ELEMENTS::Shell7p::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
   // discretization type
   distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
   // element technology
@@ -260,7 +260,7 @@ void Discret::ELEMENTS::Shell7p::Unpack(const std::vector<char>& data)
   shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(*this, eletech_);
   std::shared_ptr<Shell::Serializable> serializable_interface =
       std::dynamic_pointer_cast<Shell::Serializable>(shell_interface_);
-  if (serializable_interface != nullptr) serializable_interface->Unpack(position, data);
+  if (serializable_interface != nullptr) serializable_interface->unpack(position, data);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -365,7 +365,7 @@ bool Discret::ELEMENTS::Shell7p::ReadElement(
   SetMaterial(0, Mat::Factory(STR::UTILS::Shell::ReadElement::ReadAndSetElementMaterial(linedef)));
 
   // setup shell calculation interface
-  shell_interface_->Setup(*this, *SolidMaterial(), linedef, locking_types, shell_data);
+  shell_interface_->setup(*this, *SolidMaterial(), linedef, locking_types, shell_data);
   if (!material_post_setup_)
   {
     shell_interface_->material_post_setup(*this, *SolidMaterial());

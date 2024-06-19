@@ -51,7 +51,7 @@ Discret::ELEMENTS::Beam3Base::Beam3Base(const Discret::ELEMENTS::Beam3Base& old)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Beam3Base::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -59,7 +59,7 @@ void Discret::ELEMENTS::Beam3Base::Pack(Core::Communication::PackBuffer& data) c
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
 
   // bspotposxi_
   add_to_pack(data, bspotposxi_);
@@ -72,7 +72,7 @@ void Discret::ELEMENTS::Beam3Base::Pack(Core::Communication::PackBuffer& data) c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Beam3Base::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -81,7 +81,7 @@ void Discret::ELEMENTS::Beam3Base::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
 
   // bspotposxi_
   extract_from_pack(position, data, bspotposxi_);
@@ -334,9 +334,9 @@ void Discret::ELEMENTS::Beam3Base::UnShiftNodePosition(
   // loop through all nodes except for the first node which remains
   // fixed as reference node
   static Core::LinAlg::Matrix<3, 1> d(true), ref(true), X(true);
-  d.Clear();
-  ref.Clear();
-  X.Clear();
+  d.clear();
+  ref.clear();
+  X.clear();
   for (unsigned int i = 1; i < nnodecl; ++i)
   {
     for (int dim = 0; dim < 3; ++dim)
@@ -374,9 +374,9 @@ void Discret::ELEMENTS::Beam3Base::get_directions_of_shifts(std::vector<double>&
   // loop through all nodes except for the first node which remains
   // fixed as reference node
   static Core::LinAlg::Matrix<3, 1> d(true), ref(true), X(true);
-  d.Clear();
-  ref.Clear();
-  X.Clear();
+  d.clear();
+  ref.clear();
+  X.clear();
   for (unsigned int i = 1; i < nnodecl; ++i)
   {
     for (int dim = 0; dim < 3; ++dim)

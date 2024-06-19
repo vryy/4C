@@ -53,7 +53,7 @@ namespace Adapter
     virtual ~PoroFluidMultiphase() = default;
 
     /// initialization
-    virtual void Init(const bool isale,  ///< ALE flag
+    virtual void init(const bool isale,  ///< ALE flag
         const int nds_disp,              ///< number of dofset associated with displacements
         const int nds_vel,               ///< number of dofset associated with fluid velocities
         const int nds_solidpressure,     ///< number of dofset associated with solid pressure
@@ -121,10 +121,10 @@ namespace Adapter
     virtual void prepare_time_step() = 0;
 
     //! output solution and restart data to file
-    virtual void Output() = 0;
+    virtual void output() = 0;
 
     //! update the solution after convergence of the nonlinear iteration.
-    virtual void Update() = 0;
+    virtual void update() = 0;
 
     //! calculate error compared to analytical solution
     virtual void evaluate_error_compared_to_analytical_sol() = 0;
@@ -160,7 +160,7 @@ namespace Adapter
     virtual void calculate_phase_velocities() = 0;
 
     //! build linear system tangent matrix, rhs/force residual
-    virtual void Evaluate() = 0;
+    virtual void evaluate() = 0;
 
     // Assemble Off-Diagonal Fluid-Structure Coupling matrix
     virtual void assemble_fluid_struct_coupling_mat(

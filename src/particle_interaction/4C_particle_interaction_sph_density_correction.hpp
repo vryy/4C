@@ -35,10 +35,10 @@ namespace ParticleInteraction
     virtual ~SPHDensityCorrectionBase() = default;
 
     //! init density correction handler
-    virtual void Init();
+    virtual void init();
 
     //! setup density correction handler
-    virtual void Setup();
+    virtual void setup();
 
     //! density boundary condition is needed
     virtual bool ComputeDensityBC() const = 0;

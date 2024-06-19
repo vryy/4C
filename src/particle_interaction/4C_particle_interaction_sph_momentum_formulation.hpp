@@ -35,10 +35,10 @@ namespace ParticleInteraction
     virtual ~SPHMomentumFormulationBase() = default;
 
     //! init momentum formulation handler
-    virtual void Init();
+    virtual void init();
 
     //! setup momentum formulation handler
-    virtual void Setup();
+    virtual void setup();
 
     //! evaluate specific coefficient
     virtual void SpecificCoefficient(const double* dens_i, const double* dens_j,

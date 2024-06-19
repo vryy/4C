@@ -90,7 +90,7 @@ namespace Core::FE
     /*!
      \brief Evaluates the polynomial on a given point on the unit interval [-1, 1].
      */
-    [[nodiscard]] double Evaluate(const double point) const
+    [[nodiscard]] double evaluate(const double point) const
     {
       double value = weight_;
       for (double supportPoint : support_points_) value *= point - supportPoint;
@@ -102,12 +102,12 @@ namespace Core::FE
             the length of values) on the given point
      */
     template <typename M>
-    void Evaluate(const double point, M &derivatives) const
+    void evaluate(const double point, M &derivatives) const
     {
       FOUR_C_ASSERT(derivatives.numCols() == 1, "Only column vectors supported");
       if (derivatives.numRows() == 1)
       {
-        derivatives(0) = Evaluate(point);
+        derivatives(0) = evaluate(point);
         return;
       }
 
@@ -170,7 +170,7 @@ namespace Core::FE
     /*!
      \brief Evaluates the polynomial on a given point
      */
-    [[nodiscard]] double Evaluate(const double point) const
+    [[nodiscard]] double evaluate(const double point) const
     {
       // classical Horner's method
       return std::accumulate(coefficients_.rbegin(), coefficients_.rend(), 0.0,
@@ -182,12 +182,12 @@ namespace Core::FE
          the length of values) on the given point
      */
     template <typename M>
-    void Evaluate(const double point, M &derivatives) const
+    void evaluate(const double point, M &derivatives) const
     {
       FOUR_C_ASSERT(derivatives.numCols() == 1, "Only column vectors supported");
       if (derivatives.numRows() == 1)
       {
-        derivatives(0) = Evaluate(point);
+        derivatives(0) = evaluate(point);
         return;
       }
 
@@ -217,19 +217,19 @@ namespace Core::FE
         case 1:
         {
           Core::LinAlg::Matrix<2, 1> derivatives(false);
-          Evaluate(point, derivatives);
+          evaluate(point, derivatives);
           return derivatives(1, 0);
         }
         case 2:
         {
           Core::LinAlg::Matrix<3, 1> derivatives(false);
-          Evaluate(point, derivatives);
+          evaluate(point, derivatives);
           return derivatives(2, 0);
         }
         case 3:
         {
           Core::LinAlg::Matrix<4, 1> derivatives(false);
-          Evaluate(point, derivatives);
+          evaluate(point, derivatives);
           return derivatives(3, 0);
         }
         default:
@@ -284,7 +284,7 @@ namespace Core::FE
     /*
      \brief Evaluates the values of all polynomials on the given point
      */
-    virtual void Evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    virtual void evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
         Core::LinAlg::SerialDenseVector &values) const = 0;
 
     /*
@@ -351,7 +351,7 @@ namespace Core::FE
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    void Evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    void evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
         Core::LinAlg::SerialDenseVector &values) const override;
 
     /*
@@ -462,7 +462,7 @@ namespace Core::FE
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    void Evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    void evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
         Core::LinAlg::SerialDenseVector &values) const override;
 
     /*
@@ -581,7 +581,7 @@ namespace Core::FE
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    void Evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    void evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
         Core::LinAlg::SerialDenseVector &values) const override;
 
     /*
@@ -662,10 +662,10 @@ namespace Core::FE
     /*
    \brief Evaluates the values of all polynomials on the given point
      */
-    void Evaluate(
+    void evaluate(
         const Core::LinAlg::Matrix<nsd_, 1> &point, Core::LinAlg::SerialDenseVector &values) const
     {
-      polyspace_->Evaluate(point, values);
+      polyspace_->evaluate(point, values);
     }
 
     /*

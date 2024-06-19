@@ -171,7 +171,7 @@ namespace CONTACT
 
     Here, we call each interface to perform redistribution for each interface individually. Since
     this changes maps and interface discretizations, we have to fill_complete() all interface
-    discretizations and re-setup the strategy object afterwards by calling Setup(bool).
+    discretizations and re-setup the strategy object afterwards by calling setup(bool).
 
     If parallel redistribution is disabled in the input file or if this is a serial computation,
     i.e. only one MPI rank, then we just print the current parallel distribution to the screen, but
@@ -198,7 +198,7 @@ namespace CONTACT
      *
      *  \date 02/2016
      *  \author hiermeier */
-    virtual void Reset(const Epetra_Vector& dis)
+    virtual void reset(const Epetra_Vector& dis)
     {
       FOUR_C_THROW("Not yet considered for meshtying!");
     };
@@ -245,8 +245,8 @@ namespace CONTACT
     \brief Do mortar coupling in reference configuration
 
     Only do this ONCE for meshtying upon initialization!
-    This method calls Initialize() on all contact interfaces, which
-    resets all kind of nodal quantities. It then calls Evaluate() on
+    This method calls initialize() on all contact interfaces, which
+    resets all kind of nodal quantities. It then calls evaluate() on
     all meshtying interfaces, which does all the geometric coupling stuff.
     Concretely, this is an evaluation of all involved quantities at nodal
     level. It includes the nodal normal calculations, search, projection
@@ -457,7 +457,7 @@ namespace CONTACT
     }
     void InitEvalInterface() override {}
     void InitMortar() override {}
-    void Initialize() override {}
+    void initialize() override {}
     double Inttime() override { return inttime_; };
     void Inttime_init() override { inttime_ = 0.0; };
     int NumberOfActiveNodes() const override { return 0; }
@@ -606,7 +606,7 @@ namespace CONTACT
 
     This is just a tiny control routine, deciding which Evaluate-routine
     of those listed below is to be called (based on input-file information)
-    Note that into ALL derived Evaluate() routines, a REFERENCE to the pointer
+    Note that into ALL derived evaluate() routines, a REFERENCE to the pointer
     on the effective stiffness matrix is handed in. This way, after building the
     new effective stiffness matrix with contact, we can simply let the pointer
     kteff point onto the new object. The same is true for the effective force
@@ -616,7 +616,7 @@ namespace CONTACT
     \param feff (in/out): effective residual / force vector (without -> with contact)
 
     */
-    void Evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override;
 
     /*!

@@ -25,7 +25,7 @@ Mat::PAR::LubricationLaw::LubricationLaw(const Core::Mat::PAR::Parameter::Data& 
  *----------------------------------------------------------------------*/
 Mat::PAR::LubricationLawConstant::LubricationLawConstant(
     const Core::Mat::PAR::Parameter::Data& matdata)
-    : LubricationLaw(matdata), viscosity_(matdata.parameters.Get<double>("VISCOSITY"))
+    : LubricationLaw(matdata), viscosity_(matdata.parameters.get<double>("VISCOSITY"))
 {
   return;
 }
@@ -62,8 +62,8 @@ void Mat::PAR::LubricationLawConstant::constitutive_derivatives(
 // Standard Constructor
 Mat::PAR::LubricationLawBarus::LubricationLawBarus(const Core::Mat::PAR::Parameter::Data& matdata)
     : LubricationLaw(matdata),
-      ABSViscosity_(matdata.parameters.Get<double>("ABSViscosity")),
-      PreVisCoeff_(matdata.parameters.Get<double>("PreVisCoeff"))
+      ABSViscosity_(matdata.parameters.get<double>("ABSViscosity")),
+      PreVisCoeff_(matdata.parameters.get<double>("PreVisCoeff"))
 {
   return;
 }
@@ -99,10 +99,10 @@ void Mat::PAR::LubricationLawBarus::constitutive_derivatives(
 Mat::PAR::LubricationLawRoeland::LubricationLawRoeland(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : LubricationLaw(matdata),
-      ABSViscosity_(matdata.parameters.Get<double>("ABSViscosity")),
-      PreVisCoeff_(matdata.parameters.Get<double>("PreVisCoeff")),
-      RefVisc_(matdata.parameters.Get<double>("RefVisc")),
-      RefPress_(matdata.parameters.Get<double>("RefPress"))
+      ABSViscosity_(matdata.parameters.get<double>("ABSViscosity")),
+      PreVisCoeff_(matdata.parameters.get<double>("PreVisCoeff")),
+      RefVisc_(matdata.parameters.get<double>("RefVisc")),
+      RefPress_(matdata.parameters.get<double>("RefPress"))
 {
   z_ = (PreVisCoeff_ * RefPress_) / (log(ABSViscosity_ / RefVisc_));
   return;

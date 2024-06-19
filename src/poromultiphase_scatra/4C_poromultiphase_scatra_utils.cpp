@@ -127,7 +127,7 @@ PoroMultiPhaseScaTra::UTILS::CreateAndInitArteryCouplingStrategy(
     }
   }
 
-  strategy->Init();
+  strategy->init();
 
   return strategy;
 }

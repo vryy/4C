@@ -117,7 +117,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
   ele_ = ele;
 
   // rotationally symmetric periodic bc's: do setup for current element
-  rotsymmpbc_->Setup(ele);
+  rotsymmpbc_->setup(ele);
 
   Teuchos::RCP<Core::Mat::Material> material = ele->Material();
   if (material->MaterialType() == Core::Materials::m_matlist or
@@ -147,7 +147,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::Evaluate(Core::Elements::Element* ele,
+int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -271,7 +271,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
   }
   else
   {
-    edispnp_.Clear();
+    edispnp_.clear();
 
     // velocity = convective velocity for the non-ale case
     evelnp_ = econvelnp_;
@@ -857,11 +857,11 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::body_force(
   if (myneumcond.size() == 1)
   {
     // (SPATIAL) FUNCTION BUSINESS
-    const auto* funct = &myneumcond[0]->parameters().Get<std::vector<int>>("funct");
+    const auto* funct = &myneumcond[0]->parameters().get<std::vector<int>>("funct");
 
     // get values and switches from the condition
-    const auto* onoff = &myneumcond[0]->parameters().Get<std::vector<int>>("onoff");
-    const auto* val = &myneumcond[0]->parameters().Get<std::vector<double>>("val");
+    const auto* onoff = &myneumcond[0]->parameters().get<std::vector<int>>("onoff");
+    const auto* val = &myneumcond[0]->parameters().get<std::vector<double>>("val");
 
     // set this condition to the bodyforce array
     for (int idof = 0; idof < numdofpernode_; idof++)
@@ -874,7 +874,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::body_force(
             (functnum > 0)
                 ? Global::Problem::Instance()
                       ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                      .Evaluate((ele->Nodes()[jnode])->X().data(), scatraparatimint_->Time(), idof)
+                      .evaluate((ele->Nodes()[jnode])->X().data(), scatraparatimint_->Time(), idof)
                 : 1.0;
         (bodyforce_[idof])(jnode) = (*onoff)[idof] * (*val)[idof] * functfac;
       }
@@ -885,7 +885,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::body_force(
     for (int idof = 0; idof < numdofpernode_; idof++)
     {
       // no bodyforce
-      bodyforce_[idof].Clear();
+      bodyforce_[idof].clear();
     }
   }
 }
@@ -978,7 +978,7 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_d
     Core::FE::gder2<distype, nen_, probdim>(xjm_, derxy_, deriv2_, xyze_, derxy2_);
   }
   else
-    derxy2_.Clear();
+    derxy2_.clear();
 
   // return integration factor for current GP: fac = Gauss weight * det(J)
   return fac;
@@ -1296,7 +1296,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_laplacian_strong_form(
     Core::LinAlg::Matrix<nen_, 1>& diff)
 {
-  diff.Clear();
+  diff.clear();
   // compute N,xx  +  N,yy +  N,zz for each shape function at integration point
   for (unsigned i = 0; i < nen_; ++i)
   {
@@ -2014,7 +2014,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhsmfs(
 
   if (nsd_ < 3) FOUR_C_THROW("Turbulence is 3D!");
   // fixed-point iteration only (i.e. beta=0.0 assumed), cf
-  // turbulence part in Evaluate()
+  // turbulence part in evaluate()
   {
     double cross = convelint.Dot(mfsggradphi) + mfsgvelint.Dot(gradphi);
     double reynolds = mfsgvelint.Dot(mfsggradphi);
@@ -2062,7 +2062,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_and_rhs_multi_
   const double detF = eval_det_f_at_int_point(ele, intpoints, iquad);
 
   // evaluate multi-scale scalar transport material
-  matmultiscale->Evaluate(
+  matmultiscale->evaluate(
       iquad, std::vector<double>(1, scatravarmanager_->Phinp(k)), q_micro, dq_dphi_micro, detF);
 
   // macro-scale matrix contribution
@@ -2105,7 +2105,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhsemd(
       current[d] += funct_(jnode) *
                     Global::Problem::Instance()
                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functno - 1)
-                        .Evaluate((ele->Nodes()[jnode])->X().data(), scatraparatimint_->Time(), d);
+                        .evaluate((ele->Nodes()[jnode])->X().data(), scatraparatimint_->Time(), d);
     }
   }
 

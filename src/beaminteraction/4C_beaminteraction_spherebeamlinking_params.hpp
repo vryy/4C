@@ -50,10 +50,10 @@ namespace BEAMINTERACTION
     virtual ~SphereBeamLinkingParams() = default;
 
     //! initialize with the stuff coming from input file
-    void Init(STR::TimeInt::BaseDataGlobalState const& gstate);
+    void init(STR::TimeInt::BaseDataGlobalState const& gstate);
 
     //! setup member variables
-    void Setup();
+    void setup();
 
     //! reset time step in case structure time is adapted during simulation time
     void ResetTimeStep(double structure_delta_time);
@@ -67,13 +67,13 @@ namespace BEAMINTERACTION
     //! Checks the init and setup status
     inline void check_init_setup() const
     {
-      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call init() and setup() first!");
     }
 
     //! Checks the init status
     inline void check_init() const
     {
-      if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
+      if (!is_init()) FOUR_C_THROW("init() has not been called, yet!");
     }
 
     /// linker material id

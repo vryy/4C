@@ -727,7 +727,7 @@ void CONTACT::Interface::Redistribute()
   // (1) SLAVE splitting in close / non-close parts
   //**********************************************************************
   // perform contact search (still with non-optimal distribution)
-  Initialize();
+  initialize();
   if (SearchAlg() == Inpar::Mortar::search_bfele)
     evaluate_search_brute_force(SearchParam());
   else if (SearchAlg() == Inpar::Mortar::search_binarytree)
@@ -1155,7 +1155,7 @@ void CONTACT::Interface::CreateSearchTree()
             Discret(), interface_params(), elefullmap, Dim(), SearchParam()));
       }
       // initialize the self binary tree
-      binarytreeself_->Init();
+      binarytreeself_->init();
     }
     //*****TWO BODY CONTACT*****
     else
@@ -1192,7 +1192,7 @@ void CONTACT::Interface::CreateSearchTree()
         binarytree_ = Teuchos::rcp(new Mortar::BinaryTree(Discret(), selecolmap_, melefullmap,
             Dim(), SearchParam(), updatetype, SearchUseAuxPos()));
         // initialize the binary tree
-        binarytree_->Init();
+        binarytree_->init();
       }
     }
   }
@@ -1241,7 +1241,7 @@ void CONTACT::Interface::initialize_data_container()
 /*----------------------------------------------------------------------*
  |  initialize / reset interface for contact                  popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::Initialize()
+void CONTACT::Interface::initialize()
 {
   // loop over all nodes to reset stuff (fully overlapping column map)
   // (use fully overlapping column map)
@@ -1394,7 +1394,7 @@ void CONTACT::Interface::Initialize()
     }
 
     // just do ehl relevant stuff!
-    if (ehl_) cnode->EhlData().Clear();
+    if (ehl_) cnode->EhlData().clear();
   }
 
   //**********************************************************************
@@ -1445,7 +1445,7 @@ void CONTACT::Interface::Initialize()
     for (int e = 0; e < Discret().ElementColMap()->NumMyElements(); ++e)
       dynamic_cast<Mortar::Element*>(Discret().gElement(Discret().ElementColMap()->GID(e)))
           ->GetNitscheContainer()
-          .Clear();
+          .clear();
 
   // reset s/m pairs and intcell counters
   smpairs_ = 0;
@@ -8257,7 +8257,7 @@ void CONTACT::Interface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vecto
     std::map<int, double>& mygap, std::map<int, std::map<int, double>>& dmygap)
 {
   set_state(Mortar::state_new_displacement, *vec);
-  Initialize();
+  initialize();
 
   // interface needs to be complete
   if (!Filled() && Comm().MyPID() == 0)

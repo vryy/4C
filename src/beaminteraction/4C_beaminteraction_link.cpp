@@ -57,7 +57,7 @@ BEAMINTERACTION::BeamLink::BeamLink(const BEAMINTERACTION::BeamLink& old)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::Init(const int id, const std::vector<std::pair<int, int>>& eleids,
+void BEAMINTERACTION::BeamLink::init(const int id, const std::vector<std::pair<int, int>>& eleids,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
     Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
@@ -84,7 +84,7 @@ void BEAMINTERACTION::BeamLink::Init(const int id, const std::vector<std::pair<i
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::Setup(const int matnum)
+void BEAMINTERACTION::BeamLink::setup(const int matnum)
 {
   check_init();
 
@@ -93,7 +93,7 @@ void BEAMINTERACTION::BeamLink::Setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::Pack(Core::Communication::PackBuffer& data) const
+void BEAMINTERACTION::BeamLink::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -125,7 +125,7 @@ void BEAMINTERACTION::BeamLink::Pack(Core::Communication::PackBuffer& data) cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
+void BEAMINTERACTION::BeamLink::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

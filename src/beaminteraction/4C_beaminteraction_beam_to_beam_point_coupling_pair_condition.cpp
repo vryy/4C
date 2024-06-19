@@ -33,7 +33,7 @@ bool BEAMINTERACTION::BeamToBeamPointCouplingCondition::IdsInCondition(
 /**
  *
  */
-void BEAMINTERACTION::BeamToBeamPointCouplingCondition::Clear() {}
+void BEAMINTERACTION::BeamToBeamPointCouplingCondition::clear() {}
 
 /**
  *

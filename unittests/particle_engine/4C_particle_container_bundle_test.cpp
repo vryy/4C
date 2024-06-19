@@ -25,7 +25,7 @@ namespace
     {
       // create and init particle container bundle
       particlecontainerbundle_ = std::make_unique<PARTICLEENGINE::ParticleContainerBundle>();
-      particlecontainerbundle_->Init();
+      particlecontainerbundle_->init();
 
       // init two phases with different particle states
       std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes;
@@ -35,7 +35,7 @@ namespace
       particlestatestotypes.insert(std::make_pair(PARTICLEENGINE::Phase2, stateEnumSet));
 
       // setup particle container bundle
-      particlecontainerbundle_->Setup(particlestatestotypes);
+      particlecontainerbundle_->setup(particlestatestotypes);
 
       const auto GetMaximumStoredStateEnumSetValue = [&stateEnumSet]()
       { return *(--stateEnumSet.end()); };
@@ -123,7 +123,7 @@ namespace
       return particle;
     }
 
-    // note: the public functions Init(), Setup() and get_specific_container() of class
+    // note: the public functions init(), setup() and get_specific_container() of class
     // ParticleContainerBundle are called in the constructor and thus implicitly tested by all
     // following unittests
   };

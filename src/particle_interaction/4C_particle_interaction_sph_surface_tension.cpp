@@ -56,7 +56,7 @@ ParticleInteraction::SPHSurfaceTension::SPHSurfaceTension(const Teuchos::Paramet
 
 ParticleInteraction::SPHSurfaceTension::~SPHSurfaceTension() = default;
 
-void ParticleInteraction::SPHSurfaceTension::Init()
+void ParticleInteraction::SPHSurfaceTension::init()
 {
   // init interface viscosity handler
   init_interface_viscosity_handler();
@@ -100,7 +100,7 @@ void ParticleInteraction::SPHSurfaceTension::Init()
   }
 }
 
-void ParticleInteraction::SPHSurfaceTension::Setup(
+void ParticleInteraction::SPHSurfaceTension::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
     const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
@@ -124,14 +124,14 @@ void ParticleInteraction::SPHSurfaceTension::Setup(
 
   // setup interface viscosity handler
   if (interfaceviscosity_)
-    interfaceviscosity_->Setup(
+    interfaceviscosity_->setup(
         particleengineinterface, kernel, particlematerial, equationofstatebundle, neighborpairs);
 
   // setup evaporation induced recoil pressure handler
-  if (recoilpressureevaporation_) recoilpressureevaporation_->Setup(particleengineinterface);
+  if (recoilpressureevaporation_) recoilpressureevaporation_->setup(particleengineinterface);
 
   // setup barrier force handler
-  if (barrierforce_) barrierforce_->Setup(particleengineinterface, neighborpairs);
+  if (barrierforce_) barrierforce_->setup(particleengineinterface, neighborpairs);
 
   // safety check
   for (const auto& type_i : fluidtypes_)
@@ -252,7 +252,7 @@ void ParticleInteraction::SPHSurfaceTension::init_interface_viscosity_handler()
         new ParticleInteraction::SPHInterfaceViscosity(params_sph_));
 
   // init interface viscosity handler
-  if (interfaceviscosity_) interfaceviscosity_->Init();
+  if (interfaceviscosity_) interfaceviscosity_->init();
 }
 
 void ParticleInteraction::SPHSurfaceTension::init_recoil_pressure_evaporation_handler()
@@ -263,7 +263,7 @@ void ParticleInteraction::SPHSurfaceTension::init_recoil_pressure_evaporation_ha
         new ParticleInteraction::SPHRecoilPressureEvaporation(params_sph_));
 
   // init evaporation induced recoil pressure handler
-  if (recoilpressureevaporation_) recoilpressureevaporation_->Init();
+  if (recoilpressureevaporation_) recoilpressureevaporation_->init();
 }
 
 void ParticleInteraction::SPHSurfaceTension::init_barrier_force_handler()
@@ -274,7 +274,7 @@ void ParticleInteraction::SPHSurfaceTension::init_barrier_force_handler()
         new ParticleInteraction::SPHBarrierForce(params_sph_));
 
   // init barrier force handler
-  if (barrierforce_) barrierforce_->Init();
+  if (barrierforce_) barrierforce_->init();
 }
 
 void ParticleInteraction::SPHSurfaceTension::compute_colorfield_gradient() const
@@ -791,7 +791,7 @@ void ParticleInteraction::SPHSurfaceTension::compute_surface_tension_contributio
   if (timerampfct_ > 0)
     timefac = Global::Problem::Instance()
                   ->FunctionById<Core::UTILS::FunctionOfTime>(timerampfct_ - 1)
-                  .Evaluate(time_);
+                  .evaluate(time_);
 
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -842,7 +842,7 @@ void ParticleInteraction::SPHSurfaceTension::compute_temp_grad_driven_contributi
   if (timerampfct_ > 0)
     timefac = Global::Problem::Instance()
                   ->FunctionById<Core::UTILS::FunctionOfTime>(timerampfct_ - 1)
-                  .Evaluate(time_);
+                  .evaluate(time_);
 
   // temperature in transition from linear to constant regime of surface tension coefficient
   const double transitiontemp = surf_ref_temp_ + (alphamin_ - alpha0_) / alpha_t_;

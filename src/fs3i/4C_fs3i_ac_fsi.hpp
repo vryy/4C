@@ -62,10 +62,10 @@ namespace FS3I
     ACFSI(const Epetra_Comm& comm);
 
     /// initialize this class
-    void Init() override;
+    void init() override;
 
     /// setup this class
-    void Setup() override;
+    void setup() override;
 
     /// Read restart
     void read_restart() override;
@@ -282,7 +282,7 @@ namespace FS3I
         const std::string type, const Teuchos::RCP<const Epetra_Vector> value, const double dt);
 
     /// reset mean manager
-    void Reset();
+    void reset();
 
     /// get some mean value
     Teuchos::RCP<const Epetra_Vector> GetMeanValue(const std::string type) const;

@@ -76,7 +76,7 @@ namespace CONTACT
       Core::LinAlg::Solver* GetLinearSolver() const override;
 
       /// function wrapper
-      void Reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
+      void reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
           const Epetra_Vector& xnew) override;
 
       /// function wrapper
@@ -150,7 +150,7 @@ namespace CONTACT
       Teuchos::RCP<Epetra_Vector> ConstrRhs() override;
 
       /// function wrapper
-      void Initialize() override;
+      void initialize() override;
 
       /// function wrapper
       void EvalConstrRHS() override;
@@ -393,7 +393,7 @@ namespace CONTACT
         void Redistribute(const CONTACT::Aug::DataContainer& data);
 
         /// reset container members
-        void Reset(const Epetra_Map& slMaMap, const CONTACT::Aug::DataContainer& data);
+        void reset(const Epetra_Map& slMaMap, const CONTACT::Aug::DataContainer& data);
 
         /// slave/master DOF map without DBC
         Teuchos::RCP<Epetra_Map> slMaMap_;

@@ -35,19 +35,19 @@ STR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& timeparams,
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
   return;
 }
 
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
+void STR::TimIntStatics::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
-  // call Init() in base class
-  STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
+  // call init() in base class
+  STR::TimIntImpl::init(timeparams, sdynparams, xparams, actdis, solver);
 
   auto dyntype = Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdynparams, "DYNAMICTYP");
   const Inpar::STR::PreStress pre_stress_type = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
@@ -76,10 +76,10 @@ void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Setup this class                                                                 rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntStatics::Setup()
+void STR::TimIntStatics::setup()
 {
-  // call Setup() in base class
-  STR::TimIntImpl::Setup();
+  // call setup() in base class
+  STR::TimIntImpl::setup();
 
   // create force vectors
 
@@ -436,7 +436,7 @@ void STR::TimIntStatics::UpdateStepElement()
   // Set material displacement state for ale-wear formulation
   if ((dismat_ != Teuchos::null)) discret_->set_state("material_displacement", (*dismat_)(0));
 
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 }
 

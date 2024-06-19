@@ -42,7 +42,7 @@ namespace STR
       PartitionedPASI();
 
       //! setup class variables [derived]
-      void Setup() override;
+      void setup() override;
 
       //! get pointer to force vector at time level n+1 (full structural map)
       //! interface part is inserted in Adapter::PASIStructureWrapper
@@ -58,7 +58,7 @@ namespace STR
       Inpar::STR::ModelType Type() const override { return Inpar::STR::model_partitioned_coupling; }
 
       //! reset class variables (without jacobian) [derived]
-      void Reset(const Epetra_Vector& x) override { return; };
+      void reset(const Epetra_Vector& x) override { return; };
 
       //! [derived]
       bool evaluate_force() override { return true; };

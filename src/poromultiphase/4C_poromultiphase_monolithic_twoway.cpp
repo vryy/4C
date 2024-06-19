@@ -77,7 +77,7 @@ POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroMultiPhaseMonolithicTwoWay(
 /*----------------------------------------------------------------------*
  | initialization                                       kremheller 03/17 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Init(
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
     const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
     const std::string& struct_disname, const std::string& fluid_disname, bool isale, int nds_disp,
@@ -85,7 +85,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Init(
     const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // call base class
-  POROMULTIPHASE::PoroMultiPhaseMonolithic::Init(globaltimeparams, algoparams, structparams,
+  POROMULTIPHASE::PoroMultiPhaseMonolithic::init(globaltimeparams, algoparams, structparams,
       fluidparams, struct_disname, fluid_disname, isale, nds_disp, nds_vel, nds_solidpressure,
       ndsporofluid_scatra, nearbyelepairs);
 
@@ -173,7 +173,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_maps()
   fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full Poromultiphase-elasticity-blockmap
-  blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+  blockrowdofmap_->setup(*fullmap_, vecSpaces);
 
   return;
 }
@@ -188,7 +188,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::TimeStep()
   print_header();
 
   // Evaluate
-  Evaluate(iterinc_);
+  evaluate(iterinc_);
 
   // Newton-Loop
   while ((not converged() and itnum_ < itmax_) or (itnum_ < itmin_))
@@ -206,7 +206,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::TimeStep()
     if (not converged())
     {
       // Evaluate
-      Evaluate(iterinc_);
+      evaluate(iterinc_);
 
       // perform FD Check of monolithic system matrix
       if (fdcheck_ == Inpar::POROMULTIPHASE::fdcheck_global) poro_fd_check();
@@ -248,7 +248,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::build_combined_dbc_map()
 /*----------------------------------------------------------------------*
  | Evaluate (build global Matrix and RHS)            kremheller 03/17   |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::evaluate(
     Teuchos::RCP<const Epetra_Vector> iterinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate");
@@ -264,7 +264,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(
   Teuchos::RCP<const Epetra_Vector> f_iterinc;
   extract_field_vectors(iterinc, s_iterinc, f_iterinc);
 
-  Evaluate(s_iterinc, f_iterinc, itnum_ == 0);
+  evaluate(s_iterinc, f_iterinc, itnum_ == 0);
 
   // *********** time measurement ***********
   dtele_ = timernewton_.wallTime() - dtcpu;
@@ -276,7 +276,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(
  | Evaluate (build global Matrix and RHS, public --> allows access      |
  | from outside --> monolithic scatra-coupling)        kremheller 06/17 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(Teuchos::RCP<const Epetra_Vector> sx,
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::evaluate(Teuchos::RCP<const Epetra_Vector> sx,
     Teuchos::RCP<const Epetra_Vector> fx, const bool firstcall)
 {
   // (1) Update fluid Field and reconstruct pressures and saturations
@@ -289,9 +289,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(Teuchos::RCP<const
 
     // (3) evaluate structure
     if (firstcall)  // first call (iterinc_ = 0) --> sx = 0
-      structure_field()->Evaluate();
+      structure_field()->evaluate();
     else  //(this call will also update displacements and velocities)
-      structure_field()->Evaluate(sx);
+      structure_field()->evaluate(sx);
 
     // (4) Set structure solution on fluid field
     set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp());
@@ -306,7 +306,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(Teuchos::RCP<const
   }
 
   // (5) Evaluate the fluid
-  fluid_field()->Evaluate();
+  fluid_field()->evaluate();
 
   // (6) Build the monolithic system matrix
   setup_system_matrix();
@@ -370,7 +370,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_system_matrix(
   // if dof is a structural DBC
   // Normally, DBC should be applied on complete systemmatrix mat, but for
   // diagonal blocks (here k_ss, k_tt) DBC are ALREADY applied in
-  // prepare_system_for_newton_solve() included in Evaluate(sx)
+  // prepare_system_for_newton_solve() included in evaluate(sx)
   //
   // to avoid double work, we only call ApplyDirichlet for the off-diagonal blocks,
   // here k_sf
@@ -518,7 +518,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::update_fields_after_converg
   fluid_field()->reconstruct_pressures_and_saturations();
   fluid_field()->ReconstructFlux();
 
-  if (solve_structure_) structure_field()->Evaluate(sx);
+  if (solve_structure_) structure_field()->evaluate(sx);
 
   // (4) Set structure solution on fluid field
   set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp());
@@ -569,7 +569,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::apply_str_coupl_matrix(
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
     // evaluate the mechanical-fluid system matrix on the structural element
-    structure_field()->discretization()->Evaluate(sparams, structuralstrategy);
+    structure_field()->discretization()->evaluate(sparams, structuralstrategy);
 
     structure_field()->discretization()->ClearState();
 
@@ -983,7 +983,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_vector(
   Extractor()->InsertVector(*fv, 1, f);
 }
 /*----------------------------------------------------------------------*
- | extract field vectors for calling Evaluate() of the  kremheller 03/17|
+ | extract field vectors for calling evaluate() of the  kremheller 03/17|
  | single fields                                                        |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::extract_field_vectors(
@@ -1092,7 +1092,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::poro_fd_check()
       std::cout << "\n******************" << spaltenr + 1 << ". Spalte!!***************"
                 << std::endl;
 
-    Evaluate(iterinc);
+    evaluate(iterinc);
 
     rhs_copy->Update(1.0, *rhs_, 0.0);
 
@@ -1166,7 +1166,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::poro_fd_check()
                 << std::endl;
   }
 
-  Evaluate(iterinc);
+  evaluate(iterinc);
 
   stiff_approx->FillComplete();
 
@@ -1336,19 +1336,19 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::setup_maps()
   fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full Poromultiphase-elasticity-blockmap
-  blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+  blockrowdofmap_->setup(*fullmap_, vecSpaces);
 
   // full map of artery and poromulti DOFs
   fullmap_artporo_ = Core::LinAlg::MultiMapExtractor::MergeMaps({vecSpaces[1], vecSpaces[2]});
 
   // full artery-poromulti-blockmap
-  blockrowdofmap_artporo_->Setup(*fullmap_artporo_, {vecSpaces[1], vecSpaces[2]});
+  blockrowdofmap_artporo_->setup(*fullmap_artporo_, {vecSpaces[1], vecSpaces[2]});
 
   return;
 }
 
 /*----------------------------------------------------------------------*
- | extract field vectors for calling Evaluate() of the  kremheller 04/18|
+ | extract field vectors for calling evaluate() of the  kremheller 04/18|
  | single fields                                                        |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::build_convergence_norms()
@@ -1368,7 +1368,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::build_converg
   return;
 }
 /*----------------------------------------------------------------------*
- | extract field vectors for calling Evaluate() of the  kremheller 04/18|
+ | extract field vectors for calling evaluate() of the  kremheller 04/18|
  | single fields                                                        |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::extract_field_vectors(

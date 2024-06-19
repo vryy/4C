@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::Setup()
+void STR::MODELEVALUATOR::Contact::setup()
 {
   check_init();
   eval_contact_ptr_ = eval_data().ContactPtr();
@@ -42,8 +42,8 @@ void STR::MODELEVALUATOR::Contact::Setup()
   // create the contact factory
   // ---------------------------------------------------------------------
   CONTACT::STRATEGY::Factory factory;
-  factory.Init(global_state_ptr()->get_discret());
-  factory.Setup();
+  factory.init(global_state_ptr()->get_discret());
+  factory.setup();
 
   // check the problem dimension
   factory.CheckDimension();
@@ -69,7 +69,7 @@ void STR::MODELEVALUATOR::Contact::Setup()
   // ---------------------------------------------------------------------
   // build the solver strategy object
   // ---------------------------------------------------------------------
-  eval_contact_ptr_->Set(&discret(), 0);
+  eval_contact_ptr_->set(&discret(), 0);
   strategy_ptr_ = factory.BuildStrategy(
       cparams, poroslave, poromaster, dof_offset(), interfaces, eval_contact_ptr_.get());
   eval_contact_ptr_->ClearEntry(Core::Gen::AnyDataContainer::DataType::any, 0);
@@ -153,7 +153,7 @@ void STR::MODELEVALUATOR::Contact::set_time_integration_info(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::Contact::reset(const Epetra_Vector& x)
 {
   check_init_setup();
   std::vector<Teuchos::RCP<const Epetra_Vector>> eval_vec(2, Teuchos::null);
@@ -162,7 +162,7 @@ void STR::MODELEVALUATOR::Contact::Reset(const Epetra_Vector& x)
   eval_contact().set_action_type(Mortar::eval_reset);
 
   // reset displacement state and lagrange multiplier values
-  Strategy().Evaluate(eval_data().Contact(), &eval_vec);
+  Strategy().evaluate(eval_data().Contact(), &eval_vec);
 }
 
 /*----------------------------------------------------------------------*
@@ -174,7 +174,7 @@ bool STR::MODELEVALUATOR::Contact::evaluate_force()
   // --- evaluate contact contributions ---------------------------------
   eval_contact().set_action_type(Mortar::eval_force);
   eval_data().set_model_evaluator(this);
-  Strategy().Evaluate(eval_data().Contact());
+  Strategy().evaluate(eval_data().Contact());
 
   return ok;
 }
@@ -188,7 +188,7 @@ bool STR::MODELEVALUATOR::Contact::evaluate_stiff()
   // --- evaluate contact contributions ---------------------------------
   eval_contact().set_action_type(Mortar::eval_force_stiff);
   eval_data().set_model_evaluator(this);
-  Strategy().Evaluate(eval_data().Contact());
+  Strategy().evaluate(eval_data().Contact());
 
   return ok;
 }
@@ -201,7 +201,7 @@ bool STR::MODELEVALUATOR::Contact::evaluate_force_stiff()
   bool ok = true;
   // --- evaluate contact contributions ---------------------------------
   eval_contact().set_action_type(Mortar::eval_force_stiff);
-  Strategy().Evaluate(eval_data().Contact());
+  Strategy().evaluate(eval_data().Contact());
 
   return ok;
 }
@@ -212,7 +212,7 @@ void STR::MODELEVALUATOR::Contact::pre_evaluate()
 {
   eval_contact().set_action_type(Mortar::eval_run_pre_evaluate);
   eval_data().set_model_evaluator(this);
-  Strategy().Evaluate(eval_contact());
+  Strategy().evaluate(eval_contact());
 }
 
 /*----------------------------------------------------------------------*
@@ -221,7 +221,7 @@ void STR::MODELEVALUATOR::Contact::post_evaluate()
 {
   eval_contact().set_action_type(Mortar::eval_run_post_evaluate);
   eval_data().set_model_evaluator(this);
-  Strategy().Evaluate(eval_data().Contact());
+  Strategy().evaluate(eval_data().Contact());
 }
 
 /*----------------------------------------------------------------------*
@@ -446,7 +446,7 @@ void STR::MODELEVALUATOR::Contact::run_post_compute_x(
 
   eval_contact().set_action_type(Mortar::eval_run_post_compute_x);
 
-  Strategy().Evaluate(eval_data().Contact(), &eval_vec);
+  Strategy().evaluate(eval_data().Contact(), &eval_vec);
 }
 
 /*----------------------------------------------------------------------*
@@ -875,7 +875,7 @@ void STR::MODELEVALUATOR::Contact::run_pre_compute_x(
   eval_data().set_model_evaluator(this);
 
   // augment the search direction
-  Strategy().Evaluate(eval_data().Contact(), &eval_vec, &eval_vec_mutable);
+  Strategy().evaluate(eval_data().Contact(), &eval_vec, &eval_vec_mutable);
 }
 
 /*----------------------------------------------------------------------------*
@@ -896,7 +896,7 @@ void STR::MODELEVALUATOR::Contact::run_post_iterate(const ::NOX::Solver::Generic
     evaluate_force();
 
   eval_contact().set_action_type(Mortar::eval_run_post_iterate);
-  Strategy().Evaluate(eval_data().Contact());
+  Strategy().evaluate(eval_data().Contact());
 }
 
 /*----------------------------------------------------------------------------*
@@ -925,7 +925,7 @@ void STR::MODELEVALUATOR::Contact::run_pre_solve(const ::NOX::Solver::Generic& s
   eval_vec[0] = curr_disp;
 
   eval_contact().set_action_type(Mortar::eval_run_pre_solve);
-  Strategy().Evaluate(eval_data().Contact(), &eval_vec);
+  Strategy().evaluate(eval_data().Contact(), &eval_vec);
 }
 
 /*----------------------------------------------------------------------------*
@@ -935,16 +935,16 @@ void STR::MODELEVALUATOR::Contact::run_post_apply_jacobian_inverse(const Epetra_
 {
   check_init_setup();
 
-  eval_contact().Set(&rhs, 0);
-  eval_contact().Set(&result, 1);
-  eval_contact().Set(&xold, 2);
-  eval_contact().Set(&grp, 3);
+  eval_contact().set(&rhs, 0);
+  eval_contact().set(&result, 1);
+  eval_contact().set(&xold, 2);
+  eval_contact().set(&grp, 3);
 
   eval_contact().set_action_type(Mortar::eval_run_post_apply_jacobian_inverse);
   eval_data().set_model_evaluator(this);
 
   // augment the search direction
-  Strategy().Evaluate(eval_data().Contact());
+  Strategy().evaluate(eval_data().Contact());
 
   // clear the set any data again
   eval_contact().ClearAll(Core::Gen::AnyDataContainer::DataType::any);
@@ -999,7 +999,7 @@ void STR::MODELEVALUATOR::Contact::evaluate_weighted_gap_gradient_error()
   eval_data().set_model_evaluator(this);
 
   // augment the search direction
-  Strategy().Evaluate(eval_data().Contact());
+  Strategy().evaluate(eval_data().Contact());
 }
 
 /*----------------------------------------------------------------------------*
@@ -1011,7 +1011,7 @@ bool STR::MODELEVALUATOR::Contact::evaluate_cheap_soc_rhs()
   eval_contact().set_action_type(Mortar::eval_static_constraint_rhs);
   eval_data().set_model_evaluator(this);
 
-  Strategy().Evaluate(eval_data().Contact());
+  Strategy().evaluate(eval_data().Contact());
 
   return true;
 }
@@ -1031,9 +1031,9 @@ bool STR::MODELEVALUATOR::Contact::correct_parameters(NOX::Nln::CorrectionType t
   check_init_setup();
 
   eval_contact().set_action_type(Mortar::eval_correct_parameters);
-  eval_contact().Set(&type, 0);
+  eval_contact().set(&type, 0);
 
-  Strategy().Evaluate(eval_contact());
+  Strategy().evaluate(eval_contact());
 
   eval_contact().ClearEntry(Core::Gen::AnyDataContainer::DataType::any, 0);
 
@@ -1048,7 +1048,7 @@ void STR::MODELEVALUATOR::Contact::remove_condensed_contributions_from_rhs(Epetr
   eval_contact().set_action_type(Mortar::remove_condensed_contributions_from_str_rhs);
 
   std::vector<Teuchos::RCP<Epetra_Vector>> mutable_vec(1, Teuchos::rcpFromRef(rhs));
-  Strategy().Evaluate(eval_contact(), nullptr, &mutable_vec);
+  Strategy().evaluate(eval_contact(), nullptr, &mutable_vec);
 }
 
 FOUR_C_NAMESPACE_CLOSE

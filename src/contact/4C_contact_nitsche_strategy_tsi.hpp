@@ -72,7 +72,7 @@ namespace CONTACT
      derived from contact abstract strategy.
      The Nitsche strategy does not have
       */
-    void Setup(bool redistributed, bool init) override;
+    void setup(bool redistributed, bool init) override;
 
     void update_trace_ineq_etimates() override;
     void set_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;

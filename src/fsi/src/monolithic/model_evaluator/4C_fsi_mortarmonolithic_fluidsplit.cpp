@@ -246,7 +246,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
      */
     std::vector<int> coupleddof(ndim, 1);
 
-    coupsfm_->Setup(structure_field()->discretization(), fluid_field()->discretization(),
+    coupsfm_->setup(structure_field()->discretization(), fluid_field()->discretization(),
         ale_field()->write_access_discretization(), coupleddof, "FSICoupling", comm_,
         Global::Problem::Instance()->FunctionManager(), true);
 
@@ -316,7 +316,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
   // requires coupsf_ in order to map the nodal fluid forces on the structure nodes we have to do it
   // e.g. in here. But:
   // TODO: Move this to read_restart() when possible
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     const bool restartfrompartfsi =
@@ -1144,7 +1144,7 @@ void FSI::MortarMonolithicFluidSplit::unscale_solution(
   utils()->out().flags(flags);
 
   if (structure_field()->get_stc_algo() != Inpar::STR::stc_none)
-    structure_field()->system_matrix()->Reset();
+    structure_field()->system_matrix()->reset();
 }
 
 
@@ -1467,7 +1467,7 @@ void FSI::MortarMonolithicFluidSplit::update()
     fluid_field()->apply_interface_velocities(unew);
   }
 
-  // call Update()-routine in base class to handle the single fields
+  // call update()-routine in base class to handle the single fields
   FSI::BlockMonolithic::update();
 }
 
@@ -1475,8 +1475,8 @@ void FSI::MortarMonolithicFluidSplit::update()
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::output()
 {
-  structure_field()->Output();
-  fluid_field()->Output();
+  structure_field()->output();
+  fluid_field()->output();
 
   if (aleproj_ != Inpar::FSI::ALEprojection_none)
   {
@@ -1492,7 +1492,7 @@ void FSI::MortarMonolithicFluidSplit::output()
   // output Lagrange multiplier
   OutputLambda();
 
-  ale_field()->Output();
+  ale_field()->output();
 
   if (structure_field()->get_constraint_manager()->HaveMonitor())
   {
@@ -1573,7 +1573,7 @@ void FSI::MortarMonolithicFluidSplit::prepare_time_step()
   prepare_time_step_preconditioner();
 
   if (structure_field()->get_stc_algo() != Inpar::STR::stc_none)
-    structure_field()->system_matrix()->Reset();
+    structure_field()->system_matrix()->reset();
 
   prepare_time_step_fields();
 

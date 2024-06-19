@@ -40,13 +40,13 @@ ParticleInteraction::SPHDensityBase::SPHDensityBase(const Teuchos::ParameterList
   // empty constructor
 }
 
-void ParticleInteraction::SPHDensityBase::Init()
+void ParticleInteraction::SPHDensityBase::init()
 {
   // init with potential fluid particle types
   fluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2};
 }
 
-void ParticleInteraction::SPHDensityBase::Setup(
+void ParticleInteraction::SPHDensityBase::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
     const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
@@ -813,16 +813,16 @@ ParticleInteraction::SPHDensityPredictCorrect::SPHDensityPredictCorrect(
 
 ParticleInteraction::SPHDensityPredictCorrect::~SPHDensityPredictCorrect() = default;
 
-void ParticleInteraction::SPHDensityPredictCorrect::Init()
+void ParticleInteraction::SPHDensityPredictCorrect::init()
 {
   // call base class init
-  SPHDensityBase::Init();
+  SPHDensityBase::init();
 
   // init density correction handler
   init_density_correction_handler();
 }
 
-void ParticleInteraction::SPHDensityPredictCorrect::Setup(
+void ParticleInteraction::SPHDensityPredictCorrect::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
     const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
@@ -832,11 +832,11 @@ void ParticleInteraction::SPHDensityPredictCorrect::Setup(
     const std::shared_ptr<ParticleInteraction::SPHVirtualWallParticle> virtualwallparticle)
 {
   // call base class setup
-  SPHDensityBase::Setup(particleengineinterface, particlewallinterface, kernel, particlematerial,
+  SPHDensityBase::setup(particleengineinterface, particlewallinterface, kernel, particlematerial,
       equationofstatebundle, neighborpairs, virtualwallparticle);
 
   // setup density correction handler
-  densitycorrection_->Setup();
+  densitycorrection_->setup();
 }
 
 void ParticleInteraction::SPHDensityPredictCorrect::insert_particle_states_of_particle_types(
@@ -923,7 +923,7 @@ void ParticleInteraction::SPHDensityPredictCorrect::init_density_correction_hand
   }
 
   // init density correction handler
-  densitycorrection_->Init();
+  densitycorrection_->init();
 }
 
 void ParticleInteraction::SPHDensityPredictCorrect::correct_density() const

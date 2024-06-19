@@ -220,7 +220,7 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
  |  Evaluate the element (public)                             meier 02/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-bool CONTACT::Beam3contact<numnodes, numnodalvalues>::Evaluate(
+bool CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate(
     Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp,
     std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
     Teuchos::ParameterList& timeintparams, bool fdcheck)
@@ -2162,12 +2162,12 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::closest_point_projection(d
       iter++;
 
       // reset shape function variables to zero
-      N1.Clear();
-      N2.Clear();
-      N1_xi.Clear();
-      N2_xi.Clear();
-      N1_xixi.Clear();
-      N2_xixi.Clear();
+      N1.clear();
+      N2.clear();
+      N1_xi.clear();
+      N2_xi.clear();
+      N1_xixi.clear();
+      N2_xixi.clear();
 
       // update shape functions and their derivatives
       get_shape_functions(N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, eta1, eta2);
@@ -2558,12 +2558,12 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::point_to_line_projection(d
       iter++;
 
       // reset shape function variables to zero
-      N1.Clear();
-      N2.Clear();
-      N1_xi.Clear();
-      N2_xi.Clear();
-      N1_xixi.Clear();
-      N2_xixi.Clear();
+      N1.clear();
+      N2.clear();
+      N1_xi.clear();
+      N2_xi.clear();
+      N1_xixi.clear();
+      N2_xixi.clear();
 
       bool inversion_possible = false;
       bool endpointpenalty = Core::UTILS::IntegralValue<int>(bcparams_, "BEAMS_ENDPOINTPENALTY");
@@ -4732,12 +4732,12 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::compute_coords_and_derivs(
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi)
 {
-  r1.Clear();
-  r2.Clear();
-  r1_xi.Clear();
-  r2_xi.Clear();
-  r1_xixi.Clear();
-  r2_xixi.Clear();
+  r1.clear();
+  r2.clear();
+  r1_xi.clear();
+  r2_xi.clear();
+  r1_xixi.clear();
+  r2_xixi.clear();
 
 #ifdef AUTOMATICDIFF
   BEAMCONTACT::SetFADDispDofs<numnodes, numnodalvalues>(ele1pos_, ele2pos_);
@@ -4774,7 +4774,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_orthogonality_con
     const Core::LinAlg::Matrix<3, 1, TYPE>& t2)
 {
   // reset f
-  f.Clear();
+  f.clear();
 
   int smoothing =
       Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Smoothing>(bcparams_, "BEAMS_SMOOTHING");
@@ -4823,8 +4823,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_lin_orthogonality
 
 {
   // reset df and dfinv
-  df.Clear();
-  dfinv.Clear();
+  df.clear();
+  dfinv.clear();
 
   int smoothing =
       Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Smoothing>(bcparams_, "BEAMS_SMOOTHING");
@@ -5232,7 +5232,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::update_ele_smooth_tangents
   nodaltangentssmooth1_ = BEAMINTERACTION::Beam3TangentSmoothing::CalculateNodalTangents<numnodes>(
       currentpositions, elepos_aux, element1_, neighbors1_);
 
-  elepos_aux.Clear();
+  elepos_aux.clear();
   // Tangent smoothing only possible with data type double (not with Sacado FAD)
   for (int i = 0; i < 3 * numnodes; i++) elepos_aux(i) = Core::FADUtils::CastToDouble(ele2pos_(i));
 
@@ -5439,7 +5439,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::fd_check(
 
   std::cout << "undisturbed configuration: " << std::endl;
 
-  this->Evaluate(stiffmatrix_analyt, fint1, pp, contactpairmap, timeintparams, true);
+  this->evaluate(stiffmatrix_analyt, fint1, pp, contactpairmap, timeintparams, true);
 
   //  std::cout << std::setprecision(25) << "fint1: " << std::endl;
 
@@ -5473,7 +5473,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::fd_check(
     fint2.PutScalar(0.0);
     stiffmatrix_dummy.PutScalar(0.0);
 
-    this->Evaluate(stiffmatrix_dummy, fint2, pp, contactpairmap, timeintparams, true);
+    this->evaluate(stiffmatrix_dummy, fint2, pp, contactpairmap, timeintparams, true);
 
     //    std::cout << std::setprecision(25) << "fint2: " << std::endl;
     //

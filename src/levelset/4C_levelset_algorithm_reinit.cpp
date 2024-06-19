@@ -115,7 +115,7 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_parameters(
           eleparams.sublist("REINITIALIZATION").get<std::string>("DEFINITION_ARTDIFFREINIT"));
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   return;
@@ -143,7 +143,7 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_time_parameters()
   eleparams.set<double>("alpha_F", 1.0);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   return;
@@ -429,7 +429,7 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
         }
       }
       // call loop over elements
-      discret_->Evaluate(eleparams, sysmat_, residual_);
+      discret_->evaluate(eleparams, sysmat_, residual_);
       discret_->ClearState();
 
       // finalize the complete matrix
@@ -441,9 +441,9 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
       solver_params.reset = true;
       solver_->Solve(sysmat_->EpetraOperator(), velcomp, residual_, solver_params);
 
-      SystemMatrix()->Reset();
+      SystemMatrix()->reset();
       // reset the solver as well
-      solver_->Reset();
+      solver_->reset();
 
       // TODO: add simple ILU/SGS/... for projection case, such that the standard system can be
       // solved by efficient AMG methods
@@ -509,7 +509,7 @@ void ScaTra::LevelSetAlgorithm::correction_reinit()
 
 
   // call loop over elements
-  discret_->Evaluate(eleparams, sysmat_, residual_);
+  discret_->evaluate(eleparams, sysmat_, residual_);
   discret_->ClearState();
 
   // residual_->Print(std::cout);
@@ -525,9 +525,9 @@ void ScaTra::LevelSetAlgorithm::correction_reinit()
 
   // phinp_->Print(std::cout);
 
-  SystemMatrix()->Reset();
+  SystemMatrix()->reset();
   // reset the solver as well
-  solver_->Reset();
+  solver_->reset();
 
   return;
 }
@@ -600,19 +600,19 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
   for (size_t i = 0; i < surfacepbcs.size(); ++i)
   {
     const auto ismaster =
-        surfacepbcs[i]->parameters().Get<std::string>("Is slave periodic boundary condition");
+        surfacepbcs[i]->parameters().get<std::string>("Is slave periodic boundary condition");
     if (ismaster == "Master")
     {
       const int masterid =
-          surfacepbcs[i]->parameters().Get<int>("Id of periodic boundary condition");
+          surfacepbcs[i]->parameters().get<int>("Id of periodic boundary condition");
       std::vector<int> nodeids(*(surfacepbcs[i]->GetNodes()));
       for (auto& surfacepbc : surfacepbcs)
       {
-        const int slaveid = surfacepbc->parameters().Get<int>("Id of periodic boundary condition");
+        const int slaveid = surfacepbc->parameters().get<int>("Id of periodic boundary condition");
         if (masterid == slaveid)
         {
           const auto isslave =
-              surfacepbc->parameters().Get<std::string>("Is slave periodic boundary condition");
+              surfacepbc->parameters().get<std::string>("Is slave periodic boundary condition");
           if (isslave == "Slave")
           {
             const std::vector<int>* slavenodeids = surfacepbc->GetNodes();
@@ -624,7 +624,7 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
 
       // Get normal direction of pbc plane
       const auto pbcplane =
-          surfacepbcs[i]->parameters().Get<std::string>("degrees of freedom for the pbc plane");
+          surfacepbcs[i]->parameters().get<std::string>("degrees of freedom for the pbc plane");
       if (pbcplane == "yz")
         planenormal.push_back(0);
       else if (pbcplane == "xz")
@@ -1328,30 +1328,30 @@ bool ScaTra::LevelSetAlgorithm::project_node_on_patch(const Core::LinAlg::Matrix
   {
     // evaluate shape functions in boundary cell space at current position \eta_1,\eta_2 on the
     // patch
-    funct.Clear();
+    funct.clear();
     Core::FE::shape_function_2D(funct, eta(0), eta(1), patch.Shape());
     // evaluate derivatives of shape functions in boundary cell space at current position
     // \eta_1,\eta_2 on the patch
-    deriv.Clear();
+    deriv.clear();
     Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), patch.Shape());
 
     // evaluate projection X of node P at current position \eta_1,\eta_2 on the patch
     // projX(i,j) = patchcoord(i,k)*funct(k,1)
-    projX.Clear();
+    projX.clear();
     projX.MultiplyNN(patchcoordfix, funct);
 
     // evaluate gradient of projection X of node P at current position \eta_1,\eta_2 on the patch
     // gradprojX(i,j) = patchcoord(i,k)*deriv(j,k)
-    gradprojX.Clear();
+    gradprojX.clear();
     gradprojX.MultiplyNT(patchcoordfix, deriv);
 
     //---------------------------------------------------
     // build system of equations F and its gradient gradF
     //---------------------------------------------------
     // TODO documentaton missing
-    f.Clear();
-    gradf.Clear();
-    incr.Clear();
+    f.clear();
+    gradf.clear();
+    incr.clear();
     for (size_t icoord = 0; icoord < nsd; ++icoord)
     {
       // evaluate function f

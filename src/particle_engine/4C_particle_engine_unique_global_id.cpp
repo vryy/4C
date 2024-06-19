@@ -29,12 +29,12 @@ PARTICLEENGINE::UniqueGlobalIdHandler::UniqueGlobalIdHandler(
   // empty constructor
 }
 
-void PARTICLEENGINE::UniqueGlobalIdHandler::Init()
+void PARTICLEENGINE::UniqueGlobalIdHandler::init()
 {
   // nothing to do
 }
 
-void PARTICLEENGINE::UniqueGlobalIdHandler::Setup()
+void PARTICLEENGINE::UniqueGlobalIdHandler::setup()
 {
   // nothing to do
 }

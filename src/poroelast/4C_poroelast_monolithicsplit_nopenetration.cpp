@@ -64,7 +64,7 @@ void PoroElast::MonolithicSplitNoPenetration::SetupSystem()
     std::vector<int> coupleddof(ndim + 1, 1);
     coupleddof[ndim] = 0;
 
-    mortar_adapter_->Setup(structure_field()->discretization(), fluid_field()->discretization(),
+    mortar_adapter_->setup(structure_field()->discretization(), fluid_field()->discretization(),
         coupleddof, "FSICoupling");
   }
 
@@ -82,7 +82,7 @@ void PoroElast::MonolithicSplitNoPenetration::SetupSystem()
     // full Poroelasticity-map
     fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
     // full Poroelasticity-blockmap
-    blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+    blockrowdofmap_->setup(*fullmap_, vecSpaces);
   }
 
   // Switch fluid to interface split block matrix
@@ -255,7 +255,7 @@ void PoroElast::MonolithicSplitNoPenetration::setup_system_matrix(
   /*----------------------------------------------------------------------*/
 
   // just to play it safe ...
-  mat.Reset();
+  mat.reset();
 
   // build block matrix
   // The maps of the block matrix have to match the maps of the blocks we
@@ -577,10 +577,10 @@ void PoroElast::MonolithicSplitNoPenetration::recover_lagrange_multiplier_after_
   // we do not need to recover after a time step, it is done after every newton step
 }
 
-void PoroElast::MonolithicSplitNoPenetration::Update()
+void PoroElast::MonolithicSplitNoPenetration::update()
 {
   // call base class
-  MonolithicSplit::Update();
+  MonolithicSplit::update();
 
   // update lagrangean multiplier
   lambda_->Update(1.0, *lambdanp_, 0.0);
@@ -590,10 +590,10 @@ void PoroElast::MonolithicSplitNoPenetration::Update()
       *k_d_, Core::LinAlg::Copy));  // store D-Matrix from last timestep
 }
 
-void PoroElast::MonolithicSplitNoPenetration::Output(bool forced_writerestart)
+void PoroElast::MonolithicSplitNoPenetration::output(bool forced_writerestart)
 {
   // call base class
-  MonolithicSplit::Output(forced_writerestart);
+  MonolithicSplit::output(forced_writerestart);
 
   // for now, we always write the lagrange multiplier
   Teuchos::RCP<Epetra_Vector> fulllambda =
@@ -682,7 +682,7 @@ void PoroElast::MonolithicSplitNoPenetration::read_restart(const int step)
     // call an additional evaluate to get the old D matrix
     SetupSystem();
     // call evaluate to recalculate D matrix
-    Evaluate(zeros_, false);
+    evaluate(zeros_, false);
 
     // copy D matrix from current time step to old D matrix
     k_dn_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(

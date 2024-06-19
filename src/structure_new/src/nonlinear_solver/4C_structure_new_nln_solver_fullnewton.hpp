@@ -40,7 +40,7 @@ namespace STR
         FullNewton();
 
         //! derived from the base class
-        void Setup() override;
+        void setup() override;
 
        private:
         //! set the full newton parameters in the nox parameter list

@@ -99,7 +99,7 @@ namespace STR
      * \param[in] int_ptr ??
      * \param[in] timint_ptr Pointer to the underlying time integrator (read-only)
      */
-    void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
+    void init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
         const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_ptr,
         const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
         const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
@@ -107,7 +107,7 @@ namespace STR
         const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
 
     //! setup
-    void Setup();
+    void setup();
 
     //! setup the MultiMapExtractor in the global state
     void setup_multi_map_extractor();
@@ -504,10 +504,10 @@ namespace STR
         const std::vector<Inpar::STR::ModelType>& only_these_models) const;
 
    private:
-    //! Flag to indicate whether Init() has been called
+    //! Flag to indicate whether init() has been called
     bool isinit_;
 
-    //! Flag to indicate whether Setup() has been called
+    //! Flag to indicate whether setup() has been called
     bool issetup_;
 
     Teuchos::RCP<STR::ModelEvaluator::Map> me_map_ptr_;

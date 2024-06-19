@@ -15,9 +15,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::Elastic::PAR::Coup13aPow::Coup13aPow(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      c_(matdata.parameters.Get<double>("C")),
-      d_(matdata.parameters.Get<int>("D")),
-      a_(matdata.parameters.Get<double>("A"))
+      c_(matdata.parameters.get<double>("C")),
+      d_(matdata.parameters.get<int>("D")),
+      a_(matdata.parameters.get<double>("A"))
 {
 }
 

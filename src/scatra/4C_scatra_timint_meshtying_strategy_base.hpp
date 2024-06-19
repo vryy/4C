@@ -193,7 +193,7 @@ namespace ScaTra
     virtual Teuchos::RCP<Core::LinAlg::MultiMapExtractor> InterfaceMaps() const = 0;
 
     //! output solution for post-processing
-    virtual void Output() const { return; };
+    virtual void output() const { return; };
 
     //! output restart information
     virtual void write_restart() const {};
@@ -265,7 +265,7 @@ namespace ScaTra
     virtual const Core::LinAlg::Solver& Solver() const = 0;
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
-    virtual void Update() const { return; };
+    virtual void update() const { return; };
 
    protected:
     //! instantiate strategy for Newton-Raphson convergence check

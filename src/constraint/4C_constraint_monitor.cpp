@@ -30,7 +30,7 @@ CONSTRAINTS::Monitor::Monitor(Teuchos::RCP<Core::FE::Discretization> discr,
     montype_ = get_moni_type(conditionname);
     for (auto& i : moncond_)
     {
-      int condID = i->parameters().Get<int>("ConditionID");
+      int condID = i->parameters().get<int>("ConditionID");
 
       if (condID > maxID)
       {
@@ -68,7 +68,7 @@ CONSTRAINTS::Monitor::MoniType CONSTRAINTS::Monitor::get_moni_type(const std::st
 |(public)                                                        tk 07/08|
 |Evaluate Monitors, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void CONSTRAINTS::Monitor::Evaluate(
+void CONSTRAINTS::Monitor::evaluate(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   switch (montype_)
@@ -108,7 +108,7 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
   for (auto* cond : moncond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    const int condID = cond->parameters().Get<int>("ConditionID");
+    const int condID = cond->parameters().get<int>("ConditionID");
     const int offsetID = params.get("OffsetID", 0);
     params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 
@@ -137,7 +137,7 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
       elevector3.size(1);
 
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(
+      int err = curr->second->evaluate(
           params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 

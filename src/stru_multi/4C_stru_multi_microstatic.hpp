@@ -129,7 +129,7 @@ namespace MultiScale
     \brief Write output and (possibly) restart
 
     */
-    void Output(Teuchos::RCP<Core::IO::DiscretizationWriter> output, const double time,
+    void output(Teuchos::RCP<Core::IO::DiscretizationWriter> output, const double time,
         const int istep, const double dt);
 
     /*!
@@ -349,9 +349,9 @@ namespace MultiScale
       return MultiScale::MicroStaticParObjectType::Instance().UniqueParObjectId();
     };
 
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     struct MicroStaticData
     {

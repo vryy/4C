@@ -46,7 +46,7 @@ BEAMINTERACTION::BeamLinkRigidJointed::BeamLinkRigidJointed(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::Init(const int id,
+void BEAMINTERACTION::BeamLinkRigidJointed::init(const int id,
     const std::vector<std::pair<int, int>>& eleids,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
@@ -54,7 +54,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Init(const int id,
 {
   issetup_ = false;
 
-  BeamLink::Init(id, eleids, initpos, inittriad, linkertype, timelinkwasset);
+  BeamLink::init(id, eleids, initpos, inittriad, linkertype, timelinkwasset);
 
   // *** initialization of the two triads of the connecting element ***
 
@@ -196,7 +196,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Init(const int id,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::Setup(const int matnum)
+void BEAMINTERACTION::BeamLinkRigidJointed::setup(const int matnum)
 {
   check_init();
 
@@ -205,7 +205,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::Pack(Core::Communication::PackBuffer& data) const
+void BEAMINTERACTION::BeamLinkRigidJointed::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -213,7 +213,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Pack(Core::Communication::PackBuffer
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  BeamLink::Pack(data);
+  BeamLink::pack(data);
 
   // bspottriad1_
   add_to_pack(data, bspottriad1_);
@@ -229,7 +229,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Pack(Core::Communication::PackBuffer
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::Unpack(const std::vector<char>& data)
+void BEAMINTERACTION::BeamLinkRigidJointed::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -238,7 +238,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Unpack(const std::vector<char>& data
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  BeamLink::Unpack(basedata);
+  BeamLink::unpack(basedata);
 
   // bspottriad1_
   extract_from_pack(position, data, bspottriad1_);
@@ -274,7 +274,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::ResetState(
   currenttriad.Multiply(bspottriad[0], lambdarel1_);
   Core::LargeRotations::triadtoquaternion<double>(currenttriad, bspottriad1_);
 
-  currenttriad.Clear();
+  currenttriad.clear();
   currenttriad.Multiply(bspottriad[1], lambdarel2_);
   Core::LargeRotations::triadtoquaternion<double>(currenttriad, bspottriad2_);
 }

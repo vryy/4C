@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Mat::PAR::ScatraMatPoroECM::ScatraMatPoroECM(const Core::Mat::PAR::Parameter::Data& matdata)
-    : ScatraReactionMat(matdata), reacscale_(matdata.parameters.Get<double>("REACSCALE"))
+    : ScatraReactionMat(matdata), reacscale_(matdata.parameters.get<double>("REACSCALE"))
 {
 }
 
@@ -37,7 +37,7 @@ Mat::ScatraMatPoroECMType Mat::ScatraMatPoroECMType::instance_;
 Core::Communication::ParObject* Mat::ScatraMatPoroECMType::Create(const std::vector<char>& data)
 {
   Mat::ScatraMatPoroECM* scatra_mat = new Mat::ScatraMatPoroECM();
-  scatra_mat->Unpack(data);
+  scatra_mat->unpack(data);
   return scatra_mat;
 }
 
@@ -56,7 +56,7 @@ Mat::ScatraMatPoroECM::ScatraMatPoroECM(Mat::PAR::ScatraMatPoroECM* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraMatPoroECM::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ScatraMatPoroECM::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -73,12 +73,12 @@ void Mat::ScatraMatPoroECM::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, reaccoeff_);
 
   // add base class material
-  ScatraReactionMat::Pack(data);
+  ScatraReactionMat::pack(data);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraMatPoroECM::Unpack(const std::vector<char>& data)
+void Mat::ScatraMatPoroECM::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -107,7 +107,7 @@ void Mat::ScatraMatPoroECM::Unpack(const std::vector<char>& data)
   // extract base class material
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  ScatraReactionMat::Unpack(basedata);
+  ScatraReactionMat::unpack(basedata);
 }
 
 /*----------------------------------------------------------------------*/

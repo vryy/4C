@@ -194,9 +194,9 @@ namespace Core::FADUtils
       Core::LinAlg::Matrix<3, 1, type> first_vector, Core::LinAlg::Matrix<3, 1, type> second_vector)
   {
     Core::LinAlg::Matrix<3, 1, type> result_vector;
-    result_vector.Clear();
+    result_vector.clear();
     Core::LinAlg::Matrix<3, 3, type> S_first_vector;
-    S_first_vector.Clear();
+    S_first_vector.clear();
 
     S_first_vector(0, 0) = 0.0;
     S_first_vector(0, 1) = -first_vector(2);

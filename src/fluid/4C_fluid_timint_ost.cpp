@@ -39,11 +39,11 @@ FLD::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::RCP<Core::FE::Discret
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::Init()
+void FLD::TimIntOneStepTheta::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  FLD::FluidImplicitTimeInt::Init();
+  FLD::FluidImplicitTimeInt::init();
 
   // check, if starting algorithm is desired
   if (numstasteps_ > 0)
@@ -188,7 +188,7 @@ void FLD::TimIntOneStepTheta::set_element_time_parameter()
   eleparams.set<bool>("ost new", params_->get<bool>("ost new"));
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 

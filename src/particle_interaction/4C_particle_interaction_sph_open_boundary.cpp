@@ -37,12 +37,12 @@ ParticleInteraction::SPHOpenBoundaryBase::SPHOpenBoundaryBase(const Teuchos::Par
   // empty constructor
 }
 
-void ParticleInteraction::SPHOpenBoundaryBase::Init()
+void ParticleInteraction::SPHOpenBoundaryBase::init()
 {
   // nothing to do
 }
 
-void ParticleInteraction::SPHOpenBoundaryBase::Setup(
+void ParticleInteraction::SPHOpenBoundaryBase::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
     const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
@@ -206,10 +206,10 @@ ParticleInteraction::SPHOpenBoundaryDirichlet::SPHOpenBoundaryDirichlet(
   // empty constructor
 }
 
-void ParticleInteraction::SPHOpenBoundaryDirichlet::Init()
+void ParticleInteraction::SPHOpenBoundaryDirichlet::init()
 {
   // call base class init
-  SPHOpenBoundaryBase::Init();
+  SPHOpenBoundaryBase::init();
 
   // init function id of prescribed state
   prescribedstatefunctid_ = params_sph_.get<int>("DIRICHLET_FUNCT");
@@ -253,7 +253,7 @@ void ParticleInteraction::SPHOpenBoundaryDirichlet::Init()
   openboundaryphase_ = PARTICLEENGINE::DirichletPhase;
 }
 
-void ParticleInteraction::SPHOpenBoundaryDirichlet::Setup(
+void ParticleInteraction::SPHOpenBoundaryDirichlet::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
     const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
@@ -261,7 +261,7 @@ void ParticleInteraction::SPHOpenBoundaryDirichlet::Setup(
     const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // call base class setup
-  SPHOpenBoundaryBase::Setup(
+  SPHOpenBoundaryBase::setup(
       particleengineinterface, kernel, particlematerial, equationofstatebundle, neighborpairs);
 
   // setup states of ghosted particles to refresh
@@ -303,7 +303,7 @@ void ParticleInteraction::SPHOpenBoundaryDirichlet::prescribe_open_boundary_stat
     double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
 
     // evaluate function to set velocity
-    UTILS::VecSetScale(vel_i, -function.Evaluate(pos_i, evaltime, 0), outwardnormal_.data());
+    UTILS::VecSetScale(vel_i, -function.evaluate(pos_i, evaltime, 0), outwardnormal_.data());
   }
 }
 
@@ -410,10 +410,10 @@ ParticleInteraction::SPHOpenBoundaryNeumann::SPHOpenBoundaryNeumann(
   // empty constructor
 }
 
-void ParticleInteraction::SPHOpenBoundaryNeumann::Init()
+void ParticleInteraction::SPHOpenBoundaryNeumann::init()
 {
   // call base class init
-  SPHOpenBoundaryBase::Init();
+  SPHOpenBoundaryBase::init();
 
   // init function id of prescribed state
   prescribedstatefunctid_ = params_sph_.get<int>("NEUMANN_FUNCT");
@@ -454,7 +454,7 @@ void ParticleInteraction::SPHOpenBoundaryNeumann::Init()
   openboundaryphase_ = PARTICLEENGINE::NeumannPhase;
 }
 
-void ParticleInteraction::SPHOpenBoundaryNeumann::Setup(
+void ParticleInteraction::SPHOpenBoundaryNeumann::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
     const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
@@ -462,7 +462,7 @@ void ParticleInteraction::SPHOpenBoundaryNeumann::Setup(
     const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // call base class setup
-  SPHOpenBoundaryBase::Setup(
+  SPHOpenBoundaryBase::setup(
       particleengineinterface, kernel, particlematerial, equationofstatebundle, neighborpairs);
 
   // setup states of ghosted particles to refresh
@@ -513,7 +513,7 @@ void ParticleInteraction::SPHOpenBoundaryNeumann::prescribe_open_boundary_states
       double* press_i = container_i->GetPtrToState(PARTICLEENGINE::Pressure, particle_i);
 
       // evaluate function to set pressure
-      press_i[0] = function.Evaluate(pos_i, evaltime, 0);
+      press_i[0] = function.evaluate(pos_i, evaltime, 0);
     }
   }
   else

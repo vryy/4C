@@ -23,9 +23,9 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams::BrokenRationalConstitutiveLawParams(
     const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container)
     : CONTACT::CONSTITUTIVELAW::Parameter(container),
-      a_(container->Get<double>("A")),
-      b_(container->Get<double>("B")),
-      c_(container->Get<double>("C"))
+      a_(container->get<double>("A")),
+      b_(container->get<double>("B")),
+      c_(container->get<double>("C"))
 {
 }
 /*----------------------------------------------------------------------*/
@@ -46,7 +46,7 @@ CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::BrokenRationalConstitut
 /*----------------------------------------------------------------------*
  |  Evaluate the contact constitutive law|
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::Evaluate(
+double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate(
     double gap, CONTACT::Node* cnode)
 {
   if (gap + params_->GetOffset() > 0)

@@ -94,7 +94,7 @@ Core::FE::CellType Discret::ELEMENTS::FluidIntFace::Shape() const
  |  Pack data                                                  (public) |
  |                                                         schott 03/12 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidIntFace::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::FluidIntFace::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this FluidIntFace element does not support communication");
   return;
@@ -104,7 +104,7 @@ void Discret::ELEMENTS::FluidIntFace::Pack(Core::Communication::PackBuffer& data
  |  Unpack data                                                (public) |
  |                                                         schott 03/12 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidIntFace::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidIntFace::unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this FluidIntFace element does not support communication");
   return;
@@ -593,7 +593,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidIntFa
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                          schott 03/12 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::FluidIntFace::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::FluidIntFace::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,

@@ -41,7 +41,7 @@ namespace ScaTra
 
 
     //! setup algorithm
-    void Setup() override;
+    void setup() override;
 
     //! time update of time-dependent materials
     virtual void element_material_time_update();

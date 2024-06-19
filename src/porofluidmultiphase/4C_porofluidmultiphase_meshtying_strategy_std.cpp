@@ -40,7 +40,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::prepare_time_step() { return; }
  | current solution becomes most recent solution of next timestep       |
  |                                                     kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Update() { return; }
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::update() { return; }
 
 /*--------------------------------------------------------------------------*
  | initialize the linear solver                            kremheller 07/20 |
@@ -97,12 +97,12 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::read_restart(const int step) { r
 /*----------------------------------------------------------------------*
  | output of solution vector to BINIO                  kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Output() { return; }
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::output() { return; }
 
 /*----------------------------------------------------------------------*
  | evaluate matrix and rhs                             kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Evaluate() { return; }
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::evaluate() { return; }
 
 /*----------------------------------------------------------------------*
  | extract and update                                  kremheller 04/18 |
@@ -144,7 +144,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::SetNearbyElePairs(
 /*-------------------------------------------------------------------------*
  | setup the strategy                                     kremheller 03/19 |
  *------------------------------------------------------------------------ */
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Setup() { return; }
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::setup() { return; }
 
 /*----------------------------------------------------------------------*
  | apply mesh movement                                 kremheller 06/18 |

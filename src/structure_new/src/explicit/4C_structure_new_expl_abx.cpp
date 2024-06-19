@@ -35,12 +35,12 @@ STR::EXPLICIT::AdamsBashforthX<TOrder>::AdamsBashforthX()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
-void STR::EXPLICIT::AdamsBashforthX<TOrder>::Setup()
+void STR::EXPLICIT::AdamsBashforthX<TOrder>::setup()
 {
   check_init();
 
-  // Call the Setup() of the abstract base class first.
-  Generic::Setup();
+  // Call the setup() of the abstract base class first.
+  Generic::setup();
 
   // ---------------------------------------------------------------------------
   // setup pointers to the force vectors of the global state data container

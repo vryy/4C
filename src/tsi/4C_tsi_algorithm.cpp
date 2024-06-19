@@ -64,7 +64,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   // get the problem instance
   Global::Problem* problem = Global::Problem::Instance();
   // get the restart step
-  const int restart = problem->Restart();
+  const int restart = problem->restart();
 
   if (!matchinggrid_)
   {
@@ -74,7 +74,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     Teuchos::RCP<Core::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy =
         Teuchos::rcp(new TSI::UTILS::TSIMaterialStrategy());
     // init coupling adapter projection matrices
-    volcoupl_->Init(Global::Problem::Instance()->NDim(), structdis, thermodis, nullptr, nullptr,
+    volcoupl_->init(Global::Problem::Instance()->NDim(), structdis, thermodis, nullptr, nullptr,
         nullptr, nullptr, materialstrategy);
     // redistribute discretizations to meet needs of volmortar coupling
     Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
@@ -83,7 +83,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
         binning_params);
     volcoupl_->Redistribute(binning_params, Global::Problem::Instance()->OutputControlFile());
     // setup projection matrices
-    volcoupl_->Setup(Global::Problem::Instance()->VolmortarParams());
+    volcoupl_->setup(Global::Problem::Instance()->VolmortarParams());
   }
 
   if (Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(
@@ -102,7 +102,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
     Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr =
         Adapter::build_structure_algorithm(sdyn);
-    adapterbase_ptr->Init(Global::Problem::Instance()->TSIDynamicParams(),
+    adapterbase_ptr->init(Global::Problem::Instance()->TSIDynamicParams(),
         const_cast<Teuchos::ParameterList&>(sdyn), structdis);
 
     // set the temperature; Monolithic does this in it's own constructor with potentially
@@ -117,19 +117,19 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
             1, "temperature", volcoupl_->apply_vector_mapping12(ThermoField()->Tempnp()));
     }
 
-    adapterbase_ptr->Setup();
+    adapterbase_ptr->setup();
     structure_ =
         Teuchos::rcp_dynamic_cast<Adapter::StructureWrapper>(adapterbase_ptr->structure_field());
 
     if (restart &&
         Core::UTILS::IntegralValue<Inpar::TSI::SolutionSchemeOverFields>(
             Global::Problem::Instance()->TSIDynamicParams(), "COUPALGO") == Inpar::TSI::Monolithic)
-      structure_->Setup();
+      structure_->setup();
 
     structure_field()->discretization()->ClearState(true);
   }
 
-  // initialise displacement field needed for Output()
+  // initialise displacement field needed for output()
   // (get noderowmap of discretisation for creating this multivector)
   // TODO: why nds 0 and not 1????
   dispnp_ = Teuchos::rcp(
@@ -176,8 +176,8 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 void TSI::Algorithm::update()
 {
   apply_thermo_coupling_state(ThermoField()->Tempnp());
-  structure_field()->Update();
-  ThermoField()->Update();
+  structure_field()->update();
+  ThermoField()->update();
   if (contact_strategy_lagrange_ != Teuchos::null)
     contact_strategy_lagrange_->Update((structure_field()->Dispnp()));
   return;
@@ -205,7 +205,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
   // output for thermofield:
   //========================
   apply_struct_coupling_state(structure_field()->Dispnp(), structure_field()->Velnp());
-  ThermoField()->Output(forced_writerestart);
+  ThermoField()->output(forced_writerestart);
 
   // communicate the deformation to the thermal field,
   // current displacements are contained in Dispn()
@@ -272,7 +272,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
   // output for structurefield:
   //===========================
   apply_thermo_coupling_state(ThermoField()->Tempnp());
-  structure_field()->Output(forced_writerestart);
+  structure_field()->output(forced_writerestart);
 
   // mapped temperatures for structure field
   if ((upres != 0 and (Step() % upres == 0)) or ((uprestart != 0) and (Step() % uprestart == 0)) or
@@ -309,7 +309,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
   // reset states
   structure_field()->discretization()->ClearState(true);
   ThermoField()->discretization()->ClearState(true);
-}  // Output()
+}  // output()
 
 
 /*----------------------------------------------------------------------*
@@ -484,8 +484,8 @@ void TSI::Algorithm::prepare_contact_strategy()
     // create the contact factory
     // ---------------------------------------------------------------------
     CONTACT::STRATEGY::Factory factory;
-    factory.Init(structure_field()->discretization());
-    factory.Setup();
+    factory.init(structure_field()->discretization());
+    factory.setup();
 
     // check the problem dimension
     factory.CheckDimension();

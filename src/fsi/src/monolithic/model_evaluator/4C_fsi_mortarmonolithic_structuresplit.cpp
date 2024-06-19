@@ -251,7 +251,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
      */
     std::vector<int> coupleddof(ndim, 1);
 
-    coupsfm_->Setup(fluid_field()->discretization(), structure_field()->discretization(),
+    coupsfm_->setup(fluid_field()->discretization(), structure_field()->discretization(),
         ale_field()->write_access_discretization(), coupleddof, "FSICoupling", comm_,
         Global::Problem::Instance()->FunctionManager(), false);
 
@@ -327,7 +327,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
   // requires coupsf_ in order to map the nodal fluid forces on the structure nodes we have to do it
   // e.g. in here. But:
   // TODO: Move this to read_restart() when possible
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     const bool restartfrompartfsi =
@@ -945,7 +945,7 @@ void FSI::MortarMonolithicStructureSplit::update()
     fluid_field()->apply_interface_velocities(unew);
   }
 
-  // call Update()-routine in base class to handle the single fields
+  // call update()-routine in base class to handle the single fields
   FSI::BlockMonolithic::update();
 }
 
@@ -1374,12 +1374,12 @@ void FSI::MortarMonolithicStructureSplit::extract_field_vectors(Teuchos::RCP<con
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicStructureSplit::output()
 {
-  structure_field()->Output();
+  structure_field()->output();
 
   // output Lagrange multiplier
   OutputLambda();
 
-  fluid_field()->Output();
+  fluid_field()->output();
 
   if (aleproj_ != Inpar::FSI::ALEprojection_none)
   {
@@ -1391,7 +1391,7 @@ void FSI::MortarMonolithicStructureSplit::output()
       slideale_->output_restart(*fluid_field()->DiscWriter());
     }
   }
-  ale_field()->Output();
+  ale_field()->output();
 
   if (structure_field()->get_constraint_manager()->HaveMonitor())
   {

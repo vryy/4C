@@ -28,7 +28,7 @@ Adapter::PASIStructureWrapper::PASIStructureWrapper(Teuchos::RCP<Structure> stru
   // set-up PASI interface
   interface_ = Teuchos::rcp(new STR::MapExtractor);
 
-  interface_->Setup(*discretization(), *discretization()->dof_row_map());
+  interface_->setup(*discretization(), *discretization()->dof_row_map());
 }
 
 void Adapter::PASIStructureWrapper::ApplyInterfaceForce(Teuchos::RCP<const Epetra_Vector> intfforce)

@@ -38,16 +38,16 @@ BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
  *
  */
 template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam, solid>::Setup()
+void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam, solid>::setup()
 {
   check_init();
 
   // Call setup of base class first.
-  BeamContactPair::Setup();
+  BeamContactPair::setup();
 
   // Get the beam element data container
-  ele1posref_ = GEOMETRYPAIR::InitializeElementData<beam, double>::Initialize(Element1());
-  ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam, scalar_type>::Initialize(Element1());
+  ele1posref_ = GEOMETRYPAIR::InitializeElementData<beam, double>::initialize(Element1());
+  ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam, scalar_type>::initialize(Element1());
 
   // Set reference nodal positions (and tangents) for beam element
   for (unsigned int n = 0; n < beam::n_nodes_; ++n)
@@ -110,7 +110,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
     const std::vector<double>& solid_nodal_dofvec)
 {
   // Set the current configuration of the beam element
-  ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam, scalar_type>::Initialize(Element1());
+  ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam, scalar_type>::initialize(Element1());
   for (unsigned int i = 0; i < beam::n_dof_; i++)
     ele1pos_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + solid::n_dof_, i, beam_centerline_dofvec[i]);

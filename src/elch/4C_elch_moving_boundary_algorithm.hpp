@@ -39,10 +39,10 @@ namespace ElCh
 
 
     /// setup
-    void Setup() override;
+    void setup() override;
 
     /// init
-    void Init() override;
+    void init() override;
 
     /// outer level ELCH time loop
     void TimeLoop() override;

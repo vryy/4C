@@ -42,7 +42,7 @@ namespace PoroMultiPhaseScaTra
     PoroMultiPhaseScaTraFunction();
 
 
-    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+    double evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override = 0;
 
@@ -96,7 +96,7 @@ namespace PoroMultiPhaseScaTra
      */
     TumorGrowthLawHeaviside(const std::vector<std::pair<std::string, double>>& funct_params);
 
-    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+    double evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
@@ -137,7 +137,7 @@ namespace PoroMultiPhaseScaTra
      */
     NecrosisLawHeaviside(const std::vector<std::pair<std::string, double>>& funct_params);
 
-    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+    double evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
@@ -179,7 +179,7 @@ namespace PoroMultiPhaseScaTra
     OxygenConsumptionLawHeaviside(const std::vector<std::pair<std::string, double>>& funct_params);
 
 
-    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+    double evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
@@ -222,7 +222,7 @@ namespace PoroMultiPhaseScaTra
     TumorGrowthLawHeavisideOxy(const std::vector<std::pair<std::string, double>>& funct_params);
 
 
-    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+    double evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
@@ -264,7 +264,7 @@ namespace PoroMultiPhaseScaTra
     TumorGrowthLawHeavisideNecro(const std::vector<std::pair<std::string, double>>& funct_params);
 
 
-    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+    double evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
@@ -302,7 +302,7 @@ namespace PoroMultiPhaseScaTra
     OxygenTransvascularExchangeLawCont(
         const std::vector<std::pair<std::string, double>>& funct_params);
 
-    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+    double evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
@@ -341,7 +341,7 @@ namespace PoroMultiPhaseScaTra
         const std::vector<std::pair<std::string, double>>& funct_params);
 
 
-    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+    double evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const size_t component) const override;
 
@@ -383,7 +383,7 @@ namespace PoroMultiPhaseScaTra
     LungOxygenExchangeLaw(const std::vector<std::pair<std::string, double>>& funct_params);
 
 
-    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+    double evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const size_t component) const override;
 
@@ -437,7 +437,7 @@ namespace PoroMultiPhaseScaTra
      * \param[in] constants A vector containing a pair (variablename, value) for each
      * constant
      */
-    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+    double evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const size_t component) const override;
 

@@ -39,12 +39,12 @@ namespace PoroElast
     void SetupSystem() override;
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void Evaluate(
+    void evaluate(
         Teuchos::RCP<const Epetra_Vector> iterinc,  //!< increment between iteration i and i+1
         bool firstiter = false) override;
 
     //! use monolithic update and set old meshtying quantities at the end of a timestep
-    void Update() override;
+    void update() override;
 
     //! Recover Lagrange Multiplier after Newton step
     void recover_lagrange_multiplier_after_newton_step(

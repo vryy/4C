@@ -44,7 +44,7 @@ Mat::MembraneElastHyperType Mat::MembraneElastHyperType::instance_;
 Core::Communication::ParObject* Mat::MembraneElastHyperType::Create(const std::vector<char>& data)
 {
   Mat::MembraneElastHyper* memelhy = new Mat::MembraneElastHyper();
-  memelhy->Unpack(data);
+  memelhy->unpack(data);
 
   return memelhy;
 }  // Mat::Membrane_ElastHyperType::Create
@@ -69,7 +69,7 @@ Mat::MembraneElastHyper::MembraneElastHyper(Mat::PAR::MembraneElastHyper* params
 /*----------------------------------------------------------------------*
  |                                                       sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneElastHyper::Pack(Core::Communication::PackBuffer& data) const
+void Mat::MembraneElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -78,17 +78,17 @@ void Mat::MembraneElastHyper::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, type);
 
   // add base class Element
-  Mat::ElastHyper::Pack(data);
+  Mat::ElastHyper::pack(data);
 
   add_to_pack(data, fibervecs_);
 
   return;
-}  // Mat::MembraneElastHyper::Pack()
+}  // Mat::MembraneElastHyper::pack()
 
 /*----------------------------------------------------------------------*
  |                                                       sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneElastHyper::Unpack(const std::vector<char>& data)
+void Mat::MembraneElastHyper::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -97,25 +97,25 @@ void Mat::MembraneElastHyper::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Mat::ElastHyper::Unpack(basedata);
+  Mat::ElastHyper::unpack(basedata);
 
   extract_from_pack(position, data, fibervecs_);
 
   return;
-}  // Mat::MembraneElastHyper::Unpack()
+}  // Mat::MembraneElastHyper::unpack()
 
 /*----------------------------------------------------------------------*
  |                                                       sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::MembraneElastHyper::setup(int numgp, Input::LineDefinition* linedef)
 {
   // call setup of base class
-  Mat::ElastHyper::Setup(numgp, linedef);
+  Mat::ElastHyper::setup(numgp, linedef);
 
   GetFiberVecs(fibervecs_);
 
   return;
-}  // Mat::MembraneElastHyper::Setup()
+}  // Mat::MembraneElastHyper::setup()
 
 /*----------------------------------------------------------------------*
  | hyperelastic stress response plus elasticity tensor   sfuchs 08/2017 |
@@ -126,8 +126,8 @@ void Mat::MembraneElastHyper::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3>&
     Core::LinAlg::Matrix<3, 3>& cmat, const int gp, const int eleGID)
 {
   // blank resulting quantities
-  stress.Clear();
-  cmat.Clear();
+  stress.clear();
+  cmat.clear();
 
   // kinematic quantities and identity tensors
   Core::LinAlg::Matrix<3, 1> id2(true);

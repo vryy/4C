@@ -114,7 +114,7 @@ namespace Core::LargeRotations
   void angletotriad(
       const Core::LinAlg::Matrix<3, 1, T>& theta, Core::LinAlg::Matrix<3, 3, T>& triad)
   {
-    triad.Clear();
+    triad.clear();
     Core::LinAlg::Matrix<4, 1, T> quaternion(true);
     Core::LargeRotations::angletoquaternion(theta, quaternion);
     Core::LargeRotations::quaterniontotriad(quaternion, triad);
@@ -506,8 +506,8 @@ namespace Core::LargeRotations
     Core::LinAlg::Matrix<3, 3, T> rotation_matrix;
     Core::LinAlg::Matrix<4, 1, T> quaternion;
 
-    rotation_matrix.Clear();
-    quaternion.Clear();
+    rotation_matrix.clear();
+    quaternion.clear();
 
     rotation_matrix.MultiplyTN(triad_ref, triad);
     Core::LargeRotations::triadtoquaternion(rotation_matrix, quaternion);
@@ -523,8 +523,8 @@ namespace Core::LargeRotations
     Core::LinAlg::Matrix<3, 3, T> rotation_matrix;
     Core::LinAlg::Matrix<4, 1, T> quaternion;
 
-    rotation_matrix.Clear();
-    quaternion.Clear();
+    rotation_matrix.clear();
+    quaternion.clear();
 
     rotation_matrix.MultiplyNT(triad, triad_ref);
     Core::LargeRotations::triadtoquaternion(rotation_matrix, quaternion);

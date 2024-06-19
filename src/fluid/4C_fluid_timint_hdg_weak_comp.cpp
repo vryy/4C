@@ -40,7 +40,7 @@ FLD::TimIntHDGWeakComp::TimIntHDGWeakComp(const Teuchos::RCP<Core::FE::Discretiz
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                  laspina 08/19 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDGWeakComp::Init()
+void FLD::TimIntHDGWeakComp::init()
 {
   Core::FE::DiscretizationHDG* hdgdis = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
@@ -82,7 +82,7 @@ void FLD::TimIntHDGWeakComp::Init()
       Teuchos::rcp(new Epetra_Map(-1, dofmapvec_w.size(), dofmapvec_w.data(), 0, hdgdis->Comm()));
 
   // build density/momentum (actually velocity/pressure) splitter
-  velpressplitter_->Setup(*hdgdis->dof_row_map(), dofmap_r, dofmap_w);
+  velpressplitter_->setup(*hdgdis->dof_row_map(), dofmap_r, dofmap_w);
 
   // implement ost and bdf2 through gen-alpha facilities
   if (timealgo_ == Inpar::FLUID::timeint_bdf2)
@@ -108,9 +108,9 @@ void FLD::TimIntHDGWeakComp::Init()
   timealgoset_ = timealgo_;
   timealgo_ = Inpar::FLUID::timeint_afgenalpha;
 
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  FLD::TimIntGenAlpha::Init();
+  FLD::TimIntGenAlpha::init();
 }
 
 
@@ -344,7 +344,7 @@ void FLD::TimIntHDGWeakComp::IterUpdate(const Teuchos::RCP<const Epetra_Vector> 
     ele->LocationVector(*discret_, la, false);
 
     // evaluate interior local increments
-    ele->Evaluate(params, *discret_, la[0].lm_, dummyMat, dummyMat, elemintinc, dummyVec, dummyVec);
+    ele->evaluate(params, *discret_, la[0].lm_, dummyMat, dummyMat, elemintinc, dummyVec, dummyVec);
 
     // fill the interior increment vector for all the discretization
     if (ele->Owner() == discret_->Comm().MyPID())
@@ -445,7 +445,7 @@ void FLD::TimIntHDGWeakComp::SetInitialFlowField(
       elevec1.size(la[0].lm_.size());
     if (elevec2.numRows() != discret_->NumDof(1, ele)) elevec2.size(discret_->NumDof(1, ele));
 
-    ele->Evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
+    ele->evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
 
     // now fill the ele vector into the discretization
     for (unsigned int i = 0; i < la[0].lm_.size(); ++i)
@@ -627,9 +627,9 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
 /*------------------------------------------------------------------------------------------------*
  |
  *------------------------------------------------------------------------------------------------*/
-void FLD::TimIntHDGWeakComp::Reset(bool completeReset, int numsteps, int iter)
+void FLD::TimIntHDGWeakComp::reset(bool completeReset, int numsteps, int iter)
 {
-  FluidImplicitTimeInt::Reset(completeReset, numsteps, iter);
+  FluidImplicitTimeInt::reset(completeReset, numsteps, iter);
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
   intvelnp_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
   intvelaf_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
@@ -684,7 +684,7 @@ namespace
       if (interpolVec.numRows() == 0)
         interpolVec.resize(ele->num_node() * (msd + 1 + ndim + 1 + ndim));
 
-      ele->Evaluate(params, dis, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
+      ele->evaluate(params, dis, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
       // sum values on nodes into vectors and record the touch count (build average of values)
       for (int i = 0; i < ele->num_node(); ++i)
@@ -715,7 +715,7 @@ namespace
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                      laspina 08/19|
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDGWeakComp::Output()
+void FLD::TimIntHDGWeakComp::output()
 {
   // output of solution, currently only small subset of functionality
   if (step_ % upres_ == 0)

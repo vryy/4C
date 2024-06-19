@@ -39,7 +39,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
 
       /// initialize
-      virtual void Initialize() = 0;
+      virtual void initialize() = 0;
 
       /// return type of phase law
       virtual Core::Materials::MaterialType PoroPhaseLawType() const = 0;
@@ -76,7 +76,7 @@ namespace Mat
       explicit FluidPoroPhaseDofPressure(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// initialize
-      void Initialize() override;
+      void initialize() override;
 
       /// return type of phase law
       Core::Materials::MaterialType PoroPhaseLawType() const override;
@@ -118,7 +118,7 @@ namespace Mat
       explicit FluidPoroPhaseDofDiffPressure(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// initialize
-      void Initialize() override;
+      void initialize() override;
 
       /// return type of phase law
       Core::Materials::MaterialType PoroPhaseLawType() const override;
@@ -162,7 +162,7 @@ namespace Mat
       explicit FluidPoroPhaseDofSaturation(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// initialize
-      void Initialize() override;
+      void initialize() override;
 
       /// return type of phase law
       Core::Materials::MaterialType PoroPhaseLawType() const override;

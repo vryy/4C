@@ -84,7 +84,7 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_scatra_thermo_dom
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // assemble scatra-thermo matrix block
-  sca_tra_field()->discretization()->Evaluate(eleparams, strategyscatrathermo);
+  sca_tra_field()->discretization()->evaluate(eleparams, strategyscatrathermo);
 
   // remove state vectors from scalar transport discretization
   sca_tra_field()->discretization()->ClearState();
@@ -144,7 +144,7 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_thermo_scatra_dom
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // assemble thermo-scatra matrix block
-  thermo_field()->discretization()->Evaluate(eleparams, strategythermoscatra);
+  thermo_field()->discretization()->evaluate(eleparams, strategythermoscatra);
 
   // finalize thermo-scatra matrix block
   switch (sca_tra_field()->MatrixType())
@@ -308,7 +308,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_scatra_thermo_inter
   for (const auto& kinetics_slave_cond :
       meshtying_strategy_sca_tra()->kinetics_conditions_meshtying_slave_side())
   {
-    if (kinetics_slave_cond.second->parameters().Get<int>("kinetic model") !=
+    if (kinetics_slave_cond.second->parameters().get<int>("kinetic model") !=
         static_cast<int>(Inpar::S2I::kinetics_nointerfaceflux))
     {
       // collect condition specific data and store to scatra boundary parameter class
@@ -316,7 +316,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_scatra_thermo_inter
           *kinetics_slave_cond.second);
       // evaluate the condition
       sca_tra_field()->discretization()->evaluate_condition(condparams, strategyscatrathermos2i,
-          "S2IKinetics", kinetics_slave_cond.second->parameters().Get<int>("ConditionID"));
+          "S2IKinetics", kinetics_slave_cond.second->parameters().get<int>("ConditionID"));
     }
   }
 
@@ -487,7 +487,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
   for (const auto& kinetics_slave_cond :
       meshtying_strategy_thermo()->kinetics_conditions_meshtying_slave_side())
   {
-    if (kinetics_slave_cond.second->parameters().Get<int>("kinetic model") !=
+    if (kinetics_slave_cond.second->parameters().get<int>("kinetic model") !=
         static_cast<int>(Inpar::S2I::kinetics_nointerfaceflux))
     {
       // collect condition specific data and store to scatra boundary parameter class
@@ -495,7 +495,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
           *kinetics_slave_cond.second);
       // evaluate the condition
       thermo_field()->discretization()->evaluate_condition(condparams, strategythermoscatras2i,
-          "S2IKinetics", kinetics_slave_cond.second->parameters().Get<int>("ConditionID"));
+          "S2IKinetics", kinetics_slave_cond.second->parameters().get<int>("ConditionID"));
     }
   }
 
@@ -654,7 +654,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
   for (const auto& condition : conditions)
   {
     // consider conditions for slave side only
-    if (condition->parameters().Get<int>("interface side") == Inpar::S2I::side_slave)
+    if (condition->parameters().get<int>("interface side") == Inpar::S2I::side_slave)
     {
       // add condition to parameter list
       condparams.set<Core::Conditions::Condition*>("condition", condition);
@@ -664,7 +664,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
       // evaluate mortar integration cells
       meshtying_strategy_sca_tra()->evaluate_mortar_cells(
           meshtying_strategy_sca_tra()->mortar_discretization(
-              condition->parameters().Get<int>("ConditionID")),
+              condition->parameters().get<int>("ConditionID")),
           condparams, strategyscatrathermos2i);
     }
   }
@@ -800,7 +800,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
   for (const auto& condition : conditions)
   {
     // consider conditions for slave side only
-    if (condition->parameters().Get<int>("interface side") == Inpar::S2I::side_slave)
+    if (condition->parameters().get<int>("interface side") == Inpar::S2I::side_slave)
     {
       // add condition to parameter list
       condparams.set<Core::Conditions::Condition*>("condition", condition);
@@ -810,7 +810,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
       // evaluate mortar integration cells
       meshtying_strategy_thermo()->evaluate_mortar_cells(
           meshtying_strategy_thermo()->mortar_discretization(
-              condition->parameters().Get<int>("ConditionID")),
+              condition->parameters().get<int>("ConditionID")),
           condparams, strategythermoscatras2i);
     }
   }

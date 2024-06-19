@@ -130,7 +130,7 @@ void XFEM::ConditionManager::GetCouplingIds(const Core::FE::Discretization& cond
   for (size_t s = 0; s < conditions.size(); ++s)
   {
     Core::Conditions::Condition* cond = conditions[s];
-    const int couplingID = cond->parameters().Get<int>("label");
+    const int couplingID = cond->parameters().get<int>("label");
 
     coupling_ids.insert(couplingID);
   }
@@ -287,7 +287,7 @@ void XFEM::ConditionManager::create_new_mesh_coupling(const std::string& cond_na
   AddMeshCoupling(cond_name, cond_dis, coupling_id);
 }
 
-void XFEM::ConditionManager::Init()
+void XFEM::ConditionManager::init()
 {
   issetup_ = false;
 
@@ -295,21 +295,21 @@ void XFEM::ConditionManager::Init()
   // loop all mesh coupling objects
   for (int mc = 0; mc < (int)mesh_coupl_.size(); mc++)
   {
-    mesh_coupl_[mc]->Init();
+    mesh_coupl_[mc]->init();
   }
 
   //--------------------------------------------------------
   // loop all levelset coupling objects
   for (int lc = 0; lc < (int)levelset_coupl_.size(); lc++)
   {
-    levelset_coupl_[lc]->Init();
+    levelset_coupl_[lc]->init();
   }
 
   isinit_ = true;
 }
 
 
-void XFEM::ConditionManager::Setup()
+void XFEM::ConditionManager::setup()
 {
   check_init();
 
@@ -319,14 +319,14 @@ void XFEM::ConditionManager::Setup()
   // loop all mesh coupling objects
   for (int mc = 0; mc < (int)mesh_coupl_.size(); mc++)
   {
-    mesh_coupl_[mc]->Setup();
+    mesh_coupl_[mc]->setup();
   }
 
   //--------------------------------------------------------
   // loop all levelset coupling objects
   for (int lc = 0; lc < (int)levelset_coupl_.size(); lc++)
   {
-    levelset_coupl_[lc]->Setup();
+    levelset_coupl_[lc]->setup();
   }
 
   create();
@@ -775,13 +775,13 @@ void XFEM::ConditionManager::gmsh_output_discretization(std::ostream& gmshfileco
   }
 }
 
-void XFEM::ConditionManager::Output(
+void XFEM::ConditionManager::output(
     const int step, const double time, const bool write_restart_data)
 {
   // loop all mesh coupling objects
   for (int mc = 0; mc < (int)mesh_coupl_.size(); mc++)
   {
-    mesh_coupl_[mc]->Output(step, time, write_restart_data);
+    mesh_coupl_[mc]->output(step, time, write_restart_data);
   }
 
   // output for combined levelset field
@@ -795,7 +795,7 @@ void XFEM::ConditionManager::Output(
   // loop all level set coupling objects
   for (int lc = 0; lc < (int)levelset_coupl_.size(); lc++)
   {
-    levelset_coupl_[lc]->Output(step, time, write_restart_data, lc);
+    levelset_coupl_[lc]->output(step, time, write_restart_data, lc);
   }
 }
 

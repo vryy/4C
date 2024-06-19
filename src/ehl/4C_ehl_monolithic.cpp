@@ -414,7 +414,7 @@ void EHL::Monolithic::NewtonFull()
     // field, here e.g. for structure field: field want the iteration increment
     // 1.) Update(iterinc_),
     // 2.) evaluate_force_stiff_residual(),
-    Evaluate(iterinc_);
+    evaluate(iterinc_);
 
     // create the linear system
     // \f$J(x_i) \Delta x_i = - R(x_i)\f$
@@ -438,7 +438,7 @@ void EHL::Monolithic::NewtonFull()
     double dtcpu = timernewton_.wallTime();
     // *********** time measurement ***********
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
-    // is done in prepare_system_for_newton_solve() within Evaluate(iterinc_)
+    // is done in prepare_system_for_newton_solve() within evaluate(iterinc_)
     linear_solve();
     // *********** time measurement ***********
     dtsolve_ = timernewton_.wallTime() - dtcpu;
@@ -523,7 +523,7 @@ void EHL::Monolithic::NewtonFull()
 /*----------------------------------------------------------------------*
  | evaluate the single fields                               wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
+void EHL::Monolithic::evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("EHL::Monolithic::Evaluate");
 
@@ -558,22 +558,22 @@ void EHL::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
   set_lubrication_solution(lubrication_->LubricationField()->Prenp());
 
   // structure Evaluate (builds tangent, residual and applies DBC)
-  structure_field()->Evaluate(sx);
+  structure_field()->evaluate(sx);
   structure_field()->discretization()->ClearState(true);
 
   /// lubrication field
 
   // lubrication Evaluate
   // (builds tangent, residual and applies DBC and recent coupling values)
-  lubrication_->LubricationField()->Evaluate();
+  lubrication_->LubricationField()->evaluate();
   lubrication_->LubricationField()->discretization()->ClearState(true);
 
-}  // Evaluate()
+}  // evaluate()
 
 
 
 /*----------------------------------------------------------------------*
- | extract field vectors for calling Evaluate() of the      wirtz 01/16 |
+ | extract field vectors for calling evaluate() of the      wirtz 01/16 |
  | single fields                                                        |
  *----------------------------------------------------------------------*/
 void EHL::Monolithic::extract_field_vectors(
@@ -643,7 +643,7 @@ void EHL::Monolithic::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epet
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
 
   // full EHL-blockmap
-  extractor()->Setup(*fullmap, maps);
+  extractor()->setup(*fullmap, maps);
 }  // set_dof_row_maps()
 
 
@@ -755,7 +755,7 @@ void EHL::Monolithic::setup_system_matrix()
 
   // Derivative of the lubrication interface force: df_lub/dp = B * dt/dp
 
-  k_sl_->Reset();
+  k_sl_->reset();
   k_sl_->UnComplete();
 
   // linearization of traction w.r.t. fluid pressure
@@ -808,7 +808,7 @@ void EHL::Monolithic::setup_system_matrix()
   // 4. Calculate and assemble k_ls (Linearization of lubrication residual wrt displacements)
   //----------------------------------------------------------------------------------------
 
-  k_ls_->Reset();
+  k_ls_->reset();
   k_ls_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       *(lubrication_->LubricationField()->discretization()->dof_row_map(0)), 81, false, true));
 
@@ -1488,7 +1488,7 @@ void EHL::Monolithic::apply_lubrication_coupl_matrix(
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the lubrication-mechanical system matrix on the lubrication element
-  lubrication_->LubricationField()->discretization()->Evaluate(lparams, lubricationstrategy);
+  lubrication_->LubricationField()->discretization()->evaluate(lparams, lubricationstrategy);
 
   matheight->Complete(*(lubrication_->LubricationField()->discretization()->dof_row_map(1)),
       *(lubrication_->LubricationField()->discretization()->dof_row_map(0)));

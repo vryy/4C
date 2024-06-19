@@ -279,7 +279,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   // requires coupsf_ in order to map the nodal fluid forces on the structure nodes we have to do it
   // e.g. in here. But:
   // TODO: Move this to read_restart() when possible
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     const bool restartfrompartfsi =
@@ -1241,13 +1241,13 @@ void FSI::MonolithicStructureSplit::extract_field_vectors(Teuchos::RCP<const Epe
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicStructureSplit::output()
 {
-  structure_field()->Output();
+  structure_field()->output();
 
   // output Lagrange multiplier
   OutputLambda();
 
-  fluid_field()->Output();
-  ale_field()->Output();
+  fluid_field()->output();
+  ale_field()->output();
 
   if (structure_field()->get_constraint_manager()->HaveMonitor())
   {

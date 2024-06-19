@@ -41,10 +41,10 @@ ElCh::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ElCh::MovingBoundaryAlgorithm::Init()
+void ElCh::MovingBoundaryAlgorithm::init()
 {
   // call setup in base class
-  Adapter::ScaTraFluidAleCouplingAlgorithm::Init();
+  Adapter::ScaTraFluidAleCouplingAlgorithm::init();
 
   // safety check
   if (!ScaTraField()->discretization()->GetCondition("ScaTraFluxCalc"))
@@ -61,10 +61,10 @@ void ElCh::MovingBoundaryAlgorithm::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ElCh::MovingBoundaryAlgorithm::Setup()
+void ElCh::MovingBoundaryAlgorithm::setup()
 {
   // call init in base class
-  Adapter::ScaTraFluidAleCouplingAlgorithm::Setup();
+  Adapter::ScaTraFluidAleCouplingAlgorithm::setup();
 
   // set pointers
   idispn_ = fluid_field()->extract_interface_veln();
@@ -103,7 +103,7 @@ void ElCh::MovingBoundaryAlgorithm::TimeLoop()
     fluid_field()->StatisticsAndOutput();
     if (algo_parameters().get<int>("RESTARTEVRY") != 0)
       fluid_field()->DiscWriter()->write_vector("idispn", idispnp_);
-    ale_field()->Output();
+    ale_field()->output();
   }
 
   // prepare scatra field
@@ -288,9 +288,9 @@ void ElCh::MovingBoundaryAlgorithm::solve_sca_tra()
 /*----------------------------------------------------------------------*/
 void ElCh::MovingBoundaryAlgorithm::update()
 {
-  fluid_field()->Update();
-  ale_field()->Update();
-  ScaTraField()->Update();
+  fluid_field()->update();
+  ale_field()->update();
+  ScaTraField()->update();
 
   // perform time shift of interface displacement
   idispn_->Update(1.0, *idispnp_, 0.0);
@@ -317,7 +317,7 @@ void ElCh::MovingBoundaryAlgorithm::output()
 
   // now the other physical fiels
   ScaTraField()->check_and_write_output_and_restart();
-  ale_field()->Output();
+  ale_field()->output();
 }
 
 

@@ -237,7 +237,7 @@ double BEAMINTERACTION::CalcPointLineDist(
       fabs(Core::FADUtils::VectorNorm<3>(Core::FADUtils::VectorProduct(vec1, tline)) /
            Core::FADUtils::VectorNorm<3>(tline));
 
-  vec1.Clear();
+  vec1.clear();
   vec1.Update(-1.0, rline_a, 0.0);
   vec1.Update(-1.0, rline_b, 1.0);
   vec1.Update(2.0, rp, 1.0);

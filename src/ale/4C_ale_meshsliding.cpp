@@ -42,17 +42,17 @@ void ALE::Meshsliding::AdapterMortar(std::vector<int> coupleddof)
       Global::Problem::Instance()->spatial_approximation_type()));
 
   // Setup and Output of Nonlinear meshtying adapter
-  adaptermeshsliding_->Setup(discret_, discret_, coupleddof, "Mortar");
+  adaptermeshsliding_->setup(discret_, discret_, coupleddof, "Mortar");
 }
 
 /*-------------------------------------------------------*/
 /*  Setup mesh sliding problem               wirtz 02/16 */
 /*                                                       */
 /*-------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshsliding::Setup(
+Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshsliding::setup(
     std::vector<int> coupleddof, Teuchos::RCP<Epetra_Vector>& dispnp)
 {
-  Teuchos::RCP<Core::LinAlg::SparseOperator> mat = Meshtying::Setup(coupleddof, dispnp);
+  Teuchos::RCP<Core::LinAlg::SparseOperator> mat = Meshtying::setup(coupleddof, dispnp);
 
   lm_ = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
 

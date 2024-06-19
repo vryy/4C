@@ -124,12 +124,12 @@ namespace Discret
       bool HaveEAS() const override { return (eastype_ != soh8p_easnone); };
 
       //! Pack this class so it can be communicated
-      //! Pack and \ref Unpack are used to communicate this element
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      //! Pack and \ref unpack are used to communicate this element
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       //! Unpack data from a char vector into this class
-      //! Pack and \ref Unpack are used to communicate this element
-      void Unpack(const std::vector<char>& data) override;
+      //! Pack and \ref unpack are used to communicate this element
+      void unpack(const std::vector<char>& data) override;
 
       //! Get number of degrees of freedom of a certain node in case of multiple
       //! dofsets (implements pure virtual Core::Elements::Element)
@@ -236,7 +236,7 @@ namespace Discret
       //!  to fill these matrices or vectors.
       //!
       //!  \return 0 if successful, negative otherwise
-      int Evaluate(
+      int evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
@@ -1093,7 +1093,7 @@ namespace Discret
         if (det_f() < 0. || det_f_0() < 0.) FOUR_C_THROW("element distortion too large");
         set_fbar_fac() = pow(det_f_0() / det_f(), 1. / 3.);
         set_defgrd_mod().Update(set_fbar_fac(), defgrd());
-        set_htensor().Clear();
+        set_htensor().clear();
 
         for (int n = 0; n < numdofperelement_; n++)
           for (int i = 0; i < 3; i++)

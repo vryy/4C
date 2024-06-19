@@ -150,34 +150,34 @@ namespace ScaTra
     Hand in all objects/parameters/etc. from outside.
     Construct and manipulate internal objects.
 
-    \note Try to only perform actions in Init(), which are still valid
+    \note Try to only perform actions in init(), which are still valid
           after parallel redistribution of discretizations.
           If you have to perform an action depending on the parallel
           distribution, make sure you adapt the affected objects after
           parallel redistribution.
           Example: cloning a discretization from another discretization is
-          OK in Init(...). However, after redistribution of the source
+          OK in init(...). However, after redistribution of the source
           discretization do not forget to also redistribute the cloned
           discretization.
           All objects relying on the parallel distribution are supposed to
-          the constructed in \ref Setup().
+          the constructed in \ref setup().
 
     \warning none
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Init();
+    virtual void init();
 
     /*! \brief Setup all class internal objects and members
 
-     Setup() is not supposed to have any input arguments !
+     setup() is not supposed to have any input arguments !
 
-     Must only be called after Init().
+     Must only be called after init().
 
      Construct all objects depending on the parallel distribution and
      relying on valid maps like, e.g. the state vectors, system matrices, etc.
 
-     Call all Setup() routines on previously initialized internal objects and members.
+     Call all setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
           Otherwise, e.g. vectors may have wrong maps.
@@ -186,7 +186,7 @@ namespace ScaTra
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Setup();
+    virtual void setup();
 
     //! Initialization of turbulence models
     void InitTurbulenceModel(const Epetra_Map* dofrowmap, const Epetra_Map* noderowmap);
@@ -388,7 +388,7 @@ namespace ScaTra
     virtual void PostSolve(){};
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
-    virtual void Update();
+    virtual void update();
 
     /*!
      * @brief apply moving mesh data
@@ -1055,16 +1055,16 @@ namespace ScaTra
 
     /*--- query and output ---------------------------------------------------*/
 
-    //! returns true if \ref Setup() was called and is still valid
+    //! returns true if \ref setup() was called and is still valid
     bool is_setup() const { return issetup_; };
 
-    //! returns true if \ ref Init() was called and is still valid
+    //! returns true if \ ref init() was called and is still valid
     bool is_init() const { return isinit_; };
 
-    //! check if \ref Setup() was called
+    //! check if \ref setup() was called
     void check_is_setup() const;
 
-    //! check if \ref Init() was called
+    //! check if \ref init() was called
     void check_is_init() const;
 
     //! helper function to get algorithm title
@@ -1656,7 +1656,7 @@ namespace ScaTra
     virtual ~ScalarHandler() = default;
 
     //! set up scalar handler
-    virtual void Setup(const ScaTraTimIntImpl* const scatratimint);
+    virtual void setup(const ScaTraTimIntImpl* const scatratimint);
 
     /*========================================================================*/
     //! @name Access and Query methods
@@ -1686,7 +1686,7 @@ namespace ScaTra
     /*========================================================================*/
     //! @name general framework
     /*========================================================================*/
-    //! check if \ref Setup() was called
+    //! check if \ref setup() was called
     void check_is_setup() const;
 
     /*========================================================================*/
@@ -1702,7 +1702,7 @@ namespace ScaTra
     /*========================================================================*/
     //! @name Internal variables
     /*========================================================================*/
-    //! flag indicating \ref Setup() call
+    //! flag indicating \ref setup() call
     bool issetup_;
   };
 
@@ -1720,7 +1720,7 @@ namespace ScaTra
     virtual ~OutputScalarsStrategyBase() = default;
 
     //! initialize time integration
-    void Init(const ScaTraTimIntImpl* const scatratimint);
+    void init(const ScaTraTimIntImpl* const scatratimint);
 
     //! do the output
     void output_total_and_mean_scalars(const ScaTraTimIntImpl* const scatratimint, const int num);
@@ -1883,7 +1883,7 @@ namespace ScaTra
           boundaryintegralvalues_(){};
 
     //! initialize time integration
-    void Init(const ScaTraTimIntImpl* const scatratimint);
+    void init(const ScaTraTimIntImpl* const scatratimint);
 
     //! evaluate domain integrals and print to screen
     void evaluate_integrals_and_print_results(

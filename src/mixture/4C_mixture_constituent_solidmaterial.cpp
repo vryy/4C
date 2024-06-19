@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
     const Core::Mat::PAR::Parameter::Data& matdata)
-    : MixtureConstituent(matdata), matid_(matdata.parameters.Get<int>("MATID"))
+    : MixtureConstituent(matdata), matid_(matdata.parameters.get<int>("MATID"))
 {
 }
 
@@ -76,7 +76,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::pack_constituent(
   Core::Communication::ParObject::add_to_pack(data, matid);
 
   // pack data of the solid material
-  material_->Pack(data);
+  material_->pack(data);
 }
 
 void MIXTURE::MixtureConstituentSolidMaterial::unpack_constituent(
@@ -124,7 +124,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::unpack_constituent(
     // extract_from_pack extracts a sub_vec of size sm from data and updates the position vector
     std::vector<char> sub_vec;
     Core::Communication::ParObject::extract_from_pack(position, data, sub_vec);
-    material_->Unpack(sub_vec);
+    material_->unpack(sub_vec);
   }
 }
 
@@ -134,7 +134,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::read_element(
     int numgp, Input::LineDefinition* linedef)
 {
   MixtureConstituent::read_element(numgp, linedef);
-  material_->Setup(numgp, linedef);
+  material_->setup(numgp, linedef);
 }
 
 void MIXTURE::MixtureConstituentSolidMaterial::update(Core::LinAlg::Matrix<3, 3> const& defgrd,
@@ -148,7 +148,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::evaluate(const Core::LinAlg::Matr
     Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)
 {
-  material_->Evaluate(&F, &E_strain, params, &S_stress, &cmat, gp, eleGID);
+  material_->evaluate(&F, &E_strain, params, &S_stress, &cmat, gp, eleGID);
 }
 
 void MIXTURE::MixtureConstituentSolidMaterial::register_output_data_names(

@@ -172,7 +172,7 @@ namespace Adapter
      *  In case the StructureNOXCorrectionWrapper is applied, the step increment
      *  is expected which is then transformed into an iteration increment
      */
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    virtual void evaluate(Teuchos::RCP<const Epetra_Vector>
                               disiterinc,  ///< step increment such that \f$ x_{n+1}^{k+1} =
                                            ///< x_{n}^{converged}+ stepinc \f$
         ALE::UTILS::MapExtractor::AleDBCSetType
@@ -183,10 +183,10 @@ namespace Adapter
     virtual void UpdateIter() = 0;
 
     //! update at time step end
-    virtual void Update() = 0;
+    virtual void update() = 0;
 
     //! output results
-    virtual void Output() = 0;
+    virtual void output() = 0;
 
     //! read restart information for given time step
     virtual void read_restart(const int step) = 0;
@@ -231,7 +231,7 @@ namespace Adapter
     virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
 
     //! reset state vectors to zero
-    virtual void Reset() = 0;
+    virtual void reset() = 0;
 
     /*! \brief Create System matrix
      *

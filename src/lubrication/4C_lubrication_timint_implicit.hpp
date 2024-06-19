@@ -94,7 +94,7 @@ namespace LUBRICATION
     virtual ~TimIntImpl() = default;
 
     //! initialize time integration
-    virtual void Init();
+    virtual void init();
 
     /*========================================================================*/
     //! @name general framework
@@ -141,7 +141,7 @@ namespace LUBRICATION
     virtual void Solve();
 
     //! update the solution after convergence of the nonlinear iteration.
-    virtual void Update(const int num = 0  //!< field number
+    virtual void update(const int num = 0  //!< field number
         ) = 0;
 
     //! apply moving mesh data
@@ -180,7 +180,7 @@ namespace LUBRICATION
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic EHL accesses the linearised lubrication problem
-    void Evaluate();
+    void evaluate();
 
     //! non-overlapping DOF map for multiple dofsets
     Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds = 0)
@@ -202,7 +202,7 @@ namespace LUBRICATION
     Teuchos::RCP<Core::FE::Discretization> discretization() { return discret_; }
 
     //! output solution and restart data to file
-    virtual void Output(const int num = 0);
+    virtual void output(const int num = 0);
 
     /*========================================================================*/
     //! @name Time, time-step and related methods

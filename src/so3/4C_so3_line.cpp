@@ -91,7 +91,7 @@ Core::FE::CellType Discret::ELEMENTS::StructuralLine::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data                                                  gee 04/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralLine::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::StructuralLine::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("StructuralLine element does not support communication");
   return;
@@ -100,7 +100,7 @@ void Discret::ELEMENTS::StructuralLine::Pack(Core::Communication::PackBuffer& da
 /*----------------------------------------------------------------------*
  |  Unpack data                                                gee 04/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralLine::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::StructuralLine::unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("StructuralLine element does not support communication");
   return;

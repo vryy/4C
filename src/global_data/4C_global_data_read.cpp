@@ -1741,7 +1741,7 @@ void Global::ReadMicroFields(Global::Problem& problem, Core::IO::DatFileReader& 
         dis_micro->fill_complete();
 
         // broadcast restart information
-        int restart_step = problem.Restart();
+        int restart_step = problem.restart();
         subgroupcomm->Broadcast(&restart_step, 1, 0);
         problem.SetRestartStep(restart_step);
 
@@ -1860,7 +1860,7 @@ void Global::ReadMicrofieldsNPsupport(Global::Problem& problem)
     structdis_micro->fill_complete();
 
     // broadcast restart information
-    int restart_step = problem.Restart();
+    int restart_step = problem.restart();
     subgroupcomm->Broadcast(&restart_step, 1, 0);
     problem.SetRestartStep(restart_step);
 
@@ -2105,7 +2105,7 @@ void Global::ReadParameter(Global::Problem& problem, Core::IO::DatFileReader& re
   problem.set_spatial_approximation_type(
       Core::UTILS::IntegralValue<Core::FE::ShapeFunctionType>(type, "SHAPEFCT"));
 
-  int restart_step = problem.Restart();
+  int restart_step = problem.restart();
   // 3) do the restart business with the four options we support (partially)
   if (restart_step == 0)
   {
@@ -2527,7 +2527,7 @@ void Global::ReadKnots(Global::Problem& problem, Core::IO::DatFileReader& reader
 void Global::ReadParticles(Global::Problem& problem, Core::IO::DatFileReader& reader)
 {
   // no need to read in particles in case of restart
-  if (problem.Restart()) return;
+  if (problem.restart()) return;
 
   // the basic particle reader
   Input::ParticleReader particlereader(reader, "--PARTICLES");

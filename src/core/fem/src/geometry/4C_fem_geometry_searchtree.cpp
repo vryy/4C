@@ -337,7 +337,7 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::SearchTree::TreeNode::get_child_node_box(
 void Core::Geo::SearchTree::TreeNode::get_child_node_box(
     const int index, Core::LinAlg::Matrix<3, 2>& childNodeBox) const
 {
-  childNodeBox.Clear();
+  childNodeBox.clear();
 
   // determine x-coordinates
   if ((index == 1) || (index == 3) || (index == 5) || (index == 7))

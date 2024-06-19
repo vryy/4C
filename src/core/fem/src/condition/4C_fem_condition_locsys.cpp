@@ -132,9 +132,9 @@ void Core::Conditions::LocsysManager::Update(const double time,
       {
         typelocsys_[i] = currlocsys->Type();
 
-        const auto* rotangle = &currlocsys->parameters().Get<std::vector<double>>("rotangle");
-        const auto* funct = &currlocsys->parameters().Get<std::vector<int>>("funct");
-        const auto* useUpdatedNodePos = &currlocsys->parameters().Get<int>("useupdatednodepos");
+        const auto* rotangle = &currlocsys->parameters().get<std::vector<double>>("rotangle");
+        const auto* funct = &currlocsys->parameters().get<std::vector<int>>("funct");
+        const auto* useUpdatedNodePos = &currlocsys->parameters().get<int>("useupdatednodepos");
 
         const auto* useConsistentNodeNormal =
             (currlocsys->Type() == Core::Conditions::SurfaceLocsys or
@@ -228,14 +228,14 @@ void Core::Conditions::LocsysManager::Update(const double time,
                   // Evaluate function with current node position
                   functfac = (function_manager.FunctionById<Core::UTILS::FunctionOfSpaceTime>(
                                   (*funct)[j] - 1))
-                                 .Evaluate(currPos.data(), time, j);
+                                 .evaluate(currPos.data(), time, j);
                 }
                 else
                 {
                   // Evaluate function with reference node position
                   functfac = (function_manager.FunctionById<Core::UTILS::FunctionOfSpaceTime>(
                                   (*funct)[j] - 1))
-                                 .Evaluate(node->X().data(), time, j);
+                                 .evaluate(node->X().data(), time, j);
                 }
               }
               currotangle(j) = (*rotangle)[j] * functfac;
@@ -618,7 +618,7 @@ void Core::Conditions::LocsysManager::calc_rotation_vector_for_normal_system(
     Core::LinAlg::Matrix<3, 1> nodeNormal;  // massConsistentNodeNormals contains (dim_+1) dofs
                                             // in the fluid case and (dim_) dofs in the ale case,
                                             // but only the first (dim_) are used.
-    nodeNormal.Clear();                     // if dim_==2, then the third component is just not used
+    nodeNormal.clear();                     // if dim_==2, then the third component is just not used
     double length = 0.0;
     for (int jdim = 0; jdim < dim_; jdim++)
     {

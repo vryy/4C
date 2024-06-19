@@ -57,7 +57,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 09/2018
      */
-    void Init();
+    void init();
 
     /*!
      * \brief setup temperature boundary condition handler
@@ -66,7 +66,7 @@ namespace PARTICLEALGORITHM
      *
      * \param[in] particleengineinterface interface to particle engine
      */
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     /*!

@@ -85,7 +85,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseScaTra
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::Init(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
     const Teuchos::ParameterList& poroparams, const Teuchos::ParameterList& structparams,
     const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
@@ -94,7 +94,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::Init(
     int ndsporofluid_scatra, const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // call base class
-  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithic::Init(globaltimeparams, algoparams,
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithic::init(globaltimeparams, algoparams,
       poroparams, structparams, fluidparams, scatraparams, struct_disname, fluid_disname,
       scatra_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra,
       nearbyelepairs);
@@ -199,7 +199,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_maps()
   fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full Poromultiphase-elasticity-blockmap
-  blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+  blockrowdofmap_->setup(*fullmap_, vecSpaces);
 
   // check global map extractor
   blockrowdofmap_->check_for_valid_map_extractor();
@@ -402,7 +402,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::evaluate(
   SetScatraSolution();
 
   // (3) access poro problem to build poro-poro block
-  poro_field()->Evaluate(porostructinc, porofluidinc, itnum_ == 0);
+  poro_field()->evaluate(porostructinc, porofluidinc, itnum_ == 0);
 
   // (4) set fluid and structure solution on scatra field
   SetPoroSolution();
@@ -627,7 +627,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::apply_scatra_st
         k_sps,                                           // scatra-structure coupling matrix
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-    ScatraAlgo()->ScaTraField()->discretization()->Evaluate(sparams_struct, scatrastrategy_struct);
+    ScatraAlgo()->ScaTraField()->discretization()->evaluate(sparams_struct, scatrastrategy_struct);
   }
 
   // complete
@@ -673,7 +673,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::
       k_spf,                                          // scatra-structure coupling matrix
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-  ScatraAlgo()->ScaTraField()->discretization()->Evaluate(sparams_fluid, scatrastrategy_fluid);
+  ScatraAlgo()->ScaTraField()->discretization()->evaluate(sparams_fluid, scatrastrategy_fluid);
 
   // complete
   k_spf->Complete(poro_field()->fluid_field()->SystemMatrix()->RangeMap(),
@@ -1395,7 +1395,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
   fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full Poromultiphasescatra block map coupled with artery network
-  blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+  blockrowdofmap_->setup(*fullmap_, vecSpaces);
 
   // check global map extractor
   blockrowdofmap_->check_for_valid_map_extractor();
@@ -1405,7 +1405,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
       {vecSpaces[struct_offset_], vecSpaces[struct_offset_ + 2]});
 
   // full porofluid-artery blockmap
-  blockrowdofmap_artporo_->Setup(
+  blockrowdofmap_artporo_->setup(
       *fullmap_artporo_, {vecSpaces[struct_offset_], vecSpaces[struct_offset_ + 2]});
 
   // full artery-arteryscatra map
@@ -1413,7 +1413,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
       {vecSpaces[struct_offset_ + 1], vecSpaces[struct_offset_ + 3]});
 
   // full artery-arteryscatra blockmap
-  blockrowdofmap_artscatra_->Setup(
+  blockrowdofmap_artscatra_->setup(
       *fullmap_artscatra_, {vecSpaces[struct_offset_ + 1], vecSpaces[struct_offset_ + 3]});
 }
 
@@ -1641,7 +1641,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
       k_asa,                                              // scatra-artery coupling matrix
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-  scatramsht_->ArtScatraField()->discretization()->Evaluate(
+  scatramsht_->ArtScatraField()->discretization()->evaluate(
       sparams_artery, artscatrastrategy_artery);
 
   // complete

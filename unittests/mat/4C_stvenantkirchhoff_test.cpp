@@ -73,7 +73,7 @@ namespace
         Teuchos::rcp(new Core::LinAlg::SerialDenseVector(6));
 
     // Call evaluate function with test strain
-    stvenantkirchhoff_->Evaluate(&input_glstrain, result_cmat.get(), result_stress.get());
+    stvenantkirchhoff_->evaluate(&input_glstrain, result_cmat.get(), result_stress.get());
 
     // Test member function results using reference stress values
     FOUR_C_EXPECT_ITERABLE_NEAR(result_stress->values(), ref_stress_.data(), 6, 1.0e-4);
@@ -100,7 +100,7 @@ namespace
     const Core::LinAlg::Matrix<6, 1> ref_stress(ref_stress_.data(), false);
 
     // Call evaluate function with test strain
-    stvenantkirchhoff_->Evaluate(
+    stvenantkirchhoff_->evaluate(
         &defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
 
     // Test member function results using reference stress values

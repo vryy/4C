@@ -391,7 +391,7 @@ namespace Mat
       };
 
       /// Update of summand
-      void Update() override;
+      void update() override;
 
       /*!
        * \brief Register anisotropy extensions to be passed to all summands
@@ -401,7 +401,7 @@ namespace Mat
       void register_anisotropy_extensions(Anisotropy& anisotropy) override;
 
       /// Setup of summand
-      virtual void Setup(int numgp, double rho_tot, Input::LineDefinition* linedef);
+      virtual void setup(int numgp, double rho_tot, Input::LineDefinition* linedef);
 
       /// Update fiber directions with new local coordinate system (radaxicirc_)
       void UpdateFiberDirs(Core::LinAlg::Matrix<3, 3> const& locsys,  ///< local coordinate system

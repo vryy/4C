@@ -69,7 +69,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::pre_evaluate(Teuchos::ParameterList&
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::Wall1Poro<distype>::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Wall1Poro<distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -123,7 +123,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::Evaluate(Teuchos::ParameterList& para
       pre_evaluate(params, discretization, la);
 
       // evaluate parent solid element
-      Discret::ELEMENTS::Wall1::Evaluate(params, discretization, la[0].lm_, elemat1_epetra,
+      Discret::ELEMENTS::Wall1::evaluate(params, discretization, la[0].lm_, elemat1_epetra,
           elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
       // add volume coupling specific terms
@@ -1877,7 +1877,7 @@ void Discret::ELEMENTS::Wall1Poro<
 
     // gradient of displacements
     static Core::LinAlg::Matrix<numdim_, numdim_> dispgrad;
-    dispgrad.Clear();
+    dispgrad.clear();
     // gradient of displacements
     dispgrad.MultiplyNT(nodaldisp, N_XYZ);
 
@@ -1912,7 +1912,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_jacobian_determinant_volume_
 
     // gradient of displacements
     static Core::LinAlg::Matrix<numdim_, numdim_> dispgrad;
-    dispgrad.Clear();
+    dispgrad.clear();
     // gradient of displacements
     dispgrad.MultiplyNT(nodaldisp, N_XYZ);
 
@@ -1957,7 +1957,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_def_gradient(
   }
   else if (kintype_ == Inpar::STR::KinemType::linear)
   {
-    defgrd.Clear();
+    defgrd.clear();
     for (int i = 0; i < numdim_; i++) defgrd(i, i) = 1.0;
   }
   else

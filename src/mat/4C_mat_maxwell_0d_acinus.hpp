@@ -107,7 +107,7 @@ namespace Mat
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -121,12 +121,12 @@ namespace Mat
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     /*!
       \brief
     */
-    virtual void Setup(Input::LineDefinition* linedef)
+    virtual void setup(Input::LineDefinition* linedef)
     {
       FOUR_C_THROW(
           "Setup not implemented yet! Check your material type, "
@@ -136,7 +136,7 @@ namespace Mat
     /*!
        \brief
      */
-    virtual void Evaluate(Core::LinAlg::SerialDenseVector& epnp,
+    virtual void evaluate(Core::LinAlg::SerialDenseVector& epnp,
         Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
         Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
         const Discret::ReducedLung::ElemParams& params, const double NumOfAcini, const double Vo,

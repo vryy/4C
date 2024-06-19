@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolume::Init(const int ndim,
+void SSI::SSICouplingMatchingVolume::init(const int ndim,
     Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);
@@ -91,7 +91,7 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolume::Setup()
+void SSI::SSICouplingMatchingVolume::setup()
 {
   check_is_init();
 
@@ -183,7 +183,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetTemperatureField(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
+void SSI::SSICouplingNonMatchingBoundary::init(const int ndim,
     Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);
@@ -242,13 +242,13 @@ void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingBoundary::Setup()
+void SSI::SSICouplingNonMatchingBoundary::setup()
 {
   check_is_init();
 
   std::vector<int> coupleddof(problem_dimension_, 1);
   // Setup of meshtying adapter
-  adaptermeshtying_->Setup(structdis_, scatradis_, Teuchos::null, coupleddof, "SSICoupling",
+  adaptermeshtying_->setup(structdis_, scatradis_, Teuchos::null, coupleddof, "SSICoupling",
       structdis_->Comm(), Global::Problem::Instance()->FunctionManager(), false, false, 0, 1);
 
   // extractor for coupled surface of structure discretization with surface scatra
@@ -312,7 +312,7 @@ void SSI::SSICouplingNonMatchingBoundary::SetScalarFieldMicro(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
+void SSI::SSICouplingNonMatchingVolume::init(const int ndim,
     Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);
@@ -357,10 +357,10 @@ void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
   volcoupl_structurescatra_ = Teuchos::rcp(new Core::Adapter::MortarVolCoupl());
 
   // init projection matrices (use default material strategy)
-  volcoupl_structurescatra_->Init(ndim, structdis, scatradis);
+  volcoupl_structurescatra_->init(ndim, structdis, scatradis);
 
   // parallel redistribution is performed in the global control
-  // algorithm. We redistribute between Init(...) and Setup().
+  // algorithm. We redistribute between init(...) and setup().
   // volcoupl_structurescatra_->Redistribute();
 
   set_is_init(true);
@@ -368,12 +368,12 @@ void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingVolume::Setup()
+void SSI::SSICouplingNonMatchingVolume::setup()
 {
   check_is_init();
 
   // setup projection matrices (use default material strategy)
-  volcoupl_structurescatra_->Setup(Global::Problem::Instance()->VolmortarParams());
+  volcoupl_structurescatra_->setup(Global::Problem::Instance()->VolmortarParams());
 
   set_is_setup(true);
 }
@@ -428,7 +428,7 @@ void SSI::SSICouplingNonMatchingVolume::SetScalarFieldMicro(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
+void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
     Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);
@@ -462,7 +462,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
 
       std::set<int> couplingids;
       for (auto& cond_struct : conds_struct)
-        couplingids.insert(cond_struct->parameters().Get<int>("coupling id"));
+        couplingids.insert(cond_struct->parameters().get<int>("coupling id"));
 
       Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> structgidmatchingdofset = Teuchos::rcp(
           new Core::DOFSets::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
@@ -494,7 +494,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
 
       std::set<int> couplingids;
       for (auto& cond_struct : conds_struct)
-        couplingids.insert(cond_struct->parameters().Get<int>("coupling id"));
+        couplingids.insert(cond_struct->parameters().get<int>("coupling id"));
 
       Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> scatragidmatchingdofset = Teuchos::rcp(
           new Core::DOFSets::DofSetGIDBasedWrapper(scatradis, scatradis->GetDofSetProxy()));
@@ -570,7 +570,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolumeAndBoundary::Setup()
+void SSI::SSICouplingMatchingVolumeAndBoundary::setup()
 {
   check_is_init();
 

@@ -15,8 +15,8 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::Elastic::PAR::VolPow::VolPow(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      a_(matdata.parameters.Get<double>("A")),
-      expon_(matdata.parameters.Get<double>("EXPON"))
+      a_(matdata.parameters.get<double>("A")),
+      expon_(matdata.parameters.get<double>("EXPON"))
 {
 }
 

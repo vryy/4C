@@ -143,7 +143,7 @@ namespace Mat
     //!  The first information to be stored in data has to be the
     //!  unique parobject id delivered by UniqueParObjectId() which will then
     //!  identify the exact class on the receiving processor.
-    void Pack(Core::Communication::PackBuffer&
+    void pack(Core::Communication::PackBuffer&
             data  //!<  data (i/o): char vector to store class information
     ) const override;
 
@@ -154,7 +154,7 @@ namespace Mat
     //!  The first entry in data has to be an integer which is the unique
     //!  parobject id defined at the top of this file and delivered by
     //!  UniqueParObjectId().
-    void Unpack(const std::vector<char>&
+    void unpack(const std::vector<char>&
             data  //!< (i) : vector storing all data to be unpacked into this instance.
         ) override;
 
@@ -180,16 +180,16 @@ namespace Mat
     }
 
     //! initialise internal stress variables
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     //! update internal stress variables
-    void Update() override;
+    void update() override;
 
     //! reset internal stress variables
-    void Reset();
+    void reset();
 
     //! evaluate material
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain,
         Teuchos::ParameterList& params,                  //!< parameter list for communication
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,  //!< 2nd PK-stress
@@ -284,7 +284,7 @@ namespace Mat
 
     //! main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!
-    void Evaluate(const Core::LinAlg::Matrix<1, 1>& Ntemp,  //!< temperature of element
+    void evaluate(const Core::LinAlg::Matrix<1, 1>& Ntemp,  //!< temperature of element
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& ctemp,  //!< temperature dependent material tangent
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stresstemp  //!< temperature dependent stress term
     );

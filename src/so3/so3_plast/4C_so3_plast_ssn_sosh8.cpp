@@ -67,7 +67,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoSh8PlastType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoSh8Plast(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -102,7 +102,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8PlastType::Create(
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 05/14 |
 *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh8PlastType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
 {
   // sosh8_gmshplotdis(dis);
 
@@ -352,7 +352,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoSh8Plast::Clone() const
 /*----------------------------------------------------------------------*
  | pack data (public)                                       seitz 05/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8Plast::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoSh8Plast::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -360,7 +360,7 @@ void Discret::ELEMENTS::SoSh8Plast::Pack(Core::Communication::PackBuffer& data) 
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class So3Plast Element
-  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::Pack(data);
+  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::pack(data);
   // thickdir
   add_to_pack(data, thickdir_);
   add_to_pack(data, thickvec_);
@@ -373,7 +373,7 @@ void Discret::ELEMENTS::SoSh8Plast::Pack(Core::Communication::PackBuffer& data) 
 /*----------------------------------------------------------------------*
  | unpack data (public)                                     seitz 05/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8Plast::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoSh8Plast::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -382,7 +382,7 @@ void Discret::ELEMENTS::SoSh8Plast::Unpack(const std::vector<char>& data)
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::Unpack(basedata);
+  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::unpack(basedata);
   // thickdir
   thickdir_ = static_cast<ThicknessDirection>(extract_int(position, data));
   extract_from_pack(position, data, thickvec_);
@@ -446,7 +446,7 @@ bool Discret::ELEMENTS::SoSh8Plast::ReadElement(
   SetMaterial(0, Mat::Factory(material));
 
   Teuchos::RCP<Mat::So3Material> so3mat = SolidMaterial();
-  so3mat->Setup(numgpt_, linedef);
+  so3mat->setup(numgpt_, linedef);
   so3mat->ValidKinematics(Inpar::STR::KinemType::nonlinearTotLag);
   if (have_plastic_spin())
     plspintype_ = plspin;

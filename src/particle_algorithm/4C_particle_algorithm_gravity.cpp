@@ -24,7 +24,7 @@ PARTICLEALGORITHM::GravityHandler::GravityHandler(const Teuchos::ParameterList& 
   // empty constructor
 }
 
-void PARTICLEALGORITHM::GravityHandler::Init(const std::vector<double>& gravity)
+void PARTICLEALGORITHM::GravityHandler::init(const std::vector<double>& gravity)
 {
   // set gravity acceleration vector
   gravity_ = gravity;
@@ -35,7 +35,7 @@ void PARTICLEALGORITHM::GravityHandler::Init(const std::vector<double>& gravity)
         static_cast<int>(gravity_.size()));
 }
 
-void PARTICLEALGORITHM::GravityHandler::Setup()
+void PARTICLEALGORITHM::GravityHandler::setup()
 {
   // nothing to do
 }
@@ -50,7 +50,7 @@ void PARTICLEALGORITHM::GravityHandler::get_gravity_acceleration(
   {
     const double fac = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfTime>(gravityrampfctnumber_ - 1)
-                           .Evaluate(time);
+                           .evaluate(time);
 
     for (int dim = 0; dim < 3; ++dim) scaled_gravity[dim] *= fac;
   }

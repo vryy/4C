@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::ConstraintElement3::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -72,8 +72,8 @@ int Discret::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& para
       {
         Teuchos::RCP<Core::Conditions::Condition> condition =
             params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-        const auto& direct = condition->parameters().Get<std::vector<double>>("direction");
-        const auto& value = condition->parameters().Get<std::string>("value");
+        const auto& direct = condition->parameters().get<std::vector<double>>("direction");
+        const auto& value = condition->parameters().get<std::string>("value");
         if (value == "disp")
           elevec3[0] = compute_weighted_distance(mydisp, direct);
         else if (value == "x")
@@ -123,13 +123,13 @@ int Discret::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& para
         Teuchos::RCP<Core::Conditions::Condition> condition =
             params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
         const std::vector<double>& direct =
-            condition->parameters().Get<std::vector<double>>("direction");
+            condition->parameters().get<std::vector<double>>("direction");
 
         // Compute weighted difference between masternode and other node and it's derivative
         compute_first_deriv_weighted_distance(elevec1, direct);
         elevec2 = elevec1;
 
-        const std::string& value = condition->parameters().Get<std::string>("value");
+        const std::string& value = condition->parameters().get<std::string>("value");
         if (value == "disp")
           elevec3[0] = compute_weighted_distance(mydisp, direct);
         else if (value == "x")

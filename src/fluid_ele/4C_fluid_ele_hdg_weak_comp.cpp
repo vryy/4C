@@ -32,7 +32,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidHDGWeakCompType::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::FluidHDGWeakComp* object = new Discret::ELEMENTS::FluidHDGWeakComp(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -133,7 +133,7 @@ Core::Elements::Element* Discret::ELEMENTS::FluidHDGWeakComp::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDGWeakComp::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::FluidHDGWeakComp::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -142,7 +142,7 @@ void Discret::ELEMENTS::FluidHDGWeakComp::Pack(Core::Communication::PackBuffer& 
   add_to_pack(data, type);
 
   // add base class Element
-  Fluid::Pack(data);
+  Fluid::pack(data);
 
   int degree = degree_;
   add_to_pack(data, degree);
@@ -154,7 +154,7 @@ void Discret::ELEMENTS::FluidHDGWeakComp::Pack(Core::Communication::PackBuffer& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDGWeakComp::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidHDGWeakComp::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -163,7 +163,7 @@ void Discret::ELEMENTS::FluidHDGWeakComp::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   Fluid::extract_from_pack(position, data, basedata);
-  Fluid::Unpack(basedata);
+  Fluid::unpack(basedata);
 
   int val = 0;
   extract_from_pack(position, data, val);
@@ -202,7 +202,7 @@ bool Discret::ELEMENTS::FluidHDGWeakComp::ReadElement(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::FluidHDGWeakComp::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::FluidHDGWeakComp::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -226,7 +226,7 @@ int Discret::ELEMENTS::FluidHDGWeakComp::Evaluate(Teuchos::ParameterList& params
     case FLD::calc_fluid_systemmat_and_residual:
     {
       return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
-          ->Evaluate(
+          ->evaluate(
               this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
     }
     break;

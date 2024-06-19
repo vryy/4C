@@ -82,10 +82,10 @@ Mat::PAR::FluidPoroPhaseLaw* Mat::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(int pha
 Mat::PAR::FluidPoroPhaseLawLinear::FluidPoroPhaseLawLinear(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : FluidPoroPhaseLaw(matdata),
-      numdof_(matdata.parameters.Get<int>("NUMDOF")),
-      presids_(matdata.parameters.Get<std::vector<int>>("PRESCOEFF")),
-      reltensions_(matdata.parameters.Get<double>("RELTENSION")),
-      sat0_(matdata.parameters.Get<double>("SATURATION_0"))
+      numdof_(matdata.parameters.get<int>("NUMDOF")),
+      presids_(matdata.parameters.get<std::vector<int>>("PRESCOEFF")),
+      reltensions_(matdata.parameters.get<double>("RELTENSION")),
+      sat0_(matdata.parameters.get<double>("SATURATION_0"))
 {
   // check if sizes fit
   if (numdof_ != (int)presids_.size())
@@ -171,11 +171,11 @@ double Mat::PAR::FluidPoroPhaseLawLinear::EvaluateGenPressure(double saturation)
 Mat::PAR::FluidPoroPhaseLawTangent::FluidPoroPhaseLawTangent(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : FluidPoroPhaseLaw(matdata),
-      numdof_(matdata.parameters.Get<int>("NUMDOF")),
-      presids_(matdata.parameters.Get<std::vector<int>>("PRESCOEFF")),
-      reltensions_(matdata.parameters.Get<double>("RELTENSION")),
-      exp_(matdata.parameters.Get<double>("EXP")),
-      sat0_(matdata.parameters.Get<double>("SATURATION_0"))
+      numdof_(matdata.parameters.get<int>("NUMDOF")),
+      presids_(matdata.parameters.get<std::vector<int>>("PRESCOEFF")),
+      reltensions_(matdata.parameters.get<double>("RELTENSION")),
+      exp_(matdata.parameters.get<double>("EXP")),
+      sat0_(matdata.parameters.get<double>("SATURATION_0"))
 {
   // check if sizes fit
   if (numdof_ != (int)presids_.size())
@@ -284,10 +284,10 @@ double Mat::PAR::FluidPoroPhaseLawTangent::EvaluateGenPressure(double saturation
 Mat::PAR::FluidPoroPhaseLawByFunction::FluidPoroPhaseLawByFunction(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : FluidPoroPhaseLaw(matdata),
-      numdof_(matdata.parameters.Get<int>("NUMDOF")),
-      presids_(matdata.parameters.Get<std::vector<int>>("PRESCOEFF")),
-      functionID_saturation_(matdata.parameters.Get<int>("FUNCTSAT")),
-      functionID_pressure_(matdata.parameters.Get<int>("FUNCTPRES"))
+      numdof_(matdata.parameters.get<int>("NUMDOF")),
+      presids_(matdata.parameters.get<std::vector<int>>("PRESCOEFF")),
+      functionID_saturation_(matdata.parameters.get<int>("FUNCTSAT")),
+      functionID_pressure_(matdata.parameters.get<int>("FUNCTPRES"))
 {
   // check if sizes fit
   if (numdof_ != (int)presids_.size())
@@ -297,7 +297,7 @@ Mat::PAR::FluidPoroPhaseLawByFunction::FluidPoroPhaseLawByFunction(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroPhaseLawByFunction::Initialize()
+void Mat::PAR::FluidPoroPhaseLawByFunction::initialize()
 {
   switch (Global::Problem::Instance()->NDim())
   {
@@ -374,7 +374,7 @@ double Mat::PAR::FluidPoroPhaseLawByFunction::evaluate_saturation_internal(
 
   return Global::Problem::Instance()
       ->FunctionById<Core::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)
-      .Evaluate(dp_, {}, 0);
+      .evaluate(dp_, {}, 0);
 }
 
 /*----------------------------------------------------------------------*
@@ -502,7 +502,7 @@ double Mat::PAR::FluidPoroPhaseLawByFunction::evaluate_gen_pressure_internal(dou
 
   return Global::Problem::Instance()
       ->FunctionById<Core::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
-      .Evaluate(s_, {}, 0);
+      .evaluate(s_, {}, 0);
 }
 
 FOUR_C_NAMESPACE_CLOSE

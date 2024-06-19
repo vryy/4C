@@ -69,7 +69,7 @@ namespace Core::LinAlg
     /*!
       Destroy any existing one.
      */
-    void Setup(Teuchos::RCP<Epetra_Operator> matrix,
+    void setup(Teuchos::RCP<Epetra_Operator> matrix,
         Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex = Teuchos::null,
         Teuchos::RCP<Core::FE::Discretization> fdis = Teuchos::null,
         Teuchos::RCP<Epetra_Map> inodes = Teuchos::null, bool structuresplit = false);

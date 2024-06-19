@@ -68,10 +68,10 @@ namespace FS3I
     PartFS3I(const Epetra_Comm& comm);
 
     //! initialize this class
-    void Init() override;
+    void init() override;
 
     //! setup this class
-    void Setup() override;
+    void setup() override;
 
     //! @name overall FS3I system
     //@{

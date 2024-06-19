@@ -45,7 +45,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ParticleMaterialDEM::create_material
 Core::Communication::ParObject* Mat::ParticleMaterialDEMType::Create(const std::vector<char>& data)
 {
   Mat::ParticleMaterialDEM* particlematdem = new Mat::ParticleMaterialDEM();
-  particlematdem->Unpack(data);
+  particlematdem->unpack(data);
   return particlematdem;
 }
 
@@ -69,7 +69,7 @@ Mat::ParticleMaterialDEM::ParticleMaterialDEM(Mat::PAR::ParticleMaterialDEM* par
 /*---------------------------------------------------------------------------*
  | pack                                                       sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-void Mat::ParticleMaterialDEM::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ParticleMaterialDEM::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -86,7 +86,7 @@ void Mat::ParticleMaterialDEM::Pack(Core::Communication::PackBuffer& data) const
 /*---------------------------------------------------------------------------*
  | unpack                                                     sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-void Mat::ParticleMaterialDEM::Unpack(const std::vector<char>& data)
+void Mat::ParticleMaterialDEM::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

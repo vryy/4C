@@ -56,10 +56,10 @@ namespace ParticleInteraction
     explicit SPHHeatLossEvaporation(const Teuchos::ParameterList& params);
 
     //! init evaporation induced heat loss handler
-    void Init();
+    void init();
 
     //! setup evaporation induced heat loss handler
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial);
 

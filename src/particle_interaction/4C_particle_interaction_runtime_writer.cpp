@@ -29,12 +29,12 @@ ParticleInteraction::InteractionWriter::InteractionWriter(
   // empty constructor
 }
 
-void ParticleInteraction::InteractionWriter::Init()
+void ParticleInteraction::InteractionWriter::init()
 {
   // nothing to do
 }
 
-void ParticleInteraction::InteractionWriter::Setup()
+void ParticleInteraction::InteractionWriter::setup()
 {
   // nothing to do
 }

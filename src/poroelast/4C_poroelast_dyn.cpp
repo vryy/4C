@@ -40,7 +40,7 @@ void poroelast_drt()
       PoroElast::UTILS::CreatePoroAlgorithm(poroelastdyn, comm);
 
   // read the restart information, set vectors and variables
-  const int restart = problem->Restart();
+  const int restart = problem->restart();
   poroalgo->read_restart(restart);
 
   // now do the coupling setup and create the combined dofmap

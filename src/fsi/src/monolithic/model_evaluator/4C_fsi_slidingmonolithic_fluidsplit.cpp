@@ -254,7 +254,7 @@ void FSI::SlidingMonolithicFluidSplit::SetupSystem()
      */
     std::vector<int> coupleddof(ndim, 1);
 
-    coupsfm_->Setup(structure_field()->discretization(), fluid_field()->discretization(),
+    coupsfm_->setup(structure_field()->discretization(), fluid_field()->discretization(),
         ale_field()->write_access_discretization(), coupleddof, "FSICoupling", comm_,
         Global::Problem::Instance()->FunctionManager(), true);
 
@@ -1142,7 +1142,7 @@ void FSI::SlidingMonolithicFluidSplit::unscale_solution(
   utils()->out().flags(flags);
 
   if (structure_field()->get_stc_algo() != Inpar::STR::stc_none)
-    structure_field()->system_matrix()->Reset();
+    structure_field()->system_matrix()->reset();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1499,7 +1499,7 @@ void FSI::SlidingMonolithicFluidSplit::update()
     fluid_field()->apply_interface_velocities(unew);
   }
 
-  // call Update()-routine in base class to handle the single fields
+  // call update()-routine in base class to handle the single fields
   FSI::BlockMonolithic::update();
 }
 
@@ -1507,8 +1507,8 @@ void FSI::SlidingMonolithicFluidSplit::update()
 /*----------------------------------------------------------------------------*/
 void FSI::SlidingMonolithicFluidSplit::output()
 {
-  structure_field()->Output();
-  fluid_field()->Output();
+  structure_field()->output();
+  fluid_field()->output();
 
   if (aleproj_ != Inpar::FSI::ALEprojection_none)
   {
@@ -1524,7 +1524,7 @@ void FSI::SlidingMonolithicFluidSplit::output()
   // output Lagrange multiplier
   OutputLambda();
 
-  ale_field()->Output();
+  ale_field()->output();
 
   if (structure_field()->get_constraint_manager()->HaveMonitor())
   {
@@ -1602,7 +1602,7 @@ void FSI::SlidingMonolithicFluidSplit::prepare_time_step()
   prepare_time_step_preconditioner();
 
   if (structure_field()->get_stc_algo() != Inpar::STR::stc_none)
-    structure_field()->system_matrix()->Reset();
+    structure_field()->system_matrix()->reset();
 
   prepare_time_step_fields();
 

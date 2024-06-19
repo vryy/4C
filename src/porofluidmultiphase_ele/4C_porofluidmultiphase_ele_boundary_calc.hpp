@@ -30,7 +30,7 @@ namespace Discret
     \brief implementation of evaluation routines of porous fluid multiphase boundary element
 
     This singleton class is responsible for evaluating boundary terms.
-    It provides the method Evaluate(...) which performs the actual evaluation
+    It provides the method evaluate(...) which performs the actual evaluation
     depending on the action provided by the global algorithm.
 
 
@@ -52,7 +52,7 @@ namespace Discret
       static constexpr int nsd_ = Core::FE::dim<distype>;
 
       //! Evaluate the element (using location array)
-      int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      int evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
           std::vector<Core::LinAlg::SerialDenseVector*>& elevec) override;

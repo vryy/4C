@@ -43,14 +43,14 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam,
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::Setup()
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::setup()
 {
   // Call setup of base class first.
-  base_class::Setup();
+  base_class::setup();
 
   // Get the solid element data container
-  ele2posref_ = GEOMETRYPAIR::InitializeElementData<solid, double>::Initialize(this->Element2());
-  ele2pos_ = GEOMETRYPAIR::InitializeElementData<solid, scalar_type>::Initialize(this->Element2());
+  ele2posref_ = GEOMETRYPAIR::InitializeElementData<solid, double>::initialize(this->Element2());
+  ele2pos_ = GEOMETRYPAIR::InitializeElementData<solid, scalar_type>::initialize(this->Element2());
 
   // Set reference nodal positions for the solid element
   for (unsigned int n = 0; n < solid::n_nodes_; ++n)

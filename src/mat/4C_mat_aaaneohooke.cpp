@@ -36,10 +36,10 @@ Mat::PAR::AAAneohooke::AAAneohooke(const Core::Mat::PAR::Parameter::Data& matdat
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
-  matparams_.at(young)->PutScalar(matdata.parameters.Get<double>("YOUNG"));
-  matparams_.at(nue)->PutScalar(matdata.parameters.Get<double>("NUE"));
-  matparams_.at(beta)->PutScalar(matdata.parameters.Get<double>("BETA"));
-  matparams_.at(density)->PutScalar(matdata.parameters.Get<double>("DENS"));
+  matparams_.at(young)->PutScalar(matdata.parameters.get<double>("YOUNG"));
+  matparams_.at(nue)->PutScalar(matdata.parameters.get<double>("NUE"));
+  matparams_.at(beta)->PutScalar(matdata.parameters.get<double>("BETA"));
+  matparams_.at(density)->PutScalar(matdata.parameters.get<double>("DENS"));
 }
 
 
@@ -55,7 +55,7 @@ Mat::AAAneohookeType Mat::AAAneohookeType::instance_;
 Core::Communication::ParObject* Mat::AAAneohookeType::Create(const std::vector<char>& data)
 {
   Mat::AAAneohooke* aaa = new Mat::AAAneohooke();
-  aaa->Unpack(data);
+  aaa->unpack(data);
   return aaa;
 }
 
@@ -73,7 +73,7 @@ Mat::AAAneohooke::AAAneohooke(Mat::PAR::AAAneohooke* params) : params_(params) {
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void Mat::AAAneohooke::Pack(Core::Communication::PackBuffer& data) const
+void Mat::AAAneohooke::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -90,7 +90,7 @@ void Mat::AAAneohooke::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void Mat::AAAneohooke::Unpack(const std::vector<char>& data)
+void Mat::AAAneohooke::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -163,7 +163,7 @@ void Mat::AAAneohooke::Unpack(const std::vector<char>& data)
      with nu = 0.45  we have K =  20 alpha
 
  */
-void Mat::AAAneohooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::AAAneohooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)

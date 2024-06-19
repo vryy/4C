@@ -162,7 +162,7 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the
   // setup to all classes in the inheritance hierarchy. This way, this class may also override
-  // a method that is called during Setup() in a base class.
+  // a method that is called during setup() in a base class.
 
   if (sdynparams.get<int>("OUTPUT_STEP_OFFSET") != 0)
   {
@@ -175,7 +175,7 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
+void STR::TimInt::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
@@ -208,7 +208,7 @@ void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
 
   // initialize constraint manager
   conman_ = Teuchos::rcp(new CONSTRAINTS::ConstrManager());
-  conman_->Init(discret_, sdynparams_);
+  conman_->init(discret_, sdynparams_);
 
   // create stiffness, mass matrix and other fields
   CreateFields();
@@ -222,9 +222,9 @@ void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Setup this class                                                                 rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimInt::Setup()
+void STR::TimInt::setup()
 {
-  // we have to call Init() before
+  // we have to call init() before
   check_is_init();
 
   create_all_solution_vectors();
@@ -236,7 +236,7 @@ void STR::TimInt::Setup()
   SetInitialFields();
 
   // setup constraint manager
-  conman_->Setup((*dis_)(0), sdynparams_);
+  conman_->setup((*dis_)(0), sdynparams_);
 
   // model order reduction
   mor_ = Teuchos::rcp(new ModelOrderRed::ProperOrthogonalDecomposition(discret_));
@@ -500,8 +500,8 @@ void STR::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdynpa
   bool realcontactconditions = false;
   for (const auto& contactCondition : contactconditions)
   {
-    if (contactCondition->parameters().Get<std::string>("Application") != "Beamtosolidcontact" &&
-        contactCondition->parameters().Get<std::string>("Application") != "Beamtosolidmeshtying")
+    if (contactCondition->parameters().get<std::string>("Application") != "Beamtosolidcontact" &&
+        contactCondition->parameters().get<std::string>("Application") != "Beamtosolidmeshtying")
       realcontactconditions = true;
   }
   if (mortarconditions.size() == 0 and !realcontactconditions) return;
@@ -1070,7 +1070,7 @@ void STR::TimInt::determine_mass_damp_consist_accel()
     // for structure ale
     if (dismat_ != Teuchos::null) discret_->set_state(0, "material_displacement", (*dismat_)(0));
 
-    discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, fintn_str_);
+    discret_->evaluate(p, stiff_, mass_, fint, Teuchos::null, fintn_str_);
     discret_->ClearState();
   }
 
@@ -1131,7 +1131,7 @@ void STR::TimInt::determine_mass_damp_consist_accel()
       beamcontactparams.set("iter", 0);
       beamcontactparams.set("dt", (*dt_)[0]);
       beamcontactparams.set("numstep", step_);
-      beamcman_->Evaluate(*system_matrix(), *rhs, (*dis_)[0], beamcontactparams, true, timen_);
+      beamcman_->evaluate(*system_matrix(), *rhs, (*dis_)[0], beamcontactparams, true, timen_);
     }
 
     // Contribution to rhs due to inertia forces of inhomogeneous Dirichlet conditions
@@ -1174,7 +1174,7 @@ void STR::TimInt::determine_mass_damp_consist_accel()
   // We need to reset the stiffness matrix because its graph (topology)
   // is not finished yet in case of constraints and possibly other side
   // effects (basically managers).
-  stiff_->Reset();
+  stiff_->reset();
 }
 
 /*----------------------------------------------------------------------*/
@@ -1692,7 +1692,7 @@ void STR::TimInt::reset_step()
     Teuchos::ParameterList p;
     p.set("action", "calc_struct_reset_istep");
     // go to elements
-    discret_->Evaluate(
+    discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -1889,7 +1889,7 @@ void STR::TimInt::read_restart_multi_scale()
       Teuchos::ParameterList p;
       // action for elements
       p.set("action", "multi_readrestart");
-      discret_->Evaluate(
+      discret_->evaluate(
           p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
       discret_->ClearState();
       break;
@@ -1976,7 +1976,7 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
     reset_step();
     // restart has already been written or simulation has just started
     if ((writerestartevery_ and (step_ % writerestartevery_ == 0)) or
-        step_ == Global::Problem::Instance()->Restart())
+        step_ == Global::Problem::Instance()->restart())
       return;
     // if state already exists, add restart information
     if (writeresultsevery_ and (step_ % writeresultsevery_ == 0))
@@ -1995,7 +1995,7 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
   // write restart step
   if ((writerestartevery_ and (step_ % writerestartevery_ == 0) and step_ != 0) or
       forced_writerestart or
-      Global::Problem::Instance()->RestartManager()->Restart(step_, discret_->Comm()))
+      Global::Problem::Instance()->RestartManager()->restart(step_, discret_->Comm()))
   {
     output_restart(datawritten);
     lastwrittenresultsstep_ = step_;
@@ -2240,7 +2240,7 @@ void STR::TimInt::output_state(bool& datawritten)
   }
 
   // springdashpot output
-  if (springman_->HaveSpringDashpot()) springman_->Output(output_, discret_, disn_);
+  if (springman_->HaveSpringDashpot()) springman_->output(output_, discret_, disn_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -2350,7 +2350,7 @@ void STR::TimInt::determine_stress_strain()
 
     Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix = Teuchos::null;
     Teuchos::RCP<Epetra_Vector> system_vector = Teuchos::null;
-    Core::FE::UTILS::Evaluate(
+    Core::FE::UTILS::evaluate(
         *discret_, p, system_matrix, system_vector, discret_->ElementRowMap());
     discret_->ClearState();
   }
@@ -2433,7 +2433,7 @@ void STR::TimInt::determine_optional_quantity()
 
     if ((dismatn_ != Teuchos::null)) discret_->set_state(0, "material_displacement", dismatn_);
 
-    discret_->Evaluate(
+    discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -2812,7 +2812,7 @@ void STR::TimInt::OutputMicro()
     if (mat->MaterialType() == Core::Materials::m_struct_multiscale)
     {
       Mat::MicroMaterial* micro = static_cast<Mat::MicroMaterial*>(mat.get());
-      micro->Output();
+      micro->output();
     }
   }
 }
@@ -3018,7 +3018,7 @@ void STR::TimInt::apply_force_internal(const double time, const double dt,
 
   if (damping_ == Inpar::STR::damp_material) discret_->set_state("velocity", vel);
   // fintn_->PutScalar(0.0);  // initialise internal force vector
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null, fint, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, Teuchos::null, Teuchos::null, fint, Teuchos::null, Teuchos::null);
 
   discret_->ClearState();
 }
@@ -3033,7 +3033,7 @@ Inpar::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
     case Inpar::STR::divcont_stop:
     {
       // write restart output of last converged step before stopping
-      Output(true);
+      output(true);
 
       // we should not get here, FOUR_C_THROW for safety
       FOUR_C_THROW("Nonlinear solver did not converge! ");
@@ -3340,7 +3340,7 @@ const Epetra_Map* STR::TimInt::dof_row_map_view() { return discret_->dof_row_map
 
 /*----------------------------------------------------------------------*/
 /* reset everything (needed for biofilm simulations)                    */
-void STR::TimInt::Reset()
+void STR::TimInt::reset()
 {
   // displacements D_{n}
   dis_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));

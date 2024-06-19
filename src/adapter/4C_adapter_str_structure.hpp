@@ -92,7 +92,7 @@ namespace Adapter
   field. There are different ways to use this adapter.
 
   In all cases you need to tell the structural algorithm about your time
-  step. Therefore prepare_time_step(), Update() and Output() must be called at
+  step. Therefore prepare_time_step(), update() and output() must be called at
   the appropriate position in the FSI algorithm.
 
   <h3>Dirichlet-Neumann coupled FSI</h3>
@@ -103,7 +103,7 @@ namespace Adapter
   structural problem for each time step after the fluid forces have been
   applied (apply_interface_forces()). Solve() will be called many times for each
   time step until the interface equilibrium is reached. The structural
-  algorithm has to preserve its state until Update() is called.
+  algorithm has to preserve its state until update() is called.
 
   After each Solve() you get the interface forces by extract_interface_dispnp().
 
@@ -113,7 +113,7 @@ namespace Adapter
 
   <h3>Monolithic FSI</h3>
 
-  Monolithic FSI is based on Evaluate() of elements. This results in a new
+  Monolithic FSI is based on evaluate() of elements. This results in a new
   RHS() and a new SysMat(). Together with the initial_guess() these form the
   building blocks for a block based Newton's method.
 
@@ -131,14 +131,14 @@ namespace Adapter
 
     /*! \brief Setup all class internal objects and members
 
-     Setup() is not supposed to have any input arguments !
+     setup() is not supposed to have any input arguments !
 
-     Must only be called after Init().
+     Must only be called after init().
 
      Construct all objects depending on the parallel distribution and
      relying on valid maps like, e.g. the state vectors, system matrices, etc.
 
-     Call all Setup() routines on previously initialized internal objects and members.
+     Call all setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
           Otherwise, e.g. vectors may have wrong maps.
@@ -147,7 +147,7 @@ namespace Adapter
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Setup() = 0;
+    virtual void setup() = 0;
 
     //@}
 
@@ -342,18 +342,18 @@ namespace Adapter
     In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
     which is then transformed into an iteration increment
     */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    void evaluate(Teuchos::RCP<const Epetra_Vector>
             disiterinc  ///< displacement increment between Newton iteration i and i+1
         ) override = 0;
 
     /// don't update displacement but evaluate elements (implicit only)
-    virtual void Evaluate() = 0;
+    virtual void evaluate() = 0;
 
     //! Calculate stresses and strains
     virtual void determine_stress_strain() = 0;
 
     /// update at time step end
-    void Update() override = 0;
+    void update() override = 0;
 
     /// update at time step end in case of FSI time adaptivity
     virtual void Update(double endtime) = 0;
@@ -379,7 +379,7 @@ namespace Adapter
         Teuchos::RCP<std::vector<char>> nodedata) = 0;
 
     /// output results
-    void Output(bool forced_writerestart = false) override = 0;
+    void output(bool forced_writerestart = false) override = 0;
 
     /// output results to screen
     virtual void print_step() = 0;
@@ -511,7 +511,7 @@ namespace Adapter
     virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
 
     /// reset time and state vectors (needed for biofilm growth simulations)
-    virtual void Reset() = 0;
+    virtual void reset() = 0;
 
     /// set structure displacement vector due to biofilm growth
     virtual void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) = 0;

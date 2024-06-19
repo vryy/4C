@@ -207,7 +207,7 @@ namespace Mat
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -222,7 +222,7 @@ namespace Mat
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -246,7 +246,7 @@ namespace Mat
     }
 
     /// Setup
-    void Setup(int numgp,               ///< number of Gauss points
+    void setup(int numgp,               ///< number of Gauss points
         Input::LineDefinition* linedef  ///< definition of element line
         ) override;
 
@@ -254,13 +254,13 @@ namespace Mat
     void ResetAll(const int numgp);
 
     /// Update
-    void Update() override;
+    void update() override;
 
     /// Reset time step
     void reset_step() override;
 
     /// Evaluate material
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, const int gp,

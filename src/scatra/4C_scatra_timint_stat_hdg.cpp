@@ -33,10 +33,10 @@ ScaTra::TimIntStationaryHDG::TimIntStationaryHDG(Teuchos::RCP<Core::FE::Discreti
 /*----------------------------------------------------------------------*
  |  initialize time integration                        berardocco 05/20 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntStationaryHDG::Init()
+void ScaTra::TimIntStationaryHDG::init()
 {
   // initialize base class
-  TimIntHDG::Init();
+  TimIntHDG::init();
 
   return;
 }
@@ -65,7 +65,7 @@ void ScaTra::TimIntStationaryHDG::set_element_time_parameter(bool forcedincremen
   eleparams.set<double>("alpha_F", 1.0);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   return;

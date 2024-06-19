@@ -86,7 +86,7 @@ namespace POROFLUIDMULTIPHASE
 
 
     //! initialize time integration
-    void Init(bool isale, int nds_disp, int nds_vel, int nds_solidpressure, int nds_scalar,
+    void init(bool isale, int nds_disp, int nds_vel, int nds_solidpressure, int nds_scalar,
         const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     /*========================================================================*/
@@ -128,7 +128,7 @@ namespace POROFLUIDMULTIPHASE
     void Solve() override;
 
     //! update the solution after convergence of the nonlinear iteration.
-    void Update() override;
+    void update() override;
 
     ///  compute time derivative
     virtual void compute_time_derivative() = 0;
@@ -162,7 +162,7 @@ namespace POROFLUIDMULTIPHASE
         ) override;
 
     //! build linear system tangent matrix, rhs/force residual
-    void Evaluate() override;
+    void evaluate() override;
 
     //! apply Dirichlet Boundary Condition
     void prepare_system_for_newton_solve();
@@ -198,7 +198,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
 
     //! output solution and restart data to file
-    void Output() override;
+    void output() override;
 
     //! output solution and restart data to file
     virtual void print_header();

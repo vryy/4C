@@ -46,7 +46,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -75,7 +75,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -105,7 +105,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -134,7 +134,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -163,7 +163,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)

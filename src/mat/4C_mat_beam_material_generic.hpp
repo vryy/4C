@@ -47,7 +47,7 @@ namespace Mat
      * \brief Initialize and setup element specific variables
      *
      */
-    virtual void Setup(int numgp_force, int numgp_moment) = 0;
+    virtual void setup(int numgp_force, int numgp_moment) = 0;
 
     /** \brief get the radius of a circular cross-section that is ONLY to be used for evaluation of
      *         any kinds of beam interactions (contact, potentials, viscous drag forces ...)
@@ -76,12 +76,12 @@ namespace Mat
     /** \brief Update all material related variables at the end of a time step
      *
      */
-    virtual void Update() = 0;
+    virtual void update() = 0;
 
     /** \brief Resets all material related variables i.e. in case of adaptive time stepping
      *
      */
-    virtual void Reset() = 0;
+    virtual void reset() = 0;
   };
 }  // namespace Mat
 

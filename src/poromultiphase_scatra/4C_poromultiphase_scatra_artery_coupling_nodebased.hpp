@@ -47,7 +47,7 @@ namespace PoroMultiPhaseScaTra
         const std::string& artcoupleddofname, const std::string& contcoupleddofname);
 
     //! Evaluate the 1D-3D coupling
-    void Evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    void evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs) override
     {
       // nothing to do here, is done in SetupSystem for this type of coupling
@@ -93,10 +93,10 @@ namespace PoroMultiPhaseScaTra
     Teuchos::RCP<const Epetra_Map> dof_row_map() const override;
 
     //! init the strategy
-    void Init() override;
+    void init() override;
 
     //! setup the strategy
-    void Setup() override;
+    void setup() override;
 
     //! apply mesh movement (on artery elements)
     void ApplyMeshMovement() override;

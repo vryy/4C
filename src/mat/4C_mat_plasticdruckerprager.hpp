@@ -92,8 +92,8 @@ namespace Mat
     {
       return PlasticDruckerPragerType::Instance().UniqueParObjectId();
     }
-    void Pack(Core::Communication::PackBuffer& data) const override;
-    void Unpack(const std::vector<char>& data) override;
+    void pack(Core::Communication::PackBuffer& data) const override;
+    void unpack(const std::vector<char>& data) override;
     Core::Materials::MaterialType MaterialType() const override
     {
       return Core::Materials::m_pldruckprag;
@@ -108,8 +108,8 @@ namespace Mat
     {
       return Teuchos::rcp(new PlasticDruckerPrager(*this));
     }
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
-    void Update() override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
+    void update() override;
     /**
      * \brief Evaulate the stresses from the strains in the material
      *
@@ -121,7 +121,7 @@ namespace Mat
      * \param gp :Gauss point
      * \param eleGID :element global identifier
      */
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* linstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, int gp, int eleGID) override
@@ -130,7 +130,7 @@ namespace Mat
     };
 
     template <typename ScalarT>
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1, ScalarT>* linstrain,
         Teuchos::ParameterList& params, Core::LinAlg::Matrix<NUM_STRESS_3D, 1, ScalarT>* stress,
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, int gp, int eleGID)

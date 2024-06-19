@@ -50,7 +50,7 @@ void Discret::UTILS::AddValidCombustFunctions(Core::UTILS::FunctionManager& func
 
 
 
-double Discret::UTILS::ZalesaksDiskFunction::Evaluate(
+double Discret::UTILS::ZalesaksDiskFunction::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // the disk consists of 3 lines and a part of a circle and four points
@@ -123,7 +123,7 @@ double Discret::UTILS::ZalesaksDiskFunction::Evaluate(
 }
 
 
-double Discret::UTILS::CollapsingWaterColumnFunction::Evaluate(
+double Discret::UTILS::CollapsingWaterColumnFunction::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // here calculation of distance (sign is already taken in consideration)

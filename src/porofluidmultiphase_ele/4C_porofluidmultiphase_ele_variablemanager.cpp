@@ -32,7 +32,7 @@ Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
 
   // get the number of volume fractions
   // the check for correct input definition is performed in
-  // Mat::PAR::FluidPoroMultiPhase::Initialize()
+  // Mat::PAR::FluidPoroMultiPhase::initialize()
   const int numvolfrac = (int)((numdofpernode - numfluidphases) / 2);
 
   // determine action

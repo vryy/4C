@@ -35,12 +35,12 @@ FLD::TimIntLomaOst::TimIntLomaOst(const Teuchos::RCP<Core::FE::Discretization>& 
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntLomaOst::Init()
+void FLD::TimIntLomaOst::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntOneStepTheta::Init();
-  TimIntLoma::Init();
+  TimIntOneStepTheta::init();
+  TimIntLoma::init();
 
   return;
 }

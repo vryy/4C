@@ -31,7 +31,7 @@ namespace
 Core::Communication::ParObject* Discret::ELEMENTS::SoSh18Type::Create(const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoSh18(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -127,7 +127,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoSh18::Clone() const
  |  Pack data                                                  (public) |
  |                                                          seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh18::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoSh18::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -135,7 +135,7 @@ void Discret::ELEMENTS::SoSh18::Pack(Core::Communication::PackBuffer& data) cons
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  SoBase::Pack(data);
+  SoBase::pack(data);
 
   // detJ_
   add_to_pack(data, detJ_);
@@ -158,7 +158,7 @@ void Discret::ELEMENTS::SoSh18::Pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                          seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh18::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoSh18::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -167,7 +167,7 @@ void Discret::ELEMENTS::SoSh18::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  SoBase::Unpack(basedata);
+  SoBase::unpack(basedata);
 
   // detJ_
   extract_from_pack(position, data, detJ_);

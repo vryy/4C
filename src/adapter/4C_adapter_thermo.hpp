@@ -79,7 +79,7 @@ namespace Adapter
   field. There are different ways to use this adapter.
 
   In all cases you need to tell the thermal algorithm about your time
-  step. Therefore prepare_time_step(), Update() and Output() must be called at
+  step. Therefore prepare_time_step(), update() and output() must be called at
   the appropriate position in the TSI algorithm.
 
   <h3>Dirichlet-Neumann coupled TSI</h3>
@@ -88,13 +88,13 @@ namespace Adapter
   for each time step after the structure displacements/velocities have been
   applied (ApplyStructVariables()). Solve() will be called many times for each
   time step until the equilibrium is reached. The thermal algorithm has to
-  preserve its state until Update() is called.
+  preserve its state until update() is called.
 
   After each Solve() you get the new temperatures by Tempnp().
 
   <h3>Monolithic TSI</h3>
 
-  Monolithic TSI is based on Evaluate() of elements. This results in a new
+  Monolithic TSI is based on evaluate() of elements. This results in a new
   RHS() and a new SysMat(). Together with the initial_guess() these form the
   building blocks for a block based Newton's method.
 
@@ -189,16 +189,16 @@ namespace Adapter
     virtual void prepare_time_step() = 0;
 
     /// evaluate residual at given temperature increment
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> tempi) = 0;
+    virtual void evaluate(Teuchos::RCP<const Epetra_Vector> tempi) = 0;
 
     /// evaluate residual at given temperature increment
-    virtual void Evaluate() = 0;
+    virtual void evaluate() = 0;
 
     /// update temperature increment after Newton step
     virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi) = 0;
 
     /// update at time step end
-    virtual void Update() = 0;
+    virtual void update() = 0;
 
     /// print info about finished time step
     virtual void PrintStep() = 0;
@@ -210,7 +210,7 @@ namespace Adapter
     virtual void prepare_output() = 0;
 
     /// output results
-    virtual void Output(bool forced_writerestart = false) = 0;
+    virtual void output(bool forced_writerestart = false) = 0;
 
     /// read restart information for given time step
     virtual void read_restart(const int step) = 0;

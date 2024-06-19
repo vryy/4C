@@ -51,7 +51,7 @@ void Discret::ELEMENTS::Wall1::w1_call_matgeononl(
     Teuchos::RCP<const Mat::StructPoro> actmat =
         Teuchos::rcp_static_cast<const Mat::StructPoro>(material);
     // setup is done in so3_poro
-    // actmat->Setup(NUMGPT_SOH8);
+    // actmat->setup(NUMGPT_SOH8);
     material = actmat->GetMaterial();
   }
 
@@ -254,8 +254,8 @@ void Discret::ELEMENTS::Wall1::material_response3d_plane(Core::LinAlg::SerialDen
       gl(5) += 2.0 * ir(2);  // NOT SURE ABOUT 2.0, LACKED TESTING MATERIAL
 
       // call for new 3d stress response
-      pk2.Clear();   // must be blanked!!
-      cmat.Clear();  // must be blanked!!
+      pk2.clear();   // must be blanked!!
+      cmat.clear();  // must be blanked!!
       material_response3d(&pk2, &cmat, &gl, params, gp);
 
       // current plane stress error
@@ -346,7 +346,7 @@ void Discret::ELEMENTS::Wall1::material_response3d(Core::LinAlg::Matrix<6, 1>* s
     Core::LinAlg::Matrix<6, 6>* cmat, const Core::LinAlg::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, const int gp)
 {
-  SolidMaterial()->Evaluate(nullptr, glstrain, params, stress, cmat, gp, Id());
+  SolidMaterial()->evaluate(nullptr, glstrain, params, stress, cmat, gp, Id());
 
   return;
 }

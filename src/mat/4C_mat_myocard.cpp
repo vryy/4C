@@ -33,13 +33,13 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::Myocard::Myocard(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      diff1(matdata.parameters.Get<double>("DIFF1")),
-      diff2(matdata.parameters.Get<double>("DIFF2")),
+      diff1(matdata.parameters.get<double>("DIFF1")),
+      diff2(matdata.parameters.get<double>("DIFF2")),
       diff3(0.0),
-      dt_deriv(matdata.parameters.Get<double>("PERTUBATION_DERIV")),
-      model(matdata.parameters.Get<std::string>("MODEL")),
-      tissue(matdata.parameters.Get<std::string>("TISSUE")),
-      time_scale(matdata.parameters.Get<double>("TIME_SCALE")),
+      dt_deriv(matdata.parameters.get<double>("PERTUBATION_DERIV")),
+      model(matdata.parameters.get<std::string>("MODEL")),
+      tissue(matdata.parameters.get<std::string>("TISSUE")),
+      time_scale(matdata.parameters.get<double>("TIME_SCALE")),
       num_gp(0)
 {
 }
@@ -56,7 +56,7 @@ Mat::MyocardType Mat::MyocardType::instance_;
 Core::Communication::ParObject* Mat::MyocardType::Create(const std::vector<char>& data)
 {
   Mat::Myocard* myocard = new Mat::Myocard();
-  myocard->Unpack(data);
+  myocard->unpack(data);
   return myocard;
 }
 
@@ -90,7 +90,7 @@ Mat::Myocard::Myocard(Mat::PAR::Myocard* params)
 /*----------------------------------------------------------------------*
  |  Pack                                           (public)  cbert 09/12 |
  *----------------------------------------------------------------------*/
-void Mat::Myocard::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Myocard::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -127,7 +127,7 @@ void Mat::Myocard::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                         (public)  cbert 09/12 |
  *----------------------------------------------------------------------*/
-void Mat::Myocard::Unpack(const std::vector<char>& data)
+void Mat::Myocard::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -171,7 +171,7 @@ void Mat::Myocard::Unpack(const std::vector<char>& data)
       if (num_gp > 0)
       {
         // Initialize material
-        Initialize();
+        initialize();
 
         // unpack history data
         double val;
@@ -252,17 +252,17 @@ void Mat::Myocard::unpack_material(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Setup conductivity tensor                                cbert 02/13 |
  *----------------------------------------------------------------------*/
-void Mat::Myocard::Setup(const Core::LinAlg::Matrix<3, 1>& fiber1)
+void Mat::Myocard::setup(const Core::LinAlg::Matrix<3, 1>& fiber1)
 {
   setup_diffusion_tensor(fiber1);
 }
 
-void Mat::Myocard::Setup(const Core::LinAlg::Matrix<2, 1>& fiber1)
+void Mat::Myocard::setup(const Core::LinAlg::Matrix<2, 1>& fiber1)
 {
   setup_diffusion_tensor(fiber1);
 }
 
-void Mat::Myocard::Setup(Input::LineDefinition* linedef)
+void Mat::Myocard::setup(Input::LineDefinition* linedef)
 {
   std::vector<double> fiber1(3);
   if (linedef->has_named("FIBER1"))
@@ -549,7 +549,7 @@ double Mat::Myocard::GetIonicCurrents(const int k) const
 /*----------------------------------------------------------------------*
  |  initialize internal variables (called by constructors)   cbert 09/12 |
  *----------------------------------------------------------------------*/
-void Mat::Myocard::Initialize()
+void Mat::Myocard::initialize()
 {
   if ((params_->model) == "MV")
     myocard_mat_ =

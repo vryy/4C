@@ -64,7 +64,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projectio
     elematrix2.shape(numnode, numvec);
 
     // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
-    int err = actele->Evaluate(
+    int err = actele->evaluate(
         params, dis, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);
     if (err) FOUR_C_THROW("Element %d returned err=%d", actele->Id(), err);
 

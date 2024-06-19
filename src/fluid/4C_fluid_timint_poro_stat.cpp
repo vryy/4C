@@ -26,12 +26,12 @@ FLD::TimIntPoroStat::TimIntPoroStat(const Teuchos::RCP<Core::FE::Discretization>
 {
 }
 
-void FLD::TimIntPoroStat::Init()
+void FLD::TimIntPoroStat::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntStationary::Init();
-  TimIntPoro::Init();
+  TimIntStationary::init();
+  TimIntPoro::init();
 }
 
 void FLD::TimIntPoroStat::read_restart(int step)

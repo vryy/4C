@@ -712,8 +712,8 @@ namespace XFEM
       const int nsd = 3;
       const int numdofpernode = nsd + 1;
 
-      evel.Clear();
-      epre.Clear();
+      evel.clear();
+      epre.clear();
 
       if (vel_vec == Teuchos::null) FOUR_C_THROW("vector is null");
 

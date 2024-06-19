@@ -35,12 +35,12 @@ FLD::TimIntRedModelsGenAlpha::TimIntRedModelsGenAlpha(
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModelsGenAlpha::Init()
+void FLD::TimIntRedModelsGenAlpha::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntGenAlpha::Init();
-  TimIntRedModels::Init();
+  TimIntGenAlpha::init();
+  TimIntRedModels::init();
 
   return;
 }

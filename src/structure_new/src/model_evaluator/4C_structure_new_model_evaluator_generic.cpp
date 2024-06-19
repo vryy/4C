@@ -39,7 +39,7 @@ STR::MODELEVALUATOR::Generic::Generic()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Generic::Init(
+void STR::MODELEVALUATOR::Generic::init(
     const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
     const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
@@ -64,14 +64,14 @@ void STR::MODELEVALUATOR::Generic::Init(
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Generic::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Generic::check_init() const
 {
-  FOUR_C_ASSERT(is_init(), "Call Init() first!");
+  FOUR_C_ASSERT(is_init(), "Call init() first!");
 }
 
 /*----------------------------------------------------------------------------*

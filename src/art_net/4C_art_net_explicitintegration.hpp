@@ -62,7 +62,7 @@ namespace Arteries
     \brief Initialization
 
     */
-    void Init(const Teuchos::ParameterList& globaltimeparams,
+    void init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     // create field test
@@ -83,7 +83,7 @@ namespace Arteries
 
       \param vel new guess at velocity, cross-sectional area, and pressure
     */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> vel){};
+    void evaluate(Teuchos::RCP<const Epetra_Vector> vel){};
 
     /*!
     \brief Update the solution after convergence of the linear
@@ -111,7 +111,7 @@ namespace Arteries
     \brief update configuration and output to file/screen
 
     */
-    void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
+    void output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
 
     /*!
     \brief Test results

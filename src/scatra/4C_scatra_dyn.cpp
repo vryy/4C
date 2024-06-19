@@ -140,11 +140,11 @@ void scatra_dyn(int restart)
       // finalize discretization
       scatradis->fill_complete(true, false, true);
 
-      // now we can call Init() on the base algo.
+      // now we can call init() on the base algo.
       // time integrator is initialized inside
-      scatraonly->Init();
+      scatraonly->init();
 
-      // redistribution between Init(...) and Setup()
+      // redistribution between init(...) and setup()
       // redistribute scatra elements in case of heterogeneous reactions
       if (scatradis->GetCondition("ScatraHeteroReactionSlave") != nullptr)
       {
@@ -165,8 +165,8 @@ void scatra_dyn(int restart)
       // assign degrees of freedom and rebuild geometries
       scatradis->fill_complete(true, false, true);
 
-      // now we must call Setup()
-      scatraonly->Setup();
+      // now we must call setup()
+      scatraonly->setup();
 
       // read the restart information, set vectors and variables
       if (restart) scatraonly->ScaTraField()->read_restart(restart);
@@ -236,8 +236,8 @@ void scatra_dyn(int restart)
         algo->ScaTraField()->set_number_of_dof_set_velocity(1);
       }
 
-      // we create  the aux dofsets before Init(...)
-      // volmortar adapter Init(...) relies on this
+      // we create  the aux dofsets before init(...)
+      // volmortar adapter init(...) relies on this
       if (fieldcoupling == Inpar::ScaTra::coupling_volmortar)
       {
         // allow TRANSPORT conditions, too
@@ -278,9 +278,9 @@ void scatra_dyn(int restart)
       }
 
       // init algo (init fluid time integrator and scatra time integrator inside)
-      algo->Init();
+      algo->init();
 
-      // redistribution between Init(...) and Setup()
+      // redistribution between init(...) and setup()
       // redistribute scatra elements if the scatra discretization is not empty
       if (fieldcoupling == Inpar::ScaTra::coupling_volmortar)
       {
@@ -306,7 +306,7 @@ void scatra_dyn(int restart)
 
       // setup algo
       //(setup fluid time integrator and scatra time integrator inside)
-      algo->Setup();
+      algo->setup();
 
       // read restart information
       // in case a inflow generation in the inflow section has been performed, there are not any

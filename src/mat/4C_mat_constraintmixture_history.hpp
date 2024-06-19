@@ -49,12 +49,12 @@ namespace Mat
     {
       return ConstraintMixtureHistoryType::Instance().UniqueParObjectId();
     }
-    void Pack(Core::Communication::PackBuffer& data) const override;
-    void Unpack(const std::vector<char>& data) override;
+    void pack(Core::Communication::PackBuffer& data) const override;
+    void unpack(const std::vector<char>& data) override;
     //@}
 
     /// Setup
-    void Setup(int ngp, const double massprodbasal, bool expvar);
+    void setup(int ngp, const double massprodbasal, bool expvar);
 
    private:
     /// @name Access to History

@@ -32,10 +32,10 @@ namespace FS3I
     PartFpS3I1Wc(const Epetra_Comm& comm);
 
     //! initialize this class
-    void Init() override;
+    void init() override;
 
     //! setup this class
-    void Setup() override;
+    void setup() override;
 
     /// timeloop of coupled problem
     void Timeloop() override;

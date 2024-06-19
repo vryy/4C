@@ -80,7 +80,7 @@ void Core::FE::DiscretizationCreatorBase::create_nodes(const Core::FE::Discretiz
     }
   }
 
-  // ensure Reset() is called on targetdis on all procs (including procs without rownodes)
+  // ensure reset() is called on targetdis on all procs (including procs without rownodes)
   targetdis.CheckFilledGlobally();
 
   return;

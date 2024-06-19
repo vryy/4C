@@ -32,7 +32,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex18Type::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoHex18(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -137,7 +137,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoHex18::Clone() const
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex18::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoHex18::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -145,7 +145,7 @@ void Discret::ELEMENTS::SoHex18::Pack(Core::Communication::PackBuffer& data) con
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  SoBase::Pack(data);
+  SoBase::pack(data);
 
   // detJ_
   add_to_pack(data, detJ_);
@@ -161,7 +161,7 @@ void Discret::ELEMENTS::SoHex18::Pack(Core::Communication::PackBuffer& data) con
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex18::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoHex18::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -170,7 +170,7 @@ void Discret::ELEMENTS::SoHex18::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  SoBase::Unpack(basedata);
+  SoBase::unpack(basedata);
 
   // detJ_
   extract_from_pack(position, data, detJ_);
@@ -252,7 +252,7 @@ bool Discret::ELEMENTS::SoHex18::ReadElement(
 
   Teuchos::RCP<Core::Mat::Material> mat = Material();
 
-  SolidMaterial()->Setup(NUMGPT_SOH18, linedef);
+  SolidMaterial()->setup(NUMGPT_SOH18, linedef);
 
   // temporary variable for read-in
   std::string buffer;
@@ -297,7 +297,7 @@ void Discret::ELEMENTS::SoHex18::init_gp()
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                           seitz 11/14 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -480,7 +480,7 @@ int Discret::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case calc_struct_update_istep:
     {
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
       update();
     }
     break;
@@ -520,8 +520,8 @@ int Discret::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
@@ -548,7 +548,7 @@ int Discret::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
   }
 
   // (SPATIAL) FUNCTION BUSINESS
-  const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* funct = &condition.parameters().get<std::vector<int>>("funct");
   Core::LinAlg::Matrix<NUMDIM_SOH18, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
@@ -610,7 +610,7 @@ int Discret::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
         const double functfac =
             (functnum > 0) ? Global::Problem::Instance()
                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                 .Evaluate(xrefegp.A(), time, dim)
+                                 .evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
         for (int nodid = 0; nodid < NUMNOD_SOH18; ++nodid)
@@ -644,7 +644,7 @@ int Discret::ELEMENTS::SoHex18::init_jacobian_mapping()
   for (int gp = 0; gp < NUMGPT_SOH18; ++gp)
   {
     // reset
-    invJ_[gp].Clear();
+    invJ_[gp].clear();
     detJ_[gp] = 0.;
 
     Core::LinAlg::Matrix<NUMDIM_SOH18, NUMNOD_SOH18> deriv;
@@ -757,7 +757,7 @@ void Discret::ELEMENTS::SoHex18::nlnstiffmass(std::vector<int>& lm,  ///< locati
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
-    SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     double detJ_w = detJ * wgt_[gp];
@@ -844,7 +844,7 @@ void Discret::ELEMENTS::SoHex18::lumpmass(Core::LinAlg::Matrix<NUMDOF_SOH18, NUM
 /*----------------------------------------------------------------------*
  |  init the element (public)                               seitz 11/14 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex18Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex18Type::initialize(Core::FE::Discretization& dis)
 {
   // here we order the nodes such that we have a positive definite jacobian
   //       maybe the python script generating the hex18 elements would be a better place for this.

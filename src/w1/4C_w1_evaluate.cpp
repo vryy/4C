@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -294,7 +294,7 @@ int Discret::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
             (*alphao).values(),
             1);  // alphao := alpha
       }
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
       break;
     }
     //==================================================================================
@@ -646,9 +646,9 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
 {
   set_params_interface_ptr(params);
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
-  const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
+  const auto* funct = &condition.parameters().get<std::vector<int>>("funct");
 
   // check total time
   double time = -1.0;
@@ -771,7 +771,7 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
         // evaluate function at current gauss point
         functfac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                       .Evaluate(coordgpref, time, i);
+                       .evaluate(coordgpref, time, i);
       }
 
       ar[i] = fac * (*onoff)[i] * (*val)[i] * functfac;
@@ -1703,7 +1703,7 @@ void Discret::ELEMENTS::Wall1::w1_boplin_cure(Core::LinAlg::SerialDenseMatrix& b
 //    {
 //      Mat::StVenantKirchhoff* stvk = static_cast <Mat::StVenantKirchhoff*>(mat.get());
 //
-//      stvk->Evaluate(glstrain,cmat,stress);
+//      stvk->evaluate(glstrain,cmat,stress);
 //
 //      *density = stvk->Density();
 //

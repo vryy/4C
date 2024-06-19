@@ -105,14 +105,14 @@ namespace PARTICLEALGORITHM
      *
      * \param[in] initialparticles particle objects read in from restart
      */
-    void Init(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& initialparticles);
+    void init(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& initialparticles);
 
     /*!
      * \brief setup particle algorithm
      *
      * \author Sebastian Fuchs \date 04/2018
      */
-    void Setup();
+    void setup();
 
     /*!
      * \brief read restart information for given time step

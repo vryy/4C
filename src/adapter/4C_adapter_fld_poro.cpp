@@ -146,7 +146,7 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> Adapter::FluidPoro::VelPresSplitter()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidPoro::Output(const int step, const double time)
+void Adapter::FluidPoro::output(const int step, const double time)
 {
   // set variables that allow the forced
   // output at this point.
@@ -159,7 +159,7 @@ void Adapter::FluidPoro::Output(const int step, const double time)
   bool write_eledata_every_step_ = true;
 
   // write standard output if no arguments are provided (default -1)
-  if (step == -1 and time == -1.0) fluid_field()->Output();
+  if (step == -1 and time == -1.0) fluid_field()->output();
   // write extra output for specified step and time
   else
   {

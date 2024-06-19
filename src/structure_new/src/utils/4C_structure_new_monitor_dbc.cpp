@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::Init(const Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_ptr,
+void STR::MonitorDbc::init(const Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_ptr,
     Core::FE::Discretization& discret, STR::TimeInt::BaseDataGlobalState& gstate, STR::Dbc& dbc)
 {
   issetup_ = false;
@@ -80,7 +80,7 @@ void STR::MonitorDbc::get_tagged_condition(
 
   for (auto& cond_ptr : cond_vec)
   {
-    const std::string& cptr = cond_ptr->parameters().Get<std::string>("tag");
+    const std::string& cptr = cond_ptr->parameters().get<std::string>("tag");
 
     if (cptr == tag_name) tagged_conds.push_back(cond_ptr.get());
   }
@@ -115,7 +115,7 @@ void STR::MonitorDbc::create_reaction_force_condition(
       Teuchos::rcp(new Core::Conditions::Condition(
           new_id, Core::Conditions::ElementTag, true, tagged_cond.GType()));
 
-  rcond_ptr->parameters().Add("onoff", (tagged_cond.parameters().Get<std::vector<int>>("onoff")));
+  rcond_ptr->parameters().Add("onoff", (tagged_cond.parameters().get<std::vector<int>>("onoff")));
   rcond_ptr->SetNodes(*tagged_cond.GetNodes());
 
   dynamic_cast<Core::FE::Discretization&>(discret).SetCondition("ReactionForce", rcond_ptr);
@@ -123,7 +123,7 @@ void STR::MonitorDbc::create_reaction_force_condition(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::Setup()
+void STR::MonitorDbc::setup()
 {
   throw_if_not_init();
 
@@ -165,7 +165,7 @@ void STR::MonitorDbc::Setup()
       Core::UTILS::IntegralValue<int>(sublist_IO_monitor_structure_dbc, "WRITE_HEADER"));
 
   // handle restart
-  if (Global::Problem::Instance()->Restart())
+  if (Global::Problem::Instance()->restart())
   {
     const std::string full_restart_dirpath(
         Global::Problem::Instance()->OutputControlFile()->restart_name() + "_monitor_dbc");
@@ -187,7 +187,7 @@ void STR::MonitorDbc::Setup()
 void STR::MonitorDbc::create_reaction_maps(const Core::FE::Discretization& discret,
     const Core::Conditions::Condition& rcond, Teuchos::RCP<Epetra_Map>* react_maps) const
 {
-  const auto* onoff = &rcond.parameters().Get<std::vector<int>>("onoff");
+  const auto* onoff = &rcond.parameters().get<std::vector<int>>("onoff");
   const auto* nids = rcond.GetNodes();
   std::vector<int> my_dofs[DIM];
   int ndof = 0;
@@ -541,7 +541,7 @@ double STR::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmomen
   Core::LinAlg::Matrix<DIM, 1> node_reaction_moment(true);
   std::vector<int> node_gid(3);
 
-  const auto* onoff = &rcond->parameters().Get<std::vector<int>>("onoff");
+  const auto* onoff = &rcond->parameters().get<std::vector<int>>("onoff");
   const std::vector<int>* nids = rcond->GetNodes();
   std::vector<int> my_dofs[DIM];
   int ndof = 0;

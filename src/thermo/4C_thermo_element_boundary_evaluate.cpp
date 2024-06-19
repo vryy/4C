@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | evaluate the element for volume coupling (public)         dano 02/10 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::ThermoBoundary::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::ThermoBoundary::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -31,7 +31,7 @@ int Discret::ELEMENTS::ThermoBoundary::Evaluate(Teuchos::ParameterList& params,
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return Discret::ELEMENTS::TemperBoundaryImplInterface::Impl(this)->Evaluate(
+  return Discret::ELEMENTS::TemperBoundaryImplInterface::Impl(this)->evaluate(
       this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
 }  // Evaluate in case of multiple dofsets
 

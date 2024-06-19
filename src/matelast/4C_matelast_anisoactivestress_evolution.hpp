@@ -150,7 +150,7 @@ namespace Mat
       void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 
       /// Setup of summand
-      void Setup(int numgp, Input::LineDefinition* linedef) override;
+      void setup(int numgp, Input::LineDefinition* linedef) override;
 
       /*!
        * \brief post_setup routine of the element
@@ -187,7 +187,7 @@ namespace Mat
       void SetupAAA(Teuchos::ParameterList& params, const int eleGID) override {}
 
       // update internal stress variables
-      void Update() override;
+      void update() override;
 
       /// Indicator for formulation
       void SpecifyFormulation(

@@ -1205,7 +1205,7 @@ namespace FLD
       Core::LinAlg::SerialDenseVector interpolVec;
       interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
-      ele->Evaluate(params, *discret_, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
+      ele->evaluate(params, *discret_, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
       // sum values on nodes into vectors and record the touch count (build average of values)
       for (int i = 0; i < 5 * 5 * 5; ++i)
@@ -1251,7 +1251,7 @@ namespace FLD
       if (static_cast<std::size_t>(elevec3.numRows()) != la[0].lm_.size())
         elevec3.size(la[0].lm_.size());
 
-      ele->Evaluate(
+      ele->evaluate(
           initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, interpolVec, elevec3);
 
       if (ele->Owner() == discret_->Comm().MyPID())

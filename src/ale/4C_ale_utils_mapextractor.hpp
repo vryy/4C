@@ -60,7 +60,7 @@ namespace ALE
       };
 
       /// setup the whole thing
-      void Setup(const Core::FE::Discretization& dis, bool overlapping = false);
+      void setup(const Core::FE::Discretization& dis, bool overlapping = false);
 
       /// get all element gids those nodes are touched by any condition
       Teuchos::RCP<std::set<int>> conditioned_element_map(
@@ -88,7 +88,7 @@ namespace ALE
       };
 
       /// setup the whole thing
-      void Setup(const Core::FE::Discretization& dis);
+      void setup(const Core::FE::Discretization& dis);
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(FSI, cond_fsi)
@@ -105,7 +105,7 @@ namespace ALE
       };
 
       /// setup the whole thing
-      void Setup(const Core::FE::Discretization& dis);
+      void setup(const Core::FE::Discretization& dis);
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(XFluidFluidCond, cond_xfluidfluid)

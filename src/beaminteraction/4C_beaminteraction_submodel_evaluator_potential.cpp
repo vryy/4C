@@ -123,14 +123,14 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::BeamPotential()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Setup()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::setup()
 {
   check_init();
 
   // init and setup beam to beam contact data container
   beam_potential_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamPotentialParams());
-  beam_potential_params().Init(GState().get_time_n());
-  beam_potential_params().Setup();
+  beam_potential_params().init(GState().get_time_n());
+  beam_potential_params().setup();
 
   print_console_welcome_message(std::cout);
 
@@ -166,7 +166,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::init_submodel_dependenci
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Reset()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::reset()
 {
   check_init_setup();
 
@@ -237,11 +237,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force()
 
     for (auto& k : conditions_element1)
     {
-      int npotlaw1 = k->parameters().Get<int>("potlaw");
+      int npotlaw1 = k->parameters().get<int>("potlaw");
 
       for (auto& j : conditions_element2)
       {
-        int npotlaw2 = j->parameters().Get<int>("potlaw");
+        int npotlaw2 = j->parameters().get<int>("potlaw");
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
@@ -256,7 +256,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force()
                 "number of potential law specified in line charge condition exceeds"
                 " number of defined potential laws!");
 
-          pair_is_active = elepairptr->Evaluate(&(eleforce_centerlineDOFs[0]),
+          pair_is_active = elepairptr->evaluate(&(eleforce_centerlineDOFs[0]),
               &(eleforce_centerlineDOFs[1]), nullptr, nullptr, nullptr, nullptr, currconds,
               beam_potential_params().potential_law_prefactors().at(npotlaw1 - 1),
               beam_potential_params().potential_law_exponents().at(npotlaw1 - 1));
@@ -326,11 +326,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_stiff()
 
     for (unsigned int k = 0; k < conditions_element1.size(); ++k)
     {
-      int npotlaw1 = conditions_element1[k]->parameters().Get<int>("potlaw");
+      int npotlaw1 = conditions_element1[k]->parameters().get<int>("potlaw");
 
       for (unsigned int j = 0; j < conditions_element2.size(); ++j)
       {
-        int npotlaw2 = conditions_element2[j]->parameters().Get<int>("potlaw");
+        int npotlaw2 = conditions_element2[j]->parameters().get<int>("potlaw");
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
@@ -346,7 +346,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_stiff()
                 " number of defined potential laws!");
 
 
-          pair_is_active = elepairptr->Evaluate(nullptr, nullptr, &(elestiff_centerlineDOFs[0][0]),
+          pair_is_active = elepairptr->evaluate(nullptr, nullptr, &(elestiff_centerlineDOFs[0][0]),
               &(elestiff_centerlineDOFs[0][1]), &(elestiff_centerlineDOFs[1][0]),
               &(elestiff_centerlineDOFs[1][1]), currconds,
               beam_potential_params().potential_law_prefactors().at(npotlaw1 - 1),
@@ -426,11 +426,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force_stiff()
 
     for (unsigned int k = 0; k < conditions_element1.size(); ++k)
     {
-      int npotlaw1 = conditions_element1[k]->parameters().Get<int>("potlaw");
+      int npotlaw1 = conditions_element1[k]->parameters().get<int>("potlaw");
 
       for (unsigned int j = 0; j < conditions_element2.size(); ++j)
       {
-        int npotlaw2 = conditions_element2[j]->parameters().Get<int>("potlaw");
+        int npotlaw2 = conditions_element2[j]->parameters().get<int>("potlaw");
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
@@ -447,7 +447,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force_stiff()
 
 
           pair_is_active =
-              elepairptr->Evaluate(&(eleforce_centerlineDOFs[0]), &(eleforce_centerlineDOFs[1]),
+              elepairptr->evaluate(&(eleforce_centerlineDOFs[0]), &(eleforce_centerlineDOFs[1]),
                   &(elestiff_centerlineDOFs[0][0]), &(elestiff_centerlineDOFs[0][1]),
                   &(elestiff_centerlineDOFs[1][0]), &(elestiff_centerlineDOFs[1][1]), currconds,
                   beam_potential_params().potential_law_prefactors().at(npotlaw1 - 1),
@@ -775,11 +775,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
 
       for (unsigned int i = 0; i < conds1.size(); ++i)
       {
-        int npotlaw1 = conds1[i]->parameters().Get<int>("potlaw");
+        int npotlaw1 = conds1[i]->parameters().get<int>("potlaw");
 
         for (unsigned int j = 0; j < conds2.size(); ++j)
         {
-          int npotlaw2 = conds2[j]->parameters().Get<int>("potlaw");
+          int npotlaw2 = conds2[j]->parameters().get<int>("potlaw");
 
           // here, we also exclude "self-interaction", i.e. a pair of elements on the same physical
           // beam
@@ -875,9 +875,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::create_beam_potential_el
       Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> newbeaminteractionpair =
           BEAMINTERACTION::BeamPotentialPair::Create(ele_ptrs, beam_potential_params());
 
-      newbeaminteractionpair->Init(beam_potential_params_ptr(), ele_ptrs[0], ele_ptrs[1]);
+      newbeaminteractionpair->init(beam_potential_params_ptr(), ele_ptrs[0], ele_ptrs[1]);
 
-      newbeaminteractionpair->Setup();
+      newbeaminteractionpair->setup();
 
       beam_potential_element_pairs_.push_back(newbeaminteractionpair);
     }

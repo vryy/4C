@@ -106,7 +106,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidType::Create(
 Core::Communication::ParObject* Discret::ELEMENTS::SolidType::Create(const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Solid(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -163,14 +163,14 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Solid::Sur
   return Core::Communication::GetElementSurfaces<StructuralSurface, Solid>(*this);
 }
 
-void Discret::ELEMENTS::Solid::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Solid::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   add_to_pack(data, UniqueParObjectId());
 
   // add base class Element
-  Core::Elements::Element::Pack(data);
+  Core::Elements::Element::pack(data);
 
   add_to_pack(data, (int)celltype_);
 
@@ -178,10 +178,10 @@ void Discret::ELEMENTS::Solid::Pack(Core::Communication::PackBuffer& data) const
 
   data.add_to_pack(material_post_setup_);
 
-  Discret::ELEMENTS::Pack(solid_calc_variant_, data);
+  Discret::ELEMENTS::pack(solid_calc_variant_, data);
 }
 
-void Discret::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Solid::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -190,7 +190,7 @@ void Discret::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Core::Elements::Element::Unpack(basedata);
+  Core::Elements::Element::unpack(basedata);
 
   celltype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
 
@@ -206,7 +206,7 @@ void Discret::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
   // reset solid interface
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
 
-  Discret::ELEMENTS::Unpack(solid_calc_variant_, position, data);
+  Discret::ELEMENTS::unpack(solid_calc_variant_, position, data);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -244,7 +244,7 @@ bool Discret::ELEMENTS::Solid::ReadElement(
 
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
   std::visit(
-      [&](auto& interface) { interface->Setup(*SolidMaterial(), linedef); }, solid_calc_variant_);
+      [&](auto& interface) { interface->setup(*SolidMaterial(), linedef); }, solid_calc_variant_);
   return true;
 }
 

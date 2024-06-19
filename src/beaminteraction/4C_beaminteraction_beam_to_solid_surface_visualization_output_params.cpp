@@ -41,7 +41,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::Init()
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::init()
 {
   issetup_ = false;
   isinit_ = true;
@@ -50,7 +50,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::Init()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::Setup()
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::setup()
 {
   check_init();
 

@@ -84,11 +84,11 @@ void FSI::FluidXFEMAlgorithm::solve() { MBFluidField()->nonlinear_solve(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidXFEMAlgorithm::update() { MBFluidField()->Update(); }
+void FSI::FluidXFEMAlgorithm::update() { MBFluidField()->update(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidXFEMAlgorithm::output() { MBFluidField()->Output(); }
+void FSI::FluidXFEMAlgorithm::output() { MBFluidField()->output(); }
 
 FOUR_C_NAMESPACE_CLOSE

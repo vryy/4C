@@ -85,7 +85,7 @@ namespace
       pair_elements.push_back(&(*beam_element));
       pair_elements.push_back(&(*solid_element));
       contact_pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);
-      contact_pair.Init(Teuchos::null, pair_elements);
+      contact_pair.init(Teuchos::null, pair_elements);
 
       // Evaluate the local matrices.
       Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> local_D(false);
@@ -96,7 +96,7 @@ namespace
       contact_pair.ele1pos_.shape_function_data_ = q_beam.shape_function_data_;
       contact_pair.ele2posref_ = q_solid;
       contact_pair.ele2pos_.shape_function_data_ = q_solid.shape_function_data_;
-      contact_pair.cast_geometry_pair()->Evaluate(
+      contact_pair.cast_geometry_pair()->evaluate(
           contact_pair.ele1posref_, contact_pair.ele2posref_, contact_pair.line_to_3D_segments_);
       contact_pair.evaluate_dm(local_D, local_M, local_kappa, local_constraint);
 

@@ -86,7 +86,7 @@ void fpsi_drt()
   fpsi = FPSI_UTILS->setup_discretizations(comm, fpsidynparams, poroelastdynparams);
 
   // 3.1- Read restart if needed.
-  const int restartstep = problem->Restart();
+  const int restartstep = problem->restart();
   if (restartstep)
   {
     fpsi->read_restart(restartstep);

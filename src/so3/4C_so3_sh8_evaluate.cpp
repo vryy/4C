@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -368,7 +368,7 @@ int Discret::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
         oldfeas->putScalar(0.0);
       }
       // Update of history for materials
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
     }
     break;
 
@@ -471,14 +471,14 @@ int Discret::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     case Core::Elements::struct_calc_recover:
-      SoHex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+      SoHex8::evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
       break;
     case Core::Elements::struct_calc_energy:
     {
       if (eastype_ == Discret::ELEMENTS::SoHex8::soh8_easmild)
       {
-        SoHex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+        SoHex8::evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
             elevec2_epetra, elevec3_epetra);
         return 0;
       }
@@ -517,7 +517,7 @@ int Discret::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_mass_volume:
     case Core::Elements::analyse_jacobian_determinant:
     {
-      SoHex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+      SoHex8::evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
       break;
     }
@@ -929,8 +929,8 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
       soh8_error_handling(
           detJ_cur, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
 
-      if (stiffmatrix) stiffmatrix->Clear();
-      if (force) force->Clear();
+      if (stiffmatrix) stiffmatrix->clear();
+      if (force) force->clear();
 
       return;
     }
@@ -972,8 +972,8 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
       soh8_error_handling(
           I3, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
 
-      if (stiffmatrix) stiffmatrix->Clear();
-      if (force) force->Clear();
+      if (stiffmatrix) stiffmatrix->clear();
+      if (force) force->clear();
 
       return;
     }
@@ -1021,7 +1021,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
-    SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses if necessary
@@ -1845,7 +1845,7 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
 
     for (auto& conu : cond0)
     {
-      int tmp = conu->parameters().Get<int>("ConditionID");
+      int tmp = conu->parameters().get<int>("ConditionID");
       if (tmp < condnum0) condnum0 = tmp;
     }
     if (condnum0 ==
@@ -1855,7 +1855,7 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
 
     for (auto& conu : cond1)
     {
-      int tmp = conu->parameters().Get<int>("ConditionID");
+      int tmp = conu->parameters().get<int>("ConditionID");
       if (tmp < condnum1) condnum1 = tmp;
     }
     if (condnum1 ==
@@ -1990,7 +1990,7 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh8Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
 {
   // sosh8_gmshplotdis(dis);
 
@@ -2053,7 +2053,7 @@ int Discret::ELEMENTS::SoSh8Type::Initialize(Core::FE::Discretization& dis)
         {
           Mat::ViscoAnisotropic* visco =
               dynamic_cast<Mat::ViscoAnisotropic*>(actele->Material().get());
-          visco->Setup(NUMGPT_SOH8, actele->thickvec_);
+          visco->setup(NUMGPT_SOH8, actele->thickvec_);
           if (actele->thickvec_.size() == 0)
             FOUR_C_THROW("zero size thickness vector for element %d", actele->Id());
         }

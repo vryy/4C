@@ -27,11 +27,11 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      nummat_elast_(matdata.parameters.Get<int>("NUMMATEL")),
-      matids_elast_(matdata.parameters.Get<std::vector<int>>("MATIDSEL")),
-      numfac_inel_(matdata.parameters.Get<int>("NUMFACINEL")),
-      inel_defgradfacids_(matdata.parameters.Get<std::vector<int>>("INELDEFGRADFACIDS")),
-      density_(matdata.parameters.Get<double>("DENS"))
+      nummat_elast_(matdata.parameters.get<int>("NUMMATEL")),
+      matids_elast_(matdata.parameters.get<std::vector<int>>("MATIDSEL")),
+      numfac_inel_(matdata.parameters.get<int>("NUMFACINEL")),
+      inel_defgradfacids_(matdata.parameters.get<std::vector<int>>("INELDEFGRADFACIDS")),
+      density_(matdata.parameters.get<double>("DENS"))
 {
   // check if sizes fit
   if (nummat_elast_ != static_cast<int>(matids_elast_.size()))
@@ -60,7 +60,7 @@ Core::Communication::ParObject* Mat::MultiplicativeSplitDefgradElastHyperType::C
     const std::vector<char>& data)
 {
   auto* splitdefgrad_elhy = new Mat::MultiplicativeSplitDefgradElastHyper();
-  splitdefgrad_elhy->Unpack(data);
+  splitdefgrad_elhy->unpack(data);
 
   return splitdefgrad_elhy;
 }
@@ -93,12 +93,12 @@ Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
     elastic_summand->register_anisotropy_extensions(*anisotropy_);
   }
 
-  inelastic_->Setup(params);
+  inelastic_->setup(params);
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::Pack(Core::Communication::PackBuffer& data) const
+void Mat::MultiplicativeSplitDefgradElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -121,7 +121,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::Pack(Core::Communication::PackBu
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::Unpack(const std::vector<char>& data)
+void Mat::MultiplicativeSplitDefgradElastHyper::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   params_ = nullptr;
@@ -167,18 +167,18 @@ void Mat::MultiplicativeSplitDefgradElastHyper::Unpack(const std::vector<char>& 
     }
 
     // inelastic deformation gradient factors
-    inelastic_->Setup(params_);
+    inelastic_->setup(params_);
   }
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::Evaluate(
+void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
     const Core::LinAlg::Matrix<3, 3>* const defgrad, const Core::LinAlg::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>* stress,
     Core::LinAlg::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
-  // do all stuff that only has to be done once per Evaluate() call
+  // do all stuff that only has to be done once per evaluate() call
   pre_evaluate(params, gp);
 
   // static variables
@@ -225,7 +225,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::Evaluate(
   // if cmat != nullptr, we are evaluating the structural residual and linearizations, so we need to
   // calculate the stresses and the cmat if you like to evaluate the off-diagonal block of your
   // monolithic system (structural residual w.r.t. dofs of another field), you need to pass nullptr
-  // as the cmat when you call Evaluate() in the element
+  // as the cmat when you call evaluate() in the element
   if (cmat != nullptr)
   {
     // cmat = 2 dS/dC = 2 \frac{\partial S}{\partial C} + 2 \frac{\partial S}{\partial F_{in}^{-1}}
@@ -350,10 +350,10 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_cauchy_n_dir_and_deriva
     // calculation of \partial b_{el} / \partial F (elastic left cauchy-green w.r.t. deformation
     // gradient)
     static Core::LinAlg::Matrix<6, 9> d_be_dFe(true);
-    d_be_dFe.Clear();
+    d_be_dFe.clear();
     add_right_non_symmetric_holzapfel_product_strain_like(d_be_dFe, idM, FeM, 1.0);
     static Core::LinAlg::Matrix<9, 9> d_Fe_dF(true);
-    d_Fe_dF.Clear();
+    d_Fe_dF.clear();
     add_non_symmetric_product(1.0, idM, iFinM, d_Fe_dF);
     static Core::LinAlg::Matrix<6, 9> d_be_dF(true);
     d_be_dF.Multiply(1.0, d_be_dFe, d_Fe_dF, 0.0);
@@ -451,7 +451,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_linearization_od(
 
   // calculate the derivative of the deformation gradient w.r.t. the inelastic deformation gradient
   static Core::LinAlg::Matrix<9, 9> d_F_dFin(true);
-  d_F_dFin.Clear();
+  d_F_dFin.clear();
   add_non_symmetric_product(1.0, FeM, idM, d_F_dFin);
 
   static Core::LinAlg::Matrix<9, 1> d_Fin_dx(true);
@@ -477,8 +477,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_stress_cmat_iso(
     Core::LinAlg::Matrix<6, 1>& stress, Core::LinAlg::Matrix<6, 6>& cmatiso) const
 {
   // clear variables
-  stress.Clear();
-  cmatiso.Clear();
+  stress.clear();
+  cmatiso.clear();
 
   // 2nd Piola Kirchhoff stresses
   stress.Update(gamma(0), iCinV, 1.0);
@@ -571,8 +571,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_invariant_derivatives(
     Core::LinAlg::Matrix<3, 1>& dPI, Core::LinAlg::Matrix<6, 1>& ddPII) const
 {
   // clear variables
-  dPI.Clear();
-  ddPII.Clear();
+  dPI.clear();
+  ddPII.clear();
 
   // loop over map of associated potential summands
   // derivatives of strain energy function w.r.t. principal invariants
@@ -594,7 +594,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::EvaluatedSdiFin(
     Core::LinAlg::Matrix<6, 9>& dSdiFin) const
 {
   // clear variable
-  dSdiFin.Clear();
+  dSdiFin.clear();
 
   // calculate identity tensor
   static Core::LinAlg::Matrix<3, 3> id(true);
@@ -644,7 +644,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
     const Core::LinAlg::Matrix<6, 9>& dSdiFin, Core::LinAlg::Matrix<6, 6>& cmatadd)
 {
   // clear variable
-  cmatadd.Clear();
+  cmatadd.clear();
 
   const auto& facdefgradin = inelastic_->FacDefGradIn();
   const auto& iFinjM = inelastic_->GetiFinj();
@@ -682,7 +682,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
     for (int i = 0; i < num_contributions; ++i)
     {
       // clear static variable
-      diFindiFinj.Clear();
+      diFindiFinj.clear();
 
       // multiply all inelastic deformation gradients except for range between first and current
       producta = id;
@@ -716,7 +716,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::Setup(
+void Mat::MultiplicativeSplitDefgradElastHyper::setup(
     const int numgp, Input::LineDefinition* linedef)
 {
   // Read anisotropy
@@ -724,15 +724,15 @@ void Mat::MultiplicativeSplitDefgradElastHyper::Setup(
   anisotropy_->read_anisotropy_from_element(linedef);
 
   // elastic materials
-  for (const auto& summand : potsumel_) summand->Setup(numgp, linedef);
+  for (const auto& summand : potsumel_) summand->setup(numgp, linedef);
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::Update()
+void Mat::MultiplicativeSplitDefgradElastHyper::update()
 {
   // loop map of associated potential summands
-  for (const auto& summand : potsumel_) summand->Update();
+  for (const auto& summand : potsumel_) summand->update();
 }
 
 /*--------------------------------------------------------------------*
@@ -742,7 +742,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::EvaluateODStiffMat(PAR::Inelasti
     Core::LinAlg::Matrix<6, 1>& dstressdx)
 {
   // clear variable
-  dstressdx.Clear();
+  dstressdx.clear();
 
   // References to vector of inelastic contributions and inelastic deformation gradients
   const auto& facdefgradin = inelastic_->FacDefGradIn();
@@ -785,7 +785,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::EvaluateODStiffMat(PAR::Inelasti
       if (facdefgradin[i].first == source)
       {
         // clear static variable
-        diFindiFinj.Clear();
+        diFindiFinj.clear();
 
         // multiply all inelastic deformation gradients except for range between first and current
         // in reverse order
@@ -838,7 +838,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::SetConcentrationGP(const double 
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::InelasticFactorsHandler::Setup(Mat::PAR::MultiplicativeSplitDefgradElastHyper* params)
+void Mat::InelasticFactorsHandler::setup(Mat::PAR::MultiplicativeSplitDefgradElastHyper* params)
 {
   facdefgradin_.clear();
   i_finj_.clear();
@@ -891,15 +891,15 @@ void Mat::InelasticFactorsHandler::evaluate_inverse_inelastic_def_grad(
   static Core::LinAlg::Matrix<3, 3> iFin_init_store(true);
 
   // clear variables
-  iFinM.Clear();
-  iFin_init_store.Clear();
+  iFinM.clear();
+  iFin_init_store.clear();
 
   for (int i = 0; i < 3; ++i) iFin_init_store(i, i) = 1.0;
 
   for (int i = 0; i < NumInelasticDefGrad(); ++i)
   {
     // clear tmp variable
-    iFinp.Clear();
+    iFinp.clear();
 
     // calculate inelastic deformation gradient and its inverse
     facdefgradin_[i].second->evaluate_inverse_inelastic_def_grad(defgrad, iFinp);

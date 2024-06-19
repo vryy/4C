@@ -170,8 +170,8 @@ void PoroElastScaTra::PoroScatraPart2WC::prepare_output()
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraPart2WC::update()
 {
-  poro_field()->Update();
-  ScaTraField()->Update();
+  poro_field()->update();
+  ScaTraField()->update();
 
   ScaTraField()->evaluate_error_compared_to_analytical_sol();
 }
@@ -181,7 +181,7 @@ void PoroElastScaTra::PoroScatraPart2WC::update()
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraPart2WC::output()
 {
-  poro_field()->Output();
+  poro_field()->output();
   ScaTraField()->check_and_write_output_and_restart();
 }
 

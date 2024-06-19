@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::FluidBoundary::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,

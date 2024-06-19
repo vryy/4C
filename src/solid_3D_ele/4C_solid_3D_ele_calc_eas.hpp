@@ -108,11 +108,11 @@ namespace Discret
      public:
       SolidEleCalcEas();
 
-      void Setup(Mat::So3Material& solid_material, Input::LineDefinition* linedef);
+      void setup(Mat::So3Material& solid_material, Input::LineDefinition* linedef);
 
-      void Pack(Core::Communication::PackBuffer& data) const;
+      void pack(Core::Communication::PackBuffer& data) const;
 
-      void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+      void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
       void material_post_setup(
           const Core::Elements::Element& ele, Mat::So3Material& solid_material);

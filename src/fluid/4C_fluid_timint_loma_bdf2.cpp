@@ -35,12 +35,12 @@ FLD::TimIntLomaBDF2::TimIntLomaBDF2(const Teuchos::RCP<Core::FE::Discretization>
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntLomaBDF2::Init()
+void FLD::TimIntLomaBDF2::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntBDF2::Init();
-  TimIntLoma::Init();
+  TimIntBDF2::init();
+  TimIntLoma::init();
 
   return;
 }

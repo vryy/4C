@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::ScatraChemotaxisMat::ScatraChemotaxisMat(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      numscal_(matdata.parameters.Get<int>("NUMSCAL")),
-      pair_(matdata.parameters.Get<std::vector<int>>("PAIR")),
-      chemocoeff_(matdata.parameters.Get<double>("CHEMOCOEFF"))
+      numscal_(matdata.parameters.get<int>("NUMSCAL")),
+      pair_(matdata.parameters.get<std::vector<int>>("PAIR")),
+      chemocoeff_(matdata.parameters.get<double>("CHEMOCOEFF"))
 {
   // Some checks for more safety
   if (numscal_ != (int)pair_.size())
@@ -62,7 +62,7 @@ Mat::ScatraChemotaxisMatType Mat::ScatraChemotaxisMatType::instance_;
 Core::Communication::ParObject* Mat::ScatraChemotaxisMatType::Create(const std::vector<char>& data)
 {
   Mat::ScatraChemotaxisMat* scatra_chemotaxis_mat = new Mat::ScatraChemotaxisMat();
-  scatra_chemotaxis_mat->Unpack(data);
+  scatra_chemotaxis_mat->unpack(data);
   return scatra_chemotaxis_mat;
 }
 
@@ -82,7 +82,7 @@ Mat::ScatraChemotaxisMat::ScatraChemotaxisMat(Mat::PAR::ScatraChemotaxisMat* par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraChemotaxisMat::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ScatraChemotaxisMat::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -99,7 +99,7 @@ void Mat::ScatraChemotaxisMat::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraChemotaxisMat::Unpack(const std::vector<char>& data)
+void Mat::ScatraChemotaxisMat::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

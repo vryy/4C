@@ -61,10 +61,10 @@ namespace Adapter
     void prepare_time_step() override;
 
     /// update at time step end
-    void Update() override;
+    void update() override;
 
     /// output results
-    void Output() override;
+    void output() override;
 
     /// read restart information for given time step
     double read_restart(int step) override;

@@ -439,7 +439,7 @@ void SetProblemDimension(const std::map<std::string, testfunct>& functable)
 int main(int argc, char** argv)
 {
   MPI_Init(&argc, &argv);
-  // MPI::Init( argc, argv );
+  // MPI::init( argc, argv );
 
   // feenableexcept( FE_INVALID | FE_DIVBYZERO );
 

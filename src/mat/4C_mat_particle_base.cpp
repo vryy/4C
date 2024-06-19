@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 Mat::PAR::ParticleMaterialBase::ParticleMaterialBase(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      initRadius_(matdata.parameters.Get<double>("INITRADIUS")),
-      initDensity_(matdata.parameters.Get<double>("INITDENSITY"))
+      initRadius_(matdata.parameters.get<double>("INITRADIUS")),
+      initDensity_(matdata.parameters.get<double>("INITDENSITY"))
 {
   // empty constructor
 }

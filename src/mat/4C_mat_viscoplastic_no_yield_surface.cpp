@@ -33,19 +33,19 @@ struct Mat::PreCalculatedTerms
 Mat::PAR::ViscoPlasticNoYieldSurface::ViscoPlasticNoYieldSurface(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      density_(matdata.parameters.Get<double>("DENS")),
-      nue_(matdata.parameters.Get<double>("NUE")),
-      young_(matdata.parameters.Get<double>("YOUNG")),
-      temperature_(matdata.parameters.Get<double>("TEMPERATURE")),
-      pre_exp_fac_(matdata.parameters.Get<double>("PRE_EXP_FAC")),
-      activation_energy_(matdata.parameters.Get<double>("ACTIVATION_ENERGY")),
-      gas_constant_(matdata.parameters.Get<double>("GAS_CONSTANT")),
-      strain_rate_sensitivity_(matdata.parameters.Get<double>("STRAIN_RATE_SENS")),
-      init_flow_res_(matdata.parameters.Get<double>("INIT_FLOW_RES")),
-      flow_res_exp_(matdata.parameters.Get<double>("FLOW_RES_EXP")),
-      flow_res_pre_fac_(matdata.parameters.Get<double>("FLOW_RES_PRE_FAC")),
-      flow_res_sat_fac_(matdata.parameters.Get<double>("FLOW_RES_SAT_FAC")),
-      flow_res_sat_exp_(matdata.parameters.Get<double>("FLOW_RES_SAT_EXP"))
+      density_(matdata.parameters.get<double>("DENS")),
+      nue_(matdata.parameters.get<double>("NUE")),
+      young_(matdata.parameters.get<double>("YOUNG")),
+      temperature_(matdata.parameters.get<double>("TEMPERATURE")),
+      pre_exp_fac_(matdata.parameters.get<double>("PRE_EXP_FAC")),
+      activation_energy_(matdata.parameters.get<double>("ACTIVATION_ENERGY")),
+      gas_constant_(matdata.parameters.get<double>("GAS_CONSTANT")),
+      strain_rate_sensitivity_(matdata.parameters.get<double>("STRAIN_RATE_SENS")),
+      init_flow_res_(matdata.parameters.get<double>("INIT_FLOW_RES")),
+      flow_res_exp_(matdata.parameters.get<double>("FLOW_RES_EXP")),
+      flow_res_pre_fac_(matdata.parameters.get<double>("FLOW_RES_PRE_FAC")),
+      flow_res_sat_fac_(matdata.parameters.get<double>("FLOW_RES_SAT_FAC")),
+      flow_res_sat_exp_(matdata.parameters.get<double>("FLOW_RES_SAT_EXP"))
 {
 }
 
@@ -66,7 +66,7 @@ Core::Communication::ParObject* Mat::ViscoPlasticNoYieldSurfaceType::Create(
     const std::vector<char>& data)
 {
   auto* visco_plastic_no_yield_surface = new Mat::ViscoPlasticNoYieldSurface();
-  visco_plastic_no_yield_surface->Unpack(data);
+  visco_plastic_no_yield_surface->unpack(data);
   return visco_plastic_no_yield_surface;
 }
 
@@ -89,7 +89,7 @@ Mat::ViscoPlasticNoYieldSurface::ViscoPlasticNoYieldSurface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoPlasticNoYieldSurface::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ViscoPlasticNoYieldSurface::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -110,7 +110,7 @@ void Mat::ViscoPlasticNoYieldSurface::Pack(Core::Communication::PackBuffer& data
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoPlasticNoYieldSurface::Unpack(const std::vector<char>& data)
+void Mat::ViscoPlasticNoYieldSurface::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -149,7 +149,7 @@ void Mat::ViscoPlasticNoYieldSurface::Unpack(const std::vector<char>& data)
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
-void Mat::ViscoPlasticNoYieldSurface::Setup(const int numgp, Input::LineDefinition* linedef)
+void Mat::ViscoPlasticNoYieldSurface::setup(const int numgp, Input::LineDefinition* linedef)
 {
   // read initial flow resistance from line definition
   last_flowres_isotropic_.resize(numgp, params_->InitFlowRes());
@@ -166,7 +166,7 @@ void Mat::ViscoPlasticNoYieldSurface::Setup(const int numgp, Input::LineDefiniti
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoPlasticNoYieldSurface::Update()
+void Mat::ViscoPlasticNoYieldSurface::update()
 {
   // this update is done after the global newton loop is converged
   last_plastic_defgrd_inverse_ = current_plastic_defgrd_inverse_;
@@ -175,7 +175,7 @@ void Mat::ViscoPlasticNoYieldSurface::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoPlasticNoYieldSurface::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ViscoPlasticNoYieldSurface::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* strain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -362,7 +362,7 @@ Mat::ViscoPlasticNoYieldSurface::calculate_elastic_stiffness(
 {
   // init and clear elastic stiffness matrix
   static Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> Ce;
-  Ce.Clear();
+  Ce.clear();
   const double eps(1.0e-12);
 
   // elastic parameters
@@ -701,7 +701,7 @@ void Mat::ViscoPlasticNoYieldSurface::setup_cmat(
   //
   const double mfac = youngs_mod / ((1.0 + nue) * (1.0 - 2.0 * nue));  // factor
 
-  cmat.Clear();
+  cmat.clear();
   // write non-zero components --- axial
   cmat(0, 0) = mfac * (1.0 - nue);
   cmat(0, 1) = mfac * nue;

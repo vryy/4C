@@ -30,7 +30,7 @@ XFEM::XFieldField::Coupling::Coupling()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::Coupling::Init(const enum MinDofDiscretization& min_dof_dis)
+void XFEM::XFieldField::Coupling::init(const enum MinDofDiscretization& min_dof_dis)
 {
   min_dof_dis_ = min_dof_dis;
 

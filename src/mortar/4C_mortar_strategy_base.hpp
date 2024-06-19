@@ -268,7 +268,7 @@ namespace Mortar
         Core::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart = false) const = 0;
-    virtual void Evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    virtual void evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void EvaluateMeshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
@@ -280,7 +280,7 @@ namespace Mortar
     virtual bool Friction() const = 0;
     virtual void InitEvalInterface() = 0;
     virtual void InitMortar() = 0;
-    virtual void Initialize() = 0;
+    virtual void initialize() = 0;
     virtual void InitializeUzawa(
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     virtual double InitialPenalty() = 0;

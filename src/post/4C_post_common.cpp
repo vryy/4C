@@ -556,7 +556,7 @@ void PostProblem::read_meshes()
           Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots =
               Teuchos::rcp(new Core::FE::Nurbs::Knotvector());
 
-          knots->Unpack(*packed_knots);
+          knots->unpack(*packed_knots);
 
           if (nurbsdis == nullptr)
           {

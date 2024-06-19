@@ -63,7 +63,7 @@ void Core::FE::Discretization::CheckFilledGlobally()
    * zero*/
   Comm().MinAll(&localfilled, &globalfilled, 1);
 
-  // if not Filled() == true on all the processors call Reset()
+  // if not Filled() == true on all the processors call reset()
   if (!globalfilled) reset();
 }
 
@@ -671,7 +671,7 @@ Teuchos::RCP<std::vector<char>> Core::FE::Discretization::PackMyElements() const
 
   Core::Communication::PackBuffer buffer;
 
-  for (auto* ele : elerowptr_) ele->Pack(buffer);
+  for (auto* ele : elerowptr_) ele->pack(buffer);
 
   auto block = Teuchos::rcp(new std::vector<char>);
   std::swap(*block, buffer());
@@ -688,7 +688,7 @@ Teuchos::RCP<std::vector<char>> Core::FE::Discretization::PackMyNodes() const
 
   Core::Communication::PackBuffer buffer;
 
-  for (auto* node : noderowptr_) node->Pack(buffer);
+  for (auto* node : noderowptr_) node->pack(buffer);
 
   auto block = Teuchos::rcp(new std::vector<char>);
   std::swap(*block, buffer());

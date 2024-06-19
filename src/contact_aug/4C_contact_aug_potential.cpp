@@ -61,7 +61,7 @@ bool CONTACT::Aug::Potential::IsValid::isSameDirection(const Epetra_Vector& dir)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Potential::Setup()
+void CONTACT::Aug::Potential::setup()
 {
   zn_active_ = Teuchos::rcp(new Epetra_Vector(*data_.g_active_n_dof_row_map_ptr()));
 
@@ -99,7 +99,7 @@ void CONTACT::Aug::Potential::Compute()
 {
   if (isvalid_.potential_) return;
 
-  if (not issetup_) FOUR_C_THROW("Call Setup() first!");
+  if (not issetup_) FOUR_C_THROW("Call setup() first!");
 
   const Epetra_Vector& cn = data_.Cn();
 
@@ -250,7 +250,7 @@ double CONTACT::Aug::Potential::get_time_integration_factor() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::Aug::Potential::Get(
+double CONTACT::Aug::Potential::get(
     enum POTENTIAL::Type pot_type, enum POTENTIAL::SetType pot_set) const
 {
   if (not isvalid_.potential_) FOUR_C_THROW("Call Compute() first!");

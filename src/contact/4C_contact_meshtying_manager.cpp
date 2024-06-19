@@ -87,14 +87,14 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
 
     // try to build meshtying group around this condition
     currentgroup.push_back(contactconditions[i]);
-    const auto groupid1 = currentgroup[0]->parameters().Get<int>("Interface ID");
+    const auto groupid1 = currentgroup[0]->parameters().get<int>("Interface ID");
     bool foundit = false;
 
     for (unsigned j = 0; j < contactconditions.size(); ++j)
     {
       if (j == i) continue;  // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
-      const auto groupid2 = tempcond->parameters().Get<int>("Interface ID");
+      const auto groupid2 = tempcond->parameters().get<int>("Interface ID");
       if (groupid1 != groupid2) continue;  // not in the group
       foundit = true;                      // found a group entry
       currentgroup.push_back(tempcond);    // store it in currentgroup
@@ -129,7 +129,7 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
 
     for (unsigned j = 0; j < sides.size(); ++j)
     {
-      sides[j] = &currentgroup[j]->parameters().Get<std::string>("Side");
+      sides[j] = &currentgroup[j]->parameters().get<std::string>("Side");
       if (*sides[j] == "Slave")
       {
         hasslave = true;
@@ -155,7 +155,7 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
 
     for (unsigned j = 0; j < sides.size(); ++j)
     {
-      active[j] = &currentgroup[j]->parameters().Get<std::string>("Initialization");
+      active[j] = &currentgroup[j]->parameters().get<std::string>("Initialization");
       if (*sides[j] == "Slave")
       {
         // slave sides must be initialized as "Active"
@@ -245,7 +245,7 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
           if (contactSymconditions.at(j)->ContainsNode(node->Id()))
           {
             const std::vector<int>& onoff =
-                contactSymconditions.at(j)->parameters().Get<std::vector<int>>("onoff");
+                contactSymconditions.at(j)->parameters().get<std::vector<int>>("onoff");
             for (unsigned k = 0; k < onoff.size(); k++)
               if (onoff.at(k) == 1) mtnode->DbcDofs()[k] = true;
           }

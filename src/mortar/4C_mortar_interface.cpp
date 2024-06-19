@@ -1583,7 +1583,7 @@ void Mortar::Interface::CreateSearchTree()
     binarytree_ = Teuchos::rcp(new Mortar::BinaryTree(
         Discret(), selecolmap_, melefullmap, Dim(), SearchParam(), updatetype, SearchUseAuxPos()));
     // initialize the binary tree
-    binarytree_->Init();
+    binarytree_->init();
   }
 }
 
@@ -1940,7 +1940,7 @@ Teuchos::RCP<Epetra_Map> Mortar::Interface::redistribute_lag_mult_sets() const
 /*----------------------------------------------------------------------*
  |  initialize / reset mortar interface                       popp 01/08|
  *----------------------------------------------------------------------*/
-void Mortar::Interface::Initialize()
+void Mortar::Interface::initialize()
 {
   // loop over all nodes to reset stuff (fully overlapping column map)
   for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
@@ -2218,7 +2218,7 @@ void Mortar::Interface::EvaluateGeometry(std::vector<Teuchos::RCP<Mortar::IntCel
 /*----------------------------------------------------------------------*
  |  evaluate mortar coupling (public)                         popp 11/07|
  *----------------------------------------------------------------------*/
-void Mortar::Interface::Evaluate(
+void Mortar::Interface::evaluate(
     int rriter, const int& step, const int& iter, Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Mortar::Interface::Evaluate");

@@ -26,7 +26,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Wall1ScatraType::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Wall1Scatra* object = new Discret::ELEMENTS::Wall1Scatra(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -98,7 +98,7 @@ Core::Elements::Element* Discret::ELEMENTS::Wall1Scatra::Clone() const
  |  Pack data                                                  (public) |
  |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Scatra::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Wall1Scatra::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -109,7 +109,7 @@ void Discret::ELEMENTS::Wall1Scatra::Pack(Core::Communication::PackBuffer& data)
   add_to_pack(data, impltype_);
 
   // add base class Element
-  Wall1::Pack(data);
+  Wall1::pack(data);
 
   return;
 }
@@ -119,7 +119,7 @@ void Discret::ELEMENTS::Wall1Scatra::Pack(Core::Communication::PackBuffer& data)
  |  Unpack data                                                (public) |
  |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Scatra::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Wall1Scatra::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -131,7 +131,7 @@ void Discret::ELEMENTS::Wall1Scatra::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Wall1::Unpack(basedata);
+  Wall1::unpack(basedata);
 }
 
 /*----------------------------------------------------------------------*

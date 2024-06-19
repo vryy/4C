@@ -56,10 +56,10 @@ Adapter::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Di
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidFSI::Init()
+void Adapter::FluidFSI::init()
 {
   // call base class init
-  FluidWrapper::Init();
+  FluidWrapper::init();
 
   // cast fluid to fluidimplicit
   if (fluidimpl_ == Teuchos::null)
@@ -159,7 +159,7 @@ double Adapter::FluidFSI::TimeScaling() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidFSI::Update()
+void Adapter::FluidFSI::update()
 {
   if (Global::Problem::Instance()->spatial_approximation_type() !=
       Core::FE::ShapeFunctionType::hdg)  // TODO als fix this!
@@ -169,7 +169,7 @@ void Adapter::FluidFSI::Update()
     interfaceforcen_ = fluidimpl_->ExtrapolateEndPoint(interfaceforcen_, interfaceforcem);
   }
 
-  FluidWrapper::Update();
+  FluidWrapper::update();
 }
 
 
@@ -285,7 +285,7 @@ void Adapter::FluidFSI::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> grid
  *----------------------------------------------------------------------*/
 void Adapter::FluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master)
 {
-  meshmap_->Setup(*dis_->dof_row_map(nds_master), mm,
+  meshmap_->setup(*dis_->dof_row_map(nds_master), mm,
       Core::LinAlg::SplitMap(*dis_->dof_row_map(nds_master), *mm));
 }
 
@@ -459,12 +459,12 @@ void Adapter::FluidFSI::ProjVelToDivZero()
     // Reshape element matrices and vectors and initialize to zero
     elevector1.size(eledim);
 
-    // set action in order to calculate the integrated divergence operator via an Evaluate()-call
+    // set action in order to calculate the integrated divergence operator via an evaluate()-call
     Teuchos::ParameterList params;
     params.set<int>("action", FLD::calc_divop);
 
     // call the element specific evaluate method
-    actele->Evaluate(
+    actele->evaluate(
         params, *discretization(), lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
 
     // assembly
@@ -538,10 +538,10 @@ void Adapter::FluidFSI::ProjVelToDivZero()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Adapter::FluidFSI::Reset(bool completeReset, int numsteps, int iter)
+void Adapter::FluidFSI::reset(bool completeReset, int numsteps, int iter)
 
 {
-  FluidWrapper::Reset(completeReset, numsteps, iter);
+  FluidWrapper::reset(completeReset, numsteps, iter);
   return;
 }
 
@@ -701,7 +701,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidFSI::calculate_wall_shear_stresses()
   // Get WSSManager
   Teuchos::RCP<FLD::UTILS::StressManager> stressmanager = fluidimpl_->StressManager();
 
-  // Since the WSS Manager cannot be initialized in the FluidImplicitTimeInt::Init()
+  // Since the WSS Manager cannot be initialized in the FluidImplicitTimeInt::init()
   // it is not so sure if the WSSManager is jet initialized. So let's be safe here..
   if (stressmanager == Teuchos::null) FOUR_C_THROW("Call of StressManager failed!");
   if (not stressmanager->is_init()) FOUR_C_THROW("StressManager has not been initialized jet!");
@@ -823,7 +823,7 @@ std::string Adapter::FluidFSI::GetTimAdaMethodName() const
  *----------------------------------------------------------------------*/
 void Adapter::FluidFSI::setup_interface(const int nds_master)
 {
-  interface_->Setup(*dis_, false, false, nds_master);
+  interface_->setup(*dis_, false, false, nds_master);
 }
 
 /*----------------------------------------------------------------------*

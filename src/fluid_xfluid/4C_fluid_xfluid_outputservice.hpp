@@ -81,7 +81,7 @@ namespace FLD
     void prepare_output();
 
     /// standard output routine
-    void Output(int step, double time, bool write_restart_data,
+    void output(int step, double time, bool write_restart_data,
         Teuchos::RCP<const FLD::XFluidState> state,
         Teuchos::RCP<Epetra_Vector> dispnp = Teuchos::null,
         Teuchos::RCP<Epetra_Vector> gridvnp = Teuchos::null);

@@ -80,8 +80,8 @@ void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
       Discret::ELEMENTS::get_gauss_rule_stiffness_matrix<celltype>());
 
   // get values and switches from the condition
-  const auto& onoff = condition.parameters().Get<std::vector<int>>("onoff");
-  const auto& value = condition.parameters().Get<std::vector<double>>("val");
+  const auto& onoff = condition.parameters().get<std::vector<int>>("onoff");
+  const auto& value = condition.parameters().get<std::vector<double>>("val");
 
   // ensure that at least as many curves/functs as dofs are available
   if (onoff.size() < numdim)
@@ -99,7 +99,7 @@ void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
   }
 
   // get ids of functions of space and time
-  const auto& function_ids = condition.parameters().Get<std::vector<int>>("funct");
+  const auto& function_ids = condition.parameters().get<std::vector<int>>("funct");
 
   const ElementNodes<celltype> nodal_coordinates =
       evaluate_element_nodes<celltype>(element, discretization, dof_index_array);
@@ -131,7 +131,7 @@ void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
                 (function_number > 0)
                     ? Global::Problem::Instance()
                           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(function_number - 1)
-                          .Evaluate(gauss_point_reference_coordinates.A(), total_time, dim)
+                          .evaluate(gauss_point_reference_coordinates.A(), total_time, dim)
                     : 1.0;
 
             const double value_times_integration_factor =

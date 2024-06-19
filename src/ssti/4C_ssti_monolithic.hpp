@@ -84,10 +84,10 @@ namespace SSTI
 
     //! Setup of algorithm
     //@{
-    void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& sstitimeparams,
+    void init(const Epetra_Comm& comm, const Teuchos::ParameterList& sstitimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams,
         const Teuchos::ParameterList& structparams) override;
-    void Setup() override;
+    void setup() override;
     void SetupSystem() override;
     //@}
 

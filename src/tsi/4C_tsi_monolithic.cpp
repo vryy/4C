@@ -103,7 +103,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
         1, "temperature", volcoupl_->apply_vector_mapping12(ThermoField()->Tempnp()));
 
   // setup structural time integrator with initial temperature
-  structure_->Setup();
+  structure_->setup();
   structure_field()->discretization()->ClearState(true);
 
   blockrowdofmap_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor);
@@ -215,7 +215,7 @@ void TSI::Monolithic::read_restart(int step)
   EvalData->SetActionType(Core::Elements::struct_calc_reset_istep);
   p.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", EvalData);
   p.set<std::string>("action", "calc_struct_reset_istep");
-  structure_field()->discretization()->Evaluate(p);
+  structure_field()->discretization()->evaluate(p);
 
 
   return;
@@ -472,7 +472,7 @@ void TSI::Monolithic::NewtonFull()
   // 1.) Update(iterinc_),
   // 2.) evaluate_force_stiff_residual(),
   // 3.) prepare_system_for_newton_solve() --> if (locsysman_!=null) k_ss is rotated
-  Evaluate(iterinc_);
+  evaluate(iterinc_);
 
   // create the linear system
   // \f$J(x_i) \Delta x_i = - R(x_i)\f$
@@ -489,7 +489,7 @@ void TSI::Monolithic::NewtonFull()
 
   // do the thermo contact modifications all at once
   if (contact_strategy_lagrange_ != Teuchos::null)
-    contact_strategy_lagrange_->Evaluate(
+    contact_strategy_lagrange_->evaluate(
         SystemMatrix(), rhs_, coupST_, structure_field()->Dispnp(), ThermoField()->Tempnp());
   apply_dbc();
 
@@ -523,7 +523,7 @@ void TSI::Monolithic::NewtonFull()
     double dtcpu = timernewton_.wallTime();
     // *********** time measurement ***********
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
-    // is done in prepare_system_for_newton_solve() within Evaluate(iterinc_)
+    // is done in prepare_system_for_newton_solve() within evaluate(iterinc_)
     linear_solve();
     // *********** time measurement ***********
     dtsolve_ = timernewton_.wallTime() - dtcpu;
@@ -542,7 +542,7 @@ void TSI::Monolithic::NewtonFull()
     // 1.) Update(iterinc_),
     // 2.) evaluate_force_stiff_residual(),
     // 3.) prepare_system_for_newton_solve() --> if (locsysman_!=null) k_ss is rotated
-    Evaluate(iterinc_);
+    evaluate(iterinc_);
 
     // create the linear system
     // \f$J(x_i) \Delta x_i = - R(x_i)\f$
@@ -564,7 +564,7 @@ void TSI::Monolithic::NewtonFull()
       double dtcpu = timernewton_.wallTime();
       // *********** time measurement ***********
 
-      contact_strategy_lagrange_->Evaluate(
+      contact_strategy_lagrange_->evaluate(
           SystemMatrix(), rhs_, coupST_, structure_field()->Dispnp(), ThermoField()->Tempnp());
 
       // *********** time measurement ***********
@@ -591,7 +591,7 @@ void TSI::Monolithic::NewtonFull()
         {
           iterinc_->Scale(.5);
           ls_step_length_ *= .5;
-          Evaluate(iterinc_);
+          evaluate(iterinc_);
           normstrrhs_ = calculate_vector_norm(iternormstr_, structure_field()->RHS());
           normthrrhs_ = calculate_vector_norm(iternormthr_, ThermoField()->RHS());
         }
@@ -717,7 +717,7 @@ void TSI::Monolithic::PTC()
   // 1.) Update(iterinc_),
   // 2.) evaluate_force_stiff_residual(),
   // 3.) prepare_system_for_newton_solve() --> if (locsysman_!=null) k_ss is rotated
-  Evaluate(iterinc_);
+  evaluate(iterinc_);
 
   // create the linear system
   // \f$J(x_i) \Delta x_i = - R(x_i)\f$
@@ -806,7 +806,7 @@ void TSI::Monolithic::PTC()
     double dtcpu = timernewton_.wallTime();
     // *********** time measurement ***********
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
-    // is done in prepare_system_for_newton_solve() within Evaluate(iterinc_)
+    // is done in prepare_system_for_newton_solve() within evaluate(iterinc_)
     linear_solve();
     // *********** time measurement ***********
     dtsolve_ = timernewton_.wallTime() - dtcpu;
@@ -822,7 +822,7 @@ void TSI::Monolithic::PTC()
     // 1.) Update(iterinc_),
     // 2.) evaluate_force_stiff_residual(),
     // 3.) prepare_system_for_newton_solve() --> if (locsysman_ != null) k_ss is rotated
-    Evaluate(iterinc_);
+    evaluate(iterinc_);
 
     // create the linear system including PTC-modified systemmatrices k_ss and k_tt
     // \f$J(x_i) \Delta x_i = - R(x_i)\f$
@@ -920,11 +920,11 @@ void TSI::Monolithic::PTC()
 /*----------------------------------------------------------------------*
  | evaluate the single fields                                dano 11/10 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
+void TSI::Monolithic::evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
-  if (Comm().MyPID() == 0) std::cout << "\n TSI::Monolithic::Evaluate()" << std::endl;
+  if (Comm().MyPID() == 0) std::cout << "\n TSI::Monolithic::evaluate()" << std::endl;
 #endif  // TFSI
 #endif  // TSI_DEBUG
 
@@ -1001,9 +1001,9 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
   //     in case of local coordinate systems rotate the residual forth and back
   //     Be AWARE: apply_dirichlet_to_system has to be called with rotated stiff_!
   if (iter_ == 0)
-    structure_field()->Evaluate();
+    structure_field()->evaluate();
   else
-    structure_field()->Evaluate(sx);
+    structure_field()->evaluate(sx);
   structure_field()->discretization()->ClearState(true);
 
 #ifdef TSI_DEBUG
@@ -1046,7 +1046,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
   // monolithic TSI accesses the linearised thermo problem
   //   evaluate_rhs_tang_residual() and
   //   prepare_system_for_newton_solve()
-  ThermoField()->Evaluate();
+  ThermoField()->evaluate();
   ThermoField()->discretization()->ClearState(true);
 #ifdef TSI_DEBUG
 #ifndef TFSI
@@ -1054,11 +1054,11 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
 #endif  // TFSI
 #endif  // TSI_DEBUG
 
-}  // Evaluate()
+}  // evaluate()
 
 
 /*----------------------------------------------------------------------*
- | extract field vectors for calling Evaluate() of the       dano 11/10 |
+ | extract field vectors for calling evaluate() of the       dano 11/10 |
  | single fields                                                        |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::extract_field_vectors(
@@ -1142,7 +1142,7 @@ void TSI::Monolithic::set_dof_row_maps()
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full TSI-blockmap
-  extractor()->Setup(*fullmap, vecSpaces);
+  extractor()->setup(*fullmap, vecSpaces);
 }  // set_dof_row_maps()
 
 
@@ -1175,7 +1175,7 @@ void TSI::Monolithic::setup_system_matrix()
   // structural block k_st (3nxn)
   // build mechanical-thermal block
 
-  k_st_->Reset();
+  k_st_->reset();
   // call the element and calculate the matrix block
 #ifndef MonTSIwithoutTHR
   apply_str_coupl_matrix(k_st_);
@@ -1208,7 +1208,7 @@ void TSI::Monolithic::setup_system_matrix()
   // thermo part k_ts (nx3n)
   // build thermal-mechanical block
 
-  k_ts_->Reset();
+  k_ts_->reset();
 
   // call the element and calculate the matrix block
 #if ((!defined(MonTSIwithoutSTR)) and (!defined(COUPLEINITTEMPERATURE)))
@@ -1941,7 +1941,7 @@ void TSI::Monolithic::apply_str_coupl_matrix(
 
 
   sparams.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", EvalData);
-  structure_field()->discretization()->Evaluate(sparams, structuralstrategy);
+  structure_field()->discretization()->evaluate(sparams, structuralstrategy);
   structure_field()->discretization()->ClearState(true);
 
   // add nitsche contact integral
@@ -2092,7 +2092,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the thermal-mechanical system matrix on the thermal element
-  ThermoField()->discretization()->Evaluate(tparams, thermostrategy);
+  ThermoField()->discretization()->evaluate(tparams, thermostrategy);
   ThermoField()->discretization()->ClearState(true);
 
   // add nitsche contact integral

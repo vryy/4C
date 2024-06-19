@@ -348,7 +348,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
  *
  */
 template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surface>::Evaluate(
+void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surface>::evaluate(
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<surface, scalar_type>& element_data_surface,
     std::vector<LineSegment<scalar_type>>& segments) const
@@ -363,7 +363,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
   }
 
   // Call Evaluate on the double pair.
-  geometry_pair_double_->Evaluate(ElementDataToDouble<line>::ToDouble(element_data_line),
+  geometry_pair_double_->evaluate(ElementDataToDouble<line>::ToDouble(element_data_line),
       ElementDataToDouble<surface>::ToDouble(element_data_surface), segments_double);
 
   // Get the face parameters.

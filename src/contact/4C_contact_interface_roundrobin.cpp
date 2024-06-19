@@ -130,7 +130,7 @@ void CONTACT::Interface::round_robin_change_ownership()
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
 
-    mele->Pack(dataeles);
+    mele->pack(dataeles);
 
     // check for ghosting
     const int ghost = (mele->Owner() == myrank) ? 1 : 0;
@@ -228,7 +228,7 @@ void CONTACT::Interface::round_robin_change_ownership()
     if (ftype == Inpar::CONTACT::friction_none)
     {
       Mortar::Node* cnode = dynamic_cast<Mortar::Node*>(node);
-      cnode->Pack(datanodes);
+      cnode->pack(datanodes);
 
       if (cnode->Owner() == myrank)
         ghost = 1;
@@ -238,7 +238,7 @@ void CONTACT::Interface::round_robin_change_ownership()
     else
     {
       FriNode* cnode = dynamic_cast<FriNode*>(node);
-      cnode->Pack(datanodes);
+      cnode->pack(datanodes);
 
       if (cnode->Owner() == myrank)
         ghost = 1;

@@ -20,8 +20,8 @@ template <typename T>
 MIXTURE::PAR::RemodelFiberMaterialExponential<T>::RemodelFiberMaterialExponential(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : RemodelFiberMaterial<T>(matdata),
-      params_{matdata.parameters.Get<double>("K1"), matdata.parameters.Get<double>("K2"),
-          matdata.parameters.Get<bool>("COMPRESSION")}
+      params_{matdata.parameters.get<double>("K1"), matdata.parameters.get<double>("K2"),
+          matdata.parameters.get<bool>("COMPRESSION")}
 {
 }
 

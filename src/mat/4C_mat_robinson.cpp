@@ -68,22 +68,22 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::Robinson::Robinson(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      kind_((matdata.parameters.Get<std::string>("KIND"))),
-      youngs_((matdata.parameters.Get<std::vector<double>>("YOUNG"))),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      thermexpans_(matdata.parameters.Get<double>("THEXPANS")),
-      inittemp_(matdata.parameters.Get<double>("INITTEMP")),
-      hrdn_fact_(matdata.parameters.Get<double>("HRDN_FACT")),
-      hrdn_expo_(matdata.parameters.Get<double>("HRDN_EXPO")),
-      shrthrshld_((matdata.parameters.Get<std::vector<double>>("SHRTHRSHLD"))),
-      rcvry_(matdata.parameters.Get<double>("RCVRY")),
-      actv_ergy_(matdata.parameters.Get<double>("ACTV_ERGY")),
-      actv_tmpr_(matdata.parameters.Get<double>("ACTV_TMPR")),
-      g0_(matdata.parameters.Get<double>("G0")),
-      m_(matdata.parameters.Get<double>("M_EXPO")),
-      beta_((matdata.parameters.Get<std::vector<double>>("BETA"))),
-      h_(matdata.parameters.Get<double>("H_FACT"))
+      kind_((matdata.parameters.get<std::string>("KIND"))),
+      youngs_((matdata.parameters.get<std::vector<double>>("YOUNG"))),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      thermexpans_(matdata.parameters.get<double>("THEXPANS")),
+      inittemp_(matdata.parameters.get<double>("INITTEMP")),
+      hrdn_fact_(matdata.parameters.get<double>("HRDN_FACT")),
+      hrdn_expo_(matdata.parameters.get<double>("HRDN_EXPO")),
+      shrthrshld_((matdata.parameters.get<std::vector<double>>("SHRTHRSHLD"))),
+      rcvry_(matdata.parameters.get<double>("RCVRY")),
+      actv_ergy_(matdata.parameters.get<double>("ACTV_ERGY")),
+      actv_tmpr_(matdata.parameters.get<double>("ACTV_TMPR")),
+      g0_(matdata.parameters.get<double>("G0")),
+      m_(matdata.parameters.get<double>("M_EXPO")),
+      beta_((matdata.parameters.get<std::vector<double>>("BETA"))),
+      h_(matdata.parameters.get<double>("H_FACT"))
 {
 }
 
@@ -109,7 +109,7 @@ Mat::RobinsonType Mat::RobinsonType::instance_;
 Core::Communication::ParObject* Mat::RobinsonType::Create(const std::vector<char>& data)
 {
   Mat::Robinson* robinson = new Mat::Robinson();
-  robinson->Unpack(data);
+  robinson->unpack(data);
   return robinson;
 }
 
@@ -129,7 +129,7 @@ Mat::Robinson::Robinson(Mat::PAR::Robinson* params) : plastic_step(false), param
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 11/11 |
  *----------------------------------------------------------------------*/
-void Mat::Robinson::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Robinson::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -169,13 +169,13 @@ void Mat::Robinson::Pack(Core::Communication::PackBuffer& data) const
 
   return;
 
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack (public)                                           dano 11/11 |
  *----------------------------------------------------------------------*/
-void Mat::Robinson::Unpack(const std::vector<char>& data)
+void Mat::Robinson::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -250,13 +250,13 @@ void Mat::Robinson::Unpack(const std::vector<char>& data)
 
   return;
 
-}  // Unpack()
+}  // unpack()
 
 
 /*---------------------------------------------------------------------*
  | initialise / allocate internal stress variables (public) dano 11/11 |
  *---------------------------------------------------------------------*/
-void Mat::Robinson::Setup(const int numgp, Input::LineDefinition* linedef)
+void Mat::Robinson::setup(const int numgp, Input::LineDefinition* linedef)
 {
   // temporary variable for read-in
   std::string buffer;
@@ -301,13 +301,13 @@ void Mat::Robinson::Setup(const int numgp, Input::LineDefinition* linedef)
 
   return;
 
-}  // Setup()
+}  // setup()
 
 
 /*---------------------------------------------------------------------*
  | update after time step                          (public) dano 11/11 |
  *---------------------------------------------------------------------*/
-void Mat::Robinson::Update()
+void Mat::Robinson::update()
 {
   // make current values at time step t_n+1 to values of last step t_n
   // x_n := x_n+1
@@ -337,7 +337,7 @@ void Mat::Robinson::Update()
 
   return;
 
-}  // Update()
+}  // update()
 
 
 /*----------------------------------------------------------------------*
@@ -345,7 +345,7 @@ void Mat::Robinson::Update()
  | select Robinson's material, integrate internal variables and return  |
  | stress and material tangent                                          |
  *----------------------------------------------------------------------*/
-void Mat::Robinson::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* strain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -527,7 +527,7 @@ void Mat::Robinson::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // set in parameter list
   params.set<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>("plglstrain", plstrain);
 
-}  // Evaluate()
+}  // evaluate()
 
 
 /*----------------------------------------------------------------------*
@@ -555,7 +555,7 @@ void Mat::Robinson::setup_cmat(
   const double mfac = emod / ((1.0 + nu) * (1.0 - 2.0 * nu));  // factor
 
   // clear the material tangent
-  cmat.Clear();
+  cmat.clear();
   // write non-zero components --- axial
   cmat(0, 0) = mfac * (1.0 - nu);
   cmat(0, 1) = mfac * nu;

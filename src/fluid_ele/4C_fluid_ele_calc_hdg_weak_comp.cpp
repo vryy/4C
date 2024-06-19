@@ -72,7 +72,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InitializeShapes(
 
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate(Discret::ELEMENTS::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -82,14 +82,14 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(Discret::ELEME
     Core::LinAlg::SerialDenseVector& elevec3_epetra, const Core::FE::GaussIntegration&,
     bool offdiag)
 {
-  return this->Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+  return this->evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra, offdiag);
 }
 
 
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate(Discret::ELEMENTS::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix&,
@@ -101,7 +101,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(Discret::ELEME
 
   // initialize shapes
   InitializeShapes(ele);
-  shapes_->Evaluate(*ele, ale_dis_);
+  shapes_->evaluate(*ele, ale_dis_);
 
   // initialize all
   local_solver_->InitializeAll();
@@ -266,7 +266,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(
 
   // initialize shapes
   InitializeShapes(ele);
-  shapes_->Evaluate(*ele, ale_dis_);
+  shapes_->evaluate(*ele, ale_dis_);
 
   // initialize all
   local_solver_->InitializeAll();
@@ -335,7 +335,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::compute_error(
 
   // initialize shapes
   InitializeShapes(ele);
-  shapes_->Evaluate(*ele, ale_dis_);
+  shapes_->evaluate(*ele, ale_dis_);
 
   // get time
   const double time = local_solver_->fldparatimint_->Time();
@@ -449,7 +449,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(Discret::E
   InitializeShapes(ele);
 
   // Evaluate the element at the gauss points
-  shapes_->Evaluate(*ele, ale_dis_);
+  shapes_->evaluate(*ele, ale_dis_);
 
   // reshape elevec2 as matrix
   FOUR_C_ASSERT(elevec2.numRows() == 0 ||
@@ -708,7 +708,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to
     // Evaluating the polinomials in the point given by "shapes_->xsi".
     // The polynomials are the internal ones.
     // The result of the evaluation is given in "values".
-    shapes_->polySpace_->Evaluate(shapes_->xsi, values);
+    shapes_->polySpace_->evaluate(shapes_->xsi, values);
 
     // compute values for internal unknowns by summing over all basis functions
     for (unsigned int m = 0; m <= msd_; ++m)
@@ -792,7 +792,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to
       for (unsigned int idim = 0; idim < nsd_ - 1; idim++)
         shapesface_->xsi(idim) = xsishuffle(idim, i);
       // Actually evaluating shape polynomials in node
-      shapesface_->polySpace_->Evaluate(shapesface_->xsi, fvalues);
+      shapesface_->polySpace_->evaluate(shapesface_->xsi, fvalues);
 
       // compute values for the trace by summing over all basis functions
       {
@@ -842,17 +842,17 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_all(const int
 {
   r = Global::Problem::Instance()
           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-          .Evaluate(xyz.A(), t, 0);
+          .evaluate(xyz.A(), t, 0);
 
   for (unsigned int d = 0; d < nsd_; ++d)
     w(d) = Global::Problem::Instance()
                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-               .Evaluate(xyz.A(), t, 1 + d);
+               .evaluate(xyz.A(), t, 1 + d);
 
   for (unsigned int m = 0; m < msd_; ++m)
     L(m) = Global::Problem::Instance()
                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-               .Evaluate(xyz.A(), t, 1 + nsd_ + m);
+               .evaluate(xyz.A(), t, 1 + nsd_ + m);
 }
 
 
@@ -864,12 +864,12 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_density_momen
 {
   r = Global::Problem::Instance()
           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-          .Evaluate(xyz.A(), t, 0);
+          .evaluate(xyz.A(), t, 0);
 
   for (unsigned int d = 0; d < nsd_; ++d)
     w(d) = Global::Problem::Instance()
                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-               .Evaluate(xyz.A(), t, 1 + d);
+               .evaluate(xyz.A(), t, 1 + d);
 }
 
 
@@ -1082,7 +1082,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_m
     // get viscosity
     double mu = Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(varviscfuncnum - 1)
-                    .Evaluate(xyz.A(), time, 0);
+                    .evaluate(xyz.A(), time, 0);
 
     // evaluate Dw
     for (unsigned int d = 0; d < nsd_; ++d) Dw(d, d) = 2.0 * mu;
@@ -1199,7 +1199,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_i
         for (unsigned int dmod = 0; dmod < (1 + nsd_); ++dmod)
           feg(dmod, q) = Global::Problem::Instance()
                              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(forcefuncnum - 1)
-                             .Evaluate(xyzeg.A(), time, dmod);
+                             .evaluate(xyzeg.A(), time, dmod);
 
       drdteg(q) += N(i, q) * drdte(i);
 

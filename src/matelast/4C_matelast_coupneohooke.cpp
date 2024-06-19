@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::Elastic::PAR::CoupNeoHooke::CoupNeoHooke(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      nue_(matdata.parameters.Get<double>("NUE"))
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      nue_(matdata.parameters.get<double>("NUE"))
 {
   // Material Constants c and beta
   c_ = youngs_ / (4.0 * (1.0 + nue_));

@@ -108,7 +108,7 @@ void Discret::ELEMENTS::FluidXWallBoundary::LocationVector(const Core::FE::Discr
       const int numnode = num_node();
       const Core::Nodes::Node* const* nodes = Nodes();
 
-      la.Clear();
+      la.clear();
 
       // we need to look at all DofSets of our discretization
       for (int dofset = 0; dofset < la.Size(); ++dofset)
@@ -153,7 +153,7 @@ void Discret::ELEMENTS::FluidXWallBoundary::LocationVector(const Core::FE::Discr
                     dirich->Type() != Core::Conditions::SurfaceDirichlet &&
                     dirich->Type() != Core::Conditions::VolumeDirichlet)
                   FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-                flag = &dirich->parameters().Get<std::vector<int>>("onoff");
+                flag = &dirich->parameters().get<std::vector<int>>("onoff");
               }
               for (unsigned j = 0; j < dof.size(); ++j)
               {
@@ -216,7 +216,7 @@ void Discret::ELEMENTS::FluidXWallBoundary::LocationVector(const Core::FE::Discr
         //              dirich->Type()!=Core::Conditions::geometry_type_surfaceDirichlet &&
         //              dirich->Type()!=Core::Conditions::geometry_type_volumeDirichlet)
         //            FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-        //          flag = dirich->Get<std::vector<int> >("onoff");
+        //          flag = dirich->get<std::vector<int> >("onoff");
         //        }
         //        for (unsigned j=0; j<dof.size(); ++j)
         //        {

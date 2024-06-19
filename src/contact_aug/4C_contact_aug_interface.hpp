@@ -253,7 +253,7 @@ namespace CONTACT
       //! @{
 
       //! Initialization of all augmented contact related quantities
-      void Initialize() final;
+      void initialize() final;
 
       /*! \brief Reduced evaluate of the contact interface. We don't need any
        *  search algorithm and we don't have to build the nodal normals again. */

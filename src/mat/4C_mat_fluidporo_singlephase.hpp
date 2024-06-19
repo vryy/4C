@@ -50,7 +50,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// initialize
-      void Initialize();
+      void initialize();
 
       /// @name material parameters
       //@{
@@ -87,7 +87,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// initialize
-      void Initialize();
+      void initialize();
 
       /// @name material parameters
       //@{
@@ -126,7 +126,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// initialize
-      void Initialize();
+      void initialize();
 
       /// @name material parameters
       //@{
@@ -210,7 +210,7 @@ namespace Mat
     FluidPoroSinglePhaseBase(){};
 
     /// initialize
-    virtual void Initialize() = 0;
+    virtual void initialize() = 0;
   };
 
   /*----------------------------------------------------------------------*/
@@ -249,7 +249,7 @@ namespace Mat
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -263,12 +263,12 @@ namespace Mat
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// initialize
-    void Initialize() override;
+    void initialize() override;
 
     /// material type
     Core::Materials::MaterialType MaterialType() const override
@@ -394,7 +394,7 @@ namespace Mat
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -408,12 +408,12 @@ namespace Mat
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// initialize
-    void Initialize() override;
+    void initialize() override;
 
     /// material type
     Core::Materials::MaterialType MaterialType() const override
@@ -489,7 +489,7 @@ namespace Mat
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -503,12 +503,12 @@ namespace Mat
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// initialize
-    void Initialize() override;
+    void initialize() override;
 
     /// material type
     Core::Materials::MaterialType MaterialType() const override

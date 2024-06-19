@@ -34,10 +34,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::Maxwell0dAcinus::Maxwell0dAcinus(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      stiffness1_(matdata.parameters.Get<double>("Stiffness1")),
-      stiffness2_(matdata.parameters.Get<double>("Stiffness2")),
-      viscosity1_(matdata.parameters.Get<double>("Viscosity1")),
-      viscosity2_(matdata.parameters.Get<double>("Viscosity2"))
+      stiffness1_(matdata.parameters.get<double>("Stiffness1")),
+      stiffness2_(matdata.parameters.get<double>("Stiffness2")),
+      viscosity1_(matdata.parameters.get<double>("Viscosity1")),
+      viscosity2_(matdata.parameters.get<double>("Viscosity2"))
 {
 }
 
@@ -53,7 +53,7 @@ Mat::Maxwell0dAcinusType Mat::Maxwell0dAcinusType::instance_;
 Core::Communication::ParObject* Mat::Maxwell0dAcinusType::Create(const std::vector<char>& data)
 {
   Mat::Maxwell0dAcinus* mxwll_0d_acin = new Mat::Maxwell0dAcinus();
-  mxwll_0d_acin->Unpack(data);
+  mxwll_0d_acin->unpack(data);
   return mxwll_0d_acin;
 }
 
@@ -70,7 +70,7 @@ Mat::Maxwell0dAcinus::Maxwell0dAcinus(Mat::PAR::Maxwell0dAcinus* params) : param
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinus::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Maxwell0dAcinus::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -87,7 +87,7 @@ void Mat::Maxwell0dAcinus::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinus::Unpack(const std::vector<char>& data)
+void Mat::Maxwell0dAcinus::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

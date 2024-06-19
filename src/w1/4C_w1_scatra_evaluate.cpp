@@ -88,7 +88,7 @@ int Discret::ELEMENTS::Wall1Scatra::my_evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Wall1Scatra::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Wall1Scatra::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -132,7 +132,7 @@ int Discret::ELEMENTS::Wall1Scatra::Evaluate(Teuchos::ParameterList& params,
       //  break;
       //  case Wall1_Scatra::postprocess_stress:
       //  {
-      //    Wall1::Evaluate(params,
+      //    Wall1::evaluate(params,
       //                          discretization,
       //                          la[0].lm_,
       //                          elemat1_epetra,
@@ -144,7 +144,7 @@ int Discret::ELEMENTS::Wall1Scatra::Evaluate(Teuchos::ParameterList& params,
       //  break;
     /*case Wall1_Scatra::calc_struct_update_istep:
     {
-      so3_ele::Evaluate(params,
+      so3_ele::evaluate(params,
                         discretization,
                         la[0].lm_,
                         elemat1_epetra,
@@ -161,7 +161,7 @@ int Discret::ELEMENTS::Wall1Scatra::Evaluate(Teuchos::ParameterList& params,
 
       pre_evaluate(params, discretization, la);
 
-      Wall1::Evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
+      Wall1::evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
       my_evaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,

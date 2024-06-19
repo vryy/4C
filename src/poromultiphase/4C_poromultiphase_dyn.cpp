@@ -72,7 +72,7 @@ void poromultiphase_dyn(int restart)
       POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(solscheme, poroparams, comm);
 
   // initialize
-  algo->Init(poroparams, poroparams, structdyn, fluiddyn, struct_disname, fluid_disname, true,
+  algo->init(poroparams, poroparams, structdyn, fluiddyn, struct_disname, fluid_disname, true,
       nds_disp, nds_vel, nds_solidpressure,
       -1,  // no scalar field
       &nearbyelepairs);

@@ -369,8 +369,8 @@ void Core::Adapter::Coupling::match_nodes(const Core::FE::Discretization& master
 {
   // match master and slave nodes using octree
   auto tree = Core::COUPLING::NodeMatchingOctree();
-  tree.Init(masterdis, masternodes, 150, tolerance);
-  tree.Setup();
+  tree.init(masterdis, masternodes, 150, tolerance);
+  tree.setup();
 
   std::map<int, std::pair<int, double>> coupling;
   tree.FindMatch(slavedis, slavenodes, coupling);
@@ -516,7 +516,7 @@ void Core::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization& dis
       for (auto& cond : thiscond)
       {
         const auto& mymasterslavetoggle =
-            cond->parameters().Get<std::string>("Is slave periodic boundary condition");
+            cond->parameters().get<std::string>("Is slave periodic boundary condition");
 
         if (mymasterslavetoggle == "Master")
         {

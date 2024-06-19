@@ -67,13 +67,13 @@ Core::FE::CellType Discret::ELEMENTS::Shell7pLine::Shape() const
   }
 }
 
-void Discret::ELEMENTS::Shell7pLine::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Shell7pLine::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Shell7line element does not support communication");
 }
 
 
-void Discret::ELEMENTS::Shell7pLine::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Shell7pLine::unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this Shell line element does not support communication");
 }

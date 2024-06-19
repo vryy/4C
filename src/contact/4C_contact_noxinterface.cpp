@@ -33,7 +33,7 @@ CONTACT::NoxInterface::NoxInterface()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::NoxInterface::Init(const Teuchos::RCP<CONTACT::AbstractStrategy>& strategy_ptr)
+void CONTACT::NoxInterface::init(const Teuchos::RCP<CONTACT::AbstractStrategy>& strategy_ptr)
 {
   issetup_ = false;
 
@@ -45,7 +45,7 @@ void CONTACT::NoxInterface::Init(const Teuchos::RCP<CONTACT::AbstractStrategy>& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::NoxInterface::Setup()
+void CONTACT::NoxInterface::setup()
 {
   check_init();
 

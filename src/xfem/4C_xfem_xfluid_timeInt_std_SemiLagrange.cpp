@@ -509,7 +509,7 @@ void XFEM::XfluidSemiLagrange::newton_loop(Core::Elements::Element*& ele,  /// p
 
   //-------------------------------------------------------
   // initialize residual (Theta = 0 at predictor step)
-  residuum.Clear();
+  residuum.clear();
 
   // data->vel_ = vel^(n+1) for FGI>1, vel = vel^n
   residuum.Update((1.0 - theta(data)), vel, theta(data), data->vel_);  // dt*v(data->startpoint_)
@@ -600,7 +600,7 @@ void XFEM::XfluidSemiLagrange::newton_loop(Core::Elements::Element*& ele,  /// p
 
       //-------------------------------------------------------
       // reset residual
-      residuum.Clear();
+      residuum.clear();
       residuum.Update(
           (1.0 - theta(data)), vel, theta(data), data->vel_);  // dt*v(data->startpoint_)
       residuum.Update(1.0, data->startpoint_, -1.0, origNodeCoords,
@@ -744,7 +744,7 @@ void XFEM::XfluidSemiLagrange::newton_iter(
 
 
   // solve Newton iteration
-  incr.Clear();
+  incr.clear();
   incr.Multiply(-1.0, sysmat, residuum);  // incr = -Systemmatrix^-1 * residuum
 
   // update iteration
@@ -1326,8 +1326,8 @@ void XFEM::XfluidSemiLagrange::back_tracking(
 
   for (size_t index = 0; index < oldVectors_.size(); index++)
   {
-    nodeveldata[index].Clear();
-    nodepresdata[index].Clear();
+    nodeveldata[index].clear();
+    nodepresdata[index].clear();
   }
 
   Core::Elements::Element* ele = fittingele;  // current element
@@ -1499,7 +1499,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
   {
     veln[index].Multiply(nodeveldata[index], shapeFcn);
     // use the averaged nodal gradients
-    velnDeriv1[index].Clear();
+    velnDeriv1[index].clear();
 
     for (int i = 0; i < numnode; i++)
     {
@@ -1710,8 +1710,8 @@ void XFEM::XfluidSemiLagrange::compute_nodal_gradient(
 
   for (size_t vec_index = 0; vec_index < colVectors.size(); vec_index++)
   {
-    velDeriv_avg[vec_index].Clear();
-    preDeriv_avg[vec_index].Clear();
+    velDeriv_avg[vec_index].clear();
+    preDeriv_avg[vec_index].clear();
   }
 
   int numele = (int)eles.size();

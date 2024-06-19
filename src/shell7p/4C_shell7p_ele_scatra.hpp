@@ -44,7 +44,7 @@ namespace Discret::ELEMENTS
 
     [[nodiscard]] std::string Name() const override { return "Shell7pScatraType"; }
 
-    int Initialize(Core::FE::Discretization& dis) override;
+    int initialize(Core::FE::Discretization& dis) override;
 
     void nodal_block_information(
         Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -107,9 +107,9 @@ namespace Discret::ELEMENTS
 
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     void Print(std::ostream& os) const override;
 
@@ -126,7 +126,7 @@ namespace Discret::ELEMENTS
 
     //! @name Evaluation
     //! @{
-    int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
         Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseVector& elevec2,

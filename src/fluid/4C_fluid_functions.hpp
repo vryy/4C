@@ -42,7 +42,7 @@ namespace FLD
    public:
     BeltramiUP(const Mat::PAR::NewtonianFluid& fparams);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -65,7 +65,7 @@ namespace FLD
    public:
     BeltramiGradU(const Mat::PAR::NewtonianFluid& fparams);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -86,7 +86,7 @@ namespace FLD
    public:
     KimMoinUP(const Mat::PAR::NewtonianFluid& fparams, bool is_stationary);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -112,7 +112,7 @@ namespace FLD
    public:
     KimMoinGradU(const Mat::PAR::NewtonianFluid& fparams, bool is_stationary);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -136,7 +136,7 @@ namespace FLD
    public:
     BeltramiFunction(double c1);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -157,7 +157,7 @@ namespace FLD
   class ChannelWeaklyCompressibleFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -175,7 +175,7 @@ namespace FLD
   class CorrectionTermChannelWeaklyCompressibleFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -190,7 +190,7 @@ namespace FLD
     WeaklyCompressiblePoiseuilleFunction(
         const Mat::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -214,7 +214,7 @@ namespace FLD
     WeaklyCompressiblePoiseuilleForceFunction(
         const Mat::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -236,7 +236,7 @@ namespace FLD
    public:
     WeaklyCompressibleManufacturedFlowFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -257,7 +257,7 @@ namespace FLD
     WeaklyCompressibleManufacturedFlowForceFunction(
         const Mat::PAR::WeaklyCompressibleFluid& fparams);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -277,7 +277,7 @@ namespace FLD
    public:
     WeaklyCompressibleEtienneCFDFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -296,7 +296,7 @@ namespace FLD
    public:
     WeaklyCompressibleEtienneCFDForceFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -313,7 +313,7 @@ namespace FLD
    public:
     WeaklyCompressibleEtienneCFDViscosityFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -329,7 +329,7 @@ namespace FLD
         const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
         const Mat::PAR::StVenantKirchhoff& fparams_struc);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -353,7 +353,7 @@ namespace FLD
         const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
         const Mat::PAR::StVenantKirchhoff& fparams_struc);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -377,7 +377,7 @@ namespace FLD
         const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
         const Mat::PAR::StVenantKirchhoff& fparams_struc);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -399,7 +399,7 @@ namespace FLD
    public:
     BeltramiRHS(const Mat::PAR::NewtonianFluid& fparams, bool is_stokes);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -423,7 +423,7 @@ namespace FLD
    public:
     KimMoinRHS(const Mat::PAR::NewtonianFluid& fparams, bool is_stationary, bool is_stokes);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
@@ -450,7 +450,7 @@ namespace FLD
     KimMoinStress(
         const Mat::PAR::NewtonianFluid& fparams, bool is_stationary, double amplitude = 1.0);
 
-    double Evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(const double* x, double t, std::size_t component) const override;
 
     std::size_t NumberComponents() const override { return (6); };
 

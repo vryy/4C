@@ -60,10 +60,10 @@ namespace ParticleInteraction
     virtual ~SPHHeatSourceBase() = default;
 
     //! init heat source handler
-    virtual void Init();
+    virtual void init();
 
     //! setup heat source handler
-    virtual void Setup(
+    virtual void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
         const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs);
@@ -117,7 +117,7 @@ namespace ParticleInteraction
     explicit SPHHeatSourceSurface(const Teuchos::ParameterList& params);
 
     //! init heat source handler
-    void Init() override;
+    void init() override;
 
     //! evaluate heat source
     void EvaluateHeatSource(const double& evaltime) const override;

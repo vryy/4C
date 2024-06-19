@@ -2,7 +2,7 @@
 /*! \file
 
 \brief Internal implementation of RedAirway element. Methods implemented here
-       are called by airway_evaluate.cpp by Discret::ELEMENTS::RedAirway::Evaluate()
+       are called by airway_evaluate.cpp by Discret::ELEMENTS::RedAirway::evaluate()
        with the corresponding action.
 
 
@@ -84,12 +84,12 @@ namespace
     {
       Core::Conditions::Condition* condition = node->GetCondition(condName);
       // Get the type of prescribed bc
-      std::string Bc = (condition->parameters().Get<std::string>(optionName));
+      std::string Bc = (condition->parameters().get<std::string>(optionName));
       if (Bc == condType)
       {
         const auto* curve = condition->parameters().GetIf<std::vector<int>>("curve");
         double curvefac = 1.0;
-        const auto* vals = &condition->parameters().Get<std::vector<double>>("val");
+        const auto* vals = &condition->parameters().get<std::vector<double>>("val");
 
         // -----------------------------------------------------------------
         // Read in the value of the applied BC
@@ -101,7 +101,7 @@ namespace
         if (curvenum >= 0)
           curvefac = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                         .Evaluate(time);
+                         .evaluate(time);
 
         bcVal = (*vals)[0] * curvefac;
 
@@ -115,7 +115,7 @@ namespace
         {
           functionfac = Global::Problem::Instance()
                             ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                            .Evaluate(node->X().data(), time, 0);
+                            .evaluate(node->X().data(), time, 0);
         }
         // get curve2
         int curve2num = -1;
@@ -124,7 +124,7 @@ namespace
         if (curve2num >= 0)
           curve2fac = Global::Problem::Instance()
                           ->FunctionById<Core::UTILS::FunctionOfTime>(curve2num)
-                          .Evaluate(time);
+                          .evaluate(time);
 
         bcVal += functionfac * curve2fac;
 
@@ -577,7 +577,7 @@ Discret::ELEMENTS::RedAirwayImplInterface* Discret::ELEMENTS::RedAirwayImplInter
  | evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::ParameterList& params,
+int Discret::ELEMENTS::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -912,7 +912,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           Core::Conditions::Condition* condition =
               ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
-          Bc = (condition->parameters().Get<std::string>("boundarycond"));
+          Bc = (condition->parameters().get<std::string>("boundarycond"));
 
           if (Bc == "switchFlowPressure")
           {
@@ -920,16 +920,16 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             Core::Conditions::Condition* switchCondition =
                 ele->Nodes()[i]->GetCondition("RedAirwaySwitchFlowPressureCond");
 
-            const int funct_id_flow = switchCondition->parameters().Get<int>("FUNCT_ID_FLOW");
+            const int funct_id_flow = switchCondition->parameters().get<int>("FUNCT_ID_FLOW");
             const int funct_id_pressure =
-                switchCondition->parameters().Get<int>("FUNCT_ID_PRESSURE");
+                switchCondition->parameters().get<int>("FUNCT_ID_PRESSURE");
             const int funct_id_switch =
-                switchCondition->parameters().Get<int>("FUNCT_ID_PRESSURE_ACTIVE");
+                switchCondition->parameters().get<int>("FUNCT_ID_PRESSURE_ACTIVE");
 
             const double pressure_active =
                 Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfTime>(funct_id_switch - 1)
-                    .Evaluate(time);
+                    .evaluate(time);
 
             int funct_id_current = 0;
             if (std::abs(pressure_active - 1.0) < 10e-8)
@@ -955,7 +955,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
 
             BCin = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(funct_id_current - 1)
-                       .Evaluate(time);
+                       .evaluate(time);
           }
           else
           {
@@ -964,7 +964,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             //  Val = curve1*val1 + curve2*func
             // -----------------------------------------------------------------
             const auto* curve = condition->parameters().GetIf<std::vector<int>>("curve");
-            const auto* vals = &condition->parameters().Get<std::vector<double>>("val");
+            const auto* vals = &condition->parameters().get<std::vector<double>>("val");
 
             // get factor of curve1 or curve2
             const auto curvefac = [&](unsigned id)
@@ -975,7 +975,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
                 if ((curvenum = (*curve)[id]) >= 0)
                   return Global::Problem::Instance()
                       ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                      .Evaluate(time);
+                      .evaluate(time);
                 else
                   return 1.0;
               }
@@ -994,7 +994,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
                     if ((functnum = (*functions)[0]) > 0)
                       return Global::Problem::Instance()
                           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                          .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
+                          .evaluate((ele->Nodes()[i])->X().data(), time, 0);
                     else
                       return 0.0;
                   else
@@ -1035,7 +1035,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           // -----------------------------------------------------------------
           // Read in Condition type
           // -----------------------------------------------------------------
-          //        Type = (condition->parameters().Get<std::string>("CouplingType"));
+          //        Type = (condition->parameters().get<std::string>("CouplingType"));
           // -----------------------------------------------------------------
           // Read in coupling variable rescribed by the 3D simulation
           //
@@ -1056,7 +1056,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           //     +-----------------------------------------------------------+
           // -----------------------------------------------------------------
 
-          int ID = condition->parameters().Get<int>("ConditionID");
+          int ID = condition->parameters().get<int>("ConditionID");
           Teuchos::RCP<std::map<std::string, double>> map3D;
           map3D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
               "3D map of values");
@@ -1083,29 +1083,29 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           Core::Conditions::Condition* condition =
               ele->Nodes()[i]->GetCondition("RedAirwayVentilatorCond");
           // Get the type of prescribed bc
-          Bc = (condition->parameters().Get<std::string>("phase1"));
+          Bc = (condition->parameters().get<std::string>("phase1"));
 
           // get the smoothness flag of the two different phases
-          std::string phase1Smooth = (condition->parameters().Get<std::string>("Phase1Smoothness"));
-          std::string phase2Smooth = (condition->parameters().Get<std::string>("Phase2Smoothness"));
+          std::string phase1Smooth = (condition->parameters().get<std::string>("Phase1Smoothness"));
+          std::string phase2Smooth = (condition->parameters().get<std::string>("Phase2Smoothness"));
 
-          double period = condition->parameters().Get<double>("period");
-          double period1 = condition->parameters().Get<double>("phase1_period");
+          double period = condition->parameters().get<double>("period");
+          double period1 = condition->parameters().get<double>("phase1_period");
 
-          double smoothnessT1 = condition->parameters().Get<double>("smoothness_period1");
-          double smoothnessT2 = condition->parameters().Get<double>("smoothness_period2");
+          double smoothnessT1 = condition->parameters().get<double>("smoothness_period1");
+          double smoothnessT2 = condition->parameters().get<double>("smoothness_period2");
 
           unsigned int phase_number = 0;
 
           if (fmod(time, period) >= period1)
           {
             phase_number = 1;
-            Bc = (condition->parameters().Get<std::string>("phase2"));
+            Bc = (condition->parameters().get<std::string>("phase2"));
           }
 
           const auto* curve = condition->parameters().GetIf<std::vector<int>>("curve");
           double curvefac = 1.0;
-          const auto* vals = &condition->parameters().Get<std::vector<double>>("val");
+          const auto* vals = &condition->parameters().get<std::vector<double>>("val");
 
           // -----------------------------------------------------------------
           // Read in the value of the applied BC
@@ -1115,7 +1115,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           if (curvenum >= 0)
             curvefac = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                           .Evaluate(time);
+                           .evaluate(time);
 
           BCin = (*vals)[phase_number] * curvefac;
 
@@ -1130,7 +1130,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
               double Vn =
                   (*vals)[phase_number] * Global::Problem::Instance()
                                               ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                                              .Evaluate(time - dt);
+                                              .evaluate(time - dt);
               BCin = (Vnp - Vn) / dt;
               Bc = "flow";
             }
@@ -1533,12 +1533,12 @@ void Discret::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
         //     +-----------------------------------------------------------+
         // -----------------------------------------------------------------
 
-        int ID = condition->parameters().Get<int>("ConditionID");
+        int ID = condition->parameters().get<int>("ConditionID");
         Teuchos::RCP<std::map<std::string, double>> map1D;
         map1D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
             "reducedD map of values");
 
-        std::string returnedBC = (condition->parameters().Get<std::string>("ReturnedVariable"));
+        std::string returnedBC = (condition->parameters().get<std::string>("ReturnedVariable"));
 
         double BC3d = 0.0;
         if (returnedBC == "flow")
@@ -1551,7 +1551,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
         }
         else
         {
-          std::string str = (condition->parameters().Get<std::string>("ReturnedVariable"));
+          std::string str = (condition->parameters().get<std::string>("ReturnedVariable"));
           FOUR_C_THROW("%s, is an unimplimented type of coupling", str.c_str());
           exit(1);
         }

@@ -116,7 +116,7 @@ Arteries::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(
 
         // find whether the nodes is at the inlet or at the outlet of the element
         std::string terminalType =
-            nd->GetCondition("ArtInOutCond")->parameters().Get<std::string>("terminaltype");
+            nd->GetCondition("ArtInOutCond")->parameters().get<std::string>("terminaltype");
         if (terminalType == "inlet")
           IOart[i] = -1;
         else if (terminalType == "outlet")
@@ -140,8 +140,8 @@ Arteries::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(
         for (int j = 1; j < i; j++)
         {
           // if Id(j-1) > Id(j) then swap the two values
-          if (myConditions[j - 1]->parameters().Get<int>("ConditionID") >
-              myConditions[j]->parameters().Get<int>("ConditionID"))
+          if (myConditions[j - 1]->parameters().get<int>("ConditionID") >
+              myConditions[j]->parameters().get<int>("ConditionID"))
           {
             cond_i = myConditions[j];
             IO_i = IOart[j];
@@ -168,8 +168,8 @@ Arteries::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(
           grouped_cond.push_back(myConditions[i++]);
 
           if (i == myConditions.size()) break;
-        } while (myConditions[i]->parameters().Get<int>("ConditionID") ==
-                 grouped_cond[0]->parameters().Get<int>("ConditionID"));
+        } while (myConditions[i]->parameters().get<int>("ConditionID") ==
+                 grouped_cond[0]->parameters().get<int>("ConditionID"));
 
         SortedConds.push_back(grouped_cond);
         grouped_cond.erase(grouped_cond.begin(), grouped_cond.end());
@@ -191,7 +191,7 @@ Arteries::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(
         // -------------------------------------------------------------------
         // allocate the junction bc class members for every case
         // -------------------------------------------------------------------
-        condid = SortedConds[i][0]->parameters().Get<int>("ConditionID");
+        condid = SortedConds[i][0]->parameters().get<int>("ConditionID");
 
         // -------------------------------------------------------------------
         // sort junction BCs in map
@@ -285,10 +285,10 @@ Arteries::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<Core::FE::Discretizat
   {
     if (IOartFlag == 1)
       FOUR_C_THROW("Junction (%d) has all of its nodes defined as outlets",
-          conds[0]->parameters().Get<int>("ConditionID"));
+          conds[0]->parameters().get<int>("ConditionID"));
     else
       FOUR_C_THROW("Junction (%d) has all of its nodes defined as inlets",
-          conds[0]->parameters().Get<int>("ConditionID"));
+          conds[0]->parameters().get<int>("ConditionID"));
   }
 
   //----------------------------------------------------------------------

@@ -134,7 +134,7 @@ int Discret::ELEMENTS::Membrane<distype>::NumLine() const
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Membrane<distype>::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Membrane<distype>::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -143,7 +143,7 @@ void Discret::ELEMENTS::Membrane<distype>::Pack(Core::Communication::PackBuffer&
   add_to_pack(data, type);
 
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
 
   // thickness_
   add_to_pack(data, thickness_);
@@ -159,7 +159,7 @@ void Discret::ELEMENTS::Membrane<distype>::Pack(Core::Communication::PackBuffer&
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Membrane<distype>::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Membrane<distype>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -168,7 +168,7 @@ void Discret::ELEMENTS::Membrane<distype>::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
   // thickness_
   extract_from_pack(position, data, thickness_);
   // current thickness_

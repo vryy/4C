@@ -65,7 +65,7 @@ Airway::RedAirwayTissue::RedAirwayTissue(
     std::vector<double> val(6, 0.0);
     cond->parameters().Add("val", val);
 
-    int condID = coupcond[i]->parameters().Get<int>("coupling id");
+    int condID = coupcond[i]->parameters().get<int>("coupling id");
     tmp.push_back(condID);
   }
 
@@ -118,7 +118,7 @@ Airway::RedAirwayTissue::RedAirwayTissue(
       Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
           sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
   structure_ = Teuchos::rcp_dynamic_cast<Adapter::StructureRedAirway>(structure->structure_field());
-  structure_->Setup();
+  structure_->setup();
 
   SetupRedAirways();
   const Teuchos::ParameterList& rawdyn =
@@ -443,11 +443,11 @@ void Airway::RedAirwayTissue::update_and_output()
 {
   constexpr bool force_prepare = false;
   structure_->prepare_output(force_prepare);
-  structure_->Update();
-  structure_->Output();
+  structure_->update();
+  structure_->output();
 
   redairways_->TimeUpdate();
-  redairways_->Output();
+  redairways_->output();
 
   // In case of restart write all coupling variables to restart file
   if (redairways_->Step() % uprestart_ == 0)

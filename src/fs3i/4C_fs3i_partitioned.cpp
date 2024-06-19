@@ -57,10 +57,10 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm) : FS3IBase(), comm_(comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I::Init()
+void FS3I::PartFS3I::init()
 {
   // call setup in base class
-  FS3I::FS3IBase::Init();
+  FS3I::FS3IBase::init();
 
   volume_fieldcouplings_.push_back(Core::UTILS::IntegralValue<Inpar::FS3I::VolumeCoupling>(
       Global::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_FIELDCOUPLING"));
@@ -103,7 +103,7 @@ void FS3I::PartFS3I::Init()
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
-    aledis->Evaluate(params);
+    aledis->evaluate(params);
   }
   else
     FOUR_C_THROW("Providing an ALE mesh is not supported for FS3I problems.");
@@ -292,7 +292,7 @@ void FS3I::PartFS3I::Init()
   fluidscatra_ = Teuchos::rcp(
       new Adapter::ScaTraBaseAlgorithm(fs3idyn, problem->scalar_transport_dynamic_params(),
           problem->SolverParams(linsolver1number), "scatra1", true));
-  fluidscatra_->Init();
+  fluidscatra_->init();
   fluidscatra_->ScaTraField()->set_number_of_dof_set_displacement(1);
   fluidscatra_->ScaTraField()->set_number_of_dof_set_velocity(1);
   fluidscatra_->ScaTraField()->set_number_of_dof_set_wall_shear_stress(1);
@@ -300,7 +300,7 @@ void FS3I::PartFS3I::Init()
   structscatra_ = Teuchos::rcp(
       new Adapter::ScaTraBaseAlgorithm(fs3idyn, problem->scalar_transport_dynamic_params(),
           problem->SolverParams(linsolver2number), "scatra2", true));
-  structscatra_->Init();
+  structscatra_->init();
   structscatra_->ScaTraField()->set_number_of_dof_set_displacement(1);
   structscatra_->ScaTraField()->set_number_of_dof_set_velocity(1);
   structscatra_->ScaTraField()->set_number_of_dof_set_wall_shear_stress(1);
@@ -311,16 +311,16 @@ void FS3I::PartFS3I::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I::Setup()
+void FS3I::PartFS3I::setup()
 {
   // call setup in base class
-  FS3I::FS3IBase::Setup();
+  FS3I::FS3IBase::setup();
 
   // setup structure scatra
-  structscatra_->Setup();
+  structscatra_->setup();
 
   // setup fluid scatra
-  fluidscatra_->Setup();
+  fluidscatra_->setup();
 
   //---------------------------------------------------------------------
   // check existence of scatra coupling conditions for both
@@ -379,14 +379,14 @@ Teuchos::RCP<Core::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_ob
       Teuchos::rcp(new Core::Adapter::MortarVolCoupl());
 
   // setup projection matrices (use default material strategy)
-  volume_coupling_object->Init(Global::Problem::Instance()->NDim(), masterdis, slavedis);
+  volume_coupling_object->init(Global::Problem::Instance()->NDim(), masterdis, slavedis);
   Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
   Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
       binning_params);
   volume_coupling_object->Redistribute(
       binning_params, Global::Problem::Instance()->OutputControlFile());
-  volume_coupling_object->Setup(Global::Problem::Instance()->VolmortarParams());
+  volume_coupling_object->setup(Global::Problem::Instance()->VolmortarParams());
 
   return volume_coupling_object;
 }
@@ -416,7 +416,7 @@ void FS3I::PartFS3I::read_restart()
 {
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
 
   if (restart)
   {
@@ -509,7 +509,7 @@ void FS3I::PartFS3I::SetupSystem()
     maps.push_back(scatrafieldexvec_[1]->FullMap());
   }
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
-  scatraglobalex_->Setup(*fullmap, maps);
+  scatraglobalex_->setup(*fullmap, maps);
 
   // create coupling vectors and matrices (only needed for finite surface permeabilities)
   if (!infperm_)

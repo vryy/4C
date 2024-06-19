@@ -26,10 +26,10 @@ PaSI::PasiPartOneWayCoup::PasiPartOneWayCoup(
   // empty constructor
 }
 
-void PaSI::PasiPartOneWayCoup::Setup()
+void PaSI::PasiPartOneWayCoup::setup()
 {
   // call base class setup
-  PaSI::PartitionedAlgo::Setup();
+  PaSI::PartitionedAlgo::setup();
 
   // safety check
   {

@@ -22,7 +22,7 @@ Core::Communication::ParObject* Core::Nodes::ImmersedNodeType::Create(const std:
 {
   std::vector<double> dummycoord(3, 999.0);
   Node* object = new Core::Nodes::ImmersedNode(-1, dummycoord, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -99,7 +99,7 @@ void Core::Nodes::ImmersedNode::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                          rauch 11/14 |
  *----------------------------------------------------------------------*/
-void Core::Nodes::ImmersedNode::Pack(Core::Communication::PackBuffer& data) const
+void Core::Nodes::ImmersedNode::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -108,7 +108,7 @@ void Core::Nodes::ImmersedNode::Pack(Core::Communication::PackBuffer& data) cons
   add_to_pack(data, type);
 
   // add base class Core::Nodes::Node
-  Node::Pack(data);
+  Node::pack(data);
 
   // add IsBoundaryImmersed_
   add_to_pack(data, IsBoundaryImmersed_);
@@ -123,7 +123,7 @@ void Core::Nodes::ImmersedNode::Pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                          rauch 11/14 |
  *----------------------------------------------------------------------*/
-void Core::Nodes::ImmersedNode::Unpack(const std::vector<char>& data)
+void Core::Nodes::ImmersedNode::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -132,7 +132,7 @@ void Core::Nodes::ImmersedNode::Unpack(const std::vector<char>& data)
   // extract base class Core::Nodes::Node
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Node::Unpack(basedata);
+  Node::unpack(basedata);
 
   // isimersedboundary_
   IsBoundaryImmersed_ = extract_int(position, data);

@@ -72,11 +72,11 @@ STR::TimeInt::BaseDataIO::BaseDataIO()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
+void STR::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
-  // We have to call Setup() after Init()
+  // We have to call setup() after init()
   issetup_ = false;
 
   // ---------------------------------------------------------------------------
@@ -116,16 +116,16 @@ void STR::TimeInt::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
 
     // build params container for monitoring reaction forces
     params_monitor_dbc_ = Teuchos::rcp(new ParamsMonitorDBC());
-    params_monitor_dbc_->Init(ioparams.sublist("MONITOR STRUCTURE DBC"));
-    params_monitor_dbc_->Setup();
+    params_monitor_dbc_->init(ioparams.sublist("MONITOR STRUCTURE DBC"));
+    params_monitor_dbc_->setup();
 
     // check whether VTK output at runtime is desired
     if (ioparams.sublist("RUNTIME VTK OUTPUT").get<int>("INTERVAL_STEPS") != -1)
     {
       params_runtime_vtk_output_ = Teuchos::rcp(new ParamsRuntimeOutput());
 
-      params_runtime_vtk_output_->Init(ioparams.sublist("RUNTIME VTK OUTPUT"));
-      params_runtime_vtk_output_->Setup();
+      params_runtime_vtk_output_->init(ioparams.sublist("RUNTIME VTK OUTPUT"));
+      params_runtime_vtk_output_->setup();
     }
 
     // check whether VTP output at runtime is desired
@@ -133,8 +133,8 @@ void STR::TimeInt::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     {
       params_runtime_vtp_output_ = Teuchos::rcp(new ParamsRuntimeVtpOutput());
 
-      params_runtime_vtp_output_->Init(ioparams.sublist("RUNTIME VTP OUTPUT STRUCTURE"));
-      params_runtime_vtp_output_->Setup();
+      params_runtime_vtp_output_->init(ioparams.sublist("RUNTIME VTP OUTPUT STRUCTURE"));
+      params_runtime_vtp_output_->setup();
     }
   }
 
@@ -144,10 +144,10 @@ void STR::TimeInt::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataIO::Setup()
+void STR::TimeInt::BaseDataIO::setup()
 {
   // safety check
-  FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
+  FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
 
   if (outputeveryiter_) writer_every_iter_ = Teuchos::rcp(new Core::IO::EveryIterationWriter());
 
@@ -158,7 +158,7 @@ void STR::TimeInt::BaseDataIO::Setup()
  *----------------------------------------------------------------------------*/
 void STR::TimeInt::BaseDataIO::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -168,8 +168,8 @@ void STR::TimeInt::BaseDataIO::init_setup_every_iteration_writer(
 {
   if (not outputeveryiter_) return;
 
-  writer_every_iter_->Init(output_.get(), interface, *p_io_every_iteration_);
-  writer_every_iter_->Setup();
+  writer_every_iter_->init(output_.get(), interface, *p_io_every_iteration_);
+  writer_every_iter_->setup();
 
   // insert the every_iter output writer as ppo for the solver object
   Teuchos::ParameterList& p_sol_opt = p_nox.sublist("Solver Options");

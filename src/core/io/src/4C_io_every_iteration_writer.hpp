@@ -81,8 +81,8 @@ namespace Core::IO
    *  time integration, such that it can be seen as a blue print.
    *
    *  In general, if you consider to use this class, you will have to construct
-   *  an object and call Init() and Setup() in consecutive order. Pass the
-   *  output-writer of your problem to the Init() function. This output
+   *  an object and call init() and setup() in consecutive order. Pass the
+   *  output-writer of your problem to the init() function. This output
    *  writer will be copied, such that the every iteration output should generate
    *  the same output each Newton step just as the parent writer does in each
    *  time/load step.
@@ -144,11 +144,11 @@ namespace Core::IO
      *  @param[in] params         EVERY ITERATION parameter list.
      *
      *  @author hiermeier @date 08/17 */
-    void Init(const Core::IO::DiscretizationWriter* parent_writer,
+    void init(const Core::IO::DiscretizationWriter* parent_writer,
         EveryIterationWriterInterface* interface, const Teuchos::ParameterList& params);
 
     /// Setup the class object
-    void Setup();
+    void setup();
 
     /** @brief Initialize a new Newton loop
      *
@@ -178,16 +178,16 @@ namespace Core::IO
     void add_line_search_iteration(const int newton_iteration, const int linesearch_iteration);
 
    private:
-    /// Throw if Init() has not been called.
+    /// Throw if init() has not been called.
     inline void throw_if_not_initialized(const int line) const
     {
-      if (not isinit_) FOUR_C_THROW("LINE %d: Call Init() first!", line);
+      if (not isinit_) FOUR_C_THROW("LINE %d: Call init() first!", line);
     }
 
-    /// Throw if Setup() has not been called.
+    /// Throw if setup() has not been called.
     inline void throw_if_not_setup(const int line) const
     {
-      if (not issetup_) FOUR_C_THROW("LINE %d: Call Setup() first!", line);
+      if (not issetup_) FOUR_C_THROW("LINE %d: Call setup() first!", line);
     }
 
     /// Returns true if the current load/time step is supposed to be written.

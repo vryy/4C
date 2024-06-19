@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -332,7 +332,7 @@ int Discret::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
       // Update constraintmixture material
       if (Material()->MaterialType() == Core::Materials::m_constraintmixture)
       {
-        SolidMaterial()->Update();
+        SolidMaterial()->update();
       }
     }
     break;
@@ -627,8 +627,8 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate_neumann(Teuchos::ParameterList& para
 {
   set_params_interface_ptr(params);
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
@@ -652,7 +652,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate_neumann(Teuchos::ParameterList& para
   }
 
   // (SPATIAL) FUNCTION BUSINESS
-  const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* funct = &condition.parameters().get<std::vector<int>>("funct");
   Core::LinAlg::Matrix<NUMDIM_SOH8, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
@@ -712,7 +712,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate_neumann(Teuchos::ParameterList& para
       const double functfac =
           (functnum > 0) ? Global::Problem::Instance()
                                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                               .Evaluate(xrefegp.A(), time, dim)
+                               .evaluate(xrefegp.A(), time, dim)
                          : 1.0;
       const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
       for (int nodid = 0; nodid < NUMNOD_SOH8; ++nodid)
@@ -899,8 +899,8 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         {
           str_params_interface().set_ele_eval_error_flag(
               STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
-          stiffmatrix->Clear();
-          force->Clear();
+          stiffmatrix->clear();
+          force->clear();
           return;
         }
         else
@@ -914,8 +914,8 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         if (error_tol)
         {
           params.set<bool>("eval_error", true);
-          stiffmatrix->Clear();
-          force->Clear();
+          stiffmatrix->clear();
+          force->clear();
           return;
         }
         else
@@ -1154,12 +1154,12 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
       params.set("gp_coords_ref", point);
 
       // center of element in reference configuration
-      point.Clear();
+      point.clear();
       soh8_element_center_refe_coords(point, xrefe);
       params.set("elecenter_coords_ref", point);
     }
 
-    SolidMaterial()->Evaluate(&defgrd_bar, &glstrain_bar, params, &stress_bar, &cmat, gp, Id());
+    SolidMaterial()->evaluate(&defgrd_bar, &glstrain_bar, params, &stress_bar, &cmat, gp, Id());
     // end of call material law
 
     // print plastic strains
@@ -1443,7 +1443,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8fbarType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex8fbarType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -1692,7 +1692,7 @@ void Discret::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
 
     // center of element in reference configuration
     Core::LinAlg::Matrix<NUMDIM_SOH8, 1> point(false);
-    point.Clear();
+    point.clear();
     soh8_element_center_refe_coords(point, xrefe);
     params.set("elecenter_coords_ref", point);
 
@@ -1754,7 +1754,7 @@ void Discret::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
     }
   }
   else
-    SolidMaterial()->Update();
+    SolidMaterial()->update();
 
   return;
 }

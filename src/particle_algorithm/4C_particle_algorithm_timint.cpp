@@ -36,7 +36,7 @@ PARTICLEALGORITHM::TimInt::TimInt(const Teuchos::ParameterList& params)
 
 PARTICLEALGORITHM::TimInt::~TimInt() = default;
 
-void PARTICLEALGORITHM::TimInt::Init()
+void PARTICLEALGORITHM::TimInt::init()
 {
   // init dirichlet boundary condition handler
   init_dirichlet_boundary_condition();
@@ -45,7 +45,7 @@ void PARTICLEALGORITHM::TimInt::Init()
   init_temperature_boundary_condition();
 }
 
-void PARTICLEALGORITHM::TimInt::Setup(
+void PARTICLEALGORITHM::TimInt::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface> particlerigidbodyinterface)
 {
@@ -56,10 +56,10 @@ void PARTICLEALGORITHM::TimInt::Setup(
   particlerigidbodyinterface_ = particlerigidbodyinterface;
 
   // setup dirichlet boundary condition handler
-  if (dirichletboundarycondition_) dirichletboundarycondition_->Setup(particleengineinterface_);
+  if (dirichletboundarycondition_) dirichletboundarycondition_->setup(particleengineinterface_);
 
   // setup temperature boundary condition handler
-  if (temperatureboundarycondition_) temperatureboundarycondition_->Setup(particleengineinterface_);
+  if (temperatureboundarycondition_) temperatureboundarycondition_->setup(particleengineinterface_);
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
@@ -132,7 +132,7 @@ void PARTICLEALGORITHM::TimInt::init_dirichlet_boundary_condition()
           new PARTICLEALGORITHM::DirichletBoundaryConditionHandler(params_));
 
   // init dirichlet boundary condition handler
-  dirichletboundarycondition_->Init();
+  dirichletboundarycondition_->init();
 
   // get reference to set of particle types subjected to dirichlet boundary conditions
   const std::set<PARTICLEENGINE::TypeEnum>& typessubjectedtodirichletbc =
@@ -150,7 +150,7 @@ void PARTICLEALGORITHM::TimInt::init_temperature_boundary_condition()
           new PARTICLEALGORITHM::TemperatureBoundaryConditionHandler(params_));
 
   // init temperature boundary condition handler
-  temperatureboundarycondition_->Init();
+  temperatureboundarycondition_->init();
 
   // get reference to set of particle types subjected to temperature boundary conditions
   const std::set<PARTICLEENGINE::TypeEnum>& typessubjectedtotempbc =
@@ -241,12 +241,12 @@ PARTICLEALGORITHM::TimIntSemiImplicitEuler::TimIntSemiImplicitEuler(
   // empty constructor
 }
 
-void PARTICLEALGORITHM::TimIntSemiImplicitEuler::Setup(
+void PARTICLEALGORITHM::TimIntSemiImplicitEuler::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface> particlerigidbodyinterface)
 {
   // call base class setup
-  PARTICLEALGORITHM::TimInt::Setup(particleengineinterface, particlerigidbodyinterface);
+  PARTICLEALGORITHM::TimInt::setup(particleengineinterface, particlerigidbodyinterface);
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =

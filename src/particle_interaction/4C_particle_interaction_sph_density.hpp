@@ -61,10 +61,10 @@ namespace ParticleInteraction
     virtual ~SPHDensityBase() = default;
 
     //! init density handler
-    virtual void Init();
+    virtual void init();
 
     //! setup density handler
-    virtual void Setup(
+    virtual void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
         const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
@@ -217,10 +217,10 @@ namespace ParticleInteraction
     ~SPHDensityPredictCorrect() override;
 
     //! init density handler
-    void Init() override;
+    void init() override;
 
     //! setup density handler
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
         const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,

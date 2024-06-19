@@ -41,7 +41,7 @@ Mat::MatListChemoReacType Mat::MatListChemoReacType::instance_;
 Core::Communication::ParObject* Mat::MatListChemoReacType::Create(const std::vector<char>& data)
 {
   Mat::MatListChemoReac* MatListChemoReac = new Mat::MatListChemoReac();
-  MatListChemoReac->Unpack(data);
+  MatListChemoReac->unpack(data);
   return MatListChemoReac;
 }
 
@@ -98,7 +98,7 @@ void Mat::MatListChemoReac::clear()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 06/15 |
  *----------------------------------------------------------------------*/
-void Mat::MatListChemoReac::Pack(Core::Communication::PackBuffer& data) const
+void Mat::MatListChemoReac::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -114,15 +114,15 @@ void Mat::MatListChemoReac::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, matid);
 
   // Pack base class material
-  Mat::MatListReactions::Pack(data);
-  Mat::MatListChemotaxis::Pack(data);
+  Mat::MatListReactions::pack(data);
+  Mat::MatListChemotaxis::pack(data);
 }
 
 
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 06/15 |
  *----------------------------------------------------------------------*/
-void Mat::MatListChemoReac::Unpack(const std::vector<char>& data)
+void Mat::MatListChemoReac::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   clear();
@@ -155,11 +155,11 @@ void Mat::MatListChemoReac::Unpack(const std::vector<char>& data)
   // extract base class material
   std::vector<char> basedata(0);
   Mat::MatList::extract_from_pack(position, data, basedata);
-  Mat::MatListReactions::Unpack(basedata);
+  Mat::MatListReactions::unpack(basedata);
 
   std::vector<char> basedata2(0);
   Mat::MatList::extract_from_pack(position, data, basedata2);
-  Mat::MatListChemotaxis::Unpack(basedata2);
+  Mat::MatListChemotaxis::unpack(basedata2);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case

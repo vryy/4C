@@ -44,8 +44,8 @@ void CONTACT::NitscheStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> di
   // Evaluation for all interfaces
   for (const auto& interface : interface_)
   {
-    interface->Initialize();
-    interface->Evaluate(0, step_, iter_);
+    interface->initialize();
+    interface->evaluate(0, step_, iter_);
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
     {
       auto* mele = dynamic_cast<Mortar::Element*>(
@@ -87,7 +87,7 @@ void CONTACT::NitscheStrategy::DoReadRestart(Core::IO::DiscretizationReader& rea
   set_state(Mortar::state_old_displacement, *dis);
 
   // Evaluation for all interfaces
-  for (const auto& interface : interface_) interface->Initialize();
+  for (const auto& interface : interface_) interface->initialize();
 
   if (friction_)
   {
@@ -199,7 +199,7 @@ void CONTACT::NitscheStrategy::eval_force_stiff(CONTACT::ParamsInterface& cparam
   Integrate(cparams);
 }
 
-void CONTACT::NitscheStrategy::Reset(
+void CONTACT::NitscheStrategy::reset(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp, const Epetra_Vector& xnew)
 {
   set_state(Mortar::state_new_displacement, dispnp);
@@ -223,8 +223,8 @@ void CONTACT::NitscheStrategy::Integrate(const CONTACT::ParamsInterface& cparams
   for (const auto& interface : interface_)
   {
     interface->interface_params().set<double>("TIMESTEP", cparams.get_delta_time());
-    interface->Initialize();
-    interface->Evaluate(0, step_, iter_);
+    interface->initialize();
+    interface->evaluate(0, step_, iter_);
 
     // store required integration time
     inttime_ += interface->Inttime();
@@ -365,7 +365,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::GetMatrixBloc
   return Teuchos::null;
 }
 
-void CONTACT::NitscheStrategy::Setup(bool redistributed, bool init)
+void CONTACT::NitscheStrategy::setup(bool redistributed, bool init)
 {
   // we need to init the isselfcontact_ flag here, as we do not want to call the AbstractStrategy
   if (init)

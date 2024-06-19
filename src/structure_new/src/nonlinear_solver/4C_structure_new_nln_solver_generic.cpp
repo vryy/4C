@@ -36,13 +36,13 @@ STR::Nln::SOLVER::Generic::Generic()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::Generic::Init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate,
+void STR::Nln::SOLVER::Generic::init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate,
     const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn,
     const Teuchos::RCP<STR::TimeInt::NoxInterface>& noxinterface,
     const Teuchos::RCP<STR::Integrator>& integrator,
     const Teuchos::RCP<const STR::TimeInt::Base>& timint)
 {
-  // We have to call Setup() after Init()
+  // We have to call setup() after init()
   issetup_ = false;
 
   // initialize internal variables

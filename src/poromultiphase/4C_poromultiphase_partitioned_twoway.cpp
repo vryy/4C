@@ -46,7 +46,7 @@ POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::PoroMultiPhasePartitionedTwoWay
 /*----------------------------------------------------------------------*
  | initialization                                            vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::Init(
+void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
     const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
     const std::string& struct_disname, const std::string& fluid_disname, bool isale, int nds_disp,
@@ -54,7 +54,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::Init(
     const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // call base class
-  POROMULTIPHASE::PoroMultiPhasePartitioned::Init(globaltimeparams, algoparams, structparams,
+  POROMULTIPHASE::PoroMultiPhasePartitioned::init(globaltimeparams, algoparams, structparams,
       fluidparams, struct_disname, fluid_disname, isale, nds_disp, nds_vel, nds_solidpressure,
       ndsporofluid_scatra, nearbyelepairs);
 

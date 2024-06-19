@@ -29,14 +29,14 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::MembraneActiveStrain::MembraneActiveStrain(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      matid_passive_(matdata.parameters.Get<int>("MATIDPASSIVE")),
-      scalid_voltage_(matdata.parameters.Get<int>("SCALIDVOLTAGE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      beta1_(matdata.parameters.Get<double>("BETA1")),
-      beta2_(matdata.parameters.Get<double>("BETA2")),
-      voltage_threshold_(matdata.parameters.Get<double>("VOLTHRESH")),
-      alpha1_(matdata.parameters.Get<double>("ALPHA1")),
-      alpha2_(matdata.parameters.Get<double>("ALPHA2"))
+      matid_passive_(matdata.parameters.get<int>("MATIDPASSIVE")),
+      scalid_voltage_(matdata.parameters.get<int>("SCALIDVOLTAGE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      beta1_(matdata.parameters.get<double>("BETA1")),
+      beta2_(matdata.parameters.get<double>("BETA2")),
+      voltage_threshold_(matdata.parameters.get<double>("VOLTHRESH")),
+      alpha1_(matdata.parameters.get<double>("ALPHA1")),
+      alpha2_(matdata.parameters.get<double>("ALPHA2"))
 {
   return;
 }  // Mat::PAR::MembraneActiveStrain::MembraneActiveStrain
@@ -54,7 +54,7 @@ Mat::MembraneActiveStrainType Mat::MembraneActiveStrainType::instance_;
 Core::Communication::ParObject* Mat::MembraneActiveStrainType::Create(const std::vector<char>& data)
 {
   Mat::MembraneActiveStrain* membrane_activestrain = new Mat::MembraneActiveStrain();
-  membrane_activestrain->Unpack(data);
+  membrane_activestrain->unpack(data);
 
   return membrane_activestrain;
 }  // Mat::Membrane_ActiveStrainType::Create
@@ -90,7 +90,7 @@ Mat::MembraneActiveStrain::MembraneActiveStrain(Mat::PAR::MembraneActiveStrain* 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::Pack(Core::Communication::PackBuffer& data) const
+void Mat::MembraneActiveStrain::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -109,7 +109,7 @@ void Mat::MembraneActiveStrain::Pack(Core::Communication::PackBuffer& data) cons
   // data of passive elastic material
   if (matpassive_ != Teuchos::null)
   {
-    matpassive_->Pack(data);
+    matpassive_->pack(data);
   }
 
   // pack internal variables
@@ -134,12 +134,12 @@ void Mat::MembraneActiveStrain::Pack(Core::Communication::PackBuffer& data) cons
   }
 
   return;
-}  // Mat::MembraneActiveStrain::Pack()
+}  // Mat::MembraneActiveStrain::pack()
 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::Unpack(const std::vector<char>& data)
+void Mat::MembraneActiveStrain::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -205,12 +205,12 @@ void Mat::MembraneActiveStrain::Unpack(const std::vector<char>& data)
     activation_->at(gp) = activation_gp;
   }
   return;
-}  // Mat::MembraneActiveStrain::Unpack()
+}  // Mat::MembraneActiveStrain::unpack()
 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::MembraneActiveStrain::setup(int numgp, Input::LineDefinition* linedef)
 {
   // setup fibervectors
   setup_fiber_vectors(numgp, linedef);
@@ -218,7 +218,7 @@ void Mat::MembraneActiveStrain::Setup(int numgp, Input::LineDefinition* linedef)
   // setup of passive material
   matpassive_ =
       Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->matid_passive_), true);
-  matpassive_->Setup(numgp, linedef);
+  matpassive_->setup(numgp, linedef);
 
   // setup internal variables
   voltage_ = Teuchos::rcp(new std::vector<double>);
@@ -235,7 +235,7 @@ void Mat::MembraneActiveStrain::Setup(int numgp, Input::LineDefinition* linedef)
 
   isinit_ = true;
   return;
-}  // Mat::MembraneActiveStrain::Setup()
+}  // Mat::MembraneActiveStrain::setup()
 
 /*----------------------------------------------------------------------*
  | active strain and hyperelastic stress response plus elasticity tensor|
@@ -247,8 +247,8 @@ void Mat::MembraneActiveStrain::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3
     Core::LinAlg::Matrix<3, 3>& cmat, const int gp, const int eleGID)
 {
   // blank resulting quantities
-  stress.Clear();
-  cmat.Clear();
+  stress.clear();
+  cmat.clear();
 
   // get pointer to vector containing the scalar states at the gauss points
   Teuchos::RCP<std::vector<std::vector<double>>> gpscalar =
@@ -360,9 +360,9 @@ void Mat::MembraneActiveStrain::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3
 /*----------------------------------------------------------------------*
  | Update internal variables                       brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::Update()
+void Mat::MembraneActiveStrain::update()
 {
-  matpassive_->Update();
+  matpassive_->update();
 }  // Mat::MembraneActiveStrain::Update
 
 /*----------------------------------------------------------------------*

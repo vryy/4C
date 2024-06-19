@@ -83,12 +83,12 @@ void Adapter::FluidXFEM::prepare_time_step() { fluid_field()->prepare_time_step(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidXFEM::Update() { fluid_field()->Update(); }
+void Adapter::FluidXFEM::update() { fluid_field()->update(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidXFEM::Output() { fluid_field()->StatisticsAndOutput(); }
+void Adapter::FluidXFEM::output() { fluid_field()->StatisticsAndOutput(); }
 
 
 /*----------------------------------------------------------------------*/

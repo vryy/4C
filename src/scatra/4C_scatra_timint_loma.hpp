@@ -41,10 +41,10 @@ namespace ScaTra
     // -----------------------------------------------------------------
 
     /// initialize algorithm
-    void Init() override;
+    void init() override;
 
     /// initialize algorithm
-    void Setup() override;
+    void setup() override;
 
     //! set initial thermodynamic pressure
     void set_initial_therm_pressure();

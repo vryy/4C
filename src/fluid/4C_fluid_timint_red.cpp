@@ -47,7 +47,7 @@ FLD::TimIntRedModels::TimIntRedModels(const Teuchos::RCP<Core::FE::Discretizatio
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::Init()
+void FLD::TimIntRedModels::init()
 {
   // Vectors associated to boundary conditions
   // -----------------------------------------
@@ -62,7 +62,7 @@ void FLD::TimIntRedModels::Init()
 
   // evaluate the map of the womersley bcs
   vol_flow_rates_bc_extractor_ = Teuchos::rcp(new FLD::UTILS::VolumetricFlowMapExtractor());
-  vol_flow_rates_bc_extractor_->Setup(*discret_);
+  vol_flow_rates_bc_extractor_->setup(*discret_);
   vol_surf_flow_bc_maps_ =
       Teuchos::rcp(new Epetra_Map(*(vol_flow_rates_bc_extractor_->VolumetricSurfaceFlowCondMap())));
 
@@ -243,7 +243,7 @@ void FLD::TimIntRedModels::OutputReducedD()
       redD_export_params->set<int>("uprestart", uprestart_);
       redD_export_params->set<double>("time", time_);
 
-      ART_timeInt_->Output(true, redD_export_params);
+      ART_timeInt_->output(true, redD_export_params);
     }
 
     // Check if one-dimensional artery network problem exist
@@ -257,7 +257,7 @@ void FLD::TimIntRedModels::OutputReducedD()
       redD_export_params->set<int>("uprestart", uprestart_);
       redD_export_params->set<double>("time", time_);
 
-      airway_imp_timeInt_->Output(true, redD_export_params);
+      airway_imp_timeInt_->output(true, redD_export_params);
     }
   }
 }  // FLD::TimIntRedModels::OutputReducedD
@@ -331,14 +331,14 @@ void FLD::TimIntRedModels::setup_meshtying()
  | output of solution vector to binio                        gammi 04/07|
  | overloading function                                         bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::Output()
+void FLD::TimIntRedModels::output()
 {
-  FluidImplicitTimeInt::Output();
+  FluidImplicitTimeInt::output();
   // output of solution
   if (step_ % upres_ == 0)
   {
-    vol_surf_flow_bc_->Output(*output_);
-    traction_vel_comp_adder_bc_->Output(*output_);
+    vol_surf_flow_bc_->output(*output_);
+    traction_vel_comp_adder_bc_->output(*output_);
 
     if (uprestart_ != 0 && step_ % uprestart_ == 0)  // add restart data
     {

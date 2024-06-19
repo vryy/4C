@@ -59,7 +59,7 @@ namespace BEAMINTERACTION
      * \brief Setup the contact pair and set information on the current position of the elements in
      * the pair
      */
-    void Setup() override;
+    void setup() override;
 
     /**
      * \brief Things that need to be done in a separate loop before the actual evaluation loop over

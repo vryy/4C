@@ -47,7 +47,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
 {
   if (!this->meshtying_is_evaluated_)
   {
-    this->cast_geometry_pair()->Evaluate(
+    this->cast_geometry_pair()->evaluate(
         this->ele1poscur_, this->ele2poscur_, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -95,14 +95,14 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
       // Get the shape function matrices.
-      N_mortar.Clear();
-      N_beam.Clear();
-      N_fluid.Clear();
-      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::Evaluate(
+      N_mortar.clear();
+      N_beam.clear();
+      N_fluid.clear();
+      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::evaluate(
           N_mortar, projected_gauss_point.GetEta());
-      GEOMETRYPAIR::EvaluateShapeFunction<beam>::Evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<beam>::evaluate(
           N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
-      GEOMETRYPAIR::EvaluateShapeFunction<fluid>::Evaluate(N_fluid, projected_gauss_point.GetXi());
+      GEOMETRYPAIR::EvaluateShapeFunction<fluid>::evaluate(N_fluid, projected_gauss_point.GetXi());
 
       // Fill in the local templated mortar matrix D.
       for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
@@ -162,7 +162,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_p
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {
     // Setup variables.
-    auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::Initialize(nullptr);
+    auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::initialize(nullptr);
     Core::LinAlg::Matrix<3, 1, scalar_type> current_beamposition;
     Core::LinAlg::Matrix<3, 1, scalar_type> ref_beamposition;
     Core::LinAlg::Matrix<3, 1, scalar_type> beamdisplacement;

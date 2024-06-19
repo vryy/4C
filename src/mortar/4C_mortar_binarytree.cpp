@@ -391,10 +391,10 @@ Mortar::BinaryTree::BinaryTree(Core::FE::Discretization& discret,
 /*----------------------------------------------------------------------*
  | initialize the binary tree                              schmidt 12/18|
  *----------------------------------------------------------------------*/
-void Mortar::BinaryTree::Init()
+void Mortar::BinaryTree::init()
 {
   // call initialization method of base class
-  Mortar::BaseBinaryTree::Init();
+  Mortar::BaseBinaryTree::init();
 
   init_internal_variables();
 

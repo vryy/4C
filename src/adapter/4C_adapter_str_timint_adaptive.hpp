@@ -54,7 +54,7 @@ namespace Adapter
     void prepare_output(bool force_prepare) override;
 
     /// output results
-    virtual void Output();
+    virtual void output();
 
     //@}
 

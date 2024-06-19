@@ -30,7 +30,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8PoroType::Create(
 {
   auto* object =
       new Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -76,9 +76,9 @@ void Discret::ELEMENTS::SoHex8PoroType::setup_element_definition(
                      .build();
 }
 
-int Discret::ELEMENTS::SoHex8PoroType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex8PoroType::initialize(Core::FE::Discretization& dis)
 {
-  SoHex8Type::Initialize(dis);
+  SoHex8Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -107,7 +107,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet4PoroType::Create(
 {
   auto* object =
       new Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -153,9 +153,9 @@ void Discret::ELEMENTS::SoTet4PoroType::setup_element_definition(
                      .build();
 }
 
-int Discret::ELEMENTS::SoTet4PoroType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoTet4PoroType::initialize(Core::FE::Discretization& dis)
 {
-  SoTet4Type::Initialize(dis);
+  SoTet4Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -183,7 +183,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex27PoroType::Create(
 {
   auto* object =
       new Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -226,9 +226,9 @@ void Discret::ELEMENTS::SoHex27PoroType::setup_element_definition(
                       .build();
 }
 
-int Discret::ELEMENTS::SoHex27PoroType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex27PoroType::initialize(Core::FE::Discretization& dis)
 {
-  SoHex27Type::Initialize(dis);
+  SoHex27Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -256,7 +256,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet10PoroType::Create(
 {
   auto* object =
       new Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -299,9 +299,9 @@ void Discret::ELEMENTS::SoTet10PoroType::setup_element_definition(
                       .build();
 }
 
-int Discret::ELEMENTS::SoTet10PoroType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoTet10PoroType::initialize(Core::FE::Discretization& dis)
 {
-  SoTet10Type::Initialize(dis);
+  SoTet10Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -329,7 +329,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoNurbs27PoroType::Create(
 {
   auto* object = new Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::Nurbs::SoNurbs27,
       Core::FE::CellType::nurbs27>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -372,9 +372,9 @@ void Discret::ELEMENTS::SoNurbs27PoroType::setup_element_definition(
                         .build();
 }
 
-int Discret::ELEMENTS::SoNurbs27PoroType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoNurbs27PoroType::initialize(Core::FE::Discretization& dis)
 {
-  Nurbs::SoNurbs27Type::Initialize(dis);
+  Nurbs::SoNurbs27Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;

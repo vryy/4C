@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  //evaluate the element (public)                            ismail 06/09
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Artery::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -43,7 +43,7 @@ int Discret::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
     {
       return Discret::ELEMENTS::ArtNetFactory::ProvideImpl(
           Shape(), impltype_, discretization.Name())
-          ->Evaluate(
+          ->evaluate(
               this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
     }
     break;

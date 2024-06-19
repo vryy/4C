@@ -48,7 +48,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Init()
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::init()
 {
   issetup_ = false;
   isinit_ = true;
@@ -57,7 +57,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Init(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup(
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::setup(
     Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
         output_params_ptr)
@@ -269,7 +269,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
  */
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::check_init_setup() const
 {
-  if (!isinit_ or !issetup_) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (!isinit_ or !issetup_) FOUR_C_THROW("Call init() and setup() first!");
 }
 
 /**
@@ -277,7 +277,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::check
  */
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::check_init() const
 {
-  if (!isinit_) FOUR_C_THROW("Init() has not been called, yet!");
+  if (!isinit_) FOUR_C_THROW("init() has not been called, yet!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

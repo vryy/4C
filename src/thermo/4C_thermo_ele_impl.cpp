@@ -137,7 +137,7 @@ Discret::ELEMENTS::TemperImpl<distype>::TemperImpl()
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::TemperImpl<distype>::Evaluate(const Core::Elements::Element* ele,
+int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Element* ele,
     Teuchos::ParameterList& params, const Core::FE::Discretization& discretization,
     const Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  // Tangent ("stiffness")
@@ -687,7 +687,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::evaluate_tang_capa_fint(
   const Inpar::STR::KinemType kintype = therm->KinType();
 
   // initialise the vectors
-  // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
+  // evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
   // the coupling field is not yet known. Pass coupling vectors filled with zeros
   // the size of the vectors is the length of the location vector*nsd_
   std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
@@ -2725,7 +2725,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::radiation(
     Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
     if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
-    radiation_.Clear();
+    radiation_.clear();
 
     // compute the Jacobian matrix
     Core::LinAlg::Matrix<nsd_, nsd_> jac;
@@ -2738,7 +2738,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::radiation(
     else if (detJ < 0.0)
       FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
-    const auto* funct = &myneumcond[0]->parameters().Get<std::vector<int>>("funct");
+    const auto* funct = &myneumcond[0]->parameters().get<std::vector<int>>("funct");
     const bool havefunct =
         funct ? std::any_of(funct->begin(), funct->end(), [](int index) { return index > 0; })
               : false;
@@ -2761,12 +2761,12 @@ void Discret::ELEMENTS::TemperImpl<distype>::radiation(
     const double functfac = (functnum > 0)
                                 ? Global::Problem::Instance()
                                       ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                      .Evaluate(xrefegp.A(), time, 0)
+                                      .evaluate(xrefegp.A(), time, 0)
                                 : 1.0;
 
     // get values and switches from the condition
-    const auto* onoff = &myneumcond[0]->parameters().Get<std::vector<int>>("onoff");
-    const auto* val = &myneumcond[0]->parameters().Get<std::vector<double>>("val");
+    const auto* onoff = &myneumcond[0]->parameters().get<std::vector<int>>("onoff");
+    const auto* val = &myneumcond[0]->parameters().get<std::vector<double>>("val");
 
     // set this condition to the radiation array
     for (int idof = 0; idof < numdofpernode_; idof++)
@@ -2776,7 +2776,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::radiation(
   }
   else
   {
-    radiation_.Clear();
+    radiation_.clear();
   }
 }
 
@@ -2793,7 +2793,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::materialize(
 
   auto thermoMaterial = Teuchos::rcp_dynamic_cast<Mat::Trait::Thermo>(material);
   thermoMaterial->Reinit(temp(0), gp);
-  thermoMaterial->Evaluate(gradtemp_, cmat_, heatflux_);
+  thermoMaterial->evaluate(gradtemp_, cmat_, heatflux_);
   capacoeff_ = thermoMaterial->Capacity();
   thermoMaterial->ConductivityDerivT(dercmat_);
   dercapa_ = thermoMaterial->CapacityDerivT();
@@ -3298,7 +3298,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::compute_error(
         const double T_exact =
             Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
-                .Evaluate(position, t, 0);
+                .evaluate(position, t, 0);
 
         T_analytical(0, 0) = T_exact;
 
@@ -3389,7 +3389,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::fd_check_coupl_nln_fint_cond_capa(
   // loop over rows and disturb corresponding temperature
   for (int j = 0; j < nen_ * numdofpernode_; j++)
   {
-    efint_disturb.Clear();
+    efint_disturb.clear();
     // disturb column dof and evaluate fint
     etempn_(j, 0) += delta;
     nonlinear_thermo_disp_contribution(ele, time, disp, vel,
@@ -3525,7 +3525,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::fd_check_capalin(
   // loop over rows and disturb corresponding temperature
   for (int j = 0; j < nen_ * numdofpernode_; j++)
   {
-    ecapa_disturb.Clear();
+    ecapa_disturb.clear();
     // disturb column dof and evaluate fint
     etempn_(j, 0) += delta;
     nonlinear_thermo_disp_contribution(ele, time, disp, vel, nullptr,

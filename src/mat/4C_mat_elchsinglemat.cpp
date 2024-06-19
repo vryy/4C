@@ -20,25 +20,25 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::ElchSingleMat::ElchSingleMat(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
       diffusion_coefficient_concentration_dependence_funct_num_(
-          matdata.parameters.Get<int>("DIFF_COEF_CONC_DEP_FUNCT")),
+          matdata.parameters.get<int>("DIFF_COEF_CONC_DEP_FUNCT")),
       diffusion_coefficient_temperature_scaling_funct_num_(
-          matdata.parameters.Get<int>("DIFF_COEF_TEMP_SCALE_FUNCT")),
-      number_diffusion_coefficent_params_(matdata.parameters.Get<int>("DIFF_PARA_NUM")),
-      diffusion_coefficent_params_(matdata.parameters.Get<std::vector<double>>("DIFF_PARA")),
+          matdata.parameters.get<int>("DIFF_COEF_TEMP_SCALE_FUNCT")),
+      number_diffusion_coefficent_params_(matdata.parameters.get<int>("DIFF_PARA_NUM")),
+      diffusion_coefficent_params_(matdata.parameters.get<std::vector<double>>("DIFF_PARA")),
       number_diffusion_temp_scale_funct_params_(
-          matdata.parameters.Get<int>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM")),
+          matdata.parameters.get<int>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM")),
       diffusion_temp_scale_funct_params_(
-          matdata.parameters.Get<std::vector<double>>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA")),
+          matdata.parameters.get<std::vector<double>>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA")),
       conductivity_concentration_dependence_funct_num_(
-          matdata.parameters.Get<int>("COND_CONC_DEP_FUNCT")),
+          matdata.parameters.get<int>("COND_CONC_DEP_FUNCT")),
       conductivity_temperature_scaling_funct_num_(
-          matdata.parameters.Get<int>("COND_TEMP_SCALE_FUNCT")),
-      number_conductivity_params_(matdata.parameters.Get<int>("COND_PARA_NUM")),
-      conductivity_params_(matdata.parameters.Get<std::vector<double>>("COND_PARA")),
+          matdata.parameters.get<int>("COND_TEMP_SCALE_FUNCT")),
+      number_conductivity_params_(matdata.parameters.get<int>("COND_PARA_NUM")),
+      conductivity_params_(matdata.parameters.get<std::vector<double>>("COND_PARA")),
       number_conductivity_temp_scale_funct_params_(
-          matdata.parameters.Get<int>("COND_TEMP_SCALE_FUNCT_PARA_NUM")),
+          matdata.parameters.get<int>("COND_TEMP_SCALE_FUNCT_PARA_NUM")),
       conductivity_temp_scale_funct_params_(
-          matdata.parameters.Get<std::vector<double>>("COND_TEMP_SCALE_FUNCT_PARA")),
+          matdata.parameters.get<std::vector<double>>("COND_TEMP_SCALE_FUNCT_PARA")),
       R_(Global::Problem::Instance()->ELCHControlParams().get<double>("GAS_CONSTANT"))
 {
   // safety checks
@@ -264,7 +264,7 @@ double Mat::ElchSingleMat::compute_diffusion_coefficient_concentration_dependent
     diffusionCoefficient = Global::Problem::Instance()
                                ->FunctionById<Core::UTILS::FunctionOfTime>(
                                    diffusion_coefficient_concentration_dependence_funct_num() - 1)
-                               .Evaluate(concentration);
+                               .evaluate(concentration);
   }
 
   return diffusionCoefficient;
@@ -291,7 +291,7 @@ double Mat::ElchSingleMat::compute_temperature_dependent_scale_factor(const doub
     temperatureDependentScaleFactor =
         Global::Problem::Instance()
             ->FunctionById<Core::UTILS::FunctionOfTime>(functionNumber - 1)
-            .Evaluate(temperature);
+            .evaluate(temperature);
   }
   else
   {
@@ -437,7 +437,7 @@ double Mat::ElchSingleMat::compute_conductivity_concentration_dependent(
     conductivity = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(
                            conductivity_concentration_dependence_funct_num() - 1)
-                       .Evaluate(concentration);
+                       .evaluate(concentration);
   }
 
   return conductivity;

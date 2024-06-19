@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate (public)                                        mwgee 12/06|
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::Evaluate(Teuchos::ParameterList& params,
+void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -36,22 +36,22 @@ void Core::FE::Discretization::Evaluate(Teuchos::ParameterList& params,
 {
   Core::FE::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
-  Evaluate(params, strategy);
+  evaluate(params, strategy);
 }
 
 
-void Core::FE::Discretization::Evaluate(
+void Core::FE::Discretization::evaluate(
     Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy)
 {
   // Call the Evaluate method for the specific element
-  Evaluate(params, strategy,
+  evaluate(params, strategy,
       [&](Core::Elements::Element& ele, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3)
       {
         const int err =
-            ele.Evaluate(params, *this, la, strategy.Elematrix1(), strategy.Elematrix2(),
+            ele.evaluate(params, *this, la, strategy.Elematrix1(), strategy.Elematrix2(),
                 strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
         if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", Comm().MyPID(), ele.Id(), err);
       });
@@ -59,7 +59,7 @@ void Core::FE::Discretization::Evaluate(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::Evaluate(Teuchos::ParameterList& params,
+void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params,
     Core::FE::AssembleStrategy& strategy,
     const std::function<void(Core::Elements::Element&, Core::Elements::Element::LocationArray&,
         Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&,
@@ -111,14 +111,14 @@ void Core::FE::Discretization::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate (public)                                        u.kue 01/08|
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::Evaluate(Teuchos::ParameterList& params,
+void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<Epetra_Vector> systemvector)
 {
-  Evaluate(params, systemmatrix, Teuchos::null, systemvector, Teuchos::null, Teuchos::null);
+  evaluate(params, systemmatrix, Teuchos::null, systemvector, Teuchos::null, Teuchos::null);
 }
 
-void Core::FE::Discretization::Evaluate(
+void Core::FE::Discretization::evaluate(
     const std::function<void(Core::Elements::Element&)>& element_action)
 {
   // test only for Filled()!Dof information is not required
@@ -135,7 +135,7 @@ void Core::FE::Discretization::Evaluate(
 /*----------------------------------------------------------------------*
  |  evaluate (public)                                        a.ger 03/09|
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::Evaluate(Teuchos::ParameterList& params)
+void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params)
 {
   // define empty element matrices and vectors
   Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -146,10 +146,10 @@ void Core::FE::Discretization::Evaluate(Teuchos::ParameterList& params)
 
   Core::Elements::Element::LocationArray la(dofsets_.size());
 
-  Evaluate(
+  evaluate(
       [&](Core::Elements::Element& ele)
       {
-        const int err = ele.Evaluate(
+        const int err = ele.evaluate(
             params, *this, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);
         if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", Comm().MyPID(), ele.Id(), err);
       });
@@ -190,8 +190,8 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
     const std::vector<int>* nodeids = cond->GetNodes();
     if (!nodeids) FOUR_C_THROW("PointNeumann condition does not have nodal cloud");
     const auto* tmp_funct = cond->parameters().GetIf<std::vector<int>>("funct");
-    const auto& onoff = cond->parameters().Get<std::vector<int>>("onoff");
-    const auto& val = cond->parameters().Get<std::vector<double>>("val");
+    const auto& onoff = cond->parameters().get<std::vector<int>>("onoff");
+    const auto& val = cond->parameters().get<std::vector<double>>("val");
 
     for (const int nodeid : *nodeids)
     {
@@ -220,7 +220,7 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
                         : params.get<const Core::UTILS::FunctionManager*>("function_manager");
                 return function_manager
                     ->FunctionById<Core::UTILS::FunctionOfTime>((*tmp_funct)[j] - 1)
-                    .Evaluate(time);
+                    .evaluate(time);
               }
               else
                 return 1.0;
@@ -386,7 +386,7 @@ void Core::FE::Discretization::evaluate_condition(Teuchos::ParameterList& params
   {
     if (name == condstring)
     {
-      if (condid == -1 || condid == cond->parameters().Get<int>("ConditionID"))
+      if (condid == -1 || condid == cond->parameters().get<int>("ConditionID"))
       {
         std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->Geometry();
         // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
@@ -404,7 +404,7 @@ void Core::FE::Discretization::evaluate_condition(Teuchos::ParameterList& params
           const auto& function_manager =
               params.get<const Core::UTILS::FunctionManager*>("function_manager");
           curvefac =
-              function_manager->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).Evaluate(time);
+              function_manager->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).evaluate(time);
         }
 
         // Get ConditionID of current condition if defined and write value in parameter list
@@ -435,7 +435,7 @@ void Core::FE::Discretization::evaluate_condition(Teuchos::ParameterList& params
           strategy.ClearElementStorage(la[row].Size(), la[col].Size());
 
           // call the element specific evaluate method
-          int err = ele->Evaluate(params, *this, la, strategy.Elematrix1(), strategy.Elematrix2(),
+          int err = ele->evaluate(params, *this, la, strategy.Elematrix1(), strategy.Elematrix2(),
               strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
           if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -481,7 +481,7 @@ void Core::FE::Discretization::EvaluateScalars(
   Core::LinAlg::SerialDenseVector cpuscalars(numscalars);
 
   // define element matrices and vectors
-  // -- which are empty and unused, just to satisfy element Evaluate()
+  // -- which are empty and unused, just to satisfy element evaluate()
   Core::LinAlg::SerialDenseMatrix elematrix1;
   Core::LinAlg::SerialDenseMatrix elematrix2;
   Core::LinAlg::SerialDenseVector elevector2;
@@ -499,7 +499,7 @@ void Core::FE::Discretization::EvaluateScalars(
 
     // call the element evaluate method
     {
-      int err = actele->Evaluate(
+      int err = actele->evaluate(
           params, *this, la, elematrix1, elematrix2, elescalars, elevector2, elevector3);
       if (err)
         FOUR_C_THROW("Proc %d: Element %d returned err=%d", Comm().MyPID(), actele->Id(), err);
@@ -554,7 +554,7 @@ void Core::FE::Discretization::EvaluateScalars(
     if (name == condstring)
     {
       // additional filtering by condition ID if explicitly provided
-      if (condid == -1 or condid == condition->parameters().Get<int>("ConditionID"))
+      if (condid == -1 or condid == condition->parameters().get<int>("ConditionID"))
       {
         // extract geometry map of current condition
         std::map<int, Teuchos::RCP<Core::Elements::Element>>& geometry = condition->Geometry();
@@ -576,7 +576,7 @@ void Core::FE::Discretization::EvaluateScalars(
             Core::LinAlg::SerialDenseVector elescalars(numscalars);
 
             // call element evaluation routine
-            int error = element->Evaluate(
+            int error = element->evaluate(
                 params, *this, la, elematrix1, elematrix2, elescalars, elevector2, elevector3);
 
             // safety check
@@ -591,7 +591,7 @@ void Core::FE::Discretization::EvaluateScalars(
             cpuscalars += elescalars;
           }  // if(element.Owner() == Comm().MyPID())
         }    // loop over elements
-      }      // if(condid == -1 or condid == condition.Get<int>("ConditionID"))
+      }      // if(condid == -1 or condid == condition.get<int>("ConditionID"))
     }        // if(conditionpair->first == condstring)
   }          // loop over conditions
 
@@ -616,7 +616,7 @@ void Core::FE::Discretization::EvaluateScalars(
   if (numscalars <= 0) FOUR_C_THROW("scalars vector of interest has size <=0");
 
   // define element matrices and vectors
-  // -- which are empty and unused, just to satisfy element Evaluate()
+  // -- which are empty and unused, just to satisfy element evaluate()
   Core::LinAlg::SerialDenseMatrix elematrix1;
   Core::LinAlg::SerialDenseMatrix elematrix2;
   Core::LinAlg::SerialDenseVector elevector2;
@@ -641,7 +641,7 @@ void Core::FE::Discretization::EvaluateScalars(
 
     // call the element evaluate method
     {
-      int err = actele->Evaluate(
+      int err = actele->evaluate(
           params, *this, la, elematrix1, elematrix2, elescalars, elevector2, elevector3);
       if (err)
         FOUR_C_THROW("Proc %d: Element %d returned err=%d", Comm().MyPID(), actele->Id(), err);

@@ -56,14 +56,14 @@ namespace STR
        * @param timint_ptr
        * @param dof_offset
        */
-      void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
+      void init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
           const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
           const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
           const Teuchos::RCP<STR::Integrator>& int_ptr,
           const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset) override;
 
       //! setup class variables [derived]
-      void Setup() override;
+      void setup() override;
 
       //! @name Functions which are derived from the base generic class
       //!@{
@@ -149,12 +149,12 @@ namespace STR
        *
        * \param[in] x Current full state vector
        */
-      void Reset(const Epetra_Vector& x) override{};
+      void reset(const Epetra_Vector& x) override{};
 
-      //! \brief Perform actions just before the Evaluate() call [derived]
+      //! \brief Perform actions just before the evaluate() call [derived]
       void pre_evaluate() override{};
 
-      //! \brief Perform actions right after the Evaluate() call [derived]
+      //! \brief Perform actions right after the evaluate() call [derived]
       void post_evaluate() override{};
 
       //! @}

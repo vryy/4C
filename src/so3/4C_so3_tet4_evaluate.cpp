@@ -66,7 +66,7 @@ using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              vlf 06/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -306,7 +306,7 @@ int Discret::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
           // Update constraintmixture material
           if (Material()->MaterialType() == Core::Materials::m_constraintmixture)
           {
-            SolidMaterial()->Update();
+            SolidMaterial()->update();
           }
           break;
         }
@@ -566,7 +566,7 @@ int Discret::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
       }
 
       // Update of history for materials
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
     }
     break;
 
@@ -714,8 +714,8 @@ int Discret::ELEMENTS::SoTet4::evaluate_neumann(Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
@@ -743,7 +743,7 @@ int Discret::ELEMENTS::SoTet4::evaluate_neumann(Teuchos::ParameterList& params,
 
   // (SPATIAL) FUNCTION BUSINESS
   static_assert((NUMGPT_SOTET4 == 1));
-  const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* funct = &condition.parameters().get<std::vector<int>>("funct");
   Core::LinAlg::Matrix<NUMDIM_SOTET4, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
@@ -822,7 +822,7 @@ int Discret::ELEMENTS::SoTet4::evaluate_neumann(Teuchos::ParameterList& params,
         const double functfac =
             (functnum > 0) ? Global::Problem::Instance()
                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                 .Evaluate(xrefegp.A(), time, dim)
+                                 .evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
         for (int nodid = 0; nodid < NUMNOD_SOTET4; ++nodid)
@@ -1262,7 +1262,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
 
     UTILS::get_temperature_for_structural_material<Core::FE::CellType::tet4>(shapefcts[gp], params);
 
-    SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
 
     // return gp stresses
     switch (iostress)
@@ -1581,7 +1581,7 @@ void Discret::ELEMENTS::SoTet4::so_tet4_lumpmass(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 05/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet4Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoTet4Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -1777,7 +1777,7 @@ void Discret::ELEMENTS::SoTet4::compute_deformation_gradient(
   if (kintype_ == Inpar::STR::KinemType::linear)
   {
     // in the linear case, the deformation gradient is the identity matrix
-    defgrd.Clear();
+    defgrd.clear();
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
@@ -1965,7 +1965,7 @@ void Discret::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // locati
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
 
-      SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+      SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
       // Cauchy stress
@@ -2051,8 +2051,8 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
       true);  // reference coord. of element
   static Core::LinAlg::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xcurr(
       true);  // current  coord. of element
-  xrefe.Clear();
-  xcurr.Clear();
+  xrefe.clear();
+  xcurr.clear();
   Core::Nodes::Node** nodes = Nodes();
 
   for (int i = 0; i < NUMNOD_SOTET4; ++i)
@@ -2066,7 +2066,7 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
   }
 
   static Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> deriv(true);
-  deriv.Clear();
+  deriv.clear();
   Core::FE::shape_function_deriv1<Core::FE::CellType::tet4>(xi, deriv);
 
   static Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> N_XYZ(true);
@@ -2079,7 +2079,7 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
 
   // linearization of deformation gradient F w.r.t. displacements
   static Core::LinAlg::Matrix<9, NUMDOF_SOTET4> d_F_dd(true);
-  d_F_dd.Clear();
+  d_F_dd.clear();
   if (d_cauchyndir_dd || d2_cauchyndir_dd_dn || d2_cauchyndir_dd_ddir || d2_cauchyndir_dd2 ||
       d2_cauchyndir_dd_dxi)
   {
@@ -2145,8 +2145,8 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
       NUMNOD_SOTET4>
       deriv2(true);
   static Core::LinAlg::Matrix<9, NUMDIM_SOTET4> d_F_dxi(true);
-  deriv2.Clear();
-  d_F_dxi.Clear();
+  deriv2.clear();
+  d_F_dxi.clear();
 
   if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
   {
@@ -2199,7 +2199,7 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
     d2_cauchyndir_dd_dxi_mat.MultiplyTN(1.0, d2_cauchyndir_dF2_d_F_dd, d_F_dxi, 0.0);
 
     static Core::LinAlg::Matrix<9, NUMDIM_SOTET4 * NUMDOF_SOTET4> d2_F_dxi_dd(true);
-    d2_F_dxi_dd.Clear();
+    d2_F_dxi_dd.clear();
     for (int i = 0; i < NUMDIM_SOTET4; ++i)
     {
       for (int j = 0; j < NUMDIM_SOTET4; ++j)

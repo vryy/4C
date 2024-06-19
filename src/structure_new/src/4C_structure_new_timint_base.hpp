@@ -62,18 +62,18 @@ namespace STR
       Base();
 
       /// initialize (all already existing) class variables
-      virtual void Init(const Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio,
+      virtual void init(const Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio,
           const Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn,
           const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> dataglobalstate);
 
       /// setup of the new class variables
-      void Setup() override;
+      void setup() override;
 
       /// tests if there are more time steps to do
       [[nodiscard]] bool not_finished() const override;
 
       /// reset everything (needed for biofilm simulations)
-      void Reset() override;
+      void reset() override;
 
       /** \brief reset step configuration after time step
        *
@@ -153,7 +153,7 @@ namespace STR
       void PreUpdate() override {}
 
       /// Update routine for coupled problems with monolithic approach
-      void Update() override;
+      void update() override;
 
       /// Update routine for coupled problems with monolithic approach with time adaptivity
       void Update(double endtime) override = 0;
@@ -513,8 +513,8 @@ namespace STR
       void prepare_output(bool force_prepare_timestep) override;
 
       /// output results (implicit and explicit)
-      virtual void Output() { Output(false); }
-      void Output(bool forced_writerestart) override;
+      virtual void output() { output(false); }
+      void output(bool forced_writerestart) override;
 
       /// Write Gmsh output for structural field
       void write_gmsh_struc_output_step() override;
@@ -732,14 +732,14 @@ namespace STR
 
       ///@}
      protected:
-      /// Check if Init() and Setup() have been called, yet.
+      /// Check if init() and setup() have been called, yet.
       inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
       }
 
-      /// Check if Init() has been called
-      inline void check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!"); }
+      /// Check if init() has been called
+      inline void check_init() const { FOUR_C_ASSERT(is_init(), "Call init() first!"); }
 
       /// Get the global state
       BaseDataGlobalState& data_global_state()
@@ -873,10 +873,10 @@ namespace STR
       void initialize_energy_file_stream_and_write_headers();
 
      protected:
-      /// flag indicating if Init() has been called
+      /// flag indicating if init() has been called
       bool isinit_;
 
-      /// flag indicating if Setup() has been called
+      /// flag indicating if setup() has been called
       bool issetup_;
 
       /// flag indicating that the simulation is currently restarting

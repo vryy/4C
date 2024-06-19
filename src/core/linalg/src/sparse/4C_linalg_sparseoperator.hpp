@@ -101,7 +101,7 @@ namespace Core::LinAlg
     virtual void Zero() = 0;
 
     /// throw away the matrix and its graph and start anew
-    virtual void Reset() = 0;
+    virtual void reset() = 0;
 
     /// Assemble a Core::LinAlg::SerialDenseMatrix into a matrix with striding
     /*!

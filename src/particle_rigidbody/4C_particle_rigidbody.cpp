@@ -41,7 +41,7 @@ ParticleRigidBody::RigidBodyHandler::RigidBodyHandler(
 
 ParticleRigidBody::RigidBodyHandler::~RigidBodyHandler() = default;
 
-void ParticleRigidBody::RigidBodyHandler::Init()
+void ParticleRigidBody::RigidBodyHandler::init()
 {
   // init rigid body unique global identifier handler
   init_rigid_body_unique_global_id_handler();
@@ -56,20 +56,20 @@ void ParticleRigidBody::RigidBodyHandler::Init()
   init_affiliation_pair_handler();
 }
 
-void ParticleRigidBody::RigidBodyHandler::Setup(
+void ParticleRigidBody::RigidBodyHandler::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
 
   // setup unique global identifier handler
-  rigidbodyuniqueglobalidhandler_->Setup();
+  rigidbodyuniqueglobalidhandler_->setup();
 
   // setup rigid body data state container
-  rigidbodydatastate_->Setup();
+  rigidbodydatastate_->setup();
 
   // setup affiliation pair handler
-  affiliationpairs_->Setup(particleengineinterface);
+  affiliationpairs_->setup(particleengineinterface);
 
   // safety check
   {
@@ -457,7 +457,7 @@ void ParticleRigidBody::RigidBodyHandler::init_rigid_body_unique_global_id_handl
   // create and init unique global identifier handler
   rigidbodyuniqueglobalidhandler_ = std::unique_ptr<PARTICLEENGINE::UniqueGlobalIdHandler>(
       new PARTICLEENGINE::UniqueGlobalIdHandler(comm_, "rigidbody"));
-  rigidbodyuniqueglobalidhandler_->Init();
+  rigidbodyuniqueglobalidhandler_->init();
 }
 
 void ParticleRigidBody::RigidBodyHandler::init_rigid_body_data_state()
@@ -466,7 +466,7 @@ void ParticleRigidBody::RigidBodyHandler::init_rigid_body_data_state()
   rigidbodydatastate_ = std::make_shared<ParticleRigidBody::RigidBodyDataState>();
 
   // init rigid body data state container
-  rigidbodydatastate_->Init();
+  rigidbodydatastate_->init();
 }
 
 void ParticleRigidBody::RigidBodyHandler::init_rigid_body_vtp_writer()
@@ -474,7 +474,7 @@ void ParticleRigidBody::RigidBodyHandler::init_rigid_body_vtp_writer()
   // construct and init rigid body runtime vtp writer
   rigidbodyvtpwriter_ = std::unique_ptr<ParticleRigidBody::RigidBodyRuntimeVtpWriter>(
       new ParticleRigidBody::RigidBodyRuntimeVtpWriter(comm_));
-  rigidbodyvtpwriter_->Init(rigidbodydatastate_);
+  rigidbodyvtpwriter_->init(rigidbodydatastate_);
 }
 
 void ParticleRigidBody::RigidBodyHandler::init_affiliation_pair_handler()
@@ -484,7 +484,7 @@ void ParticleRigidBody::RigidBodyHandler::init_affiliation_pair_handler()
       new ParticleRigidBody::RigidBodyAffiliationPairs(comm_));
 
   // init affiliation pair handler
-  affiliationpairs_->Init();
+  affiliationpairs_->init();
 }
 
 void ParticleRigidBody::RigidBodyHandler::get_packed_rigid_body_states(

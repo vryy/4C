@@ -34,7 +34,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8PlastType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }  // Create()
 
@@ -95,7 +95,7 @@ void Discret::ELEMENTS::SoHex8PlastType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                          seitz 07/13 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8PlastType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex8PlastType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -109,7 +109,7 @@ int Discret::ELEMENTS::SoHex8PlastType::Initialize(Core::FE::Discretization& dis
   }
 
   return 0;
-}  // Initialize()
+}  // initialize()
 /*----------------------------------------------------------------------------*
  | END HEX8 Element
  *----------------------------------------------------------------------------*/
@@ -138,7 +138,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex18PlastType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }  // Create()
 
@@ -199,7 +199,7 @@ void Discret::ELEMENTS::SoHex18PlastType::setup_element_definition(
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex18PlastType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex18PlastType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -213,7 +213,7 @@ int Discret::ELEMENTS::SoHex18PlastType::Initialize(Core::FE::Discretization& di
   }
 
   return 0;
-}  // Initialize()
+}  // initialize()
 /*----------------------------------------------------------------------------*
 | END HEX18 Element
 *----------------------------------------------------------------------------*/
@@ -241,7 +241,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex27PlastType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex27>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }  // Create()
 
@@ -297,7 +297,7 @@ void Discret::ELEMENTS::SoHex27PlastType::setup_element_definition(
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex27PlastType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex27PlastType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -311,7 +311,7 @@ int Discret::ELEMENTS::SoHex27PlastType::Initialize(Core::FE::Discretization& di
   }
 
   return 0;
-}  // Initialize()
+}  // initialize()
 /*----------------------------------------------------------------------------*
 | END HEX27 Element
 *----------------------------------------------------------------------------*/
@@ -339,7 +339,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet4PlastType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::So3Plast<Core::FE::CellType::tet4>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }  // Create()
 
@@ -395,7 +395,7 @@ void Discret::ELEMENTS::SoTet4PlastType::setup_element_definition(
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet4PlastType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoTet4PlastType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -409,7 +409,7 @@ int Discret::ELEMENTS::SoTet4PlastType::Initialize(Core::FE::Discretization& dis
   }
 
   return 0;
-}  // Initialize()
+}  // initialize()
 /*----------------------------------------------------------------------------*
 | END tet4 Element
 *----------------------------------------------------------------------------*/
@@ -436,7 +436,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoNurbs27PlastType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::So3Plast<Core::FE::CellType::nurbs27>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }  // Create()
 
@@ -490,7 +490,7 @@ void Discret::ELEMENTS::SoNurbs27PlastType::setup_element_definition(
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoNurbs27PlastType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoNurbs27PlastType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -504,7 +504,7 @@ int Discret::ELEMENTS::SoNurbs27PlastType::Initialize(Core::FE::Discretization& 
   }
 
   return 0;
-}  // Initialize()
+}  // initialize()
 /*----------------------------------------------------------------------------*
 | END nurbs27 Element
 *----------------------------------------------------------------------------*/

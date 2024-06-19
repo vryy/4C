@@ -37,11 +37,11 @@ FLD::TimIntStationary::TimIntStationary(const Teuchos::RCP<Core::FE::Discretizat
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntStationary::Init()
+void FLD::TimIntStationary::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  FLD::FluidImplicitTimeInt::Init();
+  FLD::FluidImplicitTimeInt::init();
 
   // check, if starting algorithm is desired
   if (numstasteps_ > 0)
@@ -150,7 +150,7 @@ void FLD::TimIntStationary::solve_stationary_problem()
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    Output();
+    output();
 
   }  // end of time loop
 
@@ -227,7 +227,7 @@ void FLD::TimIntStationary::set_element_time_parameter()
   eleparams.set("total time", time_);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   return;
 }

@@ -168,7 +168,7 @@ namespace Mat
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -180,7 +180,7 @@ namespace Mat
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -207,7 +207,7 @@ namespace Mat
     double Density() const override { return params_->density_; }
 
     /// hyperelastic stress response plus elasticity tensor
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient
         const Core::LinAlg::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
         Teuchos::ParameterList& params,      ///< Container for additional information
         Core::LinAlg::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
@@ -217,7 +217,7 @@ namespace Mat
 
 
     /// setup
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /*!
      * \brief Post setup routine called before the first Evaluate call
@@ -523,7 +523,7 @@ namespace Mat
     /// Fraction of 2D material parameter of elastin
     std::vector<double> mue_frac_;
 
-    /// First call of Evaluate()
+    /// First call of evaluate()
     std::vector<int> setup_;
 
     /// Holder for anisotropic behavior

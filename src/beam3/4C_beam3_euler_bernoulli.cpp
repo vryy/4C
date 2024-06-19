@@ -34,7 +34,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Beam3ebType::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Beam3eb* object = new Discret::ELEMENTS::Beam3eb(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -216,7 +216,7 @@ void Discret::ELEMENTS::Beam3ebType::setup_element_definition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Beam3ebType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::Beam3ebType::initialize(Core::FE::Discretization& dis)
 {
   // setting up geometric variables for beam3eb elements
   for (int num = 0; num < dis.NumMyColElements(); ++num)
@@ -242,8 +242,8 @@ int Discret::ELEMENTS::Beam3ebType::Initialize(Core::FE::Discretization& dis)
     // configuration (i.e. elements cut by the periodic boundary) in the input file
     Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox =
         Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
-    periodic_boundingbox->Init(
-        Global::Problem::Instance()->binning_strategy_params());  // no Setup() call needed here
+    periodic_boundingbox->init(
+        Global::Problem::Instance()->binning_strategy_params());  // no setup() call needed here
 
     std::vector<double> disp_shift;
     int numdof = currele->NumDofPerNode(*(currele->Nodes()[0]));
@@ -344,7 +344,7 @@ Core::FE::CellType Discret::ELEMENTS::Beam3eb::Shape() const { return Core::FE::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3eb::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Beam3eb::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -352,7 +352,7 @@ void Discret::ELEMENTS::Beam3eb::Pack(Core::Communication::PackBuffer& data) con
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Beam3Base::Pack(data);
+  Beam3Base::pack(data);
 
   // add all class variables
   add_to_pack(data, jacobi_);
@@ -374,7 +374,7 @@ void Discret::ELEMENTS::Beam3eb::Pack(Core::Communication::PackBuffer& data) con
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Beam3eb::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -383,7 +383,7 @@ void Discret::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Beam3Base::Unpack(basedata);
+  Beam3Base::unpack(basedata);
 
   // extract all class variables of beam3 element
   extract_from_pack(position, data, jacobi_);
@@ -476,7 +476,7 @@ void Discret::ELEMENTS::Beam3eb::set_up_reference_geometry(
       // difference between theses to types of interpolation functions.
       Core::FE::shape_function_1D_deriv1(shapefuncderiv, xi, distype);
 
-      Tref_[numgp].Clear();
+      Tref_[numgp].clear();
 
       // calculate vector dxdxi
       for (int node = 0; node < nnode; node++)
@@ -505,9 +505,9 @@ void Discret::ELEMENTS::Beam3eb::set_up_reference_geometry(
 
     for (int node = 0; node < nnode; node++)
     {
-      Tref_[node].Clear();
+      Tref_[node].clear();
 #if NODALDOFS == 3
-      Kref_[node].Clear();
+      Kref_[node].clear();
 #endif
       for (int dof = 0; dof < 3; dof++)
       {
@@ -562,7 +562,7 @@ void Discret::ELEMENTS::Beam3eb::GetTriadAtXi(
   Core::LinAlg::Matrix<12, 1> disp_totlag(true);
   update_disp_totlag<2, 6>(disp, disp_totlag);
 
-  triad.Clear();
+  triad.clear();
 
   /* note: this beam formulation (Beam3eb = torsion-free, isotropic Kirchhoff beam)
    *       does not need to track material triads and therefore can not provide it here;

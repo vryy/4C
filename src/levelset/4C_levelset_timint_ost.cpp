@@ -45,12 +45,12 @@ ScaTra::LevelSetTimIntOneStepTheta::LevelSetTimIntOneStepTheta(
 /*----------------------------------------------------------------------*
  |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::Init()
+void ScaTra::LevelSetTimIntOneStepTheta::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntOneStepTheta::Init();
-  LevelSetAlgorithm::Init();
+  TimIntOneStepTheta::init();
+  LevelSetAlgorithm::init();
 
   return;
 }
@@ -58,12 +58,12 @@ void ScaTra::LevelSetTimIntOneStepTheta::Init()
 /*----------------------------------------------------------------------*
  |  setup time integration                                  rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::Setup()
+void ScaTra::LevelSetTimIntOneStepTheta::setup()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntOneStepTheta::Setup();
-  LevelSetAlgorithm::Setup();
+  TimIntOneStepTheta::setup();
+  LevelSetAlgorithm::setup();
 
   return;
 }
@@ -140,7 +140,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::set_old_part_of_righthandside()
  | extended version for coupled level-set problems                      |
  | including reinitialization                           rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::Update()
+void ScaTra::LevelSetTimIntOneStepTheta::update()
 {
   // -----------------------------------------------------------------
   //                     reinitialize level-set

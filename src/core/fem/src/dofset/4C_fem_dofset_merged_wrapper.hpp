@@ -61,7 +61,7 @@ namespace Core::DOFSets
         const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// reset all internal variables
-    void Reset() override;
+    void reset() override;
 
     //! @name Proxy management
     /// Proxies need to know about changes to the DofSet.

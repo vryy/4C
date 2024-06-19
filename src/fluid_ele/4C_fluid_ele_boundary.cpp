@@ -24,7 +24,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidBoundaryType::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::FluidBoundary* object = new Discret::ELEMENTS::FluidBoundary(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -96,7 +96,7 @@ Core::Elements::Element* Discret::ELEMENTS::FluidBoundary::Clone() const
  |  Pack data                                                  (public) |
  |                                                           ager 12/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidBoundary::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::FluidBoundary::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -104,7 +104,7 @@ void Discret::ELEMENTS::FluidBoundary::Pack(Core::Communication::PackBuffer& dat
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  FaceElement::Pack(data);
+  FaceElement::pack(data);
   // Discretisation type
   add_to_pack(data, distype_);
   // add numdofpernode_
@@ -116,7 +116,7 @@ void Discret::ELEMENTS::FluidBoundary::Pack(Core::Communication::PackBuffer& dat
  |  Unpack data                                                (public) |
  |                                                           ager 12/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidBoundary::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidBoundary::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -125,7 +125,7 @@ void Discret::ELEMENTS::FluidBoundary::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  FaceElement::Unpack(basedata);
+  FaceElement::unpack(basedata);
   // distype
   distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
   // numdofpernode_

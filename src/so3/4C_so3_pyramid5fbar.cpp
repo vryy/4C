@@ -32,7 +32,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoPyramid5fbarType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoPyramid5fbar(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -138,7 +138,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoPyramid5fbar::Clone() const
  |  Pack data                                                  (public) |
  |                                                          seitz 03/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoPyramid5fbar::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoPyramid5fbar::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -146,7 +146,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::Pack(Core::Communication::PackBuffer& da
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class So_pyramid5 Element
-  Discret::ELEMENTS::SoPyramid5::Pack(data);
+  Discret::ELEMENTS::SoPyramid5::pack(data);
 
   return;
 }
@@ -155,7 +155,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::Pack(Core::Communication::PackBuffer& da
  |  Unpack data                                                (public) |
  |                                                          seitz 03/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoPyramid5fbar::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoPyramid5fbar::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -164,7 +164,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::Unpack(const std::vector<char>& data)
   // extract base class So_pyramid5 Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::SoPyramid5::Unpack(basedata);
+  Discret::ELEMENTS::SoPyramid5::unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

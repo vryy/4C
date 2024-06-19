@@ -26,7 +26,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidTypeImmersed::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::FluidImmersed* object = new Discret::ELEMENTS::FluidImmersed(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -93,7 +93,7 @@ Core::Elements::Element* Discret::ELEMENTS::FluidImmersed::Clone() const
  |  Pack data                                                  (public) |
  |                                                          rauch 03/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidImmersed::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::FluidImmersed::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -101,7 +101,7 @@ void Discret::ELEMENTS::FluidImmersed::Pack(Core::Communication::PackBuffer& dat
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Discret::ELEMENTS::Fluid::Pack(data);
+  Discret::ELEMENTS::Fluid::pack(data);
   // Part of immersion domain?
   add_to_pack(data, is_immersed_);
   // Part of immersion domain for immersed boundary?
@@ -117,7 +117,7 @@ void Discret::ELEMENTS::FluidImmersed::Pack(Core::Communication::PackBuffer& dat
  |  Unpack data                                                (public) |
  |                                                          rauch 03/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidImmersed::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidImmersed::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -126,7 +126,7 @@ void Discret::ELEMENTS::FluidImmersed::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::Fluid::Unpack(basedata);
+  Discret::ELEMENTS::Fluid::unpack(basedata);
   // Part of immersion domain?
   is_immersed_ = extract_int(position, data);
   // Part of immersion domain for immersed boundary?

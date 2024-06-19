@@ -32,19 +32,19 @@ void Adapter::FieldWrapper::update_state_incrementally(Teuchos::RCP<const Epetra
 /*-----------------------------------------------------------------------/
 | update dofs and evaluate elements                                      |
 /-----------------------------------------------------------------------*/
-void Adapter::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void Adapter::FieldWrapper::evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   if (nox_correction_) get_iterinc(disiterinc);
-  field_->Evaluate(disiterinc);
+  field_->evaluate(disiterinc);
 }
 
 /*-----------------------------------------------------------------------/
 | update dofs and evaluate elements                                      |
 /-----------------------------------------------------------------------*/
-void Adapter::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter)
+void Adapter::FieldWrapper::evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter)
 {
   if (nox_correction_) get_iterinc(disiterinc);
-  field_->Evaluate(disiterinc, firstiter);
+  field_->evaluate(disiterinc, firstiter);
 }
 
 /*-----------------------------------------------------------------------/

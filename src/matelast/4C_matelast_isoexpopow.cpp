@@ -15,9 +15,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::Elastic::PAR::IsoExpoPow::IsoExpoPow(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      k1_(matdata.parameters.Get<double>("K1")),
-      k2_(matdata.parameters.Get<double>("K2")),
-      d_(matdata.parameters.Get<int>("C"))
+      k1_(matdata.parameters.get<double>("K1")),
+      k2_(matdata.parameters.get<double>("K2")),
+      d_(matdata.parameters.get<int>("C"))
 {
 }
 

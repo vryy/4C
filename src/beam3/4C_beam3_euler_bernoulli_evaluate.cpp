@@ -30,7 +30,7 @@ using FAD = Sacado::Fad::DFad<double>;
 
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -278,16 +278,16 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
     time = params.get("total time", -1.0);
 
   // find out whether we will use a time curve and get the factor
-  const auto* tmp_funct = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* tmp_funct = &condition.parameters().get<std::vector<int>>("funct");
 
   // get values and switches from the condition
   // onoff is related to the first 6 flags of a line Neumann condition in the input file;
   // value 1 for flag i says that condition is active for i-th degree of freedom
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
 
   // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
 
 #ifndef BEAM3EBDISCRETELINENEUMANN
 // funct is related to the 6 "funct" fields after the val field of the Neumann condition
@@ -326,7 +326,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
       if (functnum >= 0)
         functfac[i] = Global::Problem::Instance()
                           ->FunctionById<Core::UTILS::FunctionOfTime>(functnum - 1)
-                          .Evaluate(time);
+                          .evaluate(time);
     }
 
     // add forces to Res_external according to (5.56). There is a factor (-1) needed, as fext is
@@ -343,10 +343,10 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<3, 3> spinmatrix;
 
     // clear all matrices
-    tangent.Clear();
-    crossproduct.Clear();
-    moment.Clear();
-    spinmatrix.Clear();
+    tangent.clear();
+    crossproduct.clear();
+    moment.clear();
+    spinmatrix.clear();
 
     // assemble current tangent and moment at node
     for (int dof = 3; dof < 6; dof++)
@@ -382,13 +382,13 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
     // assembly for stiffnessmatrix
     Core::LinAlg::Matrix<3, 3> crossxtangent;
 
-    crossxtangent.Clear();
+    crossxtangent.clear();
 
     // perform matrix operation
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++) crossxtangent(i, j) = crossproduct(i) * tangent(j);
 
-    spinmatrix.Clear();
+    spinmatrix.clear();
 
     // spinmatrix = S ( m )
     Core::LargeRotations::computespin(spinmatrix, moment);
@@ -452,7 +452,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
       const Core::FE::CellType distype = Shape();
 
       // Clear matrix for shape functions
-      N_i.Clear();
+      N_i.clear();
 
 // evaluation of shape funcitons at Gauss points
 #if (NODALDOFS == 2)
@@ -515,7 +515,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
           // evaluate function at the position of the current node       --> dof here correct?
           functionfac = Global::Problem::Instance()
                             ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                            .Evaluate(X_ref.data(), time, dof);
+                            .evaluate(X_ref.data(), time, dof);
         }
         else
           functionfac = 1.0;
@@ -542,7 +542,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
       const Core::FE::CellType distype = Shape();
 
       // Clear matrix for shape functions
-      N_i.Clear();
+      N_i.clear();
 
       // evaluation of shape funcitons at Gauss points
 #if (NODALDOFS == 2)
@@ -605,8 +605,8 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
   eint_ = 0.0;
   eint_axial_ = 0.0;
   ekin_ = 0.0;
-  l_.Clear();
-  p_.Clear();
+  l_.clear();
+  p_.clear();
   kappa_max_ = 0.0;
   epsilon_max_ = 0.0;
 
@@ -678,14 +678,14 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
         "NODALDOFS=2!!!");
 #endif
     Core::LinAlg::Matrix<1, 3> L_i;
-    L_i.Clear();
+    L_i.clear();
     Core::LinAlg::Matrix<nnode * dofpn, 1> Res_tension_ANS;
-    Res_tension_ANS.Clear();
+    Res_tension_ANS.clear();
     Core::LinAlg::Matrix<nnode * dofpn, nnode * dofpn> R_tension_ANS;
-    R_tension_ANS.Clear();
+    R_tension_ANS.clear();
     double epsilon_ANS = 0.0;
     Core::LinAlg::Matrix<1, nnode * dofpn> lin_epsilon_ANS;
-    lin_epsilon_ANS.Clear();
+    lin_epsilon_ANS.clear();
 #endif
 
 
@@ -727,13 +727,13 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 // Calculate epsilon at collocation points
 #ifdef ANS_BEAM3EB
     Core::LinAlg::Matrix<3, 1> epsilon_cp;
-    epsilon_cp.Clear();
+    epsilon_cp.clear();
     Core::LinAlg::Matrix<3, 3> tangent_cp;
-    tangent_cp.Clear();
+    tangent_cp.clear();
     Core::LinAlg::Matrix<3, NODALDOFS * 6> lin_epsilon_cp;
-    lin_epsilon_cp.Clear();
+    lin_epsilon_cp.clear();
 
-    N_i_x.Clear();
+    N_i_x.clear();
     Core::FE::shape_function_hermite_1D_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
     for (int i = 0; i < 2 * NODALDOFS; i++)
     {
@@ -761,7 +761,7 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 
     for (int k = 0; k < 3; k++)
     {
-      N_i_x.Clear();
+      N_i_x.clear();
 
       switch (k)
       {
@@ -801,40 +801,40 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
       // all matrices and scalars are set to zero again!!!
       // factors for stiffness assembly
 
-      r_.Clear();
-      r_x.Clear();
-      r_xx.Clear();
+      r_.clear();
+      r_x.clear();
+      r_xx.clear();
 
-      f1.Clear();
-      f2.Clear();
-      n1.Clear();
+      f1.clear();
+      f2.clear();
+      n1.clear();
 
       rxxrxx = 0;
       rxrx = 0;
       tension = 0;
 
-      NTildex.Clear();
-      NTildexx.Clear();
+      NTildex.clear();
+      NTildexx.clear();
 
-      NxTrx.Clear();
-      NxxTrxx.Clear();
+      NxTrx.clear();
+      NxxTrxx.clear();
 
-      M2.Clear();
-      NxTrxrxTNx.Clear();
+      M2.clear();
+      NxTrxrxTNx.clear();
 
-      N_i.Clear();
-      N_i_x.Clear();
-      N_i_xx.Clear();
+      N_i.clear();
+      N_i_x.clear();
+      N_i_xx.clear();
 
-      N.Clear();
-      N_x.Clear();
-      N_xx.Clear();
+      N.clear();
+      N_x.clear();
+      N_xx.clear();
 
-      R_tension.Clear();
-      R_bending.Clear();
+      R_tension.clear();
+      R_bending.clear();
 
-      Res_tension.Clear();
-      Res_bending.Clear();
+      Res_tension.clear();
+      Res_bending.clear();
 
       // Get location and weight of GP in parameter space
       const double xi = gausspoints.qxg[numgp][0];
@@ -904,7 +904,7 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 #ifdef ANS_BEAM3EB
       Core::FE::shape_function_1D(L_i, xi, Core::FE::CellType::line3);
       epsilon_ANS = 0.0;
-      lin_epsilon_ANS.Clear();
+      lin_epsilon_ANS.clear();
       for (int i = 0; i < ANSVALUES; i++)
       {
         epsilon_ANS += L_i(i) * epsilon_cp(i);
@@ -914,8 +914,8 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
         }
       }
 
-      Res_tension_ANS.Clear();
-      R_tension_ANS.Clear();
+      Res_tension_ANS.clear();
+      R_tension_ANS.clear();
 
       for (int i = 0; i < nnode * dofpn; i++)
       {
@@ -1103,11 +1103,11 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
         "NODALDOFS=2!!!");
 #endif
     Core::LinAlg::Matrix<1, 3> L_i;
-    L_i.Clear();
+    L_i.clear();
     Core::LinAlg::Matrix<nnode * dofpn, 1> Res_tension_ANS;
-    Res_tension_ANS.Clear();
+    Res_tension_ANS.clear();
     Core::LinAlg::Matrix<nnode * dofpn, nnode * dofpn> R_tension_ANS;
-    R_tension_ANS.Clear();
+    R_tension_ANS.clear();
     double epsilon_ANS = 0.0;
     Core::LinAlg::Matrix<1, nnode * dofpn> lin_epsilon_ANS(true);
 
@@ -1115,9 +1115,9 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
     Core::LinAlg::Matrix<1, nnode * dofpn, FAD> lin_epsilon_ANS_fad(true);
 
     Core::LinAlg::Matrix<nnode * dofpn, 1, FAD> Res_tension_ANS_fad;
-    Res_tension_ANS_fad.Clear();
+    Res_tension_ANS_fad.clear();
     Core::LinAlg::Matrix<nnode * dofpn, nnode * dofpn, FAD> R_tension_ANS_fad;
-    R_tension_ANS_fad.Clear();
+    R_tension_ANS_fad.clear();
     FAD epsilon_ANS_fad = 0.0;
 #endif
 #endif
@@ -1186,7 +1186,7 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
     Core::LinAlg::Matrix<3, NODALDOFS * 6, FAD> lin_epsilon_cp_fad(true);
 #endif
 
-    N_i_x.Clear();
+    N_i_x.clear();
     Core::FE::shape_function_hermite_1D_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
 
     for (int i = 0; i < 2 * NODALDOFS; i++) N_i_x(i) = N_i_x(i) / jacobi_;
@@ -1227,7 +1227,7 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 
     for (int k = 0; k < 3; k++)
     {
-      N_i_x.Clear();
+      N_i_x.clear();
 
       switch (k)
       {
@@ -1334,13 +1334,13 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
       // all matrices and scalars are set to zero again!!!
       // factors for stiffness assembly
 
-      r_.Clear();
-      r_x.Clear();
-      r_xx.Clear();
+      r_.clear();
+      r_x.clear();
+      r_xx.clear();
 
-      f1.Clear();
-      f2.Clear();
-      n1.Clear();
+      f1.clear();
+      f2.clear();
+      n1.clear();
 
       rxrxx = 0;
       rxxrxx = 0;
@@ -1348,37 +1348,37 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
       tension = 0;
 
 #ifdef BEAM3EBAUTOMATICDIFF
-      rx_fad.Clear();
+      rx_fad.clear();
       rxrx_fad = 0.0;
-      N.Clear();
+      N.clear();
 #endif
 
-      NTilde.Clear();
-      NTildex.Clear();
-      NTildexx.Clear();
+      NTilde.clear();
+      NTildex.clear();
+      NTildexx.clear();
 
-      NxTrx.Clear();
-      NxTrxx.Clear();
-      NxxTrx.Clear();
-      NxxTrxx.Clear();
+      NxTrx.clear();
+      NxTrxx.clear();
+      NxxTrx.clear();
+      NxxTrxx.clear();
 
-      M1.Clear();
-      M2.Clear();
-      M3.Clear();
-      NxTrxrxTNx.Clear();
+      M1.clear();
+      M2.clear();
+      M3.clear();
+      NxTrxrxTNx.clear();
 
-      N_i.Clear();
-      N_i_x.Clear();
-      N_i_xx.Clear();
+      N_i.clear();
+      N_i_x.clear();
+      N_i_xx.clear();
 
-      N_x.Clear();
-      N_xx.Clear();
+      N_x.clear();
+      N_xx.clear();
 
-      R_tension.Clear();
-      R_bending.Clear();
+      R_tension.clear();
+      R_bending.clear();
 
-      Res_tension.Clear();
-      Res_bending.Clear();
+      Res_tension.clear();
+      Res_bending.clear();
 
       // Get location and weight of GP in parameter space
       const double xi = gausspoints.qxg[numgp][0];
@@ -1468,8 +1468,8 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
       if (Core::FADUtils::CastToDouble(Core::FADUtils::VectorNorm<3>(ortho_normal)) > 1.0e-12)
         ortho_normal.Scale(1.0 / (Core::FADUtils::VectorNorm<3>(ortho_normal)));
 
-      Res_orthopressure.Clear();
-      R_orthopressure.Clear();
+      Res_orthopressure.clear();
+      R_orthopressure.clear();
       Res_orthopressure.MultiplyTN(N, ortho_normal);
       Res_orthopressure.Scale(orthopressureload * wgt * jacobi_);
       for (int i = 0; i < nnode * dofpn; i++)
@@ -1500,7 +1500,7 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 #ifdef ANS_BEAM3EB
       Core::FE::shape_function_1D(L_i, xi, Core::FE::CellType::line3);
       epsilon_ANS = 0.0;
-      lin_epsilon_ANS.Clear();
+      lin_epsilon_ANS.clear();
       for (int i = 0; i < ANSVALUES; i++)
       {
         epsilon_ANS += L_i(i) * epsilon_cp(i);
@@ -1509,7 +1509,7 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 
 #ifdef BEAM3EBAUTOMATICDIFF
       epsilon_ANS_fad = 0.0;
-      lin_epsilon_ANS_fad.Clear();
+      lin_epsilon_ANS_fad.clear();
       for (int i = 0; i < ANSVALUES; i++)
       {
         epsilon_ANS_fad += L_i(i) * epsilon_cp_fad(i);
@@ -1519,8 +1519,8 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
         }
       }
 
-      Res_tension_ANS_fad.Clear();
-      R_tension_ANS_fad.Clear();
+      Res_tension_ANS_fad.clear();
+      R_tension_ANS_fad.clear();
 
 #ifndef CONSISTENTANSBEAM3EB
       for (int i = 0; i < nnode * dofpn; i++)
@@ -1545,8 +1545,8 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
         }
       }
 #endif
-      Res_tension_ANS.Clear();
-      R_tension_ANS.Clear();
+      Res_tension_ANS.clear();
+      R_tension_ANS.clear();
 #endif
 
       // assemble internal stiffness matrix / R = d/(dd) Res in thesis Meier
@@ -1762,9 +1762,9 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
       Core::LinAlg::Matrix<3, 1> r_t(true);
       Core::LinAlg::Matrix<3, 1> r(true);
 
-      N_i.Clear();
-      N_mass.Clear();
-      NTilde.Clear();
+      N_i.clear();
+      N_mass.clear();
+      NTilde.clear();
 
       // Get location and weight of GP in parameter space
       const double xi = gausspoints.qxg[numgp][0];
@@ -2147,7 +2147,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_stochastic_forces(
     }
 
     // compute stochastic force vector per unit length at current GP
-    f_stoch.Clear();
+    f_stoch.clear();
     for (unsigned int idim = 0; idim < ndim; idim++)
       for (unsigned int jdim = 0; jdim < ndim; jdim++)
         f_stoch(idim) += (std::sqrt(gamma(1)) * (idim == jdim) +

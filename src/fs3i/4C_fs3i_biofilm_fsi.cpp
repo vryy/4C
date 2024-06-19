@@ -54,17 +54,17 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm) : PartFS3I1Wc(comm), comm_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::Init()
+void FS3I::BiofilmFSI::init()
 {
   if (comm_.MyPID() == 0)
     std::cout << "\n WARNING ! The implementation of BiofilmFSI is not well tested,\n"
-                 " buggy, and introduction of just Init(...) and Setup() in commit\n"
+                 " buggy, and introduction of just init(...) and setup() in commit\n"
                  " to revision 22366 led to differing results slightly above the\n"
                  " convergence tolerance. Rework on this problem type is necessary!\n\n"
               << std::endl;
 
-  // call Init() in base class
-  FS3I::PartFS3I1Wc::Init();
+  // call init() in base class
+  FS3I::PartFS3I1Wc::init();
 
   //---------------------------------------------------------------------
   // set up struct ale
@@ -158,10 +158,10 @@ void FS3I::BiofilmFSI::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::Setup()
+void FS3I::BiofilmFSI::setup()
 {
-  // call Setup() in base class
-  FS3I::PartFS3I1Wc::Setup();
+  // call setup() in base class
+  FS3I::PartFS3I1Wc::setup();
 
   Teuchos::RCP<Core::FE::Discretization> structaledis =
       Global::Problem::Instance()->GetDis("structale");
@@ -323,10 +323,10 @@ void FS3I::BiofilmFSI::Timeloop()
       ScatraOutput();
 
       // reset step and state vectors
-      fsi_->structure_field()->Reset();
+      fsi_->structure_field()->reset();
       // fluid reset can be bypassed, in this way the next step starts from a solution closer to the
-      // final one fsi_->fluid_field()->Reset(false, false, step_bio);
-      fsi_->ale_field()->Reset();
+      // final one fsi_->fluid_field()->reset(false, false, step_bio);
+      fsi_->ale_field()->reset();
 
       fsi_->ale_field()->create_system_matrix(fsi_->ale_field()->Interface());
     }
@@ -757,7 +757,7 @@ void FS3I::BiofilmFSI::FluidAleSolve()
   }
 
   fsi_->ale_field()->create_system_matrix(Teuchos::null);
-  fsi_->ale_field()->Evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
+  fsi_->ale_field()->evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
   int error = fsi_->ale_field()->Solve();
   if (error == 1) FOUR_C_THROW("Could not solve fluid ALE in biofilm FS3I!");
   fsi_->ale_field()->UpdateIter();
@@ -806,7 +806,7 @@ void FS3I::BiofilmFSI::StructAleSolve()
   }
 
   ale_->create_system_matrix(Teuchos::null);
-  ale_->Evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
+  ale_->evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
   int error = ale_->Solve();
   if (error == 1) FOUR_C_THROW("Could not solve fluid ALE in biofilm FS3I!");
   ale_->UpdateIter();

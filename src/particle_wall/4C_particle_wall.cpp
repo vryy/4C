@@ -53,7 +53,7 @@ PARTICLEWALL::WallHandlerBase::WallHandlerBase(
 
 PARTICLEWALL::WallHandlerBase::~WallHandlerBase() = default;
 
-void PARTICLEWALL::WallHandlerBase::Init(
+void PARTICLEWALL::WallHandlerBase::init(
     const std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy)
 {
   // set interface to binning strategy
@@ -66,7 +66,7 @@ void PARTICLEWALL::WallHandlerBase::Init(
   init_wall_data_state();
 }
 
-void PARTICLEWALL::WallHandlerBase::Setup(
+void PARTICLEWALL::WallHandlerBase::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const double restart_time)
 {
@@ -80,7 +80,7 @@ void PARTICLEWALL::WallHandlerBase::Setup(
   create_wall_discretization_runtime_vtu_writer(restart_time);
 
   // setup wall data state container
-  walldatastate_->Setup();
+  walldatastate_->setup();
 }
 
 void PARTICLEWALL::WallHandlerBase::write_restart(const int step, const double time) const
@@ -433,7 +433,7 @@ void PARTICLEWALL::WallHandlerBase::init_wall_data_state()
   walldatastate_ = std::make_shared<PARTICLEWALL::WallDataState>(params_);
 
   // init wall data state container
-  walldatastate_->Init(walldiscretization_);
+  walldatastate_->init(walldiscretization_);
 }
 
 void PARTICLEWALL::WallHandlerBase::create_wall_discretization_runtime_vtu_writer(
@@ -558,7 +558,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
     currcondition.push_back(conditions[i]);
 
     // get material id for current particle wall condition
-    const int mat = currcondition[0]->parameters().Get<int>("MAT");
+    const int mat = currcondition[0]->parameters().get<int>("MAT");
 
     // initialize maps for particle wall conditions
     std::map<int, Core::Nodes::Node*> nodes;

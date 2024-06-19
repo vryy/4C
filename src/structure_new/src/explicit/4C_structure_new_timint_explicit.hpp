@@ -35,7 +35,7 @@ namespace STR
       //! constructor
       Explicit();
 
-      void Setup() override;
+      void setup() override;
 
       int Integrate() override;
 
@@ -47,9 +47,9 @@ namespace STR
 
       void determine_stress_strain() override;
 
-      void Evaluate() override;
+      void evaluate() override;
 
-      void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
+      void evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
       void set_state(const Teuchos::RCP<Epetra_Vector>& x) override;
 

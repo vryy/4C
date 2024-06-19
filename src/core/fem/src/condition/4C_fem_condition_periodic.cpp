@@ -310,15 +310,15 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
           for (unsigned numcond = 0; numcond < mysurfpbcs_.size(); ++numcond)
           {
             const int myid =
-                mysurfpbcs_[numcond]->parameters().Get<int>("Id of periodic boundary condition");
+                mysurfpbcs_[numcond]->parameters().get<int>("Id of periodic boundary condition");
             const int mylayer =
-                mysurfpbcs_[numcond]->parameters().Get<int>("Layer of periodic boundary condition");
+                mysurfpbcs_[numcond]->parameters().get<int>("Layer of periodic boundary condition");
             // yes, I am the condition with id pbcid and in the desired layer
 
             if (myid == pbcid && (mylayer + 1) == nlayer)
             {
               const std::string& mymasterslavetoggle =
-                  mysurfpbcs_[numcond]->parameters().Get<std::string>(
+                  mysurfpbcs_[numcond]->parameters().get<std::string>(
                       "Is slave periodic boundary condition");
 
               if (mymasterslavetoggle == "Master")
@@ -329,7 +329,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                 // check whether this periodic boundary condition belongs
                 // to thisplane
 
-                const std::string& dofsforpbcplanename = mastercond->parameters().Get<std::string>(
+                const std::string& dofsforpbcplanename = mastercond->parameters().get<std::string>(
                     "degrees of freedom for the pbc plane");
 
                 if (dofsforpbcplanename == *thisplane)
@@ -352,7 +352,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                   }
 
                   // check for angle of rotation (has to be zero for master plane)
-                  const double angle = mastercond->parameters().Get<double>("Angle of rotation");
+                  const double angle = mastercond->parameters().get<double>("Angle of rotation");
                   if (abs(angle) > 1e-13)
                     FOUR_C_THROW("Angle is not zero for master plane: %f", angle);
                 }
@@ -364,7 +364,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                 //--------------------------------------------------
                 // check whether this periodic boundary condition belongs
                 // to thisplane
-                const std::string& dofsforpbcplanename = slavecond->parameters().Get<std::string>(
+                const std::string& dofsforpbcplanename = slavecond->parameters().get<std::string>(
                     "degrees of freedom for the pbc plane");
 
                 if (dofsforpbcplanename == *thisplane)
@@ -387,7 +387,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                   }
 
                   // check for angle of rotation of slave plane and store it
-                  const double angle = slavecond->parameters().Get<double>("Angle of rotation");
+                  const double angle = slavecond->parameters().get<double>("Angle of rotation");
                   if (abs(angle) > 1e-13)
                   {
                     if ((*thisplane != "xz") && (*thisplane != "yz"))
@@ -411,7 +411,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
 
 
               // set tolerance for octree
-              const double tol = mysurfpbcs_[numcond]->parameters().Get<double>(
+              const double tol = mysurfpbcs_[numcond]->parameters().get<double>(
                   "Tolerance for nodematching in octree");
 
               if (!tol_set)
@@ -633,8 +633,8 @@ void Core::Conditions::PeriodicBoundaryConditions::create_node_coupling_for_sing
   // build processor local octree
   auto nodematchingoctree = Core::COUPLING::NodeMatchingOctree();
 
-  nodematchingoctree.Init(*discret_, masternodeids, maxnodeperleaf, tol);
-  nodematchingoctree.Setup();
+  nodematchingoctree.init(*discret_, masternodeids, maxnodeperleaf, tol);
+  nodematchingoctree.setup();
   // time measurement --- this causes the TimeMonitor tm2 to stop here
   tm2_ref_ = Teuchos::null;
 
@@ -767,7 +767,7 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
           for (unsigned numcond = 0; numcond < thiscond.size(); ++numcond)
           {
             const std::string& mymasterslavetoggle =
-                thiscond[numcond]->parameters().Get<std::string>(
+                thiscond[numcond]->parameters().get<std::string>(
                     "Is slave periodic boundary condition");
 
             if (mymasterslavetoggle == "Master")
@@ -990,7 +990,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     for (unsigned numcond = 0; numcond < thiscond.size(); ++numcond)
     {
       const std::string& mymasterslavetoggle =
-          thiscond[numcond]->parameters().Get<std::string>("Is slave periodic boundary condition");
+          thiscond[numcond]->parameters().get<std::string>("Is slave periodic boundary condition");
 
       if (mymasterslavetoggle == "Slave")
       {
@@ -1313,7 +1313,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       // the discretization already has a pbc dofset, we merely need to update it
       // (a replace dofset is also not needed since we are working on pointer)
       pbcdofset_->SetCoupledNodes(allcoupledcolnodes_);
-      pbcdofset_->Reset();
+      pbcdofset_->reset();
     }
 
     //--------------------------------------------------

@@ -72,7 +72,7 @@ namespace XFEM
       if (eval_dirich_at_gp)
       {
         // evaluate interface velocity (given by weak Dirichlet condition)
-        robin_id_dirch = cond->parameters().Get<int>("robin_id_dirch");
+        robin_id_dirch = cond->parameters().get<int>("robin_id_dirch");
         // Check if int is negative (signbit(x) -> x<0 true, x=>0 false)
         if (!std::signbit(static_cast<double>(robin_id_dirch)))
           evaluate_dirichlet_function(
@@ -89,7 +89,7 @@ namespace XFEM
       }
 
       // evaluate interface traction (given by Neumann condition)
-      robin_id_dirch = cond->parameters().Get<int>("robin_id_neumann");
+      robin_id_dirch = cond->parameters().get<int>("robin_id_neumann");
       if (!std::signbit(static_cast<double>(robin_id_dirch)))
       {
         // This is maybe not the most efficient implementation as we evaluate dynvisc as well as the
@@ -115,7 +115,7 @@ namespace XFEM
 
           ivel.Update(sl_visc_fac, tmp_itraction, 1.0);
 
-          itraction.Clear();
+          itraction.clear();
         }
       }
 

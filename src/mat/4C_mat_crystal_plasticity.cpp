@@ -26,35 +26,35 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::CrystalPlasticity::CrystalPlasticity(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      tol_(matdata.parameters.Get<double>("TOL")),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      poisson_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      lattice_(matdata.parameters.Get<std::string>("LAT")),
-      ctoa_(matdata.parameters.Get<double>("CTOA")),
-      lattice_const_(matdata.parameters.Get<double>("ABASE")),
-      num_slip_sys_(matdata.parameters.Get<int>("NUMSLIPSYS")),
-      num_slip_sets_(matdata.parameters.Get<int>("NUMSLIPSETS")),
-      slip_set_mem_(matdata.parameters.Get<std::vector<int>>("SLIPSETMEMBERS")),
-      slip_rate_exp_(matdata.parameters.Get<std::vector<int>>("SLIPRATEEXP")),
-      slip_ref_shear_rate_(matdata.parameters.Get<std::vector<double>>("GAMMADOTSLIPREF")),
-      dis_dens_init_(matdata.parameters.Get<std::vector<double>>("DISDENSINIT")),
-      dis_gen_coeff_(matdata.parameters.Get<std::vector<double>>("DISGENCOEFF")),
-      dis_dyn_rec_coeff_(matdata.parameters.Get<std::vector<double>>("DISDYNRECCOEFF")),
-      slip_lat_resist_(matdata.parameters.Get<std::vector<double>>("TAUY0")),
-      slip_micro_bound_(matdata.parameters.Get<std::vector<double>>("MFPSLIP")),
-      slip_hp_coeff_(matdata.parameters.Get<std::vector<double>>("SLIPHPCOEFF")),
-      slip_by_twin_(matdata.parameters.Get<std::vector<double>>("SLIPBYTWIN")),
-      num_twin_sys_(matdata.parameters.Get<int>("NUMTWINSYS")),
-      num_twin_sets_(matdata.parameters.Get<int>("NUMTWINSETS")),
-      twin_set_mem_(matdata.parameters.Get<std::vector<int>>("TWINSETMEMBERS")),
-      twin_rate_exp_(matdata.parameters.Get<std::vector<int>>("TWINRATEEXP")),
-      twin_ref_shear_rate_(matdata.parameters.Get<std::vector<double>>("GAMMADOTTWINREF")),
-      twin_lat_resist_(matdata.parameters.Get<std::vector<double>>("TAUT0")),
-      twin_micro_bound_(matdata.parameters.Get<std::vector<double>>("MFPTWIN")),
-      twin_hp_coeff_(matdata.parameters.Get<std::vector<double>>("TWINHPCOEFF")),
-      twin_by_slip_(matdata.parameters.Get<std::vector<double>>("TWINBYSLIP")),
-      twin_by_twin_(matdata.parameters.Get<std::vector<double>>("TWINBYTWIN"))
+      tol_(matdata.parameters.get<double>("TOL")),
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      poisson_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      lattice_(matdata.parameters.get<std::string>("LAT")),
+      ctoa_(matdata.parameters.get<double>("CTOA")),
+      lattice_const_(matdata.parameters.get<double>("ABASE")),
+      num_slip_sys_(matdata.parameters.get<int>("NUMSLIPSYS")),
+      num_slip_sets_(matdata.parameters.get<int>("NUMSLIPSETS")),
+      slip_set_mem_(matdata.parameters.get<std::vector<int>>("SLIPSETMEMBERS")),
+      slip_rate_exp_(matdata.parameters.get<std::vector<int>>("SLIPRATEEXP")),
+      slip_ref_shear_rate_(matdata.parameters.get<std::vector<double>>("GAMMADOTSLIPREF")),
+      dis_dens_init_(matdata.parameters.get<std::vector<double>>("DISDENSINIT")),
+      dis_gen_coeff_(matdata.parameters.get<std::vector<double>>("DISGENCOEFF")),
+      dis_dyn_rec_coeff_(matdata.parameters.get<std::vector<double>>("DISDYNRECCOEFF")),
+      slip_lat_resist_(matdata.parameters.get<std::vector<double>>("TAUY0")),
+      slip_micro_bound_(matdata.parameters.get<std::vector<double>>("MFPSLIP")),
+      slip_hp_coeff_(matdata.parameters.get<std::vector<double>>("SLIPHPCOEFF")),
+      slip_by_twin_(matdata.parameters.get<std::vector<double>>("SLIPBYTWIN")),
+      num_twin_sys_(matdata.parameters.get<int>("NUMTWINSYS")),
+      num_twin_sets_(matdata.parameters.get<int>("NUMTWINSETS")),
+      twin_set_mem_(matdata.parameters.get<std::vector<int>>("TWINSETMEMBERS")),
+      twin_rate_exp_(matdata.parameters.get<std::vector<int>>("TWINRATEEXP")),
+      twin_ref_shear_rate_(matdata.parameters.get<std::vector<double>>("GAMMADOTTWINREF")),
+      twin_lat_resist_(matdata.parameters.get<std::vector<double>>("TAUT0")),
+      twin_micro_bound_(matdata.parameters.get<std::vector<double>>("MFPTWIN")),
+      twin_hp_coeff_(matdata.parameters.get<std::vector<double>>("TWINHPCOEFF")),
+      twin_by_slip_(matdata.parameters.get<std::vector<double>>("TWINBYSLIP")),
+      twin_by_twin_(matdata.parameters.get<std::vector<double>>("TWINBYTWIN"))
 {
   // check validity of input parameters
   if (tol_ <= 0.)
@@ -179,7 +179,7 @@ Mat::CrystalPlasticityType Mat::CrystalPlasticityType::instance_;
 Core::Communication::ParObject* Mat::CrystalPlasticityType::Create(const std::vector<char>& data)
 {
   Mat::CrystalPlasticity* cp = new Mat::CrystalPlasticity();
-  cp->Unpack(data);
+  cp->unpack(data);
   return cp;
 }
 
@@ -196,7 +196,7 @@ Mat::CrystalPlasticity::CrystalPlasticity(Mat::PAR::CrystalPlasticity* params) :
 /*----------------------------------------------------------------------*
  | pack (public)                                                        |
  *----------------------------------------------------------------------*/
-void Mat::CrystalPlasticity::Pack(Core::Communication::PackBuffer& data) const
+void Mat::CrystalPlasticity::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -231,12 +231,12 @@ void Mat::CrystalPlasticity::Pack(Core::Communication::PackBuffer& data) const
     add_to_pack(data, (*gamma_last_)[var]);
     add_to_pack(data, (*defect_densities_last_)[var]);
   }
-}  // Pack()
+}  // pack()
 
 /*----------------------------------------------------------------------*
  | unpack (public)                                                      |
  *----------------------------------------------------------------------*/
-void Mat::CrystalPlasticity::Unpack(const std::vector<char>& data)
+void Mat::CrystalPlasticity::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -302,7 +302,7 @@ void Mat::CrystalPlasticity::Unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialize / allocate internal variables (public)                   |
  *---------------------------------------------------------------------*/
-void Mat::CrystalPlasticity::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::CrystalPlasticity::setup(int numgp, Input::LineDefinition* linedef)
 {
   // import material / model parameters and calculate derived values
 
@@ -485,13 +485,13 @@ void Mat::CrystalPlasticity::Setup(int numgp, Input::LineDefinition* linedef)
 
   isinit_ = true;
   return;
-}  // Setup()
+}  // setup()
 
 
 /*----------------------------------------------------------------------*
  | update internal variables (public)                                   |
  *----------------------------------------------------------------------*/
-void Mat::CrystalPlasticity::Update()
+void Mat::CrystalPlasticity::update()
 {
   // update values of last step t_n to current values at time step t_n+1
   deform_grad_last_ = deform_grad_current_;
@@ -526,12 +526,12 @@ void Mat::CrystalPlasticity::Update()
     (*defect_densities_current_)[i] = emptyvect;
   }
   return;
-}  // Update()
+}  // update()
 
 /*-------------------------------------------------------------------------------*
  | calculate stress, material stiffness matrix and evolution internal variables  |
  *-------------------------------------------------------------------------------*/
-void Mat::CrystalPlasticity::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::CrystalPlasticity::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -568,7 +568,7 @@ void Mat::CrystalPlasticity::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // TODO!!! USE NEW VOIGHT NOTATION METHOD!!!!
   // !!!!!!
   return;
-}  // Evaluate()
+}  // evaluate()
 
 /*---------------------------------------------------------------------------------*
  | Setup slip directions and slip plane normals                                    |

@@ -71,10 +71,10 @@ namespace ParticleInteraction
     explicit DEMHistoryPairs(const Epetra_Comm& comm);
 
     //! init history pair handler
-    void Init();
+    void init();
 
     //! setup history pair handler
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     //! write restart of history pair handler

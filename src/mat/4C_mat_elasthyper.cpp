@@ -28,10 +28,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::ElastHyper::ElastHyper(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      nummat_(matdata.parameters.Get<int>("NUMMAT")),
-      matids_(matdata.parameters.Get<std::vector<int>>("MATIDS")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      polyconvex_(matdata.parameters.Get<int>("POLYCONVEX"))
+      nummat_(matdata.parameters.get<int>("NUMMAT")),
+      matids_(matdata.parameters.get<std::vector<int>>("MATIDS")),
+      density_(matdata.parameters.get<double>("DENS")),
+      polyconvex_(matdata.parameters.get<int>("POLYCONVEX"))
 
 {
   // check if sizes fit
@@ -58,7 +58,7 @@ Mat::ElastHyperType Mat::ElastHyperType::instance_;
 Core::Communication::ParObject* Mat::ElastHyperType::Create(const std::vector<char>& data)
 {
   auto* elhy = new Mat::ElastHyper();
-  elhy->Unpack(data);
+  elhy->unpack(data);
 
   return elhy;
 }
@@ -95,7 +95,7 @@ Mat::ElastHyper::ElastHyper(Mat::PAR::ElastHyper* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -106,7 +106,7 @@ void Mat::ElastHyper::Pack(Core::Communication::PackBuffer& data) const
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   add_to_pack(data, matid);
-  summandProperties_.Pack(data);
+  summandProperties_.pack(data);
 
   anisotropy_.pack_anisotropy(data);
 
@@ -123,7 +123,7 @@ void Mat::ElastHyper::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::Unpack(const std::vector<char>& data)
+void Mat::ElastHyper::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   params_ = nullptr;
@@ -151,7 +151,7 @@ void Mat::ElastHyper::Unpack(const std::vector<char>& data)
     }
   }
 
-  summandProperties_.Unpack(position, data);
+  summandProperties_.unpack(position, data);
 
   // Pack anisotropy
   anisotropy_.unpack_anisotropy(data, position);
@@ -245,7 +245,7 @@ void Mat::ElastHyper::SetupAAA(Teuchos::ParameterList& params, const int eleGID)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ElastHyper::setup(int numgp, Input::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
@@ -254,9 +254,9 @@ void Mat::ElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
   // Setup summands
   for (auto& p : potsum_)
   {
-    p->Setup(numgp, linedef);
+    p->setup(numgp, linedef);
   }
-  summandProperties_.Clear();
+  summandProperties_.clear();
   ElastHyperProperties(potsum_, summandProperties_);
 
   if (summandProperties_.viscoGeneral)
@@ -280,12 +280,12 @@ void Mat::ElastHyper::post_setup(Teuchos::ParameterList& params, const int eleGI
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::Update()
+void Mat::ElastHyper::update()
 {
   // loop map of associated potential summands
   for (auto& p : potsum_)
   {
-    p->Update();
+    p->update();
   }
 }
 
@@ -322,11 +322,11 @@ void Mat::ElastHyper::StrainEnergy(
     const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   static Core::LinAlg::Matrix<6, 1> C_strain(true);
-  C_strain.Clear();
+  C_strain.clear();
   static Core::LinAlg::Matrix<3, 1> prinv(true);
-  prinv.Clear();
+  prinv.clear();
   static Core::LinAlg::Matrix<3, 1> modinv(true);
-  modinv.Clear();
+  modinv.clear();
 
   EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
   Core::LinAlg::Voigt::Strains::invariants_principal(prinv, C_strain);
@@ -343,7 +343,7 @@ void Mat::ElastHyper::StrainEnergy(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -411,9 +411,9 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
   static Core::LinAlg::Matrix<3, 1> dPI(true);
   static Core::LinAlg::Matrix<6, 1> ddPII(true);
   static Core::LinAlg::Matrix<10, 1> dddPIII(true);
-  dPI.Clear();
-  ddPII.Clear();
-  dddPIII.Clear();
+  dPI.clear();
+  ddPII.clear();
+  dddPIII.clear();
   evaluate_cauchy_derivs(prinv, gp, eleGID, dPI, ddPII, dddPIII, temp);
 
   const double prefac = 2.0 / std::sqrt(prinv(2));
@@ -638,12 +638,12 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
     static Core::LinAlg::Matrix<9, 9> d2_I1_dF2(true);
     static Core::LinAlg::Matrix<9, 9> d2_I2_dF2(true);
     static Core::LinAlg::Matrix<9, 9> d2_I3_dF2(true);
-    d_iFT_dF.Clear();
-    d2_bdnddir_dF2.Clear();
-    d2_ibdnddir_dF2.Clear();
-    d2_I1_dF2.Clear();
-    d2_I2_dF2.Clear();
-    d2_I3_dF2.Clear();
+    d_iFT_dF.clear();
+    d2_bdnddir_dF2.clear();
+    d2_ibdnddir_dF2.clear();
+    d2_I1_dF2.clear();
+    d2_I2_dF2.clear();
+    d2_I3_dF2.clear();
 
     static Core::LinAlg::Matrix<3, 3> C(true);
     C.MultiplyTN(1.0, defgrd, defgrd, 0.0);

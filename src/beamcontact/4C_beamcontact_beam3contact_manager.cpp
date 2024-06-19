@@ -392,7 +392,7 @@ void CONTACT::Beam3cmanager::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  evaluate contact (public)                                 popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::Evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
+void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
     const Epetra_Vector& disrow, Teuchos::ParameterList timeintparams, bool newsti, double time)
 {
   // get out of here if only interested in gmsh output
@@ -682,10 +682,10 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // sort out solid-to-solid contact pairs, since these are treated in the contact framework
   for (int i = 0; i < (int)beamandsolidcontactconditions.size(); ++i)
   {
-    if ((beamandsolidcontactconditions[i]->parameters().Get<std::string>("Application")) ==
+    if ((beamandsolidcontactconditions[i]->parameters().get<std::string>("Application")) ==
         "Beamtosolidcontact")
       btscontactconditions.push_back(beamandsolidcontactconditions[i]);
-    if ((beamandsolidcontactconditions[i]->parameters().Get<std::string>("Application")) ==
+    if ((beamandsolidcontactconditions[i]->parameters().get<std::string>("Application")) ==
         "Beamtosolidmeshtying")
       btsmeshtyingconditions.push_back(beamandsolidcontactconditions[i]);
   }
@@ -1239,7 +1239,7 @@ void CONTACT::Beam3cmanager::evaluate_all_pairs(Teuchos::ParameterList timeintpa
     // evaluate additional contact forces and stiffness
     if (firstisincolmap || secondisincolmap)
     {
-      pairs_[i]->Evaluate(*stiffc_, *fc_, currentpp_, contactpairmap_, timeintparams);
+      pairs_[i]->evaluate(*stiffc_, *fc_, currentpp_, contactpairmap_, timeintparams);
 
       // if active, get minimal gap of contact element pair
       if (pairs_[i]->GetContactFlag() == true)
@@ -1266,7 +1266,7 @@ void CONTACT::Beam3cmanager::evaluate_all_pairs(Teuchos::ParameterList timeintpa
     // evaluate additional contact forces and stiffness
     if (firstisincolmap || secondisincolmap)
     {
-      btsolpairs_[i]->Evaluate(*stiffc_, *fc_, btspp_);
+      btsolpairs_[i]->evaluate(*stiffc_, *fc_, btspp_);
     }
   }
 
@@ -1530,11 +1530,11 @@ void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
 
     for (unsigned int i = 0; i < conds1.size(); ++i)
     {
-      int npotlaw1 = conds1[i]->parameters().Get<int>("potlaw");
+      int npotlaw1 = conds1[i]->parameters().get<int>("potlaw");
 
       for (unsigned int j = 0; j < conds2.size(); ++j)
       {
-        int npotlaw2 = conds2[j]->parameters().Get<int>("potlaw");
+        int npotlaw2 = conds2[j]->parameters().get<int>("potlaw");
 
         // here, we also exclude "self-interaction", i.e. a pair of elements on the same physical
         // beam
@@ -2585,7 +2585,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
               theta(0) = nodaltangents(0, j);
               theta(1) = nodaltangents(1, j);
               theta(2) = nodaltangents(2, j);
-              R.Clear();
+              R.clear();
               Core::LargeRotations::angletotriad(theta, R);
               std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[j]);
               double lt = disccol[BTSolDiscret().DofColMap()->LID(dofnode[6])];

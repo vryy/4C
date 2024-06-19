@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::LinElast1D::LinElast1D(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      density_(matdata.parameters.Get<double>("DENS"))
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      density_(matdata.parameters.get<double>("DENS"))
 {
   if (youngs_ <= 0.) FOUR_C_THROW("Young's modulus must be greater zero");
   if (density_ <= 0.) FOUR_C_THROW("Density must be greater zero");
@@ -42,7 +42,7 @@ Mat::LinElast1DType Mat::LinElast1DType::instance_;
 Core::Communication::ParObject* Mat::LinElast1DType::Create(const std::vector<char>& data)
 {
   auto* stvenantk = new Mat::LinElast1D(nullptr);
-  stvenantk->Unpack(data);
+  stvenantk->unpack(data);
   return stvenantk;
 }
 
@@ -52,7 +52,7 @@ Mat::LinElast1D::LinElast1D(Mat::PAR::LinElast1D* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::LinElast1D::Pack(Core::Communication::PackBuffer& data) const
+void Mat::LinElast1D::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -68,7 +68,7 @@ void Mat::LinElast1D::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::LinElast1D::Unpack(const std::vector<char>& data)
+void Mat::LinElast1D::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -101,10 +101,10 @@ void Mat::LinElast1D::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 Mat::PAR::LinElast1DGrowth::LinElast1DGrowth(const Core::Mat::PAR::Parameter::Data& matdata)
     : LinElast1D(matdata),
-      c0_(matdata.parameters.Get<double>("C0")),
-      poly_num_(matdata.parameters.Get<int>("POLY_PARA_NUM")),
-      poly_params_(matdata.parameters.Get<std::vector<double>>("POLY_PARAMS")),
-      amount_prop_growth_(matdata.parameters.Get<bool>("AOS_PROP_GROWTH"))
+      c0_(matdata.parameters.get<double>("C0")),
+      poly_num_(matdata.parameters.get<int>("POLY_PARA_NUM")),
+      poly_params_(matdata.parameters.get<std::vector<double>>("POLY_PARAMS")),
+      amount_prop_growth_(matdata.parameters.get<bool>("AOS_PROP_GROWTH"))
 {
   if (c0_ <= 0.0) FOUR_C_THROW("Reference concentration must be greater than zero");
   if (poly_num_ <= 0) FOUR_C_THROW("Polynomial order must be greater than zero");
@@ -126,7 +126,7 @@ Mat::LinElast1DGrowthType Mat::LinElast1DGrowthType::instance_;
 Core::Communication::ParObject* Mat::LinElast1DGrowthType::Create(const std::vector<char>& data)
 {
   auto* stvk_growth = new Mat::LinElast1DGrowth(nullptr);
-  stvk_growth->Unpack(data);
+  stvk_growth->unpack(data);
   return stvk_growth;
 }
 
@@ -139,14 +139,14 @@ Mat::LinElast1DGrowth::LinElast1DGrowth(Mat::PAR::LinElast1DGrowth* params)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::LinElast1DGrowth::Pack(Core::Communication::PackBuffer& data) const
+void Mat::LinElast1DGrowth::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   add_to_pack(data, type);
-  Mat::LinElast1D::Pack(data);
+  Mat::LinElast1D::pack(data);
 
   // matid
   int matid = -1;
@@ -157,7 +157,7 @@ void Mat::LinElast1DGrowth::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::LinElast1DGrowth::Unpack(const std::vector<char>& data)
+void Mat::LinElast1DGrowth::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -166,7 +166,7 @@ void Mat::LinElast1DGrowth::Unpack(const std::vector<char>& data)
   // extract base class
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Mat::LinElast1D::Unpack(basedata);
+  Mat::LinElast1D::unpack(basedata);
 
   // matid and recover params_
   int matid;
@@ -254,7 +254,7 @@ double Mat::LinElast1DGrowth::evaluate_elastic_energy(double def_grad, double co
  *----------------------------------------------------------------------*/
 double Mat::LinElast1DGrowth::get_growth_factor_conc_prop(const double conc) const
 {
-  return Core::FE::Polynomial(growth_params_->poly_params_).Evaluate(conc - growth_params_->c0_);
+  return Core::FE::Polynomial(growth_params_->poly_params_).evaluate(conc - growth_params_->c0_);
 }
 
 /*----------------------------------------------------------------------*
@@ -263,7 +263,7 @@ double Mat::LinElast1DGrowth::get_growth_factor_ao_s_prop(
     const double conc, const double def_grad) const
 {
   return Core::FE::Polynomial(growth_params_->poly_params_)
-      .Evaluate(conc * def_grad - growth_params_->c0_);
+      .evaluate(conc * def_grad - growth_params_->c0_);
 }
 
 /*----------------------------------------------------------------------*

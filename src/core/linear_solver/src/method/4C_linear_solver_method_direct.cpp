@@ -42,7 +42,7 @@ Core::LinearSolver::DirectSolver<MatrixType, VectorType>::DirectSolver(std::stri
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::Setup(
+void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
     Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
     const bool refactor, const bool reset, Teuchos::RCP<Core::LinAlg::KrylovProjector> projector)
 {

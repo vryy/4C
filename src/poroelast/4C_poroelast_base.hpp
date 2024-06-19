@@ -144,33 +144,33 @@ namespace PoroElast
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void Evaluate(
+    void evaluate(
         Teuchos::RCP<const Epetra_Vector> iterinc  //!< increment between iteration i and i+1
         ) override
     {
-      FOUR_C_THROW("Evaluate() only available for monolithic schemes!");
+      FOUR_C_THROW("evaluate() only available for monolithic schemes!");
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void Evaluate(
+    virtual void evaluate(
         Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx)
     {
-      FOUR_C_THROW("Evaluate(sx,fx) only available for monolithic schemes!");
+      FOUR_C_THROW("evaluate(sx,fx) only available for monolithic schemes!");
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void Evaluate(
+    void evaluate(
         Teuchos::RCP<const Epetra_Vector> iterinc,  //!< increment between iteration i and i+1
         bool firstiter) override
     {
-      FOUR_C_THROW("Evaluate() only available for monolithic schemes!");
+      FOUR_C_THROW("evaluate() only available for monolithic schemes!");
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void Evaluate(
+    virtual void evaluate(
         Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx, bool firstiter)
     {
-      FOUR_C_THROW("Evaluate(sx,fx) only available for monolithic schemes!");
+      FOUR_C_THROW("evaluate(sx,fx) only available for monolithic schemes!");
     }
 
     //! solve time step (depending on algorithm)
@@ -193,13 +193,13 @@ namespace PoroElast
     void prepare_time_step() override;
 
     //! take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     //! calculate stresses, strains, energies
     void prepare_output(bool force_prepare_timestep) override;
 
     //! output
-    void Output(bool forced_writerestart = false) override;
+    void output(bool forced_writerestart = false) override;
 
     //!@}
 
@@ -343,7 +343,7 @@ namespace PoroElast
     void Clear(PoroElast::Coupltype coupltype = PoroElast::undefined);
 
     //! setup coupling matrixes and vecors
-    void Setup(Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid);
+    void setup(Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid);
 
     //! return constraint matrix, that fits to coupling type
     Teuchos::RCP<Core::LinAlg::SparseMatrix> ConstraintMatrix(PoroElast::Coupltype coupltype);

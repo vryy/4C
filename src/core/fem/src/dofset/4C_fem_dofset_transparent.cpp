@@ -228,7 +228,7 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
 
     // see whether we have a slave condition
     const std::string& mymasterslavetoggle =
-        thiscond->parameters().Get<std::string>("Is slave periodic boundary condition");
+        thiscond->parameters().get<std::string>("Is slave periodic boundary condition");
 
     if (!(mymasterslavetoggle == "Master"))
     {

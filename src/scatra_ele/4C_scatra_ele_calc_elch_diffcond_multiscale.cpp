@@ -84,7 +84,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
   const double detF = my::eval_det_f_at_int_point(ele, intpoints, iquad);
 
   // evaluate multi-scale Newman material
-  newmanmultiscale->Evaluate(iquad, phinp, q_micro, dq_dphi_micro, detF,
+  newmanmultiscale->evaluate(iquad, phinp, q_micro, dq_dphi_micro, detF,
       not Discret::ELEMENTS::ScaTraEleParameterStd::Instance("scatra")->partitioned_multi_scale());
 
   // calculate gradient of electric potential inside electrode

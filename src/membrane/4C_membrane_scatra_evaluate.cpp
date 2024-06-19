@@ -101,7 +101,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
  |  evaluate the element (public)                          sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::MembraneScatra<distype>::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::MembraneScatra<distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -112,7 +112,7 @@ int Discret::ELEMENTS::MembraneScatra<distype>::Evaluate(Teuchos::ParameterList&
   // in some cases we need to write/change some data before evaluating
   pre_evaluate(params, discretization, la);
 
-  Membrane<distype>::Evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
+  Membrane<distype>::evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
   return 0;

@@ -58,7 +58,7 @@ Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::Evaluate(Artery* ele,
+int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -130,8 +130,8 @@ void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
     Teuchos::RCP<const Core::Mat::Material> material)
 {
   // clear
-  rhs.Clear();
-  sysmat.Clear();
+  rhs.clear();
+  sysmat.clear();
 
   // set element data
   const int numnode = my::iel_;

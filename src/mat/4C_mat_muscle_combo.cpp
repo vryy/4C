@@ -34,13 +34,13 @@ namespace
   {
     if (activation_type == Inpar::Mat::ActivationType::function_of_space_time)
     {
-      auto actFunctId = matdata.parameters.Get<int>("FUNCTID");
+      auto actFunctId = matdata.parameters.get<int>("FUNCTID");
       if (actFunctId <= 0) FOUR_C_THROW("Function id must be positive");
       return actFunctId;
     }
     else if (activation_type == Inpar::Mat::ActivationType::map)
     {
-      return matdata.parameters.Get<const ActivationMapType>("MAPFILE");
+      return matdata.parameters.get<const ActivationMapType>("MAPFILE");
     }
     else
       return std::monostate{};
@@ -98,18 +98,18 @@ namespace
 
 Mat::PAR::MuscleCombo::MuscleCombo(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      alpha_(matdata.parameters.Get<double>("ALPHA")),
-      beta_(matdata.parameters.Get<double>("BETA")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
-      kappa_(matdata.parameters.Get<double>("KAPPA")),
-      omega0_(matdata.parameters.Get<double>("OMEGA0")),
-      Popt_(matdata.parameters.Get<double>("POPT")),
-      lambdaMin_(matdata.parameters.Get<double>("LAMBDAMIN")),
-      lambdaOpt_(matdata.parameters.Get<double>("LAMBDAOPT")),
+      alpha_(matdata.parameters.get<double>("ALPHA")),
+      beta_(matdata.parameters.get<double>("BETA")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
+      kappa_(matdata.parameters.get<double>("KAPPA")),
+      omega0_(matdata.parameters.get<double>("OMEGA0")),
+      Popt_(matdata.parameters.get<double>("POPT")),
+      lambdaMin_(matdata.parameters.get<double>("LAMBDAMIN")),
+      lambdaOpt_(matdata.parameters.get<double>("LAMBDAOPT")),
       activationType_(
-          static_cast<Inpar::Mat::ActivationType>(matdata.parameters.Get<int>("ACTEVALTYPE"))),
+          static_cast<Inpar::Mat::ActivationType>(matdata.parameters.get<int>("ACTEVALTYPE"))),
       activationParams_(GetActivationParams(matdata, activationType_)),
-      density_(matdata.parameters.Get<double>("DENS"))
+      density_(matdata.parameters.get<double>("DENS"))
 {
   // error handling for parameter ranges
   // passive material parameters
@@ -142,7 +142,7 @@ Mat::MuscleComboType Mat::MuscleComboType::instance_;
 Core::Communication::ParObject* Mat::MuscleComboType::Create(const std::vector<char>& data)
 {
   auto* muscle_combo = new Mat::MuscleCombo();
-  muscle_combo->Unpack(data);
+  muscle_combo->unpack(data);
   return muscle_combo;
 }
 
@@ -178,7 +178,7 @@ Mat::MuscleCombo::MuscleCombo(Mat::PAR::MuscleCombo* params)
   // cannot set activation_function here, because function manager did not yet read functions
 }
 
-void Mat::MuscleCombo::Pack(Core::Communication::PackBuffer& data) const
+void Mat::MuscleCombo::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -194,7 +194,7 @@ void Mat::MuscleCombo::Pack(Core::Communication::PackBuffer& data) const
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::MuscleCombo::Unpack(const std::vector<char>& data)
+void Mat::MuscleCombo::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -231,7 +231,7 @@ void Mat::MuscleCombo::Unpack(const std::vector<char>& data)
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
-void Mat::MuscleCombo::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::MuscleCombo::setup(int numgp, Input::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
@@ -245,7 +245,7 @@ void Mat::MuscleCombo::Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int cons
 {
 }
 
-void Mat::MuscleCombo::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::MuscleCombo::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)

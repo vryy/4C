@@ -29,7 +29,7 @@ CONTACT::MtNoxInterface::MtNoxInterface()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::MtNoxInterface::Init(
+void CONTACT::MtNoxInterface::init(
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr)
 {
   issetup_ = false;
@@ -42,7 +42,7 @@ void CONTACT::MtNoxInterface::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::MtNoxInterface::Setup()
+void CONTACT::MtNoxInterface::setup()
 {
   check_init();
 

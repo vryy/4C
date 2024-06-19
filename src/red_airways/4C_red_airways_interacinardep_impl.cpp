@@ -3,7 +3,7 @@
 
 \brief Internal implementation of RedInterAcinarDep element. Methods implemented here
        are called by inter_acinar_dep_evaluate.cpp by
-Discret::ELEMENTS::RedInterAcinarDep::Evaluate() with the corresponding action.
+Discret::ELEMENTS::RedInterAcinarDep::evaluate() with the corresponding action.
 
 
 \level 3
@@ -69,7 +69,7 @@ Discret::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
  | Evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep* ele,
+int Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -202,12 +202,12 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
           Core::Conditions::Condition* condition =
               ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
-          Bc = (condition->parameters().Get<std::string>("boundarycond"));
+          Bc = (condition->parameters().get<std::string>("boundarycond"));
 
-          const auto* curve = &condition->parameters().Get<std::vector<int>>("curve");
+          const auto* curve = &condition->parameters().get<std::vector<int>>("curve");
           double curvefac = 1.0;
-          const auto* vals = &condition->parameters().Get<std::vector<double>>("val");
-          const auto* functions = &condition->parameters().Get<std::vector<int>>("funct");
+          const auto* vals = &condition->parameters().get<std::vector<double>>("val");
+          const auto* functions = &condition->parameters().get<std::vector<int>>("funct");
 
           // Read in the value of the applied BC
           // Get factor of first CURVE
@@ -215,7 +215,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
           {
             curvefac = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
-                           .Evaluate(time);
+                           .evaluate(time);
             BCin = (*vals)[0] * curvefac;
           }
           else
@@ -235,7 +235,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
           {
             functionfac = Global::Problem::Instance()
                               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
+                              .evaluate((ele->Nodes()[i])->X().data(), time, 0);
           }
 
           // Get factor of second CURVE
@@ -245,7 +245,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
           if (curve2num >= 0)
             curve2fac = Global::Problem::Instance()
                             ->FunctionById<Core::UTILS::FunctionOfTime>(curve2num)
-                            .Evaluate(time);
+                            .evaluate(time);
 
           // Add first_CURVE + FUNCTION * second_CURVE
           BCin += functionfac * curve2fac;
@@ -274,26 +274,26 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
             double Pp_np = 0.0;
             if (pplCond)
             {
-              const auto* curve = &pplCond->parameters().Get<std::vector<int>>("curve");
+              const auto* curve = &pplCond->parameters().get<std::vector<int>>("curve");
               double curvefac = 1.0;
-              const auto* vals = &pplCond->parameters().Get<std::vector<double>>("val");
+              const auto* vals = &pplCond->parameters().get<std::vector<double>>("val");
 
               // Read in the value of the applied BC
               if ((*curve)[0] >= 0)
               {
                 curvefac = Global::Problem::Instance()
                                ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
-                               .Evaluate(time);
+                               .evaluate(time);
               }
 
               // Get parameters for VolumeDependentPleuralPressure condition
-              std::string ppl_Type = (pplCond->parameters().Get<std::string>("TYPE"));
-              auto ap = pplCond->parameters().Get<double>("P_PLEURAL_0");
-              auto bp = pplCond->parameters().Get<double>("P_PLEURAL_LIN");
-              auto cp = pplCond->parameters().Get<double>("P_PLEURAL_NONLIN");
-              auto dp = pplCond->parameters().Get<double>("TAU");
-              auto RV = pplCond->parameters().Get<double>("RV");
-              auto TLC = pplCond->parameters().Get<double>("TLC");
+              std::string ppl_Type = (pplCond->parameters().get<std::string>("TYPE"));
+              auto ap = pplCond->parameters().get<double>("P_PLEURAL_0");
+              auto bp = pplCond->parameters().get<double>("P_PLEURAL_LIN");
+              auto cp = pplCond->parameters().get<double>("P_PLEURAL_NONLIN");
+              auto dp = pplCond->parameters().get<double>("TAU");
+              auto RV = pplCond->parameters().get<double>("RV");
+              auto TLC = pplCond->parameters().get<double>("TLC");
 
               // Safety check: in case of polynomial TLC is not used
               if (((ppl_Type == "Linear_Polynomial") or (ppl_Type == "Nonlinear_Polynomial")) and

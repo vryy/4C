@@ -129,19 +129,19 @@ STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class. general variable verifications:
+  // is called during setup() in a base class. general variable verifications:
   return;
 }
 
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntImpl::Init(const Teuchos::ParameterList& timeparams,
+void STR::TimIntImpl::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
-  // call Init() in base class
-  STR::TimInt::Init(timeparams, sdynparams, xparams, actdis, solver);
+  // call init() in base class
+  STR::TimInt::init(timeparams, sdynparams, xparams, actdis, solver);
 
   if (itermax_ < 0)
     FOUR_C_THROW("MAXITER has to be greater than or equal to zero. Fix your input file.");
@@ -198,10 +198,10 @@ void STR::TimIntImpl::Init(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Setup this class                                                                 rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntImpl::Setup()
+void STR::TimIntImpl::setup()
 {
-  // call Setup() in base class
-  STR::TimInt::Setup();
+  // call setup() in base class
+  STR::TimInt::setup();
 
   // verify: if system has constraints implemented with Lagrange multipliers,
   // then Uzawa-type solver is used
@@ -273,7 +273,7 @@ void STR::TimIntImpl::Setup()
   // check if for solid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
-    const std::string& name = KSPcond[icond]->parameters().Get<std::string>("discretization");
+    const std::string& name = KSPcond[icond]->parameters().get<std::string>("discretization");
     if (name == "solid")
     {
       numsolid++;
@@ -323,7 +323,7 @@ int STR::TimIntImpl::IntegrateStep()
   return error;
 }
 
-void STR::TimIntImpl::Output(const bool forced_writerestart)
+void STR::TimIntImpl::output(const bool forced_writerestart)
 {
   OutputStep(forced_writerestart);
 
@@ -747,7 +747,7 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
     Teuchos::ParameterList p;
     p.set("action", "calc_struct_reset_istep");
     // go to elements
-    discret_->Evaluate(
+    discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -762,11 +762,11 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
 void STR::TimIntImpl::setup_krylov_space_projection(Core::Conditions::Condition* kspcond)
 {
   // get number of mode flags in dat-file
-  const int nummodes = kspcond->parameters().Get<int>("NUMMODES");
+  const int nummodes = kspcond->parameters().get<int>("NUMMODES");
 
   // get rigid body mode flags - number and order as in ComputeNullspace
   // e.g. for a 3-D solid: [transx transy transz rotx roty rotz]
-  const auto* modeflags = &kspcond->parameters().Get<std::vector<int>>("ONOFF");
+  const auto* modeflags = &kspcond->parameters().get<std::vector<int>>("ONOFF");
 
   // get actual active mode ids given in dat-file
   std::vector<int> activemodeids;
@@ -780,7 +780,7 @@ void STR::TimIntImpl::setup_krylov_space_projection(Core::Conditions::Condition*
 
   // get from dat-file definition how weights are to be computed
   const std::string* weighttype =
-      &kspcond->parameters().Get<std::string>("weight vector definition");
+      &kspcond->parameters().get<std::string>("weight vector definition");
 
   // since we only use total Lagrange, no update necessary.
   updateprojection_ = false;
@@ -909,7 +909,7 @@ void STR::TimIntImpl::apply_force_stiff_internal(const double time, const double
    * without the modifications due to the local condensation procedure.
    */
   if (fintn_str_ != Teuchos::null) fintn_str_->PutScalar(0.);
-  discret_->Evaluate(params, stiff, damp, fint, Teuchos::null, fintn_str_);
+  discret_->evaluate(params, stiff, damp, fint, Teuchos::null, fintn_str_);
   discret_->ClearState();
 
   // *********** time measurement ***********
@@ -961,7 +961,7 @@ void STR::TimIntImpl::apply_force_stiff_internal_and_inertial(const double time,
    * In such cases, fint_str_ contains the right hand side
    * without the modifications due to the local condensation procedure.
    */
-  discret_->Evaluate(params, stiff, mass, fint, finert, fintn_str_);
+  discret_->evaluate(params, stiff, mass, fint, finert, fintn_str_);
   discret_->ClearState();
 
   mass->Complete();
@@ -1099,7 +1099,7 @@ void STR::TimIntImpl::apply_force_stiff_beam_contact(
     // (set boolean flag 'newsti' to true, which activates
     // sclaing of contact stiffness with appropriate scaling
     // factor, e.g. (1.0-alphaf), internally)
-    beamcman_->Evaluate(*system_matrix(), *fresm, *dis, beamcontactparams, true, timen_);
+    beamcman_->evaluate(*system_matrix(), *fresm, *dis, beamcontactparams, true, timen_);
 
     // scaling back
     fresm->Scale(-1.0);
@@ -1481,7 +1481,7 @@ int STR::TimIntImpl::NewtonFull()
 
   if (outputeveryiter_)
   {
-    int restart = Global::Problem::Instance()->Restart();
+    int restart = Global::Problem::Instance()->restart();
     if (stepn_ == (restart + 1)) outputcounter_ = 0;
     OutputEveryIter(true);
   }
@@ -1776,7 +1776,7 @@ int STR::TimIntImpl::newton_full_error_check(int linerror, int eleerror)
     if ((iter_ >= itermax_) and (divcontype_ == Inpar::STR::divcont_stop))
     {
       // write restart output of last converged step before stopping
-      Output(true);
+      output(true);
 
       FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
       return 1;
@@ -1868,7 +1868,7 @@ int STR::TimIntImpl::NewtonLS()
 
   if (outputeveryiter_)
   {
-    int restart = Global::Problem::Instance()->Restart();
+    int restart = Global::Problem::Instance()->restart();
     if (stepn_ == (restart + 1)) outputcounter_ = 0;
     OutputEveryIter(true);
   }
@@ -2421,7 +2421,7 @@ int STR::TimIntImpl::uzawa_non_linear_newton_full()
 /*----------------------------------------------------------------------*/
 void STR::TimIntImpl::update_step_constraint()
 {
-  if (conman_->HaveConstraint()) conman_->Update();
+  if (conman_->HaveConstraint()) conman_->update();
 }
 
 /*----------------------------------------------------------------------*/
@@ -2442,7 +2442,7 @@ void STR::TimIntImpl::update_step_cardiovascular0_d()
 /*----------------------------------------------------------------------*/
 void STR::TimIntImpl::update_step_spring_dashpot()
 {
-  if (springman_->HaveSpringDashpot()) springman_->Update();
+  if (springman_->HaveSpringDashpot()) springman_->update();
 }
 
 /*----------------------------------------------------------------------*/
@@ -2908,7 +2908,7 @@ int STR::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror, int elee
     if ((iter_ >= itermax_) and (divcontype_ == Inpar::STR::divcont_stop))
     {
       // write restart output of last converged step before stopping
-      Output(true);
+      output(true);
 
       FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
       return 1;
@@ -3328,7 +3328,7 @@ int STR::TimIntImpl::PTC()
 
   if (outputeveryiter_)
   {
-    int restart = Global::Problem::Instance()->Restart();
+    int restart = Global::Problem::Instance()->restart();
     if (stepn_ == (restart + 1)) outputcounter_ = 0;
     OutputEveryIter(true);
   }
@@ -4260,7 +4260,7 @@ void STR::TimIntImpl::use_block_matrix(
     discret_->set_state(0, "acceleration", (*acc_)(0));
     if (damping_ == Inpar::STR::damp_material) discret_->set_state("velocity", (*vel_)(0));
 
-    discret_->Evaluate(p, stiff_, mass_, fint, finert, Teuchos::null);
+    discret_->evaluate(p, stiff_, mass_, fint, finert, Teuchos::null);
     discret_->ClearState();
   }
 
@@ -4288,7 +4288,7 @@ void STR::TimIntImpl::use_block_matrix(
   // We need to reset the stiffness matrix because its graph (topology)
   // is not finished yet in case of constraints and posssibly other side
   // effects (basically managers).
-  stiff_->Reset();
+  stiff_->reset();
 }
 
 /*----------------------------------------------------------------------*
@@ -4332,7 +4332,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
   p.set<int>("stc_scaling", stcscale_);
   p.set("stc_layer", 1);
 
-  discret_->Evaluate(p, stcmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, stcmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   stcmat_->Complete();
 
@@ -4359,7 +4359,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
     tmpstcmat->Zero();
 
-    discret_->Evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     tmpstcmat->Complete();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS

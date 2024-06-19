@@ -39,7 +39,7 @@ namespace Core::FE
   /*!
     The global matrices and vectors that are filled during the assembly
     process. This class manages the element assembling. This simplifies the
-    element loop in Core::FE::Discretization::Evaluate(). Furthermore, the strategy
+    element loop in Core::FE::Discretization::evaluate(). Furthermore, the strategy
     can be exchanged in the assembly process needs to be modified.
 
     \author u.kue

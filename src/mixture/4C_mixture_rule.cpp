@@ -138,10 +138,10 @@ void MIXTURE::MixtureRule::read_element(int numgp, Input::LineDefinition* linede
 void MIXTURE::MixtureRule::setup(Teuchos::ParameterList& params, const int eleGID)
 {
   // Setup must be called after ReadElement()
-  if (!has_read_element_) FOUR_C_THROW("ReadElement() must be called before Setup()!");
+  if (!has_read_element_) FOUR_C_THROW("ReadElement() must be called before setup()!");
 
   // Setup must only be called once
-  if (is_setup_) FOUR_C_THROW("Setup() is called multiple times. Just once allowed.");
+  if (is_setup_) FOUR_C_THROW("setup() is called multiple times. Just once allowed.");
   is_setup_ = true;
 }
 FOUR_C_NAMESPACE_CLOSE

@@ -108,7 +108,7 @@ void FSI::MonolithicBase::create_structure_time_integrator(
           timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
   structure_ =
       Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(structure->structure_field());
-  structure_->Setup();
+  structure_->setup();
 
   if (structure_ == Teuchos::null)
     FOUR_C_THROW(
@@ -198,9 +198,9 @@ void FSI::MonolithicBase::output()
    * the Discretizations, which in turn defines the dof number ordering of the
    * Discretizations.
    */
-  structure_field()->Output();
-  fluid_field()->Output();
-  ale_field()->Output();
+  structure_field()->output();
+  fluid_field()->output();
+  ale_field()->output();
 
   if (structure_field()->get_constraint_manager()->HaveMonitor())
   {
@@ -623,7 +623,7 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<::NOX::Epetra::Interface::Requ
   // This initializes the field algorithms and creates the first linear
   // systems. And this is the reason we know the initial linear system is
   // there when we create the NOX::FSI::Group.
-  Evaluate(Teuchos::null);
+  evaluate(Teuchos::null);
 
   // Get initial guess.
   // The initial system is there, so we can happily extract the
@@ -696,7 +696,7 @@ void FSI::Monolithic::update()
       Core::UTILS::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   if (not timeadapton)
-    structure_field()->Update();  // constant dt
+    structure_field()->update();  // constant dt
   else
   {
     structure_field()->Update(Time());  // variable/adaptive dt
@@ -706,8 +706,8 @@ void FSI::Monolithic::update()
           ->UpdateStepSize(Dt());
   }
 
-  fluid_field()->Update();
-  ale_field()->Update();
+  fluid_field()->update();
+  ale_field()->update();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -825,7 +825,7 @@ void FSI::Monolithic::NonLinErrorCheck()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
+void FSI::Monolithic::evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::Evaluate");
 
@@ -858,14 +858,14 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 
   {
     Teuchos::Time ts("structure", true);
-    structure_field()->Evaluate(sx);
+    structure_field()->evaluate(sx);
     if (verbosity_ >= Inpar::FSI::verbosity_medium)
       utils()->out() << "structure: " << ts.totalElapsedTime(true) << " sec\n";
   }
 
   {
     Teuchos::Time ta("ale", true);
-    ale_field()->Evaluate(ax);
+    ale_field()->evaluate(ax);
     if (verbosity_ >= Inpar::FSI::verbosity_medium)
       utils()->out() << "ale      : " << ta.totalElapsedTime(true) << " sec\n";
   }
@@ -876,7 +876,7 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 
   {
     Teuchos::Time tf("fluid", true);
-    fluid_field()->Evaluate(fx);
+    fluid_field()->evaluate(fx);
     if (verbosity_ >= Inpar::FSI::verbosity_medium)
       utils()->out() << "fluid    : " << tf.totalElapsedTime(true) << " sec\n";
   }
@@ -889,7 +889,7 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 void FSI::Monolithic::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
-  blockrowdofmap_.Setup(*fullmap, maps);
+  blockrowdofmap_.setup(*fullmap, maps);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -993,7 +993,7 @@ Teuchos::RCP<::NOX::Direction::Generic> FSI::Monolithic::buildDirection(
 bool FSI::Monolithic::computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::computeF");
-  Evaluate(Teuchos::rcp(&x, false));
+  evaluate(Teuchos::rcp(&x, false));
   setup_rhs(F);
   return true;
 }
@@ -1102,7 +1102,7 @@ FSI::BlockMonolithic::BlockMonolithic(
 bool FSI::BlockMonolithic::computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::computeJacobian");
-  Evaluate(Teuchos::rcp(&x, false));
+  evaluate(Teuchos::rcp(&x, false));
   Core::LinAlg::BlockSparseMatrixBase& mat =
       Teuchos::dyn_cast<Core::LinAlg::BlockSparseMatrixBase>(Jac);
   setup_system_matrix(mat);

@@ -22,7 +22,7 @@ Core::Communication::ParObject* CONTACT::FriNodeType::Create(const std::vector<c
 
   // TODO: friplus = true for all nodes!!! change this with pack/unpack
   CONTACT::FriNode* node = new CONTACT::FriNode(0, x, 0, dofs, false, false, true);
-  node->Unpack(data);
+  node->unpack(data);
 
   return node;
 }
@@ -49,7 +49,7 @@ CONTACT::FriNodeDataContainer::FriNodeDataContainer()
  |  Pack data                                                  (public) |
  |                                                            mgit 01/10|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNodeDataContainer::Pack(Core::Communication::PackBuffer& data) const
+void CONTACT::FriNodeDataContainer::pack(Core::Communication::PackBuffer& data) const
 {
   // add jump_
   Core::Communication::ParObject::add_to_pack(data, jump_, 3 * sizeof(double));
@@ -106,7 +106,7 @@ void CONTACT::FriNodeDataContainer::Pack(Core::Communication::PackBuffer& data) 
  |  Unpack data                                                (public) |
  |                                                            mgit 01/10|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNodeDataContainer::Unpack(
+void CONTACT::FriNodeDataContainer::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // jump_
@@ -186,7 +186,7 @@ CONTACT::FriNodeWearDataContainer::FriNodeWearDataContainer()
  |  Pack data                                                  (public) |
  |                                                           farah 10/13|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNodeWearDataContainer::Pack(Core::Communication::PackBuffer& data) const
+void CONTACT::FriNodeWearDataContainer::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::ParObject::add_to_pack(data, weightedwear_);
   Core::Communication::ParObject::add_to_pack(data, deltaweightedwear_);
@@ -210,7 +210,7 @@ void CONTACT::FriNodeWearDataContainer::Pack(Core::Communication::PackBuffer& da
  |  Unpack data                                                (public) |
  |                                                           farah 10/13|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNodeWearDataContainer::Unpack(
+void CONTACT::FriNodeWearDataContainer::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   Core::Communication::ParObject::extract_from_pack(position, data, weightedwear_);
@@ -288,7 +288,7 @@ void CONTACT::FriNode::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::Pack(Core::Communication::PackBuffer& data) const
+void CONTACT::FriNode::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -297,16 +297,16 @@ void CONTACT::FriNode::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, type);
 
   // add base class Mortar::Node
-  CONTACT::Node::Pack(data);
+  CONTACT::Node::pack(data);
 
   // add data_
   bool hasdata = (fridata_ != Teuchos::null);
   add_to_pack(data, hasdata);
-  if (hasdata) fridata_->Pack(data);
+  if (hasdata) fridata_->pack(data);
 
   bool hasweardata = (weardata_ != Teuchos::null);
   add_to_pack(data, hasweardata);
-  if (hasweardata) weardata_->Pack(data);
+  if (hasweardata) weardata_->pack(data);
 
   return;
 }
@@ -315,7 +315,7 @@ void CONTACT::FriNode::Pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::Unpack(const std::vector<char>& data)
+void CONTACT::FriNode::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -324,7 +324,7 @@ void CONTACT::FriNode::Unpack(const std::vector<char>& data)
   // extract base class CONTACT::Node
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  CONTACT::Node::Unpack(basedata);
+  CONTACT::Node::unpack(basedata);
 
   // **************************
   // FriData
@@ -332,7 +332,7 @@ void CONTACT::FriNode::Unpack(const std::vector<char>& data)
   if (hasdata)
   {
     fridata_ = Teuchos::rcp(new CONTACT::FriNodeDataContainer());
-    fridata_->Unpack(position, data);
+    fridata_->unpack(position, data);
   }
   else
     fridata_ = Teuchos::null;
@@ -343,7 +343,7 @@ void CONTACT::FriNode::Unpack(const std::vector<char>& data)
   if (hasdataplus)
   {
     weardata_ = Teuchos::rcp(new CONTACT::FriNodeWearDataContainer());
-    weardata_->Unpack(position, data);
+    weardata_->unpack(position, data);
   }
   else
     weardata_ = Teuchos::null;

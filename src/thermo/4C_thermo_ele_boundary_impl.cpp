@@ -121,7 +121,7 @@ Discret::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(int numdofper
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
+int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
     const Discret::ELEMENTS::ThermoBoundary* ele, Teuchos::ParameterList& params,
     const Core::FE::Discretization& discretization,
     const Core::Elements::Element::LocationArray& la,
@@ -209,23 +209,23 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ThermoConvections'");
 
     // access parameters of the condition
-    const std::string* tempstate = &cond->parameters().Get<std::string>("temperature state");
-    double coeff = cond->parameters().Get<double>("coeff");
-    const int curvenum = cond->parameters().Get<int>("funct");
+    const std::string* tempstate = &cond->parameters().get<std::string>("temperature state");
+    double coeff = cond->parameters().get<double>("coeff");
+    const int curvenum = cond->parameters().get<int>("funct");
     const double time = params.get<double>("total time");
 
     // get surrounding temperature T_infty from input file
-    double surtemp = cond->parameters().Get<double>("surtemp");
+    double surtemp = cond->parameters().get<double>("surtemp");
     // increase the surrounding temperature T_infty step by step
     // can be scaled with a time curve, get time curve number from input file
-    const int surtempcurvenum = cond->parameters().Get<int>("surtempfunct");
+    const int surtempcurvenum = cond->parameters().get<int>("surtempfunct");
 
     // find out whether we shall use a time curve for q^_c and get the factor
     double curvefac = 1.0;
     if (curvenum >= 0)
     {
       curvefac =
-          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).Evaluate(
+          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).evaluate(
               time);
     }
     // multiply heat convection coefficient with the timecurve factor
@@ -239,7 +239,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     {
       surtempcurvefac = Global::Problem::Instance()
                             ->FunctionById<Core::UTILS::FunctionOfTime>(surtempcurvenum)
-                            .Evaluate(time);
+                            .evaluate(time);
     }
     // complete surrounding temperatures T_oo: multiply with the timecurve factor
     surtemp *= surtempcurvefac;
@@ -313,7 +313,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     }  // geo_linear
 
     // initialise the vectors
-    // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
+    // evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
     // the coupling field is not yet known. Pass coupling vectors filled with zeros
     // the size of the vectors is the length of the location vector*nsd_
     std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
@@ -398,7 +398,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     Inpar::STR::KinemType kintype = parentele->kintype_;
 
     // initialise the vectors
-    // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
+    // evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
     // the coupling field is not yet known. Pass coupling vectors filled with zeros
     // the size of the vectors is the length of the location vector*nsd_
     std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
@@ -425,16 +425,16 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
         if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ThermoConvections'");
 
         // access parameters of the condition
-        const std::string* tempstate = &cond->parameters().Get<std::string>("temperature state");
-        double coeff = cond->parameters().Get<double>("coeff");
-        const int curvenum = cond->parameters().Get<int>("funct");
+        const std::string* tempstate = &cond->parameters().get<std::string>("temperature state");
+        double coeff = cond->parameters().get<double>("coeff");
+        const int curvenum = cond->parameters().get<int>("funct");
         const double time = params.get<double>("total time");
 
         // get surrounding temperature T_infty from input file
-        double surtemp = cond->parameters().Get<double>("surtemp");
+        double surtemp = cond->parameters().get<double>("surtemp");
         // increase the surrounding temperature T_infty step by step
         // can be scaled with a time curve, get time curve number from input file
-        const int surtempcurvenum = cond->parameters().Get<int>("surtempfunct");
+        const int surtempcurvenum = cond->parameters().get<int>("surtempfunct");
 
         // find out whether we shall use a time curve for q^_c and get the factor
         double curvefac = 1.0;
@@ -442,7 +442,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
         {
           curvefac = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                         .Evaluate(time);
+                         .evaluate(time);
         }
         // multiply heat convection coefficient with the timecurve factor
         coeff *= curvefac;
@@ -455,7 +455,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
         {
           surtempcurvefac = Global::Problem::Instance()
                                 ->FunctionById<Core::UTILS::FunctionOfTime>(surtempcurvenum)
-                                .Evaluate(time);
+                                .evaluate(time);
         }
         // complete surrounding temperatures T_oo: multiply with the timecurve factor
         surtemp *= surtempcurvefac;
@@ -578,7 +578,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
         THR::BoundaryActionToString(action).c_str());
 
   return 0;
-}  // Evaluate()
+}  // evaluate()
 
 
 /*----------------------------------------------------------------------*
@@ -608,9 +608,9 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate_neumann(
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
-  const auto* func = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
+  const auto* func = &condition.parameters().get<std::vector<int>>("funct");
 
   // integration loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -641,7 +641,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate_neumann(
             // evaluate function at current gauss point
             functfac = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                           .Evaluate(coordgpref, time, dof);
+                           .evaluate(coordgpref, time, dof);
           }
           else
             functfac = 1.0;

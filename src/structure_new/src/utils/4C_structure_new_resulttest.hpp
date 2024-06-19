@@ -74,11 +74,11 @@ namespace STR
     ResultTest();
 
     //! initialization of class variables
-    virtual void Init(
+    virtual void init(
         const STR::TimeInt::BaseDataGlobalState& gstate, const STR::MODELEVALUATOR::Data& data);
 
     //! setup of class variables
-    virtual void Setup();
+    virtual void setup();
 
     //! \brief structure version of nodal value tests
     //!
@@ -121,14 +121,14 @@ namespace STR
     /// get the indicator state
     inline const bool& is_setup() const { return issetup_; };
 
-    /// Check if Init() and Setup() have been called
+    /// Check if init() and setup() have been called
     inline void check_init_setup() const
     {
-      FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+      FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
     }
 
-    /// Check if Init() has been called
-    inline void check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!"); }
+    /// Check if init() has been called
+    inline void check_init() const { FOUR_C_ASSERT(is_init(), "Call init() first!"); }
 
    private:
     /** \brief Get the result of the special structural quantity
@@ -211,10 +211,10 @@ namespace STR
     int get_nodal_result(double& result, const int node, const std::string& position) const;
 
    protected:
-    //! flag which indicates if the Init() routine has already been called
+    //! flag which indicates if the init() routine has already been called
     bool isinit_;
 
-    //! flag which indicates if the Setup() routine has already been called
+    //! flag which indicates if the setup() routine has already been called
     bool issetup_;
 
    private:

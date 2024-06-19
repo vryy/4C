@@ -87,7 +87,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SolidPoroType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SolidPoro(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -191,7 +191,7 @@ bool Discret::ELEMENTS::SolidPoro::ReadElement(
 
   // setup solid material
   std::visit(
-      [&](auto& solid) { solid->Setup(StructPoroMaterial(), linedef); }, solid_calc_variant_);
+      [&](auto& solid) { solid->setup(StructPoroMaterial(), linedef); }, solid_calc_variant_);
 
   // setup poro material
   std::visit([&](auto& solidporo) { solidporo->poro_setup(StructPoroMaterial(), linedef); },
@@ -206,14 +206,14 @@ Mat::So3Material& Discret::ELEMENTS::SolidPoro::SolidPoroMaterial(int nummat) co
       Core::Elements::Element::Material(nummat), true);
 }
 
-void Discret::ELEMENTS::SolidPoro::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SolidPoro::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   add_to_pack(data, UniqueParObjectId());
 
   // add base class Element
-  Core::Elements::Element::Pack(data);
+  Core::Elements::Element::pack(data);
 
   add_to_pack(data, (int)celltype_);
 
@@ -226,11 +226,11 @@ void Discret::ELEMENTS::SolidPoro::Pack(Core::Communication::PackBuffer& data) c
   data.add_to_pack(material_post_setup_);
 
   // optional data, e.g., EAS data
-  Discret::ELEMENTS::Pack(solid_calc_variant_, data);
-  Discret::ELEMENTS::Pack(solidporo_calc_variant_, data);
+  Discret::ELEMENTS::pack(solid_calc_variant_, data);
+  Discret::ELEMENTS::pack(solidporo_calc_variant_, data);
 }
 
-void Discret::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SolidPoro::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -239,7 +239,7 @@ void Discret::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Core::Elements::Element::Unpack(basedata);
+  Core::Elements::Element::unpack(basedata);
 
   celltype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
 
@@ -255,8 +255,8 @@ void Discret::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
   solidporo_calc_variant_ = create_solid_poro_calculation_interface(*this, GetElePoroType());
 
-  Discret::ELEMENTS::Unpack(solid_calc_variant_, position, data);
-  Discret::ELEMENTS::Unpack(solidporo_calc_variant_, position, data);
+  Discret::ELEMENTS::unpack(solid_calc_variant_, position, data);
+  Discret::ELEMENTS::unpack(solidporo_calc_variant_, position, data);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

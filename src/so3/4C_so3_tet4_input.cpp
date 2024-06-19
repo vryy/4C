@@ -22,7 +22,7 @@ bool Discret::ELEMENTS::SoTet4::ReadElement(
 
   Teuchos::RCP<Core::Mat::Material> mat = Material();
 
-  SolidMaterial()->Setup(NUMGPT_SOTET4, linedef);
+  SolidMaterial()->setup(NUMGPT_SOTET4, linedef);
 
   std::string buffer;
   linedef->extract_string("KINEM", buffer);

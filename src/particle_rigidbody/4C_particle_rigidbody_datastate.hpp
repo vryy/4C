@@ -47,14 +47,14 @@ namespace ParticleRigidBody
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void Init();
+    void init();
 
     /*!
      * \brief setup rigid body data state container
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void Setup();
+    void setup();
 
     /*!
      * \brief allocate stored states

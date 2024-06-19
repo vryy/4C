@@ -32,18 +32,18 @@ SSI::SSIPart2WC::SSIPart2WC(const Epetra_Comm& comm, const Teuchos::ParameterLis
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
  | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SSIPart2WC::init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
-  SSI::SSIPart::Init(
+  SSI::SSIPart::init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // call the SSI parameter lists
@@ -99,10 +99,10 @@ void SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
 /*----------------------------------------------------------------------*
  | Setup this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WC::Setup()
+void SSI::SSIPart2WC::setup()
 {
   // call setup in base class
-  SSI::SSIPart::Setup();
+  SSI::SSIPart::setup();
 
   // construct increment vectors
   scaincnp_ = Core::LinAlg::CreateVector(*ScaTraField()->discretization()->dof_row_map(0), true);
@@ -210,7 +210,7 @@ void SSI::SSIPart2WC::prepare_time_loop()
   // initial output
   constexpr bool force_prepare = true;
   structure_field()->prepare_output(force_prepare);
-  structure_field()->Output();
+  structure_field()->output();
   set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp(), false);
   ScaTraField()->prepare_time_loop();
 }
@@ -253,12 +253,12 @@ void SSI::SSIPart2WC::update_and_output()
     nitsche_strategy_ssi()->Integrate(*cparams);
   }
 
-  structure_field()->Update();
-  ScaTraField()->Update();
+  structure_field()->update();
+  ScaTraField()->update();
 
   ScaTraField()->evaluate_error_compared_to_analytical_sol();
 
-  structure_field()->Output();
+  structure_field()->output();
   ScaTraField()->check_and_write_output_and_restart();
 }
 
@@ -458,19 +458,19 @@ SSI::SSIPart2WCSolidToScatraRelax::SSIPart2WCSolidToScatraRelax(
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
  | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WCSolidToScatraRelax::Init(const Epetra_Comm& comm,
+void SSI::SSIPart2WCSolidToScatraRelax::init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams, const std::string& struct_disname,
     const std::string& scatra_disname, bool isAle)
 {
   // call init of base class
-  SSI::SSIPart2WC::Init(
+  SSI::SSIPart2WC::init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   const Teuchos::ParameterList& ssicontrolpart =
@@ -583,16 +583,16 @@ SSI::SSIPart2WCSolidToScatraRelaxAitken::SSIPart2WCSolidToScatraRelaxAitken(
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call he setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
  | Setup this class                                          fang 01/18 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WCSolidToScatraRelaxAitken::Setup()
+void SSI::SSIPart2WCSolidToScatraRelaxAitken::setup()
 {
   // call setup of base class
-  SSI::SSIPart2WC::Setup();
+  SSI::SSIPart2WC::setup();
 
   // setup old scatra increment vector
   dispincnpold_ = Core::LinAlg::CreateVector(*structure_field()->dof_row_map(0), true);
@@ -684,19 +684,19 @@ SSI::SSIPart2WCScatraToSolidRelax::SSIPart2WCScatraToSolidRelax(
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WCScatraToSolidRelax::Init(const Epetra_Comm& comm,
+void SSI::SSIPart2WCScatraToSolidRelax::init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams, const std::string& struct_disname,
     const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
-  SSI::SSIPart2WC::Init(
+  SSI::SSIPart2WC::init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   const Teuchos::ParameterList& ssicontrolpart =
@@ -801,16 +801,16 @@ SSI::SSIPart2WCScatraToSolidRelaxAitken::SSIPart2WCScatraToSolidRelaxAitken(
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
 }
 
 /*----------------------------------------------------------------------*
  | Setup this class                                          fang 01/18 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WCScatraToSolidRelaxAitken::Setup()
+void SSI::SSIPart2WCScatraToSolidRelaxAitken::setup()
 {
   // call setup of base class
-  SSI::SSIPart2WC::Setup();
+  SSI::SSIPart2WC::setup();
 
   // setup old scatra increment vector
   scaincnpold_ = Core::LinAlg::CreateVector(*ScaTraField()->discretization()->dof_row_map(), true);

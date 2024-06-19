@@ -78,14 +78,14 @@ namespace STR
 
 
       //! initialize the class variables
-      void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
+      void init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
           const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
           const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
           const Teuchos::RCP<STR::Integrator>& int_ptr,
           const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset) override;
 
       //! setup class variables
-      void Setup() override;
+      void setup() override;
 
       //! set the active model type wrapped in this class.
       //! only active model type is evaluated.
@@ -106,7 +106,7 @@ namespace STR
       Inpar::STR::ModelType Type() const override { return Inpar::STR::model_partitioned_coupling; }
 
       //! reset class variables (without jacobian) [derived]
-      void Reset(const Epetra_Vector& x) override;
+      void reset(const Epetra_Vector& x) override;
 
       //! [derived]
       bool evaluate_force() override;

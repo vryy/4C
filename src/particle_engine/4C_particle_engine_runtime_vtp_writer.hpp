@@ -65,7 +65,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlecontainerbundle particle container bundle
      */
-    void Init(const ParticleContainerBundleShrdPtr particlecontainerbundle);
+    void init(const ParticleContainerBundleShrdPtr particlecontainerbundle);
 
     /*!
      * \brief setup particle runtime vtp writer
@@ -74,7 +74,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] write_ghosted_particles flag for output of ghosted particles
      */
-    void Setup(bool write_ghosted_particles);
+    void setup(bool write_ghosted_particles);
 
     /*!
      * \brief read restart of runtime vtp writer

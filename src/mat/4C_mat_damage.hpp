@@ -143,7 +143,7 @@ namespace Mat
     //!  identify the exact class on the receiving processor.
     //!
     //!  \param data (in/out): char vector to store class information
-    void Pack(Core::Communication::PackBuffer&
+    void pack(Core::Communication::PackBuffer&
             data  //!<  data (i/o): char vector to store class information
     ) const override;
 
@@ -157,7 +157,7 @@ namespace Mat
     //!
     //!  \param data (in) : vector storing all data to be unpacked into this
     //!  instance.
-    void Unpack(const std::vector<char>&
+    void unpack(const std::vector<char>&
             data  //!< (i) : vector storing all data to be unpacked into this instance.
         ) override;
 
@@ -183,13 +183,13 @@ namespace Mat
     }
 
     //! initialise internal stress variables
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     //! update internal stress variables
-    void Update() override;
+    void update() override;
 
     //! evaluate material
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,       //!< deformation gradient
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,       //!< deformation gradient
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* linstrain,  //!< linear total strains
         Teuchos::ParameterList& params,                  //!< parameter list for communication
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,  //!< 2nd PK-stress

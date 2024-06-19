@@ -164,7 +164,7 @@ namespace Mat
 
     \param data (in/out): char vector to store class information
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -178,7 +178,7 @@ namespace Mat
     \param data (in) : vector storing all data to be unpacked into this
     instance.
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -226,13 +226,13 @@ namespace Mat
     //! @name Evaluation methods
 
     //! initialise internal stress variables
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     //! update internal stress variables
-    void Update() override;
+    void update() override;
 
     //! evaluate material law
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;

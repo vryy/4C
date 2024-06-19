@@ -64,7 +64,7 @@ namespace Adapter
    public:
     /**
      * Construct nonlinear coupling with basic parameters. The remaining information is passed in
-     * Setup().
+     * setup().
      */
     CouplingNonLinMortar(int spatial_dimension, Teuchos::ParameterList mortar_coupling_params,
         Teuchos::ParameterList contact_dynamic_params,
@@ -74,7 +74,7 @@ namespace Adapter
     \brief initialize routine
 
     */
-    virtual void Setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
+    virtual void setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
         Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond);
 
@@ -208,7 +208,7 @@ namespace Adapter
     /// check init and setup call
     void check_setup() const override
     {
-      if (!is_setup()) FOUR_C_THROW("ERROR: Call Setup() first!");
+      if (!is_setup()) FOUR_C_THROW("ERROR: Call setup() first!");
     }
 
    protected:

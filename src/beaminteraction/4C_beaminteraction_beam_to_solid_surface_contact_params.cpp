@@ -35,7 +35,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactParams::BeamToSolidSurfaceContactParam
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceContactParams::Init()
+void BEAMINTERACTION::BeamToSolidSurfaceContactParams::init()
 {
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_to_solid_contact_params_list =
@@ -65,8 +65,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactParams::Init()
   {
     output_params_ptr_ = Teuchos::rcp<BeamToSolidSurfaceVisualizationOutputParams>(
         new BeamToSolidSurfaceVisualizationOutputParams());
-    output_params_ptr_->Init();
-    output_params_ptr_->Setup();
+    output_params_ptr_->init();
+    output_params_ptr_->setup();
   }
 
   isinit_ = true;

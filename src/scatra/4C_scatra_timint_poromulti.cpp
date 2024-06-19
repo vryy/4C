@@ -35,7 +35,7 @@ ScaTra::ScaTraTimIntPoroMulti::ScaTraTimIntPoroMulti(Teuchos::RCP<Core::FE::Disc
 /*----------------------------------------------------------------------*
  | initialize algorithm                                    vuong  08/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMulti::Init() { return; }
+void ScaTra::ScaTraTimIntPoroMulti::init() { return; }
 
 /*----------------------------------------------------------------------*
  | set solution fields on given dof sets                    vuong  08/16 |
@@ -198,13 +198,13 @@ void ScaTra::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
     double Pb = 0.0;
 
     // read input from condition
-    const auto oxyscalar = conditions[0]->parameters().Get<int>("SCALARID") - 1;
-    const auto CaO2_max = conditions[0]->parameters().Get<double>("CaO2_max");
-    const auto Pb50 = conditions[0]->parameters().Get<double>("Pb50");
-    const auto n = conditions[0]->parameters().Get<double>("n");
-    const auto alpha_eff = conditions[0]->parameters().Get<double>("alpha_bl_eff");
-    const auto rho_oxy = conditions[0]->parameters().Get<double>("rho_oxy");
-    const auto rho_bl = conditions[0]->parameters().Get<double>("rho_bl");
+    const auto oxyscalar = conditions[0]->parameters().get<int>("SCALARID") - 1;
+    const auto CaO2_max = conditions[0]->parameters().get<double>("CaO2_max");
+    const auto Pb50 = conditions[0]->parameters().get<double>("Pb50");
+    const auto n = conditions[0]->parameters().get<double>("n");
+    const auto alpha_eff = conditions[0]->parameters().get<double>("alpha_bl_eff");
+    const auto rho_oxy = conditions[0]->parameters().get<double>("rho_oxy");
+    const auto rho_bl = conditions[0]->parameters().get<double>("rho_bl");
 
     // loop over all nodes
     for (unsigned inode = 0; inode < nodegids->size(); ++inode)
@@ -259,12 +259,12 @@ ScaTra::ScaTraTimIntPoroMultiOST::ScaTraTimIntPoroMultiOST(
 /*----------------------------------------------------------------------*
  |  initialize time integration                             vuong  08/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiOST::Init()
+void ScaTra::ScaTraTimIntPoroMultiOST::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntOneStepTheta::Init();
-  ScaTraTimIntPoroMulti::Init();
+  TimIntOneStepTheta::init();
+  ScaTraTimIntPoroMulti::init();
 
   return;
 }
@@ -275,10 +275,10 @@ void ScaTra::ScaTraTimIntPoroMultiOST::Init()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiOST::Update()
+void ScaTra::ScaTraTimIntPoroMultiOST::update()
 {
-  TimIntOneStepTheta::Update();
-  ScaTraTimIntPoroMulti::Update();
+  TimIntOneStepTheta::update();
+  ScaTraTimIntPoroMulti::update();
 
   return;
 }
@@ -303,12 +303,12 @@ ScaTra::ScaTraTimIntPoroMultiBDF2::ScaTraTimIntPoroMultiBDF2(
 /*----------------------------------------------------------------------*
  |  initialize time integration                             vuong  08/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiBDF2::Init()
+void ScaTra::ScaTraTimIntPoroMultiBDF2::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntBDF2::Init();
-  ScaTraTimIntPoroMulti::Init();
+  TimIntBDF2::init();
+  ScaTraTimIntPoroMulti::init();
 
   return;
 }
@@ -319,10 +319,10 @@ void ScaTra::ScaTraTimIntPoroMultiBDF2::Init()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiBDF2::Update()
+void ScaTra::ScaTraTimIntPoroMultiBDF2::update()
 {
-  TimIntBDF2::Update();
-  ScaTraTimIntPoroMulti::Update();
+  TimIntBDF2::update();
+  ScaTraTimIntPoroMulti::update();
 
   return;
 }
@@ -348,12 +348,12 @@ ScaTra::ScaTraTimIntPoroMultiGenAlpha::ScaTraTimIntPoroMultiGenAlpha(
 /*----------------------------------------------------------------------*
  |  initialize time integration                             vuong  08/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiGenAlpha::Init()
+void ScaTra::ScaTraTimIntPoroMultiGenAlpha::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntGenAlpha::Init();
-  ScaTraTimIntPoroMulti::Init();
+  TimIntGenAlpha::init();
+  ScaTraTimIntPoroMulti::init();
 
   return;
 }
@@ -364,10 +364,10 @@ void ScaTra::ScaTraTimIntPoroMultiGenAlpha::Init()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiGenAlpha::Update()
+void ScaTra::ScaTraTimIntPoroMultiGenAlpha::update()
 {
-  TimIntGenAlpha::Update();
-  ScaTraTimIntPoroMulti::Update();
+  TimIntGenAlpha::update();
+  ScaTraTimIntPoroMulti::update();
 
   return;
 }
@@ -392,12 +392,12 @@ ScaTra::ScaTraTimIntPoroMultiStationary::ScaTraTimIntPoroMultiStationary(
 /*----------------------------------------------------------------------*
  |  initialize time integration                             vuong  08/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiStationary::Init()
+void ScaTra::ScaTraTimIntPoroMultiStationary::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntStationary::Init();
-  ScaTraTimIntPoroMulti::Init();
+  TimIntStationary::init();
+  ScaTraTimIntPoroMulti::init();
 
   return;
 }
@@ -408,10 +408,10 @@ void ScaTra::ScaTraTimIntPoroMultiStationary::Init()
  | current solution becomes most recent solution of next timestep       |
  |                                                         vuong  08/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMultiStationary::Update()
+void ScaTra::ScaTraTimIntPoroMultiStationary::update()
 {
-  TimIntStationary::Update();
-  ScaTraTimIntPoroMulti::Update();
+  TimIntStationary::update();
+  ScaTraTimIntPoroMulti::update();
 
   return;
 }

@@ -133,7 +133,7 @@ void Discret::ELEMENTS::UTILS::compute_deformation_gradient(
 {
   if (kinemType == Inpar::STR::KinemType::linear)
   {
-    defgrd.Clear();
+    defgrd.clear();
     for (auto i = 0; i < Core::FE::dim<distype>; ++i)
     {
       defgrd(i, i) = 1.0;

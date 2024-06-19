@@ -99,7 +99,7 @@ namespace Core::LinearSolver
      * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
-    virtual void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x,
+    virtual void setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x,
         Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
         Teuchos::RCP<Core::LinAlg::KrylovProjector> projector) = 0;
 

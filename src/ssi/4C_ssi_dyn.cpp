@@ -100,7 +100,7 @@ void ssi_drt()
 
     // 3.1.2 init the chosen ssi algorithm
     // Construct time integrators of subproblems inside.
-    ssi->Init(comm, ssiparams, scatradyn, sdyn, "structure", "scatra", isale);
+    ssi->init(comm, ssiparams, scatradyn, sdyn, "structure", "scatra", isale);
 
     // now we can finally fill our discretizations
     // reinitialization of the structural elements is
@@ -117,10 +117,10 @@ void ssi_drt()
     // 3.1.4 Setup the coupled problem
     // now as we redistributed our discretizations we can construct all
     // objects relying on the parallel distribution
-    ssi->Setup();
+    ssi->setup();
 
     // 3.2- Read restart if needed. (discretization called inside)
-    if (ssi->IsRestart()) ssi->read_restart(problem->Restart());
+    if (ssi->IsRestart()) ssi->read_restart(problem->restart());
 
     // 3.3 AFTER restart: reset input filename of the problem so that results from other runs can be
     // read

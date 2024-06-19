@@ -28,7 +28,7 @@ namespace Core::LinearSolver
    public:
     SimplePreconditioner(Teuchos::ParameterList& params);
 
-    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
     /// linear operator used for preconditioning
@@ -48,7 +48,7 @@ namespace Core::LinearSolver
    public:
     BGSPreconditioner(Teuchos::ParameterList& params, Teuchos::ParameterList& bgslist);
 
-    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
     /// linear operator used for preconditioning

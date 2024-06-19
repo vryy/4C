@@ -126,7 +126,7 @@ namespace Mat
       unique parobject id delivered by UniqueParObjectId() which will then
       identify the exact class on the receiving processor.
     */
-    void Pack(
+    void pack(
         Core::Communication::PackBuffer& data  //!< (i/o): char vector to store class information
     ) const override;
 
@@ -139,7 +139,7 @@ namespace Mat
       parobject id defined at the top of this file and delivered by
       UniqueParObjectId().
     */
-    void Unpack(const std::vector<char>&
+    void unpack(const std::vector<char>&
             data  //!< (i) : vector storing all data to be unpacked into this instance.
         ) override;
 
@@ -158,7 +158,7 @@ namespace Mat
     }
 
     //! evaluates stresses for 3d
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  //!< deformation gradient
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  //!< deformation gradient
         const Core::LinAlg::Matrix<6, 1>* glstrain,          //!< Green-Lagrange strain
         Teuchos::ParameterList& params,                      //!< parameter list
         Core::LinAlg::Matrix<6, 1>* stress,                  //!< stress
@@ -192,13 +192,13 @@ namespace Mat
     //! Return quick accessible material parameter data
     Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
+    void evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
         Core::LinAlg::Matrix<3, 1>& heatflux) const override;
 
-    void Evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp, Core::LinAlg::Matrix<2, 2>& cmat,
+    void evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp, Core::LinAlg::Matrix<2, 2>& cmat,
         Core::LinAlg::Matrix<2, 1>& heatflux) const override;
 
-    void Evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp, Core::LinAlg::Matrix<1, 1>& cmat,
+    void evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp, Core::LinAlg::Matrix<1, 1>& cmat,
         Core::LinAlg::Matrix<1, 1>& heatflux) const override;
 
     void ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const override;

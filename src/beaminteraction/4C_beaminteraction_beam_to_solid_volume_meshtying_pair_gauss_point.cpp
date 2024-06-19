@@ -41,7 +41,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
  *
  */
 template <typename beam, typename solid>
-bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Evaluate(
+bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
@@ -52,7 +52,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
-    this->cast_geometry_pair()->Evaluate(
+    this->cast_geometry_pair()->evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -196,7 +196,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
-    this->cast_geometry_pair()->Evaluate(
+    this->cast_geometry_pair()->evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -212,7 +212,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
 
   // Set the FAD variables for the solid DOFs.
   auto q_solid =
-      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_2nd>::Initialize(this->Element2());
+      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_2nd>::initialize(this->Element2());
   for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
     q_solid.element_position_(i_solid) =
         Core::FADUtils::HigherOrderFadValue<scalar_type_rot_2nd>::apply(3 + solid::n_dof_,

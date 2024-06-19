@@ -41,11 +41,11 @@ STR::IMPLICIT::OneStepTheta::OneStepTheta()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::Setup()
+void STR::IMPLICIT::OneStepTheta::setup()
 {
   check_init();
-  // Call the Setup() of the abstract base class first.
-  Generic::Setup();
+  // Call the setup() of the abstract base class first.
+  Generic::setup();
 
   // ---------------------------------------------------------------------------
   // setup time integration parameters

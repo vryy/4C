@@ -24,20 +24,20 @@ STR::MODELEVALUATOR::Multiphysics::Multiphysics() : active_mt_(mt_none)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Multiphysics::Init(
+void STR::MODELEVALUATOR::Multiphysics::init(
     const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
     const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
     const Teuchos::RCP<STR::Integrator>& int_ptr,
     const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset)
 {
-  STR::MODELEVALUATOR::Generic::Init(
+  STR::MODELEVALUATOR::Generic::init(
       eval_data_ptr, gstate_ptr, gio_ptr, int_ptr, timint_ptr, dof_offset);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Multiphysics::Setup()
+void STR::MODELEVALUATOR::Multiphysics::setup()
 {
   check_init();
   issetup_ = true;
@@ -46,11 +46,11 @@ void STR::MODELEVALUATOR::Multiphysics::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Multiphysics::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::Multiphysics::reset(const Epetra_Vector& x)
 {
   check_active_model_type();
 
-  get_model_evaluator_from_map(active_mt_)->Reset(x);
+  get_model_evaluator_from_map(active_mt_)->reset(x);
 }
 
 

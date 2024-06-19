@@ -30,7 +30,7 @@ ParticleInteraction::SPHBoundaryParticleBase::SPHBoundaryParticleBase(
   // empty constructor
 }
 
-void ParticleInteraction::SPHBoundaryParticleBase::Init()
+void ParticleInteraction::SPHBoundaryParticleBase::init()
 {
   // init with potential fluid particle types
   fluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::DirichletPhase,
@@ -40,7 +40,7 @@ void ParticleInteraction::SPHBoundaryParticleBase::Init()
   boundarytypes_ = {PARTICLEENGINE::BoundaryPhase, PARTICLEENGINE::RigidPhase};
 }
 
-void ParticleInteraction::SPHBoundaryParticleBase::Setup(
+void ParticleInteraction::SPHBoundaryParticleBase::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
@@ -77,12 +77,12 @@ ParticleInteraction::SPHBoundaryParticleAdami::SPHBoundaryParticleAdami(
   // empty constructor
 }
 
-void ParticleInteraction::SPHBoundaryParticleAdami::Setup(
+void ParticleInteraction::SPHBoundaryParticleAdami::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // call base class setup
-  SPHBoundaryParticleBase::Setup(particleengineinterface, neighborpairs);
+  SPHBoundaryParticleBase::setup(particleengineinterface, neighborpairs);
 
   // setup modified states of ghosted boundary particles to refresh
   {

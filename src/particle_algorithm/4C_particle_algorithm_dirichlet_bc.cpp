@@ -30,7 +30,7 @@ PARTICLEALGORITHM::DirichletBoundaryConditionHandler::DirichletBoundaryCondition
   // empty constructor
 }
 
-void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::Init()
+void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::init()
 {
   // get control parameters for initial/boundary conditions
   const Teuchos::ParameterList& params_conditions =
@@ -44,7 +44,7 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::Init()
   for (auto& typeIt : dirichletbctypetofunctid_) typessubjectedtodirichletbc_.insert(typeIt.first);
 }
 
-void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::Setup(
+void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine

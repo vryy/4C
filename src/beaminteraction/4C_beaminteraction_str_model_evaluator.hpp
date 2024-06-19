@@ -74,7 +74,7 @@ namespace STR
       //! constructor
       BeamInteraction();
 
-      void Setup() override;
+      void setup() override;
 
       virtual void post_setup();
 
@@ -173,7 +173,7 @@ namespace STR
 
      protected:
       //! derived
-      void Reset(const Epetra_Vector& x) override;
+      void reset(const Epetra_Vector& x) override;
 
       //!@name routines for submodel management
       //! @{

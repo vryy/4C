@@ -181,13 +181,13 @@ namespace Discret
 
       /// Pack this class so it can be communicated
       ///
-      /// \ref Pack and \ref Unpack are used to communicate this element
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      /// \ref pack and \ref unpack are used to communicate this element
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       /// Unpack data from a char vector into this class
       ///
-      /// \ref Pack and \ref Unpack are used to communicate this element
-      void Unpack(const std::vector<char>& data) override;
+      /// \ref pack and \ref unpack are used to communicate this element
+      void unpack(const std::vector<char>& data) override;
 
 
       //@}
@@ -240,7 +240,7 @@ namespace Discret
       /// Evaluate Wall1 element stiffness, mass, internal forces etc
       ///
       /// \return 0 if successful, negative otherwise
-      int Evaluate(Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication
+      int evaluate(Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication
                                                     ///< between control routine and elements
           Core::FE::Discretization&
               discretization,    ///< A reference to the underlying discretization
@@ -786,13 +786,13 @@ namespace Discret
 
       /// Pack this class so it can be communicated
       ///
-      /// \ref Pack and \ref Unpack are used to communicate this element
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      /// \ref pack and \ref unpack are used to communicate this element
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       /// Unpack data from a char vector into this class
       ///
-      /// \ref Pack and \ref Unpack are used to communicate this element
-      void Unpack(const std::vector<char>& data) override;
+      /// \ref pack and \ref unpack are used to communicate this element
+      void unpack(const std::vector<char>& data) override;
 
 
       //@}
@@ -858,7 +858,7 @@ namespace Discret
       /// this method evaluates a line Neumann condition on the wall element
       ///
       /// \return 0 if successful, negative otherwise
-      int Evaluate(Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication
+      int evaluate(Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication
                                                     ///< between control routine and elements
           Core::FE::Discretization&
               discretization,    ///< (in) A reference to the underlying discretization
@@ -868,7 +868,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevector3) override;
 
       //! Evaluate method on mutliple dofsets for wall element
-      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+      int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           LocationArray& la, Core::LinAlg::SerialDenseMatrix& elematrix1,
           Core::LinAlg::SerialDenseMatrix& elematrix2, Core::LinAlg::SerialDenseVector& elevector1,
           Core::LinAlg::SerialDenseVector& elevector2,

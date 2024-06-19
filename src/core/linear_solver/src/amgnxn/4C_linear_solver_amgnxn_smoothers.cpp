@@ -172,7 +172,7 @@ void Core::LinearSolver::AMGNxN::SimpleSmoother::Solve(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AMGNxN::MergeAndSolve::Setup(BlockedMatrix matrix)
+void Core::LinearSolver::AMGNxN::MergeAndSolve::setup(BlockedMatrix matrix)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::MergeAndSolve::Setup");
 
@@ -208,7 +208,7 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::Setup(BlockedMatrix matrix)
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
-  solver_->Setup(a_, x_, b_, solver_params);
+  solver_->setup(a_, x_, b_, solver_params);
 
   is_set_up_ = true;
 }
@@ -498,7 +498,7 @@ void Core::LinearSolver::AMGNxN::MueluAMGWrapper::build_hierarchy()
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void Core::LinearSolver::AMGNxN::MueluAMGWrapper::Setup()
+void Core::LinearSolver::AMGNxN::MueluAMGWrapper::setup()
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::MueluAMGWrapper::Setup");
 
@@ -538,13 +538,13 @@ Core::LinearSolver::AMGNxN::SingleFieldAMG::SingleFieldAMG(
     : MueluAMGWrapper(A, num_pde, null_space_dim, null_space_data, muelu_list),
       fine_smoother_list_(fine_smoother_list)
 {
-  Setup();
+  setup();
 }
 
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void Core::LinearSolver::AMGNxN::SingleFieldAMG::Setup()
+void Core::LinearSolver::AMGNxN::SingleFieldAMG::setup()
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::SingleFieldAMG::Setup");
 
@@ -764,7 +764,7 @@ Core::LinearSolver::AMGNxN::DirectSolverWrapper::DirectSolverWrapper()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AMGNxN::DirectSolverWrapper::Setup(
+void Core::LinearSolver::AMGNxN::DirectSolverWrapper::setup(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> matrix, Teuchos::RCP<Teuchos::ParameterList> params)
 {
   // Set matrix
@@ -799,7 +799,7 @@ void Core::LinearSolver::AMGNxN::DirectSolverWrapper::Setup(
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
-  solver_->Setup(a_, x_, b_, solver_params);
+  solver_->setup(a_, x_, b_, solver_params);
 
   is_set_up_ = true;
 }
@@ -1448,7 +1448,7 @@ Core::LinearSolver::AMGNxN::MueluAMGWrapperFactory::Create()
 
   Teuchos::RCP<MueluAMGWrapper> PtrOut =
       Teuchos::rcp(new MueluAMGWrapper(Op2, num_pde, null_space_dim, null_space_data, myList));
-  PtrOut->Setup();
+  PtrOut->setup();
 
   return Teuchos::rcp_dynamic_cast<Core::LinearSolver::AMGNxN::GenericSmoother>(PtrOut);
 }
@@ -1642,7 +1642,7 @@ Core::LinearSolver::AMGNxN::MergeAndSolveFactory::Create()
   Teuchos::RCP<MergeAndSolve> S = Teuchos::rcp(new MergeAndSolve);
   Teuchos::RCP<BlockedMatrix> matrix = GetOperator();
   if (matrix == Teuchos::null) FOUR_C_THROW("We expect here a block sparse matrix");
-  S->Setup(*matrix);
+  S->setup(*matrix);
 
   return S;
 }
@@ -2259,7 +2259,7 @@ Core::LinearSolver::AMGNxN::DirectSolverWrapperFactory::Create()
     FOUR_C_THROW("We spect here a matrix with only one block");
   Teuchos::RCP<Core::LinAlg::SparseMatrix> matrix = GetOperator()->GetMatrix(0, 0);
   if (matrix == Teuchos::null) FOUR_C_THROW("We expect here a sparse matrix");
-  S->Setup(matrix, Teuchos::rcp(new Teuchos::ParameterList(GetParams())));
+  S->setup(matrix, Teuchos::rcp(new Teuchos::ParameterList(GetParams())));
 
 
   return S;

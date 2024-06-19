@@ -21,12 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::LinearDensityViscosity::LinearDensityViscosity(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      refdensity_(matdata.parameters.Get<double>("REFDENSITY")),
-      refviscosity_(matdata.parameters.Get<double>("REFVISCOSITY")),
-      refpressure_(matdata.parameters.Get<double>("REFPRESSURE")),
-      coeffdensity_(matdata.parameters.Get<double>("COEFFDENSITY")),
-      coeffviscosity_(matdata.parameters.Get<double>("COEFFVISCOSITY")),
-      gamma_(matdata.parameters.Get<double>("GAMMA"))
+      refdensity_(matdata.parameters.get<double>("REFDENSITY")),
+      refviscosity_(matdata.parameters.get<double>("REFVISCOSITY")),
+      refpressure_(matdata.parameters.get<double>("REFPRESSURE")),
+      coeffdensity_(matdata.parameters.get<double>("COEFFDENSITY")),
+      coeffviscosity_(matdata.parameters.get<double>("COEFFVISCOSITY")),
+      gamma_(matdata.parameters.get<double>("GAMMA"))
 {
 }
 
@@ -46,7 +46,7 @@ Core::Communication::ParObject* Mat::LinearDensityViscosityType::Create(
     const std::vector<char>& data)
 {
   Mat::LinearDensityViscosity* fluid = new Mat::LinearDensityViscosity();
-  fluid->Unpack(data);
+  fluid->unpack(data);
   return fluid;
 }
 
@@ -66,7 +66,7 @@ Mat::LinearDensityViscosity::LinearDensityViscosity(Mat::PAR::LinearDensityVisco
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::LinearDensityViscosity::Pack(Core::Communication::PackBuffer& data) const
+void Mat::LinearDensityViscosity::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -83,7 +83,7 @@ void Mat::LinearDensityViscosity::Pack(Core::Communication::PackBuffer& data) co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::LinearDensityViscosity::Unpack(const std::vector<char>& data)
+void Mat::LinearDensityViscosity::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

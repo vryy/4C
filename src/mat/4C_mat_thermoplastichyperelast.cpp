@@ -41,18 +41,18 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::ThermoPlasticHyperElast::ThermoPlasticHyperElast(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      cte_(matdata.parameters.Get<double>("CTE")),
-      inittemp_(matdata.parameters.Get<double>("INITTEMP")),
-      yield_(matdata.parameters.Get<double>("YIELD")),
-      isohard_(matdata.parameters.Get<double>("ISOHARD")),
-      sathardening_(matdata.parameters.Get<double>("SATHARDENING")),
-      hardexpo_(matdata.parameters.Get<double>("HARDEXPO")),
-      yieldsoft_(matdata.parameters.Get<double>("YIELDSOFT")),
-      hardsoft_(matdata.parameters.Get<double>("HARDSOFT")),
-      abstol_(matdata.parameters.Get<double>("TOL"))
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      cte_(matdata.parameters.get<double>("CTE")),
+      inittemp_(matdata.parameters.get<double>("INITTEMP")),
+      yield_(matdata.parameters.get<double>("YIELD")),
+      isohard_(matdata.parameters.get<double>("ISOHARD")),
+      sathardening_(matdata.parameters.get<double>("SATHARDENING")),
+      hardexpo_(matdata.parameters.get<double>("HARDEXPO")),
+      yieldsoft_(matdata.parameters.get<double>("YIELDSOFT")),
+      hardsoft_(matdata.parameters.get<double>("HARDSOFT")),
+      abstol_(matdata.parameters.get<double>("TOL"))
 {
   if (sathardening_ < yield_)
     FOUR_C_THROW("Saturation hardening must not be less than initial yield stress!");
@@ -78,7 +78,7 @@ Core::Communication::ParObject* Mat::ThermoPlasticHyperElastType::Create(
     const std::vector<char>& data)
 {
   Mat::ThermoPlasticHyperElast* thrplhyper = new Mat::ThermoPlasticHyperElast();
-  thrplhyper->Unpack(data);
+  thrplhyper->unpack(data);
   return thrplhyper;
 }
 
@@ -101,7 +101,7 @@ Mat::ThermoPlasticHyperElast::ThermoPlasticHyperElast(Mat::PAR::ThermoPlasticHyp
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 03/13 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ThermoPlasticHyperElast::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -148,13 +148,13 @@ void Mat::ThermoPlasticHyperElast::Pack(Core::Communication::PackBuffer& data) c
   add_to_pack(data, plastic_step_);
 
   return;
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack (public)                                           dano 03/13 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
+void Mat::ThermoPlasticHyperElast::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -265,7 +265,7 @@ void Mat::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialise / allocate internal variables (public)                   |
  *---------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ThermoPlasticHyperElast::setup(int numgp, Input::LineDefinition* linedef)
 {
   // initialise hist variables
   defgrdlast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
@@ -329,13 +329,13 @@ void Mat::ThermoPlasticHyperElast::Setup(int numgp, Input::LineDefinition* lined
   isinit_ = true;
   return;
 
-}  // Setup()
+}  // setup()
 
 
 /*----------------------------------------------------------------------*
  | update internal variables                                 dano 03/13 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::Update()
+void Mat::ThermoPlasticHyperElast::update()
 {
   // make current values at time step t_n+1 to values of last step t_n
   defgrdlast_ = defgrdcurr_;
@@ -363,13 +363,13 @@ void Mat::ThermoPlasticHyperElast::Update()
   }
 
   return;
-}  // Update()
+}  // update()
 
 
 /*----------------------------------------------------------------------*
  | calculate stress and constitutive tensor                  dano 03/13 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ThermoPlasticHyperElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -909,7 +909,7 @@ void Mat::ThermoPlasticHyperElast::Evaluate(const Core::LinAlg::Matrix<3, 3>* de
 
   return;
 
-}  // Evaluate()
+}  // evaluate()
 
 
 /*----------------------------------------------------------------------*
@@ -1092,7 +1092,7 @@ void Mat::ThermoPlasticHyperElast::calculate_current_bebar(
  | calculate temperature-dependent stresses                  dano 09/13 |
  | is called from so3thermo element                                     |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::Evaluate(const Core::LinAlg::Matrix<1, 1>& Ntemp,
+void Mat::ThermoPlasticHyperElast::evaluate(const Core::LinAlg::Matrix<1, 1>& Ntemp,
     Core::LinAlg::Matrix<6, 1>& ctemp, Core::LinAlg::Matrix<6, 6>& cmat_T,
     Core::LinAlg::Matrix<6, 1>& stresstemp, Teuchos::ParameterList& params)
 {
@@ -1167,7 +1167,7 @@ void Mat::ThermoPlasticHyperElast::SetupCmatThermo(const Core::LinAlg::Matrix<1,
   invRCG.Invert(RCG);
 
   // clear the material tangent
-  cmat_T.Clear();
+  cmat_T.clear();
 
   // cmat_T = 2 . dS_vol,dT/dd
   //        = (T - T_0) . m_0/2 . (J - 1/J) (C^{-1} \otimes C^{-1})
@@ -1208,7 +1208,7 @@ void Mat::ThermoPlasticHyperElast::setup_cthermo(
   const double m = m_0 * (J + 1.0 / J);
 
   // clear the material tangent
-  ctemp.Clear();
+  ctemp.clear();
 
   // C_T = m_0/2.0 . (J + 1/J) . Cinv
   ctemp.Update((m / 2.0), Cinv);
@@ -1355,7 +1355,7 @@ void Mat::ThermoPlasticHyperElast::fd_check(
       // double m = m_0 * (J + 1.0 / J);
       // clear the material tangent
       Core::LinAlg::Matrix<NUM_STRESS_3D, 1> disturb_ctemp(true);
-      disturb_ctemp.Clear();
+      disturb_ctemp.clear();
       // C_T = m_0/2.0 . (J + 1/J) . Cinv
       disturb_ctemp.Update((m / 2.0), disturb_Cinv_vct);
       // in case of testing only factor, use undisturbed Cinv_vct

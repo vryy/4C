@@ -62,7 +62,7 @@ Core::Elements::Element* Discret::ELEMENTS::Wall1Poro<distype>::Clone() const
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1Poro<distype>::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Wall1Poro<distype>::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -97,11 +97,11 @@ void Discret::ELEMENTS::Wall1Poro<distype>::Pack(Core::Communication::PackBuffer
   for (int i = 0; i < size; ++i) add_to_pack(data, anisotropic_permeability_nodal_coeffs_[i]);
 
   // add base class Element
-  Discret::ELEMENTS::Wall1::Pack(data);
+  Discret::ELEMENTS::Wall1::pack(data);
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1Poro<distype>::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Wall1Poro<distype>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -142,7 +142,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::Unpack(const std::vector<char>& data
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::Wall1::Unpack(basedata);
+  Discret::ELEMENTS::Wall1::unpack(basedata);
 
 
   if (position != data.size())

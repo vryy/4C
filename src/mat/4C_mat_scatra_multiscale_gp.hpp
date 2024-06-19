@@ -48,7 +48,7 @@ namespace Mat
     ~ScatraMultiScaleGP();
 
     //! perform initializations
-    void Init();
+    void init();
 
     //! prepare time step
     void prepare_time_step(const std::vector<double>& phinp_macro  //!< macro-scale state variables
@@ -63,7 +63,7 @@ namespace Mat
     //!                        Gauss point
     //! \param solve           flag indicating whether micro-scale problem should be
     //!                        solved
-    void Evaluate(const std::vector<double>& phinp_macro, double& q_micro,
+    void evaluate(const std::vector<double>& phinp_macro, double& q_micro,
         std::vector<double>& dq_dphi_micro, double detF, const bool solve = true);
 
     //! evaluate mean concentration on micro scale
@@ -73,10 +73,10 @@ namespace Mat
     double evaluate_mean_concentration_time_derivative() const;
 
     //! update micro-scale time integrator at the end of each time step
-    void Update();
+    void update();
 
     //! output micro-scale quantities
-    void Output();
+    void output();
 
     //! read restart on micro scale
     void read_restart();

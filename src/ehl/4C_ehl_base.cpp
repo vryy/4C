@@ -81,9 +81,9 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
       Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
   structure_ = Teuchos::rcp_dynamic_cast<Adapter::Structure>(structure->structure_field());
-  structure_->Setup();
+  structure_->setup();
   lubrication_ = Teuchos::rcp(new Adapter::LubricationBaseAlgorithm());
-  lubrication_->Setup(*lubricationtimeparams, lubricationparams,
+  lubrication_->setup(*lubricationtimeparams, lubricationparams,
       problem->SolverParams(linsolvernumber), lubrication_disname, isale);
   mortaradapter_->store_dirichlet_status(structure_field()->GetDBCMapExtractor());
 
@@ -612,7 +612,7 @@ void EHL::Base::setup_field_coupling(
       Global::Problem::Instance()->mortar_coupling_params(),
       Global::Problem::Instance()->contact_dynamic_params(),
       Global::Problem::Instance()->spatial_approximation_type()));
-  mortaradapter_->Setup(structdis, structdis, coupleddof, "EHLCoupling");
+  mortaradapter_->setup(structdis, structdis, coupleddof, "EHLCoupling");
 
   if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
           mortaradapter_->Interface()->interface_params(), "STRATEGY") !=
@@ -621,7 +621,7 @@ void EHL::Base::setup_field_coupling(
 
   Teuchos::RCP<Epetra_Vector> idisp = Core::LinAlg::CreateVector(
       *(structdis->dof_row_map()), true);  // Structure displacement at the lubricated interface
-  mortaradapter_->Interface()->Initialize();
+  mortaradapter_->Interface()->initialize();
   mortaradapter_->Interface()->set_state(Mortar::state_old_displacement, *idisp);
   mortaradapter_->Interface()->set_state(Mortar::state_new_displacement, *idisp);
   mortaradapter_->Interface()->evaluate_nodal_normals();
@@ -707,8 +707,8 @@ void EHL::Base::update()
   mortaradapter_->Interface()->StoreToOld(Mortar::StrategyBase::n_old);
   mortaradapter_->Interface()->StoreToOld(Mortar::StrategyBase::dm);
   mortaradapter_->Interface()->StoreToOld(Mortar::StrategyBase::activeold);
-  structure_field()->Update();
-  lubrication_->LubricationField()->Update();
+  structure_field()->update();
+  lubrication_->LubricationField()->update();
 
   return;
 }
@@ -728,7 +728,7 @@ void EHL::Base::output(bool forced_writerestart)
   // output for structurefield:
   //===========================
   //  ApplyLubricationCouplingState(lubrication_->LubricationField()->Prenp());
-  structure_field()->Output(forced_writerestart);
+  structure_field()->output(forced_writerestart);
 
   // Additional output on structure field
   structure_field()->disc_writer()->write_vector("fluid_force",
@@ -767,7 +767,7 @@ void EHL::Base::output(bool forced_writerestart)
   // output for lubricationfield:
   //=============================
   set_mesh_disp(structure_field()->Dispnp());
-  lubrication_->LubricationField()->Output(forced_writerestart);
+  lubrication_->LubricationField()->output(forced_writerestart);
 
   // ============================
   // output for mortar interface
@@ -835,6 +835,6 @@ void EHL::Base::output(bool forced_writerestart)
   // reset states
   structure_field()->discretization()->ClearState(true);
   lubrication_->LubricationField()->discretization()->ClearState(true);
-}  // Output()
+}  // output()
 
 FOUR_C_NAMESPACE_CLOSE

@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) cyron 01/08|
  *----------------------------------------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Beam3r::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1,  // nonlinear stiffness matrix
     Core::LinAlg::SerialDenseMatrix& elemat2,  // nonlinear mass matrix
@@ -380,7 +380,7 @@ int Discret::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       rtconv_gp_mass_ = rtnew_gp_mass_;
       rconv_gp_mass_ = rnew_gp_mass_;
       qconv_gp_dampstoch_ = qnew_gp_dampstoch_;
-      get_beam_material().Update();
+      get_beam_material().update();
       break;
     }
 
@@ -403,7 +403,7 @@ int Discret::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       rtnew_gp_mass_ = rtconv_gp_mass_;
       rnew_gp_mass_ = rconv_gp_mass_;
       qnew_gp_dampstoch_ = qconv_gp_dampstoch_;
-      get_beam_material().Reset();
+      get_beam_material().reset();
       break;
     }
 
@@ -598,13 +598,13 @@ int Discret::ELEMENTS::Beam3r::evaluate_neumann(Teuchos::ParameterList& params,
 
   // onoff is related to the first numdf flags of a line Neumann condition in the input file;
   // value 1 for flag i says that condition is active for i-th degree of freedom
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
   // val is related to the numdf "val" fields after the onoff flags of the Neumann condition
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
   // funct is related to the numdf "funct" fields after the val field of the Neumann condition
   // in the input file; funct gives the number of the function defined in the section FUNCT
-  const auto* functions = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* functions = &condition.parameters().get<std::vector<int>>("funct");
 
   // integration points in parameter space and weights
   double xi = 0.0;
@@ -660,7 +660,7 @@ int Discret::ELEMENTS::Beam3r::evaluate_neumann(Teuchos::ParameterList& params,
       if (functnum > 0)
         functionfac = Global::Problem::Instance()
                           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                          .Evaluate(X_ref.data(), time, dof);
+                          .evaluate(X_ref.data(), time, dof);
       else
         functionfac = 1.0;
 
@@ -910,7 +910,7 @@ void Discret::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
           Teuchos::rcp(new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>());
 
   // reset triad interpolation scheme based on nodal quaternions
-  triad_interpolation_scheme_ptr->Reset(Qnode);
+  triad_interpolation_scheme_ptr->reset(Qnode);
 
   // matrix containing contributions to the jacobian depending on the material model
   Core::LinAlg::Matrix<3, 3, T> stiffness_contribution(true);
@@ -1241,7 +1241,7 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
           new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>());
 
   // reset triad interpolation scheme with nodal quaternions
-  triad_interpolation_scheme_ptr->Reset(Qnode);
+  triad_interpolation_scheme_ptr->reset(Qnode);
 
   ekin_ = 0.0;
   l_ = 0.0;
@@ -1272,8 +1272,8 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
     triad_interpolation_scheme_ptr->get_nodal_generalized_rotation_interpolation_matrices(
         Itilde, Psi_l, I_i[gp]);
 
-    Lambdanewmass.Clear();
-    Lambdaconvmass.Clear();
+    Lambdanewmass.clear();
+    Lambdaconvmass.clear();
     // compute current and old triad at Gauss point
     Core::LargeRotations::quaterniontotriad<double>(qnew_gp_mass_[gp], Lambdanewmass);
     Core::LargeRotations::quaterniontotriad<double>(qconv_gp_mass_[gp], Lambdaconvmass);
@@ -1948,7 +1948,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
         for (unsigned int j = 0; j < 3; ++j)
           tempmat(i, j) = stiffmatrix(dofpercombinode * inode + i, dofpercombinode * jnode + 3 + j);
 
-      newstiffmat.Clear();
+      newstiffmat.clear();
       newstiffmat.MultiplyNN(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
@@ -1962,7 +1962,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
           tempmat(i, j) =
               stiffmatrix(dofpercombinode * inode + 3 + i, dofpercombinode * jnode + 3 + j);
 
-      newstiffmat.Clear();
+      newstiffmat.clear();
       newstiffmat.MultiplyNN(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
@@ -1978,7 +1978,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
             tempmat(i, j) =
                 stiffmatrix(dofpercombinode * inode + 6 + i, dofpercombinode * jnode + 3 + j);
 
-        newstiffmat.Clear();
+        newstiffmat.clear();
         newstiffmat.MultiplyNN(tempmat, Tmat);
 
         for (unsigned int i = 0; i < 3; ++i)
@@ -1996,7 +1996,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
           tempmat(i, j) = stiffmatrix(dofperclnode * nnodecl + dofpertriadnode * inode + i,
               dofpercombinode * jnode + 3 + j);
 
-      newstiffmat.Clear();
+      newstiffmat.clear();
       newstiffmat.MultiplyNN(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
@@ -2023,7 +2023,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
           tempmat(i, j) = stiffmatrix(
               dofpercombinode * inode + i, dofperclnode * nnodecl + dofpertriadnode * jnode + j);
 
-      newstiffmat.Clear();
+      newstiffmat.clear();
       newstiffmat.MultiplyNN(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
@@ -2037,7 +2037,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
           tempmat(i, j) = stiffmatrix(dofpercombinode * inode + 3 + i,
               dofperclnode * nnodecl + dofpertriadnode * jnode + j);
 
-      newstiffmat.Clear();
+      newstiffmat.clear();
       newstiffmat.MultiplyNN(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
@@ -2053,7 +2053,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
             tempmat(i, j) = stiffmatrix(dofpercombinode * inode + 6 + i,
                 dofperclnode * nnodecl + dofpertriadnode * jnode + j);
 
-        newstiffmat.Clear();
+        newstiffmat.clear();
         newstiffmat.MultiplyNN(tempmat, Tmat);
 
         for (unsigned int i = 0; i < 3; ++i)
@@ -2070,7 +2070,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
           tempmat(i, j) = stiffmatrix(dofperclnode * nnodecl + dofpertriadnode * inode + i,
               dofperclnode * nnodecl + dofpertriadnode * jnode + j);
 
-      newstiffmat.Clear();
+      newstiffmat.clear();
       newstiffmat.MultiplyNN(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
@@ -2305,7 +2305,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
           new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>());
 
   // reset the scheme with nodal quaternions
-  triad_interpolation_scheme_ptr->Reset(Qnode);
+  triad_interpolation_scheme_ptr->reset(Qnode);
 
 
   for (int gp = 0; gp < gausspoints.nquad; gp++)
@@ -2744,7 +2744,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_stochastic_forces(Teuchos::ParameterLis
     }
 
     // compute stochastic force vector per unit length at current GP
-    f_stoch.Clear();
+    f_stoch.clear();
     for (unsigned int idim = 0; idim < ndim; idim++)
       for (unsigned int jdim = 0; jdim < ndim; jdim++)
         f_stoch(idim) += (sqrt_gamma(1) * (idim == jdim) +

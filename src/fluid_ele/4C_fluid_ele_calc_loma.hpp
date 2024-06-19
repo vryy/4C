@@ -37,7 +37,7 @@ namespace Discret
       static FluidEleCalcLoma<distype>* Instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
-      int Evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

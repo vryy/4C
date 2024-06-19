@@ -216,8 +216,8 @@ CONTACT::AbstractStrategy::AbstractStrategy(
 
   // build the NOX::Nln::CONSTRAINT::Interface::Required object
   noxinterface_ptr_ = Teuchos::rcp(new CONTACT::NoxInterface);
-  noxinterface_ptr_->Init(Teuchos::rcp(this, false));
-  noxinterface_ptr_->Setup();
+  noxinterface_ptr_->init(Teuchos::rcp(this, false));
+  noxinterface_ptr_->setup();
 
   return;
 }
@@ -438,7 +438,7 @@ bool CONTACT::AbstractStrategy::redistribute_with_safe_ghosting(
         perform_rebalancing, enforce_ghosting_update, maxdof_, ivel_[i]);
 
   // Re-setup strategy to update internal map objects
-  if (perform_rebalancing) Setup(true, false);
+  if (perform_rebalancing) setup(true, false);
 
   // time measurement
   Comm().Barrier();
@@ -499,7 +499,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact_old(
   }
 
   // re-setup strategy with redistributed=TRUE, init=FALSE
-  Setup(true, false);
+  setup(true, false);
 
   // time measurement
   Comm().Barrier();
@@ -515,7 +515,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact_old(
 /*----------------------------------------------------------------------*
  | setup this strategy object                                popp 08/10 |
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
+void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
 {
   if (init)
   {
@@ -971,8 +971,8 @@ void CONTACT::AbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> d
     // apply contact forces and stiffness
     Comm().Barrier();
     const double t_start4 = Teuchos::Time::wallTime();
-    Initialize();          // init lin-matrices
-    Evaluate(kt, f, dis);  // assemble lin. matrices, condensation ...
+    initialize();          // init lin-matrices
+    evaluate(kt, f, dis);  // assemble lin. matrices, condensation ...
     EvalConstrRHS();       // evaluate the constraint rhs (saddle-point system only)
 
     Comm().Barrier();
@@ -1023,8 +1023,8 @@ void CONTACT::AbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> d
     if (!predictor) update_active_set_semi_smooth();
 
     // apply contact forces and stiffness
-    Initialize();          // init lin-matrices
-    Evaluate(kt, f, dis);  // assemble lin. matrices, condensation ...
+    initialize();          // init lin-matrices
+    evaluate(kt, f, dis);  // assemble lin. matrices, condensation ...
     EvalConstrRHS();       // evaluate the constraint rhs (saddle-point system only)
 
     // only for debugging:
@@ -1183,7 +1183,7 @@ void CONTACT::AbstractStrategy::InitEvalInterface(
   for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // initialize / reset interfaces
-    interfaces()[i]->Initialize();
+    interfaces()[i]->initialize();
 
     // store required integration time
     inttime_ += interfaces()[i]->Inttime();
@@ -1196,20 +1196,20 @@ void CONTACT::AbstractStrategy::InitEvalInterface(
         interfaces()[i]->round_robin_detect_ghosting();
 
         // second step --> evaluate
-        interfaces()[i]->Evaluate(0, step_, iter_);
+        interfaces()[i]->evaluate(0, step_, iter_);
         break;
       }
       case Inpar::Mortar::ExtendGhosting::binning:
       {
         // required master elements are already ghosted (preparestepcontact) !!!
         // call evaluation
-        interfaces()[i]->Evaluate(0, step_, iter_);
+        interfaces()[i]->evaluate(0, step_, iter_);
         break;
       }
       case Inpar::Mortar::ExtendGhosting::redundant_all:
       case Inpar::Mortar::ExtendGhosting::redundant_master:
       {
-        interfaces()[i]->Evaluate(0, step_, iter_);
+        interfaces()[i]->evaluate(0, step_, iter_);
         break;
       }
     }
@@ -1612,7 +1612,7 @@ void CONTACT::AbstractStrategy::EvaluateRelMov()
 /*----------------------------------------------------------------------*
  | call appropriate evaluate for contact evaluation           popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::Evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+void CONTACT::AbstractStrategy::evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
     Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis)
 {
   // treat frictional and frictionless cases differently
@@ -2948,7 +2948,7 @@ void CONTACT::AbstractStrategy::collect_maps_for_preconditioner(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::Reset(
+void CONTACT::AbstractStrategy::reset(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp, const Epetra_Vector& xnew)
 {
   set_state(Mortar::state_new_displacement, dispnp);
@@ -2959,7 +2959,7 @@ void CONTACT::AbstractStrategy::Reset(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
+void CONTACT::AbstractStrategy::evaluate(CONTACT::ParamsInterface& cparams,
     const std::vector<Teuchos::RCP<const Epetra_Vector>>* eval_vec,
     const std::vector<Teuchos::RCP<Epetra_Vector>>* eval_vec_mutable)
 {
@@ -3015,7 +3015,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
             eval_vec->size());
       const Epetra_Vector& dispnp = *((*eval_vec)[0]);
       const Epetra_Vector& xnew = *((*eval_vec)[1]);
-      Reset(cparams, dispnp, xnew);
+      reset(cparams, dispnp, xnew);
 
       break;
     }
@@ -3083,10 +3083,10 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     }
     case Mortar::eval_run_post_apply_jacobian_inverse:
     {
-      const Epetra_Vector* rhs = cparams.Get<const Epetra_Vector>(0);
-      Epetra_Vector* result = cparams.Get<Epetra_Vector>(1);
-      const Epetra_Vector* xold = cparams.Get<const Epetra_Vector>(2);
-      const NOX::Nln::Group* grp = cparams.Get<const NOX::Nln::Group>(3);
+      const Epetra_Vector* rhs = cparams.get<const Epetra_Vector>(0);
+      Epetra_Vector* result = cparams.get<Epetra_Vector>(1);
+      const Epetra_Vector* xold = cparams.get<const Epetra_Vector>(2);
+      const NOX::Nln::Group* grp = cparams.get<const NOX::Nln::Group>(3);
 
       run_post_apply_jacobian_inverse(cparams, *rhs, *result, *xold, *grp);
 
@@ -3094,7 +3094,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     }
     case Mortar::eval_correct_parameters:
     {
-      const NOX::Nln::CorrectionType* type = cparams.Get<const NOX::Nln::CorrectionType>(0);
+      const NOX::Nln::CorrectionType* type = cparams.get<const NOX::Nln::CorrectionType>(0);
 
       correct_parameters(cparams, *type);
 

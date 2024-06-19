@@ -74,7 +74,7 @@ namespace THR
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> tempi) override
+    void evaluate(Teuchos::RCP<const Epetra_Vector> tempi) override
     {
       FOUR_C_THROW("not implemented for explicit time integration");
       return;
@@ -82,7 +82,7 @@ namespace THR
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    void Evaluate() override
+    void evaluate() override
     {
       FOUR_C_THROW("not implemented for explicit time integration");
       return;
@@ -112,7 +112,7 @@ namespace THR
     void UpdateStepElement() override = 0;
 
     //! update at time step end
-    void Update() override;
+    void update() override;
 
     //! update Newton step
     void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi) override

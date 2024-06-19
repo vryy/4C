@@ -38,7 +38,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::TransportType::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Transport* object = new Discret::ELEMENTS::Transport(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -244,7 +244,7 @@ void Discret::ELEMENTS::TransportType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::TransportType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::TransportType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -541,7 +541,7 @@ void Discret::ELEMENTS::Transport::SetMaterial(int matnum, Core::Elements::Eleme
     // vector)
     std::vector<Core::LinAlg::Matrix<3, 1>> fibervecs(0);
     somat->GetFiberVecs(fibervecs);
-    actmat->Setup(fibervecs[0]);
+    actmat->setup(fibervecs[0]);
   }
 }
 
@@ -555,7 +555,7 @@ Core::FE::CellType Discret::ELEMENTS::Transport::Shape() const { return distype_
  |  Pack data                                                  (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Transport::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Transport::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -564,7 +564,7 @@ void Discret::ELEMENTS::Transport::Pack(Core::Communication::PackBuffer& data) c
   add_to_pack(data, type);
 
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
 
   // add internal data
   add_to_pack(data, name_);
@@ -579,7 +579,7 @@ void Discret::ELEMENTS::Transport::Pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Transport::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Transport::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -588,7 +588,7 @@ void Discret::ELEMENTS::Transport::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
 
   // extract internal data
   extract_from_pack(position, data, name_);
@@ -687,7 +687,7 @@ int Discret::ELEMENTS::Transport::initialize()
     // a diamond inheritance structure
     Teuchos::RCP<Mat::MatListReactions> actmat =
         Teuchos::rcp_dynamic_cast<Mat::MatListReactions>(mat);
-    actmat->Initialize();
+    actmat->initialize();
   }
   else if (mat->MaterialType() == Core::Materials::m_myocard)
   {
@@ -704,7 +704,7 @@ int Discret::ELEMENTS::Transport::initialize()
         !actmat->MyocardMat())  // in case we are not in post-process mode
     {
       actmat->SetGP(gp);
-      actmat->Initialize();
+      actmat->initialize();
     }
   }
 
@@ -763,7 +763,7 @@ Core::FE::CellType Discret::ELEMENTS::TransportBoundary::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::TransportBoundary::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::TransportBoundary::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("This TransportBoundary element does not support communication");
 
@@ -773,7 +773,7 @@ void Discret::ELEMENTS::TransportBoundary::Pack(Core::Communication::PackBuffer&
 /*----------------------------------------------------------------------*
  |  Unpack data (public)                                      gjb 01/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::TransportBoundary::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::TransportBoundary::unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("This TransportBoundary element does not support communication");
   return;

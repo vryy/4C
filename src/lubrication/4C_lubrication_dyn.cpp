@@ -72,7 +72,7 @@ void lubrication_dyn(int restart)
       Teuchos::rcp(new Adapter::LubricationBaseAlgorithm());
 
   // setup Lubrication basis algorithm
-  lubricationonly->Setup(
+  lubricationonly->setup(
       lubricationdyn, lubricationdyn, Global::Problem::Instance()->SolverParams(linsolvernumber));
 
   // read the restart information, set vectors and variables

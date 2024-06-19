@@ -118,7 +118,7 @@ bool SSI::SsiMono::is_uncomplete_of_matrices_necessary_for_mesh_tying() const
     {
       auto* problem = Global::Problem::Instance();
       // restart based on time step
-      if (Step() == problem->Restart() + 1) return true;
+      if (Step() == problem->restart() + 1) return true;
     }
   }
 
@@ -322,7 +322,7 @@ void SSI::SsiMono::evaluate_subproblems()
   evaluate_and_set_temperature_field();
 
   // build system matrix and residual for structure field
-  structure_field()->Evaluate();
+  structure_field()->evaluate();
 
   // build system matrix and residual for scalar transport field
   evaluate_sca_tra();
@@ -479,7 +479,7 @@ const Teuchos::RCP<const Epetra_Map>& SSI::SsiMono::dof_row_map() const
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SsiMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SsiMono::init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
@@ -526,7 +526,7 @@ void SSI::SsiMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   }
 
   // call base class routine
-  SSIBase::Init(
+  SSIBase::init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 }
 
@@ -542,11 +542,11 @@ void SSI::SsiMono::output()
     // domain output
     ScaTraManifold()->check_and_write_output_and_restart();
     // coupling output
-    if (manifoldscatraflux_->DoOutput()) manifoldscatraflux_->Output();
+    if (manifoldscatraflux_->DoOutput()) manifoldscatraflux_->output();
   }
 
   // output structure field
-  structure_field()->Output();
+  structure_field()->output();
 
   if (print_matlab_) print_system_matrix_rhs_to_mat_lab_format();
 }
@@ -638,10 +638,10 @@ void SSI::SsiMono::prepare_time_step()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SsiMono::Setup()
+void SSI::SsiMono::setup()
 {
   // call base class routine
-  SSIBase::Setup();
+  SSIBase::setup();
 
   // safety checks
   if (ScaTraField()->NumScal() != 1)
@@ -940,11 +940,11 @@ void SSI::SsiMono::Timeloop()
 void SSI::SsiMono::update()
 {
   // update scalar transport field
-  ScaTraField()->Update();
-  if (is_sca_tra_manifold()) ScaTraManifold()->Update();
+  ScaTraField()->update();
+  if (is_sca_tra_manifold()) ScaTraManifold()->update();
 
   // update structure field
-  structure_field()->Update();
+  structure_field()->update();
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -1117,7 +1117,7 @@ void SSI::SsiMono::evaluate_sca_tra_manifold()
   ssi_vectors_->ManifoldResidual()->Update(1.0, *ScaTraManifold()->Residual(), 1.0);
 
   // evaluate coupling fluxes
-  manifoldscatraflux_->Evaluate();
+  manifoldscatraflux_->evaluate();
 
   ssi_vectors_->ManifoldResidual()->Update(1.0, *manifoldscatraflux_()->RHSManifold(), 1.0);
   ssi_vectors_->ScatraResidual()->Update(1.0, *manifoldscatraflux_()->RHSScaTra(), 1.0);
@@ -1541,7 +1541,7 @@ void SSI::SsiMono::calc_initial_time_derivative()
   }
 
   // reset solver
-  solver_->Reset();
+  solver_->reset();
 
   ScaTraField()->post_calc_initial_time_derivative();
   if (is_sca_tra_manifold()) ScaTraManifold()->post_calc_initial_time_derivative();

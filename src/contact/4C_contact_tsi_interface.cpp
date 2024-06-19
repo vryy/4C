@@ -825,9 +825,9 @@ void CONTACT::TSIInterface::AssembleInactive(Core::LinAlg::SparseMatrix* linCond
 /*----------------------------------------------------------------------*
  |  initialize / reset interface for tsi                     seitz 08/15|
  *----------------------------------------------------------------------*/
-void CONTACT::TSIInterface::Initialize()
+void CONTACT::TSIInterface::initialize()
 {
-  CONTACT::Interface::Initialize();
+  CONTACT::Interface::initialize();
 
   // loop over all nodes to reset stuff (fully overlapping column map)
   // (use fully overlapping column map)
@@ -837,7 +837,7 @@ void CONTACT::TSIInterface::Initialize()
     CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscret_->lColNode(i));
     node->initialize_tsi_data_container(
         imortar_.get<double>("TEMP_REF"), imortar_.get<double>("TEMP_DAMAGE"));
-    node->TSIData().Clear();
+    node->TSIData().clear();
   }
   return;
 }

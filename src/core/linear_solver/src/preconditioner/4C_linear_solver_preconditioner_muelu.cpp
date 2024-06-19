@@ -62,7 +62,7 @@ Core::LinearSolver::MueLuPreconditioner::MueLuPreconditioner(Teuchos::ParameterL
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::MueLuPreconditioner::Setup(
+void Core::LinearSolver::MueLuPreconditioner::setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   // check whether A is a Epetra_CrsMatrix i.e. no block matrix
@@ -172,7 +172,7 @@ Core::LinearSolver::MueLuFluidBlockPreconditioner::MueLuFluidBlockPreconditioner
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::MueLuFluidBlockPreconditioner::Setup(
+void Core::LinearSolver::MueLuFluidBlockPreconditioner::setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
@@ -308,7 +308,7 @@ Core::LinearSolver::MueLuTsiBlockPreconditioner::MueLuTsiBlockPreconditioner(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::MueLuTsiBlockPreconditioner::Setup(
+void Core::LinearSolver::MueLuTsiBlockPreconditioner::setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
@@ -428,7 +428,7 @@ Core::LinearSolver::MueLuContactSpPreconditioner::MueLuContactSpPreconditioner(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::MueLuContactSpPreconditioner::Setup(
+void Core::LinearSolver::MueLuContactSpPreconditioner::setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   using EpetraMap = Xpetra::EpetraMapT<int, Xpetra::EpetraNode>;
@@ -713,7 +713,7 @@ Core::LinearSolver::MueLuBeamSolidBlockPreconditioner::MueLuBeamSolidBlockPrecon
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::MueLuBeamSolidBlockPreconditioner::Setup(
+void Core::LinearSolver::MueLuBeamSolidBlockPreconditioner::setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   using EpetraMap = Xpetra::EpetraMapT<int, Xpetra::EpetraNode>;
@@ -852,7 +852,7 @@ Core::LinearSolver::MueLuFsiBlockPreconditioner::MueLuFsiBlockPreconditioner(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::MueLuFsiBlockPreconditioner::Setup(
+void Core::LinearSolver::MueLuFsiBlockPreconditioner::setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;

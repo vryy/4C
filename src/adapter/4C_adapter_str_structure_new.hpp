@@ -61,7 +61,7 @@ namespace Adapter
     /// @name General methods
     ///@{
     /// Setup the structure integrator
-    void Setup() override = 0;
+    void setup() override = 0;
     ///@}
 
     /// @name Vector access
@@ -242,15 +242,15 @@ namespace Adapter
     In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
     which is then transformed into an iteration increment
     */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    void evaluate(Teuchos::RCP<const Epetra_Vector>
             disiterinc  ///< displacement increment between Newton iteration i and i+1
         ) override = 0;
 
     /// don't update displacement but evaluate elements (implicit only)
-    void Evaluate() override = 0;
+    void evaluate() override = 0;
 
     /// update at time step end
-    void Update() override = 0;
+    void update() override = 0;
 
     /// update at time step end in case of FSI time adaptivity
     void Update(double endtime) override = 0;
@@ -276,7 +276,7 @@ namespace Adapter
         Teuchos::RCP<std::vector<char>> nodedata) override = 0;
 
     /// output results
-    void Output(bool forced_writerestart = false) override = 0;
+    void output(bool forced_writerestart = false) override = 0;
 
     /// output results to screen
     void print_step() override = 0;
@@ -457,7 +457,7 @@ namespace Adapter
     Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override = 0;
 
     /// reset time and state vectors (needed for biofilm growth simulations)
-    void Reset() override = 0;
+    void reset() override = 0;
 
     /// set structure displacement vector due to biofilm growth
     void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override = 0;
@@ -546,11 +546,11 @@ namespace Adapter
     virtual ~StructureBaseAlgorithmNew() = default;
 
     /// initialize all class internal variables
-    virtual void Init(const Teuchos::ParameterList& prbdyn, Teuchos::ParameterList& sdyn,
+    virtual void init(const Teuchos::ParameterList& prbdyn, Teuchos::ParameterList& sdyn,
         Teuchos::RCP<Core::FE::Discretization> actdis);
 
     /// setup
-    virtual void Setup();
+    virtual void setup();
 
     /** \brief Register an externally created model evaluator.
      *
@@ -603,17 +603,17 @@ namespace Adapter
      *
      *  \code
      *  Teuchos::RCP<FSI_Partitioned> fsi_model_ptr = Teuchos::rcp(new FSI_Partitioned());
-     *  // optional: call of your own 2-nd Init() method
-     *  fsi_model_ptr->Init(stuff_you_need_inside_the_model_evaluator);
+     *  // optional: call of your own 2-nd init() method
+     *  fsi_model_ptr->init(stuff_you_need_inside_the_model_evaluator);
      *  prbdyn.set<Teuchos::RCP<STR::MODELEVALUATOR::Generic> >("Partitioned Coupling Model",
      *      fsi_model_ptr);
      *  \endcode
      *
      *  </ol>
      *
-     *  \remark Please keep in mind, that the prescribed Generic::Init() and Generic::Setup()
-     *  methods will be called automatically in the STR::ModelEvaluator::Setup() routine. If
-     *  you need a different Init() method, just define a second Init() function with different
+     *  \remark Please keep in mind, that the prescribed Generic::init() and Generic::setup()
+     *  methods will be called automatically in the STR::ModelEvaluator::setup() routine. If
+     *  you need a different init() method, just define a second init() function with different
      *  input variables in your concrete class implementation and call it somewhere in your code
      *  (see upper example code).
      *  The constructor is supposed to stay empty. If you need a safety check, you can overload

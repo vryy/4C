@@ -51,7 +51,7 @@ namespace PoroElast
     void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) override;
 
     //! take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     //! read restart data
     void read_restart(const int step) override;
@@ -86,7 +86,7 @@ namespace PoroElast
     void recover_lagrange_multiplier_after_time_step() override;
 
     //! output
-    void Output(bool forced_writerestart = false) override;
+    void output(bool forced_writerestart = false) override;
 
     //! setup of coupling object and system matrices
     void setup_coupling_and_matrices() override;

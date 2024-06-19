@@ -27,12 +27,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::Generic::Setup()
+void STR::EXPLICIT::Generic::setup()
 {
   check_init();
 
   // call base class first
-  STR::Integrator::Setup();
+  STR::Integrator::setup();
 
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln group in the parameter list
@@ -57,7 +57,7 @@ void STR::EXPLICIT::Generic::Setup()
 
   NOX::Nln::Aux::AddToPrePostOpVector(p_sol_opt, prepost_generic_ptr);
 
-  // No issetup_ = true, since the Setup() functions of the derived classes
+  // No issetup_ = true, since the setup() functions of the derived classes
   // have to be called and finished first!
 }
 

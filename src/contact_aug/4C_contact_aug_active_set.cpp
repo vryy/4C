@@ -95,7 +95,7 @@ void CONTACT::Aug::ActiveSet::post_update(
     data.SetMatrixMapsValid(false);
 
     // reset the active/inactive state vectors
-    data.Potential().Setup();
+    data.Potential().setup();
   }
 
   // set the new active/inactive state

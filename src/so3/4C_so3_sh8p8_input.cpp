@@ -27,7 +27,7 @@ bool Discret::ELEMENTS::SoSh8p8::ReadElement(
   linedef->extract_int("MAT", material);
   SetMaterial(0, Mat::Factory(material));
 
-  SolidMaterial()->Setup(NUMGPT_SOH8, linedef);
+  SolidMaterial()->setup(NUMGPT_SOH8, linedef);
 
   // a temprorary variable for read-in
   std::string buffer;

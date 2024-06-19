@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  *  constructor (public)                               vuong 08/16      |
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(const Core::Mat::PAR::Parameter::Data& matdata)
-    : Parameter(matdata), density_(matdata.parameters.Get<double>("DENSITY")), isinit_(false)
+    : Parameter(matdata), density_(matdata.parameters.get<double>("DENSITY")), isinit_(false)
 {
   // retrieve problem instance to read from
   const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -37,18 +37,18 @@ Mat::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(const Core::Mat::PAR::Param
 
   // create density law
   densitylaw_ =
-      Mat::PAR::PoroDensityLaw::CreateDensityLaw(matdata.parameters.Get<int>("DENSITYLAWID"));
+      Mat::PAR::PoroDensityLaw::CreateDensityLaw(matdata.parameters.get<int>("DENSITYLAWID"));
 
   // create permeability law
   relpermeabilitylaw_ = Mat::PAR::FluidPoroRelPermeabilityLaw::create_rel_permeability_law(
-      matdata.parameters.Get<int>("RELPERMEABILITYLAWID"));
+      matdata.parameters.get<int>("RELPERMEABILITYLAWID"));
 
   // create viscosity law
   viscositylaw_ = Mat::PAR::FluidPoroViscosityLaw::CreateViscosityLaw(
-      matdata.parameters.Get<int>("VISCOSITYLAWID"));
+      matdata.parameters.get<int>("VISCOSITYLAWID"));
 
   auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(
-      matdata.parameters.Get<int>("DOFTYPEID"));
+      matdata.parameters.get<int>("DOFTYPEID"));
 
   switch (curmat->Type())
   {
@@ -84,11 +84,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroSinglePhase::create_materia
 /*----------------------------------------------------------------------*
  *  Create Material (public)                             vuong 08/16      |
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroSinglePhase::Initialize()
+void Mat::PAR::FluidPoroSinglePhase::initialize()
 {
   if (not isinit_)
   {
-    phasedof_->Initialize();
+    phasedof_->initialize();
     isinit_ = true;
   }
   return;
@@ -106,7 +106,7 @@ Mat::FluidPoroSinglePhaseType Mat::FluidPoroSinglePhaseType::instance_;
 Core::Communication::ParObject* Mat::FluidPoroSinglePhaseType::Create(const std::vector<char>& data)
 {
   Mat::FluidPoroSinglePhase* fluid_poro = new Mat::FluidPoroSinglePhase();
-  fluid_poro->Unpack(data);
+  fluid_poro->unpack(data);
   return fluid_poro;
 }
 
@@ -126,7 +126,7 @@ Mat::FluidPoroSinglePhase::FluidPoroSinglePhase(Mat::PAR::FluidPoroSinglePhase* 
 /*----------------------------------------------------------------------*
  * pack material for commuication                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSinglePhase::Pack(Core::Communication::PackBuffer& data) const
+void Mat::FluidPoroSinglePhase::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -143,7 +143,7 @@ void Mat::FluidPoroSinglePhase::Pack(Core::Communication::PackBuffer& data) cons
 /*----------------------------------------------------------------------*
  * unpack material                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSinglePhase::Unpack(const std::vector<char>& data)
+void Mat::FluidPoroSinglePhase::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -173,9 +173,9 @@ void Mat::FluidPoroSinglePhase::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  *  initialize                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSinglePhase::Initialize()
+void Mat::FluidPoroSinglePhase::initialize()
 {
-  params_->Initialize();
+  params_->initialize();
   return;
 }
 
@@ -258,12 +258,12 @@ double Mat::FluidPoroSinglePhase::evaluate_deriv_of_dof_wrt_pressure(
 Mat::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      density_(matdata.parameters.Get<double>("DENSITY")),
-      diffusivity_(matdata.parameters.Get<double>("DIFFUSIVITY")),
-      scalardependentflux_(matdata.parameters.Get<bool>("AddScalarDependentFlux")),
-      numscal_(matdata.parameters.Get<int>("NUMSCAL")),
-      scalardiffs_((matdata.parameters.Get<std::vector<double>>("SCALARDIFFS"))),
-      omega_half_((matdata.parameters.Get<std::vector<double>>("OMEGA_HALF"))),
+      density_(matdata.parameters.get<double>("DENSITY")),
+      diffusivity_(matdata.parameters.get<double>("DIFFUSIVITY")),
+      scalardependentflux_(matdata.parameters.get<bool>("AddScalarDependentFlux")),
+      numscal_(matdata.parameters.get<int>("NUMSCAL")),
+      scalardiffs_((matdata.parameters.get<std::vector<double>>("SCALARDIFFS"))),
+      omega_half_((matdata.parameters.get<std::vector<double>>("OMEGA_HALF"))),
       isinit_(false)
 {
   // retrieve problem instance to read from
@@ -314,7 +314,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroSingleVolFrac::create_mater
 /*----------------------------------------------------------------------*
  *  Create Material (public)                           kremheller 10/17 |
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroSingleVolFrac::Initialize()
+void Mat::PAR::FluidPoroSingleVolFrac::initialize()
 {
   isinit_ = true;
   return;
@@ -333,7 +333,7 @@ Core::Communication::ParObject* Mat::FluidPoroSingleVolFracType::Create(
     const std::vector<char>& data)
 {
   Mat::FluidPoroSingleVolFrac* fluid_poro = new Mat::FluidPoroSingleVolFrac();
-  fluid_poro->Unpack(data);
+  fluid_poro->unpack(data);
   return fluid_poro;
 }
 
@@ -353,7 +353,7 @@ Mat::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(Mat::PAR::FluidPoroSingleVol
 /*----------------------------------------------------------------------*
  * pack material for commuication                      kremheller 10/17 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSingleVolFrac::Pack(Core::Communication::PackBuffer& data) const
+void Mat::FluidPoroSingleVolFrac::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -370,7 +370,7 @@ void Mat::FluidPoroSingleVolFrac::Pack(Core::Communication::PackBuffer& data) co
 /*----------------------------------------------------------------------*
  * unpack material                                      kremheller 10/17 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSingleVolFrac::Unpack(const std::vector<char>& data)
+void Mat::FluidPoroSingleVolFrac::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -400,9 +400,9 @@ void Mat::FluidPoroSingleVolFrac::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  *  initialize                                         kremheller 10/17 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSingleVolFrac::Initialize()
+void Mat::FluidPoroSingleVolFrac::initialize()
 {
-  params_->Initialize();
+  params_->initialize();
   return;
 }
 
@@ -412,8 +412,8 @@ void Mat::FluidPoroSingleVolFrac::Initialize()
 Mat::PAR::FluidPoroVolFracPressure::FluidPoroVolFracPressure(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      permeability_(matdata.parameters.Get<double>("PERMEABILITY")),
-      min_volfrac_(matdata.parameters.Get<double>("MIN_VOLFRAC")),
+      permeability_(matdata.parameters.get<double>("PERMEABILITY")),
+      min_volfrac_(matdata.parameters.get<double>("MIN_VOLFRAC")),
       isinit_(false)
 {
   // retrieve problem instance to read from
@@ -428,7 +428,7 @@ Mat::PAR::FluidPoroVolFracPressure::FluidPoroVolFracPressure(
 
   // create viscosity law
   viscositylaw_ = Mat::PAR::FluidPoroViscosityLaw::CreateViscosityLaw(
-      matdata.parameters.Get<int>("VISCOSITYLAWID"));
+      matdata.parameters.get<int>("VISCOSITYLAWID"));
 }
 
 /*----------------------------------------------------------------------*
@@ -442,7 +442,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroVolFracPressure::create_mat
 /*----------------------------------------------------------------------*
  *  Create Material (public)                           kremheller 02/18 |
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroVolFracPressure::Initialize()
+void Mat::PAR::FluidPoroVolFracPressure::initialize()
 {
   isinit_ = true;
   return;
@@ -461,7 +461,7 @@ Core::Communication::ParObject* Mat::FluidPoroVolFracPressureType::Create(
     const std::vector<char>& data)
 {
   Mat::FluidPoroVolFracPressure* fluid_poro = new Mat::FluidPoroVolFracPressure();
-  fluid_poro->Unpack(data);
+  fluid_poro->unpack(data);
   return fluid_poro;
 }
 
@@ -481,7 +481,7 @@ Mat::FluidPoroVolFracPressure::FluidPoroVolFracPressure(Mat::PAR::FluidPoroVolFr
 /*----------------------------------------------------------------------*
  * pack material for commuication                      kremheller 02/18 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroVolFracPressure::Pack(Core::Communication::PackBuffer& data) const
+void Mat::FluidPoroVolFracPressure::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -498,7 +498,7 @@ void Mat::FluidPoroVolFracPressure::Pack(Core::Communication::PackBuffer& data) 
 /*----------------------------------------------------------------------*
  * unpack material                                      kremheller 02/18 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroVolFracPressure::Unpack(const std::vector<char>& data)
+void Mat::FluidPoroVolFracPressure::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -528,9 +528,9 @@ void Mat::FluidPoroVolFracPressure::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  *  initialize                                         kremheller 02/18 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroVolFracPressure::Initialize()
+void Mat::FluidPoroVolFracPressure::initialize()
 {
-  params_->Initialize();
+  params_->initialize();
   return;
 }
 

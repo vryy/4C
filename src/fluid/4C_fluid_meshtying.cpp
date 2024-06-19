@@ -80,7 +80,7 @@ void FLD::Meshtying::setup_meshtying(const std::vector<int>& coupleddof, const b
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  1)   Setup Meshtying");
 
   // Setup of meshtying adapter
-  adaptermeshtying_->Setup(discret_, discret_, Teuchos::null, coupleddof, "Mortar",
+  adaptermeshtying_->setup(discret_, discret_, Teuchos::null, coupleddof, "Mortar",
       discret_->Comm(), Global::Problem::Instance()->FunctionManager(), true);
 
   // 4 different systems to solve
@@ -272,7 +272,7 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> FLD::Meshtying::init_system_matrix() 
 
       Core::LinAlg::MultiMapExtractor extractor;
 
-      extractor.Setup(*dofrowmap_, fluidmaps);
+      extractor.setup(*dofrowmap_, fluidmaps);
 
       // check, if extractor maps are valid
       extractor.check_for_valid_map_extractor();
@@ -1647,7 +1647,7 @@ void FLD::Meshtying::MshtSplit(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysma
 
     Core::LinAlg::MultiMapExtractor extractor;
 
-    extractor.Setup(*dofrowmap_, fluidmaps);
+    extractor.setup(*dofrowmap_, fluidmaps);
 
     // check, if extractor maps are valid
     extractor.check_for_valid_map_extractor();
@@ -1689,7 +1689,7 @@ void FLD::Meshtying::MshtSplitShape(
 
   Core::LinAlg::MultiMapExtractor extractor;
 
-  extractor.Setup(*dofrowmap_, fluidmaps);
+  extractor.setup(*dofrowmap_, fluidmaps);
 
   // check, if extractor maps are valid
   extractor.check_for_valid_map_extractor();

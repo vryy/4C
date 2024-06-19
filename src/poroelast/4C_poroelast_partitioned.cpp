@@ -49,9 +49,9 @@ void PoroElast::Partitioned::update_and_output()
   constexpr bool force_prepare = false;
   prepare_output(force_prepare);
 
-  Update();
+  update();
 
-  Output();
+  output();
 }
 
 void PoroElast::Partitioned::Solve()

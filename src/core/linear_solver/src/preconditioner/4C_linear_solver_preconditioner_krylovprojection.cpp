@@ -25,13 +25,13 @@ Core::LinearSolver::KrylovProjectionPreconditioner::KrylovProjectionPrecondition
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::KrylovProjectionPreconditioner::Setup(
+void Core::LinearSolver::KrylovProjectionPreconditioner::setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   projector_->ApplyPT(*b);
 
   // setup wrapped preconditioner
-  preconditioner_->Setup(create, matrix, x, b);
+  preconditioner_->setup(create, matrix, x, b);
 
   // Wrap the linear operator of the contained preconditioner. This way the
   // actual preconditioner is called first and the projection is done

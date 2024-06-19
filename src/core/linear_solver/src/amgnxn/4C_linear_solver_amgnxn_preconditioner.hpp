@@ -37,10 +37,10 @@ namespace Core::LinearSolver
    public:
     AmGnxnPreconditioner(Teuchos::ParameterList &params);
 
-    void Setup(bool create, Epetra_Operator *matrix, Epetra_MultiVector *x,
+    void setup(bool create, Epetra_Operator *matrix, Epetra_MultiVector *x,
         Epetra_MultiVector *b) override;
 
-    virtual void Setup(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A);
+    virtual void setup(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A);
 
     /// linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> PrecOperator() const override;
@@ -139,7 +139,7 @@ namespace Core::LinearSolver
     // Only required to properly define an Epetra_Operator, not should be used!
     const Epetra_Map &OperatorRangeMap() const override { return a_->OperatorRangeMap(); }
 
-    void Setup();
+    void setup();
 
    private:
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a_;
@@ -210,7 +210,7 @@ namespace Core::LinearSolver
     // Only required to properly define an Epetra_Operator, not should be used!
     const Epetra_Map &OperatorRangeMap() const override { return a_->OperatorRangeMap(); }
 
-    void Setup();  // TODO
+    void setup();  // TODO
 
    private:
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a_;
@@ -277,7 +277,7 @@ namespace Core::LinearSolver
     // Only required to properly define an Epetra_Operator, not should be used!
     const Epetra_Map &OperatorRangeMap() const override { return a_->OperatorRangeMap(); }
 
-    void Setup();  // TODO
+    void setup();  // TODO
 
    private:
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a_;

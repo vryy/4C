@@ -45,9 +45,9 @@ FSI::DirichletNeumannVolCoupl::DirichletNeumannVolCoupl(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::DirichletNeumannVolCoupl::Setup()
+void FSI::DirichletNeumannVolCoupl::setup()
 {
-  FSI::DirichletNeumann::Setup();
+  FSI::DirichletNeumann::setup();
 
   const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
@@ -85,12 +85,12 @@ void FSI::DirichletNeumannVolCoupl::setup_coupling_struct_ale(
   std::pair<int, int> dofsets21(0, 0);
 
   // initialize coupling adapter
-  coupsa_->Init(ndim, structure_field()->discretization(),
+  coupsa_->init(ndim, structure_field()->discretization(),
       fluidale->ale_field()->write_access_discretization(), &coupleddof12, &coupleddof21,
       &dofsets12, &dofsets21, Teuchos::null, false);
 
   // setup coupling adapter
-  coupsa_->Setup(Global::Problem::Instance()->VolmortarParams());
+  coupsa_->setup(Global::Problem::Instance()->VolmortarParams());
 }
 
 /*----------------------------------------------------------------------*/
@@ -100,7 +100,7 @@ void FSI::DirichletNeumannVolCoupl::setup_interface_corrector(
 {
   icorrector_ = Teuchos::rcp(new InterfaceCorrector());
 
-  icorrector_->Setup(Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(fluid_));
+  icorrector_->setup(Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(fluid_));
 }
 
 
@@ -174,12 +174,12 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::ale_to_structure(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::InterfaceCorrector::Setup(Teuchos::RCP<Adapter::FluidAle> fluidale)
+void FSI::InterfaceCorrector::setup(Teuchos::RCP<Adapter::FluidAle> fluidale)
 {
   fluidale_ = fluidale;
 
   volcorrector_ = Teuchos::rcp(new VolCorrector);
-  volcorrector_->Setup(Global::Problem::Instance()->NDim(), fluidale);
+  volcorrector_->setup(Global::Problem::Instance()->NDim(), fluidale);
 
   return;
 }
@@ -432,7 +432,7 @@ void FSI::VolCorrector::correct_vol_displacements_phys_space(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<Adapter::FluidAle> fluidale)
+void FSI::VolCorrector::setup(const int dim, Teuchos::RCP<Adapter::FluidAle> fluidale)
 {
   if (fluidale->ale_field()->discretization()->Comm().MyPID() == 0)
     std::cout << "******************FSI Volume Correction Setup***********************"

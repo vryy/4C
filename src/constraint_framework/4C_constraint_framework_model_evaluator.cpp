@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::Setup()
+void STR::MODELEVALUATOR::Constraints::setup()
 {
   check_init();
 
@@ -103,11 +103,11 @@ void STR::MODELEVALUATOR::Constraints::create_sub_model_evaluators()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::Constraints::reset(const Epetra_Vector& x)
 {
   for (auto& sme_iter : sub_model_vec_ptr_)
   {
-    sme_iter->Reset();
+    sme_iter->reset();
   }
   constraint_stiff_ptr_->Zero();
 }

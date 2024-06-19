@@ -79,7 +79,7 @@ Adapter::StructureBaseAlgorithmNew::StructureBaseAlgorithmNew()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Adapter::StructureBaseAlgorithmNew::Init(const Teuchos::ParameterList& prbdyn,
+void Adapter::StructureBaseAlgorithmNew::init(const Teuchos::ParameterList& prbdyn,
     Teuchos::ParameterList& sdyn, Teuchos::RCP<Core::FE::Discretization> actdis)
 {
   issetup_ = false;
@@ -95,9 +95,9 @@ void Adapter::StructureBaseAlgorithmNew::Init(const Teuchos::ParameterList& prbd
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Adapter::StructureBaseAlgorithmNew::Setup()
+void Adapter::StructureBaseAlgorithmNew::setup()
 {
-  if (not is_init()) FOUR_C_THROW("You have to call Init() first!");
+  if (not is_init()) FOUR_C_THROW("You have to call init() first!");
 
   // major switch to different time integrators
   switch (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(*sdyn_, "DYNAMICTYP"))
@@ -131,8 +131,8 @@ void Adapter::StructureBaseAlgorithmNew::register_model_evaluator(
 {
   // safety checks
   if (not is_init())
-    FOUR_C_THROW("Init(...) must be called before register_model_evaluator(...) !");
-  if (is_setup()) FOUR_C_THROW("register_model_evaluator(...) must be called before Setup() !");
+    FOUR_C_THROW("init(...) must be called before register_model_evaluator(...) !");
+  if (is_setup()) FOUR_C_THROW("register_model_evaluator(...) must be called before setup() !");
 
   // set RCP ptr to model evaluator in problem dynamic parameter list
   const_cast<Teuchos::ParameterList&>(*prbdyn_).set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
@@ -144,12 +144,12 @@ void Adapter::StructureBaseAlgorithmNew::register_model_evaluator(
  *----------------------------------------------------------------------------*/
 void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
 {
-  if (not is_init()) FOUR_C_THROW("You have to call Init() first!");
+  if (not is_init()) FOUR_C_THROW("You have to call init() first!");
 
   // get the problem instance
   Global::Problem* problem = Global::Problem::Instance();
   // get the restart step
-  const int restart = problem->Restart();
+  const int restart = problem->restart();
 
   // ---------------------------------------------------------------------------
   // Define, initialize and start the timer
@@ -249,16 +249,16 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // initialize/setup the input/output data container
   // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio = Teuchos::rcp(new STR::TimeInt::BaseDataIO());
-  dataio->Init(*ioflags, *sdyn_, *xparams, output);
-  dataio->Setup();
+  dataio->init(*ioflags, *sdyn_, *xparams, output);
+  dataio->setup();
 
   // ---------------------------------------------------------------------------
   // initialize/setup the structural dynamics data
   // container
   // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn = STR::TimeInt::build_data_sdyn(*sdyn_);
-  datasdyn->Init(actdis_, *sdyn_, *xparams, modeltypes, eletechs, linsolvers);
-  datasdyn->Setup();
+  datasdyn->init(actdis_, *sdyn_, *xparams, modeltypes, eletechs, linsolvers);
+  datasdyn->setup();
 
   // ---------------------------------------------------------------------------
   // initialize/setup the global state data container
@@ -304,7 +304,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
 void Adapter::StructureBaseAlgorithmNew::set_model_types(
     std::set<enum Inpar::STR::ModelType>& modeltypes) const
 {
-  if (not is_init()) FOUR_C_THROW("You have to call Init() first!");
+  if (not is_init()) FOUR_C_THROW("You have to call init() first!");
   // ---------------------------------------------------------------------------
   // check for meshtying and contact conditions
   // ---------------------------------------------------------------------------
@@ -765,8 +765,8 @@ void Adapter::StructureBaseAlgorithmNew::set_global_state(
     const Teuchos::RCP<const STR::TimeInt::BaseDataSDyn>& datasdyn)
 {
   dataglobalstate = STR::TimeInt::build_data_global_state();
-  dataglobalstate->Init(actdis_, *sdyn_, datasdyn);
-  dataglobalstate->Setup();
+  dataglobalstate->init(actdis_, *sdyn_, datasdyn);
+  dataglobalstate->setup();
 }
 
 
@@ -779,12 +779,12 @@ void Adapter::StructureBaseAlgorithmNew::set_time_integration_strategy(
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& dataglobalstate, const int& restart)
 {
   ti_strategy = STR::TimeInt::build_strategy(*sdyn_);
-  ti_strategy->Init(dataio, datasdyn, dataglobalstate);
+  ti_strategy->init(dataio, datasdyn, dataglobalstate);
 
   /* In the restart case, we Setup the structural time integration after the
    * discretization has been redistributed. See STR::TimeInt::Base::read_restart()
    * for more information.                                     hiermeier 05/16*/
-  if (not restart) ti_strategy->Setup();
+  if (not restart) ti_strategy->setup();
 }
 
 

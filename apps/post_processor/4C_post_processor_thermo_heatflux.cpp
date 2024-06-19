@@ -129,7 +129,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     Teuchos::RCP<Epetra_Vector> heatfluxx = Core::LinAlg::CreateVector(*(dis->dof_row_map()), true);
     Teuchos::RCP<Epetra_Vector> heatfluxy = Core::LinAlg::CreateVector(*(dis->dof_row_map()), true);
     Teuchos::RCP<Epetra_Vector> heatfluxz = Core::LinAlg::CreateVector(*(dis->dof_row_map()), true);
-    dis->Evaluate(p, Teuchos::null, Teuchos::null, heatfluxx, heatfluxy, heatfluxz);
+    dis->evaluate(p, Teuchos::null, Teuchos::null, heatfluxx, heatfluxy, heatfluxz);
 
     // change the dis from a dof_row_map to a NodeRowMap, because Paraview can only visualize
     // nodebased date
@@ -252,7 +252,7 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
     Teuchos::RCP<Epetra_MultiVector> eleheatflux =
         Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()), numdf));
     p.set("eleheatflux", eleheatflux);
-    dis->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    dis->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     if (eleheatflux == Teuchos::null)
     {
       FOUR_C_THROW("vector containing element center heatfluxes/tempgradients not available");

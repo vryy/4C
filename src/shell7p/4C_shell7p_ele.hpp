@@ -65,7 +65,7 @@ namespace Discret
 
       Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
       [[nodiscard]] std::string Name() const override { return "Shell7pType"; }
 
@@ -158,9 +158,9 @@ namespace Discret
         return Shell7pType::Instance().UniqueParObjectId();
       };
 
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      void pack(Core::Communication::PackBuffer& data) const override;
 
-      void Unpack(const std::vector<char>& data) override;
+      void unpack(const std::vector<char>& data) override;
 
       [[nodiscard]] Core::Elements::ElementType& ElementType() const override
       {
@@ -183,7 +183,7 @@ namespace Discret
 
       //! @name Evaluation
       //! @{
-      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+      int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,

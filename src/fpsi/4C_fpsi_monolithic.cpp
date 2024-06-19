@@ -123,9 +123,9 @@ void FPSI::MonolithicBase::prepare_time_step()
 /*----------------------------------------------------------------------*/
 void FPSI::MonolithicBase::update()
 {
-  poro_field()->Update();
-  fluid_field()->Update();
-  ale_field()->Update();
+  poro_field()->update();
+  fluid_field()->update();
+  ale_field()->update();
 }
 
 /*----------------------------------------------------------------------*/
@@ -139,9 +139,9 @@ void FPSI::MonolithicBase::prepare_output(bool force_prepare)
 /*----------------------------------------------------------------------*/
 void FPSI::MonolithicBase::output()
 {
-  poro_field()->Output();
-  fluid_field()->Output();
-  ale_field()->Output();
+  poro_field()->output();
+  fluid_field()->output();
+  ale_field()->output();
 }
 
 /*----------------------------------------------------------------------*/
@@ -362,7 +362,7 @@ void FPSI::Monolithic::TimeStep()
     // start time measurement
     timer_.reset();
     Teuchos::Time timer("FPSI Time Step", true);
-    Evaluate(iterinc_);
+    evaluate(iterinc_);
     // create full monolithic FPSI right-hand-side vector
     // moved to evaluate()
 
@@ -374,7 +374,7 @@ void FPSI::Monolithic::TimeStep()
       FOUR_C_THROW("Effective tangent matrix must be filled here !");
     }
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
-    // is done in prepare_system_for_newton_solve() within Evaluate(iterinc_)
+    // is done in prepare_system_for_newton_solve() within evaluate(iterinc_)
     linear_solve();
     // build norms
     build_convergence_norms();
@@ -421,7 +421,7 @@ void FPSI::Monolithic::TimeStep()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
+void FPSI::Monolithic::evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic::Evaluate");
 
@@ -467,14 +467,14 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 
   ale_field()->WriteAccessDispnp()->Update(
       1.0, *ax, 1.0);  // displacement increments on the interfaces are zero!!!
-  ale_field()->Evaluate(Teuchos::null);
+  ale_field()->evaluate(Teuchos::null);
 
   Teuchos::RCP<const Epetra_Vector> aledisplacements = ale_to_fluid(ale_field()->Dispnp());
   fluid_field()->apply_mesh_displacement(aledisplacements);
 
   fluid_field()->UpdateNewton(fx);
 
-  fluid_field()->Evaluate(Teuchos::null);
+  fluid_field()->evaluate(Teuchos::null);
 
   // Evaluate FPSI Coupling Matrixes and RHS
   FPSICoupl()->evaluate_coupling_matrixes_rhs();
@@ -1580,7 +1580,7 @@ void FPSI::Monolithic::FPSIFDCheck()
     {
       iterinc->ReplaceGlobalValue(i, 0, 0.0);
     }
-    Evaluate(iterinc);  // initial iterinc is varied at first dof (0-th element)
+    evaluate(iterinc);  // initial iterinc is varied at first dof (0-th element)
     setup_system_matrix();
 
     rhs_copy->Update(1.0, *rhs_, 0.0);
@@ -1622,7 +1622,7 @@ void FPSI::Monolithic::FPSIFDCheck()
     if (i_loc != dofs - 1) iterinc->ReplaceGlobalValue(ip1, 0, delta);
 
   }  // i-loop (columns)
-  Evaluate(iterinc);
+  evaluate(iterinc);
   setup_system_matrix();
 
   int err = stiff_approx->FillComplete();

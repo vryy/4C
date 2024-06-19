@@ -34,11 +34,11 @@ namespace ScaTra
 
 
     //! setup time integration scheme
-    void Setup() override;
+    void setup() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update() override;
+    void update() override;
 
     //! write current state to BINIO
     void output_state() override;

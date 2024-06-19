@@ -264,13 +264,13 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchDomainKinetics'");
 
   // access parameters of the condition
-  const int kinetics = cond->parameters().Get<int>("kinetic model");
-  double pot0 = cond->parameters().Get<double>("pot");
-  const int curvenum = cond->parameters().Get<int>("funct");
-  const int nume = cond->parameters().Get<int>("e-");
+  const int kinetics = cond->parameters().get<int>("kinetic model");
+  double pot0 = cond->parameters().get<double>("pot");
+  const int curvenum = cond->parameters().get<int>("funct");
+  const int nume = cond->parameters().get<int>("e-");
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman
   // condition) but the electrode status is evaluated
-  const int zerocur = cond->parameters().Get<int>("zero_cur");
+  const int zerocur = cond->parameters().get<int>("zero_cur");
   if (nume < 0)
   {
     FOUR_C_THROW(
@@ -280,7 +280,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
 
   // convention for stoichiometric coefficients s_i:
   // Sum_i (s_i  M_i^(z_i)) -> n e- (n needs to be positive)
-  const auto* stoich = &cond->parameters().Get<std::vector<int>>("stoich");
+  const auto* stoich = &cond->parameters().get<std::vector<int>>("stoich");
   if ((unsigned int)my::numscal_ != (*stoich).size())
   {
     FOUR_C_THROW(
@@ -316,7 +316,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
   if (curvenum >= 0)
   {
     const double curvefac =
-        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).Evaluate(
+        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).evaluate(
             time);
     // adjust potential at metal side accordingly
     pot0 *= curvefac;
@@ -472,7 +472,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_el
       const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, gpid);
 
       // extract specific electrode surface area A_s from condition
-      double A_s = cond->parameters().Get<double>("A_s");
+      double A_s = cond->parameters().get<double>("A_s");
 
       // call utility class for element evaluation
       utils()->evaluate_elch_kinetics_at_integration_point(ele, emat, erhs, ephinp, ehist, timefac,
@@ -539,10 +539,10 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_el
 
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman
   // condition) but the electrode status is evaluated
-  const int zerocur = cond->parameters().Get<int>("zero_cur");
+  const int zerocur = cond->parameters().get<int>("zero_cur");
 
   // extract volumetric electrode surface area A_s from condition
-  double A_s = cond->parameters().Get<double>("A_s");
+  double A_s = cond->parameters().get<double>("A_s");
 
   // integration points and weights
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(

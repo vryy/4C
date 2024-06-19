@@ -15,12 +15,12 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::Elastic::PAR::CoupAnisoExpoBase::CoupAnisoExpoBase(
     const Core::Mat::PAR::Parameter::Data& matdata)
-    : k1_(matdata.parameters.Get<double>("K1")),
-      k2_(matdata.parameters.Get<double>("K2")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
-      k1comp_(matdata.parameters.Get<double>("K1COMP")),
-      k2comp_(matdata.parameters.Get<double>("K2COMP")),
-      init_(matdata.parameters.Get<int>("INIT"))
+    : k1_(matdata.parameters.get<double>("K1")),
+      k2_(matdata.parameters.get<double>("K2")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
+      k1comp_(matdata.parameters.get<double>("K1COMP")),
+      k2comp_(matdata.parameters.get<double>("K2COMP")),
+      init_(matdata.parameters.get<int>("INIT"))
 {
 }
 

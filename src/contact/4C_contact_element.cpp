@@ -23,7 +23,7 @@ Core::Communication::ParObject* CONTACT::ElementType::Create(const std::vector<c
 {
   CONTACT::Element* ele =
       new CONTACT::Element(0, 0, Core::FE::CellType::dis_none, 0, nullptr, false);
-  ele->Unpack(data);
+  ele->unpack(data);
   return ele;
 }
 
@@ -101,7 +101,7 @@ void CONTACT::Element::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Element::Pack(Core::Communication::PackBuffer& data) const
+void CONTACT::Element::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -110,7 +110,7 @@ void CONTACT::Element::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, type);
 
   // add base class Mortar::Element
-  Mortar::Element::Pack(data);
+  Mortar::Element::pack(data);
 
   return;
 }
@@ -119,7 +119,7 @@ void CONTACT::Element::Pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Element::Unpack(const std::vector<char>& data)
+void CONTACT::Element::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -128,7 +128,7 @@ void CONTACT::Element::Unpack(const std::vector<char>& data)
   // extract base class Mortar::Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Mortar::Element::Unpack(basedata);
+  Mortar::Element::unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -148,7 +148,7 @@ int CONTACT::Element::NumDofPerNode(const Core::Nodes::Node& node) const
 /*----------------------------------------------------------------------*
  |  evaluate element (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
-int CONTACT::Element::Evaluate(Teuchos::ParameterList& params,
+int CONTACT::Element::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -257,8 +257,8 @@ void CONTACT::Element::OldUnitNormalAtXi(
   // get shape function values and derivatives at xi
   evaluate_shape(xi, val, deriv, nnodes);
 
-  n_old.Clear();
-  d_n_old_dxi.Clear();
+  n_old.clear();
+  d_n_old_dxi.clear();
 
   Core::LinAlg::Matrix<3, 1> tmp_n;
   Core::LinAlg::Matrix<3, 2> tmp_n_deriv;

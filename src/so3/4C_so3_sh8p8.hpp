@@ -50,7 +50,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -222,13 +222,13 @@ namespace Discret
 
       /// Pack this class so it can be communicated
       ///
-      /// \ref Pack and \ref Unpack are used to communicate this element
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      /// \ref pack and \ref unpack are used to communicate this element
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       /// Unpack data from a char vector into this class
       ///
-      /// \ref Pack and \ref Unpack are used to communicate this element
-      void Unpack(const std::vector<char>& data) override;
+      /// \ref pack and \ref unpack are used to communicate this element
+      void unpack(const std::vector<char>& data) override;
 
       /// Print this element
       void Print(std::ostream& os) const override;
@@ -288,7 +288,7 @@ namespace Discret
       /// Evaluate so_sh8p8 element stiffness, mass, internal forces, etc.
       ///
       /// \return 0 if successful, negative otherwise
-      int Evaluate(Teuchos::ParameterList& params,   ///< (in/out) ParameterList for communication
+      int evaluate(Teuchos::ParameterList& params,   ///< (in/out) ParameterList for communication
                                                      ///< between control routine and elements
           Core::FE::Discretization& discretization,  ///< pointer to discretization for de-assembly
           std::vector<int>& lm,                      ///< (in) location matrix for de-assembly

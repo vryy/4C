@@ -83,10 +83,10 @@ void ScaTra::ScaTraUtils::CheckConsistencyWithS2IKineticsCondition(
   {
     if (conditionToBeTested->GType() != Core::Conditions::geometry_type_surface) continue;
     bool isslave(true);
-    const int s2ikinetics_id = conditionToBeTested->parameters().Get<int>("S2IKineticsID");
+    const int s2ikinetics_id = conditionToBeTested->parameters().get<int>("S2IKineticsID");
 
     // check the interface side
-    switch (conditionToBeTested->parameters().Get<int>("interface side"))
+    switch (conditionToBeTested->parameters().get<int>("interface side"))
     {
       case Inpar::S2I::side_slave:
       {
@@ -109,12 +109,12 @@ void ScaTra::ScaTraUtils::CheckConsistencyWithS2IKineticsCondition(
     // loop over all s2i conditions to find the one that is matching the current ssi condition
     for (const auto& s2ikinetics_cond : s2ikinetics_conditions)
     {
-      const int s2ikinetics_cond_id = s2ikinetics_cond->parameters().Get<int>("ConditionID");
+      const int s2ikinetics_cond_id = s2ikinetics_cond->parameters().get<int>("ConditionID");
       // only do further checks if Ids match
       if (s2ikinetics_id != s2ikinetics_cond_id) continue;
 
       // check the interface side
-      switch (s2ikinetics_cond->parameters().Get<int>("interface side"))
+      switch (s2ikinetics_cond->parameters().get<int>("interface side"))
       {
         case Inpar::S2I::side_slave:
         {
@@ -210,7 +210,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAtNodesMean
   {
     static Core::LinAlg::Matrix<nsd, 1>
         node_gradphi_smoothed;  // set whole 3D vector also for 2D examples
-    node_gradphi_smoothed.Clear();
+    node_gradphi_smoothed.clear();
 
     // get local processor id of current node and pointer to current node
     // int lid_node = it_node->first;
@@ -414,7 +414,7 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
       // TODO: Implement for other elements than HEX
       // get Xi-coordinates of current node in current adjacent element
       static Core::LinAlg::Matrix<dim, 1> node_Xicoordinates;
-      node_Xicoordinates.Clear();
+      node_Xicoordinates.clear();
       for (int icomp = 0; icomp < dim; ++icomp)
       {
         node_Xicoordinates(icomp) =
@@ -465,7 +465,7 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
       // compute gradient of phi at node for current element
       //----------------------------------------------------
       static Core::LinAlg::Matrix<dim, 1> nodal_grad_tmp;
-      nodal_grad_tmp.Clear();
+      nodal_grad_tmp.clear();
 
       // get xyz-gradient
       nodal_grad_tmp.Multiply(deriv3Dele_xyz, ephi_adj);

@@ -38,7 +38,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::PoroMultiPhaseScaTr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
     const Teuchos::ParameterList& poroparams, const Teuchos::ParameterList& structparams,
     const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
@@ -47,7 +47,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
     int ndsporofluid_scatra, const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // call base class
-  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitioned::Init(globaltimeparams, algoparams,
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitioned::init(globaltimeparams, algoparams,
       poroparams, structparams, fluidparams, scatraparams, struct_disname, fluid_disname,
       scatra_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra,
       nearbyelepairs);
@@ -294,7 +294,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested::Init(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested::init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
     const Teuchos::ParameterList& poroparams, const Teuchos::ParameterList& structparams,
     const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
@@ -303,7 +303,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested::Init(
     int ndsporofluid_scatra, const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // call base class
-  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::Init(globaltimeparams, algoparams,
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::init(globaltimeparams, algoparams,
       poroparams, structparams, fluidparams, scatraparams, struct_disname, fluid_disname,
       scatra_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra,
       nearbyelepairs);
@@ -354,7 +354,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Init(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential::init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
     const Teuchos::ParameterList& poroparams, const Teuchos::ParameterList& structparams,
     const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
@@ -363,7 +363,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Init
     int ndsporofluid_scatra, const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // call base class
-  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::Init(globaltimeparams, algoparams,
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::init(globaltimeparams, algoparams,
       poroparams, structparams, fluidparams, scatraparams, struct_disname, fluid_disname,
       scatra_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra,
       nearbyelepairs);

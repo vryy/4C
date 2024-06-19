@@ -55,7 +55,7 @@ namespace PARTICLEWALL
      *
      * \author Sebastian Fuchs \date 03/2019
      */
-    void Init();
+    void init();
 
     /*!
      * \brief setup wall result test
@@ -64,7 +64,7 @@ namespace PARTICLEWALL
      *
      * \param[in] particleengineinterface interface to particle engine
      */
-    void Setup(const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface);
+    void setup(const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface);
 
     /*!
      * \brief test node value

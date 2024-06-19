@@ -91,7 +91,7 @@ namespace Mortar
     class exists.
 
     */
-    virtual void Pack(Core::Communication::PackBuffer& data) const;
+    virtual void pack(Core::Communication::PackBuffer& data) const;
 
     /*!
     \brief Unpack data from a vector into this class
@@ -101,7 +101,7 @@ namespace Mortar
     class exists.
 
     */
-    virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
     //@}
 
@@ -407,18 +407,18 @@ namespace Mortar
     /*!
     \brief Pack this class so it can be communicated
 
-    \ref Pack and \ref Unpack are used to communicate this element
+    \ref pack and \ref unpack are used to communicate this element
 
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
 
-    \ref Pack and \ref Unpack are used to communicate this element
+    \ref pack and \ref unpack are used to communicate this element
 
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     Core::Elements::ElementType& ElementType() const override { return ElementType::Instance(); }
 
@@ -632,7 +632,7 @@ namespace Mortar
                                 given in params
     \return 0 if successful, negative otherwise
     */
-    int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
         Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseVector& elevec2,

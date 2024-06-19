@@ -88,9 +88,9 @@ namespace Discret::ELEMENTS
       return SolidType::Instance().UniqueParObjectId();
     };
 
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     [[nodiscard]] Core::Elements::ElementType& ElementType() const override
     {
@@ -120,7 +120,7 @@ namespace Discret::ELEMENTS
     bool ReadElement(const std::string& eletype, const std::string& celltype,
         Input::LineDefinition* linedef) override;
 
-    int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
         Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseVector& elevec2,

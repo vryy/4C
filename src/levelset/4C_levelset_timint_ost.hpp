@@ -33,10 +33,10 @@ namespace ScaTra
 
 
     /// initialize time-integration scheme
-    void Init() override;
+    void init() override;
 
     /// setup time-integration scheme
-    void Setup() override;
+    void setup() override;
 
     /// read restart data
     void read_restart(
@@ -70,7 +70,7 @@ namespace ScaTra
 
     /// update the solution after Solve()
     /// extended version for coupled level-set problems including reinitialization
-    void Update() override;
+    void update() override;
 
     /// update phi within the reinitialization loop
     void update_reinit() override;

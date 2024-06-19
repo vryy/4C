@@ -40,7 +40,7 @@ namespace STR
               ssi_part  //!< partitioned algorithm for scalar-structure interaction
       );
 
-      void Setup() override;
+      void setup() override;
 
       //! @name Functions which are derived from the base generic class
       //! @{

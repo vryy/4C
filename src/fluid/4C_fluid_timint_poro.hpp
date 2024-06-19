@@ -34,7 +34,7 @@ namespace FLD
     \brief initialization
 
     */
-    void Init() override;
+    void init() override;
 
     /*!
     \brief call elements to calculate system matrix/rhs and assemble
@@ -73,7 +73,7 @@ namespace FLD
     \brief update configuration and output to file/screen
 
     */
-    void Output() override;
+    void output() override;
 
     /*!
     \brief Do some poro-specific stuff in assemble_mat_and_rhs

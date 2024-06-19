@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -144,7 +144,7 @@ int Discret::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
       if (so3mat->MaterialType() == Core::Materials::m_elasthyper)
       {
         so3mat = Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(mat, true);
-        so3mat->Setup(0, nullptr);
+        so3mat->setup(0, nullptr);
       }
       break;  // no setup for St-Venant / classic_lin required
     }
@@ -1196,7 +1196,7 @@ void Discret::ELEMENTS::Ale2::material_response3d(Core::LinAlg::Matrix<6, 1>* st
   Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_dynamic_cast<Mat::So3Material>(Material());
   if (so3mat == Teuchos::null) FOUR_C_THROW("cast to So3Material failed!");
 
-  so3mat->Evaluate(nullptr, glstrain, params, stress, cmat, gp, Id());
+  so3mat->evaluate(nullptr, glstrain, params, stress, cmat, gp, Id());
 
   return;
 }

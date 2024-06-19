@@ -1117,7 +1117,7 @@ namespace Mortar
     \brief Initialize / reset mortar interface
 
     */
-    virtual void Initialize();
+    virtual void initialize();
 
     /*!
     \brief Set current deformation state
@@ -1145,44 +1145,44 @@ namespace Mortar
     /** \brief Evaluate mortar interface
      *
      *  No input necessary. */
-    void Evaluate() { Evaluate(0, 0, 0, Teuchos::null); };
+    void evaluate() { evaluate(0, 0, 0, Teuchos::null); };
 
     /** \brief Evaluate mortar interface
      *
      *  \param rriter      (in)     : round robin iteration */
-    void Evaluate(int rriter) { Evaluate(rriter, 0, 0, Teuchos::null); };
+    void evaluate(int rriter) { evaluate(rriter, 0, 0, Teuchos::null); };
 
     /** \brief Evaluate mortar interface
      *
      *  \param rriter      (in)     : round robin iteration
      *  \param step        (in)     : current step counter */
-    void Evaluate(int rriter, const int& step) { Evaluate(rriter, step, 0, Teuchos::null); };
+    void evaluate(int rriter, const int& step) { evaluate(rriter, step, 0, Teuchos::null); };
 
     /** \brief Evaluate mortar interface
      *
      *  \param rriter      (in)     : round robin iteration
      *  \param step        (in)     : current step counter
      *  \param iter        (in)     : current iteration number */
-    void Evaluate(int rriter, const int& step, const int& iter)
+    void evaluate(int rriter, const int& step, const int& iter)
     {
-      Evaluate(rriter, step, iter, Teuchos::null);
+      evaluate(rriter, step, iter, Teuchos::null);
     };
 
     /** \brief Evaluate mortar interface
      *
      *  \param mparams_ptr (in/out) : mortar parameter interface pointer */
-    void Evaluate(Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr)
+    void evaluate(Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr)
     {
-      Evaluate(0, mparams_ptr->get_step_np(), mparams_ptr->get_nln_iter(), mparams_ptr);
+      evaluate(0, mparams_ptr->get_step_np(), mparams_ptr->get_nln_iter(), mparams_ptr);
     };
 
     /** \brief Evaluate mortar interface
      *
      *  \param rriter      (in)     : round robin iteration
      *  \param mparams_ptr (in/out) : mortar parameter interface pointer */
-    void Evaluate(int rriter, Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr)
+    void evaluate(int rriter, Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr)
     {
-      Evaluate(rriter, mparams_ptr->get_step_np(), mparams_ptr->get_nln_iter(), mparams_ptr);
+      evaluate(rriter, mparams_ptr->get_step_np(), mparams_ptr->get_nln_iter(), mparams_ptr);
     };
 
     /** \brief Evaluate mortar interface
@@ -1191,7 +1191,7 @@ namespace Mortar
      *  \param step        (in)     : current step counter
      *  \param iter        (in)     : current iteration number
      *  \param mparams_ptr (in/out) : mortar parameter interface pointer */
-    void Evaluate(int rriter, const int& step, const int& iter,
+    void evaluate(int rriter, const int& step, const int& iter,
         Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr);
 
     /// @}

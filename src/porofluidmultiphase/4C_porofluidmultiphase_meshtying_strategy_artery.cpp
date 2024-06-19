@@ -55,7 +55,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
   artnettimint_->SetSolveScatra(false);
 
   // initialize
-  artnettimint_->Init(probparams, artdyn, "artery_scatra");
+  artnettimint_->init(probparams, artdyn, "artery_scatra");
 
   // print user info
   if (porofluidmultitimint->discretization()->Comm().MyPID() == 0)
@@ -133,7 +133,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::prepare_time_step()
  | current solution becomes most recent solution of next timestep       |
  |                                                     kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Update()
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::update()
 {
   artnettimint_->TimeUpdate();
   return;
@@ -270,9 +270,9 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::read_restart(const int step)
 /*----------------------------------------------------------------------*
  | output of solution vector to BINIO                  kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Output()
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::output()
 {
-  if (porofluidmultitimint_->Step() != 0) artnettimint_->Output(false, Teuchos::null);
+  if (porofluidmultitimint_->Step() != 0) artnettimint_->output(false, Teuchos::null);
 
   return;
 }
@@ -280,13 +280,13 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Output()
 /*----------------------------------------------------------------------*
  | evaluate matrix and rhs                             kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Evaluate()
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::evaluate()
 {
   arttoporofluidcoupling_->SetSolutionVectors(
       porofluidmultitimint_->Phinp(), porofluidmultitimint_->Phin(), artnettimint_->Pressurenp());
 
   // evaluate the coupling
-  arttoporofluidcoupling_->Evaluate(comb_systemmatrix_, rhs_);
+  arttoporofluidcoupling_->evaluate(comb_systemmatrix_, rhs_);
 
   // evaluate artery
   artnettimint_->assemble_mat_and_rhs();
@@ -377,9 +377,9 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::SetNearbyElePairs(
 /*-------------------------------------------------------------------------*
  | setup the strategy                                     kremheller 03/19 |
  *------------------------------------------------------------------------ */
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Setup()
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::setup()
 {
-  arttoporofluidcoupling_->Setup();
+  arttoporofluidcoupling_->setup();
   return;
 }
 

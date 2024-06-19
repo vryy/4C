@@ -47,7 +47,7 @@ Teuchos::RCP<Epetra_Operator> Core::LinearSolver::AmGnxnPreconditioner::PrecOper
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AmGnxnPreconditioner::Setup(
+void Core::LinearSolver::AmGnxnPreconditioner::setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   // Decide if the setup has to be done
@@ -61,7 +61,7 @@ void Core::LinearSolver::AmGnxnPreconditioner::Setup(
         "The AMGnxn preconditioner works only for BlockSparseMatrixBase or derived classes");
 
   // Do all the setup
-  Setup(Teuchos::rcp(A_bl, false));
+  setup(Teuchos::rcp(A_bl, false));
 
   return;
 }
@@ -69,7 +69,7 @@ void Core::LinearSolver::AmGnxnPreconditioner::Setup(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AmGnxnPreconditioner::Setup(
+void Core::LinearSolver::AmGnxnPreconditioner::setup(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGnxn_Preconditioner::Setup");
@@ -331,7 +331,7 @@ Core::LinearSolver::AmGnxnOperator::AmGnxnOperator(
   //
   //</ParameterList>
 
-  Setup();
+  setup();
 }
 
 /*------------------------------------------------------------------------------*/
@@ -381,7 +381,7 @@ int Core::LinearSolver::AmGnxnOperator::ApplyInverse(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AmGnxnOperator::Setup()
+void Core::LinearSolver::AmGnxnOperator::setup()
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGnxn_Operator::Setup");
 
@@ -448,7 +448,7 @@ Core::LinearSolver::BlockSmootherOperator::BlockSmootherOperator(
   //
   //</ParameterList>
 
-  Setup();
+  setup();
 }
 
 /*------------------------------------------------------------------------------*/
@@ -499,7 +499,7 @@ int Core::LinearSolver::BlockSmootherOperator::ApplyInverse(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::BlockSmootherOperator::Setup()
+void Core::LinearSolver::BlockSmootherOperator::setup()
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::BlockSmoother_Operator::Setup");
 
@@ -614,13 +614,13 @@ Core::LinearSolver::MergedOperator::MergedOperator(
   //
   //
 
-  Setup();
+  setup();
 }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::MergedOperator::Setup()
+void Core::LinearSolver::MergedOperator::setup()
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::Merged_Operator::Setup");
 

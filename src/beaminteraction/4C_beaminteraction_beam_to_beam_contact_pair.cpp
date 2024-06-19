@@ -60,12 +60,12 @@ BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::BeamToBeamCont
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
+void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::setup()
 {
   check_init();
 
   // call setup of base class first
-  BeamContactPair::Setup();
+  BeamContactPair::setup();
 
 
   for (unsigned int i = 0; i < 3 * numnodes * numnodalvalues; i++)
@@ -219,7 +219,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::pre_evalu
  |  Evaluate the element (public)                             meier 02/14|
  *----------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Evaluate(
+bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
@@ -2226,12 +2226,12 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::closest_p
       iter++;
 
       // reset shape function variables to zero
-      N1.Clear();
-      N2.Clear();
-      N1_xi.Clear();
-      N2_xi.Clear();
-      N1_xixi.Clear();
-      N2_xixi.Clear();
+      N1.clear();
+      N2.clear();
+      N1_xi.clear();
+      N2_xi.clear();
+      N1_xixi.clear();
+      N2_xixi.clear();
 
       // update shape functions and their derivatives
       get_shape_functions(N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, eta1, eta2);
@@ -2621,12 +2621,12 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::point_to_
       iter++;
 
       // reset shape function variables to zero
-      N1.Clear();
-      N2.Clear();
-      N1_xi.Clear();
-      N2_xi.Clear();
-      N1_xixi.Clear();
-      N2_xixi.Clear();
+      N1.clear();
+      N2.clear();
+      N1_xi.clear();
+      N2_xi.clear();
+      N1_xixi.clear();
+      N2_xixi.clear();
 
       bool inversion_possible = false;
       bool endpointpenalty = Params()->beam_to_beam_contact_params()->EndPointPenalty();
@@ -4591,12 +4591,12 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::compute_c
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi)
 {
-  r1.Clear();
-  r2.Clear();
-  r1_xi.Clear();
-  r2_xi.Clear();
-  r1_xixi.Clear();
-  r2_xixi.Clear();
+  r1.clear();
+  r2.clear();
+  r1_xi.clear();
+  r2_xi.clear();
+  r1_xixi.clear();
+  r2_xixi.clear();
 
 #ifdef AUTOMATICDIFF
   BEAMCONTACT::SetFADDispDofs<numnodes, numnodalvalues>(ele1pos_, ele2pos_);
@@ -4633,7 +4633,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
     const Core::LinAlg::Matrix<3, 1, TYPE>& t1, const Core::LinAlg::Matrix<3, 1, TYPE>& t2)
 {
   // reset f
-  f.Clear();
+  f.clear();
 
   for (unsigned int i = 0; i < 3; i++)
   {
@@ -4662,8 +4662,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 
 {
   // reset df and dfinv
-  df.Clear();
-  dfinv.Clear();
+  df.clear();
+  dfinv.clear();
 
   // evaluate df
   // see Wriggers, Computational Contact Mechanics, equation (12.7)
@@ -5395,7 +5395,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 //
 //  std::cout << "undisturbed configuration: " << std::endl;
 //
-//  this->Evaluate(stiffmatrix_analyt,fint1,pp,contactpairmap,timeintparams,true);
+//  this->evaluate(stiffmatrix_analyt,fint1,pp,contactpairmap,timeintparams,true);
 //
 ////  std::cout << std::setprecision(25) << "fint1: " << std::endl;
 //
@@ -5428,7 +5428,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 //    fint2.PutScalar(0.0);
 //    stiffmatrix_dummy.PutScalar(0.0);
 //
-//    this->Evaluate(stiffmatrix_dummy,fint2,pp,contactpairmap,timeintparams,true);
+//    this->evaluate(stiffmatrix_dummy,fint2,pp,contactpairmap,timeintparams,true);
 //
 ////    std::cout << std::setprecision(25) << "fint2: " << std::endl;
 ////

@@ -102,7 +102,7 @@ void dyn_nlnstructural_drt()
           Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
               sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
       structadapter = adapterbase_old_ptr->structure_field();
-      structadapter->Setup();
+      structadapter->setup();
       break;
     }
     // -------------------------------------------------------------------
@@ -112,8 +112,8 @@ void dyn_nlnstructural_drt()
     {
       Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr =
           Adapter::build_structure_algorithm(sdyn);
-      adapterbase_ptr->Init(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
-      adapterbase_ptr->Setup();
+      adapterbase_ptr->init(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+      adapterbase_ptr->setup();
       structadapter = adapterbase_ptr->structure_field();
       break;
     }
@@ -125,7 +125,7 @@ void dyn_nlnstructural_drt()
       Core::UTILS::IntegralValue<int>(Global::Problem::Instance()->IOParams(), "WRITE_FINAL_STATE");
 
   // do restart
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     structadapter->read_restart(restart);
@@ -137,7 +137,7 @@ void dyn_nlnstructural_drt()
     {
       constexpr bool force_prepare = true;
       structadapter->prepare_output(force_prepare);
-      structadapter->Output();
+      structadapter->output();
       structadapter->PostOutput();
     }
   }
@@ -150,7 +150,7 @@ void dyn_nlnstructural_drt()
     constexpr bool forceWriteRestart = true;
     constexpr bool force_prepare = true;
     structadapter->prepare_output(force_prepare);
-    structadapter->Output(forceWriteRestart);
+    structadapter->output(forceWriteRestart);
     structadapter->PostOutput();
   }
 

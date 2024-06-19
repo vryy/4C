@@ -47,7 +47,7 @@ STR::MODELEVALUATOR::BrownianDyn::BrownianDyn()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::Setup()
+void STR::MODELEVALUATOR::BrownianDyn::setup()
 {
   check_init();
 
@@ -109,7 +109,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::BrownianDyn::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -398,7 +398,7 @@ void STR::MODELEVALUATOR::BrownianDyn::evaluate_brownian(Teuchos::ParameterList&
   // -------------------------------------------------------------------------
   // Evaluate brownian on element level
   // -------------------------------------------------------------------------
-  discret().Evaluate(p, eval_mat[0], eval_mat[1], eval_vec[0], eval_vec[1], eval_vec[2]);
+  discret().evaluate(p, eval_mat[0], eval_mat[1], eval_vec[0], eval_vec[1], eval_vec[2]);
   discret().ClearState();
 }
 

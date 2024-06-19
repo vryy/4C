@@ -49,7 +49,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    this->cast_geometry_pair()->Evaluate(this->ele1posref_,
+    this->cast_geometry_pair()->evaluate(this->ele1posref_,
         this->face_element_->get_face_reference_element_data(), this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -125,14 +125,14 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
       // Get the shape function matrices.
-      N_mortar.Clear();
-      N_beam.Clear();
-      N_surface.Clear();
-      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::Evaluate(
+      N_mortar.clear();
+      N_beam.clear();
+      N_surface.clear();
+      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::evaluate(
           N_mortar, projected_gauss_point.GetEta());
-      GEOMETRYPAIR::EvaluateShapeFunction<beam>::Evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<beam>::evaluate(
           N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
-      GEOMETRYPAIR::EvaluateShapeFunction<surface>::Evaluate(N_surface,
+      GEOMETRYPAIR::EvaluateShapeFunction<surface>::evaluate(N_surface,
           projected_gauss_point.GetXi(),
           this->face_element_->GetFaceElementData().shape_function_data_);
 

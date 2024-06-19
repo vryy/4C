@@ -223,8 +223,8 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   const std::vector<int>* nodeids = cond.GetNodes();
   if (!nodeids) FOUR_C_THROW("Dirichlet condition does not have nodal cloud");
 
-  const auto* funct = &cond.parameters().Get<std::vector<int>>("funct");
-  const auto* val = &cond.parameters().Get<std::vector<double>>("val");
+  const auto* funct = &cond.parameters().get<std::vector<int>>("funct");
+  const auto* val = &cond.parameters().get<std::vector<double>>("val");
 
 
   // determine highest degree of time derivative
@@ -505,8 +505,8 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   if (assemblevecdd) solver->Solve(massmatrix->EpetraOperator(), dbcvectordd, rhsdd, solver_params);
 
   // perform resets for solver and matrix
-  solver->Reset();
-  massmatrix->Reset();
+  solver->reset();
+  massmatrix->reset();
 
   // insert nodal values to sysvec
   auxdbcmapextractor->InsertCondVector(dbcvector, systemvectors[0]);
@@ -781,7 +781,7 @@ void Core::FE::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
                 .evaluate_time_derivative(position.values(), time, deg, rr);
 
         functfac = function_manager.FunctionById<Core::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
-                       .Evaluate(position.values(), time, rr);
+                       .evaluate(position.values(), time, rr);
       }
 
       // apply factors to Dirichlet value

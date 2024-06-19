@@ -53,7 +53,7 @@ namespace BEAMINTERACTION
      *
      * \returns True if pair is in contact.
      */
-    bool Evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
+    bool evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
         Core::LinAlg::SerialDenseVector* forcevec2, Core::LinAlg::SerialDenseMatrix* stiffmat11,
         Core::LinAlg::SerialDenseMatrix* stiffmat12, Core::LinAlg::SerialDenseMatrix* stiffmat21,
         Core::LinAlg::SerialDenseMatrix* stiffmat22) override;

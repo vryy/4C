@@ -34,12 +34,12 @@ FLD::TimIntRedModelsStat::TimIntRedModelsStat(const Teuchos::RCP<Core::FE::Discr
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModelsStat::Init()
+void FLD::TimIntRedModelsStat::init()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntStationary::Init();
-  TimIntRedModels::Init();
+  TimIntStationary::init();
+  TimIntRedModels::init();
 
   return;
 }

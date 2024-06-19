@@ -65,7 +65,7 @@ namespace PoroMultiPhaseScaTra
     virtual void print_out_coupling_method() const = 0;
 
     //! Evaluate the 1D-3D coupling
-    virtual void Evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    virtual void evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs) = 0;
 
     //! set-up of global system of equations of coupled problem
@@ -105,10 +105,10 @@ namespace PoroMultiPhaseScaTra
         Teuchos::RCP<const Epetra_Vector>& vec_art) = 0;
 
     //! init the strategy
-    virtual void Init() = 0;
+    virtual void init() = 0;
 
     //! setup the strategy
-    virtual void Setup() = 0;
+    virtual void setup() = 0;
 
     //! apply mesh movement (on artery elements)
     virtual void ApplyMeshMovement() = 0;

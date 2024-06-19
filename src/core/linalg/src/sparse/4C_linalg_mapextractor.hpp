@@ -61,7 +61,7 @@ namespace Core::LinAlg
       \warning The fullmap has to be nonoverlapping. The list of maps has to
       be nonoverlapping as well and its sum has to equal the fullmap.
      */
-    void Setup(const Epetra_Map& fullmap, const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
+    void setup(const Epetra_Map& fullmap, const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// debug helper
     /*!
@@ -430,18 +430,18 @@ namespace Core::LinAlg
    public:
     /** \brief empty constructor
      *
-     *  You have to call a Setup() routine of your choice. */
+     *  You have to call a setup() routine of your choice. */
     MapExtractor();
 
     /** \brief  constructor
      *
-     *  Calls Setup() from known maps */
+     *  Calls setup() from known maps */
     MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> condmap,
         Teuchos::RCP<const Epetra_Map> othermap);
 
     /** \brief constructor
      *
-     *  Calls Setup() to create non-overlapping othermap/condmap which is complementary
+     *  Calls setup() to create non-overlapping othermap/condmap which is complementary
      *  to condmap/othermap with respect to fullmap depending on boolean 'iscondmap'  */
     MapExtractor(const Epetra_Map& fullmap,         //< full map
         Teuchos::RCP<const Epetra_Map> partialmap,  //< partial map, ie condition or other map
@@ -452,14 +452,14 @@ namespace Core::LinAlg
     //@{
 
     /// setup from known maps
-    void Setup(const Epetra_Map& fullmap, const Teuchos::RCP<const Epetra_Map>& condmap,
+    void setup(const Epetra_Map& fullmap, const Teuchos::RCP<const Epetra_Map>& condmap,
         const Teuchos::RCP<const Epetra_Map>& othermap);
 
     /// setup creates non-overlapping othermap/condmap which is complementary to condmap/othermap
     /// with respect to fullmap depending on boolean 'iscondmap'
     /// \author bborn
     /// \date 10/08
-    void Setup(const Epetra_Map& fullmap, const Teuchos::RCP<const Epetra_Map>& partialmap,
+    void setup(const Epetra_Map& fullmap, const Teuchos::RCP<const Epetra_Map>& partialmap,
         bool iscondmap = true);
 
     //@}

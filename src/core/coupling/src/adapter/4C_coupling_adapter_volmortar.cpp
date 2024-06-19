@@ -48,7 +48,7 @@ Core::Adapter::MortarVolCoupl::MortarVolCoupl()
 /*----------------------------------------------------------------------*
  |  init                                                     farah 10/13|
  *----------------------------------------------------------------------*/
-void Core::Adapter::MortarVolCoupl::Init(int spatial_dimension,
+void Core::Adapter::MortarVolCoupl::init(int spatial_dimension,
     Teuchos::RCP<Core::FE::Discretization> dis1,  // masterdis - on Omega_1
     Teuchos::RCP<Core::FE::Discretization> dis2,  // slavedis  - on Omega_2
     std::vector<int>* coupleddof12, std::vector<int>* coupleddof21, std::pair<int, int>* dofsets12,
@@ -92,7 +92,7 @@ void Core::Adapter::MortarVolCoupl::Init(int spatial_dimension,
 /*----------------------------------------------------------------------*
  |  setup                                                    rauch 08/16|
  *----------------------------------------------------------------------*/
-void Core::Adapter::MortarVolCoupl::Setup(const Teuchos::ParameterList& params)
+void Core::Adapter::MortarVolCoupl::setup(const Teuchos::ParameterList& params)
 {
   check_init();
 

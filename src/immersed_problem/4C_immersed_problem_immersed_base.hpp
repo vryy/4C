@@ -66,34 +66,34 @@ namespace Immersed
     Hand in all objects/parameters/etc. from outside.
     Construct and manipulate internal objects.
 
-    \note Try to only perform actions in Init(), which are still valid
+    \note Try to only perform actions in init(), which are still valid
           after parallel redistribution of discretizations.
           If you have to perform an action depending on the parallel
           distribution, make sure you adapt the affected objects after
           parallel redistribution.
           Example: cloning a discretization from another discretization is
-          OK in Init(...). However, after redistribution of the source
+          OK in init(...). However, after redistribution of the source
           discretization do not forget to also redistribute the cloned
           discretization.
           All objects relying on the parallel distribution are supposed to
-          the constructed in \ref Setup().
+          the constructed in \ref setup().
 
     \warning none
     \return int
     \date 08/16
     \author rauch  */
-    virtual int Init(const Teuchos::ParameterList& params) = 0;
+    virtual int init(const Teuchos::ParameterList& params) = 0;
 
     /*! \brief Setup all class internal objects and members
 
-     Setup() is not supposed to have any input arguments !
+     setup() is not supposed to have any input arguments !
 
-     Must only be called after Init().
+     Must only be called after init().
 
      Construct all objects depending on the parallel distribution and
      relying on valid maps like, e.g. the state vectors, system matrices, etc.
 
-     Call all Setup() routines on previously initialized internal objects and members.
+     Call all setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
           Otherwise, e.g. vectors may have wrong maps.
@@ -102,7 +102,7 @@ namespace Immersed
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Setup(){};
+    virtual void setup(){};
 
 
     /*!
@@ -324,22 +324,22 @@ namespace Immersed
     bool isinit_;
 
    protected:
-    //! returns true if Setup() was called and is still valid
+    //! returns true if setup() was called and is still valid
     bool is_setup() { return issetup_; };
 
-    //! returns true if Init(..) was called and is still valid
+    //! returns true if init(..) was called and is still valid
     bool is_init() { return isinit_; };
 
-    //! check if \ref Setup() was called
+    //! check if \ref setup() was called
     void check_is_setup()
     {
-      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("setup() was not called.");
     };
 
-    //! check if \ref Init() was called
+    //! check if \ref init() was called
     void check_is_init()
     {
-      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("init(...) was not called.");
     };
 
    protected:
@@ -382,7 +382,7 @@ namespace Immersed
     ///////  so make sure, that each proc owns at least one target element and/or
     ///////  it is also to be assured by external measures, that each proc
     ///////  reenters this routine until the last element on every proc is
-    ///////  evaluated (e.g. dummy call of Evaluate(...)).
+    ///////  evaluated (e.g. dummy call of evaluate(...)).
     ///////
     /////////////////////////////////////////////////////////////////////////////////
 
@@ -458,7 +458,7 @@ namespace Immersed
     Core::Elements::Element::LocationArray targetla(1);
     targetele.LocationVector(*targetdis, targetla, false);
 
-    targetele.Evaluate(params, *targetdis, targetla, dummy1, dummy2, *normal_at_targetpoint,
+    targetele.evaluate(params, *targetdis, targetla, dummy1, dummy2, *normal_at_targetpoint,
         *targetxi_dense, dummy3);
     normal_at_targetpoint->scale(1.0 / (Core::LinAlg::Norm2(*normal_at_targetpoint)));
     normal_vec[0] = (*normal_at_targetpoint)(0);
@@ -760,7 +760,7 @@ namespace Immersed
               // fill locationarray
               Core::Elements::Element::LocationArray sourcela(1);
               sourceele->LocationVector(*sourcedis, sourcela, false);
-              sourceele->Evaluate(
+              sourceele->evaluate(
                   params, *sourcedis, sourcela, dummy1, dummy2, *vectofill, *xi_dense, dummy3);
               matched = 1;
 
@@ -1104,7 +1104,7 @@ namespace Immersed
 
               if (action != "none")
                 // evaluate and perform action handed in to this function
-                sourceele->Evaluate(
+                sourceele->evaluate(
                     params, *sourcedis, la, dummy1, dummy2, *vectofill, *xi_dense, dummy3);
               else
               {

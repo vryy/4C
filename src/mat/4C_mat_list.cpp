@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::MatList::MatList(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      nummat_(matdata.parameters.Get<int>("NUMMAT")),
-      matids_(matdata.parameters.Get<std::vector<int>>("MATIDS")),
-      local_((matdata.parameters.Get<bool>("LOCAL")))
+      nummat_(matdata.parameters.get<int>("NUMMAT")),
+      matids_(matdata.parameters.get<std::vector<int>>("MATIDS")),
+      local_((matdata.parameters.get<bool>("LOCAL")))
 {
   // check if sizes fit
   if (nummat_ != (int)matids_.size())
@@ -76,7 +76,7 @@ Mat::MatListType Mat::MatListType::instance_;
 Core::Communication::ParObject* Mat::MatListType::Create(const std::vector<char>& data)
 {
   Mat::MatList* matlist = new Mat::MatList();
-  matlist->Unpack(data);
+  matlist->unpack(data);
   return matlist;
 }
 
@@ -132,7 +132,7 @@ void Mat::MatList::clear()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::MatList::Pack(Core::Communication::PackBuffer& data) const
+void Mat::MatList::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -154,7 +154,7 @@ void Mat::MatList::Pack(Core::Communication::PackBuffer& data) const
         std::vector<int>::const_iterator m;
         for (m = params_->MatIds()->begin(); m != params_->MatIds()->end(); m++)
         {
-          (mat_.find(*m))->second->Pack(data);
+          (mat_.find(*m))->second->pack(data);
         }
       }
     }
@@ -163,7 +163,7 @@ void Mat::MatList::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::MatList::Unpack(const std::vector<char>& data)
+void Mat::MatList::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   clear();
@@ -208,7 +208,7 @@ void Mat::MatList::Unpack(const std::vector<char>& data)
       {
         std::vector<char> pbtest;
         extract_from_pack(position, data, pbtest);
-        (mat_.find(*m))->second->Unpack(pbtest);
+        (mat_.find(*m))->second->unpack(pbtest);
       }
     }
     // in the postprocessing mode, we do not unpack everything we have packed

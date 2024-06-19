@@ -37,18 +37,18 @@ ScaTra::TimIntOneStepTheta::TimIntOneStepTheta(Teuchos::RCP<Core::FE::Discretiza
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntOneStepTheta::Init()
+void ScaTra::TimIntOneStepTheta::init()
 {
   // initialize base class
-  ScaTraTimIntImpl::Init();
+  ScaTraTimIntImpl::init();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntOneStepTheta::Setup()
+void ScaTra::TimIntOneStepTheta::setup()
 {
   // setup base class
-  ScaTraTimIntImpl::Setup();
+  ScaTraTimIntImpl::setup();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -80,7 +80,7 @@ void ScaTra::TimIntOneStepTheta::Setup()
   // initialize forcing for homogeneous isotropic turbulence
   // -------------------------------------------------------------------
   // note: this constructor has to be called after the forcing_ vector has
-  //       been initialized; this is done in ScaTraTimIntImpl::Init() called before
+  //       been initialized; this is done in ScaTraTimIntImpl::init() called before
   if (special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence")
   {
     if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING") == "isotropic")
@@ -105,7 +105,7 @@ void ScaTra::TimIntOneStepTheta::Setup()
         "action", ScaTra::Action::micro_scale_initialize, eleparams);
 
     // loop over macro-scale elements
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 }
@@ -132,7 +132,7 @@ void ScaTra::TimIntOneStepTheta::set_element_time_parameter(bool forcedincrement
   eleparams.set<double>("alpha_F", 1.0);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -261,13 +261,13 @@ void ScaTra::TimIntOneStepTheta::compute_time_derivative()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntOneStepTheta::Update()
+void ScaTra::TimIntOneStepTheta::update()
 {
   // compute time derivative at time n+1
   compute_time_derivative();
 
   // call base class routine
-  ScaTraTimIntImpl::Update();
+  ScaTraTimIntImpl::update();
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!
@@ -301,7 +301,7 @@ void ScaTra::TimIntOneStepTheta::Update()
         "action", ScaTra::Action::micro_scale_update, eleparams);
 
     // loop over macro-scale elements
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 }
@@ -369,7 +369,7 @@ void ScaTra::TimIntOneStepTheta::read_restart(
         "action", ScaTra::Action::micro_scale_read_restart, eleparams);
 
     // loop over macro-scale elements
-    discret_->Evaluate(eleparams);
+    discret_->evaluate(eleparams);
   }
 }
 

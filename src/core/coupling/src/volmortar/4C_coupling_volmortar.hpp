@@ -105,7 +105,7 @@ namespace Core::VolMortar
    of one discretization is meant to be coupled with the second of the other
    discretization. I.e. in TSI the structure must have temperature dofs as second
    dof set and the thermo discretization must have displacement dofs as second dof set.
-   When calling Evaluate() this class will identify volume cells (using polygon
+   When calling evaluate() this class will identify volume cells (using polygon
    clipping in 2D and the cut algorithm in 3D) OR skip this and ignore weak discontinuities,
    and build a volmortar integrator class, which evaluates the two projection matrices.
 

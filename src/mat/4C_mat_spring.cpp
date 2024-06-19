@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::Spring::Spring(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      stiffness_(matdata.parameters.Get<double>("STIFFNESS")),
-      density_(matdata.parameters.Get<double>("DENS"))
+      stiffness_(matdata.parameters.get<double>("STIFFNESS")),
+      density_(matdata.parameters.get<double>("DENS"))
 {
 }
 
@@ -38,7 +38,7 @@ Mat::SpringType Mat::SpringType::instance_;
 Core::Communication::ParObject* Mat::SpringType::Create(const std::vector<char>& data)
 {
   Mat::Spring* spring = new Mat::Spring();
-  spring->Unpack(data);
+  spring->unpack(data);
   return spring;
 }
 
@@ -54,7 +54,7 @@ Mat::Spring::Spring(Mat::PAR::Spring* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Spring::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Spring::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -71,7 +71,7 @@ void Mat::Spring::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Spring::Unpack(const std::vector<char>& data)
+void Mat::Spring::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

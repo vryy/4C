@@ -73,7 +73,7 @@ namespace Mat
        all growth materials.
 
        Further it basically passes through the interfaces functions
-       Evaluate(...) and EvaluateNonLinMass(...).
+       evaluate(...) and EvaluateNonLinMass(...).
 
        \author kehl
        \date 6/2015
@@ -103,7 +103,7 @@ namespace Mat
       \sa Core::Communication::ParObject
       \param data (in/out): char vector to store class information
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -112,7 +112,7 @@ namespace Mat
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -133,10 +133,10 @@ namespace Mat
     Teuchos::RCP<Core::Mat::Material> Clone() const override = 0;
 
     /// Setup
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// Update
-    void Update() override;
+    void update() override;
 
     /// Reset time step
     void reset_step() override;
@@ -171,7 +171,7 @@ namespace Mat
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
         const int eleGID) override = 0;
@@ -347,7 +347,7 @@ namespace Mat
       \sa Core::Communication::ParObject
       \param data (in/out): char vector to store class information
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -356,7 +356,7 @@ namespace Mat
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -367,10 +367,10 @@ namespace Mat
     }
 
     /// Setup
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// Update
-    void Update() override;
+    void update() override;
 
     /// Return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;
@@ -401,7 +401,7 @@ namespace Mat
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
         const int eleGID) override;

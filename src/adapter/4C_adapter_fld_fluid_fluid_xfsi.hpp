@@ -36,7 +36,7 @@ namespace Adapter
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     /// initialize algorithm
-    void Init() override;
+    void init() override;
 
    protected:
     /// A casted pointer to a fluid with multiple discretizations

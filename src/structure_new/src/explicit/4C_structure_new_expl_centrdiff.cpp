@@ -33,12 +33,12 @@ STR::EXPLICIT::CentrDiff::CentrDiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::Setup()
+void STR::EXPLICIT::CentrDiff::setup()
 {
   check_init();
 
-  // Call the Setup() of the abstract base class first.
-  Generic::Setup();
+  // Call the setup() of the abstract base class first.
+  Generic::setup();
 
   // ---------------------------------------------------------------------------
   // setup pointers to the force vectors of the global state data container

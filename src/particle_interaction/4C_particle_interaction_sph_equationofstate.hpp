@@ -35,10 +35,10 @@ namespace ParticleInteraction
     virtual ~SPHEquationOfStateBase() = default;
 
     //! init equation of state handler
-    virtual void Init();
+    virtual void init();
 
     //! setup equation of state handler
-    virtual void Setup();
+    virtual void setup();
 
     //! determine the pressure
     virtual double DensityToPressure(const double& density, const double& density0) const = 0;

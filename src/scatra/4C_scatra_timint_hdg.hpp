@@ -32,7 +32,7 @@ namespace ScaTra
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     //! setup
-    void Setup() override;
+    void setup() override;
 
     //! set theta_ to its value, dependent on integration method for GenAlpha and BDF2
     virtual void SetTheta();
@@ -45,7 +45,7 @@ namespace ScaTra
 
     //! update the solution after convergence of the nonlinear iteration,
     //! current solution becomes old solution of next time step
-    void Update() override;
+    void update() override;
 
     //  //! Initialization procedure before the first time step is done
     //  void prepare_first_time_step ();

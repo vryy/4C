@@ -57,7 +57,7 @@ Core::Communication::ParObject* Mat::Maxwell0dAcinusDoubleExponentialType::Creat
 {
   Mat::Maxwell0dAcinusDoubleExponential* mxwll_0d_acin =
       new Mat::Maxwell0dAcinusDoubleExponential();
-  mxwll_0d_acin->Unpack(data);
+  mxwll_0d_acin->unpack(data);
   return mxwll_0d_acin;
 }
 
@@ -78,7 +78,7 @@ Mat::Maxwell0dAcinusDoubleExponential::Maxwell0dAcinusDoubleExponential(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusDoubleExponential::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Maxwell0dAcinusDoubleExponential::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -105,7 +105,7 @@ void Mat::Maxwell0dAcinusDoubleExponential::Pack(Core::Communication::PackBuffer
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusDoubleExponential::Unpack(const std::vector<char>& data)
+void Mat::Maxwell0dAcinusDoubleExponential::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -150,7 +150,7 @@ void Mat::Maxwell0dAcinusDoubleExponential::Unpack(const std::vector<char>& data
  | E1_01, E1_LIN1, E1_EXP1, TAU1 and                                    |
  | E1_02, E1_LIN2, E1_EXP2, TAU2 to material                roth 10/2014|
  *----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusDoubleExponential::Setup(Input::LineDefinition* linedef)
+void Mat::Maxwell0dAcinusDoubleExponential::setup(Input::LineDefinition* linedef)
 {
   linedef->extract_double("E1_01", e1_01_);
   linedef->extract_double("E1_LIN1", e1_lin1_);
@@ -169,7 +169,7 @@ void Mat::Maxwell0dAcinusDoubleExponential::Setup(Input::LineDefinition* linedef
  | Evaluate DoubleExponential material and build system matrix and rhs. |
  |                                                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusDoubleExponential::Evaluate(Core::LinAlg::SerialDenseVector& epnp,
+void Mat::Maxwell0dAcinusDoubleExponential::evaluate(Core::LinAlg::SerialDenseVector& epnp,
     Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
     Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
     const Discret::ReducedLung::ElemParams& params, const double NumOfAcini, const double Vo,

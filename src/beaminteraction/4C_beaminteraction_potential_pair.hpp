@@ -60,11 +60,11 @@ namespace BEAMINTERACTION
     */
     virtual ~BeamPotentialPair() = default;
     //! Initialization
-    void Init(const Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> params_ptr,
+    void init(const Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> params_ptr,
         Core::Elements::Element const* element1, Core::Elements::Element const* element2);
 
     //! Setup
-    virtual void Setup();
+    virtual void setup();
 
     //! return appropriate derived (templated) class (acts as a simple factory)
     static Teuchos::RCP<BeamPotentialPair> Create(
@@ -79,7 +79,7 @@ namespace BEAMINTERACTION
     \brief Evaluate this contact element pair, return value indicates whether pair is active,
            i.e. non-zero values for force and stiffmat are returned
     */
-    virtual bool Evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
+    virtual bool evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
         Core::LinAlg::SerialDenseVector* forcevec2, Core::LinAlg::SerialDenseMatrix* stiffmat11,
         Core::LinAlg::SerialDenseMatrix* stiffmat12, Core::LinAlg::SerialDenseMatrix* stiffmat21,
         Core::LinAlg::SerialDenseMatrix* stiffmat22,
@@ -185,10 +185,10 @@ namespace BEAMINTERACTION
    protected:
     //! @name member variables
 
-    //! indicates if the Init() function has been called
+    //! indicates if the init() function has been called
     bool isinit_;
 
-    //! indicates if the Setup() function has been called
+    //! indicates if the setup() function has been called
     bool issetup_;
 
    private:

@@ -61,9 +61,9 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*
  | Init                                                     rauch 09/16 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::Init()
+void FS3I::ACFSI::init()
 {
-  FS3I::PartFS3I::Init();
+  FS3I::PartFS3I::init();
 
   // Some AC FSI specific testings:
 
@@ -92,7 +92,7 @@ void FS3I::ACFSI::Init()
   Global::Problem::Instance()->GetDis("fluid")->GetCondition("ImpedanceCond", ImpCond);
   for (auto& i : ImpCond)
   {
-    const double thisperiod = i->parameters().Get<double>("TIMEPERIOD");
+    const double thisperiod = i->parameters().get<double>("TIMEPERIOD");
 
     if (thisperiod != fsiperiod_)
     {
@@ -145,9 +145,9 @@ void FS3I::ACFSI::Init()
 /*----------------------------------------------------------------------*
  | Setup                                                    rauch 09/16 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::Setup()
+void FS3I::ACFSI::setup()
 {
-  FS3I::PartFS3I::Setup();
+  FS3I::PartFS3I::setup();
 
   meanmanager_ = Teuchos::rcp(new FS3I::MeanManager(*fsi_->fluid_field()->dof_row_map(0),
       *scatravec_[0]->ScaTraField()->dof_row_map(), *fsi_->fluid_field()->PressureRowMap()));
@@ -174,7 +174,7 @@ void FS3I::ACFSI::read_restart()
   PartFS3I::read_restart();
 
   // AC specific restart stuff
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
 
   if (restart)
   {
@@ -255,7 +255,7 @@ void FS3I::ACFSI::Timeloop()
   SetFSISolution();
 
   // calculate inital time derivative, when restart was done from a part. FSI simulation
-  if (Global::Problem::Instance()->Restart() and
+  if (Global::Problem::Instance()->restart() and
       Core::UTILS::IntegralValue<int>(
           Global::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
   {
@@ -334,7 +334,7 @@ void FS3I::ACFSI::small_time_scale_prepare_time_step()
   // iff this is the beginning of a new fsi cycle
   if (step_ > 1 and modulo_is_realtive_zero(time_ - dt_, fsiperiod_, time_))
   {
-    meanmanager_->Reset();  // Reset mean Manager
+    meanmanager_->reset();  // Reset mean Manager
     if (Comm().MyPID() == 0)
     {
       std::cout << "Reseting mean manager\n" << std::endl;
@@ -832,7 +832,7 @@ std::string FS3I::ACFSI::GetFileName(const int step)
 
   std::string filename;
 
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     const int crit_step = (int)(restart + fsiperiod_ / dt_ + 1e-14);
@@ -962,11 +962,11 @@ void FS3I::ACFSI::FsiOutput()
   //     * Discretizations.
 
   // structure output
-  fsi_->structure_field()->Output();
+  fsi_->structure_field()->output();
   if (coupling == fsi_iter_monolithicstructuresplit) fsi_->OutputLambda();
 
   // fluid output
-  fsi_->fluid_field()->Output();
+  fsi_->fluid_field()->output();
   if (coupling == fsi_iter_monolithicfluidsplit) fsi_->OutputLambda();
 
   if ((step_ % upresults == 0) or (uprestart != 0 && step_ % uprestart == 0) or
@@ -991,7 +991,7 @@ void FS3I::ACFSI::FsiOutput()
   }
 
   // ale output
-  fsi_->ale_field()->Output();
+  fsi_->ale_field()->output();
 }
 
 /*----------------------------------------------------------------------*

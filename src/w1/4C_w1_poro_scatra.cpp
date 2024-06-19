@@ -52,7 +52,7 @@ Core::Elements::Element* Discret::ELEMENTS::Wall1PoroScatra<distype>::Clone() co
  |  Pack data (public)                                    schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1PoroScatra<distype>::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Wall1PoroScatra<distype>::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -63,7 +63,7 @@ void Discret::ELEMENTS::Wall1PoroScatra<distype>::Pack(Core::Communication::Pack
   my::add_to_pack(data, impltype_);
 
   // add base class Element
-  my::Pack(data);
+  my::pack(data);
 
   return;
 }
@@ -72,7 +72,7 @@ void Discret::ELEMENTS::Wall1PoroScatra<distype>::Pack(Core::Communication::Pack
  |  Unpack data (public)                                  schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1PoroScatra<distype>::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Wall1PoroScatra<distype>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -84,7 +84,7 @@ void Discret::ELEMENTS::Wall1PoroScatra<distype>::Unpack(const std::vector<char>
   // extract base class Element
   std::vector<char> basedata(0);
   my::extract_from_pack(position, data, basedata);
-  my::Unpack(basedata);
+  my::unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

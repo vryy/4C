@@ -54,10 +54,10 @@ namespace ParticleInteraction
     explicit SPHVirtualWallParticle(const Teuchos::ParameterList& params);
 
     //! init virtual wall particle handler
-    void Init();
+    void init();
 
     //! setup virtual wall particle handler
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
         const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,

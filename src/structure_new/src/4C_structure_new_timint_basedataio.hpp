@@ -67,12 +67,12 @@ namespace STR
       virtual ~BaseDataIO() = default;
 
       /// initialize the class variables
-      void Init(const Teuchos::ParameterList& IOParams, const Teuchos::ParameterList& sDynParams,
+      void init(const Teuchos::ParameterList& IOParams, const Teuchos::ParameterList& sDynParams,
           const Teuchos::ParameterList& xParams,
           Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
       /// setup new class variables
-      void Setup();
+      void setup();
 
      protected:
       /// get the init indicator status
@@ -81,7 +81,7 @@ namespace STR
       /// get the setup indicator status
       virtual const bool& is_setup() const { return issetup_; };
 
-      /// Check if Init() and Setup() have been called, yet.
+      /// Check if init() and setup() have been called, yet.
       virtual void check_init_setup() const;
 
      public:

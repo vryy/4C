@@ -60,7 +60,7 @@ Arteries::ArtNetImplStationary::ArtNetImplStationary(Teuchos::RCP<Core::FE::Disc
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimeparams,
+void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname)
 {
   // time measurement: initialization
@@ -70,7 +70,7 @@ void Arteries::ArtNetImplStationary::Init(const Teuchos::ParameterList& globalti
     FOUR_C_THROW("this type of coupling is only available for explicit time integration");
 
   // call base class
-  TimInt::Init(globaltimeparams, arteryparams, scatra_disname);
+  TimInt::init(globaltimeparams, arteryparams, scatra_disname);
 
   // ensure that degrees of freedom in the discretization have been set
   if ((not discret_->Filled()) or (not discret_->HaveDofs())) discret_->fill_complete();
@@ -146,13 +146,13 @@ void Arteries::ArtNetImplStationary::Init(const Teuchos::ParameterList& globalti
 
     // initialize the base algo.
     // scatra time integrator is initialized inside.
-    scatra_->Init();
+    scatra_->init();
 
-    // only now we must call Setup() on the scatra time integrator.
+    // only now we must call setup() on the scatra time integrator.
     // all objects relying on the parallel distribution are
     // created and pointers are set.
-    // calls Setup() on the scatra time integrator inside.
-    scatra_->ScaTraField()->Setup();
+    // calls setup() on the scatra time integrator inside.
+    scatra_->ScaTraField()->setup();
   }
 }
 
@@ -268,7 +268,7 @@ void Arteries::ArtNetImplStationary::assemble_mat_and_rhs()
   discret_->set_state(0, "pressurenp", pressurenp_);
 
   // call standard loop over all elements
-  discret_->Evaluate(eleparams, sysmat_, rhs_);
+  discret_->evaluate(eleparams, sysmat_, rhs_);
   discret_->ClearState();
 
   // potential addition of Neumann terms
@@ -428,7 +428,7 @@ void Arteries::ArtNetImplStationary::TimeUpdate()
 
   if (solvescatra_)
   {
-    scatra_->ScaTraField()->Update();
+    scatra_->ScaTraField()->update();
     scatra_->ScaTraField()->evaluate_error_compared_to_analytical_sol();
   }
 
@@ -455,7 +455,7 @@ void Arteries::ArtNetImplStationary::prepare_time_loop()
     // set artery diameter of previous time step to intial artery diameter
     reset_artery_diam_previous_time_step();
     // write out initial state
-    Output(false, Teuchos::null);
+    output(false, Teuchos::null);
   }
 
   return;
@@ -470,7 +470,7 @@ void Arteries::ArtNetImplStationary::prepare_time_loop()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::ArtNetImplStationary::Output(
+void Arteries::ArtNetImplStationary::output(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   // time measurement: output of solution
@@ -566,7 +566,7 @@ void Arteries::ArtNetImplStationary::OutputFlow()
     actele->LocationVector(*discret_, la, false);
     Core::LinAlg::SerialDenseVector flowVec(1);
 
-    actele->Evaluate(p, *discret_, la, dummyMat, dummyMat, flowVec, dummyVec, dummyVec);
+    actele->evaluate(p, *discret_, la, dummyMat, dummyMat, flowVec, dummyVec, dummyVec);
 
     int err = ele_volflow_->ReplaceMyValue(i, 0, flowVec(0));
     if (err != 0) FOUR_C_THROW("ReplaceMyValue failed with error code %d!", err);
@@ -691,7 +691,7 @@ void Arteries::ArtNetImplStationary::SetInitialField(
           // evaluate component k of spatial function
           double initialval = Global::Problem::Instance()
                                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X().data(), time_, k);
+                                  .evaluate(lnode->X().data(), time_, k);
           int err = pressurenp_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }

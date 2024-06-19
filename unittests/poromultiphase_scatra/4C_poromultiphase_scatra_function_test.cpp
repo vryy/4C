@@ -68,7 +68,7 @@ namespace
         {"p1", 0.005}, {"S1", 0.005}, {"porosity", 0.2}, {"VF1", 0.3}};
 
     // test Evaluate
-    EXPECT_NEAR(LungOxygenExchangeLaw_->Evaluate(variables, constants, component),
+    EXPECT_NEAR(LungOxygenExchangeLaw_->evaluate(variables, constants, component),
         6.4996477560000005e-11, 1e-14);
 
     // test EvaluateDerivative wrt phi1
@@ -90,7 +90,7 @@ namespace
         {"p1", 0.005}, {"S1", 0.005}, {"porosity", 0.2}, {"VF1", 0.2}};
 
     // test Evaluate
-    EXPECT_NEAR(LungOxygenExchangeLaw_->Evaluate(variables, constants, component),
+    EXPECT_NEAR(LungOxygenExchangeLaw_->evaluate(variables, constants, component),
         3.2792446508136922e-11, 1e-14);
 
     // test EvaluateDerivative wrt phi1
@@ -112,7 +112,7 @@ namespace
         {"p1", 0.005}, {"S1", 0.005}, {"porosity", 0.2}, {"VF1", 0.03}};
 
     // test Evaluate
-    EXPECT_NEAR(LungOxygenExchangeLaw_->Evaluate(variables, constants, component),
+    EXPECT_NEAR(LungOxygenExchangeLaw_->evaluate(variables, constants, component),
         3.3233325598255571e-12, 1e-14);
 
     // test EvaluateDerivative wrt phi1
@@ -135,7 +135,7 @@ namespace
         {"p1", 0.005}, {"S1", 0.0}, {"porosity", 0.0}, {"VF1", 0.4}};
 
     // test Evaluate
-    EXPECT_NEAR(LungCarbonDioxideExchangeLaw_->Evaluate(variables, constants, component),
+    EXPECT_NEAR(LungCarbonDioxideExchangeLaw_->evaluate(variables, constants, component),
         1.0687549509499465e-10, 1e-14);
 
     // test EvaluateDerivative wrt phi1
@@ -159,7 +159,7 @@ namespace
         {"p1", 0.005}, {"S1", 0.0}, {"porosity", 0.0}, {"VF1", 0.4}};
 
     // test Evaluate
-    EXPECT_NEAR(LungCarbonDioxideExchangeLaw_->Evaluate(variables, constants, component),
+    EXPECT_NEAR(LungCarbonDioxideExchangeLaw_->evaluate(variables, constants, component),
         1.0251136673522964e-10, 1e-14);
 
     // test EvaluateDerivative wrt phi1

@@ -58,7 +58,7 @@ namespace Adapter
         Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
-    void Init() override;
+    void init() override;
 
     Teuchos::RCP<const Epetra_Map> dof_row_map() override;
 
@@ -68,7 +68,7 @@ namespace Adapter
     double TimeScaling() const override;
 
     /// take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     /// get the linear solver object used for this field
     Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override;
@@ -155,7 +155,7 @@ namespace Adapter
     void ProjVelToDivZero();
 
     /// reset state vectors
-    void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
+    void reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
 
     /// calculate error in comparison to analytical solution
     void CalculateError() override;

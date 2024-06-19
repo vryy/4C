@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) meier 02/14|
  *----------------------------------------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Rigidsphere::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,

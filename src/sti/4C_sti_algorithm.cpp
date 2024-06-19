@@ -46,10 +46,10 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
   // initialize scatra time integrator
   scatra_ = Teuchos::rcp(
       new Adapter::ScaTraBaseAlgorithm(*fieldparameters_, *fieldparameters_, solverparams_scatra));
-  scatra_->Init();
+  scatra_->init();
   scatra_->ScaTraField()->set_number_of_dof_set_velocity(1);
   scatra_->ScaTraField()->set_number_of_dof_set_thermo(2);
-  scatra_->Setup();
+  scatra_->setup();
 
   // modify field parameters for thermo field
   modify_field_parameters_for_thermo_field();
@@ -57,10 +57,10 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
   // initialize thermo time integrator
   thermo_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
       *fieldparameters_, *fieldparameters_, solverparams_thermo, "thermo"));
-  thermo_->Init();
+  thermo_->init();
   thermo_->ScaTraField()->set_number_of_dof_set_velocity(1);
   thermo_->ScaTraField()->set_number_of_dof_set_sca_tra(2);
-  thermo_->Setup();
+  thermo_->setup();
 
   // check maps from scatra and thermo discretizations
   if (scatra_->ScaTraField()->discretization()->dof_row_map()->NumGlobalElements() == 0)
@@ -120,10 +120,10 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
         for (auto& condition : conditions)
         {
           // consider conditions for slave side only
-          if (condition->parameters().Get<int>("interface side") == Inpar::S2I::side_slave)
+          if (condition->parameters().get<int>("interface side") == Inpar::S2I::side_slave)
           {
             // extract ID of current condition
-            const int condid = condition->parameters().Get<int>("ConditionID");
+            const int condid = condition->parameters().get<int>("ConditionID");
             if (condid < 0) FOUR_C_THROW("Invalid condition ID!");
 
             // extract mortar discretizations associated with current condition
@@ -326,10 +326,10 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
         for (auto& condition : conditions)
         {
           // consider conditions for slave side only
-          if (condition->parameters().Get<int>("interface side") == Inpar::S2I::side_slave)
+          if (condition->parameters().get<int>("interface side") == Inpar::S2I::side_slave)
           {
             // extract ID of current condition
-            const int condid = condition->parameters().Get<int>("ConditionID");
+            const int condid = condition->parameters().get<int>("ConditionID");
             if (condid < 0) FOUR_C_THROW("Invalid condition ID!");
 
             // extract mortar discretization associated with current condition
@@ -373,10 +373,10 @@ void STI::Algorithm::transfer_thermo_to_scatra(const Teuchos::RCP<const Epetra_V
     for (auto& condition : conditions)
     {
       // consider conditions for slave side only
-      if (condition->parameters().Get<int>("interface side") == Inpar::S2I::side_slave)
+      if (condition->parameters().get<int>("interface side") == Inpar::S2I::side_slave)
       {
         // extract ID of current condition
-        const int condid = condition->parameters().Get<int>("ConditionID");
+        const int condid = condition->parameters().get<int>("ConditionID");
         if (condid < 0) FOUR_C_THROW("Invalid condition ID!");
 
         // extract mortar discretization associated with current condition
@@ -397,16 +397,16 @@ void STI::Algorithm::transfer_thermo_to_scatra(const Teuchos::RCP<const Epetra_V
 void STI::Algorithm::update()
 {
   // update scatra field
-  scatra_->ScaTraField()->Update();
+  scatra_->ScaTraField()->update();
 
   // compare scatra field to analytical solution if applicable
   scatra_->ScaTraField()->evaluate_error_compared_to_analytical_sol();
 
   // update thermo field
-  thermo_->ScaTraField()->Update();
+  thermo_->ScaTraField()->update();
 
   // compare thermo field to analytical solution if applicable
   thermo_->ScaTraField()->evaluate_error_compared_to_analytical_sol();
-}  // STI::Algorithm::Update()
+}  // STI::Algorithm::update()
 
 FOUR_C_NAMESPACE_CLOSE

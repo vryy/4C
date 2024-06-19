@@ -36,7 +36,7 @@ CONSTRAINTS::Constraint::Constraint(Teuchos::RCP<Core::FE::Discretization> discr
     constrtype_ = get_constr_type(conditionname);
     for (auto& i : constrcond_)
     {
-      int condID = (i->parameters().Get<int>("ConditionID"));
+      int condID = (i->parameters().get<int>("ConditionID"));
       if (condID > maxID)
       {
         maxID = condID;
@@ -80,7 +80,7 @@ CONSTRAINTS::Constraint::Constraint(
 
     for (auto& i : constrcond_)
     {
-      int condID = i->parameters().Get<int>("ConditionID");
+      int condID = i->parameters().get<int>("ConditionID");
       auto* const myinittime = i->parameters().GetIf<double>("activTime");
       if (myinittime)
       {
@@ -125,7 +125,7 @@ CONSTRAINTS::Constraint::ConstrType CONSTRAINTS::Constraint::get_constr_type(
 |(public)                                                       tk 08/08  |
 |Initialization routine computes ref base values and activates conditions |
 *------------------------------------------------------------------------*/
-void CONSTRAINTS::Constraint::Initialize(
+void CONSTRAINTS::Constraint::initialize(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   // choose action
@@ -154,12 +154,12 @@ void CONSTRAINTS::Constraint::Initialize(
 |(public)                                                       tk 08/08  |
 |Initialization routine activates conditions (restart)                    |
 *------------------------------------------------------------------------*/
-void CONSTRAINTS::Constraint::Initialize(const double& time)
+void CONSTRAINTS::Constraint::initialize(const double& time)
 {
   for (auto* cond : constrcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
 
     // if current time (at) is larger than activation time of the condition, activate it
     if ((inittimes_.find(condID)->second <= time) && (activecons_.find(condID)->second == false))
@@ -178,7 +178,7 @@ void CONSTRAINTS::Constraint::Initialize(const double& time)
 |(public)                                                        tk 07/08|
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void CONSTRAINTS::Constraint::Evaluate(Teuchos::ParameterList& params,
+void CONSTRAINTS::Constraint::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -236,7 +236,7 @@ void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params
     double scConMat = params.get("scaleConstrMat", 1.0);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
     params.set("ConditionID", condID);
 
     // is conditions supposed to be active?
@@ -248,7 +248,7 @@ void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params
         const std::string action = params.get<std::string>("action");
         Teuchos::RCP<Epetra_Vector> displast = params.get<Teuchos::RCP<Epetra_Vector>>("old disp");
         actdisc_->set_state("displacement", displast);
-        Initialize(params, systemvector2);
+        initialize(params, systemvector2);
         Teuchos::RCP<Epetra_Vector> disp = params.get<Teuchos::RCP<Epetra_Vector>>("new disp");
         actdisc_->set_state("displacement", disp);
         params.set("action", action);
@@ -262,7 +262,7 @@ void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params
       if (curvenum >= 0)
         curvefac = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                       .Evaluate(time);
+                       .evaluate(time);
 
       // global and local ID of this bc in the redundant vectors
       const int offsetID = params.get<int>("OffsetID");
@@ -313,7 +313,7 @@ void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params
         elevector3.size(1);
 
         // call the element specific evaluate method
-        int err = curr->second->Evaluate(
+        int err = curr->second->evaluate(
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
         if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -370,7 +370,7 @@ void CONSTRAINTS::Constraint::initialize_constraint(
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
 
-    int condID = cond->parameters().Get<int>("ConditionID");
+    int condID = cond->parameters().get<int>("ConditionID");
     params.set("ConditionID", condID);
 
     // if current time is larger than initialization time of the condition, start computing
@@ -403,7 +403,7 @@ void CONSTRAINTS::Constraint::initialize_constraint(
         elevector3.size(1);
 
         // call the element specific evaluate method
-        int err = curr->second->Evaluate(
+        int err = curr->second->evaluate(
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
         if (err) FOUR_C_THROW("error while evaluating elements");
 

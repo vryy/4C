@@ -38,13 +38,13 @@ namespace STR
       //! constructor
       SpringDashpot();
 
-      void Setup() override;
+      void setup() override;
 
       //! derived
       Inpar::STR::ModelType Type() const override { return Inpar::STR::model_springdashpot; }
 
       //! derived
-      void Reset(const Epetra_Vector& x) override;
+      void reset(const Epetra_Vector& x) override;
 
       //! derived
       bool evaluate_force() override;

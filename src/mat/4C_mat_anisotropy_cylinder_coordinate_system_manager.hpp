@@ -49,7 +49,7 @@ namespace Mat
      *
      * @param data (in/out) : data object
      */
-    void Pack(Core::Communication::PackBuffer& data) const;
+    void pack(Core::Communication::PackBuffer& data) const;
 
     /*!
      * Unpack all data from another processor
@@ -57,7 +57,7 @@ namespace Mat
      * @param data (in) : data object
      * @param position (in/out) : current position in the data
      */
-    void Unpack(const std::vector<char>& data, std::vector<char>::size_type& position);
+    void unpack(const std::vector<char>& data, std::vector<char>::size_type& position);
 
     ///@}
 

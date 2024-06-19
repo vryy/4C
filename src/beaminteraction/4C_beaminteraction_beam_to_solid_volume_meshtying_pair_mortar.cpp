@@ -59,7 +59,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
-    this->cast_geometry_pair()->Evaluate(
+    this->cast_geometry_pair()->evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -322,14 +322,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
       // Get the shape function matrices.
-      N_mortar.Clear();
-      N_beam.Clear();
-      N_solid.Clear();
-      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::Evaluate(
+      N_mortar.clear();
+      N_beam.clear();
+      N_solid.clear();
+      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::evaluate(
           N_mortar, projected_gauss_point.GetEta());
-      GEOMETRYPAIR::EvaluateShapeFunction<beam>::Evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<beam>::evaluate(
           N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
-      GEOMETRYPAIR::EvaluateShapeFunction<solid>::Evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<solid>::evaluate(
           N_solid, projected_gauss_point.GetXi(), this->ele2pos_.shape_function_data_);
 
       // Fill in the local templated mortar matrix D.

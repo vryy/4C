@@ -45,7 +45,7 @@ namespace Core::LinearSolver
     virtual ~PreconditionerTypeBase() = default;
 
     /// Setup preconditioner with a given linear system.
-    virtual void Setup(
+    virtual void setup(
         bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) = 0;
 
     /// linear operator used for preconditioning

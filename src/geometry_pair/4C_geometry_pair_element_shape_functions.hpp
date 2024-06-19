@@ -51,7 +51,7 @@ namespace GEOMETRYPAIR
      * @param shape_function_data (in) Shape function data container.
      */
     template <typename V, typename T, typename... not_needed_argument_type>
-    static void Evaluate(V& N, const T& xi, const not_needed_argument_type&... not_needed_argument)
+    static void evaluate(V& N, const T& xi, const not_needed_argument_type&... not_needed_argument)
     {
       if constexpr (element_type::element_dim_ == 1)
       {
@@ -118,7 +118,7 @@ namespace GEOMETRYPAIR
      * @param shape_function_data (in) Shape function data container.
      */
     template <typename V, typename T>
-    static void Evaluate(V& N, const T& xi, const ShapeFunctionData<t_hermite>& shape_function_data)
+    static void evaluate(V& N, const T& xi, const ShapeFunctionData<t_hermite>& shape_function_data)
     {
       Core::FE::shape_function_hermite_1D(
           N, xi, shape_function_data.ref_length_, t_hermite::discretization_);
@@ -155,7 +155,7 @@ namespace GEOMETRYPAIR
      * @param shape_function_data (in) Shape function data container.
      */
     template <typename V, typename T>
-    static void Evaluate(
+    static void evaluate(
         V& N, const T& xi, const ShapeFunctionData<element_type>& shape_function_data)
     {
       if (shape_function_data.myknots_.size() == 0)
@@ -238,10 +238,10 @@ namespace GEOMETRYPAIR
         N_flat(true);
 
     // Evaluate the shape function values.
-    EvaluateShapeFunction<element_type>::Evaluate(N_flat, xi, shape_function_data...);
+    EvaluateShapeFunction<element_type>::evaluate(N_flat, xi, shape_function_data...);
 
     // Fill up the full shape function matrix.
-    N.Clear();
+    N.clear();
     for (unsigned int node = 0; node < element_type::n_nodes_; node++)
       for (unsigned int dim = 0; dim < element_type::spatial_dim_; dim++)
         for (unsigned int val = 0; val < element_type::n_val_; val++)

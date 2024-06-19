@@ -20,9 +20,9 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::StVenantKirchhoff::StVenantKirchhoff(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      density_(matdata.parameters.Get<double>("DENS"))
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      density_(matdata.parameters.get<double>("DENS"))
 {
   if (youngs_ <= 0.) FOUR_C_THROW("Young's modulus must be greater zero");
   if (poissonratio_ >= 0.5 || poissonratio_ < -1.)
@@ -40,7 +40,7 @@ Mat::StVenantKirchhoffType Mat::StVenantKirchhoffType::instance_;
 Core::Communication::ParObject* Mat::StVenantKirchhoffType::Create(const std::vector<char>& data)
 {
   auto* stvenantk = new Mat::StVenantKirchhoff();
-  stvenantk->Unpack(data);
+  stvenantk->unpack(data);
   return stvenantk;
 }
 
@@ -60,7 +60,7 @@ Mat::StVenantKirchhoff::StVenantKirchhoff(Mat::PAR::StVenantKirchhoff* params) :
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Mat::StVenantKirchhoff::Pack(Core::Communication::PackBuffer& data) const
+void Mat::StVenantKirchhoff::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -78,7 +78,7 @@ void Mat::StVenantKirchhoff::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Mat::StVenantKirchhoff::Unpack(const std::vector<char>& data)
+void Mat::StVenantKirchhoff::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -134,7 +134,7 @@ void Mat::StVenantKirchhoff::FillCmat(
   const double mfac = Emod / ((1.0 + nu) * (1.0 - 2.0 * nu));  // factor
 
   // clear the material tangent
-  cmat.Clear();
+  cmat.clear();
   // write non-zero components
   cmat(0, 0) = mfac * (1.0 - nu);
   cmat(0, 1) = mfac * nu;
@@ -155,7 +155,7 @@ void Mat::StVenantKirchhoff::FillCmat(
 /*----------------------------------------------------------------------*
 //calculates stresses using one of the above method to evaluate the elasticity tensor
  *----------------------------------------------------------------------*/
-void Mat::StVenantKirchhoff::Evaluate(const Core::LinAlg::SerialDenseVector* glstrain_e,
+void Mat::StVenantKirchhoff::evaluate(const Core::LinAlg::SerialDenseVector* glstrain_e,
     Core::LinAlg::SerialDenseMatrix* cmat_e, Core::LinAlg::SerialDenseVector* stress_e)
 {
   // this is temporary as long as the material does not have a
@@ -173,7 +173,7 @@ void Mat::StVenantKirchhoff::Evaluate(const Core::LinAlg::SerialDenseVector* gls
 /*----------------------------------------------------------------------*
 //calculates stresses using one of the above method to evaluate the elasticity tensor
  *----------------------------------------------------------------------*/
-void Mat::StVenantKirchhoff::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::StVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)

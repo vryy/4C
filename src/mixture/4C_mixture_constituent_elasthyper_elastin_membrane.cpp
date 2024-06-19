@@ -97,9 +97,9 @@ MIXTURE::ElastinMembraneAnisotropyExtension::get_orthogonal_structural_tensor(in
 MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane::
     MixtureConstituentElastHyperElastinMembrane(const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureConstituentElastHyperBase(matdata),
-      damage_function_id_(matdata.parameters.Get<int>("DAMAGE_FUNCT")),
-      nummat_membrane_(matdata.parameters.Get<int>("MEMBRANENUMMAT")),
-      matids_membrane_(matdata.parameters.Get<std::vector<int>>("MEMBRANEMATIDS"))
+      damage_function_id_(matdata.parameters.get<int>("DAMAGE_FUNCT")),
+      nummat_membrane_(matdata.parameters.get<int>("MEMBRANENUMMAT")),
+      matids_membrane_(matdata.parameters.get<std::vector<int>>("MEMBRANEMATIDS"))
 {
   if (nummat_membrane_ != (int)matids_membrane_.size())
   {
@@ -205,7 +205,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::read_element(
   MixtureConstituentElastHyperBase::read_element(numgp, linedef);
 
   // Setup summands
-  for (const auto& summand : potsum_membrane_) summand->Setup(numgp, linedef);
+  for (const auto& summand : potsum_membrane_) summand->setup(numgp, linedef);
 
   current_reference_growth_.resize(numgp, 1.0);
   mue_frac_.resize(numgp, 1.0);
@@ -227,12 +227,12 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::update(
   current_reference_growth_[gp] =
       Global::Problem::Instance()
           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
-          .Evaluate(reference_coordinates.A(), totaltime, 0);
+          .evaluate(reference_coordinates.A(), totaltime, 0);
 
   MixtureConstituentElastHyperBase::update(defgrd, params, gp, eleGID);
 
   // loop map of associated potential summands
-  for (auto& summand : potsum_membrane_) summand->Update();
+  for (auto& summand : potsum_membrane_) summand->update();
 }
 
 void MIXTURE::MixtureConstituentElastHyperElastinMembrane::pre_evaluate(
@@ -349,7 +349,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_stress_c_mat
 
   // Compute constitutive tensor
   static Core::LinAlg::Matrix<6, 6> dAradgriXAradgr_symdC(false);
-  dAradgriXAradgr_symdC.Clear();
+  dAradgriXAradgr_symdC.clear();
 
   Mat::add_holzapfel_product(dAradgriXAradgr_symdC, iFinTAorthgrTiXTAorthgriFin_sym_stress, -2.0);
 

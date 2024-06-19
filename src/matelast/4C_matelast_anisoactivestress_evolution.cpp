@@ -21,18 +21,18 @@ FOUR_C_NAMESPACE_OPEN
 Mat::Elastic::PAR::AnisoActiveStressEvolution::AnisoActiveStressEvolution(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : ParameterAniso(matdata),
-      sigma_(matdata.parameters.Get<double>("SIGMA")),
-      tauc0_(matdata.parameters.Get<double>("TAUC0")),
-      maxactiv_(matdata.parameters.Get<double>("MAX_ACTIVATION")),
-      minactiv_(matdata.parameters.Get<double>("MIN_ACTIVATION")),
-      activationthreshold_(matdata.parameters.Get<double>("ACTIVATION_THRES")),
-      sourceactiv_(matdata.parameters.Get<int>("SOURCE_ACTIVATION")),
-      strain_dep_(matdata.parameters.Get<bool>("STRAIN_DEPENDENCY")),
-      lambda_lower_(matdata.parameters.Get<double>("LAMBDA_LOWER")),
-      lambda_upper_(matdata.parameters.Get<double>("LAMBDA_UPPER")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
-      init_(matdata.parameters.Get<int>("INIT")),
-      adapt_angle_(matdata.parameters.Get<bool>("ADAPT_ANGLE"))
+      sigma_(matdata.parameters.get<double>("SIGMA")),
+      tauc0_(matdata.parameters.get<double>("TAUC0")),
+      maxactiv_(matdata.parameters.get<double>("MAX_ACTIVATION")),
+      minactiv_(matdata.parameters.get<double>("MIN_ACTIVATION")),
+      activationthreshold_(matdata.parameters.get<double>("ACTIVATION_THRES")),
+      sourceactiv_(matdata.parameters.get<int>("SOURCE_ACTIVATION")),
+      strain_dep_(matdata.parameters.get<bool>("STRAIN_DEPENDENCY")),
+      lambda_lower_(matdata.parameters.get<double>("LAMBDA_LOWER")),
+      lambda_upper_(matdata.parameters.get<double>("LAMBDA_UPPER")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
+      init_(matdata.parameters.get<int>("INIT")),
+      adapt_angle_(matdata.parameters.get<bool>("ADAPT_ANGLE"))
 {
 }
 
@@ -69,7 +69,7 @@ void Mat::Elastic::AnisoActiveStressEvolution::register_anisotropy_extensions(
   anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
 
-void Mat::Elastic::AnisoActiveStressEvolution::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::Elastic::AnisoActiveStressEvolution::setup(int numgp, Input::LineDefinition* linedef)
 {
   // Setup of active stress model
   tauc_n_ = params_->tauc0_;
@@ -147,7 +147,7 @@ void Mat::Elastic::AnisoActiveStressEvolution::add_stress_aniso_principal(
     activationFunction =
         Global::Problem::Instance()
             ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
-            .Evaluate(element_center_coordinates_ref.A(), totaltime, 0);
+            .evaluate(element_center_coordinates_ref.A(), totaltime, 0);
   }
 
   double lambda = 0.0;
@@ -217,7 +217,7 @@ void Mat::Elastic::AnisoActiveStressEvolution::GetFiberVecs(
 }
 
 // Update internal stress variables
-void Mat::Elastic::AnisoActiveStressEvolution::Update() { tauc_n_ = tauc_np_; }
+void Mat::Elastic::AnisoActiveStressEvolution::update() { tauc_n_ = tauc_np_; }
 
 void Mat::Elastic::AnisoActiveStressEvolution::SetFiberVecs(const double newgamma,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)

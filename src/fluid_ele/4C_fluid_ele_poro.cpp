@@ -29,7 +29,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidPoroEleType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::FluidPoro(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -102,7 +102,7 @@ Core::Elements::Element* Discret::ELEMENTS::FluidPoro::Clone() const
   return newelement;
 }
 
-void Discret::ELEMENTS::FluidPoro::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::FluidPoro::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -124,10 +124,10 @@ void Discret::ELEMENTS::FluidPoro::Pack(Core::Communication::PackBuffer& data) c
   for (int i = 0; i < size; ++i) add_to_pack(data, anisotropic_permeability_nodal_coeffs_[i]);
 
   // add base class Element
-  Fluid::Pack(data);
+  Fluid::pack(data);
 }
 
-void Discret::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidPoro::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -153,7 +153,7 @@ void Discret::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   Fluid::extract_from_pack(position, data, basedata);
-  Fluid::Unpack(basedata);
+  Fluid::unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);

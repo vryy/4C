@@ -77,7 +77,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
   Configuration config = config_none;
 
   // get type of condition
-  const auto& type = condition.parameters().Get<std::string>("type");
+  const auto& type = condition.parameters().get<std::string>("type");
   if (type == "neum_live")
   {
     ltype = neum_live;
@@ -104,8 +104,8 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
   }
 
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
   const auto* spa_func = condition.parameters().GetIf<std::vector<int>>("funct");
 
   /*
@@ -308,7 +308,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
               // evaluate function at current gauss point
               functfac = Global::Problem::Instance()
                              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                             .Evaluate(coordgpref, time, dof);
+                             .evaluate(coordgpref, time, dof);
             }
             else
               functfac = 1.0;
@@ -355,7 +355,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
           // evaluate function at current gauss point
           functfac = Global::Problem::Instance()
                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                         .Evaluate(coordgpref, time, 0);
+                         .evaluate(coordgpref, time, 0);
         }
 
         const double fac = intpoints.qwgt[gp] * functfac * ortho_value * normalfac;
@@ -431,7 +431,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
             // evaluate function at current gauss point
             functfac = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                           .Evaluate(coordgpref, time, 0);
+                           .evaluate(coordgpref, time, 0);
           }
           else
             functfac = 1.0;
@@ -629,7 +629,7 @@ void Discret::ELEMENTS::StructuralSurface::analytical_d_surface_integration(
 /*----------------------------------------------------------------------*
  * Evaluate method for StructuralSurface-Elements               tk 10/07*
  * ---------------------------------------------------------------------*/
-int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
@@ -1573,8 +1573,8 @@ int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& param
           pressure_part(1, 1) = interpolationresult[6];
           pressure_part(2, 2) = interpolationresult[6];
 
-          tempmat.Clear();
-          tempvec.Clear();
+          tempmat.clear();
+          tempvec.clear();
 
           tempmat.MultiplyNT(pressure_part, defgrd_inv);
           tempvec.MultiplyNN(tempmat, unitnormal);
@@ -1635,7 +1635,7 @@ int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& param
                                ? springstiff[i] * Global::Problem::Instance()
                                                       ->FunctionById<Core::UTILS::FunctionOfTime>(
                                                           (*numfuncstiff)[i] - 1)
-                                                      .Evaluate(time)
+                                                      .evaluate(time)
                                : springstiff[i];
         }
       }
@@ -1645,7 +1645,7 @@ int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& param
                              ? dashpotvisc[i] * Global::Problem::Instance()
                                                     ->FunctionById<Core::UTILS::FunctionOfTime>(
                                                         (*numfuncvisco)[i] - 1)
-                                                    .Evaluate(time)
+                                                    .evaluate(time)
                              : dashpotvisc[i];
 
       for (auto i = 0U; i < numfuncdisploffset->size(); ++i)
@@ -1653,7 +1653,7 @@ int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& param
                              ? disploffset[i] * Global::Problem::Instance()
                                                     ->FunctionById<Core::UTILS::FunctionOfTime>(
                                                         (*numfuncdisploffset)[i] - 1)
-                                                    .Evaluate(time)
+                                                    .evaluate(time)
                              : disploffset[i];
 
       // type of Robin conditions
@@ -1862,7 +1862,7 @@ int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& param
                   force_disp = Global::Problem::Instance()
                                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
                                        (*numfuncnonlinstiff)[dim] - 1)
-                                   .Evaluate(displ, time, 0);
+                                   .evaluate(displ, time, 0);
 
                   force_disp_deriv = (Global::Problem::Instance()
                                           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
@@ -1942,7 +1942,7 @@ int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& param
                 force_disp = Global::Problem::Instance()
                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
                                      (*numfuncnonlinstiff)[0] - 1)
-                                 .Evaluate(displ, time, 0);
+                                 .evaluate(displ, time, 0);
 
                 force_disp_deriv = (Global::Problem::Instance()
                                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
@@ -2009,7 +2009,7 @@ int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& param
 /*----------------------------------------------------------------------*
  * Evaluate method for StructuralSurface-Elements               tk 10/07*
  * ---------------------------------------------------------------------*/
-int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
@@ -2017,7 +2017,7 @@ int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& param
 {
   if (la.Size() == 1)
   {
-    return Evaluate(params, discretization,
+    return evaluate(params, discretization,
         la[0].lm_,  // location vector is build by the first column of la
         elematrix1, elematrix2, elevector1, elevector2, elevector3);
   }
@@ -2049,7 +2049,7 @@ int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& param
     case calc_ref_nodal_normals:
     case calc_cur_nodal_normals:
     {
-      Evaluate(params, discretization,
+      evaluate(params, discretization,
           la[0].lm_,  // location vector is build by the first column of la
           elematrix1, elematrix2, elevector1, elevector2, elevector3);
     }

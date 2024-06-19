@@ -359,7 +359,7 @@ void Adapter::CouplingPoroMortar::create_strategy(Teuchos::RCP<Core::FE::Discret
       new CONTACT::LagrangeStrategyPoro(data_ptr, masterdis->dof_row_map(), masterdis->NodeRowMap(),
           input, interfaces, dim, comm_, alphaf, numcoupleddof, poroslave, poromaster));
 
-  porolagstrategy_->Setup(false, true);
+  porolagstrategy_->setup(false, true);
   porolagstrategy_->PoroMtInitialize();
 
   firstinit_ = true;
@@ -438,10 +438,10 @@ void Adapter::CouplingPoroMortar::EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fve
   // linearization
   porolagstrategy_->SetParentState("displacement", sdisp, sdis);
 
-  interface_->Initialize();
+  interface_->initialize();
   // in the end of Evaluate coupling condition residuals and linearizations are computed in contact
   // integrator
-  interface_->Evaluate();
+  interface_->evaluate();
 
   porolagstrategy_->poro_mt_prepare_fluid_coupling();
   porolagstrategy_->PoroInitialize(coupfs, fdofrowmap, firstinit_);

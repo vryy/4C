@@ -36,7 +36,7 @@ STR::Predict::Generic::Generic()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::Generic::Init(const enum Inpar::STR::PredEnum& type,
+void STR::Predict::Generic::init(const enum Inpar::STR::PredEnum& type,
     const Teuchos::RCP<STR::IMPLICIT::Generic>& implint_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
     const Teuchos::RCP<STR::TimeInt::BaseDataIO>& iodata_ptr,
@@ -117,13 +117,13 @@ std::string STR::Predict::Generic::Name() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::Generic::check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!"); }
+void STR::Predict::Generic::check_init() const { FOUR_C_ASSERT(is_init(), "Call init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::Predict::Generic::check_init_setup() const
 {
-  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*

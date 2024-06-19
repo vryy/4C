@@ -41,7 +41,7 @@ namespace Discret
       RedInterAcinarDepImplInterface() {}
       /// Empty destructor
       virtual ~RedInterAcinarDepImplInterface() = default;  /// Evaluate the element
-      virtual int Evaluate(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
+      virtual int evaluate(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -101,7 +101,7 @@ namespace Discret
       /*!
         The evaluate function for the general inter-acinar linker case.
        */
-      int Evaluate(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
+      int evaluate(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

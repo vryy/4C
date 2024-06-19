@@ -95,7 +95,7 @@ void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
     if (cnode->Active() == true)
     {
       // Evaluate pressure
-      double pressure = coconstlaw_->Evaluate(kappa * gap, cnode);
+      double pressure = coconstlaw_->evaluate(kappa * gap, cnode);
       // Evaluate pressure derivative
       double pressurederiv = coconstlaw_->EvaluateDeriv(kappa * gap, cnode);
 
@@ -110,7 +110,7 @@ void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
       // contribution of derivative of weighted gap
       std::map<int, double>& derivg = cnode->Data().GetDerivG();
       std::map<int, double>::iterator gcurr;
-      // printf("lm=%f\n", -coconstlaw_->Evaluate(kappa * gap));
+      // printf("lm=%f\n", -coconstlaw_->evaluate(kappa * gap));
 
       // contribution of derivative of normal
       std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();

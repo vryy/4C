@@ -61,10 +61,10 @@ namespace Discret
       /*!
         This class does not provide a definition for this function; it
         must be defined in LubricationEleCalc.
-        The Evaluate() method is meant only for the assembling of the
+        The evaluate() method is meant only for the assembling of the
         linearized matrix and the right hand side
        */
-      virtual int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      virtual int evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

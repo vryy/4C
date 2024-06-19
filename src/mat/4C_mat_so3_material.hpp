@@ -28,9 +28,9 @@ namespace Mat
    public:
     int UniqueParObjectId() const override = 0;
 
-    void Pack(Core::Communication::PackBuffer& data) const override = 0;
+    void pack(Core::Communication::PackBuffer& data) const override = 0;
 
-    void Unpack(const std::vector<char>& data) override = 0;
+    void unpack(const std::vector<char>& data) override = 0;
 
     //! @name Evaluation methods
     /*!
@@ -44,7 +44,7 @@ namespace Mat
      * @param[in] gp       Current Gauss point
      * @param[in] eleGID   Global element ID
      */
-    virtual void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrad,
+    virtual void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrad,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) = 0;
@@ -179,13 +179,13 @@ namespace Mat
      * @param[in] numgp   Current Gauss point
      * @param[in] linedef Linedefinition
      */
-    virtual void Setup(int numgp, Input::LineDefinition* linedef) {}
+    virtual void setup(int numgp, Input::LineDefinition* linedef) {}
 
     /*!
      * @brief Post setup routine which will be called after all elements were read and set up
      *
      * This method will be called after the input phase to setup the material with
-     * input data that has not yet been read during the Setup(int,Input::LineDefinition*) call.
+     * input data that has not yet been read during the setup(int,Input::LineDefinition*) call.
      *
      * @param[in] params Container for additional information passed from the element
      * @param[in] eleGID Global element ID
@@ -195,7 +195,7 @@ namespace Mat
     /*!
      * @brief Update of GP data (e.g., history variables)
      */
-    virtual void Update() {}
+    virtual void update() {}
 
     /*!
      * @brief Indicator, whether the extended update call is used
@@ -208,7 +208,7 @@ namespace Mat
      * @brief Update of GP data (e.g., history variables)
      *
      * This method is currently only called from specific element types. If you need the additional
-     * functionality compared to Update() with any other element than the adapted ones, you need to
+     * functionality compared to update() with any other element than the adapted ones, you need to
      * implement it yourself. Currently only HEX8 and HEX8FBAR elements are supported
      *
      * Materials that use this method need to return true in UsesExtendedUpdate()

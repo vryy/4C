@@ -58,7 +58,7 @@ ScaTra::TimIntHDG::TimIntHDG(const Teuchos::RCP<Core::FE::Discretization> &actdi
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntHDG::Setup()
+void ScaTra::TimIntHDG::setup()
 {
   hdgdis_ = dynamic_cast<Core::FE::DiscretizationHDG *>(discret_.get());
   if (hdgdis_ == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
@@ -127,9 +127,9 @@ void ScaTra::TimIntHDG::Setup()
   timealgoset_ = timealgo_;
   if (timealgo_ != Inpar::ScaTra::timeint_stationary) timealgo_ = Inpar::ScaTra::timeint_gen_alpha;
 
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  ScaTra::TimIntGenAlpha::Setup();
+  ScaTra::TimIntGenAlpha::setup();
 
   // create vector for concentration at nodes for output
   interpolatedPhinp_ = Core::LinAlg::CreateVector(*discret_->NodeRowMap(), true);
@@ -274,9 +274,9 @@ void ScaTra::TimIntHDG::set_old_part_of_righthandside()
 /*----------------------------------------------------------------------*
  * Update
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntHDG::Update()
+void ScaTra::TimIntHDG::update()
 {
-  ScaTra::TimIntGenAlpha::Update();
+  ScaTra::TimIntGenAlpha::update();
 
   // concentrations of this step become most recent
   // concentrations of the last step
@@ -321,7 +321,7 @@ namespace
       ele->LocationVector(dis, la, false);
       interpolVec.size(ele->num_node() * (2 + ndim));
 
-      ele->Evaluate(eleparams, dis, la, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
+      ele->evaluate(eleparams, dis, la, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
       // sum values on nodes into vectors and record the touch count (build average of values)
       for (int i = 0; i < ele->num_node(); ++i)
@@ -546,7 +546,7 @@ void ScaTra::TimIntHDG::SetInitialField(
           updateVec2.size(discret_->NumDof(nds_intvar_, ele));
         else
           updateVec2.putScalar(0.0);
-        ele->Evaluate(
+        ele->evaluate(
             eleparams, *discret_, la, dummyMat, dummyMat, updateVec1, updateVec2, dummyVec);
 
         if (ele->Owner() == discret_->Comm().MyPID())
@@ -668,7 +668,7 @@ void ScaTra::TimIntHDG::update_interior_variables(Teuchos::RCP<Epetra_Vector> up
     ele->LocationVector(*discret_, la, false);
     updateVec.size(discret_->NumDof(nds_intvar_, ele));
 
-    ele->Evaluate(eleparams, *discret_, la, dummyMat, dummyMat, updateVec, dummyVec, dummyVec);
+    ele->evaluate(eleparams, *discret_, la, dummyMat, dummyMat, updateVec, dummyVec, dummyVec);
 
     std::vector<int> localDofs = discret_->Dof(nds_intvar_, ele);
     FOUR_C_ASSERT(
@@ -740,7 +740,7 @@ void ScaTra::TimIntHDG::fd_check()
     strategy.ClearElementStorage(la[0].Size(), la[0].Size());
 
     // evaluate
-    ele->Evaluate(eleparams, *discret_, la, strategy.Elematrix1(), strategy.Elematrix2(),
+    ele->evaluate(eleparams, *discret_, la, strategy.Elematrix1(), strategy.Elematrix2(),
         strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
     int eid = ele->Id();
     strategy.AssembleMatrix1(eid, la[0].lm_, la[0].lm_, la[0].lmowner_, la[0].stride_);
@@ -808,7 +808,7 @@ void ScaTra::TimIntHDG::fd_check()
         ele->LocationVector(*discret_, la, false);
 
         strategy.ClearElementStorage(la[0].Size(), la[0].Size());
-        ele->Evaluate(eleparams, *discret_, la, strategy.Elematrix1(), strategy.Elematrix2(),
+        ele->evaluate(eleparams, *discret_, la, strategy.Elematrix1(), strategy.Elematrix2(),
             strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
         int eid = ele->Id();
         strategy.AssembleMatrix1(eid, la[0].lm_, la[0].lm_, la[0].lmowner_, la[0].stride_);
@@ -1039,7 +1039,7 @@ void ScaTra::TimIntHDG::calc_mat_initial()
     strategy.ClearElementStorage(la[0].Size(), la[0].Size());
 
     // evaluate
-    int err = ele->Evaluate(eleparams, *discret_, la, strategy.Elematrix1(), strategy.Elematrix2(),
+    int err = ele->evaluate(eleparams, *discret_, la, strategy.Elematrix1(), strategy.Elematrix2(),
         strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
     if (err)
       FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret_->Comm().MyPID(), ele->Id(), err);
@@ -1126,7 +1126,7 @@ void ScaTra::TimIntHDG::adapt_degree()
           dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
 
       // call routine on elements to calculate error on element
-      ele->Evaluate(
+      ele->evaluate(
           eleparams, *discret_, la_old[iele], dummyMat, dummyMat, dummyVec, dummyVec, dummyVec);
 
       double error = eleparams.get<double>("error");
@@ -1337,7 +1337,7 @@ void ScaTra::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Epetra_Vector> phi_ne
       intphi_ele.putScalar(0.0);
 
     // call routine on elements to project values from old to new element vector
-    ele->Evaluate(eleparams, *discret_, la, dummyMat, dummyMat, phi_ele, intphi_ele, dummyVec);
+    ele->evaluate(eleparams, *discret_, la, dummyMat, dummyMat, phi_ele, intphi_ele, dummyVec);
 
     // store projected values of the element on the new state vector for the interior variables
     if (ele->Owner() == discret_->Comm().MyPID())
@@ -1426,7 +1426,7 @@ void ScaTra::TimIntHDG::assemble_rhs()
     strategy.ClearElementStorage(la[0].Size(), la[0].Size());
 
     // evaluate
-    ele->Evaluate(eleparams, *discret_, la, strategy.Elematrix1(), strategy.Elematrix2(),
+    ele->evaluate(eleparams, *discret_, la, strategy.Elematrix1(), strategy.Elematrix2(),
         strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
     strategy.AssembleVector1(la[0].lm_, la[0].lmowner_);
   }

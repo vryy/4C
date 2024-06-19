@@ -69,12 +69,12 @@ namespace STR
     virtual ~Dbc() = default;
 
     //! Initialize class variables
-    virtual void Init(const Teuchos::RCP<Core::FE::Discretization>& discret,
+    virtual void init(const Teuchos::RCP<Core::FE::Discretization>& discret,
         const Teuchos::RCP<Epetra_Vector>& freact,
         const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
 
     //! Setup class variables
-    virtual void Setup();
+    virtual void setup();
 
     /*! \brief Apply the DBC to system of equations
      *

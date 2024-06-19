@@ -24,9 +24,9 @@ namespace Adapter
    public:
     explicit FluidWrapper(Teuchos::RCP<Fluid> fluid) : fluid_(fluid) {}
 
-    void Init() override
+    void init() override
     {
-      fluid_->Init();
+      fluid_->init();
       return;
     }
     Teuchos::RCP<const Epetra_Vector> initial_guess() override { return fluid_->initial_guess(); }
@@ -181,9 +181,9 @@ namespace Adapter
       return;
     }
     void PrepareSolve() override { fluid_->PrepareSolve(); }
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc) override
+    void evaluate(Teuchos::RCP<const Epetra_Vector> stepinc) override
     {
-      return fluid_->Evaluate(stepinc);
+      return fluid_->evaluate(stepinc);
     }
     bool convergence_check(int itnum, int itmax, const double velrestol, const double velinctol,
         const double presrestol, const double presinctol) override
@@ -196,9 +196,9 @@ namespace Adapter
       FOUR_C_THROW("not implemented!");
       return;
     }
-    void Update() override { return fluid_->Update(); }
+    void update() override { return fluid_->update(); }
     void StatisticsAndOutput() override { return fluid_->StatisticsAndOutput(); }
-    void Output() override { return fluid_->Output(); }
+    void output() override { return fluid_->output(); }
     void StatisticsOutput() override
     {
       FOUR_C_THROW("not implemented!");
@@ -413,9 +413,9 @@ namespace Adapter
     {
       return fluid_->CreateFieldTest();
     }
-    void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override
+    void reset(bool completeReset = false, int numsteps = 1, int iter = -1) override
     {
-      return fluid_->Reset(completeReset, numsteps, iter);
+      return fluid_->reset(completeReset, numsteps, iter);
     };
     void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp) override
     {

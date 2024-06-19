@@ -399,7 +399,7 @@ namespace Mat
      * Pack all data to distribute it on other processors
      * @param data data where to store the values
      */
-    void Pack(Core::Communication::PackBuffer& data) const
+    void pack(Core::Communication::PackBuffer& data) const
     {
       Core::Communication::ParObject::add_to_pack(data, isoprinc);
       Core::Communication::ParObject::add_to_pack(data, isomod);
@@ -415,7 +415,7 @@ namespace Mat
      * @param position position where to start to unpack
      * @param data data holding the values
      */
-    void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
+    void unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
     {
       isoprinc = (bool)Core::Communication::ParObject::extract_int(position, data);
       isomod = (bool)Core::Communication::ParObject::extract_int(position, data);
@@ -429,7 +429,7 @@ namespace Mat
     /**
      * Set all flags to false
      */
-    void Clear()
+    void clear()
     {
       isoprinc = false;
       isomod = false;

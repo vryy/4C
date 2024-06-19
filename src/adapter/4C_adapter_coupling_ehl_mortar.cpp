@@ -70,11 +70,11 @@ void Adapter::CouplingEhlMortar::read_mortar_condition(
   input.set<int>("PROBTYPE", Inpar::CONTACT::ehl);
 }
 
-void Adapter::CouplingEhlMortar::Setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
+void Adapter::CouplingEhlMortar::setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
     Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
     const std::string& couplingcond)
 {
-  Adapter::CouplingNonLinMortar::Setup(masterdis, slavedis, coupleddof, couplingcond);
+  Adapter::CouplingNonLinMortar::setup(masterdis, slavedis, coupleddof, couplingcond);
   z_ = Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowDofs(), true));
   fscn_ = Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowDofs(), true));
 
@@ -87,9 +87,9 @@ void Adapter::CouplingEhlMortar::Setup(Teuchos::RCP<Core::FE::Discretization> ma
   double fr_coeff = -1.;
   for (int i = 0; i < (int)ehl_conditions.size(); ++i)
   {
-    [[maybe_unused]] const int group1id = ehl_conditions[i]->parameters().Get<int>("Interface ID");
-    const auto fr = ehl_conditions[i]->parameters().Get<double>("FrCoeffOrBound");
-    if (fr != ehl_conditions[0]->parameters().Get<double>("FrCoeffOrBound"))
+    [[maybe_unused]] const int group1id = ehl_conditions[i]->parameters().get<int>("Interface ID");
+    const auto fr = ehl_conditions[i]->parameters().get<double>("FrCoeffOrBound");
+    if (fr != ehl_conditions[0]->parameters().get<double>("FrCoeffOrBound"))
       FOUR_C_THROW("inconsistency in friction coefficients");
     fr_coeff = fr;
   }
@@ -127,10 +127,10 @@ void Adapter::CouplingEhlMortar::Integrate(Teuchos::RCP<const Epetra_Vector> dis
   interface_->set_state(Mortar::state_new_displacement, *disp);
 
   // init internal data
-  interface_->Initialize();
+  interface_->initialize();
   interface_->set_element_areas();
   // call interface evaluate (d,m,gap...)
-  interface_->Evaluate();
+  interface_->evaluate();
 
   // some first assemblies, that don't require any additional states
   D_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 81, false, false));
@@ -325,7 +325,7 @@ void Adapter::CouplingEhlMortar::CondenseContact(
   // if there are no active nodes, we can leave now
   if (interface_->ActiveNodes()->NumGlobalElements() == 0)
   {
-    sysmat->Reset();
+    sysmat->reset();
     sysmat->Assign(0, 0, Core::LinAlg::Copy, *kss);
     sysmat->Assign(0, 1, Core::LinAlg::Copy, *kst);
     sysmat->Assign(1, 0, Core::LinAlg::Copy, *kts);
@@ -508,8 +508,8 @@ void Adapter::CouplingEhlMortar::CondenseContact(
   // get references to the blocks (just for convenience)
   Core::LinAlg::SparseMatrix& kss_new = sysmat->Matrix(0, 0);
   Core::LinAlg::SparseMatrix& kst_new = sysmat->Matrix(0, 1);
-  kss_new.Reset();
-  kst_new.Reset();
+  kss_new.reset();
+  kst_new.reset();
   // reynolds equation blocks remain untouched
 
   // reset rhs

@@ -76,14 +76,14 @@ namespace Core::Geo
 
       virtual ~BackMesh() = default;
 
-      void Init(const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
+      void init(const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
           const Teuchos::RCP<const Epetra_Vector>& back_levelset_col);
 
       const Teuchos::RCP<Core::FE::Discretization>& GetPtr() { return back_discret_; }
 
-      Core::FE::Discretization& Get() { return *back_discret_; }
+      Core::FE::Discretization& get() { return *back_discret_; }
 
-      const Core::FE::Discretization& Get() const { return *back_discret_; }
+      const Core::FE::Discretization& get() const { return *back_discret_; }
 
       virtual int NumMyColElements() const;
 

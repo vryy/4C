@@ -24,10 +24,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*/
 Mat::PAR::Growth::Growth(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      idmatelastic_(matdata.parameters.Get<int>("IDMATELASTIC")),
-      idgrowthlaw_(matdata.parameters.Get<int>("GROWTHLAW")),
-      starttime_(matdata.parameters.Get<double>("STARTTIME")),
-      endtime_(matdata.parameters.Get<double>("ENDTIME"))
+      idmatelastic_(matdata.parameters.get<int>("IDMATELASTIC")),
+      idgrowthlaw_(matdata.parameters.get<int>("GROWTHLAW")),
+      starttime_(matdata.parameters.get<double>("STARTTIME")),
+      endtime_(matdata.parameters.get<double>("ENDTIME"))
 {
   // retrieve problem instance to read from
   const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -158,7 +158,7 @@ Mat::Growth::Growth(Mat::PAR::Growth* params)
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::Growth::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Growth::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -192,12 +192,12 @@ void Mat::Growth::Pack(Core::Communication::PackBuffer& data) const
   // Pack data of elastic material
   if (matelastic_ != Teuchos::null)
   {
-    matelastic_->Pack(data);
+    matelastic_->pack(data);
   }
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::Growth::Unpack(const std::vector<char>& data)
+void Mat::Growth::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -267,7 +267,7 @@ void Mat::Growth::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::Growth::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::Growth::setup(int numgp, Input::LineDefinition* linedef)
 {
   if (isinit_)
     FOUR_C_THROW("This function should just be called if the material is not yet initialized.");
@@ -282,13 +282,13 @@ void Mat::Growth::Setup(int numgp, Input::LineDefinition* linedef)
 
   // Setup of elastic material
   matelastic_ = Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->idmatelastic_));
-  matelastic_->Setup(numgp, linedef);
+  matelastic_->setup(numgp, linedef);
 
   isinit_ = true;
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::Growth::Update()
+void Mat::Growth::update()
 {
   const int numgp = theta_->size();
 
@@ -297,7 +297,7 @@ void Mat::Growth::Update()
     thetaold_->at(i) = theta_->at(i);
   }
 
-  matelastic_->Update();
+  matelastic_->update();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -323,7 +323,7 @@ void Mat::Growth::EvaluateElastic(const Core::LinAlg::Matrix<3, 3>* defgrd,
     Core::LinAlg::Matrix<6, 6>* cmat, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
 {
-  Matelastic()->Evaluate(defgrd, glstrain, params, stress, cmat, gp, eleGID);
+  Matelastic()->evaluate(defgrd, glstrain, params, stress, cmat, gp, eleGID);
 }
 
 
@@ -412,7 +412,7 @@ Mat::GrowthVolumetricType Mat::GrowthVolumetricType::instance_;
 Core::Communication::ParObject* Mat::GrowthVolumetricType::Create(const std::vector<char>& data)
 {
   auto* grow = new Mat::GrowthVolumetric();
-  grow->Unpack(data);
+  grow->unpack(data);
   return grow;
 }
 
@@ -445,7 +445,7 @@ Mat::GrowthVolumetric::GrowthVolumetric(Mat::PAR::Growth* params)
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthVolumetric::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::GrowthVolumetric::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -648,7 +648,7 @@ void Mat::GrowthVolumetric::EvaluateGrowth(double* theta, Core::LinAlg::Matrix<6
   double thetaold = ThetaOldAtGp(gp);
 
   Mat::Growth* matgrowth = this;
-  Parameter()->growthlaw_->Evaluate(theta, thetaold, dthetadC, *matgrowth, defgrd, glstrain,
+  Parameter()->growthlaw_->evaluate(theta, thetaold, dthetadC, *matgrowth, defgrd, glstrain,
       refdir_, curdir_, f_g_hist_, growthtrig_const_, params, gp, eleGID);
 }
 
@@ -670,19 +670,19 @@ void Mat::GrowthVolumetric::EvaluateNonLinMass(const Core::LinAlg::Matrix<3, 3>*
     double thetaold = ThetaOld()->at(gp);
 
     Mat::Growth* matgrowth = this;
-    Parameter()->growthlaw_->Evaluate(&theta, thetaold, linmass_disp, *matgrowth, defgrd, glstrain,
+    Parameter()->growthlaw_->evaluate(&theta, thetaold, linmass_disp, *matgrowth, defgrd, glstrain,
         refdir_, curdir_, f_g_hist_, growthtrig_const_, params, gp, eleGID);
 
     const double density_deriv_scale = Parameter()->growthlaw_->DensityDerivScale(theta);
     linmass_disp->Scale(density_deriv_scale * Matelastic()->Density());
 
-    linmass_vel->Clear();
+    linmass_vel->clear();
   }
   else
   {
     // no growth, set to zero
-    linmass_disp->Clear();
-    linmass_vel->Clear();
+    linmass_disp->clear();
+    linmass_vel->clear();
   }
 }
 
@@ -731,7 +731,7 @@ void Mat::GrowthVolumetric::GetSAndCmatdach(const double theta,
 
   Core::LinAlg::Matrix<6, 1> Sdachvec(true);
   // elastic 2 PK stress and constitutive matrix
-  Matelastic()->Evaluate(&defgrddach, &glstraindachvec, params, &Sdachvec, cmatdach, gp, eleGID);
+  Matelastic()->evaluate(&defgrddach, &glstraindachvec, params, &Sdachvec, cmatdach, gp, eleGID);
 
   // calculate stress
   // 2PK stress S = F_g^-1 Sdach F_g^-T
@@ -758,7 +758,7 @@ void Mat::GrowthVolumetric::GetSAndCmatdach(const double theta,
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthVolumetric::Pack(Core::Communication::PackBuffer& data) const
+void Mat::GrowthVolumetric::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -823,11 +823,11 @@ void Mat::GrowthVolumetric::Pack(Core::Communication::PackBuffer& data) const
   }
 
   // Pack base class material
-  Growth::Pack(data);
+  Growth::pack(data);
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthVolumetric::Unpack(const std::vector<char>& data)
+void Mat::GrowthVolumetric::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -934,14 +934,14 @@ void Mat::GrowthVolumetric::Unpack(const std::vector<char>& data)
   // extract base class material
   std::vector<char> basedata(0);
   Growth::extract_from_pack(position, data, basedata);
-  Growth::Unpack(basedata);
+  Growth::unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthVolumetric::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::GrowthVolumetric::setup(int numgp, Input::LineDefinition* linedef)
 {
   tr_mandel_e_ = Teuchos::rcp(new std::vector<double>(numgp));
   lambda_fib_e_ = Teuchos::rcp(new std::vector<double>(numgp));
@@ -1028,13 +1028,13 @@ void Mat::GrowthVolumetric::Setup(int numgp, Input::LineDefinition* linedef)
   }
 
   // setup base class
-  Growth::Setup(numgp, linedef);
+  Growth::setup(numgp, linedef);
 }
 
 
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthVolumetric::Update()
+void Mat::GrowthVolumetric::update()
 {
   const int numgp = theta_->size();
 
@@ -1064,7 +1064,7 @@ void Mat::GrowthVolumetric::Update()
   }
 
   // update base class
-  Growth::Update();
+  Growth::update();
 }
 
 

@@ -64,7 +64,7 @@ namespace FSI
     //    Teuchos::RCP<DirichletNeumann> FSI::DirichletNeumann::Factory(_PROBLEM_TYP type); \FIXME
 
     /// setup this object
-    void Setup() override;
+    void setup() override;
 
     /// Access function for the #kinematiccoupling_ flag
     bool get_kinematic_coupling() const { return kinematiccoupling_; }

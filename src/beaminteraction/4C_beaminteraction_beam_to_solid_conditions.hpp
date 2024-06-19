@@ -73,7 +73,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Clear not reusable data (derived).
      */
-    void Clear() override;
+    void clear() override;
 
     /**
      * \brief Create the beam to solid pairs needed for this condition (derived).
@@ -211,7 +211,7 @@ namespace BEAMINTERACTION
      *
      * @param discret (in) discretization.
      */
-    void Setup(const Teuchos::RCP<const Core::FE::Discretization>& discret) override;
+    void setup(const Teuchos::RCP<const Core::FE::Discretization>& discret) override;
 
     /**
      * \brief Set the displacement state (derived).

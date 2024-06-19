@@ -950,9 +950,9 @@ namespace Core::FE
     The discretization takes ownership of the added element.
     Note that if an element with the same Id() exists, it will be
     deleted and replaced by the new one;
-    note furthermore that in this method Reset() is called only on the processor where
+    note furthermore that in this method reset() is called only on the processor where
     an element has been added actually; however, as such a modification may affect the
-    discretization as a whole it may be required to call Reset() on each processor
+    discretization as a whole it may be required to call reset() on each processor
     subsequently; to do so, please, call CheckFilledGlobally() if required
 
     \note Sets Filled()=false
@@ -965,9 +965,9 @@ namespace Core::FE
     The discretization takes ownership of the added node.
     Note that if a node with the same Id() exists, it will be
     deleted and replaced by the new one;
-    note furthermore that in this method Reset() is called only on the processor where
+    note furthermore that in this method reset() is called only on the processor where
     a node has been added actually; however, as such a modification may affect the
-    discretization as a whole it may be required to call Reset() on each processor
+    discretization as a whole it may be required to call reset() on each processor
     subsequently; to do so, please, call CheckFilledGlobally() if required
 
     \note Sets Filled()=false
@@ -980,15 +980,15 @@ namespace Core::FE
     Delete an node from the discretization. Node can either be ghosted or not.
     If node on calling processor is not found nothing is done and false is returned.
     Note that this is not a fatal error and no message will be posted;
-    note furthermore that in this method Reset() is called only on the processor where
+    note furthermore that in this method reset() is called only on the processor where
     an node has been deleted actually; however, as such a modification may affect the
-    discretization as a whole it may be required to call Reset() on each processor
+    discretization as a whole it may be required to call reset() on each processor
     subsequently; to do so, please, call CheckFilledGlobally() if required
 
     \return Returns true upon successful deletion or node, returns false if node
             was not found on calling proc.
 
-    \note Sets Filled()=false and calls Reset() upon discretization.
+    \note Sets Filled()=false and calls reset() upon discretization.
     */
     virtual bool DeleteNode(Teuchos::RCP<Core::Nodes::Node> node);
 
@@ -999,15 +999,15 @@ namespace Core::FE
     Delete an node from the discretization. Node can either be ghosted or not.
     If node on calling processor is not found nothing is done and false is returned.
     Note that this is not a fatal error and no message will be posted;
-    note furthermore that in this method Reset() is called only on the processor where
+    note furthermore that in this method reset() is called only on the processor where
     an node has been deleted actually; however, as such a modification may affect the
-    discretization as a whole it may be required to call Reset() on each processor
+    discretization as a whole it may be required to call reset() on each processor
     subsequently; to do so, please, call CheckFilledGlobally() if required
 
     \return Returns true upon successful deletion or node, returns false if node
             was not found on calling proc.
 
-    \note Sets Filled()=false and calls Reset() upon discretization.
+    \note Sets Filled()=false and calls reset() upon discretization.
     */
     virtual bool DeleteNode(const int gid);
 
@@ -1035,15 +1035,15 @@ namespace Core::FE
     Delete an element from the discretization. Element can either be ghosted or not.
     If element on calling processor is not found nothing is done and false is returned.
     Note that this is not a fatal error and no message will be posted;
-    note furthermore that in this method Reset() is called only on the processor where
+    note furthermore that in this method reset() is called only on the processor where
     an element has been deleted actually; however, as such a modification may affect the
-    discretization as a whole it may be required to call Reset() on each processor
+    discretization as a whole it may be required to call reset() on each processor
     subsequently; to do so, please, call CheckFilledGlobally() if required
 
     \return Returns true upon successful deletion or element, returns false if element
             was not found on calling proc.
 
-    \note Sets Filled()=false and calls Reset() upon discretization.
+    \note Sets Filled()=false and calls reset() upon discretization.
     */
     virtual bool DeleteElement(Teuchos::RCP<Core::Elements::Element> ele);
 
@@ -1054,15 +1054,15 @@ namespace Core::FE
     Delete an element from the discretization. Element can either be ghosted or not.
     If element on calling processor is not found nothing is done and false is returned.
     Note that this is not a fatal error and no message will be posted;
-    note furthermore that in this method Reset() is called only on the processor where
+    note furthermore that in this method reset() is called only on the processor where
     an element has been deleted actually; however, as such a modification may affect the
-    discretization as a whole it may be required to call Reset() on each processor
+    discretization as a whole it may be required to call reset() on each processor
     subsequently; to do so, please, call CheckFilledGlobally() if required
 
     \return Returns true upon successful deletion or element, returns false if element
             was not found on calling proc.
 
-    \note Sets Filled()=false and calls Reset() upon discretization.
+    \note Sets Filled()=false and calls reset() upon discretization.
     */
     virtual bool DeleteElement(const int gid);
 
@@ -1096,7 +1096,7 @@ namespace Core::FE
     \param assigndegreesoffreedom (in) : if true, resets existing dofsets and performs
                                          assigning of degrees of freedoms to nodes and
                                          elements.
-    \param initelements (in) : if true, build element register classes and call Initialize()
+    \param initelements (in) : if true, build element register classes and call initialize()
                                on each type of finite element present
     \param doboundaryconditions (in) : if true, build geometry of boundary conditions
                                        present.
@@ -1119,7 +1119,7 @@ namespace Core::FE
     DeleteElement) may amount to filled_ == false on some processors only, but not on each
     processor; as one may consider the discretization as incomplete already if filled_ == false on
     at least one processor, it is recommended to set filled_ == false on each processor as soon as
-    it occurs on at least one processor and to call Reset() subsequently on each processor; to do so
+    it occurs on at least one processor and to call reset() subsequently on each processor; to do so
     just call CheckFilledGlobally
     */
     virtual void CheckFilledGlobally();
@@ -1239,7 +1239,7 @@ namespace Core::FE
                                          assigning of degrees of freedoms to nodes and
                                          elements.
     \param initelements           (in) : if true, build element register classes and
-                                         call Initialize() on each type of finite element
+                                         call initialize() on each type of finite element
                                          present
     \param doboundaryconditions   (in) : if true, build geometry of boundary conditions
                                          present.
@@ -1263,7 +1263,7 @@ namespace Core::FE
                                          assigning of degrees of freedoms to nodes and
                                          elements.
     \param initelements           (in) : if true, build element register classes and
-                                         call Initialize() on each type of finite element
+                                         call initialize() on each type of finite element
                                          present
     \param doboundaryconditions   (in) : if true, build geometry of boundary conditions
                                          present.
@@ -1690,23 +1690,23 @@ namespace Core::FE
                                    the underlying assembly methods that add element
                                    contributions.
     */
-    virtual void Evaluate(Teuchos::ParameterList& params,
+    virtual void evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3);
 
     /// Call elements to evaluate
-    virtual void Evaluate(Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy);
+    virtual void evaluate(Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy);
 
     /**
      * Loop over all elements of the discretization and perform the given @p element_action. In
-     * contrast to the other overloads of Evaluate(), this function allows to perform any local
+     * contrast to the other overloads of evaluate(), this function allows to perform any local
      * action on an Element that can be encoded within the passed function object @p element_action.
      * This is very useful for one-off actions, that one does not want to implement inside the
      * actual Element's Evaluate call.
      */
-    virtual void Evaluate(Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy,
+    virtual void evaluate(Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy,
         const std::function<void(Core::Elements::Element&, Core::Elements::Element::LocationArray&,
             Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&,
             Core::LinAlg::SerialDenseVector&, Core::LinAlg::SerialDenseVector&,
@@ -1714,7 +1714,7 @@ namespace Core::FE
 
     /// Call elements to evaluate
     /*!
-      Abbreviated Evaluate() call that always assembles one matrix and
+      Abbreviated evaluate() call that always assembles one matrix and
       one vector. No need to set assemble instructions to the
       Teuchos::ParameterList.
 
@@ -1732,7 +1732,7 @@ namespace Core::FE
                                   the underlying assembly methods that add element
                                   contributions.
      */
-    void Evaluate(Teuchos::ParameterList& params,
+    void evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<Epetra_Vector> systemvector);
 
@@ -1749,9 +1749,9 @@ namespace Core::FE
                             commands and parameters for the elements and
                             containing assembly instructions
    */
-    void Evaluate(Teuchos::ParameterList& params);
+    void evaluate(Teuchos::ParameterList& params);
 
-    virtual void Evaluate(const std::function<void(Core::Elements::Element&)>& element_action);
+    virtual void evaluate(const std::function<void(Core::Elements::Element&)>& element_action);
 
     /** \brief Evaluate Neumann boundary conditions
      *

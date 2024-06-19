@@ -53,7 +53,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    this->cast_geometry_pair()->Evaluate(this->ele1posref_,
+    this->cast_geometry_pair()->evaluate(this->ele1posref_,
         this->face_element_->get_face_reference_element_data(), this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -65,7 +65,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   const auto& [lambda_gid_pos, _] = mortar_manager->LocationVector(*this);
   std::vector<double> local_lambda_pos;
   Core::FE::ExtractMyValues(global_lambda, local_lambda_pos, lambda_gid_pos);
-  auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::Initialize(nullptr);
+  auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::initialize(nullptr);
   q_lambda.element_position_ =
       Core::LinAlg::Matrix<mortar::n_dof_, 1, double>(local_lambda_pos.data());
 
@@ -139,7 +139,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    this->cast_geometry_pair()->Evaluate(this->ele1posref_,
+    this->cast_geometry_pair()->evaluate(this->ele1posref_,
         this->face_element_->get_face_reference_element_data(), this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -181,7 +181,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
       // Get the mortar shape functions.
-      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::Evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::evaluate(
           N_mortar, projected_gauss_point.GetEta());
 
       // Fill in the local mortar scaling vector kappa.
@@ -620,7 +620,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         Core::LinAlg::Inverse(T_surface_inv);
 
         // Evaluate mortar shape functions.
-        GEOMETRYPAIR::EvaluateShapeFunction<mortar>::Evaluate(
+        GEOMETRYPAIR::EvaluateShapeFunction<mortar>::evaluate(
             lambda_shape_functions, projected_gauss_point.GetEta());
         for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -866,7 +866,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         Core::LinAlg::Inverse(T_surface_inv);
 
         // Evaluate mortar shape functions.
-        GEOMETRYPAIR::EvaluateShapeFunction<mortar>::Evaluate(
+        GEOMETRYPAIR::EvaluateShapeFunction<mortar>::evaluate(
             lambda_shape_functions, projected_gauss_point.GetEta());
         for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)

@@ -29,13 +29,13 @@ ParticleInteraction::SPHPressure::SPHPressure()
   // empty constructor
 }
 
-void ParticleInteraction::SPHPressure::Init()
+void ParticleInteraction::SPHPressure::init()
 {
   // init with potential fluid particle types
   fluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2};
 }
 
-void ParticleInteraction::SPHPressure::Setup(
+void ParticleInteraction::SPHPressure::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
     const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle)

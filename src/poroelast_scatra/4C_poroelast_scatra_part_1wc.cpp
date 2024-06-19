@@ -69,8 +69,8 @@ void PoroElastScaTra::PoroScatraPart1WC::update()
   //                         update solution
   //        current solution becomes old solution of next timestep
   // -------------------------------------------------------------------
-  poro_field()->Update();
-  ScaTraField()->Update();
+  poro_field()->update();
+  ScaTraField()->update();
 
   // -------------------------------------------------------------------
   // evaluate error for problems with analytical solution
@@ -86,7 +86,7 @@ void PoroElastScaTra::PoroScatraPart1WC::output()
   // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
-  poro_field()->Output();
+  poro_field()->output();
   ScaTraField()->check_and_write_output_and_restart();
 }
 

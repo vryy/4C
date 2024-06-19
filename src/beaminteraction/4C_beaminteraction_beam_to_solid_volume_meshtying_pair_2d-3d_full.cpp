@@ -55,7 +55,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
   // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
   if (!this->meshtying_is_evaluated_)
   {
-    this->cast_geometry_pair()->Evaluate(
+    this->cast_geometry_pair()->evaluate(
         this->ele1posref_, this->ele2posref_, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -87,15 +87,15 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
           n_dof_fad_, fad_offset + i_dof, Core::FADUtils::CastToDouble(q_original(i_dof)));
   };
   auto q_beam =
-      GEOMETRYPAIR::InitializeElementData<beam, scalar_type_pair>::Initialize(this->Element1());
+      GEOMETRYPAIR::InitializeElementData<beam, scalar_type_pair>::initialize(this->Element1());
   auto q_solid =
-      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_pair>::Initialize(this->Element2());
+      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_pair>::initialize(this->Element2());
   set_q_fad(this->ele1pos_.element_position_, q_beam.element_position_);
   set_q_fad(this->ele2pos_.element_position_, q_solid.element_position_, beam::n_dof_);
 
   // Shape function data for Lagrange functions for rotations
   auto q_rot =
-      GEOMETRYPAIR::InitializeElementData<GEOMETRYPAIR::t_line3, scalar_type_pair>::Initialize(
+      GEOMETRYPAIR::InitializeElementData<GEOMETRYPAIR::t_line3, scalar_type_pair>::initialize(
           nullptr);
 
   // Initialize pair wise vectors and matrices.

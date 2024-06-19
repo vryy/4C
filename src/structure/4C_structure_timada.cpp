@@ -99,7 +99,7 @@ STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input pa
 
   // enable restart for adaptive timestepping - however initial timestep size is still read from
   // datfile! (mhv 01/2015)
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     // read restart of marching time-integrator and reset initial time and step for adaptive loop
@@ -124,7 +124,7 @@ int STR::TimAda::Integrate()
 {
   // finalize initialization
   // (only relevant if an auxiliary time integrator is used)
-  Init(sti_);
+  init(sti_);
 
   // Richardson extrapolation to no avail
   if (MethodAdaptDis() == ada_ident)
@@ -219,7 +219,7 @@ int STR::TimAda::Integrate()
     sti_->print_step();
 
     // update
-    //    Update();
+    //    update();
     timestep_ += 1;
     time_ += stepsize_;
     UpdateStepSize(stpsiznew);

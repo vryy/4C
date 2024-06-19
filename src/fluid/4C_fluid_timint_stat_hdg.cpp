@@ -45,7 +45,7 @@ FLD::TimIntStationaryHDG::TimIntStationaryHDG(const Teuchos::RCP<Core::FE::Discr
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                      als 01/18 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntStationaryHDG::Init()
+void FLD::TimIntStationaryHDG::init()
 {
   Core::FE::DiscretizationHDG* hdgdis = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
@@ -89,17 +89,17 @@ void FLD::TimIntStationaryHDG::Init()
   otherdofset.clear();
   Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
       new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->Comm()));
-  velpressplitter_->Setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
+  velpressplitter_->setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
 
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  FLD::TimIntStationary::Init();
+  FLD::TimIntStationary::init();
 }
 
 
-void FLD::TimIntStationaryHDG::Reset(bool completeReset, int numsteps, int iter)
+void FLD::TimIntStationaryHDG::reset(bool completeReset, int numsteps, int iter)
 {
-  FluidImplicitTimeInt::Reset(completeReset, numsteps, iter);
+  FluidImplicitTimeInt::reset(completeReset, numsteps, iter);
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
   intvelnp_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
   if (discret_->Comm().MyPID() == 0)
@@ -194,7 +194,7 @@ void FLD::TimIntStationaryHDG::SetInitialFlowField(
       elevec1.size(la[0].lm_.size());
     if (elevec2.numRows() != discret_->NumDof(1, ele)) elevec2.size(discret_->NumDof(1, ele));
 
-    ele->Evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
+    ele->evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
 
     // now fill the ele vector into the discretization
     for (unsigned int i = 0; i < la[0].lm_.size(); ++i)
@@ -248,7 +248,7 @@ void FLD::TimIntStationaryHDG::set_element_time_parameter()
   eleparams.set("total time", time_);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 

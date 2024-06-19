@@ -44,7 +44,7 @@ ScaTra::ScaTraTimIntLoma::ScaTraTimIntLoma(Teuchos::RCP<Core::FE::Discretization
 /*----------------------------------------------------------------------*
  | initialize algorithm                                     rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntLoma::Init()
+void ScaTra::ScaTraTimIntLoma::init()
 {
   // safety check
   if (Core::UTILS::IntegralValue<int>(*lomaparams_, "SGS_MATERIAL_UPDATE"))
@@ -59,7 +59,7 @@ void ScaTra::ScaTraTimIntLoma::Init()
 /*----------------------------------------------------------------------*
  | setup algorithm                                          rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntLoma::Setup()
+void ScaTra::ScaTraTimIntLoma::setup()
 {
   SetupSplitter();
   return;

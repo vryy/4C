@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
  | constructor                                               fang 06/15 |
  *----------------------------------------------------------------------*/
 Mat::PAR::Soret::Soret(const Core::Mat::PAR::Parameter::Data& matdata)
-    : FourierIso(matdata), soretcoefficient_(matdata.parameters.Get<double>("SORET"))
+    : FourierIso(matdata), soretcoefficient_(matdata.parameters.get<double>("SORET"))
 {
   return;
 }
@@ -36,7 +36,7 @@ Mat::SoretType Mat::SoretType::instance_;
 Core::Communication::ParObject* Mat::SoretType::Create(const std::vector<char>& data)
 {
   Mat::Soret* soret = new Mat::Soret();
-  soret->Unpack(data);
+  soret->unpack(data);
   return soret;
 }
 
@@ -56,7 +56,7 @@ Mat::Soret::Soret(Mat::PAR::Soret* params) : FourierIso(params), params_(params)
 /*----------------------------------------------------------------------*
  | pack material for communication purposes                  fang 06/15 |
  *----------------------------------------------------------------------*/
-void Mat::Soret::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Soret::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -69,7 +69,7 @@ void Mat::Soret::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, matid);
 
   // pack base class material
-  FourierIso::Pack(data);
+  FourierIso::pack(data);
 
   return;
 }
@@ -78,7 +78,7 @@ void Mat::Soret::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack data from a char vector                            fang 06/15 |
  *----------------------------------------------------------------------*/
-void Mat::Soret::Unpack(const std::vector<char>& data)
+void Mat::Soret::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -104,7 +104,7 @@ void Mat::Soret::Unpack(const std::vector<char>& data)
   // extract base class material
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  FourierIso::Unpack(basedata);
+  FourierIso::unpack(basedata);
 
   // final safety check
   if (position != data.size())

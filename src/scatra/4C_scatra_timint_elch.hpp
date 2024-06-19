@@ -52,10 +52,10 @@ namespace ScaTra
         Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     //! initialize algorithm
-    void Init() override;
+    void init() override;
 
     //! initialize algorithm
-    void Setup() override;
+    void setup() override;
 
     /*========================================================================*/
     //! @name Preconditioning
@@ -103,7 +103,7 @@ namespace ScaTra
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update() override;
+    void update() override;
 
     /*--- query and output ---------------------------------------------------*/
 
@@ -443,7 +443,7 @@ namespace ScaTra
     ScalarHandlerElch();
 
     //! initialize time integration
-    void Setup(const ScaTraTimIntImpl* scatratimint) override;
+    void setup(const ScaTraTimIntImpl* scatratimint) override;
 
     /*========================================================================*/
     //! @name Access and Query methods

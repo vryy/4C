@@ -21,13 +21,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::HerschelBulkley::HerschelBulkley(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      tau0_(matdata.parameters.Get<double>("TAU_0")),
-      kfac_(matdata.parameters.Get<double>("KFAC")),
-      nexp_(matdata.parameters.Get<double>("NEXP")),
-      mexp_(matdata.parameters.Get<double>("MEXP")),
-      lolimshearrate_(matdata.parameters.Get<double>("LOLIMSHEARRATE")),
-      uplimshearrate_(matdata.parameters.Get<double>("UPLIMSHEARRATE")),
-      density_(matdata.parameters.Get<double>("DENSITY"))
+      tau0_(matdata.parameters.get<double>("TAU_0")),
+      kfac_(matdata.parameters.get<double>("KFAC")),
+      nexp_(matdata.parameters.get<double>("NEXP")),
+      mexp_(matdata.parameters.get<double>("MEXP")),
+      lolimshearrate_(matdata.parameters.get<double>("LOLIMSHEARRATE")),
+      uplimshearrate_(matdata.parameters.get<double>("UPLIMSHEARRATE")),
+      density_(matdata.parameters.get<double>("DENSITY"))
 {
 }
 
@@ -43,7 +43,7 @@ Mat::HerschelBulkleyType Mat::HerschelBulkleyType::instance_;
 Core::Communication::ParObject* Mat::HerschelBulkleyType::Create(const std::vector<char>& data)
 {
   Mat::HerschelBulkley* herbul = new Mat::HerschelBulkley();
-  herbul->Unpack(data);
+  herbul->unpack(data);
   return herbul;
 }
 
@@ -59,7 +59,7 @@ Mat::HerschelBulkley::HerschelBulkley(Mat::PAR::HerschelBulkley* params) : param
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::HerschelBulkley::Pack(Core::Communication::PackBuffer& data) const
+void Mat::HerschelBulkley::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -75,7 +75,7 @@ void Mat::HerschelBulkley::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::HerschelBulkley::Unpack(const std::vector<char>& data)
+void Mat::HerschelBulkley::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

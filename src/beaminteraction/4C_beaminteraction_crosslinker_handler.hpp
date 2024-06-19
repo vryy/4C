@@ -53,10 +53,10 @@ namespace BEAMINTERACTION
     BeamCrosslinkerHandler();
 
     /// initialize linker handler
-    void Init(int myrank, Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy);
+    void init(int myrank, Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy);
 
     /// setup linker handler
-    void Setup();
+    void setup();
 
     // destructor
     virtual ~BeamCrosslinkerHandler() = default;

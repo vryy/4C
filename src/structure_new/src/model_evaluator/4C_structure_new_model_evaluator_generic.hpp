@@ -103,26 +103,26 @@ namespace STR
        * @param timint_ptr
        * @param[in] dof_offset
        */
-      virtual void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
+      virtual void init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
           const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
           const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
           const Teuchos::RCP<STR::Integrator>& int_ptr,
           const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset);
 
       //! setup class variables
-      virtual void Setup() = 0;
+      virtual void setup() = 0;
 
      protected:
-      //! Returns true, if Init() has been called
+      //! Returns true, if init() has been called
       inline const bool& is_init() const { return isinit_; };
 
-      //! Returns true, if Setup() has been called
+      //! Returns true, if setup() has been called
       inline const bool& is_setup() const { return issetup_; };
 
-      //! Check if Init() and Setup() have been called
+      //! Check if init() and setup() have been called
       virtual void check_init_setup() const;
 
-      //! Check if Init() has been called
+      //! Check if init() has been called
       virtual void check_init() const;
 
      public:
@@ -134,14 +134,14 @@ namespace STR
 
       /*! \brief Reset model specific variables (without jacobian)
        *
-       *  This function is always called before the actual Evaluate() routine is going to start.
+       *  This function is always called before the actual evaluate() routine is going to start.
        *  You can use it to reset model specific stuff at the beginning of a new evaluation round.
        *
        *  \param[in] x current full state vector
        *
        *  \date 07/2016
        *  \author hiermeier */
-      virtual void Reset(const Epetra_Vector& x) = 0;
+      virtual void reset(const Epetra_Vector& x) = 0;
 
       /*! \brief Evaluate the current right-hand-side at \f$t_{n+1}\f$
        *
@@ -176,7 +176,7 @@ namespace STR
        *  \author hiermeier \date 12/17 */
       virtual bool evaluate_cheap_soc_rhs() { return true; };
 
-      /*! \brief Perform actions just before the Evaluate() call
+      /*! \brief Perform actions just before the evaluate() call
        *
        * Called in the very beginning of each call to one of the
        * STR::ModelEvaluator::Evaluate routines, such as evaluate_force,
@@ -186,7 +186,7 @@ namespace STR
        */
       virtual void pre_evaluate() = 0;
 
-      /*! \brief Perform actions right after the Evaluate() call
+      /*! \brief Perform actions right after the evaluate() call
        *
        * Called at the end of each call to one of the
        * STR::ModelEvaluator::Evaluate routines, i.e. evaluate_force,
@@ -271,7 +271,7 @@ namespace STR
        *
        *  This method is supposed to be used to recover condensed solution variables.
        *  Typical examples are the EAS degrees of freedom or the dual Lagrange multipliers.
-       *  Do NOT use it to reset your model variables! Use the Reset() method instead.
+       *  Do NOT use it to reset your model variables! Use the reset() method instead.
        *
        *  \author hiermeier \date 07/2016 */
       virtual void run_post_compute_x(

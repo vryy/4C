@@ -181,7 +181,7 @@ void NOX::Nln::CONTACT::LinearSystem::complete_solution_after_solve(
     const Epetra_LinearProblem& linProblem, Epetra_Vector& lhs) const
 {
   p_lin_prob_.InsertIntoGlobalLhs(lhs);
-  p_lin_prob_.Reset();
+  p_lin_prob_.reset();
 }
 
 /*----------------------------------------------------------------------*

@@ -22,13 +22,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::Sutherland::Sutherland(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      refvisc_(matdata.parameters.Get<double>("REFVISC")),
-      reftemp_(matdata.parameters.Get<double>("REFTEMP")),
-      suthtemp_(matdata.parameters.Get<double>("SUTHTEMP")),
-      shc_(matdata.parameters.Get<double>("SHC")),
-      pranum_(matdata.parameters.Get<double>("PRANUM")),
-      thermpress_(matdata.parameters.Get<double>("THERMPRESS")),
-      gasconst_(matdata.parameters.Get<double>("GASCON"))
+      refvisc_(matdata.parameters.get<double>("REFVISC")),
+      reftemp_(matdata.parameters.get<double>("REFTEMP")),
+      suthtemp_(matdata.parameters.get<double>("SUTHTEMP")),
+      shc_(matdata.parameters.get<double>("SHC")),
+      pranum_(matdata.parameters.get<double>("PRANUM")),
+      thermpress_(matdata.parameters.get<double>("THERMPRESS")),
+      gasconst_(matdata.parameters.get<double>("GASCON"))
 {
 }
 
@@ -44,7 +44,7 @@ Mat::SutherlandType Mat::SutherlandType::instance_;
 Core::Communication::ParObject* Mat::SutherlandType::Create(const std::vector<char>& data)
 {
   Mat::Sutherland* sutherland = new Mat::Sutherland();
-  sutherland->Unpack(data);
+  sutherland->unpack(data);
   return sutherland;
 }
 
@@ -61,7 +61,7 @@ Mat::Sutherland::Sutherland(Mat::PAR::Sutherland* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Sutherland::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Sutherland::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -77,7 +77,7 @@ void Mat::Sutherland::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Sutherland::Unpack(const std::vector<char>& data)
+void Mat::Sutherland::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

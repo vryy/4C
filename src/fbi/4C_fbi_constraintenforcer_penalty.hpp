@@ -64,11 +64,11 @@ namespace Adapter
      *\param[in] structure wrapper for the structure solver
      *\param[in] fluid moving boundary wrapper for the fluid solver
      */
-    void Setup(Teuchos::RCP<Adapter::FSIStructureWrapper> structure,
+    void setup(Teuchos::RCP<Adapter::FSIStructureWrapper> structure,
         Teuchos::RCP<Adapter::FluidMovingBoundary> fluid) override;
 
     /// Handle fbi specific output
-    void Output(double time, int step) override;
+    void output(double time, int step) override;
 
    protected:
     /** \brief You will have to use the Adapter::ConstraintEnforcerFactory

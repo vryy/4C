@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::Mixture::Mixture(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata), constituents_(0)
 {
-  const int num_constituents = matdata.parameters.Get<int>("NUMCONST");
-  const auto& constituent_matids = matdata.parameters.Get<std::vector<int>>("MATIDSCONST");
+  const int num_constituents = matdata.parameters.get<int>("NUMCONST");
+  const auto& constituent_matids = matdata.parameters.get<std::vector<int>>("MATIDSCONST");
 
   // check, if size of constituents fits to the number of constituents
   if (num_constituents != (int)constituent_matids.size())
@@ -41,7 +41,7 @@ Mat::PAR::Mixture::Mixture(const Core::Mat::PAR::Parameter::Data& matdata)
 
   // Create mixture rule
   mixture_rule_ =
-      MIXTURE::PAR::MixtureRule::factory(matdata.parameters.Get<int>("MATIDMIXTURERULE"));
+      MIXTURE::PAR::MixtureRule::factory(matdata.parameters.get<int>("MATIDMIXTURERULE"));
 }
 
 // Create a material instance from parameters
@@ -56,7 +56,7 @@ Mat::MixtureType Mat::MixtureType::instance_;
 Core::Communication::ParObject* Mat::MixtureType::Create(const std::vector<char>& data)
 {
   auto* mix_elhy = new Mat::Mixture();
-  mix_elhy->Unpack(data);
+  mix_elhy->unpack(data);
 
   return mix_elhy;
 }
@@ -94,7 +94,7 @@ Mat::Mixture::Mixture(Mat::PAR::Mixture* params)
 }
 
 // Pack data
-void Mat::Mixture::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Mixture::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -136,7 +136,7 @@ void Mat::Mixture::Pack(Core::Communication::PackBuffer& data) const
 }
 
 // Unpack data
-void Mat::Mixture::Unpack(const std::vector<char>& data)
+void Mat::Mixture::unpack(const std::vector<char>& data)
 {
   params_ = nullptr;
   constituents_->clear();
@@ -220,9 +220,9 @@ void Mat::Mixture::Unpack(const std::vector<char>& data)
 }
 
 // Read element and create arrays for the quantities at the Gauss points
-void Mat::Mixture::Setup(const int numgp, Input::LineDefinition* linedef)
+void Mat::Mixture::setup(const int numgp, Input::LineDefinition* linedef)
 {
-  So3Material::Setup(numgp, linedef);
+  So3Material::setup(numgp, linedef);
 
   // resize preevaluation flag
   is_pre_evaluated_.resize(numgp, false);
@@ -275,7 +275,7 @@ void Mat::Mixture::Update(Core::LinAlg::Matrix<3, 3> const& defgrd, const int gp
 }
 
 // Evaluates the material
-void Mat::Mixture::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::Mixture::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)

@@ -29,7 +29,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::RedAirwayType::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::RedAirway* object = new Discret::ELEMENTS::RedAirway(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -143,7 +143,7 @@ Core::FE::CellType Discret::ELEMENTS::RedAirway::Shape() const
  |  Pack data                                                  (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedAirway::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::RedAirway::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -152,7 +152,7 @@ void Discret::ELEMENTS::RedAirway::Pack(Core::Communication::PackBuffer& data) c
   add_to_pack(data, type);
 
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
 
   add_to_pack(data, elem_type_);
   add_to_pack(data, resistance_);
@@ -183,7 +183,7 @@ void Discret::ELEMENTS::RedAirway::Pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedAirway::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::RedAirway::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -192,7 +192,7 @@ void Discret::ELEMENTS::RedAirway::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
 
   extract_from_pack(position, data, elem_type_);
   extract_from_pack(position, data, resistance_);

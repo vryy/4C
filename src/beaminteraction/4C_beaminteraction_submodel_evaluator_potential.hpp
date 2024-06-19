@@ -42,7 +42,7 @@ namespace BEAMINTERACTION
       BeamPotential();
 
       //! setup class variables
-      void Setup() override;
+      void setup() override;
 
       //! derived
       void post_setup() override;
@@ -57,7 +57,7 @@ namespace BEAMINTERACTION
       //! @{
       //! \brief reset submodel specific variables
       //! derived
-      void Reset() override;
+      void reset() override;
 
       //! derived
       bool evaluate_force() override;

@@ -35,7 +35,7 @@ bool Discret::ELEMENTS::Ale2::ReadElement(
   Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_dynamic_cast<Mat::So3Material>(mat, true);
 
   // call material setup
-  so3mat->Setup(numgp, linedef);
+  so3mat->setup(numgp, linedef);
   return true;
 }
 

@@ -65,10 +65,10 @@ Teuchos::RCP<Adapter::Structure> Adapter::StructureTimeAda::Create(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::StructureTimeAda::Setup()
+void Adapter::StructureTimeAda::setup()
 {
   // call the wrapper setup
-  StructureWrapper::Setup();
+  StructureWrapper::setup();
 
   // self setup
   setup_time_ada();
@@ -128,7 +128,7 @@ void Adapter::StructureTimeAda::setup_time_ada()
   locerrdisn_ = Core::LinAlg::CreateVector(*(stm_->dof_row_map()), true);
 
   // enable restart for adaptive timestepping
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
     // read restart of marching time-integrator and reset initial time and step for adaptive loop
@@ -169,7 +169,7 @@ int Adapter::StructureTimeAda::Integrate()
   // finalize initialization
   // (only relevant if an auxiliary time integrator is used)
   // buih STR:TimeInt::Base should be initialized outside
-  // stm_->Init();
+  // stm_->init();
 
   // Richardson extrapolation to no avail
   if (MethodAdaptDis() == ada_ident)
@@ -278,7 +278,7 @@ int Adapter::StructureTimeAda::Integrate()
     // update everything on the element level
     PreUpdate();
 
-    Update();
+    update();
 
     post_update();
 
@@ -286,7 +286,7 @@ int Adapter::StructureTimeAda::Integrate()
     stepsize_ = stpsiznew;
 
     // write output
-    Output();
+    output();
     PostOutput();
 
     // print info about finished time step
@@ -314,7 +314,7 @@ int Adapter::StructureTimeAda::Integrate()
   }
 
   // force write output
-  Output(true);
+  output(true);
 
   // that's it say what went wrong
   return convergencestatus;
@@ -364,12 +364,12 @@ void Adapter::StructureTimeAda::size_for_output()
 
 /*----------------------------------------------------------------------*/
 /* Output action */
-void Adapter::StructureTimeAda::Output(bool forced_writerestart)
+void Adapter::StructureTimeAda::output(bool forced_writerestart)
 {
   STR::TimeInt::BaseDataIO& dataio = stm_->data_io();
   Teuchos::RCP<Core::IO::DiscretizationWriter> output_ptr = dataio.get_output_ptr();
 
-  StructureWrapper::Output(forced_writerestart);
+  StructureWrapper::output(forced_writerestart);
   output_ptr->write_double("next_delta_time", stepsize_);
 }
 
@@ -560,7 +560,7 @@ Inpar::STR::ConvergenceStatus Adapter::StructureTimeAda::PerformErrorAction(
   {
     case Inpar::STR::divcont_stop:
       // write output
-      Output();
+      output();
 
       // error and stop the simulation
       FOUR_C_THROW("Nonlinear solver did not converge! ");

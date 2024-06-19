@@ -759,7 +759,7 @@ void inline CONTACT::IntegratorNitscheTsi::so_ele_gp(Mortar::Element& sele, cons
 
   // get coordinates of gauss point w.r.t. local parent coordinate system
   Core::LinAlg::SerialDenseMatrix pqxg(1, dim);
-  derivtrafo.Clear();
+  derivtrafo.clear();
 
   Core::FE::BoundaryGPToParentGP<dim>(pqxg, derivtrafo, intpoints, sele.parent_element()->Shape(),
       sele.Shape(), sele.FaceParentNumber());

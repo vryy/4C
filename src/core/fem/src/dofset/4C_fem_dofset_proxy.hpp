@@ -68,7 +68,7 @@ namespace Core::DOFSets
     bool Filled() const override;
 
     /// reset all internal variables
-    void Reset() override;
+    void reset() override;
 
     //@}
 

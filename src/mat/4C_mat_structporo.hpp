@@ -86,7 +86,7 @@ namespace Mat
     itself (for poro P1 elements, for instance), the material evaluates the
     consitutive law itself and its derivatives in the ConstituitiveDerivatives(...)
     methods.
-    All other Evaluate() methods are basically passed through to the underlying
+    All other evaluate() methods are basically passed through to the underlying
     structure material.
 
     The poro material can save the porosity gauss point wise. Therefore it
@@ -128,7 +128,7 @@ namespace Mat
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -142,7 +142,7 @@ namespace Mat
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //!@}
 
@@ -282,12 +282,12 @@ namespace Mat
 
     //! @name Evaluation methods
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int EleID) override
     {
-      mat_->Evaluate(defgrd, glstrain, params, stress, cmat, gp, EleID);
+      mat_->evaluate(defgrd, glstrain, params, stress, cmat, gp, EleID);
     }
 
     void StrainEnergy(const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp,
@@ -321,14 +321,14 @@ namespace Mat
     //! @name Handling of Gauss point data. Here, the poro material just calls the underlying
     //! material
 
-    void Setup(int numgp, Input::LineDefinition* linedef) override
+    void setup(int numgp, Input::LineDefinition* linedef) override
     {
       // setup the underlying material
       // Note: poro material itself is setup when calling poro_setup()
-      mat_->Setup(numgp, linedef);
+      mat_->setup(numgp, linedef);
     }
 
-    void Update() override { mat_->Update(); }
+    void update() override { mat_->update(); }
 
     void reset_step() override { mat_->reset_step(); }
 

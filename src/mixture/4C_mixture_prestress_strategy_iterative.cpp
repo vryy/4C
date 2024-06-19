@@ -24,8 +24,8 @@ FOUR_C_NAMESPACE_OPEN
 MIXTURE::PAR::IterativePrestressStrategy::IterativePrestressStrategy(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : PrestressStrategy(matdata),
-      isochoric_(matdata.parameters.Get<bool>("ISOCHORIC")),
-      is_active_(matdata.parameters.Get<bool>("ACTIVE"))
+      isochoric_(matdata.parameters.get<bool>("ISOCHORIC")),
+      is_active_(matdata.parameters.get<bool>("ACTIVE"))
 {
 }
 

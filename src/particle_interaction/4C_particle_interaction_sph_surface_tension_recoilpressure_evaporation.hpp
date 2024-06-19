@@ -44,10 +44,10 @@ namespace ParticleInteraction
     explicit SPHRecoilPressureEvaporation(const Teuchos::ParameterList& params);
 
     //! init evaporation induced recoil pressure handler
-    void Init();
+    void init();
 
     //! setup evaporation induced recoil pressure handler
-    void Setup(
+    void setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     //! compute evaporation induced recoil pressure contribution

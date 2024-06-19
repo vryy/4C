@@ -32,12 +32,12 @@ STR::EXPLICIT::AdamsBashforth2::AdamsBashforth2()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::AdamsBashforth2::Setup()
+void STR::EXPLICIT::AdamsBashforth2::setup()
 {
   check_init();
 
-  // Call the Setup() of the abstract base class first.
-  Generic::Setup();
+  // Call the setup() of the abstract base class first.
+  Generic::setup();
 
   // ---------------------------------------------------------------------------
   // setup pointers to the force vectors of the global state data container

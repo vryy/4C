@@ -29,7 +29,7 @@ namespace Discret::UTILS::Beam
   void EvaluateShapeFunctionsAtXi(const T& xi, Core::LinAlg::Matrix<1, vpernode * nnode, T>& I_i,
       const Core::FE::CellType& distype, double hermite_length_param = -1.0)
   {
-    I_i.Clear();
+    I_i.clear();
 
     switch (vpernode)
     {
@@ -63,7 +63,7 @@ namespace Discret::UTILS::Beam
       Core::LinAlg::Matrix<1, vpernode * nnode, T>& I_i_xi, const Core::FE::CellType& distype,
       double hermite_length_param = -1.0)
   {
-    I_i_xi.Clear();
+    I_i_xi.clear();
 
     switch (vpernode)
     {
@@ -97,7 +97,7 @@ namespace Discret::UTILS::Beam
       Core::LinAlg::Matrix<1, vpernode * nnode, T>& I_i_xixi, const Core::FE::CellType& distype,
       double hermite_length_param = -1.0)
   {
-    I_i_xixi.Clear();
+    I_i_xixi.clear();
 
     switch (vpernode)
     {
@@ -131,7 +131,7 @@ namespace Discret::UTILS::Beam
       Core::LinAlg::Matrix<1, vpernode * nnode, T>& I_i_xixixi, const Core::FE::CellType& distype,
       double hermite_length_param = -1.0)
   {
-    I_i_xixixi.Clear();
+    I_i_xixixi.clear();
 
     switch (vpernode)
     {
@@ -327,7 +327,7 @@ namespace Discret::UTILS::Beam
       const Core::LinAlg::Matrix<1, vpernode * nnode, T2>& shapefcn_vals,
       Core::LinAlg::Matrix<ndim, 1, T>& result)
   {
-    result.Clear();
+    result.clear();
 
     for (unsigned int idim = 0; idim < ndim; ++idim)
       for (unsigned int idofperdim = 0; idofperdim < vpernode * nnode; ++idofperdim)

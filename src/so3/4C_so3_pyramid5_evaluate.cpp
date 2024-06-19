@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoPyramid5::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -318,7 +318,7 @@ int Discret::ELEMENTS::SoPyramid5::Evaluate(Teuchos::ParameterList& params,
       // Update constraintmixture material
       if (Material()->MaterialType() == Core::Materials::m_constraintmixture)
       {
-        SolidMaterial()->Update();
+        SolidMaterial()->update();
       }
     }
     break;
@@ -334,7 +334,7 @@ int Discret::ELEMENTS::SoPyramid5::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_update_istep:
     {
       // Update of history for materials
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
     }
     break;
 
@@ -462,8 +462,8 @@ int Discret::ELEMENTS::SoPyramid5::evaluate_neumann(Teuchos::ParameterList& para
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
@@ -490,7 +490,7 @@ int Discret::ELEMENTS::SoPyramid5::evaluate_neumann(Teuchos::ParameterList& para
   }
 
   // (SPATIAL) FUNCTION BUSINESS
-  const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* funct = &condition.parameters().get<std::vector<int>>("funct");
   Core::LinAlg::Matrix<NUMDIM_SOP5, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
@@ -564,7 +564,7 @@ int Discret::ELEMENTS::SoPyramid5::evaluate_neumann(Teuchos::ParameterList& para
         const double functfac =
             (functnum > 0) ? Global::Problem::Instance()
                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                 .Evaluate(xrefegp.A(), time, dim)
+                                 .evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
         for (int nodid = 0; nodid < NUMNOD_SOP5; ++nodid)
@@ -796,7 +796,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_linstiffmass(std::vector<int>& lm,  // 
     // call material law
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
-    SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law
 
     // return gp plastic strains (only in case of plastic strain output)
@@ -1154,7 +1154,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
     // call material law
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
-    SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law
 
     // return gp plastic strains (only in case of plastic strain output)
@@ -1539,7 +1539,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_shapederiv(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoPyramid5Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoPyramid5Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

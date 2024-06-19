@@ -38,7 +38,7 @@ namespace FLD
     \brief initialization
 
     */
-    void Init() override;
+    void init() override;
 
     /*!
     \brief Set the part of the righthandside belonging to the last
@@ -54,7 +54,7 @@ namespace FLD
     /*!
       \brief Reset state vectors
        */
-    void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
+    void reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
 
     void set_old_part_of_righthandside() override;
 

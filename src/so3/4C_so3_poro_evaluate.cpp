@@ -88,7 +88,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::pre_evaluate(Teuchos::Paramet
       }
       const double* coordgpref = xrefe.data();
       double functfac =
-          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(num).Evaluate(
+          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(num).evaluate(
               coordgpref, time, 0);
       params.set<double>("scalar", functfac);
     }
@@ -96,7 +96,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::pre_evaluate(Teuchos::Paramet
 }
 
 template <class so3_ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3Poro<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::So3Poro<so3_ele, distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -149,7 +149,7 @@ int Discret::ELEMENTS::So3Poro<so3_ele, distype>::Evaluate(Teuchos::ParameterLis
       pre_evaluate(params, discretization, la);
 
       // evaluate parent solid element
-      so3_ele::Evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
+      so3_ele::evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
       // add volume coupling specific terms
@@ -707,7 +707,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::gauss_point_loop(Teuchos::Par
 
     // non-linear B-operator
     static Core::LinAlg::Matrix<numstr_, numdof_> bop;
-    bop.Clear();
+    bop.clear();
     compute_b_operator(bop, defgrd, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
@@ -818,7 +818,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::gauss_point_loop_pressure_bas
 
     // non-linear B-operator
     Core::LinAlg::Matrix<numstr_, numdof_> bop;
-    bop.Clear();
+    bop.clear();
     compute_b_operator(bop, defgrd, N_XYZ);
 
     // derivative of press w.r.t. displacements (only in case of vol fracs)
@@ -1734,7 +1734,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::compute_jacobian_determinant_
 
     // gradient of displacements
     static Core::LinAlg::Matrix<numdim_, numdim_> dispgrad;
-    dispgrad.Clear();
+    dispgrad.clear();
     // gradient of displacements
     dispgrad.MultiplyNT(nodaldisp, N_XYZ);
 
@@ -1773,7 +1773,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele,
 
     // gradient of displacements
     static Core::LinAlg::Matrix<numdim_, numdim_> dispgrad;
-    dispgrad.Clear();
+    dispgrad.clear();
     // gradient of displacements
     dispgrad.MultiplyNT(nodaldisp, N_XYZ);
 
@@ -1805,7 +1805,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::compute_auxiliary_values(
   if (so3_ele::kintype_ != Inpar::STR::KinemType::linear)
   {
     // dF^-T/dus
-    dFinvTdus.Clear();
+    dFinvTdus.clear();
     for (int i = 0; i < numdim_; i++)
     {
       for (int n = 0; n < numnod_; n++)
@@ -1821,7 +1821,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::compute_auxiliary_values(
     }
 
     // dF^-T/dus * Grad p
-    dFinvdus_gradp.Clear();
+    dFinvdus_gradp.clear();
     for (int i = 0; i < numdim_; i++)
     {
       for (int n = 0; n < numnod_; n++)
@@ -1836,7 +1836,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::compute_auxiliary_values(
     }
   }
 
-  dCinv_dus.Clear();
+  dCinv_dus.clear();
   for (int n = 0; n < numnod_; ++n)
   {
     for (int k = 0; k < numdim_; ++k)
@@ -1953,7 +1953,7 @@ inline void Discret::ELEMENTS::So3Poro<so3_ele, distype>::compute_linearization_
   else if (so3_ele::kintype_ == Inpar::STR::KinemType::linear)  // linear kinematics
   {
     // J=1 -> no linearization
-    dJ_dus.Clear();
+    dJ_dus.clear();
   }
   else
     FOUR_C_THROW("invalid kinematic type!");
@@ -2776,7 +2776,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::compute_def_gradient(
   }
   else if (so3_ele::kintype_ == Inpar::STR::KinemType::linear)  // linear kinematics
   {
-    defgrd.Clear();
+    defgrd.clear();
     for (int i = 0; i < numdim_; i++) defgrd(i, i) = 1.0;
   }
   else

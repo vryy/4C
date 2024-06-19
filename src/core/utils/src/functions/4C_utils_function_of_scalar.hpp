@@ -27,7 +27,7 @@ namespace Core::UTILS
     /**
      * Evaluate the function for the given @p scalar.
      */
-    [[nodiscard]] virtual double Evaluate(double scalar) const = 0;
+    [[nodiscard]] virtual double evaluate(double scalar) const = 0;
 
     /**
      * Evaluate the @deriv_order derivative of the function for the given @p scalar.

@@ -151,36 +151,36 @@ namespace STR
     Hand in all objects/parameters/etc. from outside.
     Construct and manipulate internal objects.
 
-    \note Try to only perform actions in Init(), which are still valid
+    \note Try to only perform actions in init(), which are still valid
           after parallel redistribution of discretizations.
           If you have to perform an action depending on the parallel
           distribution, make sure you adapt the affected objects after
           parallel redistribution.
           Example: cloning a discretization from another discretization is
-          OK in Init(...). However, after redistribution of the source
+          OK in init(...). However, after redistribution of the source
           discretization do not forget to also redistribute the cloned
           discretization.
           All objects relying on the parallel distribution are supposed to
-          the constructed in \ref Setup().
+          the constructed in \ref setup().
 
     \warning none
     \return bool
     \date 08/16
     \author rauch  */
-    virtual void Init(const Teuchos::ParameterList& timeparams,
+    virtual void init(const Teuchos::ParameterList& timeparams,
         const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
         Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
-     Setup() is not supposed to have any input arguments !
+     setup() is not supposed to have any input arguments !
 
-     Must only be called after Init().
+     Must only be called after init().
 
      Construct all objects depending on the parallel distribution and
      relying on valid maps like, e.g. the state vectors, system matrices, etc.
 
-     Call all Setup() routines on previously initialized internal objects and members.
+     Call all setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
           Otherwise, e.g. vectors may have wrong maps.
@@ -189,7 +189,7 @@ namespace STR
     \return void
     \date 08/16
     \author rauch  */
-    void Setup() override;
+    void setup() override;
 
     //! create fields, based on dofrowmap, whose previous time step values are unimportant
     virtual void CreateFields();
@@ -306,13 +306,13 @@ namespace STR
      *
      *  with n and i being time and Newton iteration step
      */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override = 0;
+    void evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override = 0;
 
     /// don't update displacement but evaluate elements (implicit only)
-    void Evaluate() override { FOUR_C_THROW("new structural time integration only"); }
+    void evaluate() override { FOUR_C_THROW("new structural time integration only"); }
 
     /// update at time step end
-    void Update() override = 0;
+    void update() override = 0;
 
     /// update at time step end in case of FSI time adaptivity
     void Update(const double endtime) override = 0;
@@ -324,7 +324,7 @@ namespace STR
         ) override = 0;
 
     /// output results
-    void Output(bool forced_writerestart = false) override = 0;
+    void output(bool forced_writerestart = false) override = 0;
 
     //! Update configuration after time step
     //!
@@ -1009,7 +1009,7 @@ namespace STR
     //@{
 
     // reset everything (needed for biofilm simulations)
-    void Reset() override;
+    void reset() override;
 
     // set structure displacement vector due to biofilm growth
     void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override;
@@ -1250,22 +1250,22 @@ namespace STR
     int lastwrittenresultsstep_;
 
    protected:
-    //! returns true if Setup() was called and is still valid
+    //! returns true if setup() was called and is still valid
     bool is_setup() { return issetup_; };
 
-    //! returns true if Init(..) was called and is still valid
+    //! returns true if init(..) was called and is still valid
     bool is_init() const { return isinit_; };
 
-    //! check if \ref Setup() was called
+    //! check if \ref setup() was called
     void check_is_setup()
     {
-      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("setup() was not called.");
     };
 
-    //! check if \ref Init() was called
+    //! check if \ref init() was called
     void check_is_init() const
     {
-      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("init(...) was not called.");
     };
 
    public:

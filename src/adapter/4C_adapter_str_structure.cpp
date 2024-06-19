@@ -201,7 +201,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
         "stc_scaling", Core::UTILS::IntegralValue<Inpar::STR::StcScale>(sdyn, "STC_SCALING"));
     p.set("stc_layer", 1);
 
-    actdis->Evaluate(p, stcinv, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    actdis->evaluate(p, stcinv, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
     stcinv->Complete();
 
@@ -215,7 +215,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*actdis->dof_row_map(), 81, true, true));
       tmpstcmat->Zero();
 
-      actdis->Evaluate(p, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+      actdis->evaluate(p, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
       tmpstcmat->Complete();
 
       stcinv = MLMultiply(*stcinv, *tmpstcmat, false, false, true);
@@ -269,7 +269,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   Teuchos::RCP<STR::TimInt> tmpstr =
       STR::TimIntCreate(prbdyn, *ioflags, sdyn, *xparams, actdis, solver, contactsolver, output);
   // initialize the time integrator
-  tmpstr->Init(prbdyn, sdyn, *xparams, actdis, solver);
+  tmpstr->init(prbdyn, sdyn, *xparams, actdis, solver);
 
   // ---------------------------------------------------------------------------
   // ---------------------------------------------------------------------------

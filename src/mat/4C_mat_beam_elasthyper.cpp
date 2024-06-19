@@ -33,7 +33,7 @@ Core::Communication::ParObject* Mat::BeamElastHyperMaterialType<T>::Create(
     const std::vector<char>& data)
 {
   Core::Mat::Material* matobject = new Mat::BeamElastHyperMaterial<T>();
-  matobject->Unpack(data);
+  matobject->unpack(data);
   return matobject;
 }
 
@@ -95,7 +95,7 @@ void Mat::BeamElastHyperMaterial<T>::compute_constitutive_parameter(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void Mat::BeamElastHyperMaterial<T>::Pack(Core::Communication::PackBuffer& data) const
+void Mat::BeamElastHyperMaterial<T>::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -112,7 +112,7 @@ void Mat::BeamElastHyperMaterial<T>::Pack(Core::Communication::PackBuffer& data)
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void Mat::BeamElastHyperMaterial<T>::Unpack(const std::vector<char>& data)
+void Mat::BeamElastHyperMaterial<T>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -178,7 +178,7 @@ void Mat::BeamElastHyperMaterial<T>::get_constitutive_matrix_of_forces_material_
 {
   // defining material constitutive matrix CN between Gamma and N
   // according to Jelenic 1999, section 2.4
-  C_N.Clear();
+  C_N.clear();
 
   C_N(0, 0) = Params().GetAxialRigidity();
   C_N(1, 1) = Params().GetShearRigidity2();
@@ -193,7 +193,7 @@ void Mat::BeamElastHyperMaterial<T>::get_constitutive_matrix_of_moments_material
 {
   // defining material constitutive matrix CM between curvature and moment
   // according to Jelenic 1999, section 2.4
-  C_M.Clear();
+  C_M.clear();
 
   C_M(0, 0) = Params().get_torsional_rigidity();
   C_M(1, 1) = Params().GetBendingRigidity2();
@@ -214,7 +214,7 @@ template <typename T>
 void Mat::BeamElastHyperMaterial<T>::get_mass_moment_of_inertia_tensor_material_frame(
     Core::LinAlg::Matrix<3, 3>& J) const
 {
-  J.Clear();
+  J.clear();
 
   J(0, 0) = Params().get_polar_mass_moment_of_inertia();
   J(1, 1) = Params().get_mass_moment_of_inertia2();
@@ -227,7 +227,7 @@ template <typename T>
 void Mat::BeamElastHyperMaterial<T>::get_mass_moment_of_inertia_tensor_material_frame(
     Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>& J) const
 {
-  J.Clear();
+  J.clear();
 
   J(0, 0) = Params().get_polar_mass_moment_of_inertia();
   J(1, 1) = Params().get_mass_moment_of_inertia2();

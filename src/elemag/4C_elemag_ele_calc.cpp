@@ -39,7 +39,7 @@ Discret::ELEMENTS::ElemagEleCalc<distype>::ElemagEleCalc()
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagEleCalc<distype>::Evaluate(Discret::ELEMENTS::Elemag* ele,
+int Discret::ELEMENTS::ElemagEleCalc<distype>::evaluate(Discret::ELEMENTS::Elemag* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -49,7 +49,7 @@ int Discret::ELEMENTS::ElemagEleCalc<distype>::Evaluate(Discret::ELEMENTS::Elema
     Core::LinAlg::SerialDenseVector& elevec3_epetra, const Core::FE::GaussIntegration&,
     bool offdiag)
 {
-  return this->Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+  return this->evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra, offdiag);
 }
 
@@ -57,7 +57,7 @@ int Discret::ELEMENTS::ElemagEleCalc<distype>::Evaluate(Discret::ELEMENTS::Elema
  * Evaluate
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagEleCalc<distype>::Evaluate(Discret::ELEMENTS::Elemag* ele,
+int Discret::ELEMENTS::ElemagEleCalc<distype>::evaluate(Discret::ELEMENTS::Elemag* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix&,
@@ -89,7 +89,7 @@ int Discret::ELEMENTS::ElemagEleCalc<distype>::Evaluate(Discret::ELEMENTS::Elema
   InitializeShapes(ele);
 
   bool updateonly = false;
-  shapes_->Evaluate(*ele);
+  shapes_->evaluate(*ele);
   switch (action)
   {
     case EleMag::project_field:
@@ -456,7 +456,7 @@ int Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectField(
     Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
-  shapes_.Evaluate(*ele);
+  shapes_.evaluate(*ele);
 
   // get function
   const int* start_func = params.getPtr<int>("startfuncno");
@@ -586,7 +586,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::compute_error(
 {
   double error_ele = 0.0, error_mag = 0.0;
   double exact_ele = 0.0, exact_mag = 0.0;
-  shapes_.Evaluate(*ele);
+  shapes_.evaluate(*ele);
 
   // get function
   const int func = params.get<int>("funcno");
@@ -606,7 +606,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::compute_error(
   {
     const double* gpcoord = highquad->Point(q);
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
-    shapes_.polySpace_->Evaluate(xsi, values);
+    shapes_.polySpace_->evaluate(xsi, values);
 
     Core::FE::shape_function_deriv1<distype>(xsi, deriv);
     xjm.MultiplyNT(deriv, shapes_.xyze);
@@ -660,7 +660,7 @@ int Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectFieldTest(
     Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
-  shapes_.Evaluate(*ele);
+  shapes_.evaluate(*ele);
 
   // reshape elevec2 as matrix
   FOUR_C_ASSERT(elevec2.numRows() == 0 || unsigned(elevec2.numRows()) == nsd_ * shapes_.ndofs_,
@@ -940,7 +940,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::evaluate_all(const 
     for (int d = 0; d < v.numRows(); ++d)
       v[d] = Global::Problem::Instance()
                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                 .Evaluate(xyz.A(), t, d);
+                 .evaluate(xyz.A(), t, d);
   }
   // If the vector is half the number of the component only use the firt half
   else if (numComp == 2 * v.numRows())
@@ -948,7 +948,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::evaluate_all(const 
     for (int d = 0; d < v.numRows(); ++d)
       v[d] = Global::Problem::Instance()
                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                 .Evaluate(xyz.A(), t, d);
+                 .evaluate(xyz.A(), t, d);
   }
   // If the number of component is half of the vector, repeat the first half twice
   else if (numComp == v.numRows() / 2)
@@ -956,7 +956,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::evaluate_all(const 
     for (int d = 0; d < v.numRows(); ++d)
       v[d] = Global::Problem::Instance()
                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                 .Evaluate(xyz.A(), t, d % numComp);
+                 .evaluate(xyz.A(), t, d % numComp);
   }
   // If there is only one component always use it
   else if (numComp == 1)
@@ -964,7 +964,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::evaluate_all(const 
     for (int d = 0; d < v.numRows(); ++d)
       v[d] = Global::Problem::Instance()
                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                 .Evaluate(xyz.A(), t, 0);
+                 .evaluate(xyz.A(), t, 0);
   }
   // If the number is not recognised throw an error
   else
@@ -1015,7 +1015,7 @@ int Discret::ELEMENTS::ElemagEleCalc<distype>::interpolate_solution_to_nodes(
     // Evaluating the polinomials in the point given by "shapes_->xsi".
     // The polynomials are the internal ones.
     // The result of the evaluation is given in "values".
-    shapes_->polySpace_->Evaluate(shapes_->xsi, values);
+    shapes_->polySpace_->evaluate(shapes_->xsi, values);
 
     // compute values for interior unknown by summing over all basis functions
     for (unsigned int d = 0; d < nsd_; ++d)
@@ -1113,7 +1113,7 @@ int Discret::ELEMENTS::ElemagEleCalc<distype>::interpolate_solution_to_nodes(
         shapesface_->xsi(idim) = xsishuffle(idim, i);
 
       // Actually evaluating shape polynomials in node
-      shapesface_->polySpace_->Evaluate(shapesface_->xsi, fvalues);
+      shapesface_->polySpace_->evaluate(shapesface_->xsi, fvalues);
 
       // compute values for trace vector by summing over the shape functions
       for (unsigned int d = 0; d < nsd_; ++d)
@@ -1413,7 +1413,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
   {
     // Get the user defined functions
     auto* cond = params.getPtr<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-    const auto& funct = (*cond)->parameters().Get<std::vector<int>>("funct");
+    const auto& funct = (*cond)->parameters().get<std::vector<int>>("funct");
     const double time = params.get<double>("time");
 
     Core::LinAlg::SerialDenseVector tempVec1(shapesface_->nfdofs_ * nsd_);

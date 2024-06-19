@@ -40,7 +40,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8ThermoType::Create(
 {
   Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>* object =
       new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }  // Create()
 
@@ -99,7 +99,7 @@ void Discret::ELEMENTS::SoHex8ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                           dano 08/12 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8ThermoType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex8ThermoType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -112,13 +112,13 @@ int Discret::ELEMENTS::SoHex8ThermoType::Initialize(Core::FE::Discretization& di
     if (!actele) FOUR_C_THROW("cast to So_hex8_thermo* failed");
     // initialise all quantities
     actele->SoHex8::init_jacobian_mapping();
-    // as an alternative we can call: So_hex8Type::Initialize(dis);
+    // as an alternative we can call: So_hex8Type::initialize(dis);
     actele->So3Thermo<Discret::ELEMENTS::SoHex8,
         Core::FE::CellType::hex8>::init_jacobian_mapping_special_for_nurbs(dis);
   }
 
   return 0;
-}  // Initialize()
+}  // initialize()
 /*----------------------------------------------------------------------------*
  | ENDE HEX8 Element
  *----------------------------------------------------------------------------*/
@@ -148,7 +148,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8fbarThermoType::Create(
   Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>* object =
       new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>(
           -1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }  // Create()
 
@@ -210,7 +210,7 @@ void Discret::ELEMENTS::SoHex8fbarThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                           dano 05/13 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8fbarThermoType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex8fbarThermoType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -224,13 +224,13 @@ int Discret::ELEMENTS::SoHex8fbarThermoType::Initialize(Core::FE::Discretization
 
     // initialise all quantities
     actele->SoHex8fbar::init_jacobian_mapping();
-    // as an alternative we can call: So_hex8fbarType::Initialize(dis);
+    // as an alternative we can call: So_hex8fbarType::initialize(dis);
     actele->So3Thermo<Discret::ELEMENTS::SoHex8fbar,
         Core::FE::CellType::hex8>::init_jacobian_mapping_special_for_nurbs(dis);
   }
 
   return 0;
-}  // Initialize()
+}  // initialize()
 /*----------------------------------------------------------------------------*
  | ENDE HEX8FBAR Element
  *----------------------------------------------------------------------------*/
@@ -259,7 +259,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet4ThermoType::Create(
 {
   Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>* object =
       new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }  // Create()
 
@@ -317,7 +317,7 @@ void Discret::ELEMENTS::SoTet4ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                           dano 08/12 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet4ThermoType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoTet4ThermoType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -330,13 +330,13 @@ int Discret::ELEMENTS::SoTet4ThermoType::Initialize(Core::FE::Discretization& di
     if (!actele) FOUR_C_THROW("cast to So_tet4_thermo* failed");
 
     actele->SoTet4::init_jacobian_mapping();
-    // as an alternative we can call: So_tet4Type::Initialize(dis);
+    // as an alternative we can call: So_tet4Type::initialize(dis);
     actele->So3Thermo<Discret::ELEMENTS::SoTet4,
         Core::FE::CellType::tet4>::init_jacobian_mapping_special_for_nurbs(dis);
   }
 
   return 0;
-}  // Initialize()
+}  // initialize()
 /*----------------------------------------------------------------------------*
  | ENDE TET4 Element
  *----------------------------------------------------------------------------*/
@@ -365,7 +365,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet10ThermoType::Create(
   Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>* object =
       new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>(
           -1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }  // Create()
 
@@ -423,7 +423,7 @@ void Discret::ELEMENTS::SoTet10ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                          farah 05/14 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet10ThermoType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoTet10ThermoType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -436,13 +436,13 @@ int Discret::ELEMENTS::SoTet10ThermoType::Initialize(Core::FE::Discretization& d
     if (!actele) FOUR_C_THROW("cast to So_tet10_thermo* failed");
 
     actele->SoTet10::init_jacobian_mapping();
-    // as an alternative we can call: So_tet4Type::Initialize(dis);
+    // as an alternative we can call: So_tet4Type::initialize(dis);
     actele->So3Thermo<Discret::ELEMENTS::SoTet10,
         Core::FE::CellType::tet10>::init_jacobian_mapping_special_for_nurbs(dis);
   }
 
   return 0;
-}  // Initialize()
+}  // initialize()
 /*----------------------------------------------------------------------------*
  | ENDE TET10 Element
  *----------------------------------------------------------------------------*/
@@ -471,7 +471,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex27ThermoType::Create(
   Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>* object =
       new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>(
           -1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }  // Create()
 
@@ -529,7 +529,7 @@ void Discret::ELEMENTS::SoHex27ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                           dano 10/13 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex27ThermoType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex27ThermoType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -542,13 +542,13 @@ int Discret::ELEMENTS::SoHex27ThermoType::Initialize(Core::FE::Discretization& d
     if (!actele) FOUR_C_THROW("cast to So_hex27_thermo* failed");
 
     actele->SoHex27::init_jacobian_mapping();
-    // as an alternative we can call: So_hex27Type::Initialize(dis);
+    // as an alternative we can call: So_hex27Type::initialize(dis);
     actele->So3Thermo<Discret::ELEMENTS::SoHex27,
         Core::FE::CellType::hex27>::init_jacobian_mapping_special_for_nurbs(dis);
   }
 
   return 0;
-}  // Initialize()
+}  // initialize()
 /*----------------------------------------------------------------------------*
  | ENDE HEX27 Element
  *----------------------------------------------------------------------------*/
@@ -577,7 +577,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex20ThermoType::Create(
   Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex20, Core::FE::CellType::hex20>* object =
       new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex20, Core::FE::CellType::hex20>(
           -1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }  // Create()
 
@@ -635,7 +635,7 @@ void Discret::ELEMENTS::SoHex20ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                          farah 05/14 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex20ThermoType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoHex20ThermoType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -648,13 +648,13 @@ int Discret::ELEMENTS::SoHex20ThermoType::Initialize(Core::FE::Discretization& d
     if (!actele) FOUR_C_THROW("cast to So_hex20_thermo* failed");
 
     actele->SoHex20::init_jacobian_mapping();
-    // as an alternative we can call: So_hex27Type::Initialize(dis);
+    // as an alternative we can call: So_hex27Type::initialize(dis);
     actele->So3Thermo<Discret::ELEMENTS::SoHex20,
         Core::FE::CellType::hex20>::init_jacobian_mapping_special_for_nurbs(dis);
   }
 
   return 0;
-}  // Initialize()
+}  // initialize()
 /*----------------------------------------------------------------------------*
  | ENDE HEX20 Element
  *----------------------------------------------------------------------------*/
@@ -684,7 +684,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoNurbs27ThermoType::Create(
   Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27, Core::FE::CellType::nurbs27>*
       object = new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27,
           Core::FE::CellType::nurbs27>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }  // Create()
 
@@ -742,7 +742,7 @@ void Discret::ELEMENTS::SoNurbs27ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                          seitz 12/15 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoNurbs27ThermoType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoNurbs27ThermoType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -754,13 +754,13 @@ int Discret::ELEMENTS::SoNurbs27ThermoType::Initialize(Core::FE::Discretization&
     if (!actele) FOUR_C_THROW("cast to So_hex20_thermo* failed");
 
     actele->SoNurbs27::init_jacobian_mapping(dis);
-    // as an alternative we can call: So_hex27Type::Initialize(dis);
+    // as an alternative we can call: So_hex27Type::initialize(dis);
     actele->So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27,
         Core::FE::CellType::nurbs27>::init_jacobian_mapping_special_for_nurbs(dis);
   }
 
   return 0;
-}  // Initialize()
+}  // initialize()
 /*----------------------------------------------------------------------------*
  | END nurbs27 Element
  *----------------------------------------------------------------------------*/

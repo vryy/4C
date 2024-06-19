@@ -67,7 +67,7 @@ namespace Core::DOFSets
         const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
     //! original DofSet has been reset
-    void Reset() override;
+    void reset() override;
 
     /// Notify original dofset of new proxies
     void NotifyAssigned() override;

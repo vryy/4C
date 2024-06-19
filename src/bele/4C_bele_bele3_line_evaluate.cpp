@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 07/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Bele3Line::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Bele3Line::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -94,9 +94,9 @@ int Discret::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& param
 
   // get values and switches from the condition
   // (assumed to be constant on element boundary)
-  const auto& onoff = condition.parameters().Get<std::vector<int>>("onoff");
-  const auto& val = condition.parameters().Get<std::vector<double>>("val");
-  const auto& functions = condition.parameters().Get<std::vector<int>>("funct");
+  const auto& onoff = condition.parameters().get<std::vector<int>>("onoff");
+  const auto& val = condition.parameters().get<std::vector<double>>("val");
+  const auto& functions = condition.parameters().get<std::vector<int>>("funct");
 
   // set number of nodes
   const size_t iel = this->num_node();
@@ -168,7 +168,7 @@ int Discret::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& param
             // evaluate function at current gauss point (3D position vector required!)
             functionfac = Global::Problem::Instance()
                               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .Evaluate(coordgpref, time, dim);
+                              .evaluate(coordgpref, time, dim);
           else
             functionfac = 1.0;
         }

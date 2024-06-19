@@ -47,10 +47,10 @@ ScaTra::TimIntGenAlpha::TimIntGenAlpha(Teuchos::RCP<Core::FE::Discretization> ac
 /*----------------------------------------------------------------------*
  |  initialize time integration                         rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntGenAlpha::Setup()
+void ScaTra::TimIntGenAlpha::setup()
 {
   // initialize base class
-  ScaTraTimIntImpl::Setup();
+  ScaTraTimIntImpl::setup();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -102,7 +102,7 @@ void ScaTra::TimIntGenAlpha::Setup()
   // initialize forcing for homogeneous isotropic turbulence
   // -------------------------------------------------------------------
   // note: this constructor has to be called after the forcing_ vector has
-  //       been initialized; this is done in ScaTraTimIntImpl::Init() called before
+  //       been initialized; this is done in ScaTraTimIntImpl::init() called before
   if (special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence")
   {
     if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING") == "isotropic")
@@ -138,7 +138,7 @@ void ScaTra::TimIntGenAlpha::set_element_time_parameter(bool forcedincrementalso
   eleparams.set<double>("alpha_F", alphaF_);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -163,7 +163,7 @@ void ScaTra::TimIntGenAlpha::set_element_time_parameter_backward_euler() const
   eleparams.set<double>("alpha_F", 1.0);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -345,7 +345,7 @@ void ScaTra::TimIntGenAlpha::compute_time_derivative()
  | current solution becomes most recent solution of next timestep       |
  |                                                             vg 11/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntGenAlpha::Update()
+void ScaTra::TimIntGenAlpha::update()
 {
   // set history variable to zero for not spoiling flux calculation
   // if (not incremental_) hist_->PutScalar(0.0);
@@ -362,7 +362,7 @@ void ScaTra::TimIntGenAlpha::Update()
   compute_time_derivative();
 
   // call base class routine
-  ScaTraTimIntImpl::Update();
+  ScaTraTimIntImpl::update();
 
   // solution of this step becomes most recent solution of last step
   phin_->Update(1.0, *phinp_, 0.0);

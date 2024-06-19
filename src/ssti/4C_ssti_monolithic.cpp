@@ -192,7 +192,7 @@ void SSTI::SSTIMono::build_null_spaces()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSTI::SSTIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& sstitimeparams,
+void SSTI::SSTIMono::init(const Epetra_Comm& comm, const Teuchos::ParameterList& sstitimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams,
     const Teuchos::ParameterList& structparams)
 {
@@ -202,7 +202,7 @@ void SSTI::SSTIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList&
     FOUR_C_THROW("Invalid type of velocity field for scalar-structure interaction!");
 
   // call base class routine
-  SSTIAlgorithm::Init(comm, sstitimeparams, scatraparams, thermoparams, structparams);
+  SSTIAlgorithm::init(comm, sstitimeparams, scatraparams, thermoparams, structparams);
 }
 
 
@@ -229,7 +229,7 @@ void SSTI::SSTIMono::output()
 
   ScaTraField()->check_and_write_output_and_restart();
   ThermoField()->check_and_write_output_and_restart();
-  structure_field()->Output();
+  structure_field()->output();
 }
 
 /*--------------------------------------------------------------------------*
@@ -261,10 +261,10 @@ void SSTI::SSTIMono::prepare_time_step()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSTI::SSTIMono::Setup()
+void SSTI::SSTIMono::setup()
 {
   // call base class routine
-  SSTIAlgorithm::Setup();
+  SSTIAlgorithm::setup();
 
   // safety checks
   if (ScaTraField()->NumScal() != 1)
@@ -451,9 +451,9 @@ void SSTI::SSTIMono::Timeloop()
  *--------------------------------------------------------------------------------------*/
 void SSTI::SSTIMono::update()
 {
-  ScaTraField()->Update();
-  ThermoField()->Update();
-  structure_field()->Update();
+  ScaTraField()->update();
+  ThermoField()->update();
+  structure_field()->update();
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -528,7 +528,7 @@ void SSTI::SSTIMono::evaluate_subproblems()
   distribute_solution_all_fields();
 
   // evaluate all subproblems
-  structure_field()->Evaluate();
+  structure_field()->evaluate();
   ScaTraField()->PrepareLinearSolve();
   ThermoField()->PrepareLinearSolve();
 

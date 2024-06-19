@@ -25,21 +25,21 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Mat::PAR::Cnst1dArt::Cnst1dArt(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      viscosity_(matdata.parameters.Get<double>("VISCOSITY")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      young_(matdata.parameters.Get<double>("YOUNG")),
-      nue_(matdata.parameters.Get<double>("NUE")),
-      th_(matdata.parameters.Get<double>("TH")),
-      pext1_(matdata.parameters.Get<double>("PEXT1")),
-      pext2_(matdata.parameters.Get<double>("PEXT2")),
+      viscosity_(matdata.parameters.get<double>("VISCOSITY")),
+      density_(matdata.parameters.get<double>("DENS")),
+      young_(matdata.parameters.get<double>("YOUNG")),
+      nue_(matdata.parameters.get<double>("NUE")),
+      th_(matdata.parameters.get<double>("TH")),
+      pext1_(matdata.parameters.get<double>("PEXT1")),
+      pext2_(matdata.parameters.get<double>("PEXT2")),
       viscositylaw_(viscositylaw_undefined),
       diameterlaw_(diameterlaw_undefined),
       blood_visc_scale_diam_to_microns_(
-          matdata.parameters.Get<double>("BLOOD_VISC_SCALE_DIAM_TO_MICRONS")),
-      diameter_law_funct_(matdata.parameters.Get<int>("VARYING_DIAMETER_FUNCTION")),
-      collapse_threshold_(matdata.parameters.Get<double>("COLLAPSE_THRESHOLD"))
+          matdata.parameters.get<double>("BLOOD_VISC_SCALE_DIAM_TO_MICRONS")),
+      diameter_law_funct_(matdata.parameters.get<int>("VARYING_DIAMETER_FUNCTION")),
+      collapse_threshold_(matdata.parameters.get<double>("COLLAPSE_THRESHOLD"))
 {
-  const std::string& typestring_visc = matdata.parameters.Get<std::string>("VISCOSITYLAW");
+  const std::string& typestring_visc = matdata.parameters.get<std::string>("VISCOSITYLAW");
 
   if (typestring_visc == "CONSTANT")
     viscositylaw_ = viscositylaw_constant;
@@ -49,7 +49,7 @@ Mat::PAR::Cnst1dArt::Cnst1dArt(const Core::Mat::PAR::Parameter::Data& matdata)
     FOUR_C_THROW(
         "wrong type of viscosity law for artery material, only CONSTANT and BLOOD are valid");
 
-  const std::string& typestring_diam = matdata.parameters.Get<std::string>("VARYING_DIAMETERLAW");
+  const std::string& typestring_diam = matdata.parameters.get<std::string>("VARYING_DIAMETERLAW");
 
   if (typestring_diam == "CONSTANT")
     diameterlaw_ = diameterlaw_constant;
@@ -72,7 +72,7 @@ Mat::Cnst1dArtType Mat::Cnst1dArtType::instance_;
 Core::Communication::ParObject* Mat::Cnst1dArtType::Create(const std::vector<char>& data)
 {
   Mat::Cnst1dArt* cnst_art = new Mat::Cnst1dArt();
-  cnst_art->Unpack(data);
+  cnst_art->unpack(data);
   return cnst_art;
 }
 
@@ -95,7 +95,7 @@ Mat::Cnst1dArt::Cnst1dArt(Mat::PAR::Cnst1dArt* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Cnst1dArt::Pack(Core::Communication::PackBuffer& data) const
+void Mat::Cnst1dArt::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -115,7 +115,7 @@ void Mat::Cnst1dArt::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Cnst1dArt::Unpack(const std::vector<char>& data)
+void Mat::Cnst1dArt::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

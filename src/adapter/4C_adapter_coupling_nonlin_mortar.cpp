@@ -64,7 +64,7 @@ Adapter::CouplingNonLinMortar::CouplingNonLinMortar(int spatial_dimension,
 /*----------------------------------------------------------------------*
  |  initialize nonlinear mortar framework                    farah 10/14|
  *----------------------------------------------------------------------*/
-void Adapter::CouplingNonLinMortar::Setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
+void Adapter::CouplingNonLinMortar::setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
     Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
     const std::string& couplingcond)
 {
@@ -170,7 +170,7 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
 
     for (unsigned i = 0; i < conds.size(); i++)
     {
-      const std::string& side = conds[i]->parameters().Get<std::string>("Side");
+      const std::string& side = conds[i]->parameters().get<std::string>("Side");
 
       if (side == "Master") conds_master.push_back(conds[i]);
 
@@ -623,7 +623,7 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
   {
     // add one, since read in of COUPLING parameter in DESIGN SURF SPRING DASHPOT CONDITIONS
     // subtracts one
-    if (coup_conds[i]->parameters().Get<int>("coupling id") == (coupling_id + 1))
+    if (coup_conds[i]->parameters().get<int>("coupling id") == (coupling_id + 1))
       conds_master.push_back(coup_conds[i]);
   }
   if (!conds_master.size()) FOUR_C_THROW("Coupling ID not found.");
@@ -764,7 +764,7 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
   interface_->set_state(Mortar::state_new_displacement, *dispn);
 
   // in the following two steps MORTAR does all the work
-  interface_->Initialize();
+  interface_->initialize();
 
   // set setup flag
   issetup_ = true;
@@ -796,7 +796,7 @@ void Adapter::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
   interface_->set_state(Mortar::state_lagrange_multiplier, *veclm);
 
   // general interface init: data container etc...
-  interface_->Initialize();
+  interface_->initialize();
   interface_->set_element_areas();
 
   // loop over all slave col elements and direct integration
@@ -861,11 +861,11 @@ void Adapter::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
   interface_->set_state(Mortar::state_lagrange_multiplier, *veclm);
 
   // init internal data
-  interface_->Initialize();
+  interface_->initialize();
   interface_->set_element_areas();
 
   // call interface evaluate (d,m,gap...)
-  interface_->Evaluate();
+  interface_->evaluate();
 
   // assemble mortar matrices and lin.
   interface_->AssembleDM(*D_, *M_);
@@ -960,11 +960,11 @@ void Adapter::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
   interface_->set_state(Mortar::state_lagrange_multiplier, *veclm);
 
   // init internal data
-  interface_->Initialize();
+  interface_->initialize();
   interface_->set_element_areas();
 
   // call interface evaluate (d,m,gap...)
-  interface_->Evaluate();
+  interface_->evaluate();
 
   // assemble mortar matrices and lin.
   interface_->AssembleDM(*D_, *M_);
@@ -1004,13 +1004,13 @@ void Adapter::CouplingNonLinMortar::EvaluateSliding(const std::string& statename
   interface_->set_state(Mortar::state_lagrange_multiplier, *veclm);
 
   // init internal data
-  interface_->Initialize();
+  interface_->initialize();
   interface_->set_element_areas();
 
   interface_->BuildActiveSet(true);
 
   // call interface evaluate (d,m,gap...)
-  interface_->Evaluate();
+  interface_->evaluate();
 
   // assemble mortar matrices and lin.
   interface_->AssembleDM(*D_, *M_);

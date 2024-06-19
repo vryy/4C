@@ -597,7 +597,7 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const Core::FE::Discretization& flu
   presdofset.clear();
   Teuchos::RCP<Epetra_Map> presrowmap = Teuchos::rcp(
       new Epetra_Map(-1, presdofmapvec.size(), presdofmapvec.data(), 0, alefluiddis.Comm()));
-  extractor.Setup(*fullmap, presrowmap, velrowmap);
+  extractor.setup(*fullmap, presrowmap, velrowmap);
 }
 
 
@@ -630,7 +630,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const Core::FE::Discretization> dis
     for (unsigned i = 0; i < ldconds.size(); ++i)  // loop L&D conditions (i.e. lines in .dat file)
     {
       // get label of present LiftDrag condition
-      const int label = ldconds[i]->parameters().Get<int>("label");
+      const int label = ldconds[i]->parameters().get<int>("label");
 
       ((*liftdragvals))
           .insert(std::pair<int, std::vector<double>>(label, std::vector<double>(6, 0.0)));
@@ -658,19 +658,19 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const Core::FE::Discretization> dis
     for (unsigned i = 0; i < ldconds.size(); ++i)  // loop L&D conditions (i.e. lines in .dat file)
     {
       // get label of present LiftDrag condition
-      const int label = ldconds[i]->parameters().Get<int>("label");
+      const int label = ldconds[i]->parameters().get<int>("label");
 
       /* get new nodeset for new label OR:
          return pointer to nodeset for known label ... */
       std::set<Core::Nodes::Node*>& nodes = ldnodemap[label];
 
       // center coordinates to present label
-      ldcoordmap[label] = &ldconds[i]->parameters().Get<std::vector<double>>("centerCoord");
+      ldcoordmap[label] = &ldconds[i]->parameters().get<std::vector<double>>("centerCoord");
 
       // axis of rotation for present label (only needed for 3D)
       if (ldconds[i]->Type() == Core::Conditions::SurfLIFTDRAG)
       {
-        ldaxismap[label] = &ldconds[i]->parameters().Get<std::vector<double>>("axis");
+        ldaxismap[label] = &ldconds[i]->parameters().get<std::vector<double>>("axis");
         // get pointer to axis vector (if available)
         const std::vector<double>* axisvecptr = ldaxismap[label];
         if (axisvecptr->size() != 3) FOUR_C_THROW("axis vector has not length 3");
@@ -898,7 +898,7 @@ std::map<int, double> FLD::UTILS::ComputeFlowRates(Core::FE::Discretization& dis
        conditer != conds.end(); ++conditer)
   {
     const Core::Conditions::Condition* cond = *conditer;
-    const int condID = cond->parameters().Get<int>("ConditionID");
+    const int condID = cond->parameters().get<int>("ConditionID");
 
     // get a vector layout from the discretization to construct matching
     // vectors and matrices local <-> global dof numbering
@@ -988,7 +988,7 @@ std::map<int, Core::LinAlg::Matrix<3, 1>> FLD::UTILS::ComputeSurfaceImpulsRates(
   {
     const Core::Conditions::Condition* cond = *conditer;
 
-    const int condID = cond->parameters().Get<int>("ConditionID");
+    const int condID = cond->parameters().get<int>("ConditionID");
 
     // create vector (+ initialization with zeros)
     const Epetra_BlockMap mappy = velnp->Map();

@@ -26,17 +26,17 @@ void Mat::ElastHyperEvaluate(const Core::LinAlg::Matrix<3, 3>& defgrd,
     const SummandProperties& properties, bool checkpolyconvexity)
 {
   static Core::LinAlg::Matrix<6, 1> id2(false);
-  id2.Clear();
+  id2.clear();
   static Core::LinAlg::Matrix<6, 1> C_strain(false);
-  C_strain.Clear();
+  C_strain.clear();
   static Core::LinAlg::Matrix<6, 1> iC_strain(false);
-  iC_strain.Clear();
+  iC_strain.clear();
   static Core::LinAlg::Matrix<3, 1> prinv(false);
-  prinv.Clear();
+  prinv.clear();
   static Core::LinAlg::Matrix<3, 1> dPI(false);
-  dPI.Clear();
+  dPI.clear();
   static Core::LinAlg::Matrix<6, 1> ddPII(false);
-  ddPII.Clear();
+  ddPII.clear();
 
   // Evaluate identity tensor
   Core::LinAlg::Voigt::identity_matrix(id2);
@@ -59,8 +59,8 @@ void Mat::ElastHyperEvaluate(const Core::LinAlg::Matrix<3, 3>& defgrd,
 
 
   // clear stress and cmat (for safety reasons)
-  stress.Clear();
-  cmat.Clear();
+  stress.clear();
+  cmat.clear();
 
   // Evaluate isotropic stress response
   ElastHyperAddIsotropicStressCmat(stress, cmat, C_strain, iC_strain, prinv, dPI, ddPII);
@@ -109,11 +109,11 @@ void Mat::ElastHyperEvaluateInvariantDerivatives(const Core::LinAlg::Matrix<3, 1
   if (properties.isomod)
   {
     static Core::LinAlg::Matrix<3, 1> modinv(true);
-    modinv.Clear();
+    modinv.clear();
     static Core::LinAlg::Matrix<3, 1> dPmodI(true);
-    dPmodI.Clear();
+    dPmodI.clear();
     static Core::LinAlg::Matrix<6, 1> ddPmodII(true);
-    ddPmodII.Clear();
+    ddPmodII.clear();
 
     // Evaluate modified invariants
     Mat::invariants_modified(modinv, prinv);
@@ -249,9 +249,9 @@ void Mat::ElastHyperAddResponseStretches(Core::LinAlg::Matrix<6, 6>& cmat,
     const double detdefgrad13 = std::pow(detdefgrad, -1.0 / 3.0);
     // retrieve coefficients with respect to modified principal stretches
     static Core::LinAlg::Matrix<3, 1> modgamma(true);
-    modgamma.Clear();
+    modgamma.clear();
     static Core::LinAlg::Matrix<6, 1> moddelta(true);
-    moddelta.Clear();
+    moddelta.clear();
     {
       // loop map of associated potential summands
       for (const auto& p : potsum)
@@ -318,7 +318,7 @@ void Mat::ElastHyperAddResponseStretches(Core::LinAlg::Matrix<6, 6>& cmat,
 
   // principal 2nd Piola--Kirchhoff stress tensor, cf [1] Eq (6.47)
   static Core::LinAlg::Matrix<3, 1> prsts(true);
-  prsts.Clear();
+  prsts.clear();
   for (int al = 0; al < 3; ++al)
   {
     // PK2 principal stresses
@@ -336,9 +336,9 @@ void Mat::ElastHyperAddResponseStretches(Core::LinAlg::Matrix<6, 6>& cmat,
 
   // integration factor prfact_{al be}
   static Core::LinAlg::Matrix<6, 1> prfact1(true);
-  prfact1.Clear();
+  prfact1.clear();
   static Core::LinAlg::Matrix<6, 1> prfact2(true);
-  prfact2.Clear();
+  prfact2.clear();
   for (int albe = 0; albe < 6; ++albe)
   {
     const int al = map::voigt6_to_matrix_row_index(albe);
@@ -487,21 +487,21 @@ void Mat::ElastHyperCheckPolyconvexity(const Core::LinAlg::Matrix<3, 3>& defgrd,
 
   // Frechet Derivative according to Ebbing, PhD-thesis page 79, Eq: (5.31)
   static Core::LinAlg::Matrix<19, 19> FreD(true);
-  FreD.Clear();
+  FreD.clear();
 
   // single matrices of Frechet Derivative:
 
   // d^2P/dFdF
   // = 4 d^2\Psi/dI_1dI_1 F \otimes F + 2 \d\Psi/dI_1 *II
   static Core::LinAlg::Matrix<9, 9> FreDFF(true);
-  FreDFF.Clear();
+  FreDFF.clear();
   FreDFF.MultiplyNT(4 * ddPII(0), dfgrd, dfgrd, 1.0);
   FreDFF.Update(2 * dPI(0), ID4, 1.0);
 
   // d^2P/d(cofF)d(cofF)
   // = = 4 d^2\Psi/dI_2dI_2 cof(F) \otimes cof(F) + 2 \d\Psi/dI_2 *II
   static Core::LinAlg::Matrix<9, 9> FreDcFcF(true);
-  FreDcFcF.Clear();
+  FreDcFcF.clear();
   FreDcFcF.MultiplyNT(4 * ddPII(1), CofF, CofF, 1.0);
   FreDcFcF.Update(2 * dPI(1), ID4, 1.0);
 
@@ -513,19 +513,19 @@ void Mat::ElastHyperCheckPolyconvexity(const Core::LinAlg::Matrix<3, 3>& defgrd,
   // d^2P/d(cofF)dF
   // = 4*d\Psi/dI_1dI_2 F /otimes CofF
   static Core::LinAlg::Matrix<9, 9> FreDcFF(true);
-  FreDcFF.Clear();
+  FreDcFF.clear();
   FreDcFF.MultiplyNT(4 * ddPII(5), dfgrd, CofF, 1.0);
 
   // d^2P/d(detF)d(cofF)
   // = 4*J*d^2 \Psi /dI_2 dI_3 \mat{CofF}
   static Core::LinAlg::Matrix<9, 1> FreDcFJ(true);
-  FreDcFF.Clear();
+  FreDcFF.clear();
   FreDcFJ.Update(4 * J * ddPII(3), CofF, 1.0);
 
   // d^2P/d(detF) dF = d^2P/dF d(detF)
   // = 4*J*d^2 \Psi /dI_1 dI_3 \mat{F}
   static Core::LinAlg::Matrix<9, 1> FreDFJ(true);
-  FreDcFF.Clear();
+  FreDcFF.clear();
   FreDFJ.Update(4 * J * ddPII(4), dfgrd, 1.0);
 
   // Sort values in Frechet Derivative

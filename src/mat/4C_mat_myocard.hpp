@@ -119,7 +119,7 @@ namespace Mat
     /// The first information to be stored in data has to be the
     /// unique parobject id delivered by UniqueParObjectId() which will then
     /// identify the exact class on the receiving processor.
-    void Pack(Core::Communication::PackBuffer& data)
+    void pack(Core::Communication::PackBuffer& data)
         const override;  ///< (in/out): char vector to store class information
 
     /// \brief Unpack data from a char vector into this class
@@ -130,7 +130,7 @@ namespace Mat
     /// parobject id defined at the top of this file and delivered by
     /// UniqueParObjectId().
     ///
-    void Unpack(const std::vector<char>& data)
+    void unpack(const std::vector<char>& data)
         override;  ///< vector storing all data to be unpacked into this
 
     //@}
@@ -155,9 +155,9 @@ namespace Mat
 
     /// material call from Discret::ELEMENTS::Transport::ReadElement function
     /// to setup conductivity tensor for each element
-    void Setup(const Core::LinAlg::Matrix<3, 1>& fiber1);
-    void Setup(const Core::LinAlg::Matrix<2, 1>& fiber1);
-    void Setup(Input::LineDefinition* linedef);
+    void setup(const Core::LinAlg::Matrix<3, 1>& fiber1);
+    void setup(const Core::LinAlg::Matrix<2, 1>& fiber1);
+    void setup(Input::LineDefinition* linedef);
 
     void setup_diffusion_tensor(const std::vector<double>& fiber1);
     void setup_diffusion_tensor(const Core::LinAlg::Matrix<3, 1>& fiber1);
@@ -240,7 +240,7 @@ namespace Mat
     double GetIonicCurrents(const int k, int gp) const;
 
     /// initialize internal variables (called by constructors)
-    void Initialize();
+    void initialize();
 
     /// resize internal state variables
     void resize_internal_state_variables();

@@ -1423,7 +1423,7 @@ void Core::IO::DiscretizationWriter::write_knotvector() const
 
       // put knotvector into block
       Core::Communication::PackBuffer block;
-      knots->Pack(block);
+      knots->pack(block);
 
       // write block to file
       if (!block().empty())

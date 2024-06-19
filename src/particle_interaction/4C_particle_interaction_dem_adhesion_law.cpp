@@ -34,12 +34,12 @@ ParticleInteraction::DEMAdhesionLawBase::DEMAdhesionLawBase(const Teuchos::Param
   // empty constructor
 }
 
-void ParticleInteraction::DEMAdhesionLawBase::Init()
+void ParticleInteraction::DEMAdhesionLawBase::init()
 {
   // nothing to do
 }
 
-void ParticleInteraction::DEMAdhesionLawBase::Setup(const double& k_normal)
+void ParticleInteraction::DEMAdhesionLawBase::setup(const double& k_normal)
 {
   // set inverse normal contact stiffness
   inv_k_normal_ = 1.0 / k_normal;
@@ -85,10 +85,10 @@ ParticleInteraction::DEMAdhesionLawVdWDMT::DEMAdhesionLawVdWDMT(
   // empty constructor
 }
 
-void ParticleInteraction::DEMAdhesionLawVdWDMT::Init()
+void ParticleInteraction::DEMAdhesionLawVdWDMT::init()
 {
   // call base class init
-  DEMAdhesionLawBase::Init();
+  DEMAdhesionLawBase::init();
 
   // safety check
   if (hamaker_constant_ <= 0.0) FOUR_C_THROW("negative hamaker constant!");

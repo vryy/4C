@@ -220,7 +220,7 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntImpl::Init()
+void ScaTra::ScaTraTimIntImpl::init()
 {
   set_is_setup(false);
 
@@ -308,14 +308,14 @@ void ScaTra::ScaTraTimIntImpl::Init()
 
   // we have successfully initialized this class
   set_is_init(true);
-}  // ScaTraTimIntImpl::Init()
+}  // ScaTraTimIntImpl::init()
 
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntImpl::Setup()
+void ScaTra::ScaTraTimIntImpl::setup()
 {
-  // we have to call Init() first
+  // we have to call init() first
   check_is_init();
 
   // compute Null Space
@@ -331,7 +331,7 @@ void ScaTra::ScaTraTimIntImpl::Setup()
   if (scalarhandler_ == Teuchos::null)
     FOUR_C_THROW("Make sure you construct the scalarhandler_ in initialization.");
   else
-    scalarhandler_->Setup(this);
+    scalarhandler_->setup(this);
 
   // setup splitter (needed to solve initialization problems before setup_meshtying())
   SetupSplitter();
@@ -570,7 +570,7 @@ void ScaTra::ScaTraTimIntImpl::Setup()
     }
 
     // initialize scalar output strategy
-    outputscalarstrategy_->Init(this);
+    outputscalarstrategy_->init(this);
   }
   else
   {
@@ -598,7 +598,7 @@ void ScaTra::ScaTraTimIntImpl::Setup()
   {
     // initialize domain integral output strategy
     outputdomainintegralstrategy_ = Teuchos::rcp(new OutputDomainIntegralStrategy);
-    outputdomainintegralstrategy_->Init(this);
+    outputdomainintegralstrategy_->init(this);
   }
   else
   {
@@ -656,7 +656,7 @@ void ScaTra::ScaTraTimIntImpl::Setup()
 
   // we have successfully set up this class
   set_is_setup(true);
-}  // ScaTraTimIntImpl::Setup()
+}  // ScaTraTimIntImpl::setup()
 
 
 /*----------------------------------------------------------------------*
@@ -888,7 +888,7 @@ void ScaTra::ScaTraTimIntImpl::prepare_krylov_projection()
   // check if for scatra Krylov projection is required
   for (std::size_t icond = 0; icond < numcond; icond++)
   {
-    const auto& name = KSPCond[icond]->parameters().Get<std::string>("discretization");
+    const auto& name = KSPCond[icond]->parameters().get<std::string>("discretization");
     if (name == "scatra")
     {
       numscatra++;
@@ -931,7 +931,7 @@ void ScaTra::ScaTraTimIntImpl::set_element_nodeset_parameters() const
   eleparams.set<int>("ndswss", NdsWallShearStress());
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -1011,7 +1011,7 @@ void ScaTra::ScaTraTimIntImpl::set_element_general_parameters(bool calcinitialti
   set_element_specific_sca_tra_parameters(eleparams);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -1054,7 +1054,7 @@ void ScaTra::ScaTraTimIntImpl::set_element_turbulence_parameters(
     eleparams.set<int>("fs subgrid diffusivity", fssgd_);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -1165,7 +1165,7 @@ void ScaTra::ScaTraTimIntImpl::prepare_time_step()
     add_time_integration_specific_vectors();
 
     // loop over macro-scale elements
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 }
@@ -1245,7 +1245,7 @@ void ScaTra::ScaTraTimIntImpl::set_velocity_field()
         for (int index = 0; index < nsd_; ++index)
         {
           double value = problem_->FunctionById<Core::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
-                             .Evaluate(lnode->X().data(), time_, index);
+                             .evaluate(lnode->X().data(), time_, index);
 
           // get global and local dof IDs
           const int gid = nodedofs[index];
@@ -1306,12 +1306,12 @@ void ScaTra::ScaTraTimIntImpl::SetExternalForce()
     {
       const double external_force_value =
           problem_->FunctionById<Core::UTILS::FunctionOfSpaceTime>(external_force_function_id - 1)
-              .Evaluate(current_node->X().data(), time_, spatial_dimension);
+              .evaluate(current_node->X().data(), time_, spatial_dimension);
 
       const double intrinsic_mobility_value =
           problem_
               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(intrinsic_mobility_function_id - 1)
-              .Evaluate(current_node->X().data(), time_, spatial_dimension);
+              .evaluate(current_node->X().data(), time_, spatial_dimension);
       const double force_velocity_value = external_force_value * intrinsic_mobility_value;
 
       const int gid = nodedofs[spatial_dimension];
@@ -1536,7 +1536,7 @@ void ScaTra::ScaTraTimIntImpl::TimeLoop()
     //                         update solution
     //        current solution becomes old solution of next timestep
     // -------------------------------------------------------------------
-    Update();
+    update();
 
     // -------------------------------------------------------------------
     // evaluate error for problems with analytical solution
@@ -1605,10 +1605,10 @@ void ScaTra::ScaTraTimIntImpl::Solve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntImpl::Update()
+void ScaTra::ScaTraTimIntImpl::update()
 {
   // update quantities associated with meshtying strategy
-  strategy_->Update();
+  strategy_->update();
 }
 
 /*----------------------------------------------------------------------*
@@ -1687,7 +1687,7 @@ void ScaTra::ScaTraTimIntImpl::WriteResult()
   // write output to Gmsh postprocessing files
   if (outputgmsh_) output_to_gmsh(step_, time_);
 
-  // write flux vector field (only writing, calculation was done during Update() call)
+  // write flux vector field (only writing, calculation was done during update() call)
   if (calcflux_domain_ != Inpar::ScaTra::flux_none or
       calcflux_boundary_ != Inpar::ScaTra::flux_none)
   {
@@ -1728,7 +1728,7 @@ void ScaTra::ScaTraTimIntImpl::WriteResult()
   }
 
   // generate output associated with meshtying strategy
-  strategy_->Output();
+  strategy_->output();
 
   // generate output on micro scale if necessary
   if (macro_scale_)
@@ -1741,7 +1741,7 @@ void ScaTra::ScaTraTimIntImpl::WriteResult()
         "action", ScaTra::Action::micro_scale_output, eleparams);
 
     // loop over macro-scale elements
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
@@ -1787,7 +1787,7 @@ void ScaTra::ScaTraTimIntImpl::SetInitialField(
           // evaluate component k of spatial function
           double initialval =
               problem_->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                  .Evaluate(lnode->X().data(), time_, k);
+                  .evaluate(lnode->X().data(), time_, k);
           int err = phin_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
@@ -2220,7 +2220,7 @@ void ScaTra::ScaTraTimIntImpl::setup_krylov_space_projection(Core::Conditions::C
   // revision 17615.
 
   // confirm that mode flags are number of nodal dofs/scalars
-  const int nummodes = kspcond->parameters().Get<int>("NUMMODES");
+  const int nummodes = kspcond->parameters().get<int>("NUMMODES");
   if (nummodes != NumDofPerNode())
   {
     FOUR_C_THROW(
@@ -2229,7 +2229,7 @@ void ScaTra::ScaTraTimIntImpl::setup_krylov_space_projection(Core::Conditions::C
   }
 
   // get vector of mode flags as given in dat-file
-  const auto* modeflags = &kspcond->parameters().Get<std::vector<int>>("ONOFF");
+  const auto* modeflags = &kspcond->parameters().get<std::vector<int>>("ONOFF");
 
   // count actual active modes selected in dat-file
   std::vector<int> activemodeids;
@@ -2242,7 +2242,7 @@ void ScaTra::ScaTraTimIntImpl::setup_krylov_space_projection(Core::Conditions::C
   }
 
   // get from dat-file definition how weights are to be computed
-  const auto* weighttype = &kspcond->parameters().Get<std::string>("weight vector definition");
+  const auto* weighttype = &kspcond->parameters().get<std::string>("weight vector definition");
 
   // set flag for projection update true only if ALE and integral weights
   if (isale_ and (*weighttype == "integration")) updateprojection_ = true;
@@ -2646,9 +2646,9 @@ void ScaTra::ScaTraTimIntImpl::assemble_mat_and_rhs()
 
   // call loop over elements (with or without subgrid-diffusivity(-scaling) vector)
   if (fssgd_ != Inpar::ScaTra::fssugrdiff_no)
-    discret_->Evaluate(eleparams, sysmat_, Teuchos::null, residual_, subgrdiff_, Teuchos::null);
+    discret_->evaluate(eleparams, sysmat_, Teuchos::null, residual_, subgrdiff_, Teuchos::null);
   else
-    discret_->Evaluate(eleparams, sysmat_, residual_);
+    discret_->evaluate(eleparams, sysmat_, residual_);
 
   //----------------------------------------------------------------------
   // apply weak Dirichlet boundary conditions
@@ -2985,7 +2985,7 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_micro_scale_solve()
   add_time_integration_specific_vectors();
 
   // evaluate macro-scale elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -3302,7 +3302,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
 
           // compute matrix and vector contributions according to kinetic model for current
           // macro-micro coupling condition
-          const int kinetic_model = condition->parameters().Get<int>("kinetic model");
+          const int kinetic_model = condition->parameters().get<int>("kinetic model");
 
           switch (kinetic_model)
           {
@@ -3349,7 +3349,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
                 FOUR_C_THROW("Invalid electrode material for multi-scale coupling!");
 
               // access input parameters associated with current condition
-              const int nume = condition->parameters().Get<int>("e-");
+              const int nume = condition->parameters().get<int>("e-");
               if (nume != 1)
               {
                 FOUR_C_THROW(
@@ -3377,10 +3377,10 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
                   (gasconstant * (Global::Problem::Instance(0)->ELCHControlParams().get<double>(
                                      "TEMPERATURE")));
               const double alphaa =
-                  condition->parameters().Get<double>("alpha_a");  // anodic transfer coefficient
+                  condition->parameters().get<double>("alpha_a");  // anodic transfer coefficient
               const double alphac =
-                  condition->parameters().Get<double>("alpha_c");  // cathodic transfer coefficient
-              const double kr = condition->parameters().Get<double>(
+                  condition->parameters().get<double>("alpha_c");  // cathodic transfer coefficient
+              const double kr = condition->parameters().get<double>(
                   "k_r");  // rate constant of charge transfer reaction
               if (kr < 0.) FOUR_C_THROW("Charge transfer constant k_r is negative!");
 
@@ -3422,7 +3422,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
               const double eta = phinp_macro_[2] - phinp_macro_[1] - epd;
 
               // Butler-Volmer exchange mass flux density
-              const double j0 = condition->parameters().Get<int>("kinetic model") ==
+              const double j0 = condition->parameters().get<int>("kinetic model") ==
                                         Inpar::S2I::kinetics_butlervolmerreduced
                                     ? kr
                                     : kr * std::pow(conc_el, alphaa) *
@@ -3476,14 +3476,14 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
  *-----------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::check_is_init() const
 {
-  if (not is_init()) FOUR_C_THROW("ScaTraTimIntImpl is not initialized. Call Init() first.");
+  if (not is_init()) FOUR_C_THROW("ScaTraTimIntImpl is not initialized. Call init() first.");
 }
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::check_is_setup() const
 {
-  if (not is_setup()) FOUR_C_THROW("ScaTraTimIntImpl is not set up. Call Setup() first.");
+  if (not is_setup()) FOUR_C_THROW("ScaTraTimIntImpl is not set up. Call setup() first.");
 }
 
 /*-----------------------------------------------------------------------------*
@@ -3693,7 +3693,7 @@ void ScaTra::ScaTraTimIntImpl::calc_mean_micro_concentration()
   // evaluate nodal mean concentration of micro discretizations
   Core::FE::AssembleStrategy strategy(NdsMicro(), NdsMicro(), Teuchos::null, Teuchos::null,
       phinp_micro_, Teuchos::null, Teuchos::null);
-  discret_->Evaluate(eleparams, strategy);
+  discret_->evaluate(eleparams, strategy);
 
   // copy states from first dof of MAT_Electrode
   for (int ele_lid = 0; ele_lid < discret_->ElementRowMap()->NumMyElements(); ++ele_lid)
@@ -3845,7 +3845,7 @@ void ScaTra::ScaTraTimIntImpl::set_time_stepping_to_micro_scale()
   eleparams.set<int>("step", step_);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 

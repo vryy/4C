@@ -52,7 +52,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Init()
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::init()
 {
   issetup_ = false;
   isinit_ = true;
@@ -61,7 +61,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Init()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Setup(
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
     Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
         output_params_ptr)
@@ -243,7 +243,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 
       // Get the coupling ID for the current condition.
       const int coupling_id =
-          beam_to_surface_condition->GetOtherCondition()->parameters().Get<int>("COUPLING_ID");
+          beam_to_surface_condition->GetOtherCondition()->parameters().get<int>("COUPLING_ID");
 
       // Create the output for the averaged normal field.
       AddAveragedNodalNormals(visualization_averaged_normals,
@@ -391,7 +391,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
  */
 void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::check_init_setup() const
 {
-  if (!isinit_ or !issetup_) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (!isinit_ or !issetup_) FOUR_C_THROW("Call init() and setup() first!");
 }
 
 /**
@@ -399,7 +399,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::check_init_se
  */
 void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::check_init() const
 {
-  if (!isinit_) FOUR_C_THROW("Init() has not been called, yet!");
+  if (!isinit_) FOUR_C_THROW("init() has not been called, yet!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

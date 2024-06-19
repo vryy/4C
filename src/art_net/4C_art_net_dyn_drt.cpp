@@ -152,7 +152,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
       timintscheme, actdis, linsolvernumber, artdyn, artdyn, output);
 
   // initialize
-  artnettimint->Init(artdyn, artdyn, scatra_disname);
+  artnettimint->init(artdyn, artdyn, scatra_disname);
 
   // Initialize state save vectors
   if (CoupledTo3D)
@@ -161,7 +161,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   }
 
   // initial field from restart or calculated by given function
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
   if (restart && !CoupledTo3D)
   {
     // read the restart information, set vectors and variables

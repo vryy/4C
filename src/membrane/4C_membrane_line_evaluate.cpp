@@ -37,7 +37,7 @@ int Discret::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::Paramete
   };
   LoadType ltype;
 
-  const std::string& type = condition.parameters().Get<std::string>("type");
+  const std::string& type = condition.parameters().get<std::string>("type");
   if (type == "neum_live")
   {
     ltype = neum_live;
@@ -46,9 +46,9 @@ int Discret::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::Paramete
     FOUR_C_THROW("Unknown type of LineNeumann condition");
 
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
-  const auto* spa_func = &condition.parameters().Get<std::vector<int>>("funct");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().get<std::vector<double>>("val");
+  const auto* spa_func = &condition.parameters().get<std::vector<int>>("funct");
 
   /*
   **    TIME CURVE BUSINESS
@@ -138,7 +138,7 @@ int Discret::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::Paramete
               // evaluate function at current gauss point
               functfac = Global::Problem::Instance()
                              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                             .Evaluate(coordgpref, time, i);
+                             .evaluate(coordgpref, time, i);
             }
 
             const double fac = (*val)[i] * gpweight * dL * functfac;

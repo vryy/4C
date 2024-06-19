@@ -742,8 +742,8 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::read_restart(int step)
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicFluidSplitNoNOX::output()
 {
-  structure_field()->Output();
-  fluid_field()->Output();
+  structure_field()->output();
+  fluid_field()->output();
 
   // output Lagrange multiplier
   {
@@ -764,7 +764,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::output()
         fluid_field()->Step() % upres == 0)
       fluid_field()->DiscWriter()->write_vector("fsilambda", lambdaemb);
   }
-  ale_field()->Output();
+  ale_field()->output();
 
   if (structure_field()->get_constraint_manager()->HaveMonitor())
   {
@@ -811,7 +811,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::newton()
   ddgpred_->Update(-1.0, *structure_field()->extract_interface_dispn(), 1.0);
 
   /*----------------------------------------------------------------------*/
-  // Initialize the increment vectors, they are updated in Evaluate(...)->extract_field_vectors(...)
+  // Initialize the increment vectors, they are updated in evaluate(...)->extract_field_vectors(...)
   // at every Newton iteration!
 
   // Initialization for 1st Newton call

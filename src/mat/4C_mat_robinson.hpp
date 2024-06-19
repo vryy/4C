@@ -146,7 +146,7 @@ namespace Mat
     //!  unique parobject id delivered by UniqueParObjectId() which will then
     //!  identify the exact class on the receiving processor.
     //!
-    void Pack(
+    void pack(
         Core::Communication::PackBuffer& data  //!< (i/o): char vector to store class information
     ) const override;
 
@@ -158,7 +158,7 @@ namespace Mat
     //!  parobject id defined at the top of this file and delivered by
     //!  UniqueParObjectId().
     //!
-    void Unpack(const std::vector<char>&
+    void unpack(const std::vector<char>&
             data  //!< (i) vector storing all data to be unpacked into this instance
         ) override;
 
@@ -184,13 +184,13 @@ namespace Mat
     }
 
     //! initialise internal stress variables
-    void Setup(const int numgp,  //!< number of Gauss points
+    void setup(const int numgp,  //!< number of Gauss points
         Input::LineDefinition* linedef) override;
 
     //! update internal stress variables
-    void Update() override;
+    void update() override;
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
@@ -395,7 +395,7 @@ namespace Mat
     //@{
 
     //! material call to determine stress and constitutive tensor ctemp
-    void Evaluate(
+    void evaluate(
         const Core::LinAlg::Matrix<1, 1>& Ntemp,  //!< scalar-valued temperature of curr. element
         Core::LinAlg::Matrix<6, 1>& ctemp,        //!< temperature dependent material tangent
         Core::LinAlg::Matrix<6, 1>& stresstemp    //!< stress term dependent on temperature

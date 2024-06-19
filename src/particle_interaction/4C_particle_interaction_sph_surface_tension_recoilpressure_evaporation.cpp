@@ -31,12 +31,12 @@ ParticleInteraction::SPHRecoilPressureEvaporation::SPHRecoilPressureEvaporation(
   // empty constructor
 }
 
-void ParticleInteraction::SPHRecoilPressureEvaporation::Init()
+void ParticleInteraction::SPHRecoilPressureEvaporation::init()
 {
   // nothing to do
 }
 
-void ParticleInteraction::SPHRecoilPressureEvaporation::Setup(
+void ParticleInteraction::SPHRecoilPressureEvaporation::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine

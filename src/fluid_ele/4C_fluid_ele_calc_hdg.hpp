@@ -142,7 +142,7 @@ namespace Discret
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      int Evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -151,7 +151,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       /// Evaluate the element at specified gauss points
-      int Evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

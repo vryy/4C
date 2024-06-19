@@ -30,9 +30,9 @@ namespace FS3I
    public:
     PartFS3I1Wc(const Epetra_Comm& comm);
 
-    void Init() override;
+    void init() override;
 
-    void Setup() override;
+    void setup() override;
 
     void Timeloop() override;
 

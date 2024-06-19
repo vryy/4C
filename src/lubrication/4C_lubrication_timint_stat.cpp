@@ -39,10 +39,10 @@ LUBRICATION::TimIntStationary::TimIntStationary(Teuchos::RCP<Core::FE::Discretiz
 /*----------------------------------------------------------------------*
  |  initialize time integration                             wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::Init()
+void LUBRICATION::TimIntStationary::init()
 {
   // initialize base class
-  TimIntImpl::Init();
+  TimIntImpl::init();
 
   // -------------------------------------------------------------------
   // set element parameters
@@ -71,7 +71,7 @@ void LUBRICATION::TimIntStationary::set_element_time_parameter() const
   eleparams.set<double>("alpha_F", 1.0);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -108,7 +108,7 @@ void LUBRICATION::TimIntStationary::add_time_integration_specific_vectors(
 /*----------------------------------------------------------------------*
  | update of solution at end of time step                   wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::Update(const int num)
+void LUBRICATION::TimIntStationary::update(const int num)
 {
   // for the stationary scheme there is nothing to do
 }

@@ -51,7 +51,7 @@ namespace STR
         const Teuchos::RCP<Core::IO::DiscretizationWriter>& output  //!< the output
     );
 
-    void Setup() override;
+    void setup() override;
 
     //! Update element
     void UpdateStepElement() override;

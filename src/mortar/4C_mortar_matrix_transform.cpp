@@ -35,7 +35,7 @@ Mortar::MatrixRowColTransformer::MatrixRowColTransformer(const unsigned num_tran
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Mortar::MatrixRowColTransformer::Init(const plain_block_map_pairs& redistributed_row,
+void Mortar::MatrixRowColTransformer::init(const plain_block_map_pairs& redistributed_row,
     const plain_block_map_pairs& redistributed_column,
     const plain_block_map_pairs& unredistributed_row,
     const plain_block_map_pairs& unredistributed_column)
@@ -80,7 +80,7 @@ void Mortar::MatrixRowColTransformer::set_master_map_pairs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Mortar::MatrixRowColTransformer::Setup()
+void Mortar::MatrixRowColTransformer::setup()
 {
   throw_if_not_init();
 

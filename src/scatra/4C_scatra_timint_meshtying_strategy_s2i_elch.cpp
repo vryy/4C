@@ -207,7 +207,7 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
 
     // compute matrix and vector contributions according to kinetic model for current point coupling
     // condition
-    const int kinetic_model = cond_slave->parameters().Get<int>("kinetic model");
+    const int kinetic_model = cond_slave->parameters().get<int>("kinetic model");
     switch (kinetic_model)
     {
       case Inpar::S2I::kinetics_butlervolmer:
@@ -220,7 +220,7 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
           FOUR_C_THROW("Invalid electrode material for multi-scale coupling!");
 
         // access input parameters associated with current condition
-        const int nume = cond_slave->parameters().Get<int>("e-");
+        const int nume = cond_slave->parameters().get<int>("e-");
         if (nume != 1)
         {
           FOUR_C_THROW(
@@ -245,9 +245,9 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
         const double frt =
             faraday / (gasconstant * (Global::Problem::Instance(0)->ELCHControlParams().get<double>(
                                          "TEMPERATURE")));
-        const double alphaa = cond_slave->parameters().Get<double>("alpha_a");
-        const double alphac = cond_slave->parameters().Get<double>("alpha_c");
-        const double kr = cond_slave->parameters().Get<double>("k_r");
+        const double alphaa = cond_slave->parameters().get<double>("alpha_a");
+        const double alphac = cond_slave->parameters().get<double>("alpha_c");
+        const double kr = cond_slave->parameters().get<double>("k_r");
         if (kr < 0.0) FOUR_C_THROW("Charge transfer constant k_r is negative!");
 
         // extract saturation value of intercalated lithium concentration from electrode material
@@ -282,7 +282,7 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
         const double eta = ed_pot - el_pot - epd;
 
         // Butler-Volmer exchange mass flux density
-        const double j0 = cond_slave->parameters().Get<int>("kinetic model") ==
+        const double j0 = cond_slave->parameters().get<int>("kinetic model") ==
                                   Inpar::S2I::kinetics_butlervolmerreduced
                               ? kr
                               : kr * std::pow(el_conc, alphaa) * std::pow(cmax - ed_conc, alphaa) *
@@ -376,7 +376,7 @@ void ScaTra::MeshtyingStrategyS2IElch::init_conv_check_strategy()
 /*------------------------------------------------------------------------------------------*
  | update solution after convergence of the nonlinear Newton-Raphson iteration   fang 01/17 |
  *------------------------------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2IElch::Update() const
+void ScaTra::MeshtyingStrategyS2IElch::update() const
 {
   // update scatra-scatra interface layer thicknesses in case of semi-implicit solution approach
   if (intlayergrowth_evaluation_ == Inpar::S2I::growth_evaluation_semi_implicit)
@@ -390,24 +390,24 @@ void ScaTra::MeshtyingStrategyS2IElch::Update() const
     {
       // extract current condition
       // extract kinetic model from current condition
-      switch (condition->parameters().Get<int>("kinetic model"))
+      switch (condition->parameters().get<int>("kinetic model"))
       {
         case Inpar::S2I::growth_kinetics_butlervolmer:
         {
           // extract parameters from current condition
-          const auto kr = condition->parameters().Get<double>("k_r");
-          const auto alphaa = condition->parameters().Get<double>("alpha_a");
-          const auto alphac = condition->parameters().Get<double>("alpha_c");
+          const auto kr = condition->parameters().get<double>("k_r");
+          const auto alphaa = condition->parameters().get<double>("alpha_a");
+          const auto alphac = condition->parameters().get<double>("alpha_c");
           const double frt = elch_tim_int()->FRT();
           const double conductivity_inverse =
-              1. / condition->parameters().Get<double>("conductivity");
+              1. / condition->parameters().get<double>("conductivity");
           const double faraday =
               Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
 
           // pre-compute integration factor
-          const double integrationfac(condition->parameters().Get<double>("molar mass") *
+          const double integrationfac(condition->parameters().get<double>("molar mass") *
                                       scatratimint_->Dt() /
-                                      (condition->parameters().Get<double>("density") * faraday));
+                                      (condition->parameters().get<double>("density") * faraday));
 
           // extract nodal cloud from current condition
           const std::vector<int>* nodegids = condition->GetNodes();
@@ -527,7 +527,7 @@ void ScaTra::MeshtyingStrategyS2IElch::Update() const
 
   else
     // call base class routine
-    MeshtyingStrategyS2I::Update();
+    MeshtyingStrategyS2I::update();
 }
 
 
@@ -761,7 +761,7 @@ ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::MortarCellCalcElchSTITh
  types   fang 01/17 |
  *--------------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
+void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate(
     const Core::FE::Discretization& idiscret,           //!< interface discretization
     Mortar::IntCell& cell,                              //!< mortar integration cell
     Mortar::Element& slaveelement,                      //!< slave-side mortar element
@@ -792,7 +792,7 @@ void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
     // call base class routine
     default:
     {
-      my::Evaluate(idiscret, cell, slaveelement, masterelement, la_slave, la_master, params,
+      my::evaluate(idiscret, cell, slaveelement, masterelement, la_slave, la_master, params,
           cellmatrix1, cellmatrix2, cellmatrix3, cellmatrix4, cellvector1, cellvector2);
 
       break;
@@ -974,7 +974,7 @@ ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
  types   fang 01/17 |
  *--------------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
+void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate(
     const Core::FE::Discretization& idiscret,           //!< interface discretization
     Mortar::IntCell& cell,                              //!< mortar integration cell
     Mortar::Element& slaveelement,                      //!< slave-side mortar element
@@ -1014,7 +1014,7 @@ void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
     // call base class routine
     default:
     {
-      my::Evaluate(idiscret, cell, slaveelement, masterelement, la_slave, la_master, params,
+      my::evaluate(idiscret, cell, slaveelement, masterelement, la_slave, la_master, params,
           cellmatrix1, cellmatrix2, cellmatrix3, cellmatrix4, cellvector1, cellvector2);
 
       break;
@@ -1218,10 +1218,10 @@ void ScaTra::MeshtyingStrategyS2IElchSCL::setup_meshtying()
 
   for (const auto& s2imeshtying_condition : s2imeshtying_conditions)
   {
-    if (s2imeshtying_condition->parameters().Get<int>("S2IKineticsID") != -1)
+    if (s2imeshtying_condition->parameters().get<int>("S2IKineticsID") != -1)
       FOUR_C_THROW("No kinetics condition is allowed for the coupled space-charge layer problem.");
 
-    switch (s2imeshtying_condition->parameters().Get<int>("interface side"))
+    switch (s2imeshtying_condition->parameters().get<int>("interface side"))
     {
       case Inpar::S2I::side_slave:
       {

@@ -37,7 +37,7 @@ PaSI::PartitionedAlgo::PartitionedAlgo(
   // empty constructor
 }
 
-void PaSI::PartitionedAlgo::Init()
+void PaSI::PartitionedAlgo::init()
 {
   // reset setup flag
   set_is_setup(false);
@@ -60,16 +60,16 @@ void PaSI::PartitionedAlgo::Init()
   set_is_init(true);
 }
 
-void PaSI::PartitionedAlgo::Setup()
+void PaSI::PartitionedAlgo::setup()
 {
   // check correct initialization
   check_is_init();
 
   // setup particle algorithm
-  particlealgorithm_->Setup();
+  particlealgorithm_->setup();
 
   // write initial output
-  structurefield_->Output();
+  structurefield_->output();
 
   // set setup flag
   set_is_setup(true);
@@ -219,10 +219,10 @@ void PaSI::PartitionedAlgo::struct_output()
   structurefield_->prepare_output(force_prepare);
 
   // update all single field solvers
-  structurefield_->Update();
+  structurefield_->update();
 
   // write output
-  structurefield_->Output();
+  structurefield_->output();
 }
 
 void PaSI::PartitionedAlgo::particle_output()
@@ -250,7 +250,7 @@ void PaSI::PartitionedAlgo::init_structure_field()
   {
     // create and init structure base algorithm
     struct_adapterbase_ptr_ = Adapter::build_structure_algorithm(params);
-    struct_adapterbase_ptr_->Init(params, const_cast<Teuchos::ParameterList&>(params), structdis);
+    struct_adapterbase_ptr_->init(params, const_cast<Teuchos::ParameterList&>(params), structdis);
   }
   else if (params.get<std::string>("INT_STRATEGY") == "Old")
     FOUR_C_THROW(
@@ -278,7 +278,7 @@ void PaSI::PartitionedAlgo::init_particle_algorithm()
 
   // create and init particle algorithm
   particlealgorithm_ = Teuchos::rcp(new PARTICLEALGORITHM::ParticleAlgorithm(Comm(), params));
-  particlealgorithm_->Init(initialparticles);
+  particlealgorithm_->init(initialparticles);
 }
 
 void PaSI::PartitionedAlgo::build_structure_model_evaluator()
@@ -292,8 +292,8 @@ void PaSI::PartitionedAlgo::build_structure_model_evaluator()
 
     struct_adapterbase_ptr_->register_model_evaluator("Partitioned Coupling Model", pasi_model_ptr);
 
-    // call Setup() on structure base algorithm (wrapper is created inside)
-    struct_adapterbase_ptr_->Setup();
+    // call setup() on structure base algorithm (wrapper is created inside)
+    struct_adapterbase_ptr_->setup();
 
     // get wrapper and cast it to specific type
     structurefield_ = Teuchos::rcp_dynamic_cast<Adapter::PASIStructureWrapper>(

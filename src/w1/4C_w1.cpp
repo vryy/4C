@@ -26,7 +26,7 @@ Discret::ELEMENTS::Wall1Type& Discret::ELEMENTS::Wall1Type::Instance() { return 
 Core::Communication::ParObject* Discret::ELEMENTS::Wall1Type::Create(const std::vector<char>& data)
 {
   Discret::ELEMENTS::Wall1* object = new Discret::ELEMENTS::Wall1(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -216,7 +216,7 @@ Core::FE::CellType Discret::ELEMENTS::Wall1::Shape() const { return distype_; }
  |  Pack data                                                  (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Wall1::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -224,7 +224,7 @@ void Discret::ELEMENTS::Wall1::Pack(Core::Communication::PackBuffer& data) const
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  SoBase::Pack(data);
+  SoBase::pack(data);
   // material_
   add_to_pack(data, material_);
   // thickness
@@ -256,7 +256,7 @@ void Discret::ELEMENTS::Wall1::Pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Wall1::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -265,7 +265,7 @@ void Discret::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  SoBase::Unpack(basedata);
+  SoBase::unpack(basedata);
   // material_
   extract_from_pack(position, data, material_);
   // thickness_

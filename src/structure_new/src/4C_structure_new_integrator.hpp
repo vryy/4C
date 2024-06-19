@@ -87,14 +87,14 @@ namespace STR
      * \param[in] dpc_ptr Pointer to the dirichlet boundary condition object
      * \param[in] timint_ptr Pointer to the underlying time integrator (read-only)
      */
-    virtual void Init(const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_ptr,
+    virtual void init(const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_ptr,
         const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
         const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
         const Teuchos::RCP<STR::Dbc>& dbc_ptr,
         const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
 
     //! Setup (has to be implemented by the derived classes)
-    virtual void Setup();
+    virtual void setup();
 
     //! Post setup operation (compute initial equilibrium state), should be run directly after the
     //! setup routine has been finished
@@ -396,10 +396,10 @@ namespace STR
         const enum ::NOX::Abstract::Vector::NormType& normtype, double& mynorm) const;
 
    protected:
-    //! indicates if the Init() function has been called
+    //! indicates if the init() function has been called
     bool isinit_;
 
-    //! indicates if the Setup() function has been called
+    //! indicates if the setup() function has been called
     bool issetup_;
 
     //! Mid-time energy container
@@ -409,7 +409,7 @@ namespace STR
       MidTimeEnergy(const Integrator& integrator);
 
       /// setup
-      void Setup();
+      void setup();
 
       /// can this container be used?
       bool is_correctly_configured() const;

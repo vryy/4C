@@ -103,7 +103,7 @@ namespace CONTACT
 
       In the TSI case, the contact terms are applied to the global system here.
       The "usual" place, i.e. the
-      Evaluate(
+      evaluate(
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis)
       in the Contact_lagrange_strategy is overloaded to do nothing, since
@@ -111,7 +111,7 @@ namespace CONTACT
       the Lagrange multipliers.
 
      */
-    virtual void Evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    virtual void evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<Core::Adapter::Coupling> coupST,
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> temp);
 

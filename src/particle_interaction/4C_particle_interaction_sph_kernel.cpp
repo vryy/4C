@@ -25,12 +25,12 @@ ParticleInteraction::SPHKernelBase::SPHKernelBase(const Teuchos::ParameterList& 
   // empty constructor
 }
 
-void ParticleInteraction::SPHKernelBase::Init()
+void ParticleInteraction::SPHKernelBase::init()
 {
   // nothing to do
 }
 
-void ParticleInteraction::SPHKernelBase::Setup()
+void ParticleInteraction::SPHKernelBase::setup()
 {
   // nothing to do
 }

@@ -165,12 +165,12 @@ void FLD::XFluid::check_initialized_dof_set_coupling_map()
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                   schott 11/14 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::Init(bool createinitialstate)
+void FLD::XFluid::init(bool createinitialstate)
 {
   check_initialized_dof_set_coupling_map();
 
 
-  FluidImplicitTimeInt::Init();
+  FluidImplicitTimeInt::init();
 
   // -------------------------------------------------------------------
   // get input params and print Xfluid specific configurations
@@ -198,10 +198,10 @@ void FLD::XFluid::Init(bool createinitialstate)
   condition_manager_ = Teuchos::rcp(new XFEM::ConditionManager(
       dofset_coupling_map_, discret_, meshcoupl_dis_, levelsetcoupl_dis_, time_, step_));
 
-  condition_manager_->Init();
+  condition_manager_->init();
 
   // build the whole object which then can be used
-  condition_manager_->Setup();
+  condition_manager_->setup();
 
 
   // -------------------------------------------------------------------
@@ -214,7 +214,7 @@ void FLD::XFluid::Init(bool createinitialstate)
   //
   // REMARK: ivelnp_ and idispnp_ will be set again for the new time step in PrepareXFEMSolve()
 
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
 
   if (restart) condition_manager_->read_restart(restart);
 
@@ -302,7 +302,7 @@ void FLD::XFluid::Init(bool createinitialstate)
   if (createinitialstate and (not restart)) CreateInitialState();
 
   return;
-}  // Init()
+}  // init()
 
 
 void FLD::XFluid::setup_fluid_discretization()
@@ -542,7 +542,7 @@ void FLD::XFluid::set_element_time_parameter()
   }
 
   // call standard loop over elements
-  // discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  // discret_->evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   Discret::ELEMENTS::FluidType::Instance().pre_evaluate(*discret_, eleparams, Teuchos::null,
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -912,7 +912,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
           TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 3) standard domain");
 
           // call the element evaluate method
-          int err = impl->Evaluate(ele, *discret_, la[0].lm_, eleparams, mat, strategy.Elematrix1(),
+          int err = impl->evaluate(ele, *discret_, la[0].lm_, eleparams, mat, strategy.Elematrix1(),
               strategy.Elematrix2(), strategy.Elevector1(), strategy.Elevector2(),
               strategy.Elevector3());
 
@@ -1261,7 +1261,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
         TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 3) standard domain");
 
         // call the element evaluate method
-        int err = impl->Evaluate(ele, *discret_, la[0].lm_, eleparams, mat, strategy.Elematrix1(),
+        int err = impl->evaluate(ele, *discret_, la[0].lm_, eleparams, mat, strategy.Elematrix1(),
             strategy.Elematrix2(), strategy.Elevector1(), strategy.Elevector2(),
             strategy.Elevector3());
 
@@ -2541,7 +2541,7 @@ void FLD::XFluid::Solve()
           solver_params);
 
       // TODO: here needed because of apply Dirichlet with explicit Dirichlet flag!? CHECK THIS
-      solver_->Reset();
+      solver_->reset();
 
 
       // unscale solution
@@ -2583,7 +2583,7 @@ void FLD::XFluid::Solve()
 
   // Reset the solver and so release the system matrix' pointer (enables to delete the
   // state_->systemmatrix)
-  solver_->Reset();
+  solver_->reset();
 }
 
 bool FLD::XFluid::convergence_check(int itnum, int itemax, const double velrestol,
@@ -2715,7 +2715,7 @@ void FLD::XFluid::init_krylov_space_projection()
   // check if for fluid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
-    const auto name = KSPcond[icond]->parameters().Get<std::string>("discretization");
+    const auto name = KSPcond[icond]->parameters().get<std::string>("discretization");
     if (name == "fluid")
     {
       numfluid++;
@@ -2766,12 +2766,12 @@ void FLD::XFluid::setup_krylov_space_projection(Core::Conditions::Condition* ksp
    */
 
   // confirm that mode flags are number of nodal dofs
-  const int nummodes = kspcond->parameters().Get<int>("NUMMODES");
+  const int nummodes = kspcond->parameters().get<int>("NUMMODES");
   if (nummodes != (numdim_ + 1))
     FOUR_C_THROW("Expecting numdim_+1 modes in Krylov projection definition. Check dat-file!");
 
   // get vector of mode flags as given in dat-file
-  const auto* modeflags = &kspcond->parameters().Get<std::vector<int>>("ONOFF");
+  const auto* modeflags = &kspcond->parameters().get<std::vector<int>>("ONOFF");
 
   // confirm that only the pressure mode is selected for Krylov projection in dat-file
   for (int rr = 0; rr < numdim_; ++rr)
@@ -2789,11 +2789,11 @@ void FLD::XFluid::setup_krylov_space_projection(Core::Conditions::Condition* ksp
   kspsplitter_ = Teuchos::rcp(new FLD::UTILS::KSPMapExtractor());
   // create map of nodes involved in Krylov projection
 
-  kspsplitter_->Setup(*discret_);
+  kspsplitter_->setup(*discret_);
 
   // get from dat-file definition how weights are to be computed
   const std::string* weighttype =
-      &kspcond->parameters().Get<std::string>("weight vector definition");
+      &kspcond->parameters().get<std::string>("weight vector definition");
 
   // set flag for projection update true only if ALE and integral weights
   if (alefluid_ and (*weighttype == "integration")) updateprojection_ = true;
@@ -3010,7 +3010,7 @@ void FLD::XFluid::UpdateByIncrements(
  | cut and set new state-vectors, perform time-integration, apply bcs       |
  | evaluate the fluid at the new interface position            schott 08/14 |
  *--------------------------------------------------------------------------*/
-void FLD::XFluid::Evaluate(
+void FLD::XFluid::evaluate(
     //  Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and
     //  n+1, stepinc has to match the current xfluid dofmaps
 )
@@ -3167,7 +3167,7 @@ void FLD::XFluid::TimeUpdate()
     eleparams.set("dt", dta_);
 
     // call loop over elements to update subgrid scales
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
     if (myrank_ == 0)
@@ -3961,7 +3961,7 @@ void FLD::XFluid::x_timint_transfer_vectors_between_steps(
 
   xfluid_timeint->SetAndPrintStatus(screen_out);
 
-  if (reconstruct_method_output) xfluid_timeint->Output();
+  if (reconstruct_method_output) xfluid_timeint->output();
 }
 
 /*----------------------------------------------------------------------*
@@ -4412,7 +4412,7 @@ double FLD::XFluid::TimIntParam() const
 /*----------------------------------------------------------------------*
  |  write solution output                                  schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::Output()
+void FLD::XFluid::output()
 {
   const bool write_restart_data = step_ != 0 and uprestart_ != 0 and step_ % uprestart_ == 0;
 
@@ -4432,7 +4432,7 @@ void FLD::XFluid::Output()
 
   if (step_ % upres_ == 0)
   {
-    output_service_->Output(step_, time_, write_restart_data, state_, dispnp_, gridvnp_);
+    output_service_->output(step_, time_, write_restart_data, state_, dispnp_, gridvnp_);
   }
 
 
@@ -4446,7 +4446,7 @@ void FLD::XFluid::Output()
 void FLD::XFluid::SetInitialFlowField(
     const Inpar::FLUID::InitialField initfield, const int startfuncno)
 {
-  const int restart = Global::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->restart();
 
   if (restart) return;
 
@@ -4476,7 +4476,7 @@ void FLD::XFluid::SetInitialFlowField(
 
           double initialval = Global::Problem::Instance()
                                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X().data(), time_, dof % 4);
+                                  .evaluate(lnode->X().data(), time_, dof % 4);
           state_->velnp_->ReplaceGlobalValues(1, &initialval, &gid);
         }
       }
@@ -5057,7 +5057,7 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
   state_->incvel_->PutScalar(0.0);
 
   // free the system matrix to get the matrix deleted
-  solver_->Reset();
+  solver_->reset();
 
   return;
 }

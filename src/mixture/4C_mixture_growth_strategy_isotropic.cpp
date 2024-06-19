@@ -28,7 +28,7 @@ void MIXTURE::IsotropicGrowthStrategy::evaluate_inverse_growth_deformation_gradi
     Core::LinAlg::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
     double currentReferenceGrowthScalar, int gp) const
 {
-  iFgM.Clear();
+  iFgM.clear();
 
   for (int i = 0; i < 3; ++i)
   {
@@ -43,7 +43,7 @@ void MIXTURE::IsotropicGrowthStrategy::evaluate_growth_stress_cmat(
     Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
     Core::LinAlg::Matrix<6, 6>& cmat, const int gp, const int eleGID) const
 {
-  S_stress.Clear();
-  cmat.Clear();
+  S_stress.clear();
+  cmat.clear();
 }
 FOUR_C_NAMESPACE_CLOSE

@@ -30,14 +30,14 @@ BEAMINTERACTION::BeamCrosslinkerHandler::BeamCrosslinkerHandler()
   // empty constructor
 }
 
-void BEAMINTERACTION::BeamCrosslinkerHandler::Init(
+void BEAMINTERACTION::BeamCrosslinkerHandler::init(
     int myrank, Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy)
 {
   binstrategy_ = binstrategy;
   myrank_ = myrank;
 }
 
-void BEAMINTERACTION::BeamCrosslinkerHandler::Setup()
+void BEAMINTERACTION::BeamCrosslinkerHandler::setup()
 {
   // so far nothing to do
 }
@@ -100,7 +100,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
                homelesslinker.begin();
            currlinker != homelesslinker.end(); ++currlinker)
       {
-        (*currlinker)->Pack(data);
+        (*currlinker)->pack(data);
         binstrategy_->BinDiscret()->DeleteNode((*currlinker)->Id());
       }
       std::swap(sdata, data());
@@ -221,7 +221,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
     if (targetproc != -1)
     {
       Core::Communication::PackBuffer data;
-      iterhomelesslinker->Pack(data);
+      iterhomelesslinker->pack(data);
       binstrategy_->BinDiscret()->DeleteNode(iterhomelesslinker->Id());
       sdata[targetproc].insert(sdata[targetproc].end(), data().begin(), data().end());
       targetprocs[targetproc] = 1;
@@ -324,7 +324,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
       for (iter = p->second.begin(); iter != p->second.end(); ++iter)
       {
         Core::Communication::PackBuffer data;
-        (*iter)->Pack(data);
+        (*iter)->pack(data);
         binstrategy_->BinDiscret()->DeleteNode((*iter)->Id());
         sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
       }

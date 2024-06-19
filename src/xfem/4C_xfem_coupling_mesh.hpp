@@ -98,7 +98,7 @@ namespace XFEM
 
     virtual void gmsh_output_discretization(std::ostream& gmshfilecontent);
 
-    virtual void Output(const int step, const double time, const bool write_restart_data);
+    virtual void output(const int step, const double time, const bool write_restart_data);
 
     void prepare_cutter_output() override;
 
@@ -221,7 +221,7 @@ namespace XFEM
         const std::string& suffix = ""  ///< suffix for cutterdisname
     );
 
-    void Init() override;
+    void init() override;
 
     //! Initialize Volume Coupling
     void Init_VolCoupling();
@@ -636,7 +636,7 @@ namespace XFEM
       get_stress_tangent_slave(coup_ele, penscaling_s);
     }
 
-    void Output(const int step, const double time, const bool write_restart_data) override;
+    void output(const int step, const double time, const bool write_restart_data) override;
 
     /// Assign communicator to contact to mesh coupling object
     void Assign_Contact_Comm(Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm)
@@ -801,7 +801,7 @@ namespace XFEM
 
     void read_restart(const int step) override;
 
-    void Output(const int step, const double time, const bool write_restart_data) override;
+    void output(const int step, const double time, const bool write_restart_data) override;
 
    protected:
     //! estimate the penalty scaling in Nitsche's method from the trace inequality for a specific

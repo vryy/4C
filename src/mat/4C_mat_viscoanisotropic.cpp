@@ -28,22 +28,22 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::ViscoAnisotropic::ViscoAnisotropic(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      kappa_(matdata.parameters.Get<double>("KAPPA")),
-      mue_(matdata.parameters.Get<double>("MUE")),
-      density_(matdata.parameters.Get<double>("DENS")),
-      k1_(matdata.parameters.Get<double>("K1")),
-      k2_(matdata.parameters.Get<double>("K2")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
+      kappa_(matdata.parameters.get<double>("KAPPA")),
+      mue_(matdata.parameters.get<double>("MUE")),
+      density_(matdata.parameters.get<double>("DENS")),
+      k1_(matdata.parameters.get<double>("K1")),
+      k2_(matdata.parameters.get<double>("K2")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
       numstresstypes_(3),
       beta_(),
       relax_(),
-      minstretch_(matdata.parameters.Get<double>("MINSTRETCH")),
-      elethick_(matdata.parameters.Get<int>("ELETHICKDIR"))
+      minstretch_(matdata.parameters.get<double>("MINSTRETCH")),
+      elethick_(matdata.parameters.get<int>("ELETHICKDIR"))
 {
-  beta_[0] = matdata.parameters.Get<double>("BETA_ISO");
-  beta_[1] = matdata.parameters.Get<double>("BETA_ANISO");
-  relax_[0] = matdata.parameters.Get<double>("RELAX_ISO");
-  relax_[1] = matdata.parameters.Get<double>("RELAX_ANISO");
+  beta_[0] = matdata.parameters.get<double>("BETA_ISO");
+  beta_[1] = matdata.parameters.get<double>("BETA_ANISO");
+  relax_[0] = matdata.parameters.get<double>("RELAX_ISO");
+  relax_[1] = matdata.parameters.get<double>("RELAX_ANISO");
 }
 
 
@@ -58,7 +58,7 @@ Mat::ViscoAnisotropicType Mat::ViscoAnisotropicType::instance_;
 Core::Communication::ParObject* Mat::ViscoAnisotropicType::Create(const std::vector<char>& data)
 {
   Mat::ViscoAnisotropic* visco = new Mat::ViscoAnisotropic();
-  visco->Unpack(data);
+  visco->unpack(data);
   return visco;
 }
 
@@ -78,7 +78,7 @@ Mat::ViscoAnisotropic::ViscoAnisotropic(Mat::PAR::ViscoAnisotropic* params) : pa
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoAnisotropic::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ViscoAnisotropic::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -125,7 +125,7 @@ void Mat::ViscoAnisotropic::Pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoAnisotropic::Unpack(const std::vector<char>& data)
+void Mat::ViscoAnisotropic::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
@@ -207,7 +207,7 @@ void Mat::ViscoAnisotropic::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoAnisotropic::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ViscoAnisotropic::setup(int numgp, Input::LineDefinition* linedef)
 {
   /*fiber directions can be defined in the element line
     or by element thickness direction.
@@ -299,7 +299,7 @@ void Mat::ViscoAnisotropic::Setup(int numgp, Input::LineDefinition* linedef)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoAnisotropic::Setup(const int numgp, const std::vector<double> thickvec)
+void Mat::ViscoAnisotropic::setup(const int numgp, const std::vector<double> thickvec)
 {
   // fiber directions can be defined by element thickness direction if specified
   // in material definition
@@ -362,7 +362,7 @@ void Mat::ViscoAnisotropic::Setup(const int numgp, const std::vector<double> thi
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoAnisotropic::Update()
+void Mat::ViscoAnisotropic::update()
 {
   // make current values to values of last step
   histstresslast_ = histstresscurr_;
@@ -403,7 +403,7 @@ void Mat::ViscoAnisotropic::UpdateFiberDirs(const int gp, Core::LinAlg::Matrix<3
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoAnisotropic::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ViscoAnisotropic::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)

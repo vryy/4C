@@ -233,12 +233,12 @@ CONTACT::Aug::Interface::create_node_based_assemble_strategy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Interface::Initialize()
+void CONTACT::Aug::Interface::initialize()
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
   // call initialization routine of the contact_interface
-  CONTACT::Interface::Initialize();
+  CONTACT::Interface::initialize();
 
   // setup member variables (has to be done only once)
   setup();
@@ -581,7 +581,7 @@ void CONTACT::Aug::Interface::eval_active_contributions(
 
   // set active slave node map of this interface and start the
   // coupling evaluation
-  cparams_ptr->Set<Epetra_Map>(activenodes_.get(), 1);
+  cparams_ptr->set<Epetra_Map>(activenodes_.get(), 1);
   evaluate_coupling(*interface_data_.SActiveEleColMap(), nullptr, cparams_ptr);
   cparams_ptr->ClearEntry(Core::Gen::AnyDataContainer::DataType::any, 1);
 }

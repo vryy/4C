@@ -107,7 +107,7 @@ namespace Core::LinAlg
     V.Update(tmp);
 
     // return eigenvalues
-    S.Clear();
+    S.clear();
     for (unsigned int i = 0; i < dim; ++i) S(i, i) = w[i];
 
     return;

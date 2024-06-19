@@ -26,8 +26,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Mat::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(const Core::Mat::PAR::Parameter::Data& matdata)
     : MatList(matdata),
-      permeability_(matdata.parameters.Get<double>("PERMEABILITY")),
-      numfluidphases_(matdata.parameters.Get<int>("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
+      permeability_(matdata.parameters.get<double>("PERMEABILITY")),
+      numfluidphases_(matdata.parameters.get<int>("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
       numvolfrac_(-1),
       dof2pres_(Teuchos::null),
       constraintphaseID_(-1),
@@ -46,7 +46,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroMultiPhase::create_material
 /*----------------------------------------------------------------------*
  | initialize                                               vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroMultiPhase::Initialize()
+void Mat::PAR::FluidPoroMultiPhase::initialize()
 {
   //  matrix holding the conversion from pressures and dofs
   dof2pres_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(numfluidphases_, numfluidphases_));
@@ -187,7 +187,7 @@ Mat::FluidPoroMultiPhaseType Mat::FluidPoroMultiPhaseType::instance_;
 Core::Communication::ParObject* Mat::FluidPoroMultiPhaseType::Create(const std::vector<char>& data)
 {
   Mat::FluidPoroMultiPhase* FluidPoroMultiPhase = new Mat::FluidPoroMultiPhase();
-  FluidPoroMultiPhase->Unpack(data);
+  FluidPoroMultiPhase->unpack(data);
   return FluidPoroMultiPhase;
 }
 
@@ -217,7 +217,7 @@ void Mat::FluidPoroMultiPhase::clear()
 /*----------------------------------------------------------------------*
  | initialize                                               vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroMultiPhase::Initialize()
+void Mat::FluidPoroMultiPhase::initialize()
 {
   std::map<int, Teuchos::RCP<Core::Mat::Material>>* materials;
 
@@ -233,10 +233,10 @@ void Mat::FluidPoroMultiPhase::Initialize()
     {
       Teuchos::RCP<Mat::FluidPoroSinglePhaseBase> actphase =
           Teuchos::rcp_dynamic_cast<FluidPoroSinglePhaseBase>(it->second, true);
-      actphase->Initialize();
+      actphase->initialize();
     }
 
-    if (not paramsporo_->isinit_) paramsporo_->Initialize();
+    if (not paramsporo_->isinit_) paramsporo_->initialize();
   }
   return;
 }
@@ -244,7 +244,7 @@ void Mat::FluidPoroMultiPhase::Initialize()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroMultiPhase::Pack(Core::Communication::PackBuffer& data) const
+void Mat::FluidPoroMultiPhase::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -259,13 +259,13 @@ void Mat::FluidPoroMultiPhase::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, matid);
 
   // Pack base class material
-  Mat::MatList::Pack(data);
+  Mat::MatList::pack(data);
 }
 
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroMultiPhase::Unpack(const std::vector<char>& data)
+void Mat::FluidPoroMultiPhase::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   clear();
@@ -298,7 +298,7 @@ void Mat::FluidPoroMultiPhase::Unpack(const std::vector<char>& data)
   // extract base class material
   std::vector<char> basedata(0);
   Mat::MatList::extract_from_pack(position, data, basedata);
-  Mat::MatList::Unpack(basedata);
+  Mat::MatList::unpack(basedata);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case

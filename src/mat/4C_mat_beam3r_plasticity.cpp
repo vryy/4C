@@ -24,11 +24,11 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::BeamReissnerElastPlasticMaterialParams::BeamReissnerElastPlasticMaterialParams(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : BeamReissnerElastHyperMaterialParams(matdata),
-      yield_stress_n_(matdata.parameters.Get<double>("YIELDN")),
-      yield_stress_m_(matdata.parameters.Get<double>("YIELDM")),
-      isohard_modulus_n_(matdata.parameters.Get<double>("ISOHARDN")),
-      isohard_modulus_m_(matdata.parameters.Get<double>("ISOHARDM")),
-      torsion_plasticity_(matdata.parameters.Get<bool>("TORSIONPLAST"))
+      yield_stress_n_(matdata.parameters.get<double>("YIELDN")),
+      yield_stress_m_(matdata.parameters.get<double>("YIELDM")),
+      isohard_modulus_n_(matdata.parameters.get<double>("ISOHARDN")),
+      isohard_modulus_m_(matdata.parameters.get<double>("ISOHARDM")),
+      torsion_plasticity_(matdata.parameters.get<bool>("TORSIONPLAST"))
 {
   if (yield_stress_n_ == -1.0 && yield_stress_m_ == -1.0 && isohard_modulus_n_ == -1.0 &&
       isohard_modulus_m_ == -1.0)
@@ -85,7 +85,7 @@ Core::Communication::ParObject* Mat::BeamElastPlasticMaterialType<T>::Create(
 {
   // create material from packed data
   Mat::BeamPlasticMaterial<T>* matobject = new Mat::BeamPlasticMaterial<T>();
-  matobject->Unpack(data);
+  matobject->unpack(data);
   return matobject;
 }
 
@@ -108,7 +108,7 @@ Mat::BeamPlasticMaterial<T>::BeamPlasticMaterial(
  *-----------------------------------------------------------------------------------------------*/
 
 template <typename T>
-void Mat::BeamPlasticMaterial<T>::Setup(int numgp_force, int numgp_moment)
+void Mat::BeamPlasticMaterial<T>::setup(int numgp_force, int numgp_moment)
 {
   c_n_eff_.resize(numgp_force);
   c_m_eff_.resize(numgp_moment);
@@ -164,7 +164,7 @@ void Mat::BeamPlasticMaterial<T>::Setup(int numgp_force, int numgp_moment)
  *-----------------------------------------------------------------------------------------------*/
 // Pack data
 template <typename T>
-void Mat::BeamPlasticMaterial<T>::Pack(Core::Communication::PackBuffer& data) const
+void Mat::BeamPlasticMaterial<T>::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -192,7 +192,7 @@ void Mat::BeamPlasticMaterial<T>::Pack(Core::Communication::PackBuffer& data) co
  *-----------------------------------------------------------------------------------------------*/
 // Unpack data
 template <typename T>
-void Mat::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
+void Mat::BeamPlasticMaterial<T>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -203,7 +203,7 @@ void Mat::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
 
   this->extract_from_pack(position, data, numgp_force_);
   this->extract_from_pack(position, data, numgp_moment_);
-  this->Setup(numgp_force_, numgp_moment_);
+  this->setup(numgp_force_, numgp_moment_);
   this->extract_from_pack(position, data, gammaplastaccum_);
   this->extract_from_pack(position, data, gammaplastconv_);
   this->extract_from_pack(position, data, kappaplastaccum_);
@@ -398,7 +398,7 @@ void Mat::BeamPlasticMaterial<T>::compute_constitutive_parameter(
  *-----------------------------------------------------------------------------------------------*/
 
 template <typename T>
-void Mat::BeamPlasticMaterial<T>::Update()
+void Mat::BeamPlasticMaterial<T>::update()
 {
   for (unsigned int gp = 0; gp < numgp_force_; gp++)
   {
@@ -432,7 +432,7 @@ void Mat::BeamPlasticMaterial<T>::Update()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void Mat::BeamPlasticMaterial<T>::Reset()
+void Mat::BeamPlasticMaterial<T>::reset()
 {
   gammaplastnew_ = gammaplastconv_;
   kappaplastnew_ = kappaplastconv_;
@@ -445,7 +445,7 @@ void Mat::BeamPlasticMaterial<T>::get_constitutive_matrix_of_forces_material_fra
 {
   // defining material constitutive matrix CN between Gamma and N
   // according to Jelenic 1999, section 2.4
-  C_N.Clear();
+  C_N.clear();
 
   C_N(0, 0) = this->Params().GetAxialRigidity();
   C_N(1, 1) = this->Params().GetShearRigidity2();
@@ -460,7 +460,7 @@ void Mat::BeamPlasticMaterial<T>::get_constitutive_matrix_of_moments_material_fr
 {
   // defining material constitutive matrix CM between curvature and moment
   // according to Jelenic 1999, section 2.4
-  C_M.Clear();
+  C_M.clear();
 
   C_M(0, 0) = this->Params().get_torsional_rigidity();
   C_M(1, 1) = this->Params().GetBendingRigidity2();
@@ -489,7 +489,7 @@ template <typename T>
 void Mat::BeamPlasticMaterial<T>::get_hardening_constitutive_matrix_of_forces_material_frame(
     Core::LinAlg::Matrix<3, 3, T>& CN_eff) const
 {
-  CN_eff.Clear();
+  CN_eff.clear();
 
   CN_eff(0, 0) = this->Params().get_hardening_axial_rigidity();
   CN_eff(1, 1) = this->Params().get_hardening_shear_rigidity2();
@@ -502,7 +502,7 @@ template <typename T>
 void Mat::BeamPlasticMaterial<T>::get_hardening_constitutive_matrix_of_moments_material_frame(
     Core::LinAlg::Matrix<3, 3, T>& CM_eff) const
 {
-  CM_eff.Clear();
+  CM_eff.clear();
   if (this->Params().get_torsion_plasticity())
     CM_eff(0, 0) = this->Params().get_hardening_momental_rigidity();
   else

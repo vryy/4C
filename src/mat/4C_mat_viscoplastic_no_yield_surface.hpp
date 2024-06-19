@@ -145,9 +145,9 @@ namespace Mat
       return ViscoPlasticNoYieldSurfaceType::Instance().UniqueParObjectId();
     }
 
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
    private:
     Core::Materials::MaterialType MaterialType() const override
@@ -271,7 +271,7 @@ namespace Mat
         const Core::LinAlg::Matrix<3, 3>& last_iFv, const Core::LinAlg::Matrix<3, 3>& eigen_vectors,
         const Core::LinAlg::Matrix<3, 1>& eigen_values, const double eta) const;
 
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
@@ -297,7 +297,7 @@ namespace Mat
 
     //! @}
 
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /*!
      * @brief computes isotropic elasticity tensor in matrix notion for 3d
@@ -306,7 +306,7 @@ namespace Mat
      */
     void setup_cmat(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat);
 
-    void Update() override;
+    void update() override;
 
     bool needs_defgrd() override { return true; };
 

@@ -36,12 +36,12 @@ ScaTra::TimIntCardiacMonodomainHDG::TimIntCardiacMonodomainHDG(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainHDG::Setup()
+void ScaTra::TimIntCardiacMonodomainHDG::setup()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntHDG::Setup();
-  TimIntCardiacMonodomain::Setup();
+  TimIntHDG::setup();
+  TimIntCardiacMonodomain::setup();
 
   // Activation time at time n+1
   activation_time_interpol_.reset(new Epetra_Vector(*discret_->NodeRowMap()));
@@ -49,13 +49,13 @@ void ScaTra::TimIntCardiacMonodomainHDG::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainHDG::Update()
+void ScaTra::TimIntCardiacMonodomainHDG::update()
 {
   // time update of myocard material
   element_material_time_update();
 
   // Standard Update
-  TimIntHDG::Update();
+  TimIntHDG::update();
 }
 
 /*----------------------------------------------------------------------*
@@ -83,7 +83,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::element_material_time_update()
     Core::Elements::Element *ele = discret_->lColElement(iele);
     ele->LocationVector(*discret_, la, false);
 
-    ele->Evaluate(eleparams, *discret_, la, dummyMat, dummyMat, dummyVec, dummyVec, dummyVec);
+    ele->evaluate(eleparams, *discret_, la, dummyMat, dummyMat, dummyVec, dummyVec, dummyVec);
   }
 
   discret_->ClearState(true);
@@ -104,7 +104,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::output_state()
         "action", ScaTra::Action::get_material_internal_state, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>(
         "material_internal_state", material_internal_state_np_);
-    discret_->Evaluate(params);
+    discret_->evaluate(params);
     material_internal_state_np_ =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
     if (material_internal_state_np_ == Teuchos::null)
@@ -206,7 +206,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::project_material()
     Core::Elements::Element *ele = discret_->lColElement(iele);
 
     // call routine on elements to project material field
-    ele->Evaluate(eleparams, *discret_, dummy, dummyMat, dummyMat, dummyVec, dummyVec, dummyVec);
+    ele->evaluate(eleparams, *discret_, dummy, dummyMat, dummyMat, dummyVec, dummyVec, dummyVec);
   }
 }
 

@@ -2,7 +2,7 @@
 /*! \file
 
 \brief Internal implementation of RedAcinus element. Methods implemented here
-       are called by acinus_evaluate.cpp by Discret::ELEMENTS::RedAcinus::Evaluate()
+       are called by acinus_evaluate.cpp by Discret::ELEMENTS::RedAcinus::evaluate()
        with the corresponding action.
 
 
@@ -108,7 +108,7 @@ void Sysmat(Discret::ELEMENTS::RedAcinus* ele, Core::LinAlg::SerialDenseVector& 
         Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(ele->Material());
 
     // Evaluate material law for acinus
-    acinus_mat->Evaluate(epnp, epn, epnm, sysmat, rhs, params, NumOfAcini, volAlvDuct, time, dt);
+    acinus_mat->evaluate(epnp, epn, epnm, sysmat, rhs, params, NumOfAcini, volAlvDuct, time, dt);
   }
   else
   {
@@ -122,7 +122,7 @@ void Sysmat(Discret::ELEMENTS::RedAcinus* ele, Core::LinAlg::SerialDenseVector& 
  | evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
+int Discret::ELEMENTS::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -333,11 +333,11 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           Core::Conditions::Condition* condition =
               ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
-          Bc = (condition->parameters().Get<std::string>("boundarycond"));
+          Bc = (condition->parameters().get<std::string>("boundarycond"));
 
-          const auto* vals = &condition->parameters().Get<std::vector<double>>("val");
-          const auto* curve = &condition->parameters().Get<std::vector<int>>("curve");
-          const auto* functions = &condition->parameters().Get<std::vector<int>>("funct");
+          const auto* vals = &condition->parameters().get<std::vector<double>>("val");
+          const auto* curve = &condition->parameters().get<std::vector<int>>("curve");
+          const auto* functions = &condition->parameters().get<std::vector<int>>("funct");
 
           // Read in the value of the applied BC
           // Get factor of first CURVE
@@ -346,7 +346,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           {
             curvefac = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
-                           .Evaluate(time);
+                           .evaluate(time);
             BCin = (*vals)[0] * curvefac;
           }
           else
@@ -367,7 +367,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           {
             functionfac = Global::Problem::Instance()
                               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
+                              .evaluate((ele->Nodes()[i])->X().data(), time, 0);
           }
 
           // Get factor of second CURVE
@@ -377,7 +377,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           if (curve2num >= 0)
             curve2fac = Global::Problem::Instance()
                             ->FunctionById<Core::UTILS::FunctionOfTime>(curve2num)
-                            .Evaluate(time);
+                            .evaluate(time);
 
           // Add first_CURVE + FUNCTION * second_CURVE
           BCin += functionfac * curve2fac;
@@ -415,7 +415,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           // -----------------------------------------------------------------
           // Read in Condition type
           // -----------------------------------------------------------------
-          //        Type = (condition->parameters().Get<std::string>("CouplingType"));
+          //        Type = (condition->parameters().get<std::string>("CouplingType"));
           // -----------------------------------------------------------------
           // Read in coupling variable rescribed by the 3D simulation
           //
@@ -436,7 +436,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           //     +-----------------------------------------------------------+
           // -----------------------------------------------------------------
 
-          int ID = condition->parameters().Get<int>("ConditionID");
+          int ID = condition->parameters().get<int>("ConditionID");
           Teuchos::RCP<std::map<std::string, double>> map3D;
           map3D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
               "3D map of values");
@@ -466,29 +466,29 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           Core::Conditions::Condition* condition =
               ele->Nodes()[i]->GetCondition("RedAcinusVentilatorCond");
           // Get the type of prescribed bc
-          Bc = (condition->parameters().Get<std::string>("phase1"));
+          Bc = (condition->parameters().get<std::string>("phase1"));
 
-          double period = condition->parameters().Get<double>("period");
-          double period1 = condition->parameters().Get<double>("phase1_period");
+          double period = condition->parameters().get<double>("period");
+          double period1 = condition->parameters().get<double>("phase1_period");
 
           unsigned int phase_number = 0;
 
           if (fmod(time, period) > period1)
           {
             phase_number = 1;
-            Bc = (condition->parameters().Get<std::string>("phase2"));
+            Bc = (condition->parameters().get<std::string>("phase2"));
           }
 
-          const auto* curve = &condition->parameters().Get<std::vector<int>>("curve");
+          const auto* curve = &condition->parameters().get<std::vector<int>>("curve");
           double curvefac = 1.0;
-          const auto* vals = &condition->parameters().Get<std::vector<double>>("val");
+          const auto* vals = &condition->parameters().get<std::vector<double>>("val");
 
           // Read in the value of the applied BC
           if ((*curve)[phase_number] >= 0)
           {
             curvefac = Global::Problem::Instance()
                            ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[phase_number])
-                           .Evaluate(time);
+                           .evaluate(time);
             BCin = (*vals)[phase_number] * curvefac;
           }
           else
@@ -522,26 +522,26 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
             double Pp_np = 0.0;
             if (pplCond)
             {
-              const auto* curve = &pplCond->parameters().Get<std::vector<int>>("curve");
+              const auto* curve = &pplCond->parameters().get<std::vector<int>>("curve");
               double curvefac = 1.0;
-              const auto* vals = &pplCond->parameters().Get<std::vector<double>>("val");
+              const auto* vals = &pplCond->parameters().get<std::vector<double>>("val");
 
               // Read in the value of the applied BC
               if ((*curve)[0] >= 0)
               {
                 curvefac = Global::Problem::Instance()
                                ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
-                               .Evaluate(time);
+                               .evaluate(time);
               }
 
               // Get parameters for VolumeDependentPleuralPressure condition
-              std::string ppl_Type = (pplCond->parameters().Get<std::string>("TYPE"));
-              double ap = pplCond->parameters().Get<double>("P_PLEURAL_0");
-              double bp = pplCond->parameters().Get<double>("P_PLEURAL_LIN");
-              double cp = pplCond->parameters().Get<double>("P_PLEURAL_NONLIN");
-              double dp = pplCond->parameters().Get<double>("TAU");
-              double RV = pplCond->parameters().Get<double>("RV");
-              double TLC = pplCond->parameters().Get<double>("TLC");
+              std::string ppl_Type = (pplCond->parameters().get<std::string>("TYPE"));
+              double ap = pplCond->parameters().get<double>("P_PLEURAL_0");
+              double bp = pplCond->parameters().get<double>("P_PLEURAL_LIN");
+              double cp = pplCond->parameters().get<double>("P_PLEURAL_NONLIN");
+              double dp = pplCond->parameters().get<double>("TAU");
+              double RV = pplCond->parameters().get<double>("RV");
+              double TLC = pplCond->parameters().get<double>("TLC");
 
               Discret::ReducedLung::EvaluationData& evaluation_data =
                   Discret::ReducedLung::EvaluationData::get();
@@ -899,12 +899,12 @@ void Discret::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
         //     +-----------------------------------------------------------+
         // -----------------------------------------------------------------
 
-        int ID = condition->parameters().Get<int>("ConditionID");
+        int ID = condition->parameters().get<int>("ConditionID");
         Teuchos::RCP<std::map<std::string, double>> map1D;
         map1D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
             "reducedD map of values");
 
-        std::string returnedBC = (condition->parameters().Get<std::string>("ReturnedVariable"));
+        std::string returnedBC = (condition->parameters().get<std::string>("ReturnedVariable"));
 
         double BC3d = 0.0;
         if (returnedBC == "flow")
@@ -917,7 +917,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
         }
         else
         {
-          std::string str = (condition->parameters().Get<std::string>("ReturnedVariable"));
+          std::string str = (condition->parameters().get<std::string>("ReturnedVariable"));
           FOUR_C_THROW("%s, is an unimplimented type of coupling", str.c_str());
           exit(1);
         }

@@ -29,13 +29,13 @@ Core::LinAlg::MultiMapExtractor::MultiMapExtractor() {}
 Core::LinAlg::MultiMapExtractor::MultiMapExtractor(
     const Epetra_Map& fullmap, const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
-  Setup(fullmap, maps);
+  setup(fullmap, maps);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::MultiMapExtractor::Setup(
+void Core::LinAlg::MultiMapExtractor::setup(
     const Epetra_Map& fullmap, const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
   fullmap_ = Teuchos::rcp(new Epetra_Map(fullmap));
@@ -330,7 +330,7 @@ Core::LinAlg::MapExtractor::MapExtractor() {}
 Core::LinAlg::MapExtractor::MapExtractor(const Epetra_Map& fullmap,
     Teuchos::RCP<const Epetra_Map> condmap, Teuchos::RCP<const Epetra_Map> othermap)
 {
-  Setup(fullmap, condmap, othermap);
+  setup(fullmap, condmap, othermap);
 }
 
 /*----------------------------------------------------------------------*/
@@ -355,26 +355,26 @@ Core::LinAlg::MapExtractor::MapExtractor(
 
   // create the extractor based on choice 'iscondmap'
   if (iscondmap)
-    Setup(fullmap, partialmap, othermap);
+    setup(fullmap, partialmap, othermap);
   else
-    Setup(fullmap, othermap, partialmap);
+    setup(fullmap, othermap, partialmap);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::MapExtractor::Setup(const Epetra_Map& fullmap,
+void Core::LinAlg::MapExtractor::setup(const Epetra_Map& fullmap,
     const Teuchos::RCP<const Epetra_Map>& condmap, const Teuchos::RCP<const Epetra_Map>& othermap)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
   maps.push_back(othermap);
   maps.push_back(condmap);
-  MultiMapExtractor::Setup(fullmap, maps);
+  MultiMapExtractor::setup(fullmap, maps);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::MapExtractor::Setup(
+void Core::LinAlg::MapExtractor::setup(
     const Epetra_Map& fullmap, const Teuchos::RCP<const Epetra_Map>& partialmap, bool iscondmap)
 {
   // initialise other DOFs by inserting all DOFs of full map
@@ -394,9 +394,9 @@ void Core::LinAlg::MapExtractor::Setup(
 
   // create the extractor based on choice 'iscondmap'
   if (iscondmap)
-    Setup(fullmap, partialmap, othermap);
+    setup(fullmap, partialmap, othermap);
   else
-    Setup(fullmap, othermap, partialmap);
+    setup(fullmap, othermap, partialmap);
 }
 
 FOUR_C_NAMESPACE_CLOSE

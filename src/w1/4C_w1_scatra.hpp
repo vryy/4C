@@ -80,13 +80,13 @@ namespace Discret
 
       /// Pack this class so it can be communicated
       ///
-      /// \ref Pack and \ref Unpack are used to communicate this element
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      /// \ref pack and \ref unpack are used to communicate this element
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       /// Unpack data from a char vector into this class
       ///
-      /// \ref Pack and \ref Unpack are used to communicate this element
-      void Unpack(const std::vector<char>& data) override;
+      /// \ref pack and \ref unpack are used to communicate this element
+      void unpack(const std::vector<char>& data) override;
 
       //@}
 
@@ -131,7 +131,7 @@ namespace Discret
       /// Evaluate Wall1 element stiffness, mass, internal forces etc
       ///
       /// \return 0 if successful, negative otherwise
-      int Evaluate(
+      int evaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
           Core::FE::Discretization& discretization,  ///< pointer to discretization for de-assembly

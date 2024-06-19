@@ -162,13 +162,13 @@ namespace PoroElast
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     //! and assemble systemmatrix and rhs-vector
-    void Evaluate(
+    void evaluate(
         Teuchos::RCP<const Epetra_Vector> iterinc,  //!< increment between iteration i and i+1
         bool firstiter) override;
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     //! and assemble systemmatrix and rhs-vector
-    void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    void evaluate(Teuchos::RCP<const Epetra_Vector>
                       s_iterinc,  //!< structural increment between iteration i and i+1
         Teuchos::RCP<const Epetra_Vector>
             f_iterinc,  //!< fluid increment between iteration i and i+1

@@ -113,9 +113,9 @@ namespace Discret::ELEMENTS
 
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     [[nodiscard]] Core::FE::CellType Shape() const override { return celltype_; };
 
@@ -127,7 +127,7 @@ namespace Discret::ELEMENTS
     bool ReadElement(const std::string& eletype, const std::string& celltype,
         Input::LineDefinition* linedef) override;
 
-    int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
         Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseVector& elevec2,

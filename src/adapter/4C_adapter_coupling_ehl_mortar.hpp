@@ -75,7 +75,7 @@ namespace Adapter
     \brief initialize routine
 
     */
-    void Setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
+    void setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
         Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond) override;
 
@@ -156,8 +156,8 @@ namespace Adapter
       FOUR_C_THROW("stop");
       return Teuchos::null;
     }
-    void Evaluate() override { FOUR_C_THROW("stop"); }
-    void Evaluate(Teuchos::RCP<Epetra_Vector> idisp) override { FOUR_C_THROW("stop"); }
+    void evaluate() override { FOUR_C_THROW("stop"); }
+    void evaluate(Teuchos::RCP<Epetra_Vector> idisp) override { FOUR_C_THROW("stop"); }
     void evaluate_with_mesh_relocation(
         Teuchos::RCP<Core::FE::Discretization> slavedis,  ///< slave discretization
         Teuchos::RCP<Core::FE::Discretization> aledis,    ///< ALE discretization

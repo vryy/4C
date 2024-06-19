@@ -147,7 +147,7 @@ namespace CONTACT
     Derived version with some additional TSI related stuff!
 
     */
-    void Initialize() final;
+    void initialize() final;
 
    protected:
   };  // class

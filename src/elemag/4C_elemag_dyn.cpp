@@ -111,7 +111,7 @@ void electromagnetics_drt()
       Teuchos::rcp(new Teuchos::ParameterList(elemagparams));
 
   // set restart step if required
-  int restart = problem->Restart();
+  int restart = problem->restart();
   params->set<int>("restart", restart);
 
   // create algorithm depending on time-integration scheme
@@ -164,7 +164,7 @@ void electromagnetics_drt()
   }
 
   // Initialize the evolution algorithm
-  elemagalgo->Init();
+  elemagalgo->init();
 
   // set initial field
   if (restart)
@@ -316,9 +316,9 @@ void electromagnetics_drt()
 
             // scatraparams->print(std::cout);
 
-            scatraalgo->Init();
+            scatraalgo->init();
             scatraalgo->set_number_of_dof_set_velocity(1);
-            scatraalgo->Setup();
+            scatraalgo->setup();
             scatraalgo->set_velocity_field();
             scatraalgo->TimeLoop();
 

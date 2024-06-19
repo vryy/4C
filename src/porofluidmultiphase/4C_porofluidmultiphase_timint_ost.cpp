@@ -47,7 +47,7 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::set_element_time_step_parameter() 
   eleparams.set<double>("time factor", theta_ * dt_);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -140,10 +140,10 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::compute_time_derivative()
  | current solution becomes most recent solution of next timestep       |
  |                                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntOneStepTheta::Update()
+void POROFLUIDMULTIPHASE::TimIntOneStepTheta::update()
 {
   // call base class
-  POROFLUIDMULTIPHASE::TimIntImpl::Update();
+  POROFLUIDMULTIPHASE::TimIntImpl::update();
 
   // compute time derivative at time n+1
   compute_time_derivative();

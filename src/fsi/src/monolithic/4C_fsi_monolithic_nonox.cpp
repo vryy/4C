@@ -362,7 +362,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
   // Call all fileds evaluate method and assemble rhs and matrices
 
   {
-    structure_field()->Evaluate(sx);
+    structure_field()->evaluate(sx);
   }
 
   {
@@ -371,7 +371,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
     // displacement of the last time step. So we need to build the
     // sum of all increments and give it to ALE.
 
-    ale_field()->Evaluate(ax);
+    ale_field()->evaluate(ax);
   }
 
   // transfer the current ale mesh positions to the fluid field
@@ -379,7 +379,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
   fluid_field()->apply_mesh_displacement(fluiddisp);
 
   {
-    fluid_field()->Evaluate(fx);
+    fluid_field()->evaluate(fx);
   }
 
   if (has_fluid_dof_map_changed(fluidincrementmap)) handle_fluid_dof_map_change_in_newton();
@@ -389,7 +389,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
 void FSI::MonolithicNoNOX::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
-  blockrowdofmap_.Setup(*fullmap, maps);
+  blockrowdofmap_.setup(*fullmap, maps);
 }
 
 /*----------------------------------------------------------------------*/
@@ -614,9 +614,9 @@ void FSI::MonolithicNoNOX::update()
   }
 
   // update subsequent fields
-  structure_field()->Update();
-  fluid_field()->Update();
-  ale_field()->Update();
+  structure_field()->update();
+  fluid_field()->update();
+  ale_field()->update();
 }
 
 /*----------------------------------------------------------------------*/

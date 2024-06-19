@@ -61,10 +61,10 @@ namespace FS3I
     virtual ~FS3IBase() = default;
 
     /// initialize this class
-    virtual void Init();
+    virtual void init();
 
     /// setup this class
-    virtual void Setup();
+    virtual void setup();
 
     /// setup
     virtual void SetupSystem() = 0;
@@ -223,16 +223,16 @@ namespace FS3I
     bool isinit_;
 
    protected:
-    //! returns true if Setup() was called and is still valid
+    //! returns true if setup() was called and is still valid
     bool is_setup() { return issetup_; };
 
-    //! returns true if Init(..) was called and is still valid
+    //! returns true if init(..) was called and is still valid
     bool is_init() { return isinit_; };
 
-    //! check if \ref Setup() was called
+    //! check if \ref setup() was called
     void check_is_setup();
 
-    //! check if \ref Init() was called
+    //! check if \ref init() was called
     void check_is_init();
 
    public:

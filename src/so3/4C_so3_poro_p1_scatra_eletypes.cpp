@@ -31,7 +31,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8PoroP1ScatraType::Creat
   Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>* object =
       new Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(
           -1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -86,7 +86,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet4PoroP1ScatraType::Creat
   Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>* object =
       new Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(
           -1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 

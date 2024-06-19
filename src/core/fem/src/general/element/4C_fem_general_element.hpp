@@ -113,7 +113,7 @@ namespace Core::Elements
     {
      public:
       /// clear all vectors
-      void Clear()
+      void clear()
       {
         lm_.clear();
         lmdirich_.clear();
@@ -154,9 +154,9 @@ namespace Core::Elements
       explicit LocationArray(int size) : data_(size) {}
 
       /// clear all location entries
-      void Clear()
+      void clear()
       {
-        for (unsigned i = 0; i < data_.size(); ++i) data_[i].Clear();
+        for (unsigned i = 0; i < data_.size(); ++i) data_[i].clear();
       }
 
       /// access location entry
@@ -216,18 +216,18 @@ namespace Core::Elements
     /*!
     \brief Pack this class so it can be communicated
 
-    \ref Pack and \ref Unpack are used to communicate this element
+    \ref pack and \ref unpack are used to communicate this element
 
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
 
-    \ref Pack and \ref Unpack are used to communicate this element
+    \ref pack and \ref unpack are used to communicate this element
 
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     /// return ElementType instance
     virtual Core::Elements::ElementType& ElementType() const = 0;
@@ -619,7 +619,7 @@ might become invalid after a redistribution of the discretization.
 
     Note: If the element has only ghost nodes, the element will not be allowed
           to assemble in any global vectors or matrixes, and, hence, can be
-          skiped during Evaluate(). The only reason why it is ghosted on this
+          skiped during evaluate(). The only reason why it is ghosted on this
           proc is to provide access to its data. This might be necessary for volumetric
           coupling of non conforming meshes.
 
@@ -1055,7 +1055,7 @@ might become invalid after a redistribution of the discretization.
                                 given in params
     \return 0 if successful, negative otherwise
     */
-    virtual int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    virtual int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
         Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3);
@@ -1086,7 +1086,7 @@ might become invalid after a redistribution of the discretization.
                                 given in params
     \return 0 if successful, negative otherwise
     */
-    virtual int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    virtual int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
         Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3);
@@ -1322,18 +1322,18 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief Pack this class so it can be communicated
 
-    \ref Pack and \ref Unpack are used to communicate this face element
+    \ref pack and \ref unpack are used to communicate this face element
 
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
 
-    \ref Pack and \ref Unpack are used to communicate this face element
+    \ref pack and \ref unpack are used to communicate this face element
 
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     /*!
     \brief Returns whether the given element actually is a face element with degrees of freedom

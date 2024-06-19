@@ -72,14 +72,14 @@ Core::FE::CellType Discret::ELEMENTS::Ale3Surface::Shape() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale3Surface::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Ale3Surface::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Ale3Surface element does not support communication");
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale3Surface::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Ale3Surface::unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this Ale3Surface element does not support communication");
 }

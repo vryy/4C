@@ -75,7 +75,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(
  | evaluate  routine                                         vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Evaluate(Core::Elements::Element* ele,
+int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la,
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
@@ -409,12 +409,12 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::node_loop(Core::Ele
   //       are set in such a way that the standard routines can be used
 
   // dummy derivative matrix as zero
-  derxy_.Clear();
+  derxy_.clear();
 
   for (int inode = 0; inode < nen_; ++inode)
   {
     // dummy shape function matrix (set to zero)
-    funct_.Clear();
+    funct_.clear();
     // set value at current node to 1
     funct_(inode) = 1.0;
 
@@ -461,8 +461,8 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate_only_eleme
   //       variable and phase-managers are required
 
   // dummy derivative matrix as zero
-  derxy_.Clear();
-  funct_.Clear();
+  derxy_.clear();
+  funct_.clear();
 
   //----------------------------------------------------------------
   // 1) element matrix
@@ -518,7 +518,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::setup_calc(Core::Ele
   phasemanager_ = Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::CreatePhaseManager(
       *para_, nsd_, ele->Material()->MaterialType(), action, totalnumdofpernode_, numfluidphases_);
   // setup the manager
-  phasemanager_->Setup(ele);
+  phasemanager_->setup(ele);
 
   // rebuild the phase manager
   variablemanager_ = Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd_,
@@ -575,7 +575,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::eval_shape_func_and_deri
     Core::FE::gder2<distype, nen_>(xjm_, derxy_, deriv2_, xyze_, derxy2_);
   }
   else
-    derxy2_.Clear();
+    derxy2_.clear();
 
   //------------------------get determinant of Jacobian dX / ds
   // transposed jacobian "dX/ds"

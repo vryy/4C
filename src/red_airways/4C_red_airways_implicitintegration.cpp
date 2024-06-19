@@ -311,7 +311,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   Teuchos::RCP<Epetra_Vector> radii_in = Core::LinAlg::CreateVector(*dofrowmap, true);
   Teuchos::RCP<Epetra_Vector> radii_out = Core::LinAlg::CreateVector(*dofrowmap, true);
 
-  discret_->Evaluate(eleparams, Teuchos::null, Teuchos::null, radii_in, radii_out, n_intr_ac_ln_);
+  discret_->evaluate(eleparams, Teuchos::null, Teuchos::null, radii_in, radii_out, n_intr_ac_ln_);
 
   for (int i = 0; i < radii_->MyLength(); i++)
   {
@@ -519,7 +519,7 @@ void Airway::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
           acini_ele->UpdateRelaxedVolume(val);
 
           // adjust acini volumes in the vectors used in this function
-          if (not Global::Problem::Instance()->Restart())
+          if (not Global::Problem::Instance()->restart())
           {
             (*acini_e_volumenp_)[i] = val;
             (*acini_e_volumen_)[i] = val;
@@ -732,7 +732,7 @@ void Airway::RedAirwayImplicitTimeInt::TimeStep(
   // Normal red_airway Output
   if (!CoupledTo3D)
   {
-    Output(CoupledTo3D, CouplingTo3DParams);
+    output(CoupledTo3D, CouplingTo3DParams);
   }
 
   // Update time step sizes
@@ -983,7 +983,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
 
 
     // Call standard loop over all elements
-    discret_->Evaluate(eleparams, sysmat_, rhs_);
+    discret_->evaluate(eleparams, sysmat_, rhs_);
     discret_->ClearState();
 
     // finalize the complete matrix
@@ -1052,7 +1052,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
     eleparams.set("coupling with 3D fluid params", CouplingTo3DParams);
 
     // Call standard loop over all elements
-    discret_->Evaluate(eleparams, sysmat_, rhs_);
+    discret_->evaluate(eleparams, sysmat_, rhs_);
     discret_->ClearState();
 
   }  // end of solving terminal BCs
@@ -1158,7 +1158,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
     evaluation_data.time = time_;
 
     // Call standard loop over all elements
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -1193,7 +1193,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
     evaluation_data.elemRadiusnp = elemRadiusnp_;
 
     // call standard loop over all elements
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -1237,7 +1237,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
     eleparams.set("coupling with 3D fluid params", CouplingTo3DParams);
 
     // call standard loop over all elements
-    discret_->Evaluate(eleparams, sysmat_, rhs_);
+    discret_->evaluate(eleparams, sysmat_, rhs_);
     discret_->ClearState();
   }
 }  // RedAirwayImplicitTimeInt::Solve
@@ -1281,7 +1281,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
 
     cfls_->PutScalar(0.0);
 
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
 
@@ -1321,7 +1321,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
     junctionVolumeInMix_->PutScalar(0.0);
     evaluation_data.elemVolumenp = elemVolumenp_;
 
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, sysmat_, Teuchos::null, junctionVolumeInMix_, Teuchos::null, Teuchos::null);
   }
   //---------------------------------------------------------------------
@@ -1368,7 +1368,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
 
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
     Teuchos::RCP<Epetra_Vector> dummy = Core::LinAlg::CreateVector(*dofrowmap, true);
-    discret_->Evaluate(eleparams, sysmat_, Teuchos::null, scatraO2np_, dummy, Teuchos::null);
+    discret_->evaluate(eleparams, sysmat_, Teuchos::null, scatraO2np_, dummy, Teuchos::null);
     discret_->ClearState();
   }
   //---------------------------------------------------------------------
@@ -1420,7 +1420,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
     evaluation_data.elemVolumenp = elemVolumenp_;
     discret_->set_state("junctionVolumeInMix", junctionVolumeInMix_);
 
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, sysmat_, Teuchos::null, scatraO2np_, junctionVolumeInMix_, Teuchos::null);
     discret_->ClearState();
   }
@@ -1459,7 +1459,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
     evaluation_data.qout_n = qout_n_;
     evaluation_data.elemVolumenp = elemVolumenp_;
 
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, nodal_surfaces, nodal_volumes, nodal_avg_conc);
     discret_->ClearState();
   }
@@ -1485,7 +1485,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
     dscatraO2_->PutScalar(0.0);
     dVolumeO2_->PutScalar(0.0);
     acinarDO2_->PutScalar(0.0);
-    discret_->Evaluate(eleparams, Teuchos::null, Teuchos::null, dscatraO2_, dVolumeO2_, acinarDO2_);
+    discret_->evaluate(eleparams, Teuchos::null, Teuchos::null, dscatraO2_, dVolumeO2_, acinarDO2_);
     discret_->ClearState();
   }
 
@@ -1515,7 +1515,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
     discret_->set_state("scatranp", scatraO2np_);
     evaluation_data.elemVolumenp = elemVolumenp_;
 
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -1545,7 +1545,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
     discret_->set_state("scatranp", scatraO2np_);
     discret_->set_state("junctionVolumeInMix", junctionVolumeInMix_);
     evaluation_data.elemVolumenp = elemVolumenp_;
-    discret_->Evaluate(
+    discret_->evaluate(
         eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -1804,7 +1804,7 @@ void Airway::RedAirwayImplicitTimeInt::LoadState()
 /*----------------------------------------------------------------------*
  | Output of solution vector to binio                       ismail 07/09|
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::Output(
+void Airway::RedAirwayImplicitTimeInt::output(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   int step = 0;
@@ -1859,7 +1859,7 @@ void Airway::RedAirwayImplicitTimeInt::Output(
         discret_->set_state("scatranp", scatraO2np_);
         evaluation_data.acinar_vnp = acini_e_volumenp_;
 
-        discret_->Evaluate(
+        discret_->evaluate(
             eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
         discret_->ClearState();
         output_.write_vector("PO2", po2);
@@ -1883,7 +1883,7 @@ void Airway::RedAirwayImplicitTimeInt::Output(
         discret_->set_state("scatranp", acinarDO2_);
         evaluation_data.acinar_vnp = acini_e_volumenp_;
 
-        discret_->Evaluate(
+        discret_->evaluate(
             eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
         discret_->ClearState();
         output_.write_vector("AcinarPO2", po2);
@@ -2345,7 +2345,7 @@ void Airway::RedAirwayImplicitTimeInt::EvalResidual(
 
 
     // call standard loop over all elements
-    discret_->Evaluate(eleparams, sysmat_, rhs_);
+    discret_->evaluate(eleparams, sysmat_, rhs_);
     discret_->ClearState();
 
     // finalize the complete matrix
@@ -2410,7 +2410,7 @@ void Airway::RedAirwayImplicitTimeInt::EvalResidual(
 
 
     // call standard loop over all elements
-    discret_->Evaluate(eleparams, sysmat_, rhs_);
+    discret_->evaluate(eleparams, sysmat_, rhs_);
     discret_->ClearState();
   }
 
@@ -2461,7 +2461,7 @@ void Airway::RedAirwayImplicitTimeInt::SetupForCoupling()
     Core::Conditions::Condition* actcond = nodecond[i];
     if (actcond->Type() == Core::Conditions::RedAirwayNodeTissue)
     {
-      auto condID = actcond->parameters().Get<int>("coupling id");
+      auto condID = actcond->parameters().get<int>("coupling id");
       coupcond_[condID] = actcond;
       tmp.push_back(condID);
       pres_[condID] = 0.0;

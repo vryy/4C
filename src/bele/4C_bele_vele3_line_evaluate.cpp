@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 07/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Vele3Line::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::Vele3Line::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,

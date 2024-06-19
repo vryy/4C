@@ -49,12 +49,12 @@ namespace FBI
     /**
      * \brief Initialize with the stuff coming from input file
      */
-    void Init();
+    void init();
 
     /**
      * \brief Setup
      */
-    void Setup();
+    void setup();
 
     /// Sets the flag to compute only force contributions from the beam
     void set_weak_dirichlet_flag() { calcfluidweakdirichletforce_ = true; }
@@ -80,7 +80,7 @@ namespace FBI
      */
     inline void check_init_setup() const
     {
-      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call init() and setup() first!");
     }
 
     /**
@@ -88,7 +88,7 @@ namespace FBI
      */
     inline void check_init() const
     {
-      if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
+      if (!is_init()) FOUR_C_THROW("init() has not been called, yet!");
     }
 
     /**

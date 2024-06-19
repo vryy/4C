@@ -23,12 +23,12 @@ PARTICLEENGINE::ParticleContainer::ParticleContainer()
   // empty constructor
 }
 
-void PARTICLEENGINE::ParticleContainer::Init()
+void PARTICLEENGINE::ParticleContainer::init()
 {
   // nothing to do
 }
 
-void PARTICLEENGINE::ParticleContainer::Setup(
+void PARTICLEENGINE::ParticleContainer::setup(
     int containersize, const std::set<ParticleState>& stateset)
 {
   // set size of particle container (at least one)

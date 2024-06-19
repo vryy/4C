@@ -51,7 +51,7 @@ namespace PaSI
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    void Setup() override;
+    void setup() override;
 
     /*!
      * \brief partitioned one way coupled timeloop

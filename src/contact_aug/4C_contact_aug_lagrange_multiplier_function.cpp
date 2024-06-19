@@ -43,7 +43,7 @@ CONTACT::Aug::LagrangeMultiplierFunction::LagrangeMultiplierFunction()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::LagrangeMultiplierFunction::Init(
+void CONTACT::Aug::LagrangeMultiplierFunction::init(
     const Strategy* const strategy, CONTACT::Aug::DataContainer& data)
 {
   issetup_ = false;
@@ -60,7 +60,7 @@ void CONTACT::Aug::LagrangeMultiplierFunction::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::LagrangeMultiplierFunction::Setup()
+void CONTACT::Aug::LagrangeMultiplierFunction::setup()
 {
   check_init();
 
@@ -175,7 +175,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::get_struct
  *----------------------------------------------------------------------------*/
 void CONTACT::Aug::LagrangeMultiplierFunction::create_b_matrix()
 {
-  bmat_->Reset();
+  bmat_->reset();
 
   bmat_->Add(data_->DMatrix(), true, 1.0, 0.0);
   bmat_->Add(data_->MMatrix(), true, 1.0, 1.0);

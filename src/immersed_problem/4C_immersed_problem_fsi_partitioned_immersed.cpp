@@ -22,10 +22,10 @@ FSI::PartitionedImmersed::PartitionedImmersed(const Epetra_Comm& comm) : Partiti
 }
 
 
-void FSI::PartitionedImmersed::Setup()
+void FSI::PartitionedImmersed::setup()
 {
   // call setup of base class
-  FSI::Partitioned::Setup();
+  FSI::Partitioned::setup();
 }
 
 

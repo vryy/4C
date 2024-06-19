@@ -62,7 +62,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair
-  this->cast_geometry_pair()->Evaluate(
+  this->cast_geometry_pair()->evaluate(
       this->ele1pos_, this->face_element_->GetFaceElementData(), this->line_to_3D_segments_);
 
   // If there are no intersection segments, no contact terms will be assembled

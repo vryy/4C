@@ -28,7 +28,7 @@ void Core::FE::Discretization::reset(bool killdofs, bool killcond)
   if (killdofs)
   {
     havedof_ = false;
-    for (unsigned i = 0; i < dofsets_.size(); ++i) dofsets_[i]->Reset();
+    for (unsigned i = 0; i < dofsets_.size(); ++i) dofsets_[i]->reset();
   }
 
   elerowmap_ = Teuchos::null;

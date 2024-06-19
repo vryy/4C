@@ -25,7 +25,7 @@ Discret::ELEMENTS::SoShw6Type& Discret::ELEMENTS::SoShw6Type::Instance() { retur
 Core::Communication::ParObject* Discret::ELEMENTS::SoShw6Type::Create(const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoShw6(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -131,7 +131,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoShw6::Clone() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoShw6::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoShw6::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -139,7 +139,7 @@ void Discret::ELEMENTS::SoShw6::Pack(Core::Communication::PackBuffer& data) cons
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class So_weg6 Element
-  Discret::ELEMENTS::SoWeg6::Pack(data);
+  Discret::ELEMENTS::SoWeg6::pack(data);
   // eastype_
   add_to_pack(data, eastype_);
   // neas_
@@ -158,7 +158,7 @@ void Discret::ELEMENTS::SoShw6::Pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoShw6::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoShw6::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -167,7 +167,7 @@ void Discret::ELEMENTS::SoShw6::Unpack(const std::vector<char>& data)
   // extract base class So_weg6 Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::SoWeg6::Unpack(basedata);
+  Discret::ELEMENTS::SoWeg6::unpack(basedata);
   // eastype_
   eastype_ = static_cast<EASType>(extract_int(position, data));
   // neas_

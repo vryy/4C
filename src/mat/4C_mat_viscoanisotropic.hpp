@@ -106,7 +106,7 @@ namespace Mat
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -121,7 +121,7 @@ namespace Mat
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -145,21 +145,21 @@ namespace Mat
     }
 
     /// Setup and Initialize internal stress variables
-    void Setup(int numgp,  ///< number of Gauss points
+    void setup(int numgp,  ///< number of Gauss points
         Input::LineDefinition* linedef) override;
 
     /// Setup and Initialize internal stress variables and align fibers based on a given vector
-    void Setup(const int numgp,             ///< number of Gauss points
+    void setup(const int numgp,             ///< number of Gauss points
         const std::vector<double> thickvec  ///< direction fibers should be oriented in
     );
 
     /// Update internal stress variables
-    void Update() override;
+    void update() override;
 
     void UpdateFiberDirs(const int numgp, Core::LinAlg::Matrix<3, 3>* defgrad);
 
     /// Evaluate material
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,      ///< deformation gradient
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,      ///< deformation gradient
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain,  ///< green lagrange strain
         Teuchos::ParameterList& params,                  ///< parameter list for communication
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,  ///< 2nd PK-stress

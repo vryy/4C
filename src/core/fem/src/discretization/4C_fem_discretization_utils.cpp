@@ -51,7 +51,7 @@ void Core::FE::UTILS::evaluate_initial_field(const Core::UTILS::FunctionManager&
     for (const auto& initfieldcondition : initfieldconditions)
     {
       if (initfieldcondition->Type() != type) continue;
-      const std::string condstring = initfieldcondition->parameters().Get<std::string>("Field");
+      const std::string condstring = initfieldcondition->parameters().get<std::string>("Field");
       if (condstring != fieldstring) continue;
       DoInitialField(function_manager, discret, *initfieldcondition, *fieldvector, locids);
     }
@@ -70,7 +70,7 @@ void Core::FE::UTILS::DoInitialField(const Core::UTILS::FunctionManager& functio
 
   // loop nodes to identify and evaluate spatial distributions
   // of Initfield boundary conditions
-  const auto funct_num = cond.parameters().Get<int>("funct");
+  const auto funct_num = cond.parameters().get<int>("funct");
 
   for (const int cond_nodeid : cond_nodeids)
   {
@@ -110,7 +110,7 @@ void Core::FE::UTILS::DoInitialField(const Core::UTILS::FunctionManager& functio
           const double functfac =
               funct_num > 0
                   ? function_manager.FunctionById<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                        .Evaluate(node->X().data(), time, localdof)
+                        .evaluate(node->X().data(), time, localdof)
                   : 0.0;
 
           // assign value

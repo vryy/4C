@@ -81,7 +81,7 @@ Core::FE::CellType Discret::ELEMENTS::Vele3Surface::Shape() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3Surface::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Vele3Surface::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Vele3Surface element does not support communication");
   return;
@@ -90,7 +90,7 @@ void Discret::ELEMENTS::Vele3Surface::Pack(Core::Communication::PackBuffer& data
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3Surface::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Vele3Surface::unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this Vele3Surface element does not support communication");
   return;

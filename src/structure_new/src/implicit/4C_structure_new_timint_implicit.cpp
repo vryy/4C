@@ -33,12 +33,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::Setup()
+void STR::TimeInt::Implicit::setup()
 {
   // safety check
   check_init();
 
-  STR::TimeInt::Base::Setup();
+  STR::TimeInt::Base::setup();
 
   // ---------------------------------------------------------------------------
   // cast the base class integrator
@@ -50,18 +50,18 @@ void STR::TimeInt::Implicit::Setup()
   // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TimeInt::NoxInterface> noxinterface_ptr =
       Teuchos::rcp(new STR::TimeInt::NoxInterface);
-  noxinterface_ptr->Init(
+  noxinterface_ptr->init(
       data_global_state_ptr(), implint_ptr_, dbc_ptr(), Teuchos::rcp(this, false));
-  noxinterface_ptr->Setup();
+  noxinterface_ptr->setup();
 
   // ---------------------------------------------------------------------------
   // build predictor
   // ---------------------------------------------------------------------------
   const enum Inpar::STR::PredEnum& predtype = data_sdyn().get_predictor_type();
   predictor_ptr_ = STR::Predict::build_predictor(predtype);
-  predictor_ptr_->Init(predtype, implint_ptr_, dbc_ptr(), data_global_state_ptr(), data_io_ptr(),
+  predictor_ptr_->init(predtype, implint_ptr_, dbc_ptr(), data_global_state_ptr(), data_io_ptr(),
       data_sdyn().get_nox_params_ptr());
-  predictor_ptr_->Setup();
+  predictor_ptr_->setup();
 
   // ---------------------------------------------------------------------------
   // build non-linear solver
@@ -73,9 +73,9 @@ void STR::TimeInt::Implicit::Setup()
                  "Please use NLNSOL as \"fullnewton\" for reliable result."
               << std::endl;
   nlnsolver_ptr_ = STR::Nln::SOLVER::build_nln_solver(nlnSolverType);
-  nlnsolver_ptr_->Init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, implint_ptr_,
+  nlnsolver_ptr_->init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, implint_ptr_,
       Teuchos::rcp(this, false));
-  nlnsolver_ptr_->Setup();
+  nlnsolver_ptr_->setup();
 
   // set setup flag
   issetup_ = true;
@@ -145,7 +145,7 @@ Inpar::STR::ConvergenceStatus STR::TimeInt::Implicit::Solve()
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
   // reset the non-linear solver
-  nln_solver().Reset();
+  nln_solver().reset();
   // solve the non-linear problem
   Inpar::STR::ConvergenceStatus convstatus = nln_solver().Solve();
   // return convergence status
@@ -189,16 +189,16 @@ void STR::TimeInt::Implicit::determine_stress_strain() { impl_int().determine_st
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void STR::TimeInt::Implicit::evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   update_state_incrementally(disiterinc);
 
-  Evaluate();
+  evaluate();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::Evaluate()
+void STR::TimeInt::Implicit::evaluate()
 {
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
@@ -258,7 +258,7 @@ Inpar::STR::ConvergenceStatus STR::TimeInt::Implicit::PerformErrorAction(
     case Inpar::STR::divcont_stop:
     {
       // write restart output of last converged step before stopping
-      Output(true);
+      output(true);
 
       // we should not get here, FOUR_C_THROW for safety
       FOUR_C_THROW("Nonlinear solver did not converge! ");

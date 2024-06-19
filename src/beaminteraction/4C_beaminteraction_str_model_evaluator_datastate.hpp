@@ -63,10 +63,10 @@ namespace STR
       virtual ~BeamInteractionDataState() = default;
 
       /// initialize class variables
-      void Init();
+      void init();
 
       /// setup of the new class variables
-      void Setup(Teuchos::RCP<const Core::FE::Discretization> const& ia_discret);
+      void setup(Teuchos::RCP<const Core::FE::Discretization> const& ia_discret);
 
      protected:
       inline const bool& is_init() const { return isinit_; };
@@ -75,12 +75,12 @@ namespace STR
 
       inline void check_init_setup() const
       {
-        if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+        if (!is_init() or !is_setup()) FOUR_C_THROW("Call init() and setup() first!");
       }
 
       inline void check_init() const
       {
-        if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
+        if (!is_init()) FOUR_C_THROW("init() has not been called, yet!");
       }
 
      public:
@@ -296,10 +296,10 @@ namespace STR
      protected:
       /// @name variables for internal use only
       ///@{
-      /// flag indicating if Init() has been called
+      /// flag indicating if init() has been called
       bool isinit_;
 
-      /// flag indicating if Setup() has been called
+      /// flag indicating if setup() has been called
       bool issetup_;
       ///@}
 

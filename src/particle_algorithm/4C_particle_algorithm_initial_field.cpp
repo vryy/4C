@@ -29,7 +29,7 @@ PARTICLEALGORITHM::InitialFieldHandler::InitialFieldHandler(const Teuchos::Param
   // empty constructor
 }
 
-void PARTICLEALGORITHM::InitialFieldHandler::Init()
+void PARTICLEALGORITHM::InitialFieldHandler::init()
 {
   // get control parameters for initial/boundary conditions
   const Teuchos::ParameterList& params_conditions =
@@ -56,7 +56,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::Init()
   }
 }
 
-void PARTICLEALGORITHM::InitialFieldHandler::Setup(
+void PARTICLEALGORITHM::InitialFieldHandler::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine
@@ -118,7 +118,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
       {
         // evaluate function to set initial field
         for (int dim = 0; dim < statedim; ++dim)
-          state[statedim * i + dim] = function.Evaluate(&(pos[posstatedim * i]), 0.0, dim);
+          state[statedim * i + dim] = function.evaluate(&(pos[posstatedim * i]), 0.0, dim);
       }
     }
   }

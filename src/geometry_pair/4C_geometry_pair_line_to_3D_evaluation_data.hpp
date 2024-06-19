@@ -38,7 +38,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Clear the evaluation data.
      */
-    void Clear() override;
+    void clear() override;
 
     /**
      * \brief Reset the evaluation data tracker objects.

@@ -125,12 +125,12 @@ void CONTACT::Aug::IntegrationWrapper::IntegrateDerivEle3D(Mortar::Element& sele
   {
     Mortar::Element& mele = *(info_pair.first);
     integrator_ = IntegratorGeneric::Create(Dim(), sele.Shape(), mele.Shape(), *cparams_ptr, this);
-    integrator_->Evaluate(sele, mele, *boundary_ele, info_pair.second);
+    integrator_->evaluate(sele, mele, *boundary_ele, info_pair.second);
   }
 
   timer_ptr->stop(GlobalTimeID::IntegrateDerivEle3D);
 
-  Epetra_Vector* sele_times = cparams_ptr->Get<Epetra_Vector>(0);
+  Epetra_Vector* sele_times = cparams_ptr->get<Epetra_Vector>(0);
   const int slid = sele_times->Map().LID(sele.Id());
   if (slid == -1)
     FOUR_C_THROW("Couldn't find the current slave element GID #%d on proc #%d.", sele.Id(),
@@ -264,13 +264,13 @@ void CONTACT::Aug::IntegrationWrapper::IntegrateDerivEle2D(Mortar::Element& sele
       Mortar::Element& mele = *(info_pair.first);
       integrator_ =
           IntegratorGeneric::Create(Dim(), sele.Shape(), mele.Shape(), *cparams_ptr, this);
-      integrator_->Evaluate(sele, mele, false, info_pair.second);
+      integrator_->evaluate(sele, mele, false, info_pair.second);
     }
   }  // boundary_ele check
 
   timer_ptr->stop(GlobalTimeID::IntegrateDerivEle2D);
 
-  Epetra_Vector* sele_times = cparams_ptr->Get<Epetra_Vector>(0);
+  Epetra_Vector* sele_times = cparams_ptr->get<Epetra_Vector>(0);
   const int slid = sele_times->Map().LID(sele.Id());
   if (slid == -1)
     FOUR_C_THROW("Couldn't find the current slave element GID #%d on proc #%d.", sele.Id(),
@@ -567,7 +567,7 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evaluate(
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::evaluate(
     Mortar::Element& sele, Mortar::Element& mele, bool boundary_ele,
     const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
 {
@@ -986,7 +986,7 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::extract_active_slave_node_li_ds(std::vector<unsigned>& active_nlids,
     const Mortar::Element& sele) const
 {
-  const Epetra_Map* active_snode_row_map = this->c_params().template Get<Epetra_Map>(1);
+  const Epetra_Map* active_snode_row_map = this->c_params().template get<Epetra_Map>(1);
 
   const int* nodeids = sele.NodeIds();
 

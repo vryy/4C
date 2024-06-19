@@ -27,7 +27,7 @@ bool Discret::ELEMENTS::SoSh18::ReadElement(
 
   Teuchos::RCP<Core::Mat::Material> mat = Material();
 
-  SolidMaterial()->Setup(NUMGPT_SOH18, linedef);
+  SolidMaterial()->setup(NUMGPT_SOH18, linedef);
 
   // temporary variable for read-in
   std::string buffer;

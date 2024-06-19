@@ -53,7 +53,7 @@ namespace Discret
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      //   virtual int Evaluate(Core::Elements::Element*                 ele,
+      //   virtual int evaluate(Core::Elements::Element*                 ele,
       //                        Teuchos::ParameterList&       params,
       //                        Core::FE::Discretization &         discretization,
       //                        const std::vector<int> &      lm,

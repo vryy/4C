@@ -56,7 +56,7 @@ namespace Discret
           Core::Elements::Element* ele, Core::FE::Discretization& discretization) override;
 
       //! evaluate the element
-      int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      int evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -294,7 +294,7 @@ namespace Discret
           diffdirectiontensor_(2, 2) = 1.0 - velocity(2, 0) * velocity(2, 0) / vel_norm_sq;
         }
         else
-          diffdirectiontensor_.Clear();
+          diffdirectiontensor_.clear();
 
         // indicate that crosswind diffusion has to be used
         have_cross_wind_diff_ = true;
@@ -302,14 +302,14 @@ namespace Discret
         return;
       }
 
-      void Reset()
+      void reset()
       {
         for (std::size_t kk = 0; kk < diff_.size(); kk++)
         {
           diff_[kk] = 0.0;
           sgdiff_[kk] = 0.0;
         }
-        diffdirectiontensor_.Clear();
+        diffdirectiontensor_.clear();
         have_cross_wind_diff_ = false;
 
         return;
@@ -438,17 +438,17 @@ namespace Discret
       //! @name reset default values
       /*========================================================================*/
 
-      void Reset()
+      void reset()
       {
         for (int kk = 0; kk < my::numscal_; kk++)
         {
           my::phinp_[kk] = 0.0;
           my::phin_[kk] = 0.0;
-          (my::gradphi_[kk]).Clear();
+          (my::gradphi_[kk]).clear();
           my::conv_phi_[kk] = 0.0;
           my::hist_[kk] = 0.0;
-          my::convelint_[kk].Clear();
-          my::conv_[kk].Clear();
+          my::convelint_[kk].clear();
+          my::conv_[kk].clear();
         }
 
 

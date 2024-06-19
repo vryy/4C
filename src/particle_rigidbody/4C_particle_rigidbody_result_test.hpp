@@ -51,7 +51,7 @@ namespace ParticleRigidBody
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void Init();
+    void init();
 
     /*!
      * \brief setup rigid body result test
@@ -60,7 +60,7 @@ namespace ParticleRigidBody
      *
      * \param[in] particlerigidbodyinterface interface to rigid body handler
      */
-    void Setup(const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface>
+    void setup(const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface>
             particlerigidbodyinterface);
 
     /*!

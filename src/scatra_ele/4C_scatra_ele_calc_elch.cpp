@@ -42,7 +42,7 @@ Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::ScaTraEleCalcElch(
  | Action type: Evaluate                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Evaluate(Core::Elements::Element* ele,
+int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -51,7 +51,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Evaluate(Core::Eleme
     Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   // call base class routine
-  my::Evaluate(ele, params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+  my::evaluate(ele, params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
       elevec2_epetra, elevec3_epetra);
 
   // for certain ELCH problem formulations we have to provide

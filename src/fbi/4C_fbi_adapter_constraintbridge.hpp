@@ -89,7 +89,7 @@ namespace Adapter
      * \params[in] fluidmatrix system matrix of the fluid matrix in correct from
      * \params[in] fluidmeshtying bool indicating if fluid meshtying is included
      */
-    virtual void Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
+    virtual void setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
         Teuchos::RCP<Core::LinAlg::SparseOperator> fluidmatrix, bool fluidmeshtying);
 
     /**
@@ -100,7 +100,7 @@ namespace Adapter
      * other.
      *
      */
-    virtual void Evaluate(Teuchos::RCP<const Core::FE::Discretization> discretization1,
+    virtual void evaluate(Teuchos::RCP<const Core::FE::Discretization> discretization1,
         Teuchos::RCP<const Core::FE::Discretization> discretization2,
         Teuchos::RCP<const Epetra_Vector> fluid_vel,
         Teuchos::RCP<const Epetra_Vector> beam_vel) = 0;
@@ -140,7 +140,7 @@ namespace Adapter
     };
 
     /// Clears the pair vector and segmentation information
-    virtual void Clear();
+    virtual void clear();
 
     /// Resets class members of the bridge
     virtual void ResetBridge() = 0;

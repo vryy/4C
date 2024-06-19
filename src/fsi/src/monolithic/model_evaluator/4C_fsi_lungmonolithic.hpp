@@ -69,7 +69,7 @@ namespace FSI
     //@}
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    void Evaluate(
+    void evaluate(
         Teuchos::RCP<const Epetra_Vector> step_increment  ///< increment between time step n and n+1
         ) override;
 

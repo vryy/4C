@@ -62,13 +62,13 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
   {
     bool ConditionIsWrong = true;
     // get the Womersley surface ID
-    int surfID = womersleycond[i]->parameters().Get<int>("ConditionID");
+    int surfID = womersleycond[i]->parameters().get<int>("ConditionID");
 
     // loop over all of the border conditions
     for (unsigned int j = 0; j < womersley_border_nodes_cond.size(); j++)
     {
       // get the border ID
-      int lineID = womersley_border_nodes_cond[j]->parameters().Get<int>("ConditionID");
+      int lineID = womersley_border_nodes_cond[j]->parameters().get<int>("ConditionID");
       if (lineID == surfID)
       {
         // Since the condition is ok then create the corresponding the condition
@@ -109,7 +109,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::Output(Core::IO::DiscretizationWriter& output)
+void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::output(Core::IO::DiscretizationWriter& output)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
@@ -223,19 +223,19 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   dta_ = dta;
 
   // get the cycle period size
-  period_ = conditions[surf_numcond]->parameters().Get<double>("Period");
+  period_ = conditions[surf_numcond]->parameters().get<double>("Period");
 
   // get the polynomial order of the profile
-  order_ = conditions[surf_numcond]->parameters().Get<int>("Order");
+  order_ = conditions[surf_numcond]->parameters().get<int>("Order");
 
   // get the number of harmonics
-  n_harmonics_ = conditions[surf_numcond]->parameters().Get<int>("Harmonics");
+  n_harmonics_ = conditions[surf_numcond]->parameters().get<int>("Harmonics");
 
   // get the profile type
-  flowprofile_type_ = ((conditions[surf_numcond])->parameters().Get<std::string>("ConditionType"));
+  flowprofile_type_ = ((conditions[surf_numcond])->parameters().get<std::string>("ConditionType"));
 
   // get the prebiasing flag
-  prebiasing_flag_ = ((conditions[surf_numcond])->parameters().Get<std::string>("prebiased"));
+  prebiasing_flag_ = ((conditions[surf_numcond])->parameters().get<std::string>("prebiased"));
 
   // -------------------------------------------------------------------
   // calculate the center of mass and varage normal of the surface
@@ -247,7 +247,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
 
   // get the normal
   normal_ = Teuchos::rcp(new std::vector<double>(*normal));
-  std::string normal_info = (conditions[surf_numcond])->parameters().Get<std::string>("NORMAL");
+  std::string normal_info = (conditions[surf_numcond])->parameters().get<std::string>("NORMAL");
   if (normal_info == "SelfEvaluateNormal")
   {
     if (!myrank_)
@@ -263,9 +263,9 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
       std::cout << "Normal is manually setup" << std::endl;
     }
     vnormal_ = Teuchos::rcp(new std::vector<double>);
-    (*vnormal_)[0] = conditions[surf_numcond]->parameters().Get<double>("n1");
-    (*vnormal_)[1] = conditions[surf_numcond]->parameters().Get<double>("n2");
-    (*vnormal_)[2] = conditions[surf_numcond]->parameters().Get<double>("n3");
+    (*vnormal_)[0] = conditions[surf_numcond]->parameters().get<double>("n1");
+    (*vnormal_)[1] = conditions[surf_numcond]->parameters().get<double>("n2");
+    (*vnormal_)[2] = conditions[surf_numcond]->parameters().get<double>("n3");
   }
   else
   {
@@ -275,7 +275,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
 
   // get the center of mass
   std::string c_mass_info =
-      (conditions[surf_numcond])->parameters().Get<std::string>("CenterOfMass");
+      (conditions[surf_numcond])->parameters().get<std::string>("CenterOfMass");
   if (c_mass_info == "SelfEvaluateCenterOfMass")
   {
     if (!myrank_)
@@ -291,9 +291,9 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
       std::cout << "Center of mass is manually setup" << std::endl;
     }
     normal_ = Teuchos::rcp(new std::vector<double>);
-    (*cmass_)[0] = conditions[surf_numcond]->parameters().Get<double>("c1");
-    (*cmass_)[1] = conditions[surf_numcond]->parameters().Get<double>("c2");
-    (*cmass_)[2] = conditions[surf_numcond]->parameters().Get<double>("c3");
+    (*cmass_)[0] = conditions[surf_numcond]->parameters().get<double>("c1");
+    (*cmass_)[1] = conditions[surf_numcond]->parameters().get<double>("c2");
+    (*cmass_)[2] = conditions[surf_numcond]->parameters().get<double>("c3");
   }
   else
   {
@@ -303,7 +303,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
 
 
   // check if the condition surface is a inlet or outlet
-  std::string flow_dir = (conditions[surf_numcond])->parameters().Get<std::string>("FlowType");
+  std::string flow_dir = (conditions[surf_numcond])->parameters().get<std::string>("FlowType");
   if (flow_dir == "InFlow")
   {
     flow_dir_ = -1.0;
@@ -320,7 +320,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
 
   // check if the flow is with correction
   std::string corr_flag =
-      (conditions[surf_numcond])->parameters().Get<std::string>("CorrectionFlag");
+      (conditions[surf_numcond])->parameters().get<std::string>("CorrectionFlag");
   correct_flow_ = (corr_flag == "WithCorrection");
 
   // -------------------------------------------------------------------
@@ -1059,8 +1059,8 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
   Core::Conditions::Condition* condition = conditions[condnum_s_];
 
   // get curve and curve_factor
-  const int functnum = condition->parameters().Get<int>("Funct");
-  const double val = condition->parameters().Get<double>("Val");
+  const int functnum = condition->parameters().get<int>("Funct");
+  const double val = condition->parameters().get<double>("Val");
 
   //  if ( val < 1e-14 )
   //    FOUR_C_THROW("Val must be positive!");
@@ -1073,7 +1073,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
   {
     functfac = Global::Problem::Instance()
                    ->FunctionById<Core::UTILS::FunctionOfTime>(functnum - 1)
-                   .Evaluate(time);
+                   .evaluate(time);
     flowrate = val * functfac;
   }
 
@@ -1968,13 +1968,13 @@ FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(
   {
     bool ConditionIsWrong = true;
     // get the traction surface ID
-    int surfID = tractioncond[i]->parameters().Get<int>("ConditionID");
+    int surfID = tractioncond[i]->parameters().get<int>("ConditionID");
 
     // loop over all of the border conditions
     for (unsigned int j = 0; j < traction_border_nodes_cond.size(); j++)
     {
       // get the border ID
-      int lineID = traction_border_nodes_cond[j]->parameters().Get<int>("ConditionID");
+      int lineID = traction_border_nodes_cond[j]->parameters().get<int>("ConditionID");
       if (lineID == surfID)
       {
         // Since the condition is ok then create the corresponding the condition
@@ -2087,7 +2087,7 @@ void FLD::UTILS::TotalTractionCorrector::update_residual(Teuchos::RCP<Epetra_Vec
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::TotalTractionCorrector::Output(Core::IO::DiscretizationWriter& output)
+void FLD::UTILS::TotalTractionCorrector::output(Core::IO::DiscretizationWriter& output)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 

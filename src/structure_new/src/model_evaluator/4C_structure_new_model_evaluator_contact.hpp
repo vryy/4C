@@ -41,7 +41,7 @@ namespace STR
     {
      public:
       //! setup class variables [derived]
-      void Setup() override;
+      void setup() override;
 
       //! @name Functions which are derived from the base generic class
       //!@{
@@ -50,7 +50,7 @@ namespace STR
       Inpar::STR::ModelType Type() const override { return Inpar::STR::model_contact; }
 
       //! reset class variables (without jacobian) [derived]
-      void Reset(const Epetra_Vector& x) override;
+      void reset(const Epetra_Vector& x) override;
 
       //! [derived]
       bool evaluate_force() override;

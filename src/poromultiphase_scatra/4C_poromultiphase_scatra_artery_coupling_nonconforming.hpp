@@ -45,7 +45,7 @@ namespace PoroMultiPhaseScaTra
 
    protected:
     //! Evaluate the 1D-3D coupling
-    void Evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    void evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs) override;
 
     //! set-up of linear system of equations of coupled problem
@@ -58,7 +58,7 @@ namespace PoroMultiPhaseScaTra
         Teuchos::RCP<const Epetra_Map> dbcmap_art_with_collapsed);
 
     //! setup the strategy
-    void Setup() override;
+    void setup() override;
 
     //! evaluate additional linearization of (integrated) element diameter dependent terms
     //! (Hagen-Poiseuille)
@@ -86,7 +86,7 @@ namespace PoroMultiPhaseScaTra
     //! have the managers been set?
     bool porofluidmanagersset_;
 
-    //! has Setup() been called
+    //! has setup() been called
     bool issetup_;
 
     //! is it a pure fluid problem
@@ -145,7 +145,7 @@ namespace PoroMultiPhaseScaTra
         Teuchos::RCP<const Epetra_Vector> phinp_art) override;
 
     //! init the strategy
-    void Init() override;
+    void init() override;
 
     //! set the element pairs that are close as found by search algorithm
     void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs) override;

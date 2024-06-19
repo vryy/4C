@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
+int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -374,7 +374,7 @@ int Discret::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case calc_struct_update_istep:
     {
-      SolidMaterial()->Update();
+      SolidMaterial()->update();
     }
     break;
 
@@ -418,7 +418,7 @@ int Discret::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
       // Update constraintmixture material
       if (Material()->MaterialType() == Core::Materials::m_constraintmixture)
       {
-        SolidMaterial()->Update();
+        SolidMaterial()->update();
       }
     }
     break;
@@ -815,7 +815,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
       params.set("gp_coords_ref", point);
     }
 
-    SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
@@ -1143,7 +1143,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_lumpmass(Core::LinAlg::Matrix<NUMDOF_WEG6, 
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 04/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoWeg6Type::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::SoWeg6Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -1341,7 +1341,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location 
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
 
-      SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+      SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
       // Cauchy stress

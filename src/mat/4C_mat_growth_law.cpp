@@ -32,7 +32,7 @@ Mat::GrowthLaw::GrowthLaw(Core::Mat::PAR::Parameter* params) : params_(params) {
 
 /*----------------------------------------------------------------------------*/
 Mat::PAR::GrowthLawDyn::GrowthLawDyn(const Core::Mat::PAR::Parameter::Data& matdata)
-    : Parameter(matdata), abstol_(matdata.parameters.Get<double>("TOL"))
+    : Parameter(matdata), abstol_(matdata.parameters.get<double>("TOL"))
 {
 }
 
@@ -49,7 +49,7 @@ Mat::GrowthLawDyn::GrowthLawDyn() : GrowthLaw() {}
 Mat::GrowthLawDyn::GrowthLawDyn(Core::Mat::PAR::Parameter* params) : GrowthLaw(params) {}
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
+void Mat::GrowthLawDyn::evaluate(double* thetainit, const double& thetaold,
     Core::LinAlg::Matrix<6, 1>* dthetadC, Mat::Growth& matgrowth,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<6, 1>* glstrain,
     const Core::LinAlg::Matrix<3, 1>& refdir, const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
@@ -285,13 +285,13 @@ Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAnisoStrain::CreateGrowthLaw()
 /*----------------------------------------------------------------------------*/
 Mat::PAR::GrowthLawAnisoStrain::GrowthLawAnisoStrain(const Core::Mat::PAR::Parameter::Data& matdata)
     : GrowthLawDyn(matdata),
-      tau_(matdata.parameters.Get<double>("TAU")),
-      taurev_(matdata.parameters.Get<double>("TAU_REV")),
-      thetamin_(matdata.parameters.Get<double>("THETA_MIN")),
-      thetamax_(matdata.parameters.Get<double>("THETA_MAX")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
-      gammarev_(matdata.parameters.Get<double>("GAMMA_REV")),
-      lambdacrit_(matdata.parameters.Get<double>("LAMBDA_CRIT"))
+      tau_(matdata.parameters.get<double>("TAU")),
+      taurev_(matdata.parameters.get<double>("TAU_REV")),
+      thetamin_(matdata.parameters.get<double>("THETA_MIN")),
+      thetamax_(matdata.parameters.get<double>("THETA_MAX")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
+      gammarev_(matdata.parameters.get<double>("GAMMA_REV")),
+      lambdacrit_(matdata.parameters.get<double>("LAMBDA_CRIT"))
 {
 }
 
@@ -468,13 +468,13 @@ Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAnisoStress::CreateGrowthLaw()
 /*----------------------------------------------------------------------------*/
 Mat::PAR::GrowthLawAnisoStress::GrowthLawAnisoStress(const Core::Mat::PAR::Parameter::Data& matdata)
     : GrowthLawDyn(matdata),
-      tau_(matdata.parameters.Get<double>("TAU")),
-      taurev_(matdata.parameters.Get<double>("TAU_REV")),
-      thetamin_(matdata.parameters.Get<double>("THETA_MIN")),
-      thetamax_(matdata.parameters.Get<double>("THETA_MAX")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
-      gammarev_(matdata.parameters.Get<double>("GAMMA_REV")),
-      pcrit_(matdata.parameters.Get<double>("P_CRIT"))
+      tau_(matdata.parameters.get<double>("TAU")),
+      taurev_(matdata.parameters.get<double>("TAU_REV")),
+      thetamin_(matdata.parameters.get<double>("THETA_MIN")),
+      thetamax_(matdata.parameters.get<double>("THETA_MAX")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
+      gammarev_(matdata.parameters.get<double>("GAMMA_REV")),
+      pcrit_(matdata.parameters.get<double>("P_CRIT"))
 {
 }
 
@@ -877,13 +877,13 @@ Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawIsoStress::CreateGrowthLaw()
 /*----------------------------------------------------------------------------*/
 Mat::PAR::GrowthLawIsoStress::GrowthLawIsoStress(const Core::Mat::PAR::Parameter::Data& matdata)
     : GrowthLawDyn(matdata),
-      thetaplus_(matdata.parameters.Get<double>("THETAPLUS")),
-      kthetaplus_(matdata.parameters.Get<double>("KPLUS")),
-      mthetaplus_(matdata.parameters.Get<double>("MPLUS")),
-      thetaminus_(matdata.parameters.Get<double>("THETAMINUS")),
-      kthetaminus_(matdata.parameters.Get<double>("KMINUS")),
-      mthetaminus_(matdata.parameters.Get<double>("MMINUS")),
-      hommandel_(matdata.parameters.Get<double>("HOMMANDEL"))
+      thetaplus_(matdata.parameters.get<double>("THETAPLUS")),
+      kthetaplus_(matdata.parameters.get<double>("KPLUS")),
+      mthetaplus_(matdata.parameters.get<double>("MPLUS")),
+      thetaminus_(matdata.parameters.get<double>("THETAMINUS")),
+      kthetaminus_(matdata.parameters.get<double>("KMINUS")),
+      mthetaminus_(matdata.parameters.get<double>("MMINUS")),
+      hommandel_(matdata.parameters.get<double>("HOMMANDEL"))
 {
 }
 
@@ -1052,10 +1052,10 @@ double Mat::GrowthLawIsoStress::DensityDerivScale(const double theta)
 /*----------------------------------------------------------------------------*/
 Mat::PAR::GrowthLawAC::GrowthLawAC(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      Sc1_(matdata.parameters.Get<int>("SCALAR1")),
-      alpha_(matdata.parameters.Get<double>("ALPHA")),
-      Sc2_(matdata.parameters.Get<int>("SCALAR2")),
-      beta_(matdata.parameters.Get<double>("BETA"))
+      Sc1_(matdata.parameters.get<int>("SCALAR1")),
+      alpha_(matdata.parameters.get<double>("ALPHA")),
+      Sc2_(matdata.parameters.get<int>("SCALAR2")),
+      beta_(matdata.parameters.get<double>("BETA"))
 {
   if (Sc1_ < 1) FOUR_C_THROW("At least on scalar field must induce growth");
   if (alpha_ < 0) FOUR_C_THROW("The influence of scalar field SCALAR1 to growth can't be negativ");
@@ -1081,7 +1081,7 @@ Mat::GrowthLawAC::GrowthLawAC(Mat::PAR::GrowthLawAC* params) : GrowthLawStatic(p
 
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthLawAC::Evaluate(double* theta, const double& thetaold,
+void Mat::GrowthLawAC::evaluate(double* theta, const double& thetaold,
     Core::LinAlg::Matrix<6, 1>* dthetadC, Mat::Growth& matgrowth,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<6, 1>* glstrain,
     const Core::LinAlg::Matrix<3, 1>& refdir, const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
@@ -1194,7 +1194,7 @@ Mat::GrowthLawACRadial::GrowthLawACRadial(Mat::PAR::GrowthLawAC* params) : Growt
 
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthLawACRadial::Evaluate(double* theta, const double& thetaold,
+void Mat::GrowthLawACRadial::evaluate(double* theta, const double& thetaold,
     Core::LinAlg::Matrix<6, 1>* dthetadC, Mat::Growth& matgrowth,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<6, 1>* glstrain,
     const Core::LinAlg::Matrix<3, 1>& refdir, const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
@@ -1318,7 +1318,7 @@ Mat::GrowthLawACRadialRefConc::GrowthLawACRadialRefConc(Mat::PAR::GrowthLawAC* p
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthLawACRadialRefConc::Evaluate(double* theta, const double& thetaold,
+void Mat::GrowthLawACRadialRefConc::evaluate(double* theta, const double& thetaold,
     Core::LinAlg::Matrix<6, 1>* dthetadC, Mat::Growth& matgrowth,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<6, 1>* glstrain,
     const Core::LinAlg::Matrix<3, 1>& refdir, const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
@@ -1411,7 +1411,7 @@ Mat::PAR::GrowthLawConst::GrowthLawConst(const Core::Mat::PAR::Parameter::Data& 
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
-  matparams_.at(thetarate)->PutScalar(matdata.parameters.Get<double>("THETARATE"));
+  matparams_.at(thetarate)->PutScalar(matdata.parameters.get<double>("THETARATE"));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1421,7 +1421,7 @@ Mat::GrowthLawConst::GrowthLawConst() : GrowthLawStatic(nullptr) {}
 Mat::GrowthLawConst::GrowthLawConst(Mat::PAR::GrowthLawConst* params) : GrowthLawStatic(params) {}
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthLawConst::Evaluate(double* theta, const double& thetaold,
+void Mat::GrowthLawConst::evaluate(double* theta, const double& thetaold,
     Core::LinAlg::Matrix<6, 1>* dthetadC, Mat::Growth& matgrowth,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<6, 1>* glstrain,
     const Core::LinAlg::Matrix<3, 1>& refdir, const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,

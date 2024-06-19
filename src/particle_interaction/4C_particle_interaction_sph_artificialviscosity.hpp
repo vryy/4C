@@ -32,10 +32,10 @@ namespace ParticleInteraction
     explicit SPHArtificialViscosity();
 
     //! init artificial viscosity handler
-    void Init();
+    void init();
 
     //! setup artificial viscosity handler
-    void Setup();
+    void setup();
 
     //! evaluate artificial viscosity
     void ArtificialViscosity(const double* vel_i, const double* vel_j, const double* mass_i,

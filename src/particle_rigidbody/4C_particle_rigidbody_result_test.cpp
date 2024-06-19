@@ -25,12 +25,12 @@ ParticleRigidBody::RigidBodyResultTest::RigidBodyResultTest() : Core::UTILS::Res
   // empty constructor
 }
 
-void ParticleRigidBody::RigidBodyResultTest::Init()
+void ParticleRigidBody::RigidBodyResultTest::init()
 {
   // nothing to do
 }
 
-void ParticleRigidBody::RigidBodyResultTest::Setup(
+void ParticleRigidBody::RigidBodyResultTest::setup(
     const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface> particlerigidbodyinterface)
 {
   // set interface to rigid body handler

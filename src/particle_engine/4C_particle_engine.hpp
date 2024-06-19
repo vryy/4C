@@ -91,7 +91,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      */
-    void Init();
+    void init();
 
     /*!
      * \brief setup particle engine
@@ -100,7 +100,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestatestotypes particle types and corresponding particle states
      */
-    void Setup(const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes);
+    void setup(const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes);
 
     /*!
      * \brief write restart of particle engine

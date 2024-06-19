@@ -54,19 +54,19 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& timepa
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
   return;
 }
 
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntOneStepTheta::Init(const Teuchos::ParameterList& timeparams,
+void STR::TimIntOneStepTheta::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
-  // call Init() in base class
-  STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
+  // call init() in base class
+  STR::TimIntImpl::init(timeparams, sdynparams, xparams, actdis, solver);
 
   // general variable verifications:
   // info to user about current time integration scheme and its parametrization
@@ -85,10 +85,10 @@ void STR::TimIntOneStepTheta::Init(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Setup this class                                                                 rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntOneStepTheta::Setup()
+void STR::TimIntOneStepTheta::setup()
 {
-  // call Setup() in base class
-  STR::TimIntImpl::Setup();
+  // call setup() in base class
+  STR::TimIntImpl::setup();
 
   if (!HaveNonlinearMass())
   {
@@ -663,7 +663,7 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
 
   if (!HaveNonlinearMass())
   {
-    discret_->Evaluate(
+    discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
   else
@@ -685,7 +685,7 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
     update_acc = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
 
-    discret_->Evaluate(p, Teuchos::null, Teuchos::null, update_disp, update_vel, update_acc);
+    discret_->evaluate(p, Teuchos::null, Teuchos::null, update_disp, update_vel, update_acc);
 
     disn_->Update(1.0, *update_disp, 1.0);
     (*dis_)(0)->Update(1.0, *update_disp, 1.0);

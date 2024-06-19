@@ -69,10 +69,10 @@ namespace STR
         Nox();
 
         //! derived from the base class
-        void Setup() override;
+        void setup() override;
 
         //! derived from the base class
-        void Reset() override;
+        void reset() override;
 
         //! derived from the base class
         Inpar::STR::ConvergenceStatus Solve() override;
@@ -111,7 +111,7 @@ namespace STR
         Teuchos::RCP<::NOX::Solver::Generic> nlnsolver_;
 
        private:
-        //! @name Variables which stay constant after Init() and Setup() call
+        //! @name Variables which stay constant after init() and setup() call
         //!@{
 
         //!@}

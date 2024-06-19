@@ -44,7 +44,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::PoroMultiPhaseScaTr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::init()
 {
   // ARTERY COUPLING CONDITIONS
   std::vector<std::vector<int>> condIDs;
@@ -60,7 +60,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
 
   for (auto& iter : artCoupcond)
   {
-    int myID = iter->parameters().Get<int>("coupling id");
+    int myID = iter->parameters().get<int>("coupling id");
     condIDs[0].push_back(myID);
   }
 
@@ -70,7 +70,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
 
   for (auto& iter : contfieldCoupcond)
   {
-    int myID = iter->parameters().Get<int>("coupling id");
+    int myID = iter->parameters().get<int>("coupling id");
     condIDs[1].push_back(myID);
   }
 
@@ -102,7 +102,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
   fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
   /// dof row map of coupled problem splitted in (field) blocks
   globalex_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
-  globalex_->Setup(*fullmap_, maps);
+  globalex_->setup(*fullmap_, maps);
 
   // check global map extractor
   globalex_->check_for_valid_map_extractor();
@@ -115,7 +115,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::Setup()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup()
 {
   // do nothing
 }
@@ -155,7 +155,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_map_extr
   fullmap_vector.push_back(fullmap_uncoupled);
   fullmap_vector.push_back(fullmap_coupled);
 
-  mapextractor->Setup(*dis->dof_row_map(), fullmap_vector);
+  mapextractor->setup(*dis->dof_row_map(), fullmap_vector);
 }
 
 /*----------------------------------------------------------------------*

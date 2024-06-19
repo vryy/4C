@@ -30,7 +30,7 @@ PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::TemperatureBoundaryCondi
   // empty constructor
 }
 
-void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::Init()
+void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::init()
 {
   // get control parameters for conditions
   const Teuchos::ParameterList& params_conditions =
@@ -45,7 +45,7 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::Init()
     typessubjectedtotemperaturebc_.insert(typeIt.first);
 }
 
-void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::Setup(
+void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine
@@ -128,7 +128,7 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::
     for (int i = 0; i < particlestored; ++i)
     {
       // evaluate function
-      temp[i] = function.Evaluate(&(refpos[statedim * i]), evaltime, 0);
+      temp[i] = function.evaluate(&(refpos[statedim * i]), evaltime, 0);
     }
   }
 }

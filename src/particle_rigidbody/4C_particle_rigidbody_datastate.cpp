@@ -15,12 +15,12 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-void ParticleRigidBody::RigidBodyDataState::Init()
+void ParticleRigidBody::RigidBodyDataState::init()
 {
   // nothing to do
 }
 
-void ParticleRigidBody::RigidBodyDataState::Setup()
+void ParticleRigidBody::RigidBodyDataState::setup()
 {
   // nothing to do
 }

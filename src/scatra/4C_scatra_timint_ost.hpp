@@ -37,9 +37,9 @@ namespace ScaTra
     /// copy constructor
     TimIntOneStepTheta(const TimIntOneStepTheta& old) = delete;
 
-    void Init() override;
+    void init() override;
 
-    void Setup() override;
+    void setup() override;
 
     void PreSolve() override{};
 
@@ -55,7 +55,7 @@ namespace ScaTra
 
     void compute_time_deriv_pot0(const bool init) override{};
 
-    void Update() override;
+    void update() override;
 
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;

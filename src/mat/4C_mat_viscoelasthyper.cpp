@@ -54,7 +54,7 @@ Mat::ViscoElastHyperType Mat::ViscoElastHyperType::instance_;
 Core::Communication::ParObject* Mat::ViscoElastHyperType::Create(const std::vector<char>& data)
 {
   Mat::ViscoElastHyper* elhy = new Mat::ViscoElastHyper();
-  elhy->Unpack(data);
+  elhy->unpack(data);
 
   return elhy;
 }
@@ -108,7 +108,7 @@ Mat::ViscoElastHyper::ViscoElastHyper(Mat::PAR::ViscoElastHyper* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ViscoElastHyper::Pack(Core::Communication::PackBuffer& data) const
+void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -119,7 +119,7 @@ void Mat::ViscoElastHyper::Pack(Core::Communication::PackBuffer& data) const
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   add_to_pack(data, matid);
-  summandProperties_.Pack(data);
+  summandProperties_.pack(data);
   add_to_pack(data, isovisco_);
   add_to_pack(data, viscogenmax_);
   add_to_pack(data, viscogeneralizedgenmax_);
@@ -184,13 +184,13 @@ void Mat::ViscoElastHyper::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ViscoElastHyper::Unpack(const std::vector<char>& data)
+void Mat::ViscoElastHyper::unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   params_ = nullptr;
   potsum_.clear();
 
-  summandProperties_.Clear();
+  summandProperties_.clear();
   isovisco_ = false;
   viscogenmax_ = false;
   viscogeneralizedgenmax_ = false;
@@ -218,7 +218,7 @@ void Mat::ViscoElastHyper::Unpack(const std::vector<char>& data)
     }
   }
 
-  summandProperties_.Unpack(position, data);
+  summandProperties_.unpack(position, data);
   isovisco_ = (bool)extract_int(position, data);
   viscogenmax_ = (bool)extract_int(position, data);
   viscogeneralizedgenmax_ = (bool)extract_int(position, data);
@@ -325,14 +325,14 @@ void Mat::ViscoElastHyper::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ViscoElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ViscoElastHyper::setup(int numgp, Input::LineDefinition* linedef)
 {
   // read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
   anisotropy_.read_anisotropy_from_element(linedef);
 
   // Setup summands
-  for (auto& p : potsum_) p->Setup(numgp, linedef);
+  for (auto& p : potsum_) p->setup(numgp, linedef);
 
   // find out which formulations are used
   isovisco_ = false;
@@ -340,7 +340,7 @@ void Mat::ViscoElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
   viscogeneralizedgenmax_ = false;
   viscofract_ = false;
 
-  summandProperties_.Clear();
+  summandProperties_.clear();
   ElastHyperProperties(potsum_, summandProperties_);
 
 
@@ -402,9 +402,9 @@ void Mat::ViscoElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoElastHyper::Update()
+void Mat::ViscoElastHyper::update()
 {
-  Mat::ElastHyper::Update();
+  Mat::ElastHyper::update();
 
   // Update history values 09/13
   histscglast_ = histscgcurr_;
@@ -480,7 +480,7 @@ void Mat::ViscoElastHyper::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ViscoElastHyper::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -544,8 +544,8 @@ void Mat::ViscoElastHyper::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
-  stress->Clear();
-  cmat->Clear();
+  stress->clear();
+  cmat->clear();
 
   // add isotropic part
   ElastHyperAddIsotropicStressCmat(*stress, *cmat, C_strain, iC_strain, prinv, dPI, ddPII);
@@ -807,7 +807,7 @@ void Mat::ViscoElastHyper::evaluate_iso_visco_modified(
   modcmat2.MultiplyNN(Projection, modcmat);
   cmatisomodisovisco.MultiplyNT(1.0, modcmat2, Projection, 1.0);
   // contribution: 2/3*Tr(J^(-2/3)modstress) (Cinv \odot Cinv - 1/3 Cinv \otimes Cinv)
-  modcmat.Clear();
+  modcmat.clear();
   modcmat.MultiplyNT(-1.0 / 3.0, icg, icg);
   add_holzapfel_product(modcmat, icg, 1.0);
   Core::LinAlg::Matrix<1, 1> tracemat;
@@ -976,14 +976,14 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
   if (S_n.size() != (unsigned int)(abs(numbranch)))
   {
     std::vector<Core::LinAlg::Matrix<6, 1>> S_n(numbranch);
-    for (int branch = 0; branch < numbranch; branch++) S_n.at(branch).Clear();
+    for (int branch = 0; branch < numbranch; branch++) S_n.at(branch).clear();
     histbranchelaststresslast_->at(gp) = S_n;
   }
 
   if (Q_n.size() != (unsigned int)(abs(numbranch)))
   {
     std::vector<Core::LinAlg::Matrix<6, 1>> Q_n(numbranch);
-    for (int branch = 0; branch < numbranch; branch++) Q_n.at(branch).Clear();
+    for (int branch = 0; branch < numbranch; branch++) Q_n.at(branch).clear();
     histbranchstresslast_->at(gp) = Q_n;
   }
 
@@ -1001,7 +1001,7 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
     // get parameter of each visco branch
     branchpotsum = branchespotsum[i];
 
-    branchProperties.Clear();
+    branchProperties.clear();
     ElastHyperProperties(branchpotsum, branchProperties);
 
     if (isovisco_)
@@ -1027,8 +1027,8 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
 
     // blank resulting quantities
     // ... even if it is an implicit law that cmat is zero upon input
-    S.at(i).Clear();
-    cmatqbranch.Clear();
+    S.at(i).clear();
+    cmatqbranch.clear();
 
     // build stress response and elasticity tensor
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressiso(true);
@@ -1046,7 +1046,7 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
     }
 
     // make sure Qbranch in this branch is empty
-    Qbranch.at(i).Clear();
+    Qbranch.at(i).clear();
     double deltascalar = 1.0;
     if (solve == "OST")
     {

@@ -28,7 +28,7 @@ FLD::TimIntPoro::TimIntPoro(const Teuchos::RCP<Core::FE::Discretization>& actdis
 {
 }
 
-void FLD::TimIntPoro::Init()
+void FLD::TimIntPoro::init()
 {
   Teuchos::ParameterList* stabparams;
   stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
@@ -96,7 +96,7 @@ void FLD::TimIntPoro::set_element_custom_parameter()
   eleparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -122,7 +122,7 @@ void FLD::TimIntPoro::set_initial_porosity_field(
         int numdofs = nodedofset.size();
         double initialval = Global::Problem::Instance()
                                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                .Evaluate(lnode->X().data(), time_, 0);
+                                .evaluate(lnode->X().data(), time_, 0);
 
         // check whether there are invalid values of porosity
         if (initialval < 1e-15) FOUR_C_THROW("zero or negative initial porosity");
@@ -167,9 +167,9 @@ void FLD::TimIntPoro::update_iter_incrementally(
   }
 }
 
-void FLD::TimIntPoro::Output()
+void FLD::TimIntPoro::output()
 {
-  FluidImplicitTimeInt::Output();
+  FluidImplicitTimeInt::output();
   // output of solution
   if (step_ % upres_ == 0)
   {

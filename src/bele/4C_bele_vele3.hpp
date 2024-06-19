@@ -176,17 +176,17 @@ namespace Discret
       /*!
       \brief Pack this class so it can be communicated
 
-      \ref Pack and \ref Unpack are used to communicate this element
+      \ref pack and \ref unpack are used to communicate this element
 
       */
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
 
-      \ref Pack and \ref Unpack are used to communicate this element
+      \ref pack and \ref unpack are used to communicate this element
       */
-      void Unpack(const std::vector<char>& data) override;
+      void unpack(const std::vector<char>& data) override;
 
 
 
@@ -228,7 +228,7 @@ namespace Discret
       //@}
 
       //! @name Evaluation
-      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+      int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -365,8 +365,8 @@ namespace Discret
       {
         return Vele3SurfaceType::Instance().UniqueParObjectId();
       }
-      void Pack(Core::Communication::PackBuffer& data) const override;
-      void Unpack(const std::vector<char>& data) override;
+      void pack(Core::Communication::PackBuffer& data) const override;
+      void unpack(const std::vector<char>& data) override;
 
 
       //@}
@@ -386,7 +386,7 @@ namespace Discret
       //@}
 
       //! @name Evaluation
-      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+      int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
@@ -510,8 +510,8 @@ namespace Discret
       {
         return Vele3LineType::Instance().UniqueParObjectId();
       }
-      void Pack(Core::Communication::PackBuffer& data) const override;
-      void Unpack(const std::vector<char>& data) override;
+      void pack(Core::Communication::PackBuffer& data) const override;
+      void unpack(const std::vector<char>& data) override;
 
 
       //@}
@@ -540,7 +540,7 @@ namespace Discret
 
 
       //! @name Evaluation
-      int Evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+      int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,

@@ -36,7 +36,7 @@ PoroElast::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
   const int ndim = Global::Problem::Instance()->NDim();
   std::vector<int> coupleddof(ndim, 1);  // 1,1,1 should be in coupleddof
   // coupleddof[ndim]=0; // not necessary because structural discretization is used
-  mortar_adapter_->Setup(structure_field()->discretization(), structure_field()->discretization(),
+  mortar_adapter_->setup(structure_field()->discretization(), structure_field()->discretization(),
       coupleddof, "Mortar");
 
   fvelactiverowdofmap_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor);
@@ -52,11 +52,11 @@ PoroElast::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
 
 void PoroElast::MonolithicMeshtying::SetupSystem() { Monolithic::SetupSystem(); }
 
-void PoroElast::MonolithicMeshtying::Evaluate(
+void PoroElast::MonolithicMeshtying::evaluate(
     Teuchos::RCP<const Epetra_Vector> iterinc, bool firstiter)
 {
   // evaluate monolithic system for newton iterations
-  Monolithic::Evaluate(iterinc, firstiter);
+  Monolithic::evaluate(iterinc, firstiter);
 
   // get state vectors to store in contact data container
   Teuchos::RCP<Epetra_Vector> fvel = fluid_structure_coupling().SlaveToMaster(
@@ -113,9 +113,9 @@ void PoroElast::MonolithicMeshtying::Evaluate(
   if ((iter_ == 1) and (Step() == 1)) SetupExtractor();
 }
 
-void PoroElast::MonolithicMeshtying::Update()
+void PoroElast::MonolithicMeshtying::update()
 {
-  Monolithic::Update();
+  Monolithic::update();
   mortar_adapter_->UpdatePoroMt();
 }
 
@@ -219,7 +219,7 @@ void PoroElast::MonolithicMeshtying::SetupExtractor()
   fluidveldofmapvec.emplace_back(factivenmap);
   fluidveldofmapvec.emplace_back(factivenmapcomplement);
 
-  fvelactiverowdofmap_->Setup(*fluid_field()->VelocityRowMap(), fluidveldofmapvec);
+  fvelactiverowdofmap_->setup(*fluid_field()->VelocityRowMap(), fluidveldofmapvec);
 }
 
 bool PoroElast::MonolithicMeshtying::Converged()

@@ -115,7 +115,7 @@ namespace CONTACT
       virtual Inpar::CONTACT::PenaltyUpdate Type() const = 0;
 
       /// initialize the penalty update object
-      void Init(Strategy* const strategy, DataContainer* const data);
+      void init(Strategy* const strategy, DataContainer* const data);
 
       /// update the contact regularization parameter (increase)
       void Update(const CONTACT::ParamsInterface& cparams);
@@ -166,7 +166,7 @@ namespace CONTACT
       /// reset class members
       void reset();
 
-      /// Throw if Init() has not been called
+      /// Throw if init() has not been called
       void throw_if_not_initialized() const;
 
       /// access the surrounding strategy
@@ -227,7 +227,7 @@ namespace CONTACT
               pu_(state.pu_){/* empty */};
 
         /// set state
-        void Set(const Epetra_Vector& xold, const Epetra_Vector& dir,
+        void set(const Epetra_Vector& xold, const Epetra_Vector& dir,
             const CONTACT::Aug::DataContainer& data);
 
         /// get direction
@@ -246,7 +246,7 @@ namespace CONTACT
         const Epetra_Vector& get_inactive_tributary_area() const;
 
         /// reset the state variables
-        void Reset();
+        void reset();
 
         /// print the state
         void Print(std::ostream& os) const;
@@ -277,7 +277,7 @@ namespace CONTACT
       };
 
      private:
-      /// has Init() been called?
+      /// has init() been called?
       bool isinit_ = false;
 
       /// call-back to the surrounding strategy

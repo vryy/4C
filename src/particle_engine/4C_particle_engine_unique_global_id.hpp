@@ -69,14 +69,14 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 11/2019
      */
-    void Init();
+    void init();
 
     /*!
      * \brief setup unique global identifier handler
      *
      * \author Sebastian Fuchs \date 11/2019
      */
-    void Setup();
+    void setup();
 
     /*!
      * \brief write restart of unique global identifier handler

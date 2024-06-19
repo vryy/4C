@@ -58,12 +58,12 @@ void Adapter::FBIFluidMB::prepare_time_step() { fluid_field()->prepare_time_step
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FBIFluidMB::Update() { fluid_field()->Update(); }
+void Adapter::FBIFluidMB::update() { fluid_field()->update(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FBIFluidMB::Output() { fluid_field()->StatisticsAndOutput(); }
+void Adapter::FBIFluidMB::output() { fluid_field()->StatisticsAndOutput(); }
 
 
 /*----------------------------------------------------------------------*/

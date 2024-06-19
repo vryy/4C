@@ -52,8 +52,8 @@ namespace
 MIXTURE::PAR::FunctionMixtureRule::FunctionMixtureRule(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureRule(matdata),
-      initial_reference_density_(matdata.parameters.Get<double>("DENS")),
-      mass_fractions_funct_ids_(matdata.parameters.Get<std::vector<int>>("MASSFRACFUNCT")){};
+      initial_reference_density_(matdata.parameters.get<double>("DENS")),
+      mass_fractions_funct_ids_(matdata.parameters.get<std::vector<int>>("MASSFRACFUNCT")){};
 
 std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::FunctionMixtureRule::create_rule()
 {
@@ -106,14 +106,14 @@ void MIXTURE::FunctionMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
 
     // evaluate the mass fraction function at the gauss point reference coordinates and current time
     const double massfrac =
-        mass_fractions_functions_[i]->Evaluate(reference_coordinates.A(), time, 0);
+        mass_fractions_functions_[i]->evaluate(reference_coordinates.A(), time, 0);
     sum += massfrac;
     double constituent_density = params_->initial_reference_density_ * massfrac;
 
     // add stress contribution to global stress
     MixtureConstituent& constituent = *constituents()[i];
-    cstress.Clear();
-    ccmat.Clear();
+    cstress.clear();
+    ccmat.clear();
     constituent.evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
 
     S_stress.Update(constituent_density, cstress, 1.0);

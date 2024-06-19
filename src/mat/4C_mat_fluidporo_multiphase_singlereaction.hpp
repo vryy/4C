@@ -52,7 +52,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// initialize
-      void Initialize();
+      void initialize();
 
       /// evaluate reaction for by-function definition
       void evaluate_function(std::vector<double>& reacval,
@@ -125,7 +125,7 @@ namespace Mat
           const std::vector<double>& volfracs, const std::vector<double>& volfracpressures,
           const std::vector<double>& scalar);
 
-      /// flag if Initialize() has been called
+      /// flag if initialize() has been called
       bool isinit_;
 
       /// string name used for scalars in function parser
@@ -209,7 +209,7 @@ namespace Mat
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -223,12 +223,12 @@ namespace Mat
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// initialize
-    void Initialize() override;
+    void initialize() override;
 
     /// Return quick accessible material parameter data
     Core::Mat::PAR::Parameter* Parameter() const override { return params_; }

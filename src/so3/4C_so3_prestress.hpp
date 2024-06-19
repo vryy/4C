@@ -58,18 +58,18 @@ namespace Discret
       /*!
       \brief Pack this class so it can be communicated
 
-      \ref Pack and \ref Unpack are used to communicate this node
+      \ref pack and \ref unpack are used to communicate this node
 
       */
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
 
-      \ref Pack and \ref Unpack are used to communicate this node
+      \ref pack and \ref unpack are used to communicate this node
 
       */
-      void Unpack(const std::vector<char>& data) override;
+      void unpack(const std::vector<char>& data) override;
 
       /// get history of deformation gradient
       inline Core::LinAlg::SerialDenseMatrix& FHistory() const { return *fhist_; }

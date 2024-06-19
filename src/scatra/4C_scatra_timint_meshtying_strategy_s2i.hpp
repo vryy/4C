@@ -225,7 +225,7 @@ namespace ScaTra
     Core::FE::Discretization& mortar_discretization(const int& condid) const;
 
     //! output solution for post-processing
-    void Output() const override;
+    void output() const override;
 
     void write_restart() const override;
 
@@ -283,7 +283,7 @@ namespace ScaTra
     const Core::LinAlg::Solver& Solver() const override;
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
-    void Update() const override;
+    void update() const override;
 
     //! write integrated interface flux on slave side of s2i kintetics condition to csv file
     void OutputInterfaceFlux() const;
@@ -730,7 +730,7 @@ namespace ScaTra
 
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types
-    virtual void Evaluate(const Core::FE::Discretization& idiscret,  //!< interface discretization
+    virtual void evaluate(const Core::FE::Discretization& idiscret,  //!< interface discretization
         Mortar::IntCell& cell,                                       //!< mortar integration cell
         Mortar::Element& slaveelement,                               //!< slave-side mortar element
         Mortar::Element& masterelement,                              //!< master-side mortar element
@@ -818,7 +818,7 @@ namespace ScaTra
 
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types
-    void Evaluate(const Core::FE::Discretization& idiscret,  //!< interface discretization
+    void evaluate(const Core::FE::Discretization& idiscret,  //!< interface discretization
         Mortar::IntCell& cell,                               //!< mortar integration cell
         Mortar::Element& slaveelement,                       //!< slave-side mortar element
         Mortar::Element& masterelement,                      //!< master-side mortar element

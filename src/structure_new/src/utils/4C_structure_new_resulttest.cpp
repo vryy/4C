@@ -153,7 +153,7 @@ STR::ResultTest::ResultTest()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ResultTest::Init(
+void STR::ResultTest::init(
     const STR::TimeInt::BaseDataGlobalState& gstate, const STR::MODELEVALUATOR::Data& data)
 {
   issetup_ = false;
@@ -177,7 +177,7 @@ void STR::ResultTest::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ResultTest::Setup()
+void STR::ResultTest::setup()
 {
   check_init();
   // currently unused
@@ -643,7 +643,7 @@ std::optional<int> STR::ResultTest::get_last_lin_iteration_number(
   {
     const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
 
-    const int restart = Global::Problem::Instance()->Restart();
+    const int restart = Global::Problem::Instance()->restart();
     if (stepn <= restart) return -1;
 
     special_status = Status::evaluated;
@@ -664,7 +664,7 @@ std::optional<int> STR::ResultTest::get_nln_iteration_number(
   {
     const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
 
-    const int restart = Global::Problem::Instance()->Restart();
+    const int restart = Global::Problem::Instance()->restart();
     if (stepn <= restart) return -1;
 
     special_status = Status::evaluated;

@@ -50,21 +50,21 @@ BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::BeamToSphe
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup()
+void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::setup()
 {
   check_init();
 
   // call setup of base class first
-  BeamPotentialPair::Setup();
+  BeamPotentialPair::setup();
 
 
-  ele1pos_.Clear();
-  ele2pos_.Clear();
+  ele1pos_.clear();
+  ele2pos_.clear();
 
-  fpot1_.Clear();
-  fpot2_.Clear();
-  stiffpot1_.Clear();
-  stiffpot2_.Clear();
+  fpot1_.clear();
+  fpot2_.clear();
+  stiffpot1_.clear();
+  stiffpot2_.clear();
 
 
   // cast first element to Beam3Base
@@ -99,7 +99,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evaluate(
+bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22,
@@ -109,10 +109,10 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   if (k == 0.0) return false;
 
   // reset fpot and stiffpot class variables
-  fpot1_.Clear();
-  fpot2_.Clear();
-  stiffpot1_.Clear();
-  stiffpot2_.Clear();
+  fpot1_.clear();
+  fpot2_.clear();
+  stiffpot1_.clear();
+  stiffpot2_.clear();
 
   unsigned int dim1 = 3 * numnodes * numnodalvalues;
   unsigned int dim2 = 3;
@@ -243,27 +243,27 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   get_shape_functions(N1_i, N1_i_xi, gausspoints);
 
   // evaluate charge density from DLINE charge condition specified in input file
-  double q1 = chargeconds_[0]->parameters().Get<double>("val");
+  double q1 = chargeconds_[0]->parameters().get<double>("val");
 
   // read charge of rigid sphere; note: this is NOT a charge density but the total charge of the
   // sphere!!!
-  double q2 = chargeconds_[1]->parameters().Get<double>("val");
+  double q2 = chargeconds_[1]->parameters().get<double>("val");
 
   // evaluate function in time if specified in line charge conditions
   // TODO allow for functions in space, i.e. varying charge along beam centerline
-  int function_number = chargeconds_[0]->parameters().Get<int>("funct");
+  int function_number = chargeconds_[0]->parameters().get<int>("funct");
 
   if (function_number != -1)
     q1 *= Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-              .Evaluate(time_);
+              .evaluate(time_);
 
-  function_number = chargeconds_[1]->parameters().Get<int>("funct");
+  function_number = chargeconds_[1]->parameters().get<int>("funct");
 
   if (function_number != -1)
     q2 *= Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-              .Evaluate(time_);
+              .evaluate(time_);
 
 
   // auxiliary variable
@@ -555,7 +555,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::compu
     const Core::LinAlg::Matrix<1, numnodes * numnodalvalues>& N_i,
     const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos)
 {
-  r.Clear();
+  r.clear();
 
   // compute output variable
   for (unsigned int i = 0; i < 3; i++)

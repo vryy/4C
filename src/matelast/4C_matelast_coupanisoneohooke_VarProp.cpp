@@ -21,12 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 Mat::Elastic::PAR::CoupAnisoNeoHookeVarProp::CoupAnisoNeoHookeVarProp(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : ParameterAniso(matdata),
-      c_(matdata.parameters.Get<double>("C")),
-      sourceactiv_(matdata.parameters.Get<int>("SOURCE_ACTIVATION")),
-      gamma_(matdata.parameters.Get<double>("GAMMA")),
-      theta_(matdata.parameters.Get<double>("THETA")),
-      init_(matdata.parameters.Get<int>("INIT")),
-      adapt_angle_(matdata.parameters.Get<bool>("ADAPT_ANGLE"))
+      c_(matdata.parameters.get<double>("C")),
+      sourceactiv_(matdata.parameters.get<int>("SOURCE_ACTIVATION")),
+      gamma_(matdata.parameters.get<double>("GAMMA")),
+      theta_(matdata.parameters.get<double>("THETA")),
+      init_(matdata.parameters.get<int>("INIT")),
+      adapt_angle_(matdata.parameters.get<bool>("ADAPT_ANGLE"))
 {
 }
 
@@ -50,7 +50,7 @@ void Mat::Elastic::CoupAnisoNeoHookeVarProp::UnpackSummand(
   extract_from_pack(position, data, structural_tensor_);
 }
 
-void Mat::Elastic::CoupAnisoNeoHookeVarProp::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::Elastic::CoupAnisoNeoHookeVarProp::setup(int numgp, Input::LineDefinition* linedef)
 {
   // path if fibers aren't given in .dat file
   if (params_->init_ == 0)
@@ -137,7 +137,7 @@ void Mat::Elastic::CoupAnisoNeoHookeVarProp::add_stress_aniso_principal(
   double stressFact_ =
       Global::Problem::Instance()
           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
-          .Evaluate(element_center_coordinates_ref.A(), time_, 0);
+          .evaluate(element_center_coordinates_ref.A(), time_, 0);
 
 
   // double stressFact_=params.get<double>("scalar");

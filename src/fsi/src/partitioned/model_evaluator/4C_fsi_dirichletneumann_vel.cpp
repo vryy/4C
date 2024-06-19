@@ -46,10 +46,10 @@ FSI::DirichletNeumannVel::DirichletNeumannVel(const Epetra_Comm& comm)
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::DirichletNeumannVel::Setup()
+void FSI::DirichletNeumannVel::setup()
 {
   // call setup of base class
-  FSI::DirichletNeumann::Setup();
+  FSI::DirichletNeumann::setup();
   const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   if (Core::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp)
@@ -127,7 +127,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::struct_op(
   if (fbi.get<int>("STARTSTEP") < Step())
   {
     constraint_manager_->PrepareFluidSolve();
-    constraint_manager_->Evaluate();
+    constraint_manager_->evaluate();
     if (!(Teuchos::getIntegralValue<Inpar::FBI::BeamToFluidCoupling>(fbi, "COUPLING") ==
             Inpar::FBI::BeamToFluidCoupling::solid))
       Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(MBFluidField(), true)->ResetExternalForces();
@@ -186,7 +186,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::struct_to_fluid(
 void FSI::DirichletNeumannVel::output()
 {
   FSI::DirichletNeumann::output();
-  constraint_manager_->Output(Time(), Step());
+  constraint_manager_->output(Time(), Step());
   visualization_output_writer_->write_output_runtime(constraint_manager_, Step(), Time());
   structure_field()->discretization()->Writer()->clear_map_cache();
   MBFluidField()->discretization()->Writer()->clear_map_cache();
@@ -198,18 +198,18 @@ void FSI::DirichletNeumannVel::output()
 void FSI::DirichletNeumannVel::Timeloop(
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
 {
-  constraint_manager_->Setup(structure_field(), MBFluidField());
+  constraint_manager_->setup(structure_field(), MBFluidField());
   if (get_kinematic_coupling()) constraint_manager_->PrepareFluidSolve();
   visualization_output_writer_ =
       Teuchos::rcp(new BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter());
-  visualization_output_writer_->Init();
-  visualization_output_writer_->Setup(
+  visualization_output_writer_->init();
+  visualization_output_writer_->setup(
       Core::IO::VisualizationParametersFactory(
           Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
           *Global::Problem::Instance()->OutputControlFile(), Time()),
       Teuchos::rcp_dynamic_cast<Adapter::FBIStructureWrapper>(structure_field(), true)->GetIOData(),
       constraint_manager_->GetBridge()->GetParams()->get_visualization_ouput_params_ptr());
-  constraint_manager_->Evaluate();
+  constraint_manager_->evaluate();
   if (get_kinematic_coupling()) struct_to_fluid(Teuchos::null);
 
   FSI::Partitioned::Timeloop(interface);

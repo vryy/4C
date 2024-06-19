@@ -47,7 +47,7 @@ Discret::ELEMENTS::SoBase::SoBase(const Discret::ELEMENTS::SoBase& old)
  |  Pack data                                                  (public) |
  |                                                           vuong 03/15|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoBase::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoBase::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -55,7 +55,7 @@ void Discret::ELEMENTS::SoBase::Pack(Core::Communication::PackBuffer& data) cons
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
   // kintype_
   add_to_pack(data, kintype_);
 
@@ -68,7 +68,7 @@ void Discret::ELEMENTS::SoBase::Pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                           vuong 03/15|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoBase::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoBase::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -77,7 +77,7 @@ void Discret::ELEMENTS::SoBase::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
   // kintype_
   kintype_ = static_cast<Inpar::STR::KinemType>(extract_int(position, data));
 

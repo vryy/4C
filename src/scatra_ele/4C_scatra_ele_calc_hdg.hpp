@@ -69,7 +69,7 @@ namespace Discret
       void InitializeShapes(const Core::Elements::Element* ele, const std::string& disname);
 
       //! Evaluate the element (Generic virtual interface function. Called via base pointer.)
-      int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      int evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,

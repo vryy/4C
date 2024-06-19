@@ -39,13 +39,13 @@ ScaTra::TimIntCardiacMonodomainOST::TimIntCardiacMonodomainOST(
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainOST::Setup()
+void ScaTra::TimIntCardiacMonodomainOST::setup()
 {
-  // call Setup()-functions of base classes
+  // call setup()-functions of base classes
   // note: this order is important
-  TimIntOneStepTheta::Setup();
+  TimIntOneStepTheta::setup();
 
-  TimIntCardiacMonodomain::Setup();
+  TimIntCardiacMonodomain::setup();
 
   return;
 }
@@ -54,10 +54,10 @@ void ScaTra::TimIntCardiacMonodomainOST::Setup()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainOST::Update()
+void ScaTra::TimIntCardiacMonodomainOST::update()
 {
   // Standard Update
-  TimIntOneStepTheta::Update();
+  TimIntOneStepTheta::update();
 
   // time update of myocard material
   TimIntCardiacMonodomain::element_material_time_update();
@@ -136,13 +136,13 @@ ScaTra::TimIntCardiacMonodomainBDF2::TimIntCardiacMonodomainBDF2(
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainBDF2::Setup()
+void ScaTra::TimIntCardiacMonodomainBDF2::setup()
 {
-  // call Setup()-functions of base classes
+  // call setup()-functions of base classes
   // note: this order is important
-  TimIntBDF2::Setup();
+  TimIntBDF2::setup();
 
-  TimIntCardiacMonodomain::Setup();
+  TimIntCardiacMonodomain::setup();
 
   return;
 }
@@ -151,10 +151,10 @@ void ScaTra::TimIntCardiacMonodomainBDF2::Setup()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainBDF2::Update()
+void ScaTra::TimIntCardiacMonodomainBDF2::update()
 {
   // Standard Update
-  TimIntBDF2::Update();
+  TimIntBDF2::update();
 
   // time update of myocard material
   TimIntCardiacMonodomain::element_material_time_update();
@@ -222,13 +222,13 @@ ScaTra::TimIntCardiacMonodomainGenAlpha::TimIntCardiacMonodomainGenAlpha(
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainGenAlpha::Setup()
+void ScaTra::TimIntCardiacMonodomainGenAlpha::setup()
 {
-  // call Init()-functions of base classes
+  // call init()-functions of base classes
   // note: this order is important
-  TimIntGenAlpha::Setup();
+  TimIntGenAlpha::setup();
 
-  TimIntCardiacMonodomain::Setup();
+  TimIntCardiacMonodomain::setup();
 
   return;
 }
@@ -237,10 +237,10 @@ void ScaTra::TimIntCardiacMonodomainGenAlpha::Setup()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainGenAlpha::Update()
+void ScaTra::TimIntCardiacMonodomainGenAlpha::update()
 {
   // Standard Update
-  TimIntGenAlpha::Update();
+  TimIntGenAlpha::update();
 
   // time update of myocard material
   TimIntCardiacMonodomain::element_material_time_update();

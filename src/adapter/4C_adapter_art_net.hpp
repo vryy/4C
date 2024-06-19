@@ -40,7 +40,7 @@ namespace Adapter
     virtual ~ArtNet() = default;
 
     /// initialization
-    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+    virtual void init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) = 0;
 
     /// initialization
@@ -66,7 +66,7 @@ namespace Adapter
     virtual double Dt() const = 0;
 
     // output
-    virtual void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) = 0;
+    virtual void output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) = 0;
 
     // update of variables from n --> n+1
     virtual void TimeUpdate() = 0;

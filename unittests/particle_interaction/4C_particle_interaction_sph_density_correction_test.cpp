@@ -25,13 +25,13 @@ namespace
       densitycorrection_ = std::make_unique<ParticleInteraction::SPHDensityCorrectionInterior>();
 
       // init density correction handler
-      densitycorrection_->Init();
+      densitycorrection_->init();
 
       // setup density correction handler
-      densitycorrection_->Setup();
+      densitycorrection_->setup();
     }
-    // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called
-    // in Setup() and thus implicitly tested by all following unittests
+    // note: the public functions init() and setup() of class SPHEquationOfStateGenTait are called
+    // in setup() and thus implicitly tested by all following unittests
   };
 
   TEST_F(SPHDensityCorrectionInteriorTest, ComputeDensityBC)
@@ -75,12 +75,12 @@ namespace
       densitycorrection_ = std::make_unique<ParticleInteraction::SPHDensityCorrectionNormalized>();
 
       // init density correction handler
-      densitycorrection_->Init();
+      densitycorrection_->init();
 
       // setup density correction handler
-      densitycorrection_->Setup();
+      densitycorrection_->setup();
     }
-    // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called
+    // note: the public functions init() and setup() of class SPHEquationOfStateGenTait are called
     // in SetUp() and thus implicitly tested by all following unittests
   };
 
@@ -124,12 +124,12 @@ namespace
       densitycorrection_ = std::make_unique<ParticleInteraction::SPHDensityCorrectionRandles>();
 
       // init density correction handler
-      densitycorrection_->Init();
+      densitycorrection_->init();
 
       // setup density correction handler
-      densitycorrection_->Setup();
+      densitycorrection_->setup();
     }
-    // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called
+    // note: the public functions init() and setup() of class SPHEquationOfStateGenTait are called
     // in SetUp() and thus implicitly tested by all following unittests
   };
   TEST_F(SPHDensityCorrectionRandlesTest, ComputeDensityBC)

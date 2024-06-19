@@ -155,7 +155,7 @@ namespace CONTACT
           Mortar::Element& sele, Mortar::Element& mele, Mortar::IntCell& cell, double* auxn) = 0;
       //! @}
 
-      virtual void Evaluate(Mortar::Element& sele, Mortar::Element& mele, bool boundary_ele,
+      virtual void evaluate(Mortar::Element& sele, Mortar::Element& mele, bool boundary_ele,
           const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo) = 0;
 
 
@@ -231,7 +231,7 @@ namespace CONTACT
           Mortar::IntCell& cell, double* auxn) override;
 
       //! element based evaluation
-      void Evaluate(Mortar::Element& sele, Mortar::Element& mele, bool boundary_ele,
+      void evaluate(Mortar::Element& sele, Mortar::Element& mele, bool boundary_ele,
           const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo) override;
 
       //! @}

@@ -89,7 +89,7 @@ namespace CONTACT
       //! @name Evaluation methods
 
       /// evaluate contact constitutive law
-      double Evaluate(double gap, CONTACT::Node* cnode) override;
+      double evaluate(double gap, CONTACT::Node* cnode) override;
       /// evaluate derivative of the contact constitutive law
       double EvaluateDeriv(double gap, CONTACT::Node* cnode) override;
       //@}

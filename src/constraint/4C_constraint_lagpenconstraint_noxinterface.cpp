@@ -42,7 +42,7 @@ LAGPENCONSTRAINT::NoxInterfacePrec::NoxInterfacePrec()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void LAGPENCONSTRAINT::NoxInterface::Init(
+void LAGPENCONSTRAINT::NoxInterface::init(
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr)
 {
   issetup_ = false;
@@ -55,7 +55,7 @@ void LAGPENCONSTRAINT::NoxInterface::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void LAGPENCONSTRAINT::NoxInterfacePrec::Init(
+void LAGPENCONSTRAINT::NoxInterfacePrec::init(
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr)
 {
   issetup_ = false;
@@ -68,7 +68,7 @@ void LAGPENCONSTRAINT::NoxInterfacePrec::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void LAGPENCONSTRAINT::NoxInterface::Setup()
+void LAGPENCONSTRAINT::NoxInterface::setup()
 {
   check_init();
 
@@ -77,7 +77,7 @@ void LAGPENCONSTRAINT::NoxInterface::Setup()
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void LAGPENCONSTRAINT::NoxInterfacePrec::Setup()
+void LAGPENCONSTRAINT::NoxInterfacePrec::setup()
 {
   check_init();
 

@@ -56,13 +56,13 @@ namespace Discret
      public:
       Shell7pEleCalcEas();
 
-      void Setup(Core::Elements::Element& ele, Mat::So3Material& solid_material,
+      void setup(Core::Elements::Element& ele, Mat::So3Material& solid_material,
           Input::LineDefinition* linedef, const STR::ELEMENTS::ShellLockingTypes& locking_types,
           const STR::ELEMENTS::ShellData& shell_data) override;
 
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      void pack(Core::Communication::PackBuffer& data) const override;
 
-      void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data) override;
+      void unpack(std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
       void material_post_setup(
           Core::Elements::Element& ele, Mat::So3Material& solid_material) override;

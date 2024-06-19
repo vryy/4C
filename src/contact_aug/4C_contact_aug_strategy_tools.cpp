@@ -39,7 +39,7 @@ void CONTACT::Aug::Strategy::aug_fd_check_global(CONTACT::ParamsInterface& cpara
     first_attempt = false;
   }
 
-  FD_Debug::Instance(this)->Evaluate(
+  FD_Debug::Instance(this)->evaluate(
       Data().d_lm_nw_gap_lin_matrix_ptr(), Data().WGapPtr(), cparams);
 #endif
 
@@ -66,7 +66,7 @@ void CONTACT::Aug::Strategy::aug_fd_check_global(CONTACT::ParamsInterface& cpara
     first_attempt = false;
   }
 
-  FD_Debug::Instance(this)->Evaluate(Data().DGLmLinMatrixPtr(), dGLm, cparams);
+  FD_Debug::Instance(this)->evaluate(Data().DGLmLinMatrixPtr(), dGLm, cparams);
 #endif
   /*---------------------------------*
    | Regularization term             |
@@ -86,7 +86,7 @@ void CONTACT::Aug::Strategy::aug_fd_check_global(CONTACT::ParamsInterface& cpara
     std::cout << "*------------------------------------------------------------*\n";
     first_attempt = false;
   }
-  FD_Debug::Instance(this)->Evaluate(Data().DGGLinMatrixPtr(), dGG, cparams);
+  FD_Debug::Instance(this)->evaluate(Data().DGGLinMatrixPtr(), dGG, cparams);
 #endif
 
   return;
@@ -121,7 +121,7 @@ void CONTACT::Aug::Strategy::FdDebug::init(Strategy* strat, const double delta)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::FdDebug::Evaluate(
+void CONTACT::Aug::Strategy::FdDebug::evaluate(
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& derivMatrixPtr,
     Teuchos::RCP<Epetra_Vector>& rhsVector, CONTACT::ParamsInterface& cparams)
 {

@@ -681,7 +681,7 @@ void PostVtuWriter::write_geo_beam_ele(const Discret::ELEMENTS::Beam3Base* beame
 
   for (unsigned int i = 0; i < BEAMSVTUVISUALSUBSEGMENTS + 1; ++i)
   {
-    r.Clear();
+    r.clear();
     xi = -1.0 + i * 2.0 / BEAMSVTUVISUALSUBSEGMENTS;
 
     beamele->GetRefPosAtXi(r, xi);
@@ -870,8 +870,8 @@ void PostVtuWriter::write_dof_result_step_beam_ele(const Discret::ELEMENTS::Beam
 
   for (unsigned int i = 0; i < BEAMSVTUVISUALSUBSEGMENTS + 1; ++i)
   {
-    pos.Clear();
-    refpos.Clear();
+    pos.clear();
+    refpos.clear();
     xi = -1.0 + i * 2.0 / BEAMSVTUVISUALSUBSEGMENTS;
 
     // let the beam element do the interpolation

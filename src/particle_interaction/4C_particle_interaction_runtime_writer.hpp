@@ -48,10 +48,10 @@ namespace ParticleInteraction
     explicit InteractionWriter(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! init interaction writer
-    void Init();
+    void init();
 
     //! setup interaction writer
-    void Setup();
+    void setup();
 
     //! read restart of interaction writer
     void read_restart(const std::shared_ptr<Core::IO::DiscretizationReader> reader);

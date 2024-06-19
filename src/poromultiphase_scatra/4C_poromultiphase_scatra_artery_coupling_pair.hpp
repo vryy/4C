@@ -71,7 +71,7 @@ namespace PoroMultiPhaseScaTra
     virtual ~PoroMultiPhaseScatraArteryCouplingPairBase() = default;
 
     //! Init
-    virtual void Init(std::vector<Core::Elements::Element const*> elements,
+    virtual void init(std::vector<Core::Elements::Element const*> elements,
         const Teuchos::ParameterList& couplingparams,
         const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
@@ -94,7 +94,7 @@ namespace PoroMultiPhaseScaTra
      *
      * @returns integral of diameter of the segment
      */
-    virtual double Evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
+    virtual double evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
         Core::LinAlg::SerialDenseVector* forcevec2, Core::LinAlg::SerialDenseMatrix* stiffmat11,
         Core::LinAlg::SerialDenseMatrix* stiffmat12, Core::LinAlg::SerialDenseMatrix* stiffmat21,
         Core::LinAlg::SerialDenseMatrix* stiffmat22, Core::LinAlg::SerialDenseMatrix* D_ele,
@@ -168,7 +168,7 @@ namespace PoroMultiPhaseScaTra
     PoroMultiPhaseScatraArteryCouplingPair();
 
     //! Init
-    void Init(std::vector<Core::Elements::Element const*> elements,
+    void init(std::vector<Core::Elements::Element const*> elements,
         const Teuchos::ParameterList& couplingparams,
         const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
@@ -209,7 +209,7 @@ namespace PoroMultiPhaseScaTra
      *
      * @returns integral of diameter of the segment
      */
-    double Evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
+    double evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
         Core::LinAlg::SerialDenseVector* forcevec2, Core::LinAlg::SerialDenseMatrix* stiffmat11,
         Core::LinAlg::SerialDenseMatrix* stiffmat12, Core::LinAlg::SerialDenseMatrix* stiffmat21,
         Core::LinAlg::SerialDenseMatrix* stiffmat22, Core::LinAlg::SerialDenseMatrix* D_ele,
@@ -499,7 +499,7 @@ namespace PoroMultiPhaseScaTra
     //! name of the condition
     std::string condname_;
 
-    //! indicates if the Init() function has been called
+    //! indicates if the init() function has been called
     bool isinit_;
 
     //! indicates if the pre_evaluate() function has been called

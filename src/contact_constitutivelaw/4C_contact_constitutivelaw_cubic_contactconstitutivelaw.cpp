@@ -23,10 +23,10 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams::CubicConstitutiveLawParams(
     const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container)
     : CONTACT::CONSTITUTIVELAW::Parameter(container),
-      a_(container->Get<double>("A")),
-      b_(container->Get<double>("B")),
-      c_(container->Get<double>("C")),
-      d_(container->Get<double>("D"))
+      a_(container->get<double>("A")),
+      b_(container->get<double>("B")),
+      c_(container->get<double>("C")),
+      d_(container->get<double>("D"))
 {
 }
 /*----------------------------------------------------------------------*/
@@ -46,7 +46,7 @@ CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::CubicConstitutiveLaw(
 /*----------------------------------------------------------------------*
  |  Evaluate Contact Constitutive Law
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::Evaluate(double gap, CONTACT::Node* cnode)
+double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
 {
   if (gap + params_->GetOffset() > 0)
   {

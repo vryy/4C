@@ -64,7 +64,7 @@ namespace FLD
         const Teuchos::RCP<Core::IO::DiscretizationWriter>& output);
 
 
-    void Init() override = 0;
+    void init() override = 0;
 
     Teuchos::RCP<const Epetra_Vector> initial_guess() override
     {
@@ -221,7 +221,7 @@ namespace FLD
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) override
+    void evaluate(Teuchos::RCP<const Epetra_Vector> vel) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -234,12 +234,12 @@ namespace FLD
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
-    void Update() override = 0;
+    void update() override = 0;
     void StatisticsAndOutput() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
-    void Output() override
+    void output() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -689,7 +689,7 @@ namespace FLD
     }
 
     /// reset data for restart of simulation at beginning
-    void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override
+    void reset(bool completeReset = false, int numsteps = 1, int iter = -1) override
     {
       FOUR_C_THROW("reset function not implemented for this fluid adapter");
     };

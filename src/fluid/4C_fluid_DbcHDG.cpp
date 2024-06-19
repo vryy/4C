@@ -50,7 +50,7 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
   if (discret.FaceRowMap() == nullptr) return;
 
   // get onoff toggles
-  const auto& onoff = cond.parameters().Get<std::vector<int>>("onoff");
+  const auto& onoff = cond.parameters().get<std::vector<int>>("onoff");
 
   if (discret.NumMyRowFaces() > 0)
   {
@@ -172,9 +172,9 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
   if (!nodeids) FOUR_C_THROW("Dirichlet condition does not have nodal cloud");
 
   // get curves, functs, vals, and onoff toggles from the condition
-  const auto* funct = &cond.parameters().Get<std::vector<int>>("funct");
-  const auto* val = &cond.parameters().Get<std::vector<double>>("val");
-  const auto* onoff = &cond.parameters().Get<std::vector<int>>("onoff");
+  const auto* funct = &cond.parameters().get<std::vector<int>>("funct");
+  const auto* val = &cond.parameters().get<std::vector<double>>("val");
+  const auto* onoff = &cond.parameters().get<std::vector<int>>("onoff");
 
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to
@@ -337,7 +337,7 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
         // cast the const qualifier away, thus the Evaluate routine can be called.
         Core::FE::DiscretizationFaces& non_const_dis =
             const_cast<Core::FE::DiscretizationFaces&>(discret);
-        faceele->ParentMasterElement()->Evaluate(
+        faceele->ParentMasterElement()->evaluate(
             initParams, non_const_dis, dummy, elemat1, elemat2, elevec1, elevec2, elevec3);
       }
       else

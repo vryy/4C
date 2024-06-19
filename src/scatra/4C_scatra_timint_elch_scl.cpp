@@ -64,11 +64,11 @@ ScaTra::ScaTraTimIntElchSCL::ScaTraTimIntElchSCL(Teuchos::RCP<Core::FE::Discreti
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElchSCL::Setup()
+void ScaTra::ScaTraTimIntElchSCL::setup()
 {
   TEUCHOS_FUNC_TIME_MONITOR("SCL: setup");
 
-  ScaTra::ScaTraTimIntElch::Setup();
+  ScaTra::ScaTraTimIntElch::setup();
 
   auto* problem = Global::Problem::Instance();
 
@@ -98,7 +98,7 @@ void ScaTra::ScaTraTimIntElchSCL::Setup()
   micro_timint_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(*sdyn_micro, *sdyn_micro,
       problem->SolverParams(sdyn_micro->get<int>("LINEAR_SOLVER")), "scatra_micro", false));
 
-  micro_timint_->Init();
+  micro_timint_->init();
 
   auto dofset_vel = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(3, 0, 0, true));
   if (micro_timint_->ScaTraField()->discretization()->AddDofSet(dofset_vel) != 1)
@@ -111,7 +111,7 @@ void ScaTra::ScaTraTimIntElchSCL::Setup()
 
   MicroScaTraField()->set_velocity_field();
 
-  micro_timint_->Setup();
+  micro_timint_->setup();
 
   // setup coupling between macro and micro field
   setup_coupling();
@@ -239,11 +239,11 @@ void ScaTra::ScaTraTimIntElchSCL::prepare_time_step()
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElchSCL::Update()
+void ScaTra::ScaTraTimIntElchSCL::update()
 {
-  ScaTraTimIntElch::Update();
+  ScaTraTimIntElch::update();
 
-  MicroScaTraField()->Update();
+  MicroScaTraField()->update();
 }
 
 /*------------------------------------------------------------------------------*
@@ -614,7 +614,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
       // is this node owned by this proc?
       if (!Core::Communication::IsNodeGIDOnThisProc(*discret_, coupling_node_gid)) continue;
 
-      switch (coupling_condition->parameters().Get<int>("interface side"))
+      switch (coupling_condition->parameters().get<int>("interface side"))
       {
         case Inpar::S2I::side_slave:
           my_macro_slave_node_gids.emplace_back(coupling_node_gid);
@@ -1262,7 +1262,7 @@ void ScaTra::ScaTraTimIntElchSCL::calc_initial_potential_field()
 
   // reset global system matrix and its graph, since we solved a very special problem with a
   // special sparsity pattern
-  system_matrix_elch_scl_->Reset();
+  system_matrix_elch_scl_->reset();
 
   post_calc_initial_potential_field();
 

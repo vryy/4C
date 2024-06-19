@@ -39,7 +39,7 @@ void poro_scatra_drt()
       PoroElastScaTra::UTILS::CreatePoroScatraAlgorithm(poroscatradynparams, comm);
 
   // 3.1- Read restart if needed. (discretization called inside)
-  const int restart = problem->Restart();
+  const int restart = problem->restart();
   poro_scatra->read_restart(restart);
 
   // 4.- Run of the actual problem.

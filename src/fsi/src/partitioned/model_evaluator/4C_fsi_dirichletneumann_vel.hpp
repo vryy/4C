@@ -70,7 +70,7 @@ namespace FSI
      * Here we check the input for the coupling variable
      *
      */
-    void Setup() override;
+    void setup() override;
 
     /** \brief Here the base class writes output for each field and in addition we write coupling
      * related output

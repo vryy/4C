@@ -42,7 +42,7 @@ Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::IterativeSolver(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-void Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::Setup(
+void Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::setup(
     Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
     const bool refactor, const bool reset, Teuchos::RCP<Core::LinAlg::KrylovProjector> projector)
 {
@@ -64,7 +64,7 @@ void Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::Setup(
   a_ = matrix;  // we cannot use A here, since it could be Teuchos::null (for blocked operators);
   x_ = x;
 
-  preconditioner_->Setup(create, a_.get(), x_.get(), b_.get());
+  preconditioner_->setup(create, a_.get(), x_.get(), b_.get());
 }
 
 //----------------------------------------------------------------------------------

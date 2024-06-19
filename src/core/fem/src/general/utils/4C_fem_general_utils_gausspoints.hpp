@@ -250,7 +250,7 @@ namespace Core::FE
     /// construct with a known set of gauss points
     explicit GaussIntegration(Teuchos::RCP<GaussPoints> gp) : gp_(gp) {}
 
-    void Clear() { gp_ = Teuchos::null; }
+    void clear() { gp_ = Teuchos::null; }
 
     iterator begin() { return GaussPointIterator(&*gp_, 0); }
 

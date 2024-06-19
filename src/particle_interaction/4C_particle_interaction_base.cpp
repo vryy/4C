@@ -27,7 +27,7 @@ ParticleInteraction::ParticleInteractionBase::ParticleInteractionBase(
   // empty constructor
 }
 
-void ParticleInteraction::ParticleInteractionBase::Init()
+void ParticleInteraction::ParticleInteractionBase::init()
 {
   // init particle material handler
   init_particle_material_handler();
@@ -36,7 +36,7 @@ void ParticleInteraction::ParticleInteractionBase::Init()
   init_particle_interaction_writer();
 }
 
-void ParticleInteraction::ParticleInteractionBase::Setup(
+void ParticleInteraction::ParticleInteractionBase::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {
@@ -50,10 +50,10 @@ void ParticleInteraction::ParticleInteractionBase::Setup(
   particlewallinterface_ = particlewallinterface;
 
   // setup particle material handler
-  particlematerial_->Setup();
+  particlematerial_->setup();
 
   // setup particle interaction writer
-  particleinteractionwriter_->Setup();
+  particleinteractionwriter_->setup();
 
   // init vector
   gravity_.resize(3, 0.0);
@@ -139,7 +139,7 @@ void ParticleInteraction::ParticleInteractionBase::init_particle_material_handle
   particlematerial_ = std::make_shared<ParticleInteraction::MaterialHandler>(params_);
 
   // init particle material handler
-  particlematerial_->Init();
+  particlematerial_->init();
 }
 
 void ParticleInteraction::ParticleInteractionBase::init_particle_interaction_writer()
@@ -149,7 +149,7 @@ void ParticleInteraction::ParticleInteractionBase::init_particle_interaction_wri
       std::make_shared<ParticleInteraction::InteractionWriter>(comm_, params_);
 
   // init particle interaction writer
-  particleinteractionwriter_->Init();
+  particleinteractionwriter_->init();
 }
 
 double ParticleInteraction::ParticleInteractionBase::max_particle_radius() const

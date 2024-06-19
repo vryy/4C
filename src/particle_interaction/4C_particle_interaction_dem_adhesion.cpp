@@ -45,7 +45,7 @@ ParticleInteraction::DEMAdhesion::DEMAdhesion(const Teuchos::ParameterList& para
 
 ParticleInteraction::DEMAdhesion::~DEMAdhesion() = default;
 
-void ParticleInteraction::DEMAdhesion::Init()
+void ParticleInteraction::DEMAdhesion::init()
 {
   // init adhesion law handler
   init_adhesion_law_handler();
@@ -54,7 +54,7 @@ void ParticleInteraction::DEMAdhesion::Init()
   init_adhesion_surface_energy_handler();
 }
 
-void ParticleInteraction::DEMAdhesion::Setup(
+void ParticleInteraction::DEMAdhesion::setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
     const std::shared_ptr<ParticleInteraction::InteractionWriter> particleinteractionwriter,
@@ -84,10 +84,10 @@ void ParticleInteraction::DEMAdhesion::Setup(
   historypairs_ = historypairs;
 
   // setup adhesion law handler
-  adhesionlaw_->Setup(k_normal);
+  adhesionlaw_->setup(k_normal);
 
   // setup adhesion surface energy handler
-  adhesionsurfaceenergy_->Setup();
+  adhesionsurfaceenergy_->setup();
 
   // safety check
   if (adhesion_distance_ < 0.0) FOUR_C_THROW("negative adhesion distance!");
@@ -131,7 +131,7 @@ void ParticleInteraction::DEMAdhesion::init_adhesion_law_handler()
   }
 
   // init adhesion law handler
-  adhesionlaw_->Init();
+  adhesionlaw_->init();
 }
 
 void ParticleInteraction::DEMAdhesion::init_adhesion_surface_energy_handler()
@@ -173,7 +173,7 @@ void ParticleInteraction::DEMAdhesion::init_adhesion_surface_energy_handler()
   }
 
   // init adhesion surface energy handler
-  adhesionsurfaceenergy_->Init();
+  adhesionsurfaceenergy_->init();
 }
 
 void ParticleInteraction::DEMAdhesion::setup_particle_interaction_writer()

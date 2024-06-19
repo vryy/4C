@@ -106,7 +106,7 @@ Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Shell7pEleCalcEas()
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Setup(Core::Elements::Element& ele,
+void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::setup(Core::Elements::Element& ele,
     Mat::So3Material& solid_material, Input::LineDefinition* linedef,
     const STR::ELEMENTS::ShellLockingTypes& locking_types,
     const STR::ELEMENTS::ShellData& shell_data)
@@ -122,11 +122,11 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Setup(Core::Elements::Elemen
   eas_iteration_data_.transL_.shape(locking_types_.total, Shell::DETAIL::numdofperelement<distype>);
 
   //  set up of materials with GP data (e.g., history variables)
-  solid_material.Setup(intpoints_midsurface_.NumPoints(), linedef);
+  solid_material.setup(intpoints_midsurface_.NumPoints(), linedef);
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Pack(
+void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::pack(
     Core::Communication::PackBuffer& data) const
 {
   Discret::ELEMENTS::Shell7p::add_to_pack(data, shell_data_.sdc);
@@ -151,7 +151,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Pack(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Unpack(
+void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   Core::Communication::ParObject::extract_from_pack(position, data, shell_data_.sdc);
@@ -874,7 +874,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Update(Core::Elements::Eleme
           }
         });
   }
-  solid_material.Update();
+  solid_material.update();
 }
 
 template <Core::FE::CellType distype>

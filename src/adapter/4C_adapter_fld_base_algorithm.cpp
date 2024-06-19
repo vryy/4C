@@ -1205,7 +1205,7 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
   // initialize algorithm for specific time-integration scheme
   if (init)
   {
-    fluid_->Init();
+    fluid_->init();
 
     SetInitialFlowField(fdyn);
   }
@@ -1430,7 +1430,7 @@ void Adapter::FluidBaseAlgorithm::setup_inflow_fluid(
   }
 
   // initialize algorithm for specific time-integration scheme
-  fluid_->Init();
+  fluid_->init();
 
   set_initial_inflow_field(fdyn);
 

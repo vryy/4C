@@ -24,7 +24,7 @@ Discret::ELEMENTS::Vele3Type& Discret::ELEMENTS::Vele3Type::Instance() { return 
 Core::Communication::ParObject* Discret::ELEMENTS::Vele3Type::Create(const std::vector<char>& data)
 {
   Discret::ELEMENTS::Vele3* object = new Discret::ELEMENTS::Vele3(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -139,7 +139,7 @@ Core::FE::CellType Discret::ELEMENTS::Vele3::Shape() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Vele3::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -147,7 +147,7 @@ void Discret::ELEMENTS::Vele3::Pack(Core::Communication::PackBuffer& data) const
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
 
   return;
 }
@@ -155,7 +155,7 @@ void Discret::ELEMENTS::Vele3::Pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Vele3::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -164,7 +164,7 @@ void Discret::ELEMENTS::Vele3::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);

@@ -20,16 +20,16 @@ ScaTra::CCCVCondition::CCCVCondition(const Core::Conditions::Condition& cccvcycl
     const std::vector<Core::Conditions::Condition*>& cccvhalfcycleconditions,
     const bool adaptivetimestepping, const int num_dofs)
     : adaptivetimesteppingonoff_(static_cast<bool>(
-          cccvcyclingcondition.parameters().Get<int>("AdaptiveTimeSteppingInitRelax"))),
+          cccvcyclingcondition.parameters().get<int>("AdaptiveTimeSteppingInitRelax"))),
       beginwithcharge_(
-          static_cast<bool>(cccvcyclingcondition.parameters().Get<int>("BeginWithCharging"))),
+          static_cast<bool>(cccvcyclingcondition.parameters().get<int>("BeginWithCharging"))),
       charging_(false),
       ihalfcycle_(-1),
-      initrelaxtime_(cccvcyclingcondition.parameters().Get<double>("InitRelaxTime")),
+      initrelaxtime_(cccvcyclingcondition.parameters().get<double>("InitRelaxTime")),
       min_time_steps_during_init_relax_(
-          cccvcyclingcondition.parameters().Get<int>("min_time_steps_during_init_relax")),
-      nhalfcycles_(cccvcyclingcondition.parameters().Get<int>("NumberOfHalfCycles")),
-      num_add_adapt_timesteps_(cccvcyclingcondition.parameters().Get<int>("NumAddAdaptTimeSteps")),
+          cccvcyclingcondition.parameters().get<int>("min_time_steps_during_init_relax")),
+      nhalfcycles_(cccvcyclingcondition.parameters().get<int>("NumberOfHalfCycles")),
+      num_add_adapt_timesteps_(cccvcyclingcondition.parameters().get<int>("NumAddAdaptTimeSteps")),
       num_dofs_(num_dofs),
       phasechanged_(false),
       phaseinitialrelaxation_(false),
@@ -52,19 +52,19 @@ ScaTra::CCCVCondition::CCCVCondition(const Core::Conditions::Condition& cccvcycl
   // loop over all conditions and create half cycles
   for (const auto& condition : cccvhalfcycleconditions)
   {
-    if (condition->parameters().Get<int>("ConditionID") < 0)
+    if (condition->parameters().get<int>("ConditionID") < 0)
     {
       FOUR_C_THROW(
           "Constant-current constant-voltage (CCCV) half-cycle boundary condition has invalid "
           "condition ID!");
     }
 
-    if (condition->parameters().Get<int>("ConditionID") ==
-        cccvcyclingcondition.parameters().Get<int>("ConditionIDForCharge"))
+    if (condition->parameters().get<int>("ConditionID") ==
+        cccvcyclingcondition.parameters().get<int>("ConditionIDForCharge"))
       halfcycle_charge_ =
           Teuchos::rcp(new ScaTra::CCCVHalfCycleCondition(*condition, adaptivetimestepping));
-    if (condition->parameters().Get<int>("ConditionID") ==
-        cccvcyclingcondition.parameters().Get<int>("ConditionIDForDischarge"))
+    if (condition->parameters().get<int>("ConditionID") ==
+        cccvcyclingcondition.parameters().get<int>("ConditionIDForDischarge"))
       halfcycle_discharge_ =
           Teuchos::rcp(new ScaTra::CCCVHalfCycleCondition(*condition, adaptivetimestepping));
   }
@@ -270,14 +270,14 @@ void ScaTra::CCCVCondition::read_restart(Core::IO::DiscretizationReader& reader)
  *-----------------------------------------------------------------------------*/
 ScaTra::CCCVHalfCycleCondition::CCCVHalfCycleCondition(
     const Core::Conditions::Condition& cccvhalfcyclecondition, const bool adaptivetimestepping)
-    : adaptivetimesteppingonoff_(cccvhalfcyclecondition.parameters().Get<std::vector<int>>(
+    : adaptivetimesteppingonoff_(cccvhalfcyclecondition.parameters().get<std::vector<int>>(
           "AdaptiveTimeSteppingPhaseOnOff")),
-      cutoffcrate_(cccvhalfcyclecondition.parameters().Get<double>("CutoffCRate")),
-      cutoffvoltage_(cccvhalfcyclecondition.parameters().Get<double>("CutoffVoltage")),
-      halfcyclecondition_id_(cccvhalfcyclecondition.parameters().Get<int>("ConditionID")),
+      cutoffcrate_(cccvhalfcyclecondition.parameters().get<double>("CutoffCRate")),
+      cutoffvoltage_(cccvhalfcyclecondition.parameters().get<double>("CutoffVoltage")),
+      halfcyclecondition_id_(cccvhalfcyclecondition.parameters().get<int>("ConditionID")),
       phase_cccv_(Inpar::ElCh::CCCVHalfCyclePhase::undefined),
       relaxendtime_(-1.0),
-      relaxtime_(cccvhalfcyclecondition.parameters().Get<double>("RelaxTime"))
+      relaxtime_(cccvhalfcyclecondition.parameters().get<double>("RelaxTime"))
 {
   // safety check
   for (int i : adaptivetimesteppingonoff_)

@@ -731,7 +731,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void Initialize() override;
+    void initialize() override;
 
     /*!
     \brief Set element areas
@@ -871,7 +871,7 @@ namespace CONTACT
     from within the penalty strategy object, the contact status is known at a global level.
 
     Note: To be able to perform this computation, weighted gaps and normals have to be available
-    within every node! Since this computation is done via Interface::Evaluate() in the Integrator
+    within every node! Since this computation is done via Interface::evaluate() in the Integrator
     class, these corresponding methods have to be called before AssembleMacauley()!
 
     */

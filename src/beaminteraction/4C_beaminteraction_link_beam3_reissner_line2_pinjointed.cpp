@@ -36,7 +36,7 @@ Core::Communication::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedTy
 {
   BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed* my_beam3rline2 =
       new BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed();
-  my_beam3rline2->Unpack(data);
+  my_beam3rline2->unpack(data);
   return my_beam3rline2;
 }
 
@@ -78,7 +78,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLine2PinJ
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Init(int id,
+void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::init(int id,
     const std::vector<std::pair<int, int>>& eleids,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
@@ -86,7 +86,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Init(int id,
 {
   issetup_ = false;
 
-  BeamLinkPinJointed::Init(id, eleids, initpos, inittriad, linkertype, timelinkwasset);
+  BeamLinkPinJointed::init(id, eleids, initpos, inittriad, linkertype, timelinkwasset);
 
   // *** initialization of the two triads of the connecting element ***
   /* they are determined such that:
@@ -205,12 +205,12 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Init(int id,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Setup(const int matnum)
+void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::setup(const int matnum)
 {
   check_init();
 
   // call setup of base class first
-  BeamLinkPinJointed::Setup(matnum);
+  BeamLinkPinJointed::setup(matnum);
 
   /* the idea is to use a beam element as auxiliary object that provides us with a
    * response force (and moment) depending on the position and orientation of the
@@ -262,7 +262,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Pack(
+void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::pack(
     Core::Communication::PackBuffer& data) const
 {
   check_init_setup();
@@ -273,17 +273,17 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Pack(
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class
-  BeamLinkPinJointed::Pack(data);
+  BeamLinkPinJointed::pack(data);
 
   // pack linker element
-  if (linkele_ != Teuchos::null) linkele_->Pack(data);
+  if (linkele_ != Teuchos::null) linkele_->pack(data);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Unpack(const std::vector<char>& data)
+void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -292,7 +292,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Unpack(const std::vector<ch
   // extract base class
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  BeamLinkPinJointed::Unpack(basedata);
+  BeamLinkPinJointed::unpack(basedata);
 
   // Unpack data of sub material (these lines are copied from element.cpp)
   std::vector<char> dataele;
@@ -446,7 +446,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
    * axis in every new configuration given here from outside;
    * to keep the Reisner element shear-, bending- and torsion-free, we use the
    * same strategy to determine the nodal triads as for initialization of any
-   * linker (see Init() ) */
+   * linker (see init() ) */
 
 
 

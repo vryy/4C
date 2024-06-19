@@ -41,9 +41,9 @@ STR::MODELEVALUATOR::SpringDashpot::SpringDashpot()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::Setup()
+void STR::MODELEVALUATOR::SpringDashpot::setup()
 {
-  FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
+  FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
 
   // get all spring dashpot conditions
   std::vector<Teuchos::RCP<Core::Conditions::Condition>> springdashpots;
@@ -68,7 +68,7 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::SpringDashpot::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -299,7 +299,7 @@ void STR::MODELEVALUATOR::SpringDashpot::update_step_state(const double& timefac
         break;
     }
   }
-  for (const auto& spring : springs_) spring->Update();
+  for (const auto& spring : springs_) spring->update();
 }
 
 /*----------------------------------------------------------------------*

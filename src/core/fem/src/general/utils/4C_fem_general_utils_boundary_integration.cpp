@@ -539,7 +539,7 @@ void Core::FE::BoundaryGPToParentGP<3>(Core::LinAlg::SerialDenseMatrix& pqxg,
 {
   // resize output array
   pqxg.shape(intpoints.IP().nquad, 3);
-  derivtrafo.Clear();
+  derivtrafo.clear();
 
   Core::FE::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
   return;
@@ -553,7 +553,7 @@ void Core::FE::BoundaryGPToParentGP<2>(Core::LinAlg::SerialDenseMatrix& pqxg,
 {
   // resize output array
   pqxg.shape(intpoints.IP().nquad, 2);
-  derivtrafo.Clear();
+  derivtrafo.clear();
 
   Core::FE::LineGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
   return;
@@ -596,7 +596,7 @@ void Core::FE::BoundaryGPToParentGP<3>(Core::LinAlg::SerialDenseMatrix& pqxg,
 {
   // resize output array
   pqxg.shape(intpoints.NumPoints(), 3);
-  derivtrafo.Clear();
+  derivtrafo.clear();
 
   Core::FE::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
   return;
@@ -610,7 +610,7 @@ void Core::FE::BoundaryGPToParentGP<2>(Core::LinAlg::SerialDenseMatrix& pqxg,
 {
   // resize output array
   pqxg.shape(intpoints.NumPoints(), 2);
-  derivtrafo.Clear();
+  derivtrafo.clear();
 
   Core::FE::LineGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
   return;

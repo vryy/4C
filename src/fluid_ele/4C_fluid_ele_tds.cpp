@@ -47,7 +47,7 @@ sveln_      (old.sveln_      )
  |  Pack data                                                  (public) |
  |                                                            gjb 12/12 |
  *----------------------------------------------------------------------*/
-void FLD::TDSEleData::Pack(Core::Communication::PackBuffer& data) const
+void FLD::TDSEleData::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -72,7 +72,7 @@ void FLD::TDSEleData::Pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gjb 12/12 |
  *----------------------------------------------------------------------*/
-void FLD::TDSEleData::Unpack(const std::vector<char>& data)
+void FLD::TDSEleData::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

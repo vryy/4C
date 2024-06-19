@@ -39,7 +39,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoPyramid5Type::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoPyramid5(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -173,7 +173,7 @@ Core::FE::CellType Discret::ELEMENTS::SoPyramid5::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoPyramid5::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::SoPyramid5::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -181,7 +181,7 @@ void Discret::ELEMENTS::SoPyramid5::Pack(Core::Communication::PackBuffer& data) 
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
   // kintype_
   add_to_pack(data, kintype_);
 
@@ -209,7 +209,7 @@ void Discret::ELEMENTS::SoPyramid5::Pack(Core::Communication::PackBuffer& data) 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoPyramid5::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoPyramid5::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -218,7 +218,7 @@ void Discret::ELEMENTS::SoPyramid5::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
   // kintype_
   kintype_ = static_cast<Inpar::STR::KinemType>(extract_int(position, data));
 
@@ -246,7 +246,7 @@ void Discret::ELEMENTS::SoPyramid5::Unpack(const std::vector<char>& data)
       if (me) numgpt += 1;  // one more history entry for centroid data in pyramid5fbar
       prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOP5, numgpt));
     }
-    prestress_->Unpack(tmpprestress);
+    prestress_->unpack(tmpprestress);
     // end
   }
 

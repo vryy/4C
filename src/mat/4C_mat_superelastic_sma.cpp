@@ -52,24 +52,24 @@ using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
  *----------------------------------------------------------------------*/
 Mat::PAR::SuperElasticSMA::SuperElasticSMA(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      density_(matdata.parameters.Get<double>("DENS")),
-      youngs_(matdata.parameters.Get<double>("YOUNG")),
-      poissonratio_(matdata.parameters.Get<double>("NUE")),
-      epsilon_L_(matdata.parameters.Get<double>("EPSILON_L")),
-      T_AS_s_(matdata.parameters.Get<double>("T_AS_s")),
-      T_AS_f_(matdata.parameters.Get<double>("T_AS_f")),
-      T_SA_s_(matdata.parameters.Get<double>("T_SA_s")),
-      T_SA_f_(matdata.parameters.Get<double>("T_SA_f")),
-      C_AS_(matdata.parameters.Get<double>("C_AS")),
-      C_SA_(matdata.parameters.Get<double>("C_SA")),
-      sigma_AS_s_(matdata.parameters.Get<double>("SIGMA_AS_s")),
-      sigma_AS_f_(matdata.parameters.Get<double>("SIGMA_AS_f")),
-      sigma_SA_s_(matdata.parameters.Get<double>("SIGMA_SA_s")),
-      sigma_SA_f_(matdata.parameters.Get<double>("SIGMA_SA_f")),
-      alpha_(matdata.parameters.Get<double>("ALPHA")),
-      model_(matdata.parameters.Get<int>("MODEL")),
-      beta_AS_(matdata.parameters.Get<double>("BETA_AS")),
-      beta_SA_(matdata.parameters.Get<double>("BETA_SA"))
+      density_(matdata.parameters.get<double>("DENS")),
+      youngs_(matdata.parameters.get<double>("YOUNG")),
+      poissonratio_(matdata.parameters.get<double>("NUE")),
+      epsilon_L_(matdata.parameters.get<double>("EPSILON_L")),
+      T_AS_s_(matdata.parameters.get<double>("T_AS_s")),
+      T_AS_f_(matdata.parameters.get<double>("T_AS_f")),
+      T_SA_s_(matdata.parameters.get<double>("T_SA_s")),
+      T_SA_f_(matdata.parameters.get<double>("T_SA_f")),
+      C_AS_(matdata.parameters.get<double>("C_AS")),
+      C_SA_(matdata.parameters.get<double>("C_SA")),
+      sigma_AS_s_(matdata.parameters.get<double>("SIGMA_AS_s")),
+      sigma_AS_f_(matdata.parameters.get<double>("SIGMA_AS_f")),
+      sigma_SA_s_(matdata.parameters.get<double>("SIGMA_SA_s")),
+      sigma_SA_f_(matdata.parameters.get<double>("SIGMA_SA_f")),
+      alpha_(matdata.parameters.get<double>("ALPHA")),
+      model_(matdata.parameters.get<int>("MODEL")),
+      beta_AS_(matdata.parameters.get<double>("BETA_AS")),
+      beta_SA_(matdata.parameters.get<double>("BETA_SA"))
 {
 }
 
@@ -142,7 +142,7 @@ Mat::SuperElasticSMAType Mat::SuperElasticSMAType::instance_;
 Core::Communication::ParObject* Mat::SuperElasticSMAType::Create(const std::vector<char>& data)
 {
   Mat::SuperElasticSMA* superelast = new Mat::SuperElasticSMA();
-  superelast->Unpack(data);
+  superelast->unpack(data);
   return superelast;
 }
 
@@ -162,7 +162,7 @@ Mat::SuperElasticSMA::SuperElasticSMA(Mat::PAR::SuperElasticSMA* params) : param
 /*----------------------------------------------------------------------*
  | pack (public)                                          hemmler 09/16 |
  *----------------------------------------------------------------------*/
-void Mat::SuperElasticSMA::Pack(Core::Communication::PackBuffer& data) const
+void Mat::SuperElasticSMA::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -199,13 +199,13 @@ void Mat::SuperElasticSMA::Pack(Core::Communication::PackBuffer& data) const
   }
 
   return;
-}  // Pack()
+}  // pack()
 
 
 /*----------------------------------------------------------------------*
  | unpack (public)                                        hemmler 09/16 |
  *----------------------------------------------------------------------*/
-void Mat::SuperElasticSMA::Unpack(const std::vector<char>& data)
+void Mat::SuperElasticSMA::unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   strainenergy_ = 0.0;
@@ -266,13 +266,13 @@ void Mat::SuperElasticSMA::Unpack(const std::vector<char>& data)
 
   return;
 
-}  // Unpack()
+}  // unpack()
 
 
 /*---------------------------------------------------------------------*
  | initialize / allocate internal variables (public)     hemmler 09/16 |
  *---------------------------------------------------------------------*/
-void Mat::SuperElasticSMA::Setup(int numgp, Input::LineDefinition* linedef)
+void Mat::SuperElasticSMA::setup(int numgp, Input::LineDefinition* linedef)
 {
   druckerpragerloadingcurr_ = Teuchos::rcp(new std::vector<double>);
   druckerpragerloadinglast_ = Teuchos::rcp(new std::vector<double>);
@@ -296,13 +296,13 @@ void Mat::SuperElasticSMA::Setup(int numgp, Input::LineDefinition* linedef)
   isinit_ = true;
   return;
 
-}  // Setup()
+}  // setup()
 
 
 /*----------------------------------------------------------------------*
  | update internal variables                              hemmler 09/16 |
  *----------------------------------------------------------------------*/
-void Mat::SuperElasticSMA::Update()
+void Mat::SuperElasticSMA::update()
 {
   druckerpragerloadinglast_ = druckerpragerloadingcurr_;
   xi_s_last_ = xi_s_curr_;
@@ -321,13 +321,13 @@ void Mat::SuperElasticSMA::Update()
     xi_s_curr_->at(i) = 0.0;
   }
   return;
-}  // Update()
+}  // update()
 
 
 /*----------------------------------------------------------------------*
  | calculate stress and constitutive tensor               hemmler 09/16 |
  *----------------------------------------------------------------------*/
-void Mat::SuperElasticSMA::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -955,7 +955,7 @@ void Mat::SuperElasticSMA::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     }
 
     // express coefficents of tangent in Kirchhoff stresses
-    cmat->Clear();
+    cmat->clear();
     for (int a = 0; a < 3; a++)
     {
       // - sum_1^3 (2 * tau N_aaaa)
@@ -1015,7 +1015,7 @@ void Mat::SuperElasticSMA::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   return;
 
-}  // Evaluate()
+}  // evaluate()
 
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)           hemmler 09/16 |

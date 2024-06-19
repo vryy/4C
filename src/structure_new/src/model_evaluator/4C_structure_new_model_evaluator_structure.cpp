@@ -59,9 +59,9 @@ STR::MODELEVALUATOR::Structure::Structure()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::Setup()
+void STR::MODELEVALUATOR::Structure::setup()
 {
-  FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
+  FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
 
   // get the global state content
   {
@@ -128,7 +128,7 @@ void STR::MODELEVALUATOR::Structure::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::Structure::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -697,7 +697,7 @@ void STR::MODELEVALUATOR::Structure::write_output_runtime_structure(
       *global_in_output().get_runtime_output_params()->get_structure_params();
 
   // reset time and time step of the writer object
-  vtu_writer_ptr_->Reset();
+  vtu_writer_ptr_->reset();
 
   // append all desired output data to the writer object's storage
 
@@ -896,7 +896,7 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress
         [&](const std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& map_data,
             Epetra_MultiVector& assembled_data)
     {
-      discret_ptr()->Evaluate(
+      discret_ptr()->evaluate(
           [&](Core::Elements::Element& ele)
           {
             if (DoPostprocessingOnElement(ele))
@@ -909,7 +909,7 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress
         [&](const std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& map_data,
             Epetra_MultiVector& assembled_data)
     {
-      discret_ptr()->Evaluate(
+      discret_ptr()->evaluate(
           [&](Core::Elements::Element& ele)
           {
             if (DoPostprocessingOnElement(ele))
@@ -1017,7 +1017,7 @@ void STR::MODELEVALUATOR::Structure::init_output_runtime_beams()
       tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box();
 
   // initialize the writer object with current displacement state
-  beam_vtu_writer_ptr_->Initialize(const_cast<STR::MODELEVALUATOR::Structure*>(this)->discret_ptr(),
+  beam_vtu_writer_ptr_->initialize(const_cast<STR::MODELEVALUATOR::Structure*>(this)->discret_ptr(),
       beam_output_params.use_absolute_positions(),
       beam_output_params.get_number_visualization_subsegments(), bounding_box_ptr);
 }
@@ -1168,7 +1168,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_internal(Teuchos::ParameterList& p
   // this is about to go, once the old time integration is deleted
   params_interface2_parameter_list(eval_data_ptr(), p);
 
-  discret().Evaluate(p, eval_mat[0], eval_mat[1], eval_vec[0], eval_vec[1], eval_vec[2]);
+  discret().evaluate(p, eval_mat[0], eval_mat[1], eval_vec[0], eval_vec[1], eval_vec[2]);
   discret().ClearState();
 }
 
@@ -1204,7 +1204,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_internal_specified_elements(Teucho
   // this is about to go, once the old time integration is deleted
   params_interface2_parameter_list(eval_data_ptr(), p);
 
-  Core::FE::UTILS::Evaluate(*discret_ptr(), p, *eval_mat, *eval_vec, ele_map_to_be_evaluated);
+  Core::FE::UTILS::evaluate(*discret_ptr(), p, *eval_mat, *eval_vec, ele_map_to_be_evaluated);
 
   discret().ClearState();
 }
@@ -1316,7 +1316,7 @@ void STR::MODELEVALUATOR::Structure::run_post_compute_x(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   check_init_setup();
-  Reset(xnew);
+  reset(xnew);
   /* set the class internal displacement increment vector. Check if it is
    * meaningful/necessary in some cases, like incremental strains etc. */
   dis_incr_ptr_ = global_state().extract_displ_entries(dir);
@@ -1648,13 +1648,13 @@ bool STR::MODELEVALUATOR::Structure::determine_element_volumes(
     rele->LocationVector(discret(), la, false);
 
     eval_data().set_action_type(Core::Elements::analyse_jacobian_determinant);
-    rele->Evaluate(p, discret(), la, empty_dummy_mat, empty_dummy_mat, ele_vol, empty_dummy_vec,
+    rele->evaluate(p, discret(), la, empty_dummy_mat, empty_dummy_mat, ele_vol, empty_dummy_vec,
         empty_dummy_vec);
 
     if (not eval_data().is_ele_eval_error())
     {
       eval_data().set_action_type(Core::Elements::struct_calc_mass_volume);
-      rele->Evaluate(p, discret(), la, empty_dummy_mat, empty_dummy_mat, ele_vol, empty_dummy_vec,
+      rele->evaluate(p, discret(), la, empty_dummy_mat, empty_dummy_mat, ele_vol, empty_dummy_vec,
           empty_dummy_vec);
     }
 

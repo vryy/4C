@@ -31,7 +31,7 @@ namespace Mat::FLUIDPORO
   void CreateStructureTensorFromVector(
       const std::vector<double>& direction_vector, Core::LinAlg::Matrix<dim, dim>& structure_tensor)
   {
-    structure_tensor.Clear();
+    structure_tensor.clear();
 
     // Factor to normalize the structure tensor
     const double square_length = std::inner_product(
@@ -142,8 +142,8 @@ namespace Mat::FLUIDPORO
     {
       // Derivative is zero, clearing the tensors is enough
       // This is the standard case, so it is implemented in the base class
-      linreac_dphi.Clear();
-      linreac_dJ.Clear();
+      linreac_dphi.clear();
+      linreac_dJ.clear();
     };
 
     /*! @brief Compute the derivatives of the material reaction tensor - 3D
@@ -164,8 +164,8 @@ namespace Mat::FLUIDPORO
     {
       // Derivative is zero, clearing the tensors is enough
       // This is the standard case, so it is implemented in the base class
-      linreac_dphi.Clear();
-      linreac_dJ.Clear();
+      linreac_dphi.clear();
+      linreac_dJ.clear();
     };
 
    protected:
@@ -251,7 +251,7 @@ namespace Mat::FLUIDPORO
       const double permeability_correction_factor = params_->permeability_correction_factor_;
       const auto permeability_function = params_->permeability_func_;
 
-      reaction_tensor.Clear();
+      reaction_tensor.clear();
 
       if (permeability_function == Mat::PAR::kozeny_carman)
       {
@@ -302,8 +302,8 @@ namespace Mat::FLUIDPORO
       const double permeability_correction_factor = params_->permeability_correction_factor_;
       const auto permeability_function = params_->permeability_func_;
 
-      linreac_dphi.Clear();
-      linreac_dJ.Clear();
+      linreac_dphi.clear();
+      linreac_dJ.clear();
 
       if (permeability_function == Mat::PAR::constant)
       {
@@ -412,7 +412,7 @@ namespace Mat::FLUIDPORO
       if (anisotropic_permeability_directions.empty())
         FOUR_C_THROW("orthotropy directions not specified");
 
-      reaction_tensor.Clear();
+      reaction_tensor.clear();
 
       Core::LinAlg::Matrix<dim, dim> permeability_tensor(true);
       Core::LinAlg::Matrix<dim, dim> structure_tensor(true);
@@ -489,7 +489,7 @@ namespace Mat::FLUIDPORO
       if (anisotropic_permeability_directions.empty())
         FOUR_C_THROW("orthotropy directions not specified");
 
-      reaction_tensor.Clear();
+      reaction_tensor.clear();
 
       Core::LinAlg::Matrix<3, 3> permeability_tensor(true);
       Core::LinAlg::Matrix<3, 3> structure_tensor(true);
@@ -603,7 +603,7 @@ namespace Mat::FLUIDPORO
       if (anisotropic_permeability_coeffs.empty())
         FOUR_C_THROW("orthotropy coefficients not specified");
 
-      reaction_tensor.Clear();
+      reaction_tensor.clear();
 
       Core::LinAlg::Matrix<dim, dim> permeability_tensor(true);
       Core::LinAlg::Matrix<dim, dim> structure_tensor(true);
@@ -646,24 +646,24 @@ namespace Mat::FLUIDPORO
 
 Mat::PAR::FluidPoro::FluidPoro(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      viscosity_(matdata.parameters.Get<double>("DYNVISCOSITY")),
-      density_(matdata.parameters.Get<double>("DENSITY")),
-      permeability_(matdata.parameters.Get<double>("PERMEABILITY")),
-      axial_permeability_(matdata.parameters.Get<double>("AXIALPERMEABILITY")),
+      viscosity_(matdata.parameters.get<double>("DYNVISCOSITY")),
+      density_(matdata.parameters.get<double>("DENSITY")),
+      permeability_(matdata.parameters.get<double>("PERMEABILITY")),
+      axial_permeability_(matdata.parameters.get<double>("AXIALPERMEABILITY")),
       type_(undefined),
       varying_permeability_(false),
       permeability_func_(Mat::PAR::pf_undefined),
       permeability_correction_factor_(1.0),
       initial_porosity_(1.0)
 {
-  const auto& typestring = matdata.parameters.Get<std::string>("TYPE");
+  const auto& typestring = matdata.parameters.get<std::string>("TYPE");
 
   if (typestring == "Darcy")
     type_ = darcy;
   else if (typestring == "Darcy-Brinkman")
     type_ = darcy_brinkman;
 
-  const auto& pfuncstring = matdata.parameters.Get<std::string>("PERMEABILITYFUNCTION");
+  const auto& pfuncstring = matdata.parameters.get<std::string>("PERMEABILITYFUNCTION");
 
   if (pfuncstring == "Const")
     permeability_func_ = Mat::PAR::constant;
@@ -683,7 +683,7 @@ Mat::PAR::FluidPoro::FluidPoro(const Core::Mat::PAR::Parameter::Data& matdata)
   {
     for (int dim = 0; dim < 3; ++dim)
       orthotropic_permeabilities_[dim] =
-          matdata.parameters.Get<double>("ORTHOPERMEABILITY" + std::to_string(dim + 1));
+          matdata.parameters.get<double>("ORTHOPERMEABILITY" + std::to_string(dim + 1));
   }
 }
 
@@ -713,7 +713,7 @@ Mat::FluidPoroType Mat::FluidPoroType::instance_;
 Core::Communication::ParObject* Mat::FluidPoroType::Create(const std::vector<char>& data)
 {
   auto* fluid_poro = new Mat::FluidPoro();
-  fluid_poro->Unpack(data);
+  fluid_poro->unpack(data);
   return fluid_poro;
 }
 
@@ -724,7 +724,7 @@ Mat::FluidPoro::FluidPoro(Mat::PAR::FluidPoro* params) : params_(params)
   anisotropy_strategy_ = Mat::FLUIDPORO::CreateAnisotropyStrategy(params);
 }
 
-void Mat::FluidPoro::Pack(Core::Communication::PackBuffer& data) const
+void Mat::FluidPoro::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -738,7 +738,7 @@ void Mat::FluidPoro::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, matid);
 }
 
-void Mat::FluidPoro::Unpack(const std::vector<char>& data)
+void Mat::FluidPoro::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

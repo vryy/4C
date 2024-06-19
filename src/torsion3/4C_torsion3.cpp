@@ -25,7 +25,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Torsion3Type::Create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Torsion3* object = new Discret::ELEMENTS::Torsion3(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -121,14 +121,14 @@ Core::FE::CellType Discret::ELEMENTS::Torsion3::Shape() const { return Core::FE:
  |  Pack data                                                  (public) |
  |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Torsion3::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::Torsion3::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   add_to_pack(data, type);
-  Element::Pack(data);
+  Element::pack(data);
   add_to_pack(data, bendingpotential_);
 }
 
@@ -137,7 +137,7 @@ void Discret::ELEMENTS::Torsion3::Pack(Core::Communication::PackBuffer& data) co
  |  Unpack data                                                (public) |
  |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Torsion3::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Torsion3::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -145,7 +145,7 @@ void Discret::ELEMENTS::Torsion3::Unpack(const std::vector<char>& data)
 
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
   bendingpotential_ = static_cast<BendingPotential>(extract_int(position, data));
 
   if (position != data.size())

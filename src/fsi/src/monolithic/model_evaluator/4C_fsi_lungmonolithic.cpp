@@ -146,7 +146,7 @@ FSI::LungMonolithic::LungMonolithic(
   Teuchos::RCP<Epetra_Map> emptymap =
       Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, fluid_field()->discretization()->Comm()));
   Core::LinAlg::MapExtractor constrextractor;
-  constrextractor.Setup(*ConstrMap_, emptymap, ConstrMap_);
+  constrextractor.setup(*ConstrMap_, emptymap, ConstrMap_);
   AleConstrMatrix_ =
       Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           constrextractor, *fluid_field()->Interface(), 108, false, true));
@@ -350,13 +350,13 @@ Teuchos::RCP<Epetra_Vector> FSI::LungMonolithic::struct_to_ale_outflow(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
+void FSI::LungMonolithic::evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   //-----------------------------------------------------------------------------
   // evaluation of all fields
   //-----------------------------------------------------------------------------
 
-  FSI::Monolithic::Evaluate(step_increment);
+  FSI::Monolithic::evaluate(step_increment);
 
   //-----------------------------------------------------------------------------
   // evaluation of lung volume constraints
@@ -789,7 +789,7 @@ void FSI::LungMonolithic::output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  structure_field()->Output();
+  structure_field()->output();
 
   // additional output of volume constraint related forces
   //   Adapter::StructureLung& structfield =
@@ -812,13 +812,13 @@ void FSI::LungMonolithic::output()
     structfield->WriteVolConRestart(OldFlowRatesRed, OldVolsRed, LagrMultVecOldRed);
   }
 
-  fluid_field()->Output();
+  fluid_field()->output();
 
   // additional output of volume constraint related forces
   //   Adapter::FluidLung& fluidfield = dynamic_cast<Adapter::FluidLung&>(fluid_field());
   //   fluidfield->OutputForces(AddFluidRHS_);
 
-  ale_field()->Output();
+  ale_field()->output();
 
   // output of volumes for visualization (e.g. gnuplot)
 
@@ -901,7 +901,7 @@ void FSI::LungMonolithic::prepare_time_step()
 
   // Update of Lagrange multipliers, current volumes and flow rates is
   // not necessary here, since these values are already equal to the
-  // "old" ones (cf. Update()). Note that we assume a constant
+  // "old" ones (cf. update()). Note that we assume a constant
   // predictor here!
 
   IncLagrMultVec_->PutScalar(0.0);

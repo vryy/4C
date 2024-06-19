@@ -16,12 +16,12 @@ FOUR_C_NAMESPACE_OPEN
 
 void Core::Communication::ParObject::add_to_pack(PackBuffer& data, const ParObject& obj)
 {
-  obj.Pack(data);
+  obj.pack(data);
 }
 
 void Core::Communication::ParObject::add_to_pack(PackBuffer& data, const ParObject* obj)
 {
-  obj->Pack(data);
+  obj->pack(data);
 }
 
 void Core::Communication::ParObject::add_to_pack(

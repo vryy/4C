@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
     const Core::Mat::PAR::Parameter::Data& matdata)
-    : MIXTURE::PAR::MixtureGrowthStrategy(matdata), kappa_(matdata.parameters.Get<double>("KAPPA"))
+    : MIXTURE::PAR::MixtureGrowthStrategy(matdata), kappa_(matdata.parameters.get<double>("KAPPA"))
 {
 }
 

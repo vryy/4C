@@ -36,9 +36,9 @@ namespace Core::Communication
 MIXTURE::PAR::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureRule(matdata),
-      growth_strategy_matid_(matdata.parameters.Get<int>("GROWTH_STRATEGY")),
-      initial_reference_density_(matdata.parameters.Get<double>("DENS")),
-      mass_fractions_(matdata.parameters.Get<std::vector<double>>("MASSFRAC"))
+      growth_strategy_matid_(matdata.parameters.get<int>("GROWTH_STRATEGY")),
+      initial_reference_density_(matdata.parameters.get<double>("DENS")),
+      mass_fractions_(matdata.parameters.get<std::vector<double>>("MASSFRAC"))
 {
 }
 
@@ -140,8 +140,8 @@ void MIXTURE::GrowthRemodelMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3
   for (std::size_t i = 0; i < constituents().size(); ++i)
   {
     MixtureConstituent& constituent = *constituents()[i];
-    cstress.Clear();
-    ccmat.Clear();
+    cstress.clear();
+    ccmat.clear();
     if (growth_strategy_->has_inelastic_growth_deformation_gradient())
       constituent.evaluate_elastic_part(F, iF_gM, params, cstress, ccmat, gp, eleGID);
     else
@@ -163,8 +163,8 @@ void MIXTURE::GrowthRemodelMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3
         cstress, dGrowthScalarDC, 1.0);
   }
 
-  cstress.Clear();
-  ccmat.Clear();
+  cstress.clear();
+  ccmat.clear();
 
 
   const auto [currentReferenceGrowthScalar, dCurrentReferenceGrowthScalarDC] = std::invoke(

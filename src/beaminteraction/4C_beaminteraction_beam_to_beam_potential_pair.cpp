@@ -52,19 +52,19 @@ BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::BeamToBea
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Setup()
+void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::setup()
 {
   check_init();
 
   // call setup of base class first
-  BeamPotentialPair::Setup();
+  BeamPotentialPair::setup();
 
 
-  ele1pos_.Clear();
-  ele2pos_.Clear();
+  ele1pos_.clear();
+  ele2pos_.clear();
 
   /* take care of how to assign the role of master and slave (only applicable to
-   * "SingleLengthSpecific" approach). Immediately before this Setup(), the element with smaller GID
+   * "SingleLengthSpecific" approach). Immediately before this setup(), the element with smaller GID
    * has been assigned as element1_, i.e., slave. */
   if (Params()->ChoiceMasterSlave() ==
       Inpar::BEAMPOTENTIAL::MasterSlaveChoice::higher_eleGID_is_slave)
@@ -98,7 +98,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Setu
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Evaluate(
+bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22,
@@ -235,24 +235,24 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   T norm_dist = 0.0;                         // = |r1-r2|
 
   // evaluate charge densities from DLINE charge condition specified in input file
-  double q1 = linechargeconds_[0]->parameters().Get<double>("val");
-  double q2 = linechargeconds_[1]->parameters().Get<double>("val");
+  double q1 = linechargeconds_[0]->parameters().get<double>("val");
+  double q2 = linechargeconds_[1]->parameters().get<double>("val");
 
   // evaluate function in time if specified in line charge conditions
   // TODO allow for functions in space, i.e. varying charge along beam centerline
-  int function_number = linechargeconds_[0]->parameters().Get<int>("funct");
+  int function_number = linechargeconds_[0]->parameters().get<int>("funct");
 
   if (function_number != -1)
     q1 *= Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-              .Evaluate(time_);
+              .evaluate(time_);
 
-  function_number = linechargeconds_[1]->parameters().Get<int>("funct");
+  function_number = linechargeconds_[1]->parameters().get<int>("funct");
 
   if (function_number != -1)
     q2 *= Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-              .Evaluate(time_);
+              .evaluate(time_);
 
 
   // auxiliary variable
@@ -616,24 +616,24 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   T gap_regularized = 0.0;  // modified gap if a regularization of the force law is applied
 
   // evaluate charge/particle densities from DLINE charge condition specified in input file
-  double q1 = linechargeconds_[0]->parameters().Get<double>("val");
-  double q2 = linechargeconds_[1]->parameters().Get<double>("val");
+  double q1 = linechargeconds_[0]->parameters().get<double>("val");
+  double q2 = linechargeconds_[1]->parameters().get<double>("val");
 
   // evaluate function in time if specified in line charge conditions
   // TODO allow for functions in space, i.e. varying charge along beam centerline
-  int function_number = linechargeconds_[0]->parameters().Get<int>("funct");
+  int function_number = linechargeconds_[0]->parameters().get<int>("funct");
 
   if (function_number != -1)
     q1 *= Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-              .Evaluate(time_);
+              .evaluate(time_);
 
-  function_number = linechargeconds_[1]->parameters().Get<int>("funct");
+  function_number = linechargeconds_[1]->parameters().get<int>("funct");
 
   if (function_number != -1)
     q2 *= Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-              .Evaluate(time_);
+              .evaluate(time_);
 
 
   // Evaluation of the Gamma-Function term:
@@ -1201,24 +1201,24 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T> force_pot_master_GP(true);
 
   // evaluate charge/particle densities from DLINE charge condition specified in input file
-  double rho1 = linechargeconds_[0]->parameters().Get<double>("val");
-  double rho2 = linechargeconds_[1]->parameters().Get<double>("val");
+  double rho1 = linechargeconds_[0]->parameters().get<double>("val");
+  double rho2 = linechargeconds_[1]->parameters().get<double>("val");
 
   // evaluate function in time if specified in line charge conditions
   // TODO allow for functions in space, i.e. varying charge along beam centerline
-  int function_number = linechargeconds_[0]->parameters().Get<int>("funct");
+  int function_number = linechargeconds_[0]->parameters().get<int>("funct");
 
   if (function_number != -1)
     rho1 *= Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-                .Evaluate(time_);
+                .evaluate(time_);
 
-  function_number = linechargeconds_[1]->parameters().Get<int>("funct");
+  function_number = linechargeconds_[1]->parameters().get<int>("funct");
 
   if (function_number != -1)
     rho2 *= Global::Problem::Instance()
                 ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
-                .Evaluate(time_);
+                .evaluate(time_);
 
 
   // constant prefactor of the disk-cylinder interaction potential
@@ -1671,7 +1671,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   cos_alpha_deriv_r_xi_master_deriv_r_xi_master.Update(
       -1.0 * norm_r_xi_master_inverse * t_slave_dot_t_master, t_master_partial_r_xi_master, 1.0);
 
-  tmp_mat.Clear();
+  tmp_mat.clear();
   tmp_mat.MultiplyTN(t_slave_tensorproduct_t_master, t_master_partial_r_xi_master);
   cos_alpha_deriv_r_xi_master_deriv_r_xi_master.Update(
       -1.0 * norm_r_xi_master_inverse, tmp_mat, 1.0);
@@ -2479,7 +2479,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     norm_normal_bl_tilde = Core::FADUtils::VectorNorm(normal_bl);
     normal_bl.Scale(1.0 / norm_normal_bl_tilde);
 
-    aux_plane_normal.Clear();
+    aux_plane_normal.clear();
     x = 0.0;
   }
   else
@@ -2703,7 +2703,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   // Todo: check and remove: the following term should vanish since r_xi_master \perp normal_bl
   gap_bl_partial_xi_master = -1.0 * signum_dist_bl_tilde * r_xi_master.Dot(normal_bl);
 
-  v_mat_tmp.Clear();
+  v_mat_tmp.clear();
   for (unsigned int i = 0; i < 3; ++i)
   {
     v_mat_tmp(i, i) += 1.0;
@@ -2718,11 +2718,11 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   {
     // Todo: check and remove: signum_dist_bl_tilde should always be +1.0 in this case!
 
-    gap_bl_partial_r_xi_slave.Clear();
+    gap_bl_partial_r_xi_slave.clear();
 
     gap_bl_partial_r_slave.Update(signum_dist_bl_tilde / norm_normal_bl_tilde, vec_tmp, 1.0);
 
-    gap_bl_partial_r_xi_master.Clear();
+    gap_bl_partial_r_xi_master.clear();
 
     gap_bl_partial_r_master.Update(
         -1.0 * signum_dist_bl_tilde / norm_normal_bl_tilde, vec_tmp, 1.0);
@@ -2746,7 +2746,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   // components from variation of cosine of enclosed angle
   T signum_tangentsscalarproduct = Core::FADUtils::Signum(r_xi_slave.Dot(r_xi_master));
 
-  v_mat_tmp.Clear();
+  v_mat_tmp.clear();
   for (unsigned int i = 0; i < 3; ++i)
   {
     v_mat_tmp(i, i) += 1.0;
@@ -2756,7 +2756,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   cos_alpha_partial_r_xi_slave.Multiply(
       signum_tangentsscalarproduct / Core::FADUtils::VectorNorm(r_xi_slave), v_mat_tmp, t1_master);
 
-  v_mat_tmp.Clear();
+  v_mat_tmp.clear();
   for (unsigned int i = 0; i < 3; ++i)
   {
     v_mat_tmp(i, i) += 1.0;
@@ -2774,10 +2774,10 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   {
     /* set the following quantities to zero since they are not required in this case
      * because pot_ia_partial_x is zero anyway */
-    x_partial_r_slave.Clear();
-    x_partial_r_master.Clear();
-    x_partial_r_xi_slave.Clear();
-    x_partial_r_xi_master.Clear();
+    x_partial_r_slave.clear();
+    x_partial_r_master.clear();
+    x_partial_r_xi_slave.clear();
+    x_partial_r_xi_master.clear();
     x_partial_xi_master = 0.0;
   }
   else
@@ -2785,7 +2785,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     x_partial_r_slave.Update(-1.0 / t1_slave.Dot(aux_plane_normal), aux_plane_normal);
     x_partial_r_master.Update(1.0 / t1_slave.Dot(aux_plane_normal), aux_plane_normal);
 
-    v_mat_tmp.Clear();
+    v_mat_tmp.clear();
     for (unsigned int i = 0; i < 3; ++i)
     {
       v_mat_tmp(i, i) += 1.0;
@@ -2800,7 +2800,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     x_partial_aux_plane_normal.Update(-1.0 / t1_slave.Dot(aux_plane_normal), dist_ul,
         dist_ul.Dot(aux_plane_normal) / std::pow(t1_slave.Dot(aux_plane_normal), 2), t1_slave);
 
-    v_mat_tmp.Clear();
+    v_mat_tmp.clear();
     for (unsigned int i = 0; i < 3; ++i)
       for (unsigned int j = 0; j < 3; ++j) v_mat_tmp(i, j) += r_xi_master(i) * r_xi_master(j);
 
@@ -2811,7 +2811,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
     x_partial_r_xi_master.Update(-1.0 * r_xi_master.Dot(r_xi_slave), x_partial_aux_plane_normal);
 
-    v_mat_tmp.Clear();
+    v_mat_tmp.clear();
     for (unsigned int i = 0; i < 3; ++i)
       for (unsigned int j = 0; j < 3; ++j)
       {
@@ -2939,7 +2939,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   //********************************************************************
   // calculate fpot1: force/residual vector on slave element
   //********************************************************************
-  force_pot_slave_GP.Clear();
+  force_pot_slave_GP.clear();
   // sum up the contributions of all nodes (in all dimensions)
   for (unsigned int idofperdim = 0; idofperdim < (numnodes * numnodalvalues); ++idofperdim)
   {
@@ -2975,7 +2975,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   //********************************************************************
   // calculate fpot2: force/residual vector on master element
   //********************************************************************
-  force_pot_master_GP.Clear();
+  force_pot_master_GP.clear();
   // sum up the contributions of all nodes (in all dimensions)
   for (unsigned int idofperdim = 0; idofperdim < (numnodes * numnodalvalues); ++idofperdim)
   {
@@ -3283,7 +3283,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   cos_alpha_partial_r_xi_slave.Multiply(
       signum_tangentsscalarproduct / Core::FADUtils::VectorNorm(r_xi_slave), v_mat_tmp, t_master);
 
-  v_mat_tmp.Clear();
+  v_mat_tmp.clear();
   for (unsigned int i = 0; i < 3; ++i)
   {
     v_mat_tmp(i, i) += 1.0;
@@ -3396,8 +3396,8 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   //********************************************************************
   // calculate force/residual vector of slave and master element
   //********************************************************************
-  force_pot_slave_GP.Clear();
-  force_pot_master_GP.Clear();
+  force_pot_slave_GP.clear();
+  force_pot_master_GP.clear();
 
   // sum up the contributions of all nodes (in all dimensions)
   for (unsigned int idofperdim = 0; idofperdim < (numnodes * numnodalvalues); ++idofperdim)
@@ -3703,10 +3703,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Rese
   // reset interaction potential as well as interaction forces and moments of this pair
   interaction_potential_ = 0.0;
 
-  for (auto& forcevec : forces_pot_gp_1_) forcevec.Clear();
-  for (auto& forcevec : forces_pot_gp_2_) forcevec.Clear();
-  for (auto& momentvec : moments_pot_gp_1_) momentvec.Clear();
-  for (auto& momentvec : moments_pot_gp_2_) momentvec.Clear();
+  for (auto& forcevec : forces_pot_gp_1_) forcevec.clear();
+  for (auto& forcevec : forces_pot_gp_2_) forcevec.clear();
+  for (auto& momentvec : moments_pot_gp_1_) momentvec.clear();
+  for (auto& momentvec : moments_pot_gp_2_) momentvec.clear();
 }
 
 /*-----------------------------------------------------------------------------------------------*

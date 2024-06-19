@@ -39,19 +39,19 @@ STR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& timeparams,
   // First do everything on the more basic objects like the discretizations, like e.g.
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // is called during setup() in a base class.
   return;
 }
 
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntExplEuler::Init(const Teuchos::ParameterList& timeparams,
+void STR::TimIntExplEuler::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
-  // call Init() in base class
-  STR::TimIntExpl::Init(timeparams, sdynparams, xparams, actdis, solver);
+  // call init() in base class
+  STR::TimIntExpl::init(timeparams, sdynparams, xparams, actdis, solver);
 
 
   // info to user
@@ -70,10 +70,10 @@ void STR::TimIntExplEuler::Init(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Setup this class                                                                 rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntExplEuler::Setup()
+void STR::TimIntExplEuler::setup()
 {
-  // call Setup() in base class
-  STR::TimIntExpl::Setup();
+  // call setup() in base class
+  STR::TimIntExpl::setup();
 
   // determine mass, damping and initial accelerations
   determine_mass_damp_consist_accel();
@@ -280,7 +280,7 @@ void STR::TimIntExplEuler::UpdateStepElement()
   // action for elements
   p.set("action", "calc_struct_update_istep");
   // go to elements
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
 /*----------------------------------------------------------------------*/

@@ -635,7 +635,7 @@ namespace XFEM
 
     void gmsh_output_discretization(std::ostream& gmshfilecontent);
 
-    void Output(const int step, const double time, const bool write_restart_data);
+    void output(const int step, const double time, const bool write_restart_data);
 
     /// compute lift and drag values by integrating the true residuals
     void LiftDrag(const int step, const double time);
@@ -696,10 +696,10 @@ namespace XFEM
 
    public:
     //! initialized the coupling object
-    void Init();
+    void init();
 
     //! setup the coupling object
-    void Setup();
+    void setup();
 
     /// get the indicator state
     inline const bool& is_init() const { return isinit_; };
@@ -707,16 +707,16 @@ namespace XFEM
     /// get the indicator state
     inline const bool& is_setup() const { return issetup_; };
 
-    /// Check if Init() and Setup() have been called, yet.
+    /// Check if init() and setup() have been called, yet.
     inline void check_init_setup() const
     {
-      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call init() and setup() first!");
     }
 
-    /// Check if Init() has been called
+    /// Check if init() has been called
     inline void check_init() const
     {
-      if (not is_init()) FOUR_C_THROW("Call Init() first!");
+      if (not is_init()) FOUR_C_THROW("Call init() first!");
     }
 
    private:

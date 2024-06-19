@@ -95,9 +95,9 @@ Core::UTILS::FastPolynomialFunction::FastPolynomialFunction(std::vector<double> 
 {
 }
 
-double Core::UTILS::FastPolynomialFunction::Evaluate(const double argument) const
+double Core::UTILS::FastPolynomialFunction::evaluate(const double argument) const
 {
-  return mypoly_.Evaluate(argument);
+  return mypoly_.evaluate(argument);
 }
 
 double Core::UTILS::FastPolynomialFunction::EvaluateDerivative(
@@ -116,9 +116,9 @@ Core::UTILS::CubicSplineFromCSV::CubicSplineFromCSV(const std::string& csv_file)
 }
 
 
-double Core::UTILS::CubicSplineFromCSV::Evaluate(const double scalar) const
+double Core::UTILS::CubicSplineFromCSV::evaluate(const double scalar) const
 {
-  return cubic_spline_->Evaluate(scalar);
+  return cubic_spline_->evaluate(scalar);
 }
 
 

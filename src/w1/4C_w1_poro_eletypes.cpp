@@ -31,7 +31,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::WallQuad4PoroType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad4>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -73,9 +73,9 @@ void Discret::ELEMENTS::WallQuad4PoroType::setup_element_definition(
                       .build();
 }
 
-int Discret::ELEMENTS::WallQuad4PoroType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::WallQuad4PoroType::initialize(Core::FE::Discretization& dis)
 {
-  Discret::ELEMENTS::Wall1Type::Initialize(dis);
+  Discret::ELEMENTS::Wall1Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -101,7 +101,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::WallQuad9PoroType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad9>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -141,9 +141,9 @@ void Discret::ELEMENTS::WallQuad9PoroType::setup_element_definition(
                       .build();
 }
 
-int Discret::ELEMENTS::WallQuad9PoroType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::WallQuad9PoroType::initialize(Core::FE::Discretization& dis)
 {
-  Discret::ELEMENTS::Wall1Type::Initialize(dis);
+  Discret::ELEMENTS::Wall1Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -170,7 +170,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs4PoroType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs4>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -210,9 +210,9 @@ void Discret::ELEMENTS::WallNurbs4PoroType::setup_element_definition(
                        .build();
 }
 
-int Discret::ELEMENTS::WallNurbs4PoroType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::WallNurbs4PoroType::initialize(Core::FE::Discretization& dis)
 {
-  Discret::ELEMENTS::Wall1Type::Initialize(dis);
+  Discret::ELEMENTS::Wall1Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -239,7 +239,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs9PoroType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs9>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -279,9 +279,9 @@ void Discret::ELEMENTS::WallNurbs9PoroType::setup_element_definition(
                        .build();
 }
 
-int Discret::ELEMENTS::WallNurbs9PoroType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::WallNurbs9PoroType::initialize(Core::FE::Discretization& dis)
 {
-  Discret::ELEMENTS::Wall1Type::Initialize(dis);
+  Discret::ELEMENTS::Wall1Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -308,7 +308,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::WallTri3PoroType::Create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::tri3>(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -350,9 +350,9 @@ void Discret::ELEMENTS::WallTri3PoroType::setup_element_definition(
                      .build();
 }
 
-int Discret::ELEMENTS::WallTri3PoroType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::WallTri3PoroType::initialize(Core::FE::Discretization& dis)
 {
-  Discret::ELEMENTS::Wall1Type::Initialize(dis);
+  Discret::ELEMENTS::Wall1Type::initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;

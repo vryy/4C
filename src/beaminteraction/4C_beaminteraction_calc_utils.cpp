@@ -129,8 +129,8 @@ namespace BEAMINTERACTION
 
       for (int i = 0; i < discret->NumMyRowNodes(); ++i)
       {
-        d.Clear();
-        X.Clear();
+        d.clear();
+        X.clear();
 
         // get a pointer at i-th row node
         Core::Nodes::Node* node = discret->lRowNode(i);
@@ -398,7 +398,7 @@ namespace BEAMINTERACTION
         if (cond == nullptr) continue;
 
         // get filament number
-        int const currfilnum = cond->parameters().Get<int>("FilamentId");
+        int const currfilnum = cond->parameters().get<int>("FilamentId");
 
         // if a filament has already been examined --> continue with next node
         if (relevantfilaments.find(currfilnum) != relevantfilaments.end()) continue;
@@ -1209,7 +1209,7 @@ namespace BEAMINTERACTION
             Teuchos::rcp(new Epetra_Map(-1, mapvec.size(), mapvec.data(), 0, discret->Comm()));
       }
 
-      eletypeextractor->Setup(*discret()->ElementRowMap(), maps);
+      eletypeextractor->setup(*discret()->ElementRowMap(), maps);
     }
 
     /*----------------------------------------------------------------------------*

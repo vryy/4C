@@ -39,15 +39,15 @@ Core::LinAlg::Solver::Solver(const Teuchos::ParameterList& inparams, const Epetr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Solver::Setup() { solver_ = Teuchos::null; }
+void Core::LinAlg::Solver::setup() { solver_ = Teuchos::null; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::LinAlg::Solver::~Solver() { Reset(); }
+Core::LinAlg::Solver::~Solver() { reset(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Solver::Reset() { solver_ = Teuchos::null; }
+void Core::LinAlg::Solver::reset() { solver_ = Teuchos::null; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -150,7 +150,7 @@ void Core::LinAlg::Solver::ResetTolerance()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
+void Core::LinAlg::Solver::setup(Teuchos::RCP<Epetra_Operator> matrix,
     Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b,
     const SolverParams& params)
 {
@@ -173,7 +173,7 @@ void Core::LinAlg::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
   bool refactor = params.refactor;
   if (params.reset)
   {
-    Reset();
+    reset();
     refactor = true;
   }
 
@@ -197,7 +197,7 @@ void Core::LinAlg::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
       FOUR_C_THROW("Unknown type of solver");
   }
 
-  solver_->Setup(matrix, x, b, refactor, params.reset, params.projector);
+  solver_->setup(matrix, x, b, refactor, params.reset, params.projector);
 }
 
 /*----------------------------------------------------------------------*
@@ -214,7 +214,7 @@ int Core::LinAlg::Solver::Solve(Teuchos::RCP<Epetra_Operator> matrix,
     Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b,
     const SolverParams& params)
 {
-  Setup(matrix, x, b, params);
+  setup(matrix, x, b, params);
   return Solve();
 }
 

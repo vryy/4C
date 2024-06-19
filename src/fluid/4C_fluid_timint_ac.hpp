@@ -35,7 +35,7 @@ namespace FLD
     void read_restart(int step) override;
 
     /// write output
-    void Output() override;
+    void output() override;
 
    protected:
    private:

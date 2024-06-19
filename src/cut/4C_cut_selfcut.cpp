@@ -690,13 +690,13 @@ void Core::Geo::Cut::SelfCut::find_self_cut_triangulation()
         {
           ErrorStatusText(*cutside);
           ErrorGmsh("triangle_with_collinear_points.pos", *cutside);
-          //          Output(*cutside, "find_self_cut_triangulation");
+          //          output(*cutside, "find_self_cut_triangulation");
           std::cout
               << "WARNING:::selfcut algorithm produced a triangle with all points on a line\n";
         }
         if (maincycletriangle.size() != 3)
         {
-          //          Output(*cutside, "find_self_cut_triangulation");
+          //          output(*cutside, "find_self_cut_triangulation");
           FOUR_C_THROW("SelfCut: triangulation unsuccessful; triangle without 3 points");
         }
         if (maincycletriangle[0]->Id() == maincycletriangle[1]->Id() or
@@ -765,20 +765,20 @@ void Core::Geo::Cut::SelfCut::CreateSelfCutSides()
           Node* cutsidenode = *i;
           std::cout << "Ids: " << cutsidenode->Id() << "\n";
         }
-        //        Output(*cutside, "CreateSelfCutSides");
+        //        output(*cutside, "CreateSelfCutSides");
         FOUR_C_THROW("SelfCut: creating sides unsuccessful; didn't find 3-id-set");
       }
       if (selfcutsidenodeids.size() != 3)
       {
         std::cout << "selfcutsidenodeids.size(): " << selfcutsidenodeids.size() << "\n";
-        //        Output(*cutside, "CreateSelfCutSides");
+        //        output(*cutside, "CreateSelfCutSides");
         FOUR_C_THROW("SelfCut: creating sides unsuccessful; didn't find 3 ids");
       }
       if (selfcutsidenodeids[0] == selfcutsidenodeids[1] or
           selfcutsidenodeids[0] == selfcutsidenodeids[2] or
           selfcutsidenodeids[1] == selfcutsidenodeids[2])
       {
-        //        Output(*cutside, "CreateSelfCutSides");
+        //        output(*cutside, "CreateSelfCutSides");
         FOUR_C_THROW("SelfCut: triangulation unsuccessful; triangle with two identical points");
       }
       Side* selfcutside =

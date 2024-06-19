@@ -44,7 +44,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::PoroFluidMultiPhaseType::Crea
 {
   Discret::ELEMENTS::PoroFluidMultiPhase* object =
       new Discret::ELEMENTS::PoroFluidMultiPhase(-1, -1);
-  object->Unpack(data);
+  object->unpack(data);
   return object;
 }
 
@@ -174,7 +174,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::PoroFluidMultiPhaseBoun
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::PoroFluidMultiPhaseType::Initialize(Core::FE::Discretization& dis)
+int Discret::ELEMENTS::PoroFluidMultiPhaseType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
@@ -239,7 +239,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhase::initialize()
   Teuchos::RCP<Mat::FluidPoroMultiPhase> actmat =
       Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(Material(), true);
 
-  actmat->Initialize();
+  actmat->initialize();
   return;
 }
 
@@ -247,7 +247,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhase::initialize()
  |  Pack data                                                  (public) |
  |                                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidMultiPhase::Pack(Core::Communication::PackBuffer& data) const
+void Discret::ELEMENTS::PoroFluidMultiPhase::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -256,7 +256,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhase::Pack(Core::Communication::PackBuffe
   add_to_pack(data, type);
 
   // add base class Element
-  Element::Pack(data);
+  Element::pack(data);
 
   // add internal data
   add_to_pack(data, distype_);
@@ -270,7 +270,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhase::Pack(Core::Communication::PackBuffe
  |  Unpack data                                                (public) |
  |                                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidMultiPhase::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::PoroFluidMultiPhase::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -279,7 +279,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhase::Unpack(const std::vector<char>& dat
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::Unpack(basedata);
+  Element::unpack(basedata);
 
   // extract internal data
   distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
@@ -450,7 +450,7 @@ Core::FE::CellType Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                      vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Pack(
+void Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::pack(
     Core::Communication::PackBuffer& data) const
 {
   // boundary elements are rebuild by their parent element for each condition
@@ -463,7 +463,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Pack(
 /*----------------------------------------------------------------------*
  |  Unpack data (public)                                    vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::unpack(const std::vector<char>& data)
 {
   // boundary elements are rebuild by their parent element for each condition
   // after redistribution. This way we make sure, that the node ids always match.

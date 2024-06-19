@@ -72,7 +72,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   // Set the FAD variables for the solid DOFs. For the terms calculated here we only need first
   // order derivatives.
   auto q_solid =
-      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_1st>::Initialize(this->Element2());
+      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_1st>::initialize(this->Element2());
   for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
     q_solid.element_position_(i_solid) =
         Core::FADUtils::HigherOrderFadValue<scalar_type_rot_1st>::apply(3 + solid::n_dof_,
@@ -255,7 +255,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       Core::LinAlg::Inverse(T_solid_inv);
 
       // Evaluate shape functions.
-      GEOMETRYPAIR::EvaluateShapeFunction<mortar_rot>::Evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<mortar_rot>::evaluate(
           lambda_shape_functions, projected_gauss_point.GetEta());
       for (unsigned int i_node = 0; i_node < mortar_rot::n_nodes_; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -356,7 +356,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   // Set the FAD variables for the solid DOFs. For the terms calculated here we only need first
   // order derivatives.
   auto q_solid =
-      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_2nd>::Initialize(this->Element2());
+      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_2nd>::initialize(this->Element2());
   for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
     q_solid.element_position_(i_solid) =
         Core::FADUtils::HigherOrderFadValue<scalar_type_rot_2nd>::apply(3 + solid::n_dof_,
@@ -546,7 +546,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       Core::LinAlg::Inverse(T_solid_inv);
 
       // Evaluate shape functions.
-      GEOMETRYPAIR::EvaluateShapeFunction<mortar_rot>::Evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<mortar_rot>::evaluate(
           lambda_shape_functions, projected_gauss_point.GetEta());
       for (unsigned int i_node = 0; i_node < mortar_rot::n_nodes_; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)

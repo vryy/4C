@@ -81,11 +81,11 @@ void FSI::FluidAleAlgorithm::solve() { MBFluidField()->nonlinear_solve(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::update() { MBFluidField()->Update(); }
+void FSI::FluidAleAlgorithm::update() { MBFluidField()->update(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::output() { MBFluidField()->Output(); }
+void FSI::FluidAleAlgorithm::output() { MBFluidField()->output(); }
 
 FOUR_C_NAMESPACE_CLOSE

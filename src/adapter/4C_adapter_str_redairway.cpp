@@ -38,7 +38,7 @@ Adapter::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
     Core::Conditions::Condition* actcond = surfneumcond[i];
     if (actcond->Type() == Core::Conditions::RedAirwayTissue)
     {
-      int condID = actcond->parameters().Get<int>("coupling id");
+      int condID = actcond->parameters().get<int>("coupling id");
       coupcond_[condID] = actcond;
       tmp.push_back(condID);
       vn_[condID] = 0.0;
@@ -115,7 +115,7 @@ void Adapter::StructureRedAirway::CalcVol(std::map<int, double>& V)
       elevector3.size(1);
 
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(params, *discretization(), lm, elematrix1, elematrix2,
+      int err = curr->second->evaluate(params, *discretization(), lm, elematrix1, elematrix2,
           elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -164,9 +164,9 @@ void Adapter::StructureRedAirway::CalcFlux(
 
 
 /*======================================================================*/
-void Adapter::StructureRedAirway::Update()
+void Adapter::StructureRedAirway::update()
 {
-  StructureWrapper::Update();
+  StructureWrapper::update();
 
   for (int i = 0; i < coupmap_->NumMyElements(); ++i)
   {

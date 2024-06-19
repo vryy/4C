@@ -225,7 +225,7 @@ namespace Discret::ELEMENTS
   /*!
    * @brief Pack the solid formulation history data
    *
-   * @note Calls the respective @p Pack(...) method for the SolidFormulation if needed by the solid
+   * @note Calls the respective @p pack(...) method for the SolidFormulation if needed by the solid
    * formulation
    *
    * @tparam SolidFormulation
@@ -233,12 +233,12 @@ namespace Discret::ELEMENTS
    * @param solid_formulation_history (in) : History data to be packed
    */
   template <typename SolidFormulation>
-  void Pack(Core::Communication::PackBuffer& data,
+  void pack(Core::Communication::PackBuffer& data,
       const SolidFormulationHistory<SolidFormulation>& solid_formulation_history)
   {
     if constexpr (has_global_history<SolidFormulation>)
     {
-      SolidFormulation::Pack(solid_formulation_history.global_history, data);
+      SolidFormulation::pack(solid_formulation_history.global_history, data);
     }
 
     if constexpr (has_gauss_point_history<SolidFormulation>)
@@ -246,7 +246,7 @@ namespace Discret::ELEMENTS
       data.add_to_pack(solid_formulation_history.gp_history.size());
       for (const auto& item : solid_formulation_history.gp_history)
       {
-        SolidFormulation::Pack(item, data);
+        SolidFormulation::pack(item, data);
       }
     }
   }
@@ -254,7 +254,7 @@ namespace Discret::ELEMENTS
   /*!
    * @brief Unpack the solid formulation history data
    *
-   * @note Calls the respective @p Unpack(...) method for the SolidFormulation if needed by the
+   * @note Calls the respective @p unpack(...) method for the SolidFormulation if needed by the
    * solid formulation
    *
    * @tparam SolidFormulation
@@ -263,12 +263,12 @@ namespace Discret::ELEMENTS
    * @param solid_formulation_history (out) : History data to be unpacked
    */
   template <typename SolidFormulation>
-  void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data,
+  void unpack(std::vector<char>::size_type& position, const std::vector<char>& data,
       SolidFormulationHistory<SolidFormulation>& solid_formulation_history)
   {
     if constexpr (has_global_history<SolidFormulation>)
     {
-      SolidFormulation::Unpack(position, data, solid_formulation_history.global_history);
+      SolidFormulation::unpack(position, data, solid_formulation_history.global_history);
     }
 
     if constexpr (has_gauss_point_history<SolidFormulation>)
@@ -278,7 +278,7 @@ namespace Discret::ELEMENTS
       solid_formulation_history.gp_history.resize(num_gps);
       for (auto& item : solid_formulation_history.gp_history)
       {
-        SolidFormulation::Unpack(position, data, item);
+        SolidFormulation::unpack(position, data, item);
       }
     }
   }

@@ -39,7 +39,7 @@ namespace Discret
 
       Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(Core::FE::Discretization& dis) override;
+      int initialize(Core::FE::Discretization& dis) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -107,18 +107,18 @@ namespace Discret
       /*!
       \brief Pack this class so it can be communicated
 
-      \ref Pack and \ref Unpack are used to communicate this element
+      \ref pack and \ref unpack are used to communicate this element
 
       */
-      void Pack(Core::Communication::PackBuffer& data) const override;
+      void pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
 
-      \ref Pack and \ref Unpack are used to communicate this element
+      \ref pack and \ref unpack are used to communicate this element
 
       */
-      void Unpack(const std::vector<char>& data) override;
+      void unpack(const std::vector<char>& data) override;
 
 
       //@}
@@ -159,7 +159,7 @@ namespace Discret
 
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(
+      int evaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
           Core::FE::Discretization& discretization,  ///< pointer to discretization for de-assembly

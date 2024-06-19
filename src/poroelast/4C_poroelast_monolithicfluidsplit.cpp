@@ -62,7 +62,7 @@ void PoroElast::MonolithicFluidSplit::SetupSystem()
     // full Poroelasticity-map
     fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
     // full Poroelasticity-blockmap
-    blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+    blockrowdofmap_->setup(*fullmap_, vecSpaces);
   }
 
   // Switch fluid to interface split block matrix

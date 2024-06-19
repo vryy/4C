@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::NewmanMultiScale::NewmanMultiScale(const Core::Mat::PAR::Parameter::Data& matdata)
     : Newman(matdata),
       ScatraMicroMacroCoupling(matdata),
-      electronic_cond_(matdata.parameters.Get<double>("ELECTRONIC_COND")),
-      conc_dep_scale_func_num_(matdata.parameters.Get<int>("ELECTRONIC_COND_CONC_SCALE_FUNC_NUM"))
+      electronic_cond_(matdata.parameters.get<double>("ELECTRONIC_COND")),
+      conc_dep_scale_func_num_(matdata.parameters.get<int>("ELECTRONIC_COND_CONC_SCALE_FUNC_NUM"))
 {
 }
 
@@ -44,7 +44,7 @@ Mat::NewmanMultiScaleType Mat::NewmanMultiScaleType::instance_;
 Core::Communication::ParObject* Mat::NewmanMultiScaleType::Create(const std::vector<char>& data)
 {
   Mat::NewmanMultiScale* NewmanMultiScale = new Mat::NewmanMultiScale();
-  NewmanMultiScale->Unpack(data);
+  NewmanMultiScale->unpack(data);
   return NewmanMultiScale;
 }
 
@@ -67,7 +67,7 @@ Mat::NewmanMultiScale::NewmanMultiScale(Mat::PAR::NewmanMultiScale* params)
 /*--------------------------------------------------------------------*
  | pack material for communication purposes                fang 07/17 |
  *--------------------------------------------------------------------*/
-void Mat::NewmanMultiScale::Pack(Core::Communication::PackBuffer& data) const
+void Mat::NewmanMultiScale::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -80,14 +80,14 @@ void Mat::NewmanMultiScale::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, matid);
 
   // pack base class material
-  Newman::Pack(data);
+  Newman::pack(data);
 }
 
 
 /*--------------------------------------------------------------------*
  | unpack data from a char vector                          fang 07/17 |
  *--------------------------------------------------------------------*/
-void Mat::NewmanMultiScale::Unpack(const std::vector<char>& data)
+void Mat::NewmanMultiScale::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -115,7 +115,7 @@ void Mat::NewmanMultiScale::Unpack(const std::vector<char>& data)
   // extract base class material
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Newman::Unpack(basedata);
+  Newman::unpack(basedata);
 
   // final safety check
   if (position != data.size())
@@ -131,7 +131,7 @@ double Mat::NewmanMultiScale::electronic_cond(const int gp) const
   {
     return Global::Problem::Instance()
                ->FunctionById<Core::UTILS::FunctionOfAnything>(func_num - 1)
-               .Evaluate({{"c", evaluate_mean_concentration(gp)}}, {}, 0) *
+               .evaluate({{"c", evaluate_mean_concentration(gp)}}, {}, 0) *
            params_->electronic_cond();
   }
   else

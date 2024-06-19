@@ -37,11 +37,11 @@ namespace ScaTra
 
 
     //! setup time integration scheme
-    void Setup() override;
+    void setup() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update() override;
+    void update() override;
 
     //! read restart data
     void read_restart(
@@ -72,11 +72,11 @@ namespace ScaTra
 
 
     //! setup time integration scheme
-    void Setup() override;
+    void setup() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update() override;
+    void update() override;
 
     //! read restart data
     void read_restart(
@@ -104,11 +104,11 @@ namespace ScaTra
 
 
     //! Setup time integration scheme
-    void Setup() override;
+    void setup() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update() override;
+    void update() override;
 
     //! read restart data
     void read_restart(

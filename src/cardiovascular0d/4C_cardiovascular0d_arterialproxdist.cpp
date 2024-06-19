@@ -47,7 +47,7 @@ UTILS::Cardiovascular0DArterialProxDist::Cardiovascular0DArterialProxDist(
  |calling element evaluates of a condition and assembing results         |
  |based on this conditions                                               |
  *----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& params,
+void UTILS::Cardiovascular0DArterialProxDist::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,
@@ -90,33 +90,33 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
   for (auto* cond : cardiovascular0dcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("id");
+    int condID = cond->parameters().get<int>("id");
     params.set("id", condID);
 
-    double R_arvalve_max = cardiovascular0dcond_[condID]->parameters().Get<double>("R_arvalve_max");
-    double R_arvalve_min = cardiovascular0dcond_[condID]->parameters().Get<double>("R_arvalve_min");
-    double R_atvalve_max = cardiovascular0dcond_[condID]->parameters().Get<double>("R_atvalve_max");
-    double R_atvalve_min = cardiovascular0dcond_[condID]->parameters().Get<double>("R_atvalve_min");
-    double k_p = cardiovascular0dcond_[condID]->parameters().Get<double>("k_p");
+    double R_arvalve_max = cardiovascular0dcond_[condID]->parameters().get<double>("R_arvalve_max");
+    double R_arvalve_min = cardiovascular0dcond_[condID]->parameters().get<double>("R_arvalve_min");
+    double R_atvalve_max = cardiovascular0dcond_[condID]->parameters().get<double>("R_atvalve_max");
+    double R_atvalve_min = cardiovascular0dcond_[condID]->parameters().get<double>("R_atvalve_min");
+    double k_p = cardiovascular0dcond_[condID]->parameters().get<double>("k_p");
 
-    double L_arp = cardiovascular0dcond_[condID]->parameters().Get<double>("L_arp");
-    double C_arp = cardiovascular0dcond_[condID]->parameters().Get<double>("C_arp");
-    double R_arp = cardiovascular0dcond_[condID]->parameters().Get<double>("R_arp");
-    double C_ard = cardiovascular0dcond_[condID]->parameters().Get<double>("C_ard");
-    double R_ard = cardiovascular0dcond_[condID]->parameters().Get<double>("R_ard");
+    double L_arp = cardiovascular0dcond_[condID]->parameters().get<double>("L_arp");
+    double C_arp = cardiovascular0dcond_[condID]->parameters().get<double>("C_arp");
+    double R_arp = cardiovascular0dcond_[condID]->parameters().get<double>("R_arp");
+    double C_ard = cardiovascular0dcond_[condID]->parameters().get<double>("C_ard");
+    double R_ard = cardiovascular0dcond_[condID]->parameters().get<double>("R_ard");
 
-    double p_ref = cardiovascular0dcond_[condID]->parameters().Get<double>("p_ref");
+    double p_ref = cardiovascular0dcond_[condID]->parameters().get<double>("p_ref");
 
-    double p_at_fac = cardiovascular0dcond_[condID]->parameters().Get<double>("fac");
+    double p_at_fac = cardiovascular0dcond_[condID]->parameters().get<double>("fac");
 
     // find out whether we will use a time curve and get the factor
-    const int curvenum = cardiovascular0dcond_[condID]->parameters().Get<int>("curve");
+    const int curvenum = cardiovascular0dcond_[condID]->parameters().get<int>("curve");
     double curvefac_np = 1.0;
 
     if (curvenum >= 0 && usetime)
     {
       curvefac_np =
-          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).Evaluate(
+          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).evaluate(
               tim);
     }
 
@@ -290,7 +290,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
       elevector3.size(numdof_per_cond);
 
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(
+      int err = curr->second->evaluate(
           params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -338,7 +338,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList& params,
+void UTILS::Cardiovascular0DArterialProxDist::initialize(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> sysvec1, Teuchos::RCP<Epetra_Vector> sysvec2)
 {
   if (!(actdisc_->Filled())) FOUR_C_THROW("fill_complete() was not called");
@@ -356,7 +356,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList&
   for (auto* cond : cardiovascular0dcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->parameters().Get<int>("id");
+    int condID = cond->parameters().get<int>("id");
     params.set("id", condID);
 
     // global and local ID of this bc in the redundant vectors
@@ -365,10 +365,10 @@ void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList&
     gindex[0] = numdof_per_cond * condID + offsetID;
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
-    double p_v_0 = cardiovascular0dcond_[condID]->parameters().Get<double>("p_v_0");
-    double p_arp_0 = cardiovascular0dcond_[condID]->parameters().Get<double>("p_arp_0");
-    double q_arp_0 = cardiovascular0dcond_[condID]->parameters().Get<double>("y_arp_0");
-    double p_ard_0 = cardiovascular0dcond_[condID]->parameters().Get<double>("p_ard_0");
+    double p_v_0 = cardiovascular0dcond_[condID]->parameters().get<double>("p_v_0");
+    double p_arp_0 = cardiovascular0dcond_[condID]->parameters().get<double>("p_arp_0");
+    double q_arp_0 = cardiovascular0dcond_[condID]->parameters().get<double>("y_arp_0");
+    double p_ard_0 = cardiovascular0dcond_[condID]->parameters().get<double>("p_ard_0");
 
     int err1 = sysvec2->SumIntoGlobalValues(1, &p_v_0, &gindex[0]);
     int err2 = sysvec2->SumIntoGlobalValues(1, &p_arp_0, &gindex[1]);
@@ -403,7 +403,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList&
       elevector3.size(numdof_per_cond);
 
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(
+      int err = curr->second->evaluate(
           params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 

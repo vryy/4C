@@ -38,10 +38,10 @@ ScaTra::TimIntStationary::TimIntStationary(Teuchos::RCP<Core::FE::Discretization
 /*----------------------------------------------------------------------*
  |  initialize time integration                         rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntStationary::Init()
+void ScaTra::TimIntStationary::init()
 {
   // initialize base class
-  ScaTraTimIntImpl::Init();
+  ScaTraTimIntImpl::init();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -97,16 +97,16 @@ void ScaTra::TimIntStationary::set_element_time_parameter(bool forcedincremental
   eleparams.set<double>("alpha_F", 1.0);
 
   // call standard loop over elements
-  discret_->Evaluate(
+  discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntStationary::Setup()
+void ScaTra::TimIntStationary::setup()
 {
   // setup base class
-  ScaTraTimIntImpl::Setup();
+  ScaTraTimIntImpl::setup();
 
   set_element_nodeset_parameters();
 }
@@ -205,10 +205,10 @@ void ScaTra::TimIntStationary::read_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntStationary::Update()
+void ScaTra::TimIntStationary::update()
 {
   // call base class routine
-  ScaTraTimIntImpl::Update();
+  ScaTraTimIntImpl::update();
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!

@@ -200,7 +200,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
       // loop over all Gauss points
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
         // initialize micro scale in multi-scale simulations
-        newmanmultiscale->Initialize(ele->Id(), iquad, my::scatrapara_->IsAle());
+        newmanmultiscale->initialize(ele->Id(), iquad, my::scatrapara_->IsAle());
 
       break;
     }
@@ -240,7 +240,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
           // solve micro scale
           std::vector<double> dummy(3, 0.0);
           const double detF = my::eval_det_f_at_int_point(ele, intpoints, iquad);
-          newmanmultiscale->Evaluate(iquad, phinp, dummy[0], dummy, detF);
+          newmanmultiscale->evaluate(iquad, phinp, dummy[0], dummy, detF);
         }
       }
 
@@ -268,7 +268,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
       // loop over all Gauss points
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
         // create output on micro scale
-        newmanmultiscale->Output(iquad);
+        newmanmultiscale->output(iquad);
 
       break;
     }

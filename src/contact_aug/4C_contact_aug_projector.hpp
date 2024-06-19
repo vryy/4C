@@ -48,7 +48,7 @@ namespace CONTACT
 
      public:
       /// access the singleton pointer of the projector object
-      static ProjectorBase* Get(const unsigned probdim, Core::FE::CellType ref_type,
+      static ProjectorBase* get(const unsigned probdim, Core::FE::CellType ref_type,
           Core::FE::CellType tar_type, const bool debug = false);
 
       virtual ~ProjectorBase() = default;

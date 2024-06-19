@@ -90,7 +90,7 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
     // which should be the same!
     // -------------------------------------------------------------------
 
-    int N_iter = couplingcond[0]->parameters().Get<int>("MaximumIterations");
+    int N_iter = couplingcond[0]->parameters().get<int>("MaximumIterations");
 
     // -------------------------------------------------------------------
     // make sure that each coupling has two conditions of same ID
@@ -98,10 +98,10 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
     for (unsigned int i = 0; i < numcondlines; i++)
     {
       bool CondIsFine = false;
-      int condid = couplingcond[i]->parameters().Get<int>("ConditionID");
+      int condid = couplingcond[i]->parameters().get<int>("ConditionID");
       for (unsigned int j = 0; j < numcondlines; j++)
       {
-        int condid2 = couplingcond2[j]->parameters().Get<int>("ConditionID");
+        int condid2 = couplingcond2[j]->parameters().get<int>("ConditionID");
         if (condid2 == condid)
         {
           CondIsFine = true;
@@ -121,7 +121,7 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
     // -------------------------------------------------------------------
     for (unsigned int i = 0; i < numcondlines; i++)
     {
-      int condid = couplingcond[i]->parameters().Get<int>("ConditionID");
+      int condid = couplingcond[i]->parameters().get<int>("ConditionID");
 
       // -----------------------------------------------------------------
       // Find the second condition number which has the same id as the
@@ -130,12 +130,12 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
       unsigned int j = 0;
       for (j = 0; j < numcondlines; j++)
       {
-        if (condid == couplingcond2[j]->parameters().Get<int>("ConditionID"))
+        if (condid == couplingcond2[j]->parameters().get<int>("ConditionID"))
         {
           break;
         }
       }
-      int thisN_iter = couplingcond[i]->parameters().Get<int>("MaximumIterations");
+      int thisN_iter = couplingcond[i]->parameters().get<int>("MaximumIterations");
       if (thisN_iter != N_iter)
         FOUR_C_THROW(
             "all maximum number of iterations on the coupling boundary between 3-D and reduced-D "
@@ -176,10 +176,10 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
     for (unsigned int i = 0; i < numcondlines; i++)
     {
       // Get condition ID
-      int id = couplingcond[i]->parameters().Get<int>("ConditionID");
+      int id = couplingcond[i]->parameters().get<int>("ConditionID");
 
       // Get returned coupling variable
-      std::string variable = ((couplingcond[i])->parameters().Get<std::string>("ReturnedVariable"));
+      std::string variable = ((couplingcond[i])->parameters().get<std::string>("ReturnedVariable"));
 
       // Build a new std::string from [coupling Variable name][Condition Id]
       std::stringstream VariableWithId;
@@ -198,11 +198,11 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
     for (unsigned int i = 0; i < numcondlines; i++)
     {
       // Get condition ID
-      int id = couplingcond2[i]->parameters().Get<int>("ConditionID");
+      int id = couplingcond2[i]->parameters().get<int>("ConditionID");
 
       // Get returned coupling variable
       std::string variable =
-          ((couplingcond2[i])->parameters().Get<std::string>("ReturnedVariable"));
+          ((couplingcond2[i])->parameters().get<std::string>("ReturnedVariable"));
 
       // Build a new std::string from [coupling Variable name][Condition Id]
       std::stringstream VariableWithId;
@@ -304,10 +304,10 @@ void FLD::UTILS::FluidCouplingWrapperBase::apply_boundary_conditions(
     //----------------------------------------------------------------
     for (auto& i : conds3D)
     {
-      if (i->parameters().Get<int>("ConditionID") == condID)
+      if (i->parameters().get<int>("ConditionID") == condID)
       {
         // get returned value name from 3D boundary
-        std::string variable_str = (i->parameters().Get<std::string>("ReturnedVariable"));
+        std::string variable_str = (i->parameters().get<std::string>("ReturnedVariable"));
 
         // concatenate the variable name with the variable id
         std::stringstream CouplingVariable;
@@ -374,11 +374,11 @@ void FLD::UTILS::FluidCouplingWrapperBase::apply_boundary_conditions(
       //----------------------------------------------------------------
       for (unsigned int i = 0; i < conds3D.size(); i++)
       {
-        if (conds_redD[i]->parameters().Get<int>("ConditionID") == condID)
+        if (conds_redD[i]->parameters().get<int>("ConditionID") == condID)
         {
           // get returned value name from 3D boundary
           std::string variable_str =
-              (conds_redD[i]->parameters().Get<std::string>("ReturnedVariable"));
+              (conds_redD[i]->parameters().get<std::string>("ReturnedVariable"));
 
           // concatenate the variable name with the variable id
           std::stringstream CouplingVariable;
@@ -492,11 +492,11 @@ void FLD::UTILS::FluidCouplingWrapperBase::apply_boundary_conditions(
   for (unsigned int i = 0; i < conds3D.size(); i++)
   {
     // Get condition ID
-    int ID = conds_redD[i]->parameters().Get<int>("ConditionID");
+    int ID = conds_redD[i]->parameters().get<int>("ConditionID");
 
     // Concatenate the returned value with the condition ID
     std::string ReturnedVariable =
-        (conds_redD[i]->parameters().Get<std::string>("ReturnedVariable"));
+        (conds_redD[i]->parameters().get<std::string>("ReturnedVariable"));
 
     std::stringstream VariableWithId;
     VariableWithId << ReturnedVariable << "_" << ID;
@@ -757,7 +757,7 @@ FLD::UTILS::FluidCouplingBc::FluidCouplingBc(Teuchos::RCP<Core::FE::Discretizati
   //               |applied
   // ---------------------------------------------------------------------
 
-  if ((couplingcond[numcond2]->parameters().Get<std::string>("ReturnedVariable")) == "flow")
+  if ((couplingcond[numcond2]->parameters().get<std::string>("ReturnedVariable")) == "flow")
   {
     double density = 0.0;
     double viscosity = 0.0;
@@ -1145,14 +1145,14 @@ void FLD::UTILS::FluidCouplingBc::evaluate_dirichlet(
   Core::Conditions::Condition* cond_red = nullptr;
   for (unsigned int i = 0; i != conds_red.size(); i++)
   {
-    if (conds_red[i]->parameters().Get<int>("ConditionID") == condid_)
+    if (conds_red[i]->parameters().get<int>("ConditionID") == condid_)
     {
       cond_red = conds_red[i];
       break;
     }
   }
 
-  if ((cond_red->parameters().Get<std::string>("ReturnedVariable")) != "flow")
+  if ((cond_red->parameters().get<std::string>("ReturnedVariable")) != "flow")
   {
     return;
   }
@@ -1164,7 +1164,7 @@ void FLD::UTILS::FluidCouplingBc::evaluate_dirichlet(
   Core::Conditions::Condition* cond;
   for (unsigned int i = 0; i != conds.size(); i++)
   {
-    if (conds[i]->parameters().Get<int>("ConditionID") == condid_)
+    if (conds[i]->parameters().get<int>("ConditionID") == condid_)
     {
       cond = conds[i];
       break;

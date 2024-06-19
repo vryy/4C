@@ -29,7 +29,7 @@ Mortar::ElementType& Mortar::ElementType::Instance() { return instance_; }
 Core::Communication::ParObject* Mortar::ElementType::Create(const std::vector<char>& data)
 {
   Mortar::Element* ele = new Mortar::Element(0, 0, Core::FE::CellType::dis_none, 0, nullptr, false);
-  ele->Unpack(data);
+  ele->unpack(data);
   return ele;
 }
 
@@ -73,7 +73,7 @@ Mortar::MortarEleDataContainer::MortarEleDataContainer()
  |  Pack data                                                  (public) |
  |                                                            popp 12/10|
  *----------------------------------------------------------------------*/
-void Mortar::MortarEleDataContainer::Pack(Core::Communication::PackBuffer& data) const
+void Mortar::MortarEleDataContainer::pack(Core::Communication::PackBuffer& data) const
 {
   // add area_
   Core::Communication::ParObject::add_to_pack(data, area_);
@@ -85,7 +85,7 @@ void Mortar::MortarEleDataContainer::Pack(Core::Communication::PackBuffer& data)
  |  Unpack data                                                (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void Mortar::MortarEleDataContainer::Unpack(
+void Mortar::MortarEleDataContainer::unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // area_
@@ -179,7 +179,7 @@ void Mortar::Element::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void Mortar::Element::Pack(Core::Communication::PackBuffer& data) const
+void Mortar::Element::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -187,7 +187,7 @@ void Mortar::Element::Pack(Core::Communication::PackBuffer& data) const
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   // add base class Core::Elements::FaceElement
-  Core::Elements::FaceElement::Pack(data);
+  Core::Elements::FaceElement::pack(data);
   // add shape_
   add_to_pack(data, shape_);
   // add isslave_
@@ -215,7 +215,7 @@ void Mortar::Element::Pack(Core::Communication::PackBuffer& data) const
   // add modata_
   bool hasdata = (modata_ != Teuchos::null);
   add_to_pack(data, hasdata);
-  if (hasdata) modata_->Pack(data);
+  if (hasdata) modata_->pack(data);
 
   // add physicaltype
   add_to_pack(data, static_cast<int>(physicaltype_));
@@ -232,7 +232,7 @@ void Mortar::Element::Pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void Mortar::Element::Unpack(const std::vector<char>& data)
+void Mortar::Element::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -241,7 +241,7 @@ void Mortar::Element::Unpack(const std::vector<char>& data)
   // extract base class Core::Elements::FaceElement
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Core::Elements::FaceElement::Unpack(basedata);
+  Core::Elements::FaceElement::unpack(basedata);
   // shape_
   shape_ = static_cast<Core::FE::CellType>(extract_int(position, data));
   // isslave_
@@ -273,7 +273,7 @@ void Mortar::Element::Unpack(const std::vector<char>& data)
   if (hasdata)
   {
     modata_ = Teuchos::rcp(new Mortar::MortarEleDataContainer());
-    modata_->Unpack(position, data);
+    modata_->unpack(position, data);
   }
   else
   {
@@ -309,7 +309,7 @@ int Mortar::Element::NumDofPerNode(const Core::Nodes::Node& node) const
 /*----------------------------------------------------------------------*
  |  evaluate element (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
-int Mortar::Element::Evaluate(Teuchos::ParameterList& params,
+int Mortar::Element::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,

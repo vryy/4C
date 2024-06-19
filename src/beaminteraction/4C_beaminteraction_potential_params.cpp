@@ -42,7 +42,7 @@ BEAMINTERACTION::BeamPotentialParams::BeamPotentialParams()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
+void BEAMINTERACTION::BeamPotentialParams::init(const double restart_time)
 {
   issetup_ = false;
 
@@ -173,9 +173,9 @@ void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
     params_runtime_visualization_output_btb_potential_ =
         Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams(restart_time));
 
-    params_runtime_visualization_output_btb_potential_->Init(
+    params_runtime_visualization_output_btb_potential_->init(
         beam_potential_params_list.sublist("RUNTIME VTK OUTPUT"));
-    params_runtime_visualization_output_btb_potential_->Setup();
+    params_runtime_visualization_output_btb_potential_->setup();
   }
 
   /****************************************************************************/
@@ -210,7 +210,7 @@ void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamPotentialParams::Setup()
+void BEAMINTERACTION::BeamPotentialParams::setup()
 {
   throw_error_if_not_init();
 
@@ -223,14 +223,14 @@ void BEAMINTERACTION::BeamPotentialParams::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialParams::throw_error_if_not_init_and_setup() const
 {
-  if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (!is_init() or !is_setup()) FOUR_C_THROW("Call init() and setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialParams::throw_error_if_not_init() const
 {
-  if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
+  if (!is_init()) FOUR_C_THROW("init() has not been called, yet!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

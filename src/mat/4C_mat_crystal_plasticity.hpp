@@ -315,10 +315,10 @@ namespace Mat
     }
 
     //! Pack this class so it can be communicated
-    void Pack(Core::Communication::PackBuffer& data) const override;
+    void pack(Core::Communication::PackBuffer& data) const override;
 
     //! Unpack data from a char vector into this class
-    void Unpack(const std::vector<char>& data) override;
+    void unpack(const std::vector<char>& data) override;
 
     //-----------------------------------------------------------------------------
     /** @}                                                                       */
@@ -373,7 +373,7 @@ namespace Mat
     //-----------------------------------------------------------------------------
 
     //! setup and initialize internal and variables
-    void Setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, Input::LineDefinition* linedef) override;
 
     //! set up the slip/twinning directions and slip/twinning plane normals for the given lattice
     //! type
@@ -383,10 +383,10 @@ namespace Mat
     void setup_lattice_orientation(Input::LineDefinition* linedef);
 
     //! update internal variables
-    void Update() override;
+    void update() override;
 
     //! evaluate material law
-    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,      //!< [IN] deformation gradient
+    void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,      //!< [IN] deformation gradient
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain,  //!< [IN] Green-Lagrange strain
         Teuchos::ParameterList& params,                          //!< [IN] model parameter list
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>*
