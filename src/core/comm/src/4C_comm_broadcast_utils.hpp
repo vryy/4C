@@ -29,34 +29,38 @@ namespace Core::Communication
   //! Merge map @p map_in (key of type @p T and value of type @p U) from all procs to a merged
   //! map (key of type @p T and value of type @p U). It is distributed to to all procs.
   template <typename T, typename U>
-  std::map<T, U> BroadcastMap(const std::map<T, U>& map_in, const Epetra_Comm& comm);
+  std::map<T, U> broadcast(const std::map<T, U>& map_in, const Epetra_Comm& comm);
 
-  // ! This function is an overload of the above defined function for unordered maps.
+  //! Merge map @p unordered map_in (key of type @p T and value of type @p U) from all procs to a
+  //! merged unordered map (key of type @p T and value of type @p U). It is distributed to to all
+  //! procs.
   template <typename T, typename U>
-  std::unordered_map<T, U> BroadcastMap(
+  std::unordered_map<T, U> broadcast(
       const std::unordered_map<T, U>& map_in, const Epetra_Comm& comm);
 
-  // ! This function is an overload of the above defined function for unordered multimaps.
+  //! Merge unordered multimap @p map_in (key of type @p T and value of type @p U) from all procs
+  //! to a merged unordered multimap (key of type @p T and value of type @p U). It is distributed
+  //! to to all procs.
   template <typename T, typename U>
-  std::unordered_multimap<T, U> BroadcastMap(
+  std::unordered_multimap<T, U> broadcast(
       const std::unordered_multimap<T, U>& map_in, const Epetra_Comm& comm);
 
   //! Merge vector of pairs @p pairs_in (items of type @p T and @p U) from all procs to a merged
   //! vector (items of type @p T and @p U). The merged items are in an unspecified order. It is
   //! distributed to to all procs.
   template <typename T, typename U>
-  std::vector<std::pair<T, U>> BroadcastPairVector(
+  std::vector<std::pair<T, U>> broadcast(
       const std::vector<std::pair<T, U>>& pairs_in, const Epetra_Comm& comm);
 
   //! Merge @p set_in (items of type @p T) from all procs to a merged set (items of type @p T). It
   //! is distributed to to all procs.
   template <typename T>
-  std::set<T> BroadcastSet(const std::set<T>& set_in, const Epetra_Comm& comm);
+  std::set<T> broadcast(const std::set<T>& set_in, const Epetra_Comm& comm);
 
   //! Merge vector @p vec_in (items of type @p T) from all procs to a merged vector (items of type
   //! @p T). The items of are in an unspecified order. It is distributed to to all procs.
   template <typename T>
-  std::vector<T> BroadcastVector(const std::vector<T>& vec_in, const Epetra_Comm& comm);
+  std::vector<T> broadcast(const std::vector<T>& vec_in, const Epetra_Comm& comm);
 }  // namespace Core::Communication
 
 /*----------------------------------------------------------------------*/
@@ -78,8 +82,8 @@ namespace Core::Communication::DETAIL
     }
     std::vector<T> vec1;
     std::vector<U> vec2;
-    vec1 = BroadcastVector(my_gid_vec1, comm);
-    vec2 = BroadcastVector(my_gid_vec2, comm);
+    vec1 = broadcast(my_gid_vec1, comm);
+    vec2 = broadcast(my_gid_vec2, comm);
 
     FOUR_C_ASSERT(vec1.size() == vec2.size(), "Vectors must have the same length.");
 
@@ -95,8 +99,7 @@ namespace Core::Communication::DETAIL
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::map<T, U> Core::Communication::BroadcastMap(
-    const std::map<T, U>& map_in, const Epetra_Comm& comm)
+std::map<T, U> Core::Communication::broadcast(const std::map<T, U>& map_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
   std::vector<U> vec2;
@@ -109,7 +112,7 @@ std::map<T, U> Core::Communication::BroadcastMap(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::unordered_map<T, U> Core::Communication::BroadcastMap(
+std::unordered_map<T, U> Core::Communication::broadcast(
     const std::unordered_map<T, U>& map_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
@@ -123,7 +126,7 @@ std::unordered_map<T, U> Core::Communication::BroadcastMap(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::unordered_multimap<T, U> Core::Communication::BroadcastMap(
+std::unordered_multimap<T, U> Core::Communication::broadcast(
     const std::unordered_multimap<T, U>& map_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
@@ -137,7 +140,7 @@ std::unordered_multimap<T, U> Core::Communication::BroadcastMap(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::vector<std::pair<T, U>> Core::Communication::BroadcastPairVector(
+std::vector<std::pair<T, U>> Core::Communication::broadcast(
     const std::vector<std::pair<T, U>>& pairs_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
@@ -152,11 +155,11 @@ std::vector<std::pair<T, U>> Core::Communication::BroadcastPairVector(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T>
-std::set<T> Core::Communication::BroadcastSet(const std::set<T>& set_in, const Epetra_Comm& comm)
+std::set<T> Core::Communication::broadcast(const std::set<T>& set_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec_in, vec_out;
   for (const auto& val : set_in) vec_in.emplace_back(val);
-  vec_out = BroadcastVector(vec_in, comm);
+  vec_out = broadcast(vec_in, comm);
   std::set<T> set_out;
   for (const auto& val : vec_out) set_out.insert(val);
   return set_out;
@@ -165,8 +168,7 @@ std::set<T> Core::Communication::BroadcastSet(const std::set<T>& set_in, const E
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T>
-std::vector<T> Core::Communication::BroadcastVector(
-    const std::vector<T>& vec_in, const Epetra_Comm& comm)
+std::vector<T> Core::Communication::broadcast(const std::vector<T>& vec_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec_out;
   for (int iproc = 0; iproc < comm.NumProc(); ++iproc)

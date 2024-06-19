@@ -1149,8 +1149,7 @@ void SSI::UTILS::SSIMeshTying::find_matching_node_pairs(Teuchos::RCP<Core::FE::D
   }
 
   // communicate to all other procs
-  const auto all_coupling_pairs =
-      Core::Communication::BroadcastPairVector(my_coupling_pairs, comm_);
+  const auto all_coupling_pairs = Core::Communication::broadcast(my_coupling_pairs, comm_);
 
   // remove duplicates (slave node = master node)
   for (const auto& pair : all_coupling_pairs)
@@ -1321,8 +1320,8 @@ void SSI::UTILS::SSIMeshTying::define_master_slave_pairing(
       if (node != new_master_gid) my_slave_master_pair.insert(std::make_pair(node, new_master_gid));
   }
 
-  master_gids = Core::Communication::BroadcastVector(my_master_gids, comm_);
-  slave_master_pair = Core::Communication::BroadcastMap(my_slave_master_pair, comm_);
+  master_gids = Core::Communication::broadcast(my_master_gids, comm_);
+  slave_master_pair = Core::Communication::broadcast(my_slave_master_pair, comm_);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // check if everything worked fine
@@ -1370,7 +1369,7 @@ void SSI::UTILS::SSIMeshTying::find_slave_slave_transformation_nodes(
 
   // distribute gids from original slave nodes to all procs (matching might be on different proc)
   all_coupled_original_slave_gids =
-      Core::Communication::BroadcastVector(my_coupled_original_slave_gids, comm_);
+      Core::Communication::broadcast(my_coupled_original_slave_gids, comm_);
 }
 
 /*---------------------------------------------------------------------------------*
