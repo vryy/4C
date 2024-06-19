@@ -56,11 +56,15 @@ namespace Mat
       const double abstol_;
       //! initial cohesion
       const double cohesion_;
-      //! Mohr-Coulumb approximation parameters
+      //! friction angle variable
       const double eta_;
+      //! hardening factor
       const double xi_;
       //! dilatancy angle variable
       const double etabar_;
+      //! method to compute the material tangent
+      const std::string tang_;
+      //! maximum iterations for local system solve
       const int itermax_;
       //@}
       //! create material instance of matching type with my parameters
@@ -151,10 +155,10 @@ namespace Mat
      * \param G :shear modulus
      * \param Kappa :Bulk modulus
      * \param devstrain :deviatoric strain
-     * \param xi :Mohr-columb parameter
+     * \param xi :Mohr-Coulomb parameter
      * \param Hiso :isotropic hardening modulus
-     * \param eta :Mohr-columb parameter
-     * \param etabar :Mohr-columb parameter
+     * \param eta :Mohr-Coulomb parameter
+     * \param etabar :Mohr-Coulomb parameter
      */
     void setup_cmat_elasto_plastic_cone(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
         double Dgamma, double G, double Kappa, Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstrain,
@@ -165,19 +169,19 @@ namespace Mat
      * \param cmat :elasto-plastic tangent modulus (out)
      * \param Kappa :Bulk modulus
      * \param devstrain :deviatoric strain
-     * \param xi :Mohr-columb parameter
+     * \param xi :Mohr-Coulomb parameter
      * \param Hiso :isotropic hardening modulus
-     * \param eta :Mohr-columb parameter
-     * \param etabar :Mohr-columb parameter
+     * \param eta :Mohr-Coulomb parameter
+     * \param etabar :Mohr-Coulomb parameter
      */
     void setup_cmat_elasto_plastic_apex(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
                                             cmat,           // elasto-plastic tangent modulus (out)
-        double Kappa,                                       // Bulk mmodulus
+        double Kappa,                                       // Bulk modulus
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstrain,  // deviatoric strain
-        double xi,                                          // Mohr-columb parameter
+        double xi,                                          // Mohr-Coulomb parameter
         double Hiso,                                        // isotropic hardening modulus
-        double eta,                                         // Mohr-columb parameter
-        double etabar                                       // Mohr-columb parameter
+        double eta,                                         // Mohr-Coulomb parameter
+        double etabar                                       // Mohr-Coulomb parameter
     );
     Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
     double Density() const override { return params_->density_; }

@@ -1013,7 +1013,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "ETA", "Drucker Prager Constant Eta");
     add_named_real(m, "XI", "Drucker Prager Constant Xi");
     add_named_real(m, "ETABAR", "Drucker Prager Constant Etabar");
-    add_named_int(m, "MAXITER", "Maximum Neuton Raphson Iterations", 50, true);
+    add_named_string(m, "TANG", "Method to compute the material tangent", "consistent", true);
+    add_named_int(m, "MAXITER", "Maximum Iterations for local Neuton Raphson", 50, true);
 
     Mat::AppendMaterialDefinition(matlist, m);
   }

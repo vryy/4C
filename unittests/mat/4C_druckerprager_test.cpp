@@ -38,6 +38,7 @@ namespace
       container.Add("XI", 1.);
       container.Add("ETABAR", 1.);
       container.Add("MAXITER", 50);
+      container.Add("TANG", std::string("consistent"));
 
       param_druckprag_ = std::shared_ptr(
           Mat::make_parameter(1, Core::Materials::MaterialType::m_pldruckprag, container));
