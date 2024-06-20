@@ -748,6 +748,14 @@ namespace Core::Binstrategy
     //! \}
 
    private:
+    /**
+     * Get an axis-aligned bounding box for an element.
+     * The coordinates are ordered as: ((x_min, y_min, z_min), (x_max, y_max, z_max))
+     */
+    [[nodiscard]] std::pair<std::array<double, 3>, std::array<double, 3>> compute_aabb(
+        const Core::FE::Discretization& discret, const Core::Elements::Element& ele,
+        Teuchos::RCP<const Epetra_Vector> disnp) const;
+
     /*!
      * \brief binning discretization with bins as elements
      */

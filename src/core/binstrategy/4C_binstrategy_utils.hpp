@@ -101,8 +101,7 @@ namespace Core::Binstrategy::Utils
    * @param[in] disnp current displacement state
    * @param[out] currpos current position of node
    */
-  void GetCurrentNodePos(Teuchos::RCP<const Core::FE::Discretization> const discret,
-      Core::Nodes::Node const* node,
+  void GetCurrentNodePos(const Core::FE::Discretization& discret, Core::Nodes::Node const* node,
       std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)>
           correct_beam_center_node,
       Teuchos::RCP<const Epetra_Vector> const disnp, double* currpos);

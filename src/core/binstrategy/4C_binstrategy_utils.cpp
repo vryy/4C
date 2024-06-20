@@ -246,8 +246,7 @@ namespace Core::Binstrategy::Utils
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void GetCurrentNodePos(Teuchos::RCP<const Core::FE::Discretization> const discret,
-      Core::Nodes::Node const* node,
+  void GetCurrentNodePos(const Core::FE::Discretization& discret, Core::Nodes::Node const* node,
       std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)>
           correct_beam_center_node,
       Teuchos::RCP<const Epetra_Vector> const disnp, double* currpos)
@@ -265,7 +264,7 @@ namespace Core::Binstrategy::Utils
 
     if (disnp != Teuchos::null)
     {
-      const int gid = discret->Dof(node_with_position_Dofs, 0);
+      const int gid = discret.Dof(node_with_position_Dofs, 0);
       const int lid = disnp->Map().LID(gid);
       if (lid < 0)
         FOUR_C_THROW(
