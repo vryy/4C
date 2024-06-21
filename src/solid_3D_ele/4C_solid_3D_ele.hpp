@@ -177,6 +177,10 @@ namespace Discret::ELEMENTS
         const Core::LinAlg::Matrix<dim, 1>& xi, const Core::LinAlg::Matrix<dim, 1>& n,
         const Core::LinAlg::Matrix<dim, 1>& dir, CauchyNDirLinearizations<dim>& linearizations);
 
+    void for_each_gauss_point(Core::FE::Discretization& discretization, std::vector<int>& lm,
+        const std::function<void(Mat::So3Material&, double integration_factor, int gp)>& integrator)
+        const;
+
    private:
     //! cell type
     Core::FE::CellType celltype_ = Core::FE::CellType::dis_none;

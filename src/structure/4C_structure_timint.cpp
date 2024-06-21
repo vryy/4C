@@ -45,12 +45,14 @@
 #include "4C_mortar_utils.hpp"
 #include "4C_poroelast_utils.hpp"
 #include "4C_so3_sh8p8.hpp"
+#include "4C_solid_3D_ele.hpp"
 #include "4C_stru_multi_microstatic.hpp"
 #include "4C_structure_resulttest.hpp"
 #include "4C_structure_timint_genalpha.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
+#include <algorithm>
 #include <iostream>
 
 FOUR_C_NAMESPACE_OPEN
@@ -243,7 +245,7 @@ void STR::TimInt::setup()
 
   // initialize 0D cardiovascular manager
   cardvasc0dman_ =
-      Teuchos::rcp(new UTILS::Cardiovascular0DManager(discret_, (*dis_)(0), sdynparams_,
+      Teuchos::rcp(new FourC::UTILS::Cardiovascular0DManager(discret_, (*dis_)(0), sdynparams_,
           Global::Problem::Instance()->cardiovascular0_d_structural_params(), *solver_, mor_));
 
   // initialize spring dashpot manager
@@ -1881,18 +1883,34 @@ void STR::TimInt::read_restart_beam_contact()
 void STR::TimInt::read_restart_multi_scale()
 {
   Teuchos::RCP<Mat::PAR::Bundle> materials = Global::Problem::Instance()->Materials();
-  for (const auto& [_, mat] : materials->Map())
+
+  if (std::any_of(materials->Map().begin(), materials->Map().end(),
+          [](const auto& item)
+          { return item.second->Type() == Core::Materials::m_struct_multiscale; }))
   {
-    if (mat->Type() == Core::Materials::m_struct_multiscale)
+    int my_pid = Global::Problem::Instance()->GetDis("structure")->Comm().MyPID();
+    // set dummy displacements
+    discret_->set_state("displacement", zeros_);
+    Core::Elements::Element::LocationArray la(discret_->NumDofSets());
+    for (const auto* ele : discret_->MyColElementRange())
     {
-      // create the parameters for the discretization
-      Teuchos::ParameterList p;
-      // action for elements
-      p.set("action", "multi_readrestart");
-      discret_->evaluate(
-          p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-      discret_->ClearState();
-      break;
+      ele->LocationVector(*discret_, la, false);
+
+      const auto* solid_ele = dynamic_cast<const Discret::ELEMENTS::Solid*>(ele);
+      FOUR_C_THROW_UNLESS(solid_ele,
+          "Multiscale simulations are currently only possible with the new solid elements");
+
+      solid_ele->for_each_gauss_point(*discret_, la[0].lm_,
+          [&](Mat::So3Material& solid_material, double integration_factor, int gp)
+          {
+            if (solid_material.MaterialType() == Core::Materials::m_struct_multiscale)
+            {
+              auto& micro = dynamic_cast<Mat::MicroMaterial&>(solid_material);
+              const bool eleowner = my_pid == ele->Owner();
+
+              micro.read_restart(gp, ele->Id(), eleowner);
+            }
+          });
     }
   }
 }
