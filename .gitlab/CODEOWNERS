@@ -423,6 +423,7 @@ Gemfile.lock                                   @baci/team_infrastructure
 set_up_dev_env.sh                              @baci/team_infrastructure
 requirements.txt                               @baci/team_infrastructure
 .contains_modules                              @baci/team_infrastructure
+.mailmap                                       @baci/team_infrastructure
 
 # template files
 .gitlab/issue_templates/BUG_REPORT.md                                        @baci/team_infrastructure
