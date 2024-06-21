@@ -382,6 +382,9 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
   const PreparationData<SolidFormulation> preparation_data =
       Prepare(ele, nodal_coordinates, history_data_);
 
+  // Check for negative Jacobian determinants
+  ensure_positive_jacobian_determinant_at_element_nodes(nodal_coordinates);
+
   ForEachGaussPoint(nodal_coordinates, stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,

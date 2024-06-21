@@ -1112,148 +1112,22 @@ std::vector<std::vector<int>> Core::FE::getEleNodeNumbering_lines_surfaces(
 
 
 Core::LinAlg::SerialDenseMatrix Core::FE::getEleNodeNumbering_nodes_paramspace(
-    const Core::FE::CellType distype)
+    const Core::FE::CellType celltype)
 {
-  const int nNode = getNumberOfElementNodes(distype);
-  const int dim = getDimension(distype);
-  Core::LinAlg::SerialDenseMatrix map(dim, nNode);
+  return Core::FE::CellTypeSwitch(celltype,
+      [&](auto celltype_t)
+      {
+        constexpr Core::FE::CellType my_celltype = celltype_t();
 
-  switch (distype)
-  {
-    case Core::FE::CellType::quad4:
-    case Core::FE::CellType::quad8:
-    case Core::FE::CellType::quad9:
-    case Core::FE::CellType::nurbs9:
-    {
-      for (int inode = 0; inode < nNode; inode++)
-      {
-        for (int isd = 0; isd < dim; isd++)
-          map(isd, inode) = eleNodeNumbering_quad9_nodes_reference[inode][isd];
-      }
-      break;
-    }
-    case Core::FE::CellType::nurbs4:
-    {
-      for (int inode = 0; inode < nNode; inode++)
-      {
-        for (int isd = 0; isd < dim; isd++)
-          map(isd, inode) = eleNodeNumbering_nurbs4_nodes_reference[inode][isd];
-      }
-      break;
-    }
-    case Core::FE::CellType::quad6:
-    {
-      for (int inode = 0; inode < nNode; inode++)
-      {
-        for (int isd = 0; isd < dim; isd++)
-          map(isd, inode) = eleNodeNumbering_quad6_nodes_reference[inode][isd];
-      }
-      break;
-    }
-    case Core::FE::CellType::tri3:
-    case Core::FE::CellType::tri6:
-    {
-      for (int inode = 0; inode < nNode; inode++)
-      {
-        for (int isd = 0; isd < dim; isd++)
-          map(isd, inode) = eleNodeNumbering_tri6_nodes_reference[inode][isd];
-      }
-      break;
-    }
-    case Core::FE::CellType::hex8:
-    case Core::FE::CellType::hex20:
-    case Core::FE::CellType::hex27:
-    {
-      for (int inode = 0; inode < nNode; inode++)
-      {
-        for (int isd = 0; isd < dim; isd++)
-          map(isd, inode) = eleNodeNumbering_hex27_nodes_reference[inode][isd];
-      }
-      break;
-    }
-    case Core::FE::CellType::nurbs8:
-    {
-      for (int inode = 0; inode < nNode; inode++)
-      {
-        for (int isd = 0; isd < dim; isd++)
-          map(isd, inode) = eleNodeNumbering_nurbs8_nodes_reference[inode][isd];
-      }
-      break;
-    }
-    case Core::FE::CellType::nurbs27:
-    {
-      for (int inode = 0; inode < nNode; inode++)
-      {
-        for (int isd = 0; isd < dim; isd++)
-          map(isd, inode) = eleNodeNumbering_nurbs27_nodes_reference[inode][isd];
-      }
-      break;
-    }
-    case Core::FE::CellType::hex16:
-    {
-      for (int inode = 0; inode < nNode; inode++)
-      {
-        for (int isd = 0; isd < dim; isd++)
-          map(isd, inode) = eleNodeNumbering_hex16_nodes_reference[inode][isd];
-      }
-      break;
-    }
-    case Core::FE::CellType::hex18:
-    {
-      for (int inode = 0; inode < nNode; inode++)
-      {
-        for (int isd = 0; isd < dim; isd++)
-          map(isd, inode) = eleNodeNumbering_hex18_nodes_reference[inode][isd];
-      }
-      break;
-    }
-    case Core::FE::CellType::wedge6:
-    case Core::FE::CellType::wedge15:
-    {
-      for (int inode = 0; inode < nNode; inode++)
-      {
-        for (int isd = 0; isd < dim; isd++)
+        Core::LinAlg::SerialDenseMatrix map(
+            Core::FE::dim<my_celltype>, Core::FE::num_nodes<my_celltype>);
+        for (int inode = 0; inode < Core::FE::num_nodes<my_celltype>; inode++)
         {
-          map(isd, inode) = eleNodeNumbering_wedge18_nodes_reference[inode][isd];
+          for (int isd = 0; isd < Core::FE::dim<my_celltype>; isd++)
+            map(isd, inode) = get_element_nodes_in_parameter_space<my_celltype>()[inode][isd];
         }
-      }
-      break;
-    }
-    case Core::FE::CellType::tet4:
-    case Core::FE::CellType::tet10:
-    {
-      for (int inode = 0; inode < nNode; inode++)
-      {
-        for (int isd = 0; isd < dim; isd++)
-          map(isd, inode) = eleNodeNumbering_tet10_nodes_reference[inode][isd];
-      }
-      break;
-    }
-    case Core::FE::CellType::pyramid5:
-    {
-      for (int inode = 0; inode < nNode; inode++)
-      {
-        for (int isd = 0; isd < dim; isd++)
-          map(isd, inode) = eleNodeNumbering_pyramid5_nodes_reference[inode][isd];
-      }
-      break;
-    }
-    case Core::FE::CellType::line3:
-    case Core::FE::CellType::line2:
-    {
-      for (int inode = 0; inode < nNode; inode++)
-      {
-        for (int isd = 0; isd < dim; isd++)
-          map(isd, inode) = eleNodeNumbering_line3_nodes_reference[inode][isd];
-      }
-      break;
-    }
-    default:
-      FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
-  }
-
-  return map;
+        return map;
+      });
 }
 
 

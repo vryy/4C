@@ -439,6 +439,35 @@ namespace Discret::ELEMENTS
   }
 
   /*!
+   * @brief Check for negative Jacobian determinants
+   *
+   * @tparam celltype : Cell type
+   * @param element_nodes (in) : Element node information
+   */
+  template <Core::FE::CellType celltype>
+  void ensure_positive_jacobian_determinant_at_element_nodes(
+      const ElementNodes<celltype>& element_nodes)
+  {
+    const Core::LinAlg::SerialDenseMatrix rst =
+        Core::FE::getEleNodeNumbering_nodes_paramspace(celltype);
+
+    for (const auto& xi : Core::FE::get_element_nodes_in_parameter_space<celltype>())
+    {
+      Core::LinAlg::Matrix<3, 1> xi_mat(xi.data(), true);
+
+      ShapeFunctionsAndDerivatives<celltype> shape_functions =
+          EvaluateShapeFunctionsAndDerivs(xi_mat, element_nodes);
+
+      JacobianMapping<celltype> jacobian_mapping =
+          EvaluateJacobianMapping(shape_functions, element_nodes);
+
+      FOUR_C_THROW_UNLESS(jacobian_mapping.determinant_ > 0,
+          "Determinant of jacobian is %f <= 0 at one node of the element.",
+          jacobian_mapping.determinant_);
+    }
+  }
+
+  /*!
    * @brief Evaluate the jacobian mapping at the element centroid
    *
    * @tparam celltype : Cell type

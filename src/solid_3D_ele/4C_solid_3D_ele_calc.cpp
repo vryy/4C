@@ -124,6 +124,9 @@ void Discret::ELEMENTS::SolidEleCalc<celltype,
   const PreparationData<ElementFormulation> preparation_data =
       Prepare(ele, nodal_coordinates, history_data_);
 
+  // Check for negative Jacobian determinants
+  ensure_positive_jacobian_determinant_at_element_nodes(nodal_coordinates);
+
   double element_mass = 0.0;
   double element_volume = 0.0;
   ForEachGaussPoint(nodal_coordinates, stiffness_matrix_integration_,

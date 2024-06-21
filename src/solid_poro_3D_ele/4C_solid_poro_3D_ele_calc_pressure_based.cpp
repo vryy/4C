@@ -61,6 +61,9 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
   const ElementNodes<celltype> nodal_coordinates =
       evaluate_element_nodes<celltype>(ele, discretization, la[0].lm_);
 
+  // Check for negative Jacobian determinants
+  ensure_positive_jacobian_determinant_at_element_nodes(nodal_coordinates);
+
   // Loop over all Gauss points
   ForEachGaussPoint(nodal_coordinates, gauss_integration_,
       [&](const Core::LinAlg::Matrix<num_dim_, 1>& xi,
