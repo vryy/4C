@@ -9,7 +9,6 @@
 
 #include "4C_binstrategy.hpp"
 
-#include "4C_beam3_base.hpp"
 #include "4C_binstrategy_meshfree_multibin.hpp"
 #include "4C_binstrategy_utils.hpp"
 #include "4C_fem_discretization.hpp"
@@ -26,23 +25,33 @@
 #include "4C_mortar_node.hpp"
 #include "4C_rebalance_graph_based.hpp"
 #include "4C_rebalance_print.hpp"
-#include "4C_rigidsphere.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <utility>
 
 FOUR_C_NAMESPACE_OPEN
 
 
-BINSTRATEGY::BinningStrategy::BinningStrategy(const Teuchos::ParameterList& binning_params,
+Core::Binstrategy::BinningStrategy::BinningStrategy(const Teuchos::ParameterList& binning_params,
     Teuchos::RCP<Core::IO::OutputControl> output_control, const Epetra_Comm& comm,
-    const int my_rank, const std::vector<Teuchos::RCP<Core::FE::Discretization>>& discret,
+    const int my_rank,
+    const std::function<Utils::SpecialElement(const Core::Elements::Element* element)>
+        element_filter,
+    const std::function<double(const Core::Elements::Element* element)> rigid_sphere_radius,
+    const std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)>
+        correct_beam_center_node,
+    const std::vector<Teuchos::RCP<Core::FE::Discretization>>& discret,
     std::vector<Teuchos::RCP<const Epetra_Vector>> disnp)
     : bin_size_lower_bound_(binning_params.get<double>("BIN_SIZE_LOWER_BOUND")),
       deforming_simulation_domain_handler_(Teuchos::null),
       writebinstype_(
           Core::UTILS::IntegralValue<Inpar::BINSTRATEGY::Writebins>(binning_params, ("WRITEBINS"))),
       myrank_(my_rank),
-      comm_(comm.Clone())
+      comm_(comm.Clone()),
+      element_filter_(std::move(element_filter)),
+      rigid_sphere_radius_(std::move(rigid_sphere_radius)),
+      correct_beam_center_node_(std::move(correct_beam_center_node))
 {
   // create binning discretization
   bindis_ = Teuchos::rcp(new Core::FE::Discretization("binning", comm_, 3));
@@ -143,7 +152,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(const Teuchos::ParameterList& binn
   BuildPeriodicBC(binning_params);
 }
 
-void BINSTRATEGY::BinningStrategy::GidsInijkRange(
+void Core::Binstrategy::BinningStrategy::GidsInijkRange(
     const int* ijk_range, std::set<int>& binIds, bool checkexistence) const
 {
   if (checkexistence and bindis_ == Teuchos::null)
@@ -174,7 +183,7 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(
   }      // end for int i
 }
 
-void BINSTRATEGY::BinningStrategy::GidsInijkRange(
+void Core::Binstrategy::BinningStrategy::GidsInijkRange(
     const int* ijk_range, std::vector<int>& binIds, bool checkexistence) const
 {
   if (checkexistence and bindis_ == Teuchos::null)
@@ -205,13 +214,13 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(
   }      // end for int i
 }
 
-int BINSTRATEGY::BinningStrategy::get_number_of_bins_inijk_range(int const ijk_range[6]) const
+int Core::Binstrategy::BinningStrategy::get_number_of_bins_inijk_range(int const ijk_range[6]) const
 {
   return ((ijk_range[1] - ijk_range[0] + 1) * (ijk_range[3] - ijk_range[2] + 1) *
           (ijk_range[5] - ijk_range[4] + 1));
 }
 
-int BINSTRATEGY::BinningStrategy::ConvertijkToGid(int* ijk) const
+int Core::Binstrategy::BinningStrategy::ConvertijkToGid(int* ijk) const
 {
   // might need to modify ijk connectivity in the presence of periodic boundary conditions
   if (havepbc_)
@@ -237,7 +246,7 @@ int BINSTRATEGY::BinningStrategy::ConvertijkToGid(int* ijk) const
          ijk[2] * id_calc_bin_per_dir_[0] * id_calc_bin_per_dir_[1];
 }
 
-void BINSTRATEGY::BinningStrategy::ConvertGidToijk(const int gid, int* ijk) const
+void Core::Binstrategy::BinningStrategy::ConvertGidToijk(const int gid, int* ijk) const
 {
   // in order to efficiently compute the ijk triple from a given bin id,
   // use of the shift operator is made (right shift by one equals division by two)
@@ -278,7 +287,7 @@ void BINSTRATEGY::BinningStrategy::ConvertGidToijk(const int gid, int* ijk) cons
 }
 
 
-int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const double* pos) const
+int Core::Binstrategy::BinningStrategy::ConvertPosToGid(const double* pos) const
 {
   int ijk[3];
   double pos_ud[3];
@@ -300,7 +309,7 @@ int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const double* pos) const
   return ConvertijkToGid(ijk);
 }
 
-void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const double* pos, int* ijk) const
+void Core::Binstrategy::BinningStrategy::ConvertPosToijk(const double* pos, int* ijk) const
 {
   double pos_ud[3];
   if (deforming_simulation_domain_handler_ != Teuchos::null)
@@ -319,7 +328,7 @@ void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const double* pos, int* ijk) 
   }
 }
 
-void BINSTRATEGY::BinningStrategy::ConvertPosToijk(
+void Core::Binstrategy::BinningStrategy::ConvertPosToijk(
     const Core::LinAlg::Matrix<3, 1>& pos, int* ijk) const
 {
   Core::LinAlg::Matrix<3, 1> pos_ud;
@@ -339,7 +348,7 @@ void BINSTRATEGY::BinningStrategy::ConvertPosToijk(
   }
 }
 
-int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const Core::LinAlg::Matrix<3, 1>& pos) const
+int Core::Binstrategy::BinningStrategy::ConvertPosToGid(const Core::LinAlg::Matrix<3, 1>& pos) const
 {
   int ijk[3];
   Core::LinAlg::Matrix<3, 1> pos_ud;
@@ -361,7 +370,7 @@ int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const Core::LinAlg::Matrix<3, 
   return ConvertijkToGid(ijk);
 }
 
-void BINSTRATEGY::BinningStrategy::GetNeighborBinIds(
+void Core::Binstrategy::BinningStrategy::GetNeighborBinIds(
     const int binId, std::vector<int>& binIds) const
 {
   int ijk_base[3];
@@ -384,7 +393,7 @@ void BINSTRATEGY::BinningStrategy::GetNeighborBinIds(
   }
 }
 
-void BINSTRATEGY::BinningStrategy::get_neighbor_and_own_bin_ids(
+void Core::Binstrategy::BinningStrategy::get_neighbor_and_own_bin_ids(
     const int binId, std::vector<int>& binIds) const
 {
   // get neighbors
@@ -402,7 +411,7 @@ void BINSTRATEGY::BinningStrategy::get_neighbor_and_own_bin_ids(
   }
 }
 
-void BINSTRATEGY::BinningStrategy::GetBinCorners(
+void Core::Binstrategy::BinningStrategy::GetBinCorners(
     const int binId, std::vector<Core::LinAlg::Matrix<3, 1>>& bincorners) const
 {
   bincorners.clear();
@@ -435,7 +444,7 @@ void BINSTRATEGY::BinningStrategy::GetBinCorners(
   std::swap(bincorners[6], bincorners[7]);
 }
 
-void BINSTRATEGY::BinningStrategy::GetAllBinCenters(
+void Core::Binstrategy::BinningStrategy::GetAllBinCenters(
     Teuchos::RCP<Epetra_Map>& binrowmap, Teuchos::RCP<Epetra_MultiVector>& bincenters) const
 {
   // loop over row bins and get center coordinates
@@ -451,7 +460,7 @@ void BINSTRATEGY::BinningStrategy::GetAllBinCenters(
   }
 }
 
-Core::LinAlg::Matrix<3, 1> BINSTRATEGY::BinningStrategy::GetBinCentroid(const int binId) const
+Core::LinAlg::Matrix<3, 1> Core::Binstrategy::BinningStrategy::GetBinCentroid(const int binId) const
 {
   int ijk[3];
   ConvertGidToijk(binId, ijk);
@@ -466,17 +475,18 @@ Core::LinAlg::Matrix<3, 1> BINSTRATEGY::BinningStrategy::GetBinCentroid(const in
   return centroid;
 }
 
-double BINSTRATEGY::BinningStrategy::GetMinBinSize() const
+double Core::Binstrategy::BinningStrategy::GetMinBinSize() const
 {
   return std::min(bin_size_[0], std::min(bin_size_[1], bin_size_[2]));
 }
 
-double BINSTRATEGY::BinningStrategy::GetMaxBinSize() const
+double Core::Binstrategy::BinningStrategy::GetMaxBinSize() const
 {
   return std::max(bin_size_[0], std::max(bin_size_[1], bin_size_[2]));
 }
 
-void BINSTRATEGY::BinningStrategy::BuildPeriodicBC(const Teuchos::ParameterList& binning_params)
+void Core::Binstrategy::BinningStrategy::BuildPeriodicBC(
+    const Teuchos::ParameterList& binning_params)
 {
   std::istringstream periodicbc(
       Teuchos::getNumericStringParameter(binning_params, "PERIODICONOFF"));
@@ -516,7 +526,7 @@ void BINSTRATEGY::BinningStrategy::BuildPeriodicBC(const Teuchos::ParameterList&
   }
 }
 
-void BINSTRATEGY::BinningStrategy::determine_boundary_row_bins()
+void Core::Binstrategy::BinningStrategy::determine_boundary_row_bins()
 {
   // clear old content
   boundaryrowbins_.clear();
@@ -556,7 +566,7 @@ void BINSTRATEGY::BinningStrategy::determine_boundary_row_bins()
   }
 }
 
-void BINSTRATEGY::BinningStrategy::determine_boundary_col_bins()
+void Core::Binstrategy::BinningStrategy::determine_boundary_col_bins()
 {
   boundarycolbins_.clear();
 
@@ -574,7 +584,7 @@ void BINSTRATEGY::BinningStrategy::determine_boundary_col_bins()
   }
 }
 
-Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::create_linear_map_for_numbin(
+Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::create_linear_map_for_numbin(
     const Epetra_Comm& comm) const
 {
   // initial dummy distribution using a linear map
@@ -607,7 +617,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::create_linear_map_for_num
   return Teuchos::rcp(new Epetra_Map(numbin, linearmap.size(), linearmap.data(), 0, comm));
 }
 
-void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const time)
+void Core::Binstrategy::BinningStrategy::WriteBinOutput(int const step, double const time)
 {
   // no bin output
   if (writebinstype_ == Inpar::BINSTRATEGY::none) return;
@@ -743,7 +753,7 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
   visbindis_->ClearDiscret();
 }
 
-void BINSTRATEGY::BinningStrategy::distribute_bins_recurs_coord_bisection(
+void Core::Binstrategy::BinningStrategy::distribute_bins_recurs_coord_bisection(
     Teuchos::RCP<Epetra_Map>& binrowmap, Teuchos::RCP<Epetra_MultiVector>& bincenters,
     Teuchos::RCP<Epetra_MultiVector>& binweights) const
 {
@@ -770,7 +780,7 @@ void BINSTRATEGY::BinningStrategy::distribute_bins_recurs_coord_bisection(
       bincenters->Map().MyGlobalElements(), 0, BinDiscret()->Comm()));
 }
 
-void BINSTRATEGY::BinningStrategy::fill_bins_into_bin_discretization(
+void Core::Binstrategy::BinningStrategy::fill_bins_into_bin_discretization(
     Teuchos::RCP<Epetra_Map> const& rowbins)
 {
   // fill bins into bindis_
@@ -783,7 +793,7 @@ void BINSTRATEGY::BinningStrategy::fill_bins_into_bin_discretization(
   }
 }
 
-void BINSTRATEGY::BinningStrategy::addijk_to_axis_alignedijk_range_of_element(
+void Core::Binstrategy::BinningStrategy::addijk_to_axis_alignedijk_range_of_element(
     int const ijk[3], int ijk_range[6]) const
 {
   for (int dim = 0; dim < 3; ++dim)
@@ -800,7 +810,7 @@ void BINSTRATEGY::BinningStrategy::addijk_to_axis_alignedijk_range_of_element(
   }
 }
 
-void BINSTRATEGY::BinningStrategy::addijk_to_axis_alignedijk_range_of_beam_element(
+void Core::Binstrategy::BinningStrategy::addijk_to_axis_alignedijk_range_of_beam_element(
     int const ijk[3], int ijk_range[6]) const
 {
   // this should be large enough
@@ -838,12 +848,10 @@ void BINSTRATEGY::BinningStrategy::addijk_to_axis_alignedijk_range_of_beam_eleme
   }
 }
 
-void BINSTRATEGY::BinningStrategy::build_axis_alignedijk_range_for_rigid_sphere(
-    Core::Elements::Element const* const sphereele, double currpos[3], int ijk[3],
-    int ijk_range[6]) const
+void Core::Binstrategy::BinningStrategy::build_axis_alignedijk_range_for_rigid_sphere(
+    Core::Elements::Element const* const sphereele, double currpos[3], int ijk[3], int ijk_range[6],
+    const double radius) const
 {
-  double const& radius = dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(sphereele)->Radius();
-
   for (int j = 0; j < 3; ++j)
   {
     double* coords = currpos;
@@ -857,7 +865,7 @@ void BINSTRATEGY::BinningStrategy::build_axis_alignedijk_range_for_rigid_sphere(
   }
 }
 
-void BINSTRATEGY::BinningStrategy::distribute_eles_to_bins(
+void Core::Binstrategy::BinningStrategy::distribute_eles_to_bins(
     const Core::FE::Discretization& mortardis, std::map<int, std::set<int>>& binelemap,
     bool isslave) const
 {
@@ -907,7 +915,7 @@ void BINSTRATEGY::BinningStrategy::distribute_eles_to_bins(
   }
 }
 
-void BINSTRATEGY::BinningStrategy::distribute_row_elements_to_bins_using_ele_aabb(
+void Core::Binstrategy::BinningStrategy::distribute_row_elements_to_bins_using_ele_aabb(
     Teuchos::RCP<Core::FE::Discretization> const& discret,
     std::map<int, std::set<int>>& bintorowelemap, Teuchos::RCP<const Epetra_Vector> disnp) const
 {
@@ -929,7 +937,7 @@ void BINSTRATEGY::BinningStrategy::distribute_row_elements_to_bins_using_ele_aab
   }
 }
 
-void BINSTRATEGY::BinningStrategy::distribute_col_elements_to_bins_using_ele_aabb(
+void Core::Binstrategy::BinningStrategy::distribute_col_elements_to_bins_using_ele_aabb(
     Teuchos::RCP<Core::FE::Discretization> const& discret,
     std::map<int, std::set<int>>& bintocolelemap, Teuchos::RCP<const Epetra_Vector> disnp) const
 {
@@ -951,7 +959,7 @@ void BINSTRATEGY::BinningStrategy::distribute_col_elements_to_bins_using_ele_aab
   }
 }
 
-void BINSTRATEGY::BinningStrategy::distribute_single_element_to_bins_using_ele_aabb(
+void Core::Binstrategy::BinningStrategy::distribute_single_element_to_bins_using_ele_aabb(
     Teuchos::RCP<Core::FE::Discretization> const& discret, Core::Elements::Element* eleptr,
     std::vector<int>& binIds, Teuchos::RCP<const Epetra_Vector> const& disnp) const
 {
@@ -968,69 +976,74 @@ void BINSTRATEGY::BinningStrategy::distribute_single_element_to_bins_using_ele_a
 
   // bounding box idea for rigid sphere element with just one node needs
   // some special treatment
-  if (eleptr->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
+  switch (element_filter_(eleptr))
   {
-    double currpos[3] = {0.0, 0.0, 0.0};
-    BINSTRATEGY::UTILS::GetCurrentNodePos(discret, eleptr->Nodes()[0], disnp, currpos);
-    build_axis_alignedijk_range_for_rigid_sphere(eleptr, currpos, ijk, ijk_range);
-  }
-  else if (dynamic_cast<Discret::ELEMENTS::Beam3Base*>(eleptr) != nullptr)
-  {
-    // fill in remaining nodes
-    for (int j = 1; j < eleptr->num_node(); ++j)
+    case Utils::SpecialElement::rigid_sphere:
     {
-      Core::Nodes::Node const* const node = nodes[j];
-      getijk_of_single_node_in_current_position(discret, node, disnp, ijk);
-      addijk_to_axis_alignedijk_range_of_beam_element(ijk, ijk_range);
+      double currpos[3] = {0.0, 0.0, 0.0};
+      Utils::GetCurrentNodePos(
+          discret, eleptr->Nodes()[0], correct_beam_center_node_, disnp, currpos);
+      build_axis_alignedijk_range_for_rigid_sphere(
+          eleptr, currpos, ijk, ijk_range, rigid_sphere_radius_(eleptr));
+      break;
+    }
+    case Utils::SpecialElement::beam:
+    {
+      // fill in remaining nodes
+      for (int j = 1; j < eleptr->num_node(); ++j)
+      {
+        Core::Nodes::Node const* const node = nodes[j];
+        getijk_of_single_node_in_current_position(discret, node, disnp, ijk);
+        addijk_to_axis_alignedijk_range_of_beam_element(ijk, ijk_range);
+      }
+      break;
+    }
+    default:
+    {
+      // fill in remaining nodes
+      for (int j = 1; j < eleptr->num_node(); ++j)
+      {
+        Core::Nodes::Node const* const node = nodes[j];
+        getijk_of_single_node_in_current_position(discret, node, disnp, ijk);
+        addijk_to_axis_alignedijk_range_of_element(ijk, ijk_range);
+      }
+      break;
     }
   }
-  else
-  {
-    // fill in remaining nodes
-    for (int j = 1; j < eleptr->num_node(); ++j)
-    {
-      Core::Nodes::Node const* const node = nodes[j];
-      getijk_of_single_node_in_current_position(discret, node, disnp, ijk);
-      addijk_to_axis_alignedijk_range_of_element(ijk, ijk_range);
-    }
-  }
-
   // get corresponding bin ids in ijk range
   binIds.reserve(get_number_of_bins_inijk_range(ijk_range));
   GidsInijkRange(ijk_range, binIds, false);
 }
 
-void BINSTRATEGY::BinningStrategy::AssignElesToBins(Teuchos::RCP<Core::FE::Discretization> discret,
-    std::map<int, std::set<int>> const& extended_bin_to_row_ele_map) const
+void Core::Binstrategy::BinningStrategy::AssignElesToBins(
+    Teuchos::RCP<Core::FE::Discretization> discret,
+    std::map<int, std::set<int>> const& extended_bin_to_row_ele_map,
+    const std::function<Utils::BinContentType(const Core::Elements::Element* element)>&
+        ele_to_bin_type) const
 {
   // loop over bins
-  std::map<int, std::set<int>>::const_iterator biniter;
-  for (biniter = extended_bin_to_row_ele_map.begin(); biniter != extended_bin_to_row_ele_map.end();
-       ++biniter)
+  for (const auto& [bin_gid, ele_gids] : extended_bin_to_row_ele_map)
   {
     // extract bins from discretization after checking on existence
-    const int lid = bindis_->ElementColMap()->LID(biniter->first);
-    if (lid < 0) continue;
+    const int bin_lid = bindis_->ElementColMap()->LID(bin_gid);
+    if (bin_lid < 0) continue;
 
     // get current bin
-    auto* currbin =
-        dynamic_cast<Discret::MeshFree::MeshfreeMultiBin*>(bindis_->gElement(biniter->first));
+    auto* currbin = dynamic_cast<Core::FE::MeshFree::MeshfreeMultiBin*>(bindis_->gElement(bin_gid));
 
     // loop over ele content of this bin
-    std::set<int>::const_iterator eleiter;
-    for (eleiter = biniter->second.begin(); eleiter != biniter->second.end(); ++eleiter)
+    for (const auto& ele_gid : ele_gids)
     {
+      auto* ele = discret->gElement(ele_gid);
       // add eleid and elepointer to current bin
-      currbin->AddAssociatedEle(
-          BINSTRATEGY::UTILS::ConvertElementToBinContentType(discret->gElement(*eleiter)),
-          discret->gElement(*eleiter));
+      currbin->AddAssociatedEle(ele_to_bin_type(ele), ele);
     }
   }
 }
 
-void BINSTRATEGY::BinningStrategy::GetBinContent(std::set<Core::Elements::Element*>& eles,
-    const std::vector<BINSTRATEGY::UTILS::BinContentType>& bincontent, std::vector<int>& binIds,
-    bool roweles) const
+void Core::Binstrategy::BinningStrategy::GetBinContent(std::set<Core::Elements::Element*>& eles,
+    const std::vector<Core::Binstrategy::Utils::BinContentType>& bincontent,
+    std::vector<int>& binIds, bool roweles) const
 {
   // loop over all bins
   std::vector<int>::const_iterator biniter;
@@ -1041,7 +1054,7 @@ void BINSTRATEGY::BinningStrategy::GetBinContent(std::set<Core::Elements::Elemen
     if (lid < 0) continue;
 
     // get content of current bin
-    auto* bin = static_cast<Discret::MeshFree::MeshfreeMultiBin*>(bindis_->lColElement(lid));
+    auto* bin = static_cast<Core::FE::MeshFree::MeshfreeMultiBin*>(bindis_->lColElement(lid));
 
     // loop over bincontent you want to get
     for (const auto& bc_i : bincontent)
@@ -1057,28 +1070,28 @@ void BINSTRATEGY::BinningStrategy::GetBinContent(std::set<Core::Elements::Elemen
   }
 }
 
-void BINSTRATEGY::BinningStrategy::remove_all_eles_from_bins()
+void Core::Binstrategy::BinningStrategy::remove_all_eles_from_bins()
 {
   // loop over all bins and remove assigned elements
   const int numcolbins = bindis_->NumMyColElements();
   for (int binlid = 0; binlid < numcolbins; ++binlid)
   {
     Core::Elements::Element* currentbin = bindis_->lColElement(binlid);
-    dynamic_cast<Discret::MeshFree::MeshfreeMultiBin*>(currentbin)->remove_all_associated_eles();
+    dynamic_cast<Core::FE::MeshFree::MeshfreeMultiBin*>(currentbin)->remove_all_associated_eles();
   }
 }
 
-void BINSTRATEGY::BinningStrategy::getijk_of_single_node_in_current_position(
+void Core::Binstrategy::BinningStrategy::getijk_of_single_node_in_current_position(
     Teuchos::RCP<Core::FE::Discretization> const& discret, Core::Nodes::Node const* const node,
     Teuchos::RCP<const Epetra_Vector> const& disnp, int ijk[3]) const
 {
   double currpos[3] = {0.0, 0.0, 0.0};
-  BINSTRATEGY::UTILS::GetCurrentNodePos(discret, node, disnp, currpos);
+  Utils::GetCurrentNodePos(discret, node, correct_beam_center_node_, disnp, currpos);
   double const* coords = currpos;
   ConvertPosToijk(coords, ijk);
 }
 
-void BINSTRATEGY::BinningStrategy::distribute_row_nodes_to_bins(
+void Core::Binstrategy::BinningStrategy::distribute_row_nodes_to_bins(
     Teuchos::RCP<Core::FE::Discretization> discret,
     std::map<int, std::vector<int>>& bin_to_rownodes_map,
     Teuchos::RCP<const Epetra_Vector> disnp) const
@@ -1090,7 +1103,7 @@ void BINSTRATEGY::BinningStrategy::distribute_row_nodes_to_bins(
   for (int lid = 0; lid < discret->NumMyRowNodes(); ++lid)
   {
     Core::Nodes::Node* node = discret->lRowNode(lid);
-    BINSTRATEGY::UTILS::GetCurrentNodePos(discret, node, disnp, currpos);
+    Utils::GetCurrentNodePos(discret, node, correct_beam_center_node_, disnp, currpos);
 
     const double* coords = currpos;
     int ijk[3];
@@ -1107,7 +1120,7 @@ void BINSTRATEGY::BinningStrategy::distribute_row_nodes_to_bins(
   }
 }
 
-Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::
+Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::
     do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
         std::vector<Teuchos::RCP<Core::FE::Discretization>> discret,
         std::vector<Teuchos::RCP<Epetra_Map>>& stdelecolmap,
@@ -1203,7 +1216,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::
   return newrowbins;
 }
 
-Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::weighted_distribution_of_bins_to_procs(
+Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::weighted_distribution_of_bins_to_procs(
     std::vector<Teuchos::RCP<Core::FE::Discretization>>& discret,
     std::vector<Teuchos::RCP<const Epetra_Vector>>& disnp,
     std::vector<std::map<int, std::vector<int>>>& row_nodes_to_bin_map, double const& weight,
@@ -1344,7 +1357,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::weighted_distribution_of_
   return newrowbins;
 }
 
-Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendElementColMap(
+Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::ExtendElementColMap(
     std::map<int, std::set<int>> const& bin_to_row_ele_map,
     std::map<int, std::set<int>>& bin_to_row_ele_map_to_lookup_requests,
     std::map<int, std::set<int>>& ext_bin_to_ele_map, Teuchos::RCP<Epetra_Map> bin_colmap,
@@ -1433,7 +1446,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendElementColMap(
   return Teuchos::rcp(new Epetra_Map(-1, (int)colgids.size(), colgids.data(), 0, *comm_));
 }
 
-void BINSTRATEGY::BinningStrategy::extend_ghosting_of_binning_discretization(
+void Core::Binstrategy::BinningStrategy::extend_ghosting_of_binning_discretization(
     Teuchos::RCP<Epetra_Map> rowbins, std::set<int> const& colbins, bool assigndegreesoffreedom)
 {
   // gather set of bins that need to be ghosted by myrank
@@ -1449,8 +1462,7 @@ void BINSTRATEGY::BinningStrategy::extend_ghosting_of_binning_discretization(
   if (bincolmap->NumGlobalElements() == 1 && bindis_->Comm().NumProc() > 1)
     FOUR_C_THROW("one bin cannot be run in parallel -> reduce BIN_SIZE_LOWER_BOUND");
 
-  BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(
-      bindis_, bincolmap, assigndegreesoffreedom, false, true);
+  Utils::ExtendDiscretizationGhosting(bindis_, bincolmap, assigndegreesoffreedom, false, true);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether each proc has only particles that are within bins on this proc
@@ -1474,7 +1486,7 @@ void BINSTRATEGY::BinningStrategy::extend_ghosting_of_binning_discretization(
 #endif
 }
 
-void BINSTRATEGY::BinningStrategy::standard_discretization_ghosting(
+void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
     Teuchos::RCP<Core::FE::Discretization>& discret, Teuchos::RCP<Epetra_Map> const& rowbins,
     Teuchos::RCP<Epetra_Vector>& disnp, Teuchos::RCP<Epetra_Map>& stdelecolmap,
     Teuchos::RCP<Epetra_Map>& stdnodecolmap) const
@@ -1485,7 +1497,7 @@ void BINSTRATEGY::BinningStrategy::standard_discretization_ghosting(
   Teuchos::RCP<Epetra_CrsGraph> initgraph = discret->BuildNodeGraph();
 
   // Todo introduced this export to column map due to special handling of
-  //      beam nodes without own position DoFs in BINSTRATEGY::UTILS::GetCurrentNodePos()
+  //      beam nodes without own position DoFs in Utils::GetCurrentNodePos()
   Teuchos::RCP<Epetra_Vector> disnp_col = Teuchos::null;
   if (discret->HaveDofs() and disnp != Teuchos::null)
   {
@@ -1565,7 +1577,7 @@ void BINSTRATEGY::BinningStrategy::standard_discretization_ghosting(
 #endif
 }
 
-void BINSTRATEGY::BinningStrategy::
+void Core::Binstrategy::BinningStrategy::
     collect_information_about_content_of_bins_from_other_procs_via_round_robin(
         Teuchos::RCP<Epetra_Map> rowbins, std::map<int, std::vector<int>>& mynodesinbins,
         std::map<int, std::vector<int>>& allnodesinmybins) const
@@ -1620,7 +1632,7 @@ void BINSTRATEGY::BinningStrategy::
   }
 }
 
-void BINSTRATEGY::BinningStrategy::revert_extended_ghosting(
+void Core::Binstrategy::BinningStrategy::revert_extended_ghosting(
     std::vector<Teuchos::RCP<Core::FE::Discretization>> dis,
     std::vector<Teuchos::RCP<Epetra_Map>>& stdelecolmap,
     std::vector<Teuchos::RCP<Epetra_Map>>& stdnodecolmap) const
@@ -1645,7 +1657,7 @@ void BINSTRATEGY::BinningStrategy::revert_extended_ghosting(
   }
 }
 
-void BINSTRATEGY::BinningStrategy::
+void Core::Binstrategy::BinningStrategy::
     compute_min_binning_domain_containing_all_elements_of_multiple_discrets(
         std::vector<Teuchos::RCP<Core::FE::Discretization>> discret,
         std::vector<Teuchos::RCP<const Epetra_Vector>> disnp,
@@ -1665,7 +1677,7 @@ void BINSTRATEGY::BinningStrategy::
 
   // calculate current position of this node
   double currpos[3] = {0.0, 0.0, 0.0};
-  BINSTRATEGY::UTILS::GetCurrentNodePos(discret[0], node, disnp[0], currpos);
+  Utils::GetCurrentNodePos(discret[0], node, correct_beam_center_node_, disnp[0], currpos);
 
   for (int dim = 0; dim < 3; ++dim)
   {
@@ -1695,7 +1707,7 @@ void BINSTRATEGY::BinningStrategy::
   if (set_bin_size_lower_bound_) bin_size_lower_bound_ += Core::Geo::TOL7;
 }
 
-double BINSTRATEGY::BinningStrategy::
+double Core::Binstrategy::BinningStrategy::
     compute_lower_bound_for_bin_size_as_max_edge_length_of_aabb_of_largest_ele(
         std::vector<Teuchos::RCP<Core::FE::Discretization>> discret,
         std::vector<Teuchos::RCP<const Epetra_Vector>> disnp)
@@ -1718,7 +1730,8 @@ double BINSTRATEGY::BinningStrategy::
       Core::LinAlg::Matrix<3, 2> eleXAABB(false);
 
       // initialize eleXAABB as rectangle around the first node of ele
-      BINSTRATEGY::UTILS::GetCurrentNodePos(discret[ndis], ele->Nodes()[0], disnp[ndis], currpos);
+      Utils::GetCurrentNodePos(
+          discret[ndis], ele->Nodes()[0], correct_beam_center_node_, disnp[ndis], currpos);
       for (int dim = 0; dim < 3; ++dim)
       {
         eleXAABB(dim, 0) = currpos[dim] - Core::Geo::TOL7;
@@ -1726,15 +1739,14 @@ double BINSTRATEGY::BinningStrategy::
       }
 
       // rigid sphere elements needs to consider its radius
-      if (ele->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
+      if (element_filter_(ele) == Utils::SpecialElement::rigid_sphere)
       {
-        double radius = dynamic_cast<Discret::ELEMENTS::Rigidsphere*>(ele)->Radius();
         for (int dim = 0; dim < 3; ++dim)
         {
-          eleXAABB(dim, 0) =
-              std::min(eleXAABB(dim, 0), eleXAABB(dim, 0) - radius - Core::Geo::TOL7);
-          eleXAABB(dim, 1) =
-              std::max(eleXAABB(dim, 1), eleXAABB(dim, 0) + radius + Core::Geo::TOL7);
+          eleXAABB(dim, 0) = std::min(
+              eleXAABB(dim, 0), eleXAABB(dim, 0) - rigid_sphere_radius_(ele) - Core::Geo::TOL7);
+          eleXAABB(dim, 1) = std::max(
+              eleXAABB(dim, 1), eleXAABB(dim, 0) + rigid_sphere_radius_(ele) + Core::Geo::TOL7);
         }
       }
       else
@@ -1743,7 +1755,8 @@ double BINSTRATEGY::BinningStrategy::
         for (int lid = 1; lid < ele->num_node(); ++lid)
         {
           const Core::Nodes::Node* node = ele->Nodes()[lid];
-          BINSTRATEGY::UTILS::GetCurrentNodePos(discret[ndis], node, disnp[ndis], currpos);
+          Utils::GetCurrentNodePos(
+              discret[ndis], node, correct_beam_center_node_, disnp[ndis], currpos);
 
           //  merge eleXAABB of all nodes of this element
           for (int dim = 0; dim < 3; ++dim)
@@ -1768,7 +1781,7 @@ double BINSTRATEGY::BinningStrategy::
   return bin_size_lower_bound;
 }
 
-void BINSTRATEGY::BinningStrategy::
+void Core::Binstrategy::BinningStrategy::
     create_bins_based_on_bin_size_lower_bound_and_binning_domain_dimensions(
         Teuchos::RCP<Core::FE::Discretization> dis)
 {
@@ -1818,7 +1831,7 @@ void BINSTRATEGY::BinningStrategy::
     bin_size_lower_bound_ = std::min(bin_size_[0], std::min(bin_size_[1], bin_size_[2]));
 }
 
-void BINSTRATEGY::BinningStrategy::
+void Core::Binstrategy::BinningStrategy::
     compute_min_binning_domain_containing_all_elements_of_single_discret(
         Teuchos::RCP<Core::FE::Discretization> discret, Core::LinAlg::Matrix<3, 2>& XAABB,
         Teuchos::RCP<const Epetra_Vector> disnp, bool set_bin_size_lower_bound_)
@@ -1828,7 +1841,8 @@ void BINSTRATEGY::BinningStrategy::
   double currpos[3] = {0.0, 0.0, 0.0};
   // initialize XAABB of discret as rectangle around the first node of
   // discret on each proc
-  BINSTRATEGY::UTILS::GetCurrentNodePos(discret, discret->lRowNode(0), disnp, currpos);
+  Utils::GetCurrentNodePos(
+      discret, discret->lRowNode(0), correct_beam_center_node_, disnp, currpos);
   for (int dim = 0; dim < 3; ++dim)
   {
     XAABB(dim, 0) = currpos[dim] - Core::Geo::TOL7;
@@ -1844,7 +1858,7 @@ void BINSTRATEGY::BinningStrategy::
     Core::LinAlg::Matrix<3, 2> eleXAABB(false);
 
     // initialize eleXAABB as rectangle around the first node of ele
-    BINSTRATEGY::UTILS::GetCurrentNodePos(discret, ele->Nodes()[0], disnp, currpos);
+    Utils::GetCurrentNodePos(discret, ele->Nodes()[0], correct_beam_center_node_, disnp, currpos);
     for (int dim = 0; dim < 3; ++dim)
     {
       eleXAABB(dim, 0) = currpos[dim] - Core::Geo::TOL7;
@@ -1855,7 +1869,7 @@ void BINSTRATEGY::BinningStrategy::
     for (int lid = 1; lid < ele->num_node(); ++lid)
     {
       const Core::Nodes::Node* node = ele->Nodes()[lid];
-      BINSTRATEGY::UTILS::GetCurrentNodePos(discret, node, disnp, currpos);
+      Utils::GetCurrentNodePos(discret, node, correct_beam_center_node_, disnp, currpos);
 
       //  merge eleXAABB of all nodes of this element
       for (int dim = 0; dim < 3; dim++)
@@ -1908,11 +1922,11 @@ void BINSTRATEGY::BinningStrategy::
   }
 }
 
-void BINSTRATEGY::BinningStrategy::transfer_nodes_and_elements(
+void Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements(
     Teuchos::RCP<Core::FE::Discretization>& discret, Teuchos::RCP<const Epetra_Vector> disnp,
     std::map<int, std::set<int>>& bintorowelemap)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("BINSTRATEGY::BinningStrategy::transfer_nodes_and_elements");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements");
 
   // clear map before setting up new one
   bintorowelemap.clear();
@@ -1926,7 +1940,7 @@ void BINSTRATEGY::BinningStrategy::transfer_nodes_and_elements(
   {
     // get current node and position
     Core::Nodes::Node* currnode = discret->lColNode(i);
-    BINSTRATEGY::UTILS::GetCurrentNodePos(discret, currnode, disnp, currpos);
+    Utils::GetCurrentNodePos(discret, currnode, correct_beam_center_node_, disnp, currpos);
 
     int const gidofbin = ConvertPosToGid(currpos);
 
@@ -2000,9 +2014,9 @@ void BINSTRATEGY::BinningStrategy::transfer_nodes_and_elements(
 
   // todo: send in one package
   // send and receive elements
-  BINSTRATEGY::UTILS::CommunicateElements(discret, toranktosendeles);
+  Utils::CommunicateElements(discret, toranktosendeles);
   // send and receive new elements to bin relation, like this no fillcomplete call necessary here
-  BINSTRATEGY::UTILS::CommunicateDistributionOfTransferredElementsToBins(
+  Utils::CommunicateDistributionOfTransferredElementsToBins(
       discret, toranktosendbinids, bintorowelemap);
 }
 

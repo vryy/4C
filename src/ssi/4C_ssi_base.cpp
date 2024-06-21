@@ -23,11 +23,13 @@
 #include "4C_io_inputreader.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_mat_par_bundle.hpp"
+#include "4C_membrane.hpp"
 #include "4C_rebalance_binning_based.hpp"
-#include "4C_scatra_ele.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
 #include "4C_scatra_utils.hpp"
+#include "4C_so3_base.hpp"
+#include "4C_solid_3D_ele.hpp"
 #include "4C_ssi_clonestrategy.hpp"
 #include "4C_ssi_coupling.hpp"
 #include "4C_ssi_partitioned.hpp"
@@ -239,9 +241,13 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
     Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
         binning_params);
-
-    Core::Rebalance::RebalanceDiscretizationsByBinning(
-        binning_params, Global::Problem::Instance()->OutputControlFile(), {structdis}, false);
+    auto element_filter = [](const Core::Elements::Element* element)
+    { return Core::Binstrategy::Utils::SpecialElement::none; };
+    auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
+    auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
+    Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
+        Global::Problem::Instance()->OutputControlFile(), {structdis}, element_filter,
+        rigid_sphere_radius, correct_beam_center_node, false);
   }
 
   if (scatradis->NumGlobalNodes() == 0)
@@ -675,9 +681,13 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
     Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
         binning_params);
-
-    Core::Rebalance::RebalanceDiscretizationsByBinning(
-        binning_params, Global::Problem::Instance()->OutputControlFile(), dis, false);
+    auto element_filter = [](const Core::Elements::Element* element)
+    { return Core::Binstrategy::Utils::SpecialElement::none; };
+    auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
+    auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
+    Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
+        Global::Problem::Instance()->OutputControlFile(), dis, element_filter, rigid_sphere_radius,
+        correct_beam_center_node, false);
 
     Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
         *scatradis, *scatradis, "ScatraHeteroReactionMaster", "ScatraHeteroReactionSlave");
@@ -696,9 +706,13 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
     Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
         binning_params);
-
-    Core::Rebalance::RebalanceDiscretizationsByBinning(
-        binning_params, Global::Problem::Instance()->OutputControlFile(), dis, false);
+    auto element_filter = [](const Core::Elements::Element* element)
+    { return Core::Binstrategy::Utils::SpecialElement::none; };
+    auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
+    auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
+    Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
+        Global::Problem::Instance()->OutputControlFile(), dis, element_filter, rigid_sphere_radius,
+        correct_beam_center_node, false);
   }
 }
 

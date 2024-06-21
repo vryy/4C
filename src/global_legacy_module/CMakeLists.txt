@@ -7,7 +7,6 @@ set(_dependencies
     beam3
     beaminteraction
     bele
-    binstrategy
     config
     constraint
     contact

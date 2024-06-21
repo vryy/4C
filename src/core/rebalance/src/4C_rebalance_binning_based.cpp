@@ -33,6 +33,10 @@ void Core::Rebalance::RebalanceDiscretizationsByBinning(
     const Teuchos::ParameterList& binning_params,
     Teuchos::RCP<Core::IO::OutputControl> output_control,
     const std::vector<Teuchos::RCP<Core::FE::Discretization>>& vector_of_discretizations,
+    std::function<Core::Binstrategy::Utils::SpecialElement(const Core::Elements::Element* element)>
+        element_filter,
+    std::function<double(const Core::Elements::Element* element)> rigid_sphere_radius,
+    std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)> correct_beam_center_node,
     bool revertextendedghosting)
 {
   // safety check
@@ -65,9 +69,10 @@ void Core::Rebalance::RebalanceDiscretizationsByBinning(
     std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
 
     // binning strategy is created and parallel redistribution is performed
-    auto binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params,
+    auto binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
         output_control, vector_of_discretizations[0]->Comm(),
-        vector_of_discretizations[0]->Comm().MyPID(), vector_of_discretizations));
+        vector_of_discretizations[0]->Comm().MyPID(), element_filter, rigid_sphere_radius,
+        correct_beam_center_node, vector_of_discretizations));
 
     binningstrategy
         ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(

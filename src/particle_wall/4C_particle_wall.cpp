@@ -30,6 +30,8 @@
 #include "4C_particle_engine_interface.hpp"
 #include "4C_particle_wall_datastate.hpp"
 #include "4C_particle_wall_discretization_runtime_vtu_writer.hpp"
+#include "4C_so3_base.hpp"
+#include "4C_solid_3D_ele.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -54,7 +56,7 @@ PARTICLEWALL::WallHandlerBase::WallHandlerBase(
 PARTICLEWALL::WallHandlerBase::~WallHandlerBase() = default;
 
 void PARTICLEWALL::WallHandlerBase::init(
-    const std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy)
+    const std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy)
 {
   // set interface to binning strategy
   binstrategy_ = binstrategy;
@@ -530,7 +532,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::extend_wall_element_ghosting(
   Teuchos::RCP<Epetra_Map> extendedelecolmap =
       binstrategy_->ExtendElementColMap(bintorowelemap, bintorowelemap, colbintoelemap, bincolmap_);
 
-  BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(
+  Core::Binstrategy::Utils::ExtendDiscretizationGhosting(
       walldiscretization_, extendedelecolmap, true, false, false);
 }
 

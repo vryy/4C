@@ -29,7 +29,7 @@ namespace NOX
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace BINSTRATEGY
+namespace Core::Binstrategy
 {
   class BinningStrategy;
 }
@@ -96,7 +96,7 @@ namespace BEAMINTERACTION
           Teuchos::RCP<STR::TimeInt::BaseDataIO> const& gio_ptr,
           Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
           Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
-          Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy,
+          Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy,
           Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox,
           Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> const& eletypeextractor);
 
@@ -231,9 +231,9 @@ namespace BEAMINTERACTION
       Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler>& beam_crosslinker_handler_ptr();
       BEAMINTERACTION::BeamCrosslinkerHandler const& beam_crosslinker_handler() const;
 
-      BINSTRATEGY::BinningStrategy& BinStrategy();
-      Teuchos::RCP<BINSTRATEGY::BinningStrategy>& BinStrategyPtr();
-      BINSTRATEGY::BinningStrategy const& BinStrategy() const;
+      Core::Binstrategy::BinningStrategy& BinStrategy();
+      Teuchos::RCP<Core::Binstrategy::BinningStrategy>& BinStrategyPtr();
+      Core::Binstrategy::BinningStrategy const& BinStrategy() const;
 
       Core::Geo::MeshFree::BoundingBox& PeriodicBoundingBox();
       Teuchos::RCP<Core::Geo::MeshFree::BoundingBox>& periodic_bounding_box_ptr();
@@ -271,7 +271,7 @@ namespace BEAMINTERACTION
       Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> beam_crosslinker_handler_;
 
       //! binning strategy
-      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
+      Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy_;
 
       //! periodic bounding box
       Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox_;

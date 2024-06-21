@@ -42,6 +42,7 @@
 #include "4C_io_pstream.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_rebalance_binning_based.hpp"
+#include "4C_rigidsphere.hpp"
 #include "4C_shell7p_ele.hpp"
 #include "4C_so3_hex8fbar.hpp"
 #include "4C_so3_plast_ssn_eletypes.hpp"
@@ -170,8 +171,35 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
         "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
         binning_params);
     actdis_vec[0]->fill_complete(false, false, false);
-    Core::Rebalance::RebalanceDiscretizationsByBinning(
-        binning_params, Global::Problem::Instance()->OutputControlFile(), actdis_vec, true);
+    auto element_filter = [](const Core::Elements::Element* element)
+    {
+      if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element))
+        return Core::Binstrategy::Utils::SpecialElement::beam;
+      else if (element->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
+        return Core::Binstrategy::Utils::SpecialElement::rigid_sphere;
+      else
+        return Core::Binstrategy::Utils::SpecialElement::none;
+    };
+
+    auto rigid_sphere_radius = [](const Core::Elements::Element* element)
+    {
+      if (element->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
+        return dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(element)->Radius();
+      else
+        return 0.0;
+    };
+    auto correct_beam_center_node = [](const Core::Nodes::Node* node)
+    {
+      const Core::Elements::Element* element = node->Elements()[0];
+      const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
+      if (beamelement != nullptr and not beamelement->IsCenterlineNode(*node))
+        return element->Nodes()[0];
+      else
+        return node;
+    };
+    Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
+        Global::Problem::Instance()->OutputControlFile(), actdis_vec, element_filter,
+        rigid_sphere_radius, correct_beam_center_node, true);
   }
   else if (not actdis_->Filled() || not actdis_->HaveDofs())
   {

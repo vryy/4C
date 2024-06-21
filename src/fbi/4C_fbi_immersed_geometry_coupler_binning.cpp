@@ -10,6 +10,8 @@ performed afterwards
 *----------------------------------------------------------------------*/
 #include "4C_fbi_immersed_geometry_coupler_binning.hpp"
 
+#include "4C_beam3_base.hpp"
+#include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_binstrategy.hpp"
 #include "4C_binstrategy_utils.hpp"
 #include "4C_fem_discretization_faces.hpp"
@@ -84,7 +86,8 @@ void FBI::FBIBinningGeometryCoupler::partition_geometry(
 
   // assign Elements to bins
   binstrategy_->remove_all_eles_from_bins();
-  binstrategy_->AssignElesToBins(discretizations[0], bintoelemap_);
+  binstrategy_->AssignElesToBins(
+      discretizations[0], bintoelemap_, BEAMINTERACTION::UTILS::ConvertElementToBinContentType);
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIBinningGeometryCoupler::UpdateBinning(
@@ -97,7 +100,8 @@ void FBI::FBIBinningGeometryCoupler::UpdateBinning(
 
   // assign Elements to bins
   binstrategy_->remove_all_eles_from_bins();
-  binstrategy_->AssignElesToBins(structure_discretization, bintoelemap_);
+  binstrategy_->AssignElesToBins(structure_discretization, bintoelemap_,
+      BEAMINTERACTION::UTILS::ConvertElementToBinContentType);
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIBinningGeometryCoupler::setup(
@@ -155,7 +159,7 @@ void FBI::FBIBinningGeometryCoupler::compute_current_positions(Core::FE::Discret
   std::set<Core::Elements::Element*> beam_element_list;
 
   binstrategy_->GetBinContent(
-      beam_element_list, {BINSTRATEGY::UTILS::BinContentType::Beam}, colbinvec, false);
+      beam_element_list, {Core::Binstrategy::Utils::BinContentType::Beam}, colbinvec, false);
 
   for (std::set<Core::Elements::Element*>::iterator element = beam_element_list.begin();
        element != beam_element_list.end(); element++)
@@ -180,7 +184,8 @@ void FBI::FBIBinningGeometryCoupler::compute_current_positions(Core::FE::Discret
 
 /*----------------------------------------------------------------------*/
 
-void FBI::FBIBinningGeometryCoupler::SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning)
+void FBI::FBIBinningGeometryCoupler::SetBinning(
+    Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning)
 {
   binstrategy_ = binning;
   binstrategy_->BinDiscret()->fill_complete(false, false, false);

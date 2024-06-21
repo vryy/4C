@@ -49,7 +49,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::init(
     Teuchos::RCP<STR::TimeInt::BaseDataIO> const& gio_ptr,
     Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
     Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy,
+    Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy,
     Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox,
     Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> const& eletypeextractor)
 {
@@ -236,7 +236,8 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_crosslinker_handler_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BINSTRATEGY::BinningStrategy const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategy() const
+Core::Binstrategy::BinningStrategy const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategy()
+    const
 {
   check_init();
   return *binstrategy_;
@@ -244,7 +245,7 @@ BINSTRATEGY::BinningStrategy const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BINSTRATEGY::BinningStrategy& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategy()
+Core::Binstrategy::BinningStrategy& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategy()
 {
   check_init();
   return *binstrategy_;
@@ -252,7 +253,7 @@ BINSTRATEGY::BinningStrategy& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinSt
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<BINSTRATEGY::BinningStrategy>&
+Teuchos::RCP<Core::Binstrategy::BinningStrategy>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategyPtr()
 {
   check_init();

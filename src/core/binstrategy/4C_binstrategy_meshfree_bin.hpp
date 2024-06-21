@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::MeshFree
+namespace Core::FE::MeshFree
 {
   /*--------------------------------------------------------------------------*/
   /*!
@@ -59,7 +59,7 @@ namespace Discret::MeshFree
      * Makes a deep copy of a meshfree bin
      *///                                                  (public) ghamm 11/12
     /*------------------------------------------------------------------------*/
-    MeshfreeBin(const Discret::MeshFree::MeshfreeBin<ELEMENT>& old);
+    MeshfreeBin(const Core::FE::MeshFree::MeshfreeBin<ELEMENT>& old);
 
     /*------------------------------------------------------------------------*/
     /*!
@@ -147,7 +147,7 @@ namespace Discret::MeshFree
 
    private:
   };  // class MeshfreeBin
-}  // namespace Discret::MeshFree
+}  // namespace Core::FE::MeshFree
 
 FOUR_C_NAMESPACE_CLOSE
 

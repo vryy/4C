@@ -343,6 +343,7 @@ void FBI::FBIGeometryCoupler::compute_current_positions(Core::FE::Discretization
 
 /*----------------------------------------------------------------------*/
 
-void FBI::FBIGeometryCoupler::SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning){};
+void FBI::FBIGeometryCoupler::SetBinning(
+    Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning){};
 
 FOUR_C_NAMESPACE_CLOSE

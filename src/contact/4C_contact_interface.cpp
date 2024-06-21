@@ -653,7 +653,8 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       // Extend master column map via binning
 
       // Create the binning strategy
-      RCP<BINSTRATEGY::BinningStrategy> binningstrategy = setup_binning_strategy(meanVelocity);
+      RCP<Core::Binstrategy::BinningStrategy> binningstrategy =
+          setup_binning_strategy(meanVelocity);
 
       // fill master and slave elements into bins
       std::map<int, std::set<int>> slavebinelemap;

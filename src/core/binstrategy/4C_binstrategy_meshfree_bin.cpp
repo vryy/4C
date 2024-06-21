@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor                                               (public) ghamm 11/12 |
  *--------------------------------------------------------------------------*/
 template <typename ELEMENT>
-Discret::MeshFree::MeshfreeBin<ELEMENT>::MeshfreeBin(int id, int owner) : ELEMENT(id, owner)
+Core::FE::MeshFree::MeshfreeBin<ELEMENT>::MeshfreeBin(int id, int owner) : ELEMENT(id, owner)
 {
 }
 
@@ -25,8 +25,8 @@ Discret::MeshFree::MeshfreeBin<ELEMENT>::MeshfreeBin(int id, int owner) : ELEMEN
  |  copy-ctor                                          (public) ghamm 11/12 |
  *--------------------------------------------------------------------------*/
 template <typename ELEMENT>
-Discret::MeshFree::MeshfreeBin<ELEMENT>::MeshfreeBin(
-    const Discret::MeshFree::MeshfreeBin<ELEMENT>& old)
+Core::FE::MeshFree::MeshfreeBin<ELEMENT>::MeshfreeBin(
+    const Core::FE::MeshFree::MeshfreeBin<ELEMENT>& old)
     : ELEMENT(old)
 {
 }
@@ -36,7 +36,7 @@ Discret::MeshFree::MeshfreeBin<ELEMENT>::MeshfreeBin(
  | Delete a single node from the element               (public) ghamm 11/12 |
  *--------------------------------------------------------------------------*/
 template <typename ELEMENT>
-void Discret::MeshFree::MeshfreeBin<ELEMENT>::DeleteNode(int gid)
+void Core::FE::MeshFree::MeshfreeBin<ELEMENT>::DeleteNode(int gid)
 {
   for (unsigned int i = 0; i < ELEMENT::nodeid_.size(); i++)
   {
@@ -53,8 +53,8 @@ void Discret::MeshFree::MeshfreeBin<ELEMENT>::DeleteNode(int gid)
 /*--------------------------------------------------------------------------*
  | Explicit instantiations                                kronbichler 03/15 |
  *--------------------------------------------------------------------------*/
-template class Discret::MeshFree::MeshfreeBin<Core::Elements::Element>;
-template class Discret::MeshFree::MeshfreeBin<Core::Elements::FaceElement>;
-template class Discret::MeshFree::MeshfreeBin<Mortar::Element>;
+template class Core::FE::MeshFree::MeshfreeBin<Core::Elements::Element>;
+template class Core::FE::MeshFree::MeshfreeBin<Core::Elements::FaceElement>;
+template class Core::FE::MeshFree::MeshfreeBin<Mortar::Element>;
 
 FOUR_C_NAMESPACE_CLOSE

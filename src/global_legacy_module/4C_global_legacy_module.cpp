@@ -179,7 +179,7 @@ namespace
       << Core::FE::Nurbs::ControlPointType::Instance().Name() << " "
       << Core::Nodes::ImmersedNodeType::Instance().Name() << " "
       << CrossLinking::CrosslinkerNodeType::Instance().Name() << " "
-      << Discret::MeshFree::MeshfreeMultiBinType::Instance().Name() << " "
+      << Core::FE::MeshFree::MeshfreeMultiBinType::Instance().Name() << " "
       << Discret::ELEMENTS::Beam3rType::Instance().Name() << " "
       << Discret::ELEMENTS::Beam3ebType::Instance().Name() << " "
       << Discret::ELEMENTS::Beam3kType::Instance().Name() << " "

@@ -19,7 +19,9 @@
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_adapter_str_poro_wrapper.hpp"
 #include "4C_adapter_str_structure.hpp"
+#include "4C_ale_ale3.hpp"
 #include "4C_ale_utils_clonestrategy.hpp"
+#include "4C_beam3_base.hpp"
 #include "4C_binstrategy.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
@@ -27,6 +29,7 @@
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_dofset_fixed_size.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
+#include "4C_fluid_ele.hpp"
 #include "4C_fluid_xfluid.hpp"
 #include "4C_fluid_xfluid_fluid.hpp"
 #include "4C_fsi_constrmonolithic_fluidsplit.hpp"
@@ -63,6 +66,8 @@
 #include "4C_poroelast_utils_clonestrategy.hpp"
 #include "4C_poroelast_utils_setup.hpp"
 #include "4C_rebalance_binning_based.hpp"
+#include "4C_so3_base.hpp"
+#include "4C_solid_3D_ele.hpp"
 #include "4C_utils_result_test.hpp"
 #include "4C_xfem_discretization.hpp"
 
@@ -327,6 +332,24 @@ void fsi_immersed_drt()
   const Epetra_Comm& comm = structdis->Comm();
 
   // Redistribute beams in the case of point coupling conditions
+  auto element_filter = [](const Core::Elements::Element* element)
+  {
+    if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element))
+      return Core::Binstrategy::Utils::SpecialElement::beam;
+    else
+      return Core::Binstrategy::Utils::SpecialElement::none;
+  };
+
+  auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
+  auto correct_beam_center_node = [](const Core::Nodes::Node* node)
+  {
+    const Core::Elements::Element* element = node->Elements()[0];
+    const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
+    if (beamelement != nullptr and not beamelement->IsCenterlineNode(*node))
+      return element->Nodes()[0];
+    else
+      return node;
+  };
 
   if (structdis->GetCondition("PointCoupling") != nullptr)
   {
@@ -335,8 +358,9 @@ void fsi_immersed_drt()
     Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
         binning_params);
-    Core::Rebalance::RebalanceDiscretizationsByBinning(
-        binning_params, Global::Problem::Instance()->OutputControlFile(), {structdis}, true);
+    Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
+        Global::Problem::Instance()->OutputControlFile(), {structdis}, element_filter,
+        rigid_sphere_radius, correct_beam_center_node, true);
   }
   else if (not structdis->Filled() || not structdis->HaveDofs())
   {
@@ -358,8 +382,11 @@ void fsi_immersed_drt()
   Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
       binning_params);
-  auto binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(
-      binning_params, Global::Problem::Instance()->OutputControlFile(), comm, comm.MyPID(), dis));
+
+
+  auto binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
+      Global::Problem::Instance()->OutputControlFile(), comm, comm.MyPID(), element_filter,
+      rigid_sphere_radius, correct_beam_center_node, dis));
 
   const Teuchos::ParameterList& fbidyn = problem->FBIParams();
 
@@ -378,6 +405,8 @@ void fsi_immersed_drt()
     binningstrategy->fill_bins_into_bin_discretization(rowbins);
     binningstrategy->fill_bins_into_bin_discretization(rowbins);
   }
+
+
 
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
@@ -433,6 +462,24 @@ void fsi_ale_drt()
   //       structure dof < fluid dof < ale dof
   //
   // We rely on this ordering in certain non-intuitive places!
+  auto element_filter = [](const Core::Elements::Element* element)
+  {
+    if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element))
+      return Core::Binstrategy::Utils::SpecialElement::beam;
+    else
+      return Core::Binstrategy::Utils::SpecialElement::none;
+  };
+
+  auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
+  auto correct_beam_center_node = [](const Core::Nodes::Node* node)
+  {
+    const Core::Elements::Element* element = node->Elements()[0];
+    const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
+    if (beamelement != nullptr and not beamelement->IsCenterlineNode(*node))
+      return element->Nodes()[0];
+    else
+      return node;
+  };
 
   if (structdis->GetCondition("PointCoupling") != nullptr)
   {
@@ -441,8 +488,10 @@ void fsi_ale_drt()
     Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
         binning_params);
-    Core::Rebalance::RebalanceDiscretizationsByBinning(
-        binning_params, Global::Problem::Instance()->OutputControlFile(), {structdis}, true);
+
+    Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
+        Global::Problem::Instance()->OutputControlFile(), {structdis}, element_filter,
+        rigid_sphere_radius, correct_beam_center_node, true);
   }
   else if (not structdis->Filled() || not structdis->HaveDofs())
   {
@@ -503,8 +552,9 @@ void fsi_ale_drt()
         Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
             "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
             binning_params);
-        auto binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params,
-            Global::Problem::Instance()->OutputControlFile(), comm, comm.MyPID(), dis));
+        auto binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
+            Global::Problem::Instance()->OutputControlFile(), comm, comm.MyPID(), element_filter,
+            rigid_sphere_radius, correct_beam_center_node, dis));
         binningstrategy
             ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
                 dis, stdelecolmap, stdnodecolmap);

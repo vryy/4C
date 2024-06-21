@@ -346,8 +346,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
         // get set of neighboring beam elements (i.e. elements that somehow touch nb bins)
         // we also need col elements (flag = false) here (in contrast to "normal" crosslinking)
         std::set<Core::Elements::Element*> neighboring_beams;
-        std::vector<BINSTRATEGY::UTILS::BinContentType> bc(
-            1, BINSTRATEGY::UTILS::BinContentType::Beam);
+        std::vector<Core::Binstrategy::Utils::BinContentType> bc(
+            1, Core::Binstrategy::Utils::BinContentType::Beam);
         BinStrategyPtr()->GetBinContent(neighboring_beams, bc, neighboring_binIds, false);
 
         // in case there are no neighbors, go to next binding spot
@@ -2326,12 +2326,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
   // get set of neighboring beam elements (i.e. elements that somehow touch nb bins)
   // as explained above, we only need row elements (true flag in GetBinContent())
   std::set<Core::Elements::Element*> neighboring_row_beams;
-  std::vector<BINSTRATEGY::UTILS::BinContentType> bc_beam(
-      1, BINSTRATEGY::UTILS::BinContentType::Beam);
+  std::vector<Core::Binstrategy::Utils::BinContentType> bc_beam(
+      1, Core::Binstrategy::Utils::BinContentType::Beam);
   BinStrategyPtr()->GetBinContent(neighboring_row_beams, bc_beam, neighboring_binIds, true);
   std::set<Core::Elements::Element*> neighboring_col_spheres;
-  std::vector<BINSTRATEGY::UTILS::BinContentType> bc_sphere(
-      1, BINSTRATEGY::UTILS::BinContentType::RigidSphere);
+  std::vector<Core::Binstrategy::Utils::BinContentType> bc_sphere(
+      1, Core::Binstrategy::Utils::BinContentType::RigidSphere);
   BinStrategyPtr()->GetBinContent(neighboring_col_spheres, bc_sphere, neighboring_binIds, false);
 
 

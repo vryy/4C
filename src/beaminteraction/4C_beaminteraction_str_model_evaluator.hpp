@@ -39,7 +39,7 @@ namespace Core::LinAlg
   class MatrixRowTransform;
 }  // namespace Core::LinAlg
 
-namespace BINSTRATEGY
+namespace Core::Binstrategy
 {
   class BinningStrategy;
 }
@@ -293,7 +293,7 @@ namespace STR
       Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> beam_crosslinker_handler_;
 
       //! binning strategy
-      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
+      Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy_;
 
       //! crosslinker and bin discretization
       Teuchos::RCP<Core::FE::Discretization> bindis_;

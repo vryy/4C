@@ -2,7 +2,6 @@ four_c_auto_define_module()
 
 set(_dependencies
     # cmake-format: sortable
-    binstrategy
     config
     core
     cut

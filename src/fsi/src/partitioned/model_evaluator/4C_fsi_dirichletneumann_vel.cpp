@@ -218,7 +218,7 @@ void FSI::DirichletNeumannVel::Timeloop(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void FSI::DirichletNeumannVel::SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning)
+void FSI::DirichletNeumannVel::SetBinning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning)
 {
   constraint_manager_->SetBinning(binning);
 };

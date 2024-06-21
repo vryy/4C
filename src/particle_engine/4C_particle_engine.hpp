@@ -37,7 +37,7 @@ namespace PARTICLEENGINE
   class ParticleRuntimeVtpWriter;
 }  // namespace PARTICLEENGINE
 
-namespace BINSTRATEGY
+namespace Core::Binstrategy
 {
   class BinningStrategy;
 }
@@ -318,7 +318,7 @@ namespace PARTICLEENGINE
      *
      * \return binning strategy
      */
-    std::shared_ptr<BINSTRATEGY::BinningStrategy> GetBinningStrategy() const
+    std::shared_ptr<Core::Binstrategy::BinningStrategy> GetBinningStrategy() const
     {
       return binstrategy_;
     };
@@ -785,7 +785,7 @@ namespace PARTICLEENGINE
     const Teuchos::ParameterList& params_;
 
     //! binning strategy
-    std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy_;
+    std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy_;
 
     //! distribution of row bins
     Teuchos::RCP<Epetra_Map> binrowmap_;

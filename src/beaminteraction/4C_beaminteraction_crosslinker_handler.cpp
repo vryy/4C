@@ -31,7 +31,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::BeamCrosslinkerHandler()
 }
 
 void BEAMINTERACTION::BeamCrosslinkerHandler::init(
-    int myrank, Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy)
+    int myrank, Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy)
 {
   binstrategy_ = binstrategy;
   myrank_ = myrank;
@@ -68,7 +68,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::RemoveAllLinker()
   for (int ibin = 0; ibin < numrowbin; ++ibin)
   {
     Core::Elements::Element* actele = BinStrategy()->BinDiscret()->lColElement(ibin);
-    dynamic_cast<Discret::MeshFree::MeshfreeMultiBin*>(actele)->DeleteNodes();
+    dynamic_cast<Core::FE::MeshFree::MeshfreeMultiBin*>(actele)->DeleteNodes();
   }
 
   // 2nd) initial linker need to be removed from bindis_
@@ -443,13 +443,13 @@ bool BEAMINTERACTION::BeamCrosslinkerHandler::PlaceNodeCorrectly(
   // either fill linker into correct bin on this proc or mark it as homeless
   if (found == true)
   {
-    Discret::MeshFree::MeshfreeMultiBin* currbin =
-        dynamic_cast<Discret::MeshFree::MeshfreeMultiBin*>(
+    Core::FE::MeshFree::MeshfreeMultiBin* currbin =
+        dynamic_cast<Core::FE::MeshFree::MeshfreeMultiBin*>(
             binstrategy_->BinDiscret()->gElement(binId));
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (currbin == nullptr)
       FOUR_C_THROW(
-          "dynamic cast from Core::Elements::Element to Discret::MeshFree::MeshfreeMultiBin "
+          "dynamic cast from Core::Elements::Element to Core::FE:MeshFree::MeshfreeMultiBin "
           "failed");
 #endif
     // check whether it is a row bin
@@ -539,8 +539,8 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLi
       FOUR_C_THROW("ERROR: A linker is assigned to more than one bin!");
 #endif
 
-    Discret::MeshFree::MeshfreeMultiBin* currbin =
-        dynamic_cast<Discret::MeshFree::MeshfreeMultiBin*>(currlinker->Elements()[0]);
+    Core::FE::MeshFree::MeshfreeMultiBin* currbin =
+        dynamic_cast<Core::FE::MeshFree::MeshfreeMultiBin*>(currlinker->Elements()[0]);
     // as checked above, there is only one element in currele array
     const int binId = currbin->Id();
     const int rlid = binstrategy_->BinDiscret()->ElementRowMap()->LID(binId);

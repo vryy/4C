@@ -20,6 +20,7 @@
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_adapter_structure_scatra_ele.hpp"
 #include "4C_ale_utils_clonestrategy.hpp"
+#include "4C_beam3_base.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
 #include "4C_fem_condition_selector.hpp"
 #include "4C_fem_condition_utils.hpp"
@@ -384,8 +385,26 @@ Teuchos::RCP<Core::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_ob
   Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
       binning_params);
-  volume_coupling_object->Redistribute(
-      binning_params, Global::Problem::Instance()->OutputControlFile());
+  auto element_filter = [](const Core::Elements::Element* element)
+  {
+    if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element))
+      return Core::Binstrategy::Utils::SpecialElement::beam;
+    else
+      return Core::Binstrategy::Utils::SpecialElement::none;
+  };
+  auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
+  auto correct_beam_center_node = [](const Core::Nodes::Node* node)
+  {
+    const Core::Elements::Element* element = node->Elements()[0];
+    const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
+    if (beamelement != nullptr and not beamelement->IsCenterlineNode(*node))
+      return element->Nodes()[0];
+    else
+      return node;
+  };
+  volume_coupling_object->Redistribute(binning_params,
+      Global::Problem::Instance()->OutputControlFile(), element_filter, rigid_sphere_radius,
+      correct_beam_center_node);
   volume_coupling_object->setup(Global::Problem::Instance()->VolmortarParams());
 
   return volume_coupling_object;

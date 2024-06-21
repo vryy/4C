@@ -377,7 +377,8 @@ namespace BEAMINTERACTION
           new Epetra_Map(-1, static_cast<int>(colgids.size()), colgids.data(), 0, discret->Comm()));
 
       // temporarily extend ghosting
-      BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(discret, newelecolmap, true, false, true);
+      Core::Binstrategy::Utils::ExtendDiscretizationGhosting(
+          discret, newelecolmap, true, false, true);
     }
 
     /*-----------------------------------------------------------------------------*
@@ -1259,6 +1260,32 @@ namespace BEAMINTERACTION
       pair.first = w - pair.second;
 
       return pair;
+    }
+
+    /*-----------------------------------------------------------------------------*
+     *-----------------------------------------------------------------------------*/
+    Core::Binstrategy::Utils::BinContentType ConvertElementToBinContentType(
+        const Core::Elements::Element* ele)
+    {
+      if (dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(ele) != nullptr)
+      {
+        return Core::Binstrategy::Utils::BinContentType::Beam;
+      }
+      else if (dynamic_cast<Discret::ELEMENTS::Rigidsphere const*>(ele) != nullptr)
+      {
+        return Core::Binstrategy::Utils::BinContentType::RigidSphere;
+      }
+      else if (dynamic_cast<Discret::ELEMENTS::SoBase const*>(ele) != nullptr ||
+               dynamic_cast<Discret::ELEMENTS::Solid const*>(ele) != nullptr)
+      {
+        return Core::Binstrategy::Utils::BinContentType::Solid;
+      }
+      else
+      {
+        FOUR_C_THROW(
+            " Element you are about to assign to a bin could not be converted"
+            " to a valid bin content type. ");
+      }
     }
 
 

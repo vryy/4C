@@ -33,7 +33,7 @@ namespace BEAMINTERACTION
   class BeamToFluidMeshtyingVtkOutputWriter;
 }
 
-namespace BINSTRATEGY
+namespace Core::Binstrategy
 {
   class BinningStrategy;
 }
@@ -101,7 +101,7 @@ namespace Adapter
      *
      *  \param[in] binning binning strategy object
      */
-    void SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning);
+    void SetBinning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning);
 
     /**
      * \brief Computes the coupling matrices

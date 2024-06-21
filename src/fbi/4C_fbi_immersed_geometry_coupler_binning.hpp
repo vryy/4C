@@ -27,7 +27,7 @@ performed afterwards
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace BINSTRATEGY
+namespace Core::Binstrategy
 {
   class BinningStrategy;
 }
@@ -59,7 +59,7 @@ namespace FBI
      *
      * \param[in] binning binning strategy
      */
-    void SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning) override;
+    void SetBinning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning) override;
 
     /** \brief Setup the Geoemtry object
      *
@@ -130,7 +130,7 @@ namespace FBI
 
    private:
     /// binning strategy
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
+    Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy_;
 
     /// Map relating bins to elements they contain
     std::map<int, std::set<int>> bintoelemap_;

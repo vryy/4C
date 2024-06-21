@@ -39,7 +39,7 @@ namespace PARTICLEENGINE
   class ParticleEngineInterface;
 }
 
-namespace BINSTRATEGY
+namespace Core::Binstrategy
 {
   class BinningStrategy;
 }
@@ -98,7 +98,7 @@ namespace PARTICLEWALL
      *
      * \param[in] binstrategy binning strategy
      */
-    virtual void init(const std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy);
+    virtual void init(const std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy);
 
     /*!
      * \brief setup wall handler
@@ -291,7 +291,7 @@ namespace PARTICLEWALL
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
 
     //! binning strategy
-    std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy_;
+    std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy_;
 
     //! distribution of row bins
     Teuchos::RCP<Epetra_Map> binrowmap_;

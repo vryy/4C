@@ -21,6 +21,8 @@
 #include "4C_poroelast_scatra_utils_clonestrategy.hpp"
 #include "4C_poroelast_utils_setup.hpp"
 #include "4C_rebalance_binning_based.hpp"
+#include "4C_so3_base.hpp"
+#include "4C_solid_3D_ele.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -103,9 +105,13 @@ namespace PoroElastScaTra
         Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
             "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
             binning_params);
-
-        Core::Rebalance::RebalanceDiscretizationsByBinning(
-            binning_params, Global::Problem::Instance()->OutputControlFile(), dis, false);
+        auto element_filter = [](const Core::Elements::Element* element)
+        { return Core::Binstrategy::Utils::SpecialElement::none; };
+        auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
+        auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
+        Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
+            Global::Problem::Instance()->OutputControlFile(), dis, element_filter,
+            rigid_sphere_radius, correct_beam_center_node, false);
 
         // set material pointers
         PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);

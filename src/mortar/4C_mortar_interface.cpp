@@ -966,7 +966,7 @@ void Mortar::Interface::initialize_data_container()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<BINSTRATEGY::BinningStrategy> Mortar::Interface::setup_binning_strategy(
+Teuchos::RCP<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_binning_strategy(
     const double meanVelocity)
 {
   // Initialize eXtendedAxisAlignedBoundingBox (XAABB)
@@ -1051,9 +1051,17 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> Mortar::Interface::setup_binning_stra
   Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
       binning_params);
-  Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-      Teuchos::rcp(new BINSTRATEGY::BinningStrategy(binning_params,
-          Global::Problem::Instance()->OutputControlFile(), Comm(), Comm().MyPID()));
+
+  auto element_filter = [](const Core::Elements::Element* element)
+  { return Core::Binstrategy::Utils::SpecialElement::none; };
+
+  auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
+  auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
+
+  Teuchos::RCP<Core::Binstrategy::BinningStrategy> binningstrategy =
+      Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
+          Global::Problem::Instance()->OutputControlFile(), Comm(), Comm().MyPID(), element_filter,
+          rigid_sphere_radius, correct_beam_center_node));
 
   return binningstrategy;
 }
@@ -1485,7 +1493,7 @@ void Mortar::Interface::extend_interface_ghosting(
       Discret().fill_complete(false, isFinalParallelDistribution, false);
 
       // Create the binning strategy
-      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
+      Teuchos::RCP<Core::Binstrategy::BinningStrategy> binningstrategy =
           setup_binning_strategy(meanVelocity);
 
       // fill master and slave elements into bins

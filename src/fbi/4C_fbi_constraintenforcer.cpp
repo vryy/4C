@@ -319,7 +319,8 @@ void Adapter::FBIConstraintenforcer::extract_current_element_dofs(
 
 /*----------------------------------------------------------------------*/
 
-void Adapter::FBIConstraintenforcer::SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning)
+void Adapter::FBIConstraintenforcer::SetBinning(
+    Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning)
 {
   geometrycoupler_->SetBinning(binning);
 };

@@ -48,14 +48,12 @@ namespace Input
   class LineDefinition;
 }
 
-namespace Discret
+namespace Core::FE::MeshFree
 {
-  namespace MeshFree
-  {
-    template <typename>
-    class MeshfreeBin;
-  }
-}  // namespace Discret
+  template <typename>
+  class MeshfreeBin;
+}
+
 
 namespace Core::FE
 {
@@ -95,7 +93,7 @@ namespace Core::Elements
     //! @name Enums and Friends
 
     template <typename>
-    friend class Discret::MeshFree::MeshfreeBin;
+    friend class Core::FE::MeshFree::MeshfreeBin;
 
     //@}
 
