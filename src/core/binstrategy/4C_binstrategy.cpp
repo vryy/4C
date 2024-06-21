@@ -1706,8 +1706,8 @@ double Core::Binstrategy::BinningStrategy::
 
       // compute lower bound for bin size as largest element in discret
       for (int dim = 0; dim < 3; ++dim)
-        loc_max_bin_size_lower_bound =
-            std::max(loc_max_bin_size_lower_bound, aabb.second[dim] - aabb.first[dim]);
+        loc_max_bin_size_lower_bound = std::max(
+            loc_max_bin_size_lower_bound, aabb.second[dim] - aabb.first[dim] + 2 * Core::Geo::TOL7);
     }
 
     double globmax_bin_size_lower_bound = 0.0;
@@ -1797,15 +1797,15 @@ void Core::Binstrategy::BinningStrategy::
     if (set_bin_size_lower_bound_)
     {
       for (int dim = 0; dim < 3; ++dim)
-        locmax_set_bin_size_lower_bound =
-            std::max(locmax_set_bin_size_lower_bound, aabb.second[dim] - aabb.first[dim]);
+        locmax_set_bin_size_lower_bound = std::max(locmax_set_bin_size_lower_bound,
+            aabb.second[dim] - aabb.first[dim] + 2 * Core::Geo::TOL7);
     }
 
     // merge XAABB of all roweles
     for (int dim = 0; dim < 3; dim++)
     {
-      XAABB(dim, 0) = std::min(XAABB(dim, 0), aabb.first[dim]);
-      XAABB(dim, 1) = std::max(XAABB(dim, 1), aabb.second[dim]);
+      XAABB(dim, 0) = std::min(XAABB(dim, 0), aabb.first[dim] - Core::Geo::TOL7);
+      XAABB(dim, 1) = std::max(XAABB(dim, 1), aabb.second[dim] + Core::Geo::TOL7);
     }
   }
 
@@ -1951,10 +1951,8 @@ Core::Binstrategy::BinningStrategy::compute_aabb(const Core::FE::Discretization&
       double currpos[3] = {0.0, 0.0, 0.0};
       Utils::GetCurrentNodePos(discret, ele.Nodes()[0], correct_beam_center_node_, disnp, currpos);
       const double radius = rigid_sphere_radius_(&ele);
-      return {{currpos[0] - radius - Core::Geo::TOL7, currpos[1] - radius - Core::Geo::TOL7,
-                  currpos[2] - radius - Core::Geo::TOL7},
-          {currpos[0] + radius + Core::Geo::TOL7, currpos[1] + radius + Core::Geo::TOL7,
-              currpos[2] + radius + Core::Geo::TOL7}};
+      return {{currpos[0] - radius, currpos[1] - radius, currpos[2] - radius},
+          {currpos[0] + radius, currpos[1] + radius, currpos[2] + radius}};
     }
     default:
     {
@@ -1965,8 +1963,8 @@ Core::Binstrategy::BinningStrategy::compute_aabb(const Core::FE::Discretization&
         Utils::GetCurrentNodePos(discret, nodes[j], correct_beam_center_node_, disnp, currpos);
         for (unsigned d = 0; d < 3; ++d)
         {
-          aabb.first[d] = std::min(aabb.first[d], currpos[d] - Core::Geo::TOL7);
-          aabb.second[d] = std::max(aabb.second[d], currpos[d] + Core::Geo::TOL7);
+          aabb.first[d] = std::min(aabb.first[d], currpos[d]);
+          aabb.second[d] = std::max(aabb.second[d], currpos[d]);
         }
       }
       return aabb;
