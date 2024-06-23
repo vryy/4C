@@ -105,7 +105,7 @@ Wear::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
   // create interface coupling
   coupstrualei_ = Teuchos::rcp(new Core::Adapter::Coupling());
   coupstrualei_->setup_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->AleWearCondMap(), *ale_field().discretization(),
+      structure_field()->Interface()->ale_wear_cond_map(), *ale_field().discretization(),
       ale_field().Interface()->Map(ale_field().Interface()->cond_ale_wear), "AleWear", ndim);
 
   // initialize intern variables for wear
@@ -496,7 +496,7 @@ void Wear::Partitioned::disp_coupling(Teuchos::RCP<Epetra_Vector>& disinterface)
   // Teuchos::RCP<Epetra_Vector> aledofs = Teuchos::rcp(new
   // Epetra_Vector(*ale_field().Interface()->Map(ale_field().Interface()->cond_ale_wear)),true);
   Teuchos::RCP<Epetra_Vector> strudofs =
-      Teuchos::rcp(new Epetra_Vector(*structure_field()->Interface()->AleWearCondMap()), true);
+      Teuchos::rcp(new Epetra_Vector(*structure_field()->Interface()->ale_wear_cond_map()), true);
 
   // change the parallel distribution from mortar interface to structure
   Core::LinAlg::Export(*disinterface, *strudofs);

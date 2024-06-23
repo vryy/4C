@@ -181,7 +181,7 @@ double NOX::FSI::PartialNormF::compute_norm(const ::NOX::Abstract::Group& grp)
 
   // extract the inner vector elements we are interested in
 
-  Teuchos::RCP<Epetra_Vector> v = extractor_.ExtractVector(f.getEpetraVector(), blocknum_);
+  Teuchos::RCP<Epetra_Vector> v = extractor_.extract_vector(f.getEpetraVector(), blocknum_);
 
   double norm = FSI::GenericNormF::compute_norm(*v);
 
@@ -223,8 +223,8 @@ double NOX::FSI::PartialSumNormF::compute_norm(const ::NOX::Abstract::Group& grp
 
   // extract the inner vector elements we are interested in
 
-  Teuchos::RCP<Epetra_Vector> v1 = extractor1_.ExtractCondVector(f.getEpetraVector());
-  Teuchos::RCP<Epetra_Vector> v2 = extractor2_.ExtractCondVector(f.getEpetraVector());
+  Teuchos::RCP<Epetra_Vector> v1 = extractor1_.extract_cond_vector(f.getEpetraVector());
+  Teuchos::RCP<Epetra_Vector> v2 = extractor2_.extract_cond_vector(f.getEpetraVector());
 
   Teuchos::RCP<Epetra_Vector> v = converter_->SrcToDst(v2);
   v->Update(scale1_, *v1, scale2_);
@@ -416,7 +416,7 @@ NOX::FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
 /*----------------------------------------------------------------------*/
 double NOX::FSI::PartialNormUpdate::compute_norm(const Epetra_Vector& v)
 {
-  return FSI::GenericNormUpdate::compute_norm(*extractor_.ExtractVector(v, blocknum_));
+  return FSI::GenericNormUpdate::compute_norm(*extractor_.extract_vector(v, blocknum_));
 }
 
 

@@ -191,10 +191,10 @@ void THR::TimIntImpl::Predict()
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
-  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
 
   // blank residual at DOFs on Dirichlet BC
-  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
 
   // build residual force norm
   normfres_ = THR::Aux::calculate_vector_norm(iternorm_, fres_);
@@ -232,10 +232,10 @@ void THR::TimIntImpl::prepare_partition_step()
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
-  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
 
   // blank residual at DOFs on Dirichlet BC
-  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
 
   // split norms
   // build residual force norm
@@ -312,10 +312,10 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
 
   // extract reaction forces
   freact_->Update(-1.0, *fres_, 0.0);  // reactions are negative
-  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
 
   // blank residual at DOFs on Dirichlet BC
-  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
 
   // make negative residual
   // K . DT = -fres = -(fint - fext)
@@ -324,7 +324,8 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
   // apply Dirichlet BCs to system of equations
   tempi_->PutScalar(0.0);
   tang_->Complete();
-  Core::LinAlg::apply_dirichlet_to_system(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+  Core::LinAlg::apply_dirichlet_to_system(
+      *tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->cond_map()));
 
   // solve for tempi_
   // Solve K_Teffdyn . IncT = -R  ===>  IncT_{n+1}
@@ -510,7 +511,7 @@ Inpar::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
     // apply Dirichlet BCs to system of equations
     tempi_->PutScalar(0.0);  // Useful? depends on solver and more
     Core::LinAlg::apply_dirichlet_to_system(
-        *tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+        *tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->cond_map()));
 
     // Solve for tempi_
     // Solve K_Teffdyn . IncT = -R  ===>  IncT_{n+1}
@@ -559,11 +560,11 @@ void THR::TimIntImpl::blank_dirichlet_and_calc_norms()
   freact_->Update(-1.0, *fres_, 0.0);
   // copie the dbc onto freact_,
   // everything that is not DBC node ("OtherVector") is blanked
-  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
 
   // blank residual at DOFs on Dirichlet BC
   // DBC node do not enter the residual, because values are known at the nodes
-  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
 
   // do mortar condensation
   if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->MortarCondensation(tang_, fres_);
@@ -689,18 +690,19 @@ void THR::TimIntImpl::prepare_system_for_newton_solve()
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
-  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
 
   // make the residual negative
   fres_->Scale(-1.0);
   // blank residual at DOFs on Dirichlet BCs, fres_=0 at nodes with DBC
-  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
 
   // apply Dirichlet BCs to system of equations
   tempi_->PutScalar(0.0);  // Useful? depends on solver and more
   // at dofs with DBC change tang_:
   // blank all off-diagonal terms and put 1s at diagonal terms of tang_
-  Core::LinAlg::apply_dirichlet_to_system(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+  Core::LinAlg::apply_dirichlet_to_system(
+      *tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->cond_map()));
 
   // final sip
   return;
@@ -1061,7 +1063,7 @@ void THR::TimIntImpl::fd_check()
   for (int i = 0; i < dofs; ++i)  // TSI: j=STR_DOFs+dofs
   {
     // DOFs that have DBC are not disturbed, i.e. set to zero
-    if (dbcmaps_->CondMap()->MyGID(i))
+    if (dbcmaps_->cond_map()->MyGID(i))
     {
       disturbtempi->ReplaceGlobalValue(i, 0, 0.0);
     }
@@ -1070,7 +1072,7 @@ void THR::TimIntImpl::fd_check()
     rhs_copy->Update(1.0, *fres_, 0.0);
     tempi_->PutScalar(0.0);
     Core::LinAlg::apply_dirichlet_to_system(
-        *tang_copy, *disturbtempi, *rhs_copy, *zeros_, *(dbcmaps_->CondMap()));
+        *tang_copy, *disturbtempi, *rhs_copy, *zeros_, *(dbcmaps_->cond_map()));
     // finite difference approximation of partial derivative
     // rhs_copy = ( rhs_disturb - rhs_old ) . (-1)/delta with rhs_copy==rhs_disturb
     rhs_copy->Update(-1.0, *rhs_old, 1.0);
@@ -1086,7 +1088,7 @@ void THR::TimIntImpl::fd_check()
     }  // loop over rows
 
     // free DOFs (no DBC) get the value (-delta)
-    if (not dbcmaps_->CondMap()->MyGID(i))
+    if (not dbcmaps_->cond_map()->MyGID(i))
       disturbtempi->ReplaceGlobalValue(i, 0, -delta);  // row: i, vector index: 0, value: -delta
 
     // TODO 2013-09-18 was machen diese drei Zeilen??
@@ -1115,11 +1117,11 @@ void THR::TimIntImpl::fd_check()
   for (int i = 0; i < dofs; ++i)
   {
     // only do the check for DOFs which have NO Dirichlet boundary condition
-    if (not dbcmaps_->CondMap()->MyGID(i))
+    if (not dbcmaps_->cond_map()->MyGID(i))
     {
       for (int j = 0; j < dofs; ++j)
       {
-        if (not dbcmaps_->CondMap()->MyGID(j))
+        if (not dbcmaps_->cond_map()->MyGID(j))
         {
           double tang_approx_ij = 0.0;
           double sparse_ij = 0.0;

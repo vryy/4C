@@ -401,10 +401,10 @@ void PoroElast::Monolithic::extract_field_vectors(Teuchos::RCP<const Epetra_Vect
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::Monolithic::extract_field_vectors");
 
   // process structure unknowns of the first field
-  sx = Extractor()->ExtractVector(x, 0);
+  sx = Extractor()->extract_vector(x, 0);
 
   // process fluid unknowns of the second field
-  fx = Extractor()->ExtractVector(x, 1);
+  fx = Extractor()->extract_vector(x, 1);
 }
 
 void PoroElast::Monolithic::SetupSystem()
@@ -431,7 +431,7 @@ void PoroElast::Monolithic::SetupSystem()
     if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid equation. Panic.");
 
     // full Poroelasticity-map
-    fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
+    fullmap_ = Core::LinAlg::MultiMapExtractor::merge_maps(vecSpaces);
     // full Poroelasticity-blockmap
     blockrowdofmap_->setup(*fullmap_, vecSpaces);
   }
@@ -734,9 +734,9 @@ void PoroElast::Monolithic::setup_vector(
   // and put the structural/fluid field vector into the global vector f
   // noticing the block number
 
-  Extractor()->InsertVector(*sv, 0, f);
+  Extractor()->insert_vector(*sv, 0, f);
   if (not oldstructimint_) f.Scale(-1);
-  Extractor()->InsertVector(*fv, 1, f);
+  Extractor()->insert_vector(*fv, 1, f);
 }
 
 bool PoroElast::Monolithic::Converged()
@@ -1518,16 +1518,16 @@ void PoroElast::Monolithic::build_convergence_norms()
   Teuchos::RCP<const Epetra_Vector> rhs_fpres;
 
   // process structure unknowns of the first field
-  rhs_s = Extractor()->ExtractVector(rhs_, 0);
+  rhs_s = Extractor()->extract_vector(rhs_, 0);
   // process fluid unknowns of the second field
-  rhs_f = Extractor()->ExtractVector(rhs_, 1);
+  rhs_f = Extractor()->extract_vector(rhs_, 1);
   rhs_fvel = fluid_field()->ExtractVelocityPart(rhs_f);
   rhs_fpres = fluid_field()->ExtractPressurePart(rhs_f);
 
   if (porosity_dof_)
   {
-    Teuchos::RCP<const Epetra_Vector> rhs_poro = porosity_splitter_->ExtractCondVector(rhs_s);
-    Teuchos::RCP<const Epetra_Vector> rhs_sdisp = porosity_splitter_->ExtractOtherVector(rhs_s);
+    Teuchos::RCP<const Epetra_Vector> rhs_poro = porosity_splitter_->extract_cond_vector(rhs_s);
+    Teuchos::RCP<const Epetra_Vector> rhs_sdisp = porosity_splitter_->extract_other_vector(rhs_s);
 
     normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_sdisp);
     normrhsporo_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_poro);
@@ -1549,18 +1549,18 @@ void PoroElast::Monolithic::build_convergence_norms()
   Teuchos::RCP<const Epetra_Vector> interincfvel;
   Teuchos::RCP<const Epetra_Vector> interincfpres;
   // process structure unknowns of the first field
-  interincs = Extractor()->ExtractVector(iterinc_, 0);
+  interincs = Extractor()->extract_vector(iterinc_, 0);
   // process fluid unknowns of the second field
-  interincf = Extractor()->ExtractVector(iterinc_, 1);
+  interincf = Extractor()->extract_vector(iterinc_, 1);
   interincfvel = fluid_field()->ExtractVelocityPart(interincf);
   interincfpres = fluid_field()->ExtractPressurePart(interincf);
 
   if (porosity_dof_)
   {
     Teuchos::RCP<const Epetra_Vector> interincporo =
-        porosity_splitter_->ExtractCondVector(interincs);
+        porosity_splitter_->extract_cond_vector(interincs);
     Teuchos::RCP<const Epetra_Vector> interincsdisp =
-        porosity_splitter_->ExtractOtherVector(interincs);
+        porosity_splitter_->extract_other_vector(interincs);
 
     normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, interincsdisp);
     normincporo_ = UTILS::calculate_vector_norm(vectornorminc_, interincporo);
@@ -1859,7 +1859,7 @@ void PoroElast::Monolithic::eval_poro_mortar()
           Teuchos::RCP<Core::LinAlg::SparseOperator> k_sf =
               Teuchos::rcp<Core::LinAlg::SparseMatrix>(
                   new Core::LinAlg::SparseMatrix(systemmatrix_->Matrix(0, 1)));
-          Teuchos::RCP<Epetra_Vector> rhs_s = Extractor()->ExtractVector(rhs_, 0);
+          Teuchos::RCP<Epetra_Vector> rhs_s = Extractor()->extract_vector(rhs_, 0);
 
           // Evaluate Poro Contact Condensation for K_ss, K_sf
           costrategy.apply_force_stiff_cmt_coupled(
@@ -1870,7 +1870,7 @@ void PoroElast::Monolithic::eval_poro_mortar()
               *Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(k_ss));
           systemmatrix_->Assign(0, 1, Core::LinAlg::Copy,
               *Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(k_sf));
-          Extractor()->InsertVector(rhs_s, 0, rhs_);
+          Extractor()->insert_vector(rhs_s, 0, rhs_);
 
           //---Modify fluid matrix, coupling matrix k_fs and rhs of fluid
           if (no_penetration_)
@@ -1885,7 +1885,7 @@ void PoroElast::Monolithic::eval_poro_mortar()
                 Teuchos::rcp<Core::LinAlg::SparseMatrix>(
                     new Core::LinAlg::SparseMatrix(systemmatrix_->Matrix(1, 0)));
 
-            Teuchos::RCP<Epetra_Vector> frhs = Extractor()->ExtractVector(rhs_, 1);
+            Teuchos::RCP<Epetra_Vector> frhs = Extractor()->extract_vector(rhs_, 1);
 
             // Evaluate Poro No Penetration Contact Condensation
             costrategy.evaluate_poro_no_pen_contact(k_fs, f, frhs);
@@ -1894,7 +1894,7 @@ void PoroElast::Monolithic::eval_poro_mortar()
             systemmatrix_->Assign(1, 1, Core::LinAlg::Copy, *f);
             systemmatrix_->Assign(1, 0, Core::LinAlg::Copy, *k_fs);
 
-            Extractor()->InsertVector(*frhs, 1, *rhs_);
+            Extractor()->insert_vector(*frhs, 1, *rhs_);
           }
         }
         else  // add nitsche contributions to sysmat and rhs
@@ -1912,7 +1912,7 @@ void PoroElast::Monolithic::eval_poro_mortar()
               *pstrat->GetMatrixBlockPtr(CONTACT::MatBlockType::porofluid_displ), false, 1.0, 1.0);
           systemmatrix_->Complete();
 
-          Extractor()->AddVector(
+          Extractor()->add_vector(
               *pstrat->GetRhsBlockPtr(CONTACT::VecBlockType::porofluid), 1, *rhs_);
         }
       }
@@ -1945,8 +1945,9 @@ void PoroElast::Monolithic::eval_poro_mortar()
 void PoroElast::Monolithic::build_combined_dbc_map()
 {
   const Teuchos::RCP<const Epetra_Map> scondmap =
-      structure_field()->GetDBCMapExtractor()->CondMap();
-  const Teuchos::RCP<const Epetra_Map> fcondmap = fluid_field()->GetDBCMapExtractor()->CondMap();
+      structure_field()->get_dbc_map_extractor()->cond_map();
+  const Teuchos::RCP<const Epetra_Map> fcondmap =
+      fluid_field()->get_dbc_map_extractor()->cond_map();
   combinedDBCMap_ = Core::LinAlg::MergeMap(scondmap, fcondmap, false);
 }
 

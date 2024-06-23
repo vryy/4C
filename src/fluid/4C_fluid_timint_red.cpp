@@ -63,8 +63,8 @@ void FLD::TimIntRedModels::init()
   // evaluate the map of the womersley bcs
   vol_flow_rates_bc_extractor_ = Teuchos::rcp(new FLD::UTILS::VolumetricFlowMapExtractor());
   vol_flow_rates_bc_extractor_->setup(*discret_);
-  vol_surf_flow_bc_maps_ =
-      Teuchos::rcp(new Epetra_Map(*(vol_flow_rates_bc_extractor_->VolumetricSurfaceFlowCondMap())));
+  vol_surf_flow_bc_maps_ = Teuchos::rcp(
+      new Epetra_Map(*(vol_flow_rates_bc_extractor_->volumetric_surface_flow_cond_map())));
 
   // -------------------------------------------------------------------
   // Initialize the reduced models
@@ -150,13 +150,13 @@ void FLD::TimIntRedModels::do_problem_specific_boundary_conditions()
   // Check if one-dimensional artery network problem exist
   if (ART_timeInt_ != Teuchos::null)
   {
-    coupled3D_redDbc_art_->evaluate_dirichlet(velnp_, *(dbcmaps_->CondMap()), time_);
+    coupled3D_redDbc_art_->evaluate_dirichlet(velnp_, *(dbcmaps_->cond_map()), time_);
   }
   // update the 3D-to-reduced_D coupling data
   // Check if one-dimensional artery network problem exist
   if (airway_imp_timeInt_ != Teuchos::null)
   {
-    coupled3D_redDbc_airways_->evaluate_dirichlet(velnp_, *(dbcmaps_->CondMap()), time_);
+    coupled3D_redDbc_airways_->evaluate_dirichlet(velnp_, *(dbcmaps_->cond_map()), time_);
   }
 
   // Evaluate the womersley velocities
@@ -382,11 +382,11 @@ void FLD::TimIntRedModels::insert_volumetric_surface_flow_cond_vector(
   // -------------------------------------------------------------------
   // take surface volumetric flow rate into account
   //    Teuchos::RCP<Epetra_Vector> temp_vec = Teuchos::rcp(new
-  //    Epetra_Vector(*vol_surf_flow_bc_maps_,true)); vol_surf_flow_bc_->InsertCondVector( *temp_vec
-  //    , *residual_);
+  //    Epetra_Vector(*vol_surf_flow_bc_maps_,true)); vol_surf_flow_bc_->insert_cond_vector(
+  //    *temp_vec , *residual_);
   // -------------------------------------------------------------------
-  vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
-      vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(vel), res);
+  vol_flow_rates_bc_extractor_->insert_volumetric_surface_flow_cond_vector(
+      vol_flow_rates_bc_extractor_->extract_volumetric_surface_flow_cond_vector(vel), res);
 }
 
 /*----------------------------------------------------------------------*

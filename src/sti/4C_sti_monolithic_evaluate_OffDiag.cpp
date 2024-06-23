@@ -368,7 +368,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::copy_slave_to_master_scatra_
 
       // derive linearizations of master-side scatra fluxes w.r.t. slave-side thermo dofs
       // and assemble into auxiliary system matrix
-      for (int iblock = 0; iblock < meshtying_strategy_sca_tra()->BlockMapsSlave().NumMaps();
+      for (int iblock = 0; iblock < meshtying_strategy_sca_tra()->BlockMapsSlave().num_maps();
            ++iblock)
       {
         Core::LinAlg::MatrixRowTransform()(blockslavematrix->Matrix(iblock, 0), -1.0,

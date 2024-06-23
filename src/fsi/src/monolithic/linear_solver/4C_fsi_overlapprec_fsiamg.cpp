@@ -1228,14 +1228,14 @@ void FSI::OverlappingBlockMatrixFSIAMG::sgs(
   Epetra_Vector& y = Teuchos::dyn_cast<Epetra_Vector>(Y);
 
   Teuchos::RCP<Epetra_Vector> sy = (hybridPrec_ == nullptr)
-                                       ? RangeExtractor().ExtractVector(y, 0)
-                                       : hybridPrec_->RangeExtractor().ExtractVector(y, 0);
+                                       ? RangeExtractor().extract_vector(y, 0)
+                                       : hybridPrec_->RangeExtractor().extract_vector(y, 0);
   Teuchos::RCP<Epetra_Vector> fy = (hybridPrec_ == nullptr)
-                                       ? RangeExtractor().ExtractVector(y, 1)
-                                       : hybridPrec_->RangeExtractor().ExtractVector(y, 1);
+                                       ? RangeExtractor().extract_vector(y, 1)
+                                       : hybridPrec_->RangeExtractor().extract_vector(y, 1);
   Teuchos::RCP<Epetra_Vector> ay = (hybridPrec_ == nullptr)
-                                       ? RangeExtractor().ExtractVector(y, 2)
-                                       : hybridPrec_->RangeExtractor().ExtractVector(y, 2);
+                                       ? RangeExtractor().extract_vector(y, 2)
+                                       : hybridPrec_->RangeExtractor().extract_vector(y, 2);
   MLAPI::MultiVector mlsy(rsspace, sy->Pointers());
   MLAPI::MultiVector mlfy(rfspace, fy->Pointers());
   MLAPI::MultiVector mlay(raspace, ay->Pointers());
@@ -1245,14 +1245,14 @@ void FSI::OverlappingBlockMatrixFSIAMG::sgs(
 
   // rhs
   Teuchos::RCP<Epetra_Vector> sx = (hybridPrec_ == nullptr)
-                                       ? DomainExtractor().ExtractVector(x, 0)
-                                       : hybridPrec_->DomainExtractor().ExtractVector(x, 0);
+                                       ? DomainExtractor().extract_vector(x, 0)
+                                       : hybridPrec_->DomainExtractor().extract_vector(x, 0);
   Teuchos::RCP<Epetra_Vector> fx = (hybridPrec_ == nullptr)
-                                       ? DomainExtractor().ExtractVector(x, 1)
-                                       : hybridPrec_->DomainExtractor().ExtractVector(x, 1);
+                                       ? DomainExtractor().extract_vector(x, 1)
+                                       : hybridPrec_->DomainExtractor().extract_vector(x, 1);
   Teuchos::RCP<Epetra_Vector> ax = (hybridPrec_ == nullptr)
-                                       ? DomainExtractor().ExtractVector(x, 2)
-                                       : hybridPrec_->DomainExtractor().ExtractVector(x, 2);
+                                       ? DomainExtractor().extract_vector(x, 2)
+                                       : hybridPrec_->DomainExtractor().extract_vector(x, 2);
   MLAPI::MultiVector mlsx(dsspace, sx->Pointers());
   MLAPI::MultiVector mlfx(dfspace, fx->Pointers());
   MLAPI::MultiVector mlax(daspace, ax->Pointers());
@@ -1335,15 +1335,15 @@ void FSI::OverlappingBlockMatrixFSIAMG::sgs(
   // Note that mlsy, mlfy, mlay are views of sy, fy, ay, respectively.
   if (hybridPrec_ == nullptr)
   {
-    RangeExtractor().InsertVector(*sy, 0, y);
-    RangeExtractor().InsertVector(*fy, 1, y);
-    RangeExtractor().InsertVector(*ay, 2, y);
+    RangeExtractor().insert_vector(*sy, 0, y);
+    RangeExtractor().insert_vector(*fy, 1, y);
+    RangeExtractor().insert_vector(*ay, 2, y);
   }
   else
   {
-    hybridPrec_->RangeExtractor().InsertVector(*sy, 0, y);
-    hybridPrec_->RangeExtractor().InsertVector(*fy, 1, y);
-    hybridPrec_->RangeExtractor().InsertVector(*ay, 2, y);
+    hybridPrec_->RangeExtractor().insert_vector(*sy, 0, y);
+    hybridPrec_->RangeExtractor().insert_vector(*fy, 1, y);
+    hybridPrec_->RangeExtractor().insert_vector(*ay, 2, y);
   }
 
   return;

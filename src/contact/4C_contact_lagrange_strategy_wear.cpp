@@ -3135,7 +3135,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
   // the use of a toggle vector is more flexible here. It allows to apply dirichlet
   // conditions on different matrix blocks separately.
   Teuchos::RCP<Epetra_Vector> dirichtoggle = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->FullMap())));
-  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->CondMap())));
+  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->cond_map())));
   temp->PutScalar(1.0);
   Core::LinAlg::Export(*temp, *dirichtoggle);
 
@@ -3981,20 +3981,20 @@ void Wear::LagrangeStrategyWear::update_displacements_and_l_mincrements(
 
   Core::LinAlg::MapExtractor mapextd(*mergedmap, ProblemDofs(), glmdofrowmap_);
   Core::LinAlg::MapExtractor mapextlm(*mergedmap, glmdofrowmap_, glmdofrowmap_);
-  mapextd.ExtractCondVector(blocksol, sold);
-  mapextlm.ExtractCondVector(blocksol, sollm);
+  mapextd.extract_cond_vector(blocksol, sold);
+  mapextlm.extract_cond_vector(blocksol, sollm);
   sollm->ReplaceMap(*gsdofrowmap_);
 
   if (wearprimvar_)
   {
     Core::LinAlg::MapExtractor mapextw(*mergedmap, gwdofrowmap_, glmdofrowmap_);
-    mapextw.ExtractCondVector(blocksol, solw);
+    mapextw.extract_cond_vector(blocksol, solw);
     solw->ReplaceMap(*gsdofnrowmap_);
   }
   if (wearbothpv_)
   {
     Core::LinAlg::MapExtractor mapextwm(*mergedmap, gwmdofrowmap_, glmdofrowmap_);
-    mapextwm.ExtractCondVector(blocksol, solwm);
+    mapextwm.extract_cond_vector(blocksol, solwm);
     solwm->ReplaceMap(*gmdofnrowmap_);
   }
 

@@ -66,15 +66,14 @@ namespace ALE
       Teuchos::RCP<std::set<int>> conditioned_element_map(
           const Core::FE::Discretization& dis) const;
 
-      MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
-      MAP_EXTRACTOR_VECTOR_METHODS(FSICond, cond_fsi)
-      MAP_EXTRACTOR_VECTOR_METHODS(FSCond, cond_fs)
-      MAP_EXTRACTOR_VECTOR_METHODS(LungASICond, cond_lung_asi)
-      MAP_EXTRACTOR_VECTOR_METHODS(AleWearCond, cond_ale_wear)
-      MAP_EXTRACTOR_VECTOR_METHODS(BioGrCond, cond_bio_gr)
-      MAP_EXTRACTOR_VECTOR_METHODS(AUCond, cond_au)
-      MAP_EXTRACTOR_VECTOR_METHODS(FPSICond, cond_fpsi)
-      MAP_EXTRACTOR_VECTOR_METHODS(Mortar, cond_mortar)
+      MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)
+      MAP_EXTRACTOR_VECTOR_METHODS(fsi_cond, cond_fsi)
+      MAP_EXTRACTOR_VECTOR_METHODS(fs_cond, cond_fs)
+      MAP_EXTRACTOR_VECTOR_METHODS(lung_asi_cond, cond_lung_asi)
+      MAP_EXTRACTOR_VECTOR_METHODS(ale_wear_cond, cond_ale_wear)
+      MAP_EXTRACTOR_VECTOR_METHODS(au_cond, cond_au)
+      MAP_EXTRACTOR_VECTOR_METHODS(fpsi_cond, cond_fpsi)
+      MAP_EXTRACTOR_VECTOR_METHODS(mortar, cond_mortar)
     };
 
     /// specific MultiMapExtractor to handle the fsi and ale meshtying at the same time
@@ -90,7 +89,7 @@ namespace ALE
       /// setup the whole thing
       void setup(const Core::FE::Discretization& dis);
 
-      MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
+      MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(FSI, cond_fsi)
     };
 
@@ -107,8 +106,8 @@ namespace ALE
       /// setup the whole thing
       void setup(const Core::FE::Discretization& dis);
 
-      MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
-      MAP_EXTRACTOR_VECTOR_METHODS(XFluidFluidCond, cond_xfluidfluid)
+      MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)
+      MAP_EXTRACTOR_VECTOR_METHODS(xfluid_fluid_cond, cond_xfluidfluid)
     };
   }  // namespace UTILS
 }  // namespace ALE

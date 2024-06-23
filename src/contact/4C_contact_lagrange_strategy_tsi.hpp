@@ -222,7 +222,7 @@ namespace CONTACT
   namespace UTILS
   {
     //! @name little helpers
-    void AddVector(Epetra_Vector& src, Epetra_Vector& dst);
+    void add_vector(Epetra_Vector& src, Epetra_Vector& dst);
   }  // namespace UTILS
 }  // namespace CONTACT
 

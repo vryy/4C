@@ -235,25 +235,25 @@ namespace XFEM
 
     /// @name Extract vector routines
     /// @{
-    Teuchos::RCP<Epetra_Vector> ExtractVector(
+    Teuchos::RCP<Epetra_Vector> extract_vector(
         const Epetra_Vector& full, enum FieldName field, enum MapType map_type = map_dofs) const;
 
-    Teuchos::RCP<Epetra_MultiVector> ExtractVector(const Epetra_MultiVector& full,
+    Teuchos::RCP<Epetra_MultiVector> extract_vector(const Epetra_MultiVector& full,
         enum FieldName field, enum MapType map_type = map_dofs) const;
 
-    inline void ExtractVector(Teuchos::RCP<const Epetra_Vector> full, enum FieldName field,
+    inline void extract_vector(Teuchos::RCP<const Epetra_Vector> full, enum FieldName field,
         Teuchos::RCP<Epetra_Vector> partial, enum MapType map_type = map_dofs) const
     {
-      ExtractVector(*full, field, *partial, map_type);
+      extract_vector(*full, field, *partial, map_type);
     }
 
-    inline void ExtractVector(const Epetra_MultiVector& full, enum FieldName field,
+    inline void extract_vector(const Epetra_MultiVector& full, enum FieldName field,
         Epetra_MultiVector& partial, enum MapType map_type = map_dofs) const
     {
-      ExtractVector(full, slave_id(field), partial, map_type);
+      extract_vector(full, slave_id(field), partial, map_type);
     }
 
-    void ExtractVector(const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial,
+    void extract_vector(const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial,
         enum MapType map_type = map_dofs) const;
 
     inline void extract_element_vector(
@@ -275,7 +275,7 @@ namespace XFEM
      *  \param field   (in): field name enumerator of the partial vector
      *
      *  \author hiermeier \date 10/16 */
-    Teuchos::RCP<Epetra_Vector> InsertVector(
+    Teuchos::RCP<Epetra_Vector> insert_vector(
         const Epetra_Vector& partial, enum FieldName field, enum MapType map_type = map_dofs) const;
 
     /** \brief Put a partial vector into a full vector (Epetra_MultiVector)
@@ -284,7 +284,7 @@ namespace XFEM
      *  \param field   (in): field name enumerator of the partial vector
      *
      *  \author hiermeier \date 10/16 */
-    Teuchos::RCP<Epetra_MultiVector> InsertVector(const Epetra_MultiVector& partial,
+    Teuchos::RCP<Epetra_MultiVector> insert_vector(const Epetra_MultiVector& partial,
         enum FieldName field, enum MapType map_type = map_dofs) const;
 
     /** \brief Put a partial vector into a full vector (Epetra_Vector)
@@ -294,10 +294,10 @@ namespace XFEM
      *  \param full   (out): vector to copy into
      *
      *  \author hiermeier \date 10/16 */
-    void InsertVector(Teuchos::RCP<const Epetra_Vector> partial, enum FieldName field,
+    void insert_vector(Teuchos::RCP<const Epetra_Vector> partial, enum FieldName field,
         Teuchos::RCP<Epetra_Vector> full, enum MapType map_type = map_dofs) const
     {
-      InsertVector(*partial, field, *full, map_type);
+      insert_vector(*partial, field, *full, map_type);
     }
 
     /** \brief Put a partial vector into a full vector (Epetra_MultiVector)
@@ -307,16 +307,16 @@ namespace XFEM
      *  \param full   (out): vector to copy into
      *
      *  \author hiermeier \date 10/16 */
-    void InsertVector(const Epetra_MultiVector& partial, enum FieldName field,
+    void insert_vector(const Epetra_MultiVector& partial, enum FieldName field,
         Epetra_MultiVector& full, enum MapType map_type = map_dofs) const
     {
-      return InsertVector(partial, slave_id(field), full, map_type);
+      return insert_vector(partial, slave_id(field), full, map_type);
     }
 
     /** \brief Put a partial vector into a full vector (Epetra_MultiVector) [derived]
      *
      *  \author hiermeier \date 10/16  */
-    void InsertVector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full,
+    void insert_vector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full,
         enum MapType map_type = map_dofs) const;
 
     inline void InsertElementVector(
@@ -339,10 +339,10 @@ namespace XFEM
      *  \param scale   (in): scaling factor for partial vector
      *
      *  \author hiermeier \date 10/16 */
-    inline void AddVector(Teuchos::RCP<const Epetra_Vector> partial, enum FieldName field,
+    inline void add_vector(Teuchos::RCP<const Epetra_Vector> partial, enum FieldName field,
         Teuchos::RCP<Epetra_Vector> full, double scale, enum MapType map_type = map_dofs) const
     {
-      AddVector(*partial, slave_id(field), *full, scale, map_type);
+      add_vector(*partial, slave_id(field), *full, scale, map_type);
     }
 
     /** \brief Add a partial vector to a full vector (Epetra_MultiVector)
@@ -353,16 +353,16 @@ namespace XFEM
      *  \param scale   (in): scaling factor for partial vector
      *
      *  \author hiermeier \date 10/16 */
-    inline void AddVector(const Epetra_MultiVector& partial, enum FieldName field,
+    inline void add_vector(const Epetra_MultiVector& partial, enum FieldName field,
         Epetra_MultiVector& full, double scale, enum MapType map_type = map_dofs) const
     {
-      return AddVector(partial, slave_id(field), full, scale, map_type);
+      return add_vector(partial, slave_id(field), full, scale, map_type);
     }
 
     /** \brief Add a partial vector to a full vector (Epetra_MultiVector) [derived]
      *
      *  \author hiermeier \date 10/16 */
-    void AddVector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full,
+    void add_vector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full,
         double scale, enum MapType map_type = map_dofs) const;
 
     inline void AddElementVector(const Epetra_MultiVector& partial, enum FieldName field,

@@ -188,7 +188,7 @@ void ALE::Meshtying::DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps)
   //      -> DC also influence slave nodes which are not part of the inflow
   //
   //      if(msht_ != Inpar::ALE::no_meshtying)
-  //        meshtying_->project_master_to_slave_for_overlapping_bc(dispnp_, dbcmaps_->CondMap());
+  //        meshtying_->project_master_to_slave_for_overlapping_bc(dispnp_, dbcmaps_->cond_map());
   //
   // (c)  DC are included in the condensation process (-> actual strategy)
 
@@ -197,7 +197,7 @@ void ALE::Meshtying::DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps)
   Teuchos::RCP<const Epetra_Map> gmdofrowmap = gmdofrowmap_;
   intersectionmaps.push_back(gmdofrowmap);
   Teuchos::RCP<Epetra_Map> intersectionmap =
-      Core::LinAlg::MultiMapExtractor::IntersectMaps(intersectionmaps);
+      Core::LinAlg::MultiMapExtractor::intersect_maps(intersectionmaps);
 
   if (intersectionmap->NumGlobalElements() != 0)
   {

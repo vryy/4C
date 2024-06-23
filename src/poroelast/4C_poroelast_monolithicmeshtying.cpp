@@ -95,7 +95,7 @@ void PoroElast::MonolithicMeshtying::evaluate(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs =
       Teuchos::rcpFromRef<Core::LinAlg::SparseMatrix>(systemmatrix_->Matrix(1, 0));
 
-  Teuchos::RCP<Epetra_Vector> frhs = Extractor()->ExtractVector(rhs_, 1);
+  Teuchos::RCP<Epetra_Vector> frhs = Extractor()->extract_vector(rhs_, 1);
 
   // modify system matrix and rhs for meshtying
   mortar_adapter_->EvaluatePoroMt(fvel, svel, modfpres, sdisp, structure_field()->discretization(),
@@ -106,7 +106,7 @@ void PoroElast::MonolithicMeshtying::evaluate(
   systemmatrix_->Assign(1, 0, Core::LinAlg::View, *k_fs);
 
   // assign modified part of RHS vector into full RHS vector
-  Extractor()->InsertVector(*frhs, 1, *rhs_);
+  Extractor()->insert_vector(*frhs, 1, *rhs_);
 
   // because the mesh tying interface stays the same, the map extractors for a separate convergence
   // check of the mesh tying fluid coupling condition is only build once
@@ -150,14 +150,14 @@ void PoroElast::MonolithicMeshtying::build_convergence_norms()
   Teuchos::RCP<const Epetra_Vector> rhs_fpres;
 
   // process structure unknowns of the first field (structure)
-  rhs_s = Extractor()->ExtractVector(rhs_, 0);
+  rhs_s = Extractor()->extract_vector(rhs_, 0);
 
   // process fluid unknowns of the second field
-  rhs_f = Extractor()->ExtractVector(rhs_, 1);
+  rhs_f = Extractor()->extract_vector(rhs_, 1);
   rhs_fvel = fluid_field()->ExtractVelocityPart(rhs_f);
   // now split it
-  rhs_fvel_activen = fluid_vel_active_dof_extractor()->ExtractVector(rhs_fvel, 0);
-  rhs_fvel_other = fluid_vel_active_dof_extractor()->ExtractVector(rhs_fvel, 1);
+  rhs_fvel_activen = fluid_vel_active_dof_extractor()->extract_vector(rhs_fvel, 0);
+  rhs_fvel_other = fluid_vel_active_dof_extractor()->extract_vector(rhs_fvel, 1);
   // pressure is treated separately anyway
   rhs_fpres = fluid_field()->ExtractPressurePart(rhs_f);
 
@@ -190,9 +190,9 @@ void PoroElast::MonolithicMeshtying::build_convergence_norms()
   Teuchos::RCP<const Epetra_Vector> interincfvel;
   Teuchos::RCP<const Epetra_Vector> interincfpres;
   // process structure unknowns of the first field
-  interincs = Extractor()->ExtractVector(iterinc_, 0);
+  interincs = Extractor()->extract_vector(iterinc_, 0);
   // process fluid unknowns of the second field
-  interincf = Extractor()->ExtractVector(iterinc_, 1);
+  interincf = Extractor()->extract_vector(iterinc_, 1);
   interincfvel = fluid_field()->ExtractVelocityPart(interincf);
   interincfpres = fluid_field()->ExtractPressurePart(interincf);
 

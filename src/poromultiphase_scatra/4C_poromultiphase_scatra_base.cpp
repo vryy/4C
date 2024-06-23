@@ -388,7 +388,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
             const int scalartophaseid = scatravolfracmat->PhaseID();
             // if not already in original dirich map     &&   if it is not a valid volume fraction
             // species dof identified with < 1
-            if (ScatraAlgo()->ScaTraField()->DirichMaps()->CondMap()->LID(scatradofs[idof]) == -1 &&
+            if (ScatraAlgo()->ScaTraField()->DirichMaps()->cond_map()->LID(scatradofs[idof]) ==
+                    -1 &&
                 (int)(*valid_volfracspec_dofs)
                         [poro_field()->fluid_field()->discretization()->dof_row_map()->LID(
                             fluiddofs[scalartophaseid + numvolfrac])] < 1)

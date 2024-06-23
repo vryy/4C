@@ -527,7 +527,7 @@ void FS3I::PartFS3I::SetupSystem()
     maps.push_back(scatrafieldexvec_[0]->FullMap());
     maps.push_back(scatrafieldexvec_[1]->FullMap());
   }
-  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
   scatraglobalex_->setup(*fullmap, maps);
 
   // create coupling vectors and matrices (only needed for finite surface permeabilities)
@@ -795,7 +795,7 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
   // ############ Structure Field ###############
 
   // extract FSI-Interface from fluid field
-  WallShearStress = fsi_->fluid_field()->Interface()->ExtractFSICondVector(WallShearStress);
+  WallShearStress = fsi_->fluid_field()->Interface()->extract_fsi_cond_vector(WallShearStress);
 
   // replace global fluid interface dofs through structure interface dofs
   WallShearStress = fsi_->fluid_to_struct(WallShearStress);
@@ -806,7 +806,7 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
 
   // Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of
   // structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )
-  fsi_->structure_field()->Interface()->InsertVector(WallShearStress, 1, structure);
+  fsi_->structure_field()->Interface()->insert_vector(WallShearStress, 1, structure);
   wss.push_back(structure);
 }
 

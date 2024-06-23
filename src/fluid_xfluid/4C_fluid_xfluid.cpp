@@ -1585,7 +1585,7 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
   // for which not ghost-penalty term has been assembled
   // for these rows we later have to assemble ones, as we solve for the whole vector
 
-  const Epetra_Map& dbctoggle = *(ghost_penaly_dbcmaps->CondMap());
+  const Epetra_Map& dbctoggle = *(ghost_penaly_dbcmaps->cond_map());
 
   bool diagonalblock = true;
 
@@ -2482,8 +2482,8 @@ void FLD::XFluid::Solve()
 
 
     // apply Dirichlet conditions to the residual vector by setting zeros into the residual
-    state_->DBCMapExtractor()->InsertCondVector(
-        state_->DBCMapExtractor()->ExtractCondVector(state_->Zeros()), state_->Residual());
+    state_->DBCMapExtractor()->insert_cond_vector(
+        state_->DBCMapExtractor()->extract_cond_vector(state_->Zeros()), state_->Residual());
 
     output_service_->gmsh_residual_output_debug("DEBUG_residual", step_, itnum, state_);
 
@@ -2504,7 +2504,7 @@ void FLD::XFluid::Solve()
     //          boundary conditions
     state_->IncVel()->PutScalar(0.0);
     Core::LinAlg::apply_dirichlet_to_system(*state_->SystemMatrix(), *state_->IncVel(),
-        *state_->Residual(), *state_->Zeros(), *(state_->DBCMapExtractor()->CondMap()));
+        *state_->Residual(), *state_->Zeros(), *(state_->DBCMapExtractor()->cond_map()));
 
 
     //-------solve for residual displacements to correct incremental displacements
@@ -2601,23 +2601,23 @@ bool FLD::XFluid::convergence_check(int itnum, int itemax, const double velresto
   presnorm_ = 0.0;
 
   Teuchos::RCP<Epetra_Vector> onlyvel =
-      state_->VelPresSplitter()->ExtractOtherVector(state_->Residual());
+      state_->VelPresSplitter()->extract_other_vector(state_->Residual());
   onlyvel->Norm2(&vresnorm_);
 
-  state_->VelPresSplitter()->ExtractOtherVector(state_->IncVel(), onlyvel);
+  state_->VelPresSplitter()->extract_other_vector(state_->IncVel(), onlyvel);
   onlyvel->Norm2(&incvelnorm_L2_);
 
-  state_->VelPresSplitter()->ExtractOtherVector(state_->Velnp(), onlyvel);
+  state_->VelPresSplitter()->extract_other_vector(state_->Velnp(), onlyvel);
   onlyvel->Norm2(&velnorm_L2_);
 
   Teuchos::RCP<Epetra_Vector> onlypre =
-      state_->VelPresSplitter()->ExtractCondVector(state_->Residual());
+      state_->VelPresSplitter()->extract_cond_vector(state_->Residual());
   onlypre->Norm2(&presnorm_);
 
-  state_->VelPresSplitter()->ExtractCondVector(state_->IncVel(), onlypre);
+  state_->VelPresSplitter()->extract_cond_vector(state_->IncVel(), onlypre);
   onlypre->Norm2(&incprenorm_L2_);
 
-  state_->VelPresSplitter()->ExtractCondVector(state_->Velnp(), onlypre);
+  state_->VelPresSplitter()->extract_cond_vector(state_->Velnp(), onlypre);
   onlypre->Norm2(&prenorm_L2_);
 
   // care for the case that nothing really happens in the velocity
@@ -2823,7 +2823,7 @@ void FLD::XFluid::update_krylov_space_projection()
   c0->PutScalar(0.0);
 
   // extract vector of pressure-dofs
-  Teuchos::RCP<Epetra_Vector> presmode = state_->velpressplitter_->ExtractCondVector(*c0);
+  Teuchos::RCP<Epetra_Vector> presmode = state_->velpressplitter_->extract_cond_vector(*c0);
 
   const std::string* weighttype = projector_->WeightType();
 
@@ -2890,7 +2890,7 @@ void FLD::XFluid::update_krylov_space_projection()
   presmode->PutScalar(1.0);
   Teuchos::RCP<Epetra_Vector> tmpc = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
   Core::LinAlg::Export(*presmode, *tmpc);
-  Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->ExtractKSPCondVector(*tmpc);
+  Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->extract_ksp_cond_vector(*tmpc);
   Core::LinAlg::Export(*tmpkspc, *c0);
 
   // fillcomplete the projector to compute (w^T c)^(-1)
@@ -2987,8 +2987,8 @@ void FLD::XFluid::UpdateByIncrements(
     velnp_tmp->Update(1.0, *state_->veln_, 1.0, *stepinc, 0.0);
 
     // take the Dirichlet values from velnp and insert them in velnp_tmp
-    state_->dbcmaps_->InsertCondVector(
-        state_->dbcmaps_->ExtractCondVector(state_->velnp_), velnp_tmp);
+    state_->dbcmaps_->insert_cond_vector(
+        state_->dbcmaps_->extract_cond_vector(state_->velnp_), velnp_tmp);
 
     // set the whole vector with u^(n+1,i+1) including the Dirichlet values to velnp_
     state_->velnp_->Update(1.0, *velnp_tmp, 0.0);
@@ -3051,7 +3051,7 @@ void FLD::XFluid::evaluate(
   //    velnp_tmp->Update(1.0, *state_->veln_, 1.0, *stepinc, 0.0);
   //
   //    // take the Dirichlet values from velnp and insert them in velnp_tmp
-  //    state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->velnp_),
+  //    state_->dbcmaps_->insert_cond_vector(state_->dbcmaps_->extract_cond_vector(state_->velnp_),
   //    velnp_tmp );
   //
   //    // set the whole vector with u^(n+1,i+1) including the Dirichlet values to velnp_
@@ -3179,15 +3179,15 @@ void FLD::XFluid::TimeUpdate()
   // Compute accelerations
   {
     Teuchos::RCP<Epetra_Vector> onlyaccn =
-        state_->velpressplitter_->ExtractOtherVector(state_->accn_);
+        state_->velpressplitter_->extract_other_vector(state_->accn_);
     Teuchos::RCP<Epetra_Vector> onlyaccnp =
-        state_->velpressplitter_->ExtractOtherVector(state_->accnp_);
+        state_->velpressplitter_->extract_other_vector(state_->accnp_);
     Teuchos::RCP<Epetra_Vector> onlyvelnm =
-        state_->velpressplitter_->ExtractOtherVector(state_->velnm_);
+        state_->velpressplitter_->extract_other_vector(state_->velnm_);
     Teuchos::RCP<Epetra_Vector> onlyveln =
-        state_->velpressplitter_->ExtractOtherVector(state_->veln_);
+        state_->velpressplitter_->extract_other_vector(state_->veln_);
     Teuchos::RCP<Epetra_Vector> onlyvelnp =
-        state_->velpressplitter_->ExtractOtherVector(state_->velnp_);
+        state_->velpressplitter_->extract_other_vector(state_->velnp_);
 
     calculate_acceleration(onlyvelnp, onlyveln, onlyvelnm, onlyaccn, onlyaccnp);
 
@@ -4159,7 +4159,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
   std::vector<int> numentries(state_->xfluiddofrowmap_->NumMyElements());
 
   const Epetra_Map& rowmap = *state_->xfluiddofrowmap_;
-  const Epetra_Map& condmap = *(ghost_penaly_dbcmaps->CondMap());
+  const Epetra_Map& condmap = *(ghost_penaly_dbcmaps->cond_map());
 
   for (unsigned i = 0; i < numentries.size(); ++i)
   {
@@ -4220,10 +4220,10 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
     discret_->Comm().Barrier();
 
     TEUCHOS_FUNC_TIME_MONITOR(
-        "FLD::XFluid::x_timint_reconstruct_ghost_values::ghost_penaly_dbcmaps->InsertCondVector");
+        "FLD::XFluid::x_timint_reconstruct_ghost_values::ghost_penaly_dbcmaps->insert_cond_vector");
 
-    ghost_penaly_dbcmaps->InsertCondVector(
-        ghost_penaly_dbcmaps->ExtractCondVector(zeros_gp), residual_gp);
+    ghost_penaly_dbcmaps->insert_cond_vector(
+        ghost_penaly_dbcmaps->extract_cond_vector(zeros_gp), residual_gp);
   }
 
   //--------- Apply Dirichlet boundary conditions to system of equations
@@ -4237,7 +4237,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
         "FLD::XFluid::x_timint_reconstruct_ghost_values::apply_dirichlet_to_system");
 
     Core::LinAlg::apply_dirichlet_to_system(
-        *sysmat_gp, *incvel_gp, *residual_gp, *zeros_gp, *(ghost_penaly_dbcmaps->CondMap()));
+        *sysmat_gp, *incvel_gp, *residual_gp, *zeros_gp, *(ghost_penaly_dbcmaps->cond_map()));
   }
 
   //-------solve for residual displacements to correct incremental displacements
@@ -4854,10 +4854,10 @@ void FLD::XFluid::explicit_predictor()
     state_->velnp_->Update(1.0, *state_->veln_, 0.0);
 
     // split between acceleration and pressure
-    Teuchos::RCP<Epetra_Vector> inc = state_->velpressplitter_->ExtractOtherVector(state_->accn_);
+    Teuchos::RCP<Epetra_Vector> inc = state_->velpressplitter_->extract_other_vector(state_->accn_);
     inc->Scale((1.0 - theta_) * dta_);
 
-    state_->velpressplitter_->AddOtherVector(inc, state_->velnp_);
+    state_->velpressplitter_->add_other_vector(inc, state_->velnp_);
   }
   else if (predictor_ == "constant_acceleration")
   {
@@ -4875,10 +4875,10 @@ void FLD::XFluid::explicit_predictor()
     //
     state_->velnp_->Update(1.0, *state_->veln_, 0.0);
 
-    Teuchos::RCP<Epetra_Vector> inc = state_->velpressplitter_->ExtractOtherVector(state_->accn_);
+    Teuchos::RCP<Epetra_Vector> inc = state_->velpressplitter_->extract_other_vector(state_->accn_);
     inc->Scale(dta_);
 
-    state_->velpressplitter_->AddOtherVector(inc, state_->velnp_);
+    state_->velpressplitter_->add_other_vector(inc, state_->velnp_);
   }
   else if (predictor_ == "constant_increment")
   {
@@ -4900,12 +4900,13 @@ void FLD::XFluid::explicit_predictor()
     //
     state_->velnp_->Update(1.0, *state_->veln_, 0.0);
 
-    Teuchos::RCP<Epetra_Vector> un = state_->velpressplitter_->ExtractOtherVector(state_->veln_);
-    Teuchos::RCP<Epetra_Vector> unm = state_->velpressplitter_->ExtractOtherVector(state_->velnm_);
+    Teuchos::RCP<Epetra_Vector> un = state_->velpressplitter_->extract_other_vector(state_->veln_);
+    Teuchos::RCP<Epetra_Vector> unm =
+        state_->velpressplitter_->extract_other_vector(state_->velnm_);
     unm->Scale(-1.0);
 
-    state_->velpressplitter_->AddOtherVector(un, state_->velnp_);
-    state_->velpressplitter_->AddOtherVector(unm, state_->velnp_);
+    state_->velpressplitter_->add_other_vector(un, state_->velnp_);
+    state_->velpressplitter_->add_other_vector(unm, state_->velnp_);
   }
   else if (predictor_ == "explicit_second_order_midpoint")
   {
@@ -4932,12 +4933,13 @@ void FLD::XFluid::explicit_predictor()
     state_->velnp_->Update(1.0, *state_->veln_, 0.0);
 
     // split between acceleration and pressure
-    Teuchos::RCP<Epetra_Vector> unm = state_->velpressplitter_->ExtractOtherVector(state_->velnm_);
-    Teuchos::RCP<Epetra_Vector> an = state_->velpressplitter_->ExtractOtherVector(state_->accn_);
+    Teuchos::RCP<Epetra_Vector> unm =
+        state_->velpressplitter_->extract_other_vector(state_->velnm_);
+    Teuchos::RCP<Epetra_Vector> an = state_->velpressplitter_->extract_other_vector(state_->accn_);
 
     unm->Update(2.0 * dta_, *an, 1.0);
 
-    state_->velpressplitter_->InsertOtherVector(unm, state_->velnp_);
+    state_->velpressplitter_->insert_other_vector(unm, state_->velnp_);
   }
   else
     FOUR_C_THROW("Unknown fluid predictor %s", predictor_.c_str());
@@ -5022,17 +5024,18 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
 
   // extract reaction forces
   freact->Update(1.0, *state_->residual_, 0.0);
-  state_->dbcmaps_->InsertOtherVector(state_->dbcmaps_->ExtractOtherVector(state_->zeros_), freact);
+  state_->dbcmaps_->insert_other_vector(
+      state_->dbcmaps_->extract_other_vector(state_->zeros_), freact);
 
   // blank residual at DOFs on Dirichlet BC
-  state_->dbcmaps_->InsertCondVector(
-      state_->dbcmaps_->ExtractCondVector(state_->zeros_), state_->residual_);
+  state_->dbcmaps_->insert_cond_vector(
+      state_->dbcmaps_->extract_cond_vector(state_->zeros_), state_->residual_);
 
   // apply Dirichlet BCs to system of equations
   state_->incvel_->PutScalar(0.0);
   state_->sysmat_->Complete();
   Core::LinAlg::apply_dirichlet_to_system(*state_->sysmat_, *state_->incvel_, *state_->residual_,
-      *state_->zeros_, *(state_->dbcmaps_->CondMap()));
+      *state_->zeros_, *(state_->dbcmaps_->cond_map()));
 
   // solve for incvel_
   Core::LinAlg::SolverParams solver_params;
@@ -5048,8 +5051,8 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
   update_iter_incrementally(state_->incvel_);
 
   // keep pressure values from previous time step
-  state_->velpressplitter_->InsertCondVector(
-      state_->velpressplitter_->ExtractCondVector(state_->veln_), state_->velnp_);
+  state_->velpressplitter_->insert_cond_vector(
+      state_->velpressplitter_->extract_cond_vector(state_->veln_), state_->velnp_);
 
   // Note: accelerations on Dirichlet DOFs are not set.
 
@@ -5074,8 +5077,9 @@ void FLD::XFluid::update_iter_incrementally(Teuchos::RCP<const Epetra_Vector> ve
     // values.
     Teuchos::RCP<Epetra_Vector> aux = Core::LinAlg::CreateVector(*(discret_->dof_row_map(0)), true);
     aux->Update(1.0, *state_->velnp_, 1.0, *vel, 0.0);
-    //    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), velnp_);
-    state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->velnp_), aux);
+    //    dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(aux), velnp_);
+    state_->dbcmaps_->insert_cond_vector(
+        state_->dbcmaps_->extract_cond_vector(state_->velnp_), aux);
 
     *state_->velnp_ = *aux;
   }
@@ -5212,9 +5216,9 @@ void FLD::XFluid::gen_alpha_intermediate_values()
     // run into trouble in loma, where the 'pressure' component
     // is used to store the acceleration of the temperature
     Teuchos::RCP<Epetra_Vector> onlyaccn =
-        state_->velpressplitter_->ExtractOtherVector(state_->accn_);
+        state_->velpressplitter_->extract_other_vector(state_->accn_);
     Teuchos::RCP<Epetra_Vector> onlyaccnp =
-        state_->velpressplitter_->ExtractOtherVector(state_->accnp_);
+        state_->velpressplitter_->extract_other_vector(state_->accnp_);
 
     Teuchos::RCP<Epetra_Vector> onlyaccam = Teuchos::rcp(new Epetra_Vector(onlyaccnp->Map()));
 
@@ -5255,11 +5259,11 @@ void FLD::XFluid::gen_alpha_update_acceleration()
   // run into trouble in loma, where the 'pressure' component
   // is used to store the acceleration of the temperature
   Teuchos::RCP<Epetra_Vector> onlyaccn =
-      state_->velpressplitter_->ExtractOtherVector(state_->accn_);
+      state_->velpressplitter_->extract_other_vector(state_->accn_);
   Teuchos::RCP<Epetra_Vector> onlyveln =
-      state_->velpressplitter_->ExtractOtherVector(state_->veln_);
+      state_->velpressplitter_->extract_other_vector(state_->veln_);
   Teuchos::RCP<Epetra_Vector> onlyvelnp =
-      state_->velpressplitter_->ExtractOtherVector(state_->velnp_);
+      state_->velpressplitter_->extract_other_vector(state_->velnp_);
 
   Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::rcp(new Epetra_Vector(onlyaccn->Map()));
 

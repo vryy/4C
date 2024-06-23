@@ -369,7 +369,7 @@ void FLD::Meshtying::project_master_to_slave_for_overlapping_bc(
   Teuchos::RCP<const Epetra_Map> gmdofrowmap = gmdofrowmap_;
   intersectionmaps.push_back(gmdofrowmap);
   Teuchos::RCP<Epetra_Map> intersectionmap =
-      Core::LinAlg::MultiMapExtractor::IntersectMaps(intersectionmaps);
+      Core::LinAlg::MultiMapExtractor::intersect_maps(intersectionmaps);
 
   if (intersectionmap->NumGlobalElements() != 0)
   {
@@ -413,7 +413,7 @@ void FLD::Meshtying::DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps)
   //      -> DC also influence slave nodes which are not part of the inflow
   //
   //      if(msht_ != Inpar::FLUID::no_meshtying)
-  //        meshtying_->project_master_to_slave_for_overlapping_bc(velnp_, dbcmaps_->CondMap());
+  //        meshtying_->project_master_to_slave_for_overlapping_bc(velnp_, dbcmaps_->cond_map());
   //
   // (c)  DC are included in the condensation process (-> actual strategy)
 
@@ -422,7 +422,7 @@ void FLD::Meshtying::DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps)
   Teuchos::RCP<const Epetra_Map> gmdofrowmap = gmdofrowmap_;
   intersectionmaps.push_back(gmdofrowmap);
   Teuchos::RCP<Epetra_Map> intersectionmap =
-      Core::LinAlg::MultiMapExtractor::IntersectMaps(intersectionmaps);
+      Core::LinAlg::MultiMapExtractor::intersect_maps(intersectionmaps);
 
   if (intersectionmap->NumGlobalElements() != 0)
   {
@@ -1587,10 +1587,10 @@ void FLD::FluidImplicitTimeInt::PrintAbsoluteL2Norm(Teuchos::RCP<Epetra_Vector>&
   double incvelnorm_L2;
   double incprenorm_L2;
 
-  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_->ExtractOtherVector(vector);
+  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_->extract_other_vector(vector);
   onlyvel->Norm2(&incvelnorm_L2);
 
-  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_->ExtractCondVector(vector);
+  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_->extract_cond_vector(vector);
   onlypre->Norm2(&incprenorm_L2);
 
   printf("+------------+-------------------+--------------+\n");

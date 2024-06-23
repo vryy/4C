@@ -96,8 +96,8 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
     matchingnodes_ = true;
     const int ndim = Global::Problem::Instance()->NDim();
     coupsf.setup_condition_coupling(*structure_field()->discretization(),
-        structure_field()->Interface()->FSICondMap(), *MBFluidField()->discretization(),
-        MBFluidField()->Interface()->FSICondMap(), "FSICoupling", ndim);
+        structure_field()->Interface()->fsi_cond_map(), *MBFluidField()->discretization(),
+        MBFluidField()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
     if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
       FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
@@ -114,9 +114,9 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
     Teuchos::RCP<Adapter::FluidXFEM> x_movingboundary =
         Teuchos::rcp_dynamic_cast<Adapter::FluidXFEM>(MBFluidField());
     coupsf.setup_condition_coupling(*structure_field()->discretization(),
-        structure_field()->Interface()->FSICondMap(),
+        structure_field()->Interface()->fsi_cond_map(),
         *x_movingboundary->boundary_discretization(),  // use the matching boundary discretization
-        x_movingboundary->StructInterface()->FSICondMap(), "FSICoupling", ndim);
+        x_movingboundary->StructInterface()->fsi_cond_map(), "FSICoupling", ndim);
 
     if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
       FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");

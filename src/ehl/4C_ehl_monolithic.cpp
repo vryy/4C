@@ -582,10 +582,10 @@ void EHL::Monolithic::extract_field_vectors(
   TEUCHOS_FUNC_TIME_MONITOR("EHL::Monolithic::extract_field_vectors");
 
   // process structure unknowns of the first field
-  sx = extractor()->ExtractVector(x, 0);
+  sx = extractor()->extract_vector(x, 0);
 
   // process lubrication unknowns of the second field
-  lx = extractor()->ExtractVector(x, 1);
+  lx = extractor()->extract_vector(x, 1);
 }  // extract_field_vectors()
 
 
@@ -640,7 +640,7 @@ void EHL::Monolithic::SetupSystem()
  *----------------------------------------------------------------------*/
 void EHL::Monolithic::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
-  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
 
   // full EHL-blockmap
   extractor()->setup(*fullmap, maps);
@@ -743,7 +743,7 @@ void EHL::Monolithic::setup_system_matrix()
   k_ss->Add(*dm_dd, false, -(1.0 - alphaf), 1.0);
 
   k_ss->Complete();
-  k_ss->ApplyDirichlet(*structure_field()->GetDBCMapExtractor()->CondMap(), true);
+  k_ss->ApplyDirichlet(*structure_field()->get_dbc_map_extractor()->cond_map(), true);
 
   // Assign k_ss to system matrix
   systemmatrix_->Assign(0, 0, Core::LinAlg::View, *k_ss);
@@ -787,7 +787,7 @@ void EHL::Monolithic::setup_system_matrix()
   );
 
   // No DBC need to be applied, since lubrication interface disp-dofs must NOT have dbc conditions!
-  k_sl_->ApplyDirichlet(*structure_field()->GetDBCMapExtractor()->CondMap(), false);
+  k_sl_->ApplyDirichlet(*structure_field()->get_dbc_map_extractor()->cond_map(), false);
 
   // Assign k_sl to system matrix
   systemmatrix_->Assign(0, 1, Core::LinAlg::View, *(k_sl_));
@@ -880,7 +880,8 @@ void EHL::Monolithic::setup_system_matrix()
   );
 
   // Apply Dirichet to k_ls
-  k_ls_->ApplyDirichlet(*lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap(), false);
+  k_ls_->ApplyDirichlet(
+      *lubrication_->LubricationField()->get_dbc_map_extractor()->cond_map(), false);
   if (inf_gap_toggle_lub_ != Teuchos::null) k_ls_->ApplyDirichlet(*inf_gap_toggle_lub_, false);
 
   // Assign k_ls to system matrix
@@ -976,8 +977,8 @@ void EHL::Monolithic::setup_vector(
   // extract dofs of the two fields
   // and put the structural/lubrication field vector into the global vector f
   // noticing the block number
-  extractor()->InsertVector(*sv, 0, f);
-  extractor()->InsertVector(*lv, 1, f);
+  extractor()->insert_vector(*sv, 0, f);
+  extractor()->insert_vector(*lv, 1, f);
 
 }  // setup_vector()
 
@@ -1507,9 +1508,9 @@ void EHL::Monolithic::apply_lubrication_coupl_matrix(
 Teuchos::RCP<Epetra_Map> EHL::Monolithic::combined_dbc_map()
 {
   const Teuchos::RCP<const Epetra_Map> scondmap =
-      structure_field()->GetDBCMapExtractor()->CondMap();
+      structure_field()->get_dbc_map_extractor()->cond_map();
   const Teuchos::RCP<const Epetra_Map> lcondmap =
-      lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap();
+      lubrication_->LubricationField()->get_dbc_map_extractor()->cond_map();
   Teuchos::RCP<Epetra_Map> condmap = Core::LinAlg::MergeMap(scondmap, lcondmap, false);
   return condmap;
 
@@ -1548,14 +1549,14 @@ void EHL::Monolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epe
         (mat.Matrix(0, 1).EpetraMatrix()->RightScale(*lcolsum_)))
       FOUR_C_THROW("lubrication scaling failed");
 
-    Teuchos::RCP<Epetra_Vector> sx = extractor()->ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> lx = extractor()->ExtractVector(b, 1);
+    Teuchos::RCP<Epetra_Vector> sx = extractor()->extract_vector(b, 0);
+    Teuchos::RCP<Epetra_Vector> lx = extractor()->extract_vector(b, 1);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (lx->Multiply(1.0, *lrowsum_, *lx, 0.0)) FOUR_C_THROW("lubrication scaling failed");
 
-    extractor()->InsertVector(*sx, 0, b);
-    extractor()->InsertVector(*lx, 1, b);
+    extractor()->insert_vector(*sx, 0, b);
+    extractor()->insert_vector(*lx, 1, b);
   }
 }  // scale_system
 
@@ -1570,24 +1571,24 @@ void EHL::Monolithic::unscale_solution(
 
   if (scaling_infnorm)
   {
-    Teuchos::RCP<Epetra_Vector> sy = extractor()->ExtractVector(x, 0);
-    Teuchos::RCP<Epetra_Vector> ly = extractor()->ExtractVector(x, 1);
+    Teuchos::RCP<Epetra_Vector> sy = extractor()->extract_vector(x, 0);
+    Teuchos::RCP<Epetra_Vector> ly = extractor()->extract_vector(x, 1);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ly->Multiply(1.0, *lcolsum_, *ly, 0.0)) FOUR_C_THROW("lubrication scaling failed");
 
-    extractor()->InsertVector(*sy, 0, x);
-    extractor()->InsertVector(*ly, 1, x);
+    extractor()->insert_vector(*sy, 0, x);
+    extractor()->insert_vector(*ly, 1, x);
 
-    Teuchos::RCP<Epetra_Vector> sx = extractor()->ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> lx = extractor()->ExtractVector(b, 1);
+    Teuchos::RCP<Epetra_Vector> sx = extractor()->extract_vector(b, 0);
+    Teuchos::RCP<Epetra_Vector> lx = extractor()->extract_vector(b, 1);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (lx->ReciprocalMultiply(1.0, *lrowsum_, *lx, 0.0))
       FOUR_C_THROW("lubrication scaling failed");
 
-    extractor()->InsertVector(*sx, 0, b);
-    extractor()->InsertVector(*lx, 1, b);
+    extractor()->insert_vector(*sx, 0, b);
+    extractor()->insert_vector(*lx, 1, b);
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
     srowsum_->Reciprocal(*srowsum_);
@@ -2150,10 +2151,12 @@ void EHL::Monolithic::apply_dbc()
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(systemmatrix_->Matrix(1, 0)));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ll =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(systemmatrix_->Matrix(1, 1)));
-  k_ss->ApplyDirichlet(*structure_field()->GetDBCMapExtractor()->CondMap(), true);
-  k_sl->ApplyDirichlet(*structure_field()->GetDBCMapExtractor()->CondMap(), false);
-  k_ls->ApplyDirichlet(*lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap(), false);
-  k_ll->ApplyDirichlet(*lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap(), true);
+  k_ss->ApplyDirichlet(*structure_field()->get_dbc_map_extractor()->cond_map(), true);
+  k_sl->ApplyDirichlet(*structure_field()->get_dbc_map_extractor()->cond_map(), false);
+  k_ls->ApplyDirichlet(
+      *lubrication_->LubricationField()->get_dbc_map_extractor()->cond_map(), false);
+  k_ll->ApplyDirichlet(
+      *lubrication_->LubricationField()->get_dbc_map_extractor()->cond_map(), true);
 
   if (inf_gap_toggle_lub_ != Teuchos::null)
   {
@@ -2170,9 +2173,9 @@ void EHL::Monolithic::apply_dbc()
 
 
   Core::LinAlg::apply_dirichlet_to_system(
-      *rhs_, *zeros_, *structure_field()->GetDBCMapExtractor()->CondMap());
+      *rhs_, *zeros_, *structure_field()->get_dbc_map_extractor()->cond_map());
   Core::LinAlg::apply_dirichlet_to_system(
-      *rhs_, *zeros_, *lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap());
+      *rhs_, *zeros_, *lubrication_->LubricationField()->get_dbc_map_extractor()->cond_map());
 
   if (inf_gap_toggle_lub_ != Teuchos::null)
     for (int i = 0; i < inf_gap_toggle_lub_->MyLength(); ++i)

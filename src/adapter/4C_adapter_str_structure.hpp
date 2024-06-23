@@ -247,7 +247,7 @@ namespace Adapter
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() = 0;
 
     /// expand dirichlet bc map
     virtual void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd){

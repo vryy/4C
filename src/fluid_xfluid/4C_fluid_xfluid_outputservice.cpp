@@ -166,7 +166,7 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
 
   // output (hydrodynamic) pressure for visualization
 
-  Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_out_->ExtractCondVector(outvec_fluid_);
+  Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_out_->extract_cond_vector(outvec_fluid_);
 
   discret_->Writer()->write_vector("velnp", outvec_fluid_);
   discret_->Writer()->write_vector("pressure", pressure);

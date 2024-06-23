@@ -211,7 +211,7 @@ void THR::TimInt::determine_capa_consist_temp_rate()
     Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
     // blank RHS on DBC DOFs
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
+    dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), rhs);
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = true;

@@ -727,7 +727,7 @@ void CONTACT::MtAbstractStrategy::store_dirichlet_status(
       for (int k = 0; k < mtnode->NumDof(); ++k)
       {
         int currdof = mtnode->Dofs()[k];
-        int lid = (dbcmaps->CondMap())->LID(currdof);
+        int lid = (dbcmaps->cond_map())->LID(currdof);
 
         // store dbc status if found
         if (lid >= 0 && mtnode->DbcDofs()[k] == false)
@@ -745,7 +745,7 @@ void CONTACT::MtAbstractStrategy::store_dirichlet_status(
 
   // create old style dirichtoggle vector (supposed to go away)
   pgsdirichtoggle_ = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
-  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->CondMap())));
+  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->cond_map())));
   temp->PutScalar(1.0);
   Core::LinAlg::Export(*temp, *pgsdirichtoggle_);
 

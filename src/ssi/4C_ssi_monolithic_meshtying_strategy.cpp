@@ -211,15 +211,15 @@ Epetra_Vector SSI::MeshtyingStrategyBase::apply_meshtying_to_structure_rhs(
 
     // transform slave-side part of structure right-hand side vector to master side
     const auto rhs_structure_only_slave_dofs =
-        coupling_map_extractor->ExtractVector(rhs_structure, 1);
+        coupling_map_extractor->extract_vector(rhs_structure, 1);
 
     const auto rhs_structure_only_master_dofs =
         coupling_adapter->SlaveToMaster(rhs_structure_only_slave_dofs);
 
-    coupling_map_extractor->AddVector(rhs_structure_only_master_dofs, 2, rhs_structure_master);
+    coupling_map_extractor->add_vector(rhs_structure_only_master_dofs, 2, rhs_structure_master);
 
     // zero out slave-side part of structure right-hand side vector
-    coupling_map_extractor->PutScalar(rhs_structure, 1, 0.0);
+    coupling_map_extractor->put_scalar(rhs_structure, 1, 0.0);
   }
 
   // assemble master-side part of structure right-hand side vector

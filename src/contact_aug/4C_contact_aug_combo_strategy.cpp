@@ -415,7 +415,7 @@ void CONTACT::Aug::ComboStrategy::post_setup(bool redistributed, bool init)
 void CONTACT::Aug::ComboStrategy::post_store_dirichlet_status(
     Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps)
 {
-  no_dbc_.Assemble(*dbcmaps->CondMap(), data_);
+  no_dbc_.Assemble(*dbcmaps->cond_map(), data_);
 
   get().post_store_dirichlet_status(dbcmaps);
 }

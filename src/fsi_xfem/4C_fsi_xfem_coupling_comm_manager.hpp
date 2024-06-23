@@ -85,17 +85,17 @@ namespace XFEM
 
     //! Insert a Vector A into vector B (choose type of transfer, add or scaling) - Version vor
     //! RCP<const Epetra_Vector> vecA
-    void InsertVector(const int idxA, Teuchos::RCP<const Epetra_Vector> vecA, const int idxB,
+    void insert_vector(const int idxA, Teuchos::RCP<const Epetra_Vector> vecA, const int idxB,
         Teuchos::RCP<Epetra_Vector> vecB, const CouplingCommManager::TransferType ttype,
         bool add = false, double scale = 1.0);
 
     //! Insert a Vector A into vector B (choose type of transfer, add or scaling) - Version vor
     //! RCP<Epetra_Vector> vecA
-    void InsertVector(const int idxA, Teuchos::RCP<Epetra_Vector> vecA, const int idxB,
+    void insert_vector(const int idxA, Teuchos::RCP<Epetra_Vector> vecA, const int idxB,
         Teuchos::RCP<Epetra_Vector> vecB, const CouplingCommManager::TransferType ttype,
         bool add = false, double scale = 1.0)
     {
-      InsertVector(
+      insert_vector(
           idxA, Teuchos::rcp_static_cast<const Epetra_Vector>(vecA), idxB, vecB, ttype, add, scale);
     }
 

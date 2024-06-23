@@ -87,7 +87,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup()
   // store old maps prior to redistribution
   cl_noderowmap_prior_redistr_ = Teuchos::rcp(new Epetra_Map(*BinDiscret().NodeRowMap()));
   cl_nodecolmap_prior_redistr_ = Teuchos::rcp(new Epetra_Map(*BinDiscret().NodeColMap()));
-  beam_elerowmap_prior_redistr_ = Teuchos::rcp(new Epetra_Map(*EleTypeMapExtractor().BeamMap()));
+  beam_elerowmap_prior_redistr_ = Teuchos::rcp(new Epetra_Map(*EleTypeMapExtractor().beam_map()));
   beam_elecolmap_prior_redistr_ = Teuchos::rcp(new Epetra_Map(*Discret().ElementColMap()));
 
   // set flag
@@ -316,12 +316,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
   my_bspot_linker.clear();
 
   // loop over all row beam elements
-  int unsigned const numbeams = ele_type_map_extractor_ptr()->BeamMap()->NumMyElements();
+  int unsigned const numbeams = ele_type_map_extractor_ptr()->beam_map()->NumMyElements();
   my_bspot_linker.reserve(numbeams);
   for (unsigned int rowbeam_i = 0; rowbeam_i < numbeams; ++rowbeam_i)
   {
     Discret::ELEMENTS::Beam3Base* beamele = dynamic_cast<Discret::ELEMENTS::Beam3Base*>(
-        Discret().gElement(ele_type_map_extractor_ptr()->BeamMap()->GID(rowbeam_i)));
+        Discret().gElement(ele_type_map_extractor_ptr()->beam_map()->GID(rowbeam_i)));
 
     BEAMINTERACTION::Data::BeamData const* beamdata_i = beam_data_[beamele->LID()].get();
 
@@ -1359,10 +1359,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
   // 3) beam data
   // -------------------------------------------------------------------------
   Core::Communication::PackBuffer beamdata_buffer;
-  unsigned int numrowbeam = EleTypeMapExtractor().BeamMap()->NumMyElements();
+  unsigned int numrowbeam = EleTypeMapExtractor().beam_map()->NumMyElements();
   for (unsigned int i = 0; i < numrowbeam; ++i)
   {
-    int const beamgid = EleTypeMapExtractor().BeamMap()->GID(i);
+    int const beamgid = EleTypeMapExtractor().beam_map()->GID(i);
     Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data_i =
         beam_data_[Discret().ElementColMap()->LID(beamgid)];
 
@@ -2016,7 +2016,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::store_maps_prior_redistri
 
   *cl_noderowmap_prior_redistr_ = *BinDiscret().NodeRowMap();
   *cl_nodecolmap_prior_redistr_ = *BinDiscret().NodeColMap();
-  *beam_elerowmap_prior_redistr_ = *EleTypeMapExtractor().BeamMap();
+  *beam_elerowmap_prior_redistr_ = *EleTypeMapExtractor().beam_map();
   *beam_elecolmap_prior_redistr_ = *Discret().ElementColMap();
 }
 /*----------------------------------------------------------------------------*

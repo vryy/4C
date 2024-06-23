@@ -40,7 +40,7 @@ PoroElast::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
   csigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
 
   // Recovering of Lagrange multiplier happens on structure field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*fluid_field()->Interface()->FSICondMap()));
+  lambda_ = Teuchos::rcp(new Epetra_Vector(*fluid_field()->Interface()->fsi_cond_map()));
 }
 
 void PoroElast::MonolithicFluidSplit::SetupSystem()
@@ -53,14 +53,14 @@ void PoroElast::MonolithicFluidSplit::SetupSystem()
 #ifdef FLUIDSPLITAMG
     vecSpaces.push_back(fluid_field()->dof_row_map());
 #else
-    vecSpaces.push_back(fluid_field()->Interface()->OtherMap());
+    vecSpaces.push_back(fluid_field()->Interface()->other_map());
 #endif
 
     if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
     if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid equation. Panic.");
 
     // full Poroelasticity-map
-    fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
+    fullmap_ = Core::LinAlg::MultiMapExtractor::merge_maps(vecSpaces);
     // full Poroelasticity-blockmap
     blockrowdofmap_->setup(*fullmap_, vecSpaces);
   }
@@ -114,10 +114,10 @@ void PoroElast::MonolithicFluidSplit::setup_rhs(bool firstcall)
     rhs->Scale(timescale * Dt());
 
 #ifdef FLUIDSPLITAMG
-    rhs = fluid_field()->Interface()->InsertOtherVector(rhs);
+    rhs = fluid_field()->Interface()->insert_other_vector(rhs);
 #endif
 
-    Extractor()->AddVector(*rhs, 1, *rhs_);  // add fluid contributions to 'f'
+    Extractor()->add_vector(*rhs, 1, *rhs_);  // add fluid contributions to 'f'
 
     rhs = Teuchos::rcp(new Epetra_Vector(fgg.RowMap()));
 
@@ -127,32 +127,32 @@ void PoroElast::MonolithicFluidSplit::setup_rhs(bool firstcall)
         (1.0 - stiparam) / (1.0 - ftiparam));  // scale 'rhs' due to consistent time integration
 
     rhs = fluid_to_structure_at_interface(rhs);
-    rhs = structure_field()->Interface()->InsertFSICondVector(rhs);
+    rhs = structure_field()->Interface()->insert_fsi_cond_vector(rhs);
 
-    Extractor()->AddVector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
+    Extractor()->add_vector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
 
     rhs = Teuchos::rcp(new Epetra_Vector(kig.RowMap()));
 
     kig.Apply(*fveln, *rhs);
     rhs->Scale(timescale * Dt());
 
-    rhs = structure_field()->Interface()->InsertOtherVector(rhs);
+    rhs = structure_field()->Interface()->insert_other_vector(rhs);
 
-    Extractor()->AddVector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
+    Extractor()->add_vector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
 
     rhs = Teuchos::rcp(new Epetra_Vector(kgg.RowMap()));
 
     kgg.Apply(*fveln, *rhs);
     rhs->Scale(timescale * Dt());
 
-    rhs = structure_field()->Interface()->InsertFSICondVector(rhs);
+    rhs = structure_field()->Interface()->insert_fsi_cond_vector(rhs);
 
-    Extractor()->AddVector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
+    Extractor()->add_vector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
   }
 
   // store interface force onto the structure to know it in the next time step as previous force
   // in order to recover the Lagrange multiplier
-  fgcur_ = fluid_field()->Interface()->ExtractFSICondVector(fluid_field()->RHS());
+  fgcur_ = fluid_field()->Interface()->extract_fsi_cond_vector(fluid_field()->RHS());
 }
 
 void PoroElast::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat)
@@ -229,7 +229,7 @@ void PoroElast::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 #ifdef FLUIDSPLITAMG
   mat.Matrix(1, 1).Add(f->Matrix(0, 0), false, 1., 0.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
-      Core::LinAlg::Eye(*fluid_field()->Interface()->FSICondMap());
+      Core::LinAlg::Eye(*fluid_field()->Interface()->fsi_cond_map());
   mat.Matrix(1, 1).Add(*eye, false, 1., 1.0);
 #else
   f->Matrix(0, 0).UnComplete();
@@ -261,14 +261,14 @@ void PoroElast::MonolithicFluidSplit::setup_vector(Epetra_Vector& f,
 {
   // extract the inner and boundary dofs of all fields
 
-  Teuchos::RCP<Epetra_Vector> fov = fluid_field()->Interface()->ExtractOtherVector(fv);
+  Teuchos::RCP<Epetra_Vector> fov = fluid_field()->Interface()->extract_other_vector(fv);
 #ifdef FLUIDSPLITAMG
-  fov = fluid_field()->Interface()->InsertOtherVector(fov);
+  fov = fluid_field()->Interface()->insert_other_vector(fov);
 #endif
 
-  Extractor()->InsertVector(*sv, 0, f);
+  Extractor()->insert_vector(*sv, 0, f);
 
-  Extractor()->InsertVector(*fov, 1, f);  // add fluid contributions to 'f'
+  Extractor()->insert_vector(*fov, 1, f);  // add fluid contributions to 'f'
 }
 
 void PoroElast::MonolithicFluidSplit::extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
@@ -277,18 +277,18 @@ void PoroElast::MonolithicFluidSplit::extract_field_vectors(Teuchos::RCP<const E
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::MonolithicFluidSplit::extract_field_vectors");
 
   // process structure unknowns
-  sx = Extractor()->ExtractVector(x, 0);
+  sx = Extractor()->extract_vector(x, 0);
 
   // process fluid unknowns
   if (evaluateinterface_)
   {
     Teuchos::RCP<const Epetra_Vector> scx =
-        structure_field()->Interface()->ExtractFSICondVector(sx);
+        structure_field()->Interface()->extract_fsi_cond_vector(sx);
 
     Teuchos::RCP<Epetra_Vector> fcx = structure_to_fluid_at_interface(scx);
-    Teuchos::RCP<const Epetra_Vector> fox = Extractor()->ExtractVector(x, 1);
+    Teuchos::RCP<const Epetra_Vector> fox = Extractor()->extract_vector(x, 1);
 #ifdef FLUIDSPLITAMG
-    fox = fluid_field()->Interface()->ExtractOtherVector(fox);
+    fox = fluid_field()->Interface()->extract_other_vector(fox);
 #endif
 
     {
@@ -296,17 +296,17 @@ void PoroElast::MonolithicFluidSplit::extract_field_vectors(Teuchos::RCP<const E
       fcx->Scale(timescale);
     }
 
-    Teuchos::RCP<Epetra_Vector> f = fluid_field()->Interface()->InsertOtherVector(fox);
-    fluid_field()->Interface()->InsertFSICondVector(fcx, f);
+    Teuchos::RCP<Epetra_Vector> f = fluid_field()->Interface()->insert_other_vector(fox);
+    fluid_field()->Interface()->insert_fsi_cond_vector(fcx, f);
 
     auto zeros = Teuchos::rcp(new const Epetra_Vector(f->Map(), true));
     Core::LinAlg::apply_dirichlet_to_system(
-        *f, *zeros, *(fluid_field()->GetDBCMapExtractor()->CondMap()));
+        *f, *zeros, *(fluid_field()->get_dbc_map_extractor()->cond_map()));
 
     fx = f;
 
     // Store field vectors to know them later on as previous quantities
-    Teuchos::RCP<Epetra_Vector> sox = structure_field()->Interface()->ExtractOtherVector(sx);
+    Teuchos::RCP<Epetra_Vector> sox = structure_field()->Interface()->extract_other_vector(sx);
     if (solipre_ != Teuchos::null)
       ddiinc_->Update(1.0, *sox, -1.0, *solipre_, 0.0);  // compute current iteration increment
     else
@@ -329,7 +329,7 @@ void PoroElast::MonolithicFluidSplit::extract_field_vectors(Teuchos::RCP<const E
     solivelpre_ = fox;  // store current step increment
   }
   else
-    fx = Extractor()->ExtractVector(x, 1);
+    fx = Extractor()->extract_vector(x, 1);
 }
 
 void PoroElast::MonolithicFluidSplit::recover_lagrange_multiplier_after_time_step()
@@ -345,25 +345,25 @@ void PoroElast::MonolithicFluidSplit::recover_lagrange_multiplier_after_time_ste
 
     // store the product F_{\GammaI} \Delta u_I^{n+1} in here
     Teuchos::RCP<Epetra_Vector> fgiddi =
-        Core::LinAlg::CreateVector(*fluid_field()->Interface()->FSICondMap(), true);
+        Core::LinAlg::CreateVector(*fluid_field()->Interface()->fsi_cond_map(), true);
     // compute the above mentioned product
     fgicur_->Multiply(false, *duiinc_, *fgiddi);
 
     // store the product C_{\GammaI} \Delta d_I^{n+1} in here
     Teuchos::RCP<Epetra_Vector> sgiddi =
-        Core::LinAlg::CreateVector(*fluid_field()->Interface()->FSICondMap(), true);
+        Core::LinAlg::CreateVector(*fluid_field()->Interface()->fsi_cond_map(), true);
     // compute the above mentioned product
     cgicur_->Multiply(false, *ddiinc_, *sgiddi);
 
     // store the product F_{\Gamma\Gamma} \Delta u_\Gamma^{n+1} in here
     Teuchos::RCP<Epetra_Vector> sggddg =
-        Core::LinAlg::CreateVector(*fluid_field()->Interface()->FSICondMap(), true);
+        Core::LinAlg::CreateVector(*fluid_field()->Interface()->fsi_cond_map(), true);
     // compute the above mentioned product
     fggcur_->Multiply(false, *duginc_, *sggddg);
 
     // store the prodcut C_{\Gamma\Gamma} \Delta d_\Gamma^{n+1} in here
     Teuchos::RCP<Epetra_Vector> cggddg =
-        Core::LinAlg::CreateVector(*fluid_field()->Interface()->FSICondMap(), true);
+        Core::LinAlg::CreateVector(*fluid_field()->Interface()->fsi_cond_map(), true);
     // compute the above mentioned product
     cggcur_->Multiply(false, *duginc_, *cggddg);
     cggddg->Scale(1.0 / timescale);

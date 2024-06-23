@@ -214,9 +214,9 @@ void Adapter::PoroFluidMultiphaseWrapper::prepare_time_loop() { porofluid_->prep
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Core::LinAlg::MapExtractor>
-Adapter::PoroFluidMultiphaseWrapper::GetDBCMapExtractor() const
+Adapter::PoroFluidMultiphaseWrapper::get_dbc_map_extractor() const
 {
-  return porofluid_->GetDBCMapExtractor();
+  return porofluid_->get_dbc_map_extractor();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

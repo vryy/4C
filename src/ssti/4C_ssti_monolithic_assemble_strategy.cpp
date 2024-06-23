@@ -1147,7 +1147,7 @@ void SSTI::AssembleStrategyBlock::apply_structural_dbc_system_matrix(
   const auto& locsysmanager_structure = structure_field()->LocsysManager();
 
   // map of strucutral Dirichlet BCs
-  const auto dbcmap_structure = structure_field()->GetDBCMapExtractor()->CondMap();
+  const auto dbcmap_structure = structure_field()->get_dbc_map_extractor()->cond_map();
 
   if (locsysmanager_structure == Teuchos::null)
     systemmatrix->ApplyDirichlet(*dbcmap_structure);
@@ -1179,7 +1179,7 @@ void SSTI::AssembleStrategySparse::apply_structural_dbc_system_matrix(
   const auto& locsysmanager_structure = structure_field()->LocsysManager();
 
   // map of strucutral Dirichlet BCs
-  const auto& dbcmap_structure = structure_field()->GetDBCMapExtractor()->CondMap();
+  const auto& dbcmap_structure = structure_field()->get_dbc_map_extractor()->cond_map();
 
   // structural dof row map
   const auto& dofrowmap_structure = structure_field()->dof_row_map();
@@ -1218,9 +1218,9 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
   RHS->PutScalar(0.0);
 
   // assemble scalar transport right-hand side vector into monolithic right-hand side vector
-  all_maps()->MapsSubProblems()->InsertVector(
+  all_maps()->MapsSubProblems()->insert_vector(
       RHSscatra, ssti_mono_->GetProblemPosition(Subproblem::scalar_transport), RHS);
-  all_maps()->MapsSubProblems()->InsertVector(
+  all_maps()->MapsSubProblems()->insert_vector(
       RHSthermo, ssti_mono_->GetProblemPosition(Subproblem::thermo), RHS);
 
   if (interface_meshtying())
@@ -1240,15 +1240,15 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
 
       // transform slave-side part of structure right-hand side vector to master side
       const auto rhs_structure_only_slave_dofs =
-          coupling_map_extractor->ExtractVector(residual_structure, 1);
+          coupling_map_extractor->extract_vector(residual_structure, 1);
 
       const auto rhs_structure_only_master_dofs =
           coupling_adapter->SlaveToMaster(rhs_structure_only_slave_dofs);
 
-      coupling_map_extractor->AddVector(rhs_structure_only_master_dofs, 2, rhs_structure_master);
+      coupling_map_extractor->add_vector(rhs_structure_only_master_dofs, 2, rhs_structure_master);
 
       // zero out slave-side part of structure right-hand side vector
-      coupling_map_extractor->PutScalar(residual_structure, 1, 0.0);
+      coupling_map_extractor->put_scalar(residual_structure, 1, 0.0);
     }
 
     // locsys manager of strucutre
@@ -1261,7 +1261,7 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
     if (locsysmanager_structure != Teuchos::null)
       locsysmanager_structure->RotateGlobalToLocal(rhs_structure_master);
     Core::LinAlg::apply_dirichlet_to_system(*rhs_structure_master, *zeros,
-        *ssti_mono_->structure_field()->GetDBCMapExtractor()->CondMap());
+        *ssti_mono_->structure_field()->get_dbc_map_extractor()->cond_map());
     if (locsysmanager_structure != Teuchos::null)
       locsysmanager_structure->RotateLocalToGlobal(rhs_structure_master);
 
@@ -1269,12 +1269,12 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
     residual_structure.Update(1.0, *rhs_structure_master, 1.0);
 
     // assemble final structural right-hand side vector into monolithic right-hand side vector
-    all_maps()->MapsSubProblems()->AddVector(
+    all_maps()->MapsSubProblems()->add_vector(
         residual_structure, ssti_mono_->GetProblemPosition(Subproblem::structure), *RHS, -1.0);
   }
   else
   {
-    all_maps()->MapsSubProblems()->AddVector(
+    all_maps()->MapsSubProblems()->add_vector(
         RHSstructure, ssti_mono_->GetProblemPosition(Subproblem::structure), RHS, -1.0);
   }
 }

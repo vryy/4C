@@ -36,7 +36,8 @@ void Adapter::PASIStructureWrapper::ApplyInterfaceForce(Teuchos::RCP<const Epetr
   pasi_model_evaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
 
   if (intfforce != Teuchos::null)
-    interface_->AddPASICondVector(intfforce, pasi_model_evaluator()->get_interface_force_np_ptr());
+    interface_->add_pasi_cond_vector(
+        intfforce, pasi_model_evaluator()->get_interface_force_np_ptr());
 }
 
 FOUR_C_NAMESPACE_CLOSE

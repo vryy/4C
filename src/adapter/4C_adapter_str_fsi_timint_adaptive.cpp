@@ -43,12 +43,12 @@ Adapter::StructureFSITimIntAda::StructureFSITimIntAda(
   // Create intersection of fluid DOFs that hold a Dirichlet boundary condition
   // and are located at the FSI interface.
   std::vector<Teuchos::RCP<const Epetra_Map>> intersectionmaps;
-  intersectionmaps.push_back(sti->GetDBCMapExtractor()->CondMap());
-  intersectionmaps.push_back(Interface()->FSICondMap());
+  intersectionmaps.push_back(sti->get_dbc_map_extractor()->cond_map());
+  intersectionmaps.push_back(Interface()->fsi_cond_map());
   Teuchos::RCP<Epetra_Map> intersectionmap =
-      Core::LinAlg::MultiMapExtractor::IntersectMaps(intersectionmaps);
+      Core::LinAlg::MultiMapExtractor::intersect_maps(intersectionmaps);
 
-  numdbcdofs_ = sti->GetDBCMapExtractor()->CondMap()->NumGlobalElements();
+  numdbcdofs_ = sti->get_dbc_map_extractor()->cond_map()->NumGlobalElements();
   numdbcfsidofs_ = intersectionmap->NumGlobalElements();
   numdbcinnerdofs_ = numdbcdofs_ - numdbcfsidofs_;
 }
@@ -78,12 +78,12 @@ void Adapter::StructureFSITimIntAda::indicate_errors(double& err, double& errcon
   // extract the condition part of the full error vector
   // (i.e. only interface displacement DOFs)
   Teuchos::RCP<Epetra_Vector> errorcond =
-      Teuchos::rcp(new Epetra_Vector(*interface_->ExtractFSICondVector(error)));
+      Teuchos::rcp(new Epetra_Vector(*interface_->extract_fsi_cond_vector(error)));
 
   // in case of structure split: extract the other part of the full error vector
   // (i.e. only interior displacement DOFs)
   Teuchos::RCP<Epetra_Vector> errorother =
-      Teuchos::rcp(new Epetra_Vector(*interface_->ExtractFSICondVector(error)));
+      Teuchos::rcp(new Epetra_Vector(*interface_->extract_fsi_cond_vector(error)));
 
   // calculate L2-norms of different subsets of local discretization error vector
   err = STR::calculate_vector_norm(errnorm_, error, numdbcdofs_);

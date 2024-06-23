@@ -62,7 +62,7 @@ Teuchos::RCP<const Epetra_Map> Adapter::StructurePoroWrapper::combined_dbc_map()
   switch (type_)
   {
     case FieldWrapper::type_StructureField:
-      return structure_->GetDBCMapExtractor()->CondMap();
+      return structure_->get_dbc_map_extractor()->cond_map();
       break;
     case FieldWrapper::type_PoroField:
       return poro_->combined_dbc_map();
@@ -113,18 +113,18 @@ const Teuchos::RCP<Adapter::FluidPoro>& Adapter::StructurePoroWrapper::fluid_fie
 }
 
 //! Insert FSI Condition Vector
-Teuchos::RCP<Epetra_Vector> Adapter::StructurePoroWrapper::InsertFSICondVector(
+Teuchos::RCP<Epetra_Vector> Adapter::StructurePoroWrapper::insert_fsi_cond_vector(
     Teuchos::RCP<const Epetra_Vector> cond)
 {
   Teuchos::RCP<Epetra_Vector> tmpcond;
   switch (type_)
   {
     case FieldWrapper::type_StructureField:
-      return Interface()->InsertFSICondVector(cond);
+      return Interface()->insert_fsi_cond_vector(cond);
       break;
     case FieldWrapper::type_PoroField:
-      tmpcond = Interface()->InsertFSICondVector(cond);
-      return poro_->Extractor()->InsertVector(tmpcond, 0);  // into structural part = 0
+      tmpcond = Interface()->insert_fsi_cond_vector(cond);
+      return poro_->Extractor()->insert_vector(tmpcond, 0);  // into structural part = 0
       break;
     default:
       FOUR_C_THROW("StructurePoroWrapper: type for this wrapper not considered!");

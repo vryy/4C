@@ -99,7 +99,7 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
 
   const Teuchos::RCP<const Core::LinAlg::MapExtractor> masterdirichmapex =
       scatravec_[0]->ScaTraField()->DirichMaps();
-  const Teuchos::RCP<const Epetra_Map> masterdirichmap = masterdirichmapex->CondMap();
+  const Teuchos::RCP<const Epetra_Map> masterdirichmap = masterdirichmapex->cond_map();
 
   // filter out master dirichlet dofs associated with the interface
   Teuchos::RCP<Epetra_Vector> masterifdirich = Teuchos::rcp(new Epetra_Vector(*mastermap, true));
@@ -115,7 +115,7 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
 
   const Teuchos::RCP<const Core::LinAlg::MapExtractor> slavedirichmapex =
       scatravec_[1]->ScaTraField()->DirichMaps();
-  const Teuchos::RCP<const Epetra_Map> slavedirichmap = slavedirichmapex->CondMap();
+  const Teuchos::RCP<const Epetra_Map> slavedirichmap = slavedirichmapex->cond_map();
 
   // filter out slave dirichlet dofs associated with the interface
   Teuchos::RCP<Epetra_Vector> slaveifdirich = Teuchos::rcp(new Epetra_Vector(*slavemap, true));
@@ -484,7 +484,7 @@ void FS3I::FS3IBase::evaluate_scatra_fields()
       // apply Dirichlet boundary conditions to coupling matrix and vector
       Teuchos::RCP<Epetra_Vector> zeros = scatrazeros_[i];
       const Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmapex = scatra->DirichMaps();
-      const Teuchos::RCP<const Epetra_Map> dbcmap = dbcmapex->CondMap();
+      const Teuchos::RCP<const Epetra_Map> dbcmap = dbcmapex->cond_map();
       coupmat->ApplyDirichlet(*dbcmap, false);
       Core::LinAlg::apply_dirichlet_to_system(*coupforce, *zeros, *dbcmap);
     }
@@ -522,11 +522,11 @@ void FS3I::FS3IBase::extract_membrane_concentration(
 
   // extract interface values
   Teuchos::RCP<Epetra_Vector> interface_phin =
-      scatrafieldexvec_[0]->ExtractVector(MembraneConcentration1, 1);
+      scatrafieldexvec_[0]->extract_vector(MembraneConcentration1, 1);
 
   // insert interface values from Fluid Field into Poro Field;
   Teuchos::RCP<Epetra_Vector> MembraneConcentration2 =
-      scatrafieldexvec_[1]->InsertVector(Scatra1ToScatra2(interface_phin), 1);
+      scatrafieldexvec_[1]->insert_vector(Scatra1ToScatra2(interface_phin), 1);
   MembraneConcentration.push_back(MembraneConcentration2);
 }
 
@@ -543,13 +543,13 @@ Teuchos::RCP<Epetra_Vector> FS3I::FS3IBase::calc_membrane_concentration() const
 
   // extract interface values from phi2 but we are still on scatrafield2
   Teuchos::RCP<Epetra_Vector> interface2_phi2np =
-      scatrafieldexvec_[1]->ExtractVector(scatrafield2_phi2np, 1);
+      scatrafieldexvec_[1]->extract_vector(scatrafield2_phi2np, 1);
 
   // insert interface values from scatrafield2 into scatrafield1; scatrafield1_phi2n is again of
   // full length, i.e. of size of scatrafield1; all values that do not belong to the interface are
   // zero
   Teuchos::RCP<Epetra_Vector> scatrafield1_phi2np =
-      scatrafieldexvec_[0]->InsertVector(Scatra2ToScatra1(interface2_phi2np), 1);
+      scatrafieldexvec_[0]->insert_vector(Scatra2ToScatra1(interface2_phi2np), 1);
 
   // Get concentration phi1 in scatrafield1
   Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra1 = scatravec_[0];
@@ -557,11 +557,11 @@ Teuchos::RCP<Epetra_Vector> FS3I::FS3IBase::calc_membrane_concentration() const
 
   // extract interface values from phi1 but we are still on scatrafield1
   Teuchos::RCP<Epetra_Vector> interface1_phi1np =
-      scatrafieldexvec_[0]->ExtractVector(scatrafield1_phi1np, 1);
+      scatrafieldexvec_[0]->extract_vector(scatrafield1_phi1np, 1);
 
   // insert interface values interface1_phi1n from scatrafield1 into the full scatrafield1 again;
   // this is just to obtain a vector whose entries are zero except for the nodes of the interface
-  Teuchos::RCP<Epetra_Vector> temp = scatrafieldexvec_[0]->InsertVector(interface1_phi1np, 1);
+  Teuchos::RCP<Epetra_Vector> temp = scatrafieldexvec_[0]->insert_vector(interface1_phi1np, 1);
 
   // nodewise calculation of mean concentration in the interface
 
@@ -609,20 +609,20 @@ void FS3I::FS3IBase::setup_coupled_scatra_rhs()
     Teuchos::RCP<Epetra_Vector> coup2 = scatracoupforce_[1];
 
     // contribution of the same field
-    scatraglobalex_->AddVector(*coup1, 0, *scatrarhs_, 1.0);
-    scatraglobalex_->AddVector(*coup2, 1, *scatrarhs_, 1.0);
+    scatraglobalex_->add_vector(*coup1, 0, *scatrarhs_, 1.0);
+    scatraglobalex_->add_vector(*coup2, 1, *scatrarhs_, 1.0);
 
     // contribution of the respective other field
-    Teuchos::RCP<Epetra_Vector> coup1_boundary = scatrafieldexvec_[0]->ExtractVector(coup1, 1);
+    Teuchos::RCP<Epetra_Vector> coup1_boundary = scatrafieldexvec_[0]->extract_vector(coup1, 1);
     Teuchos::RCP<Epetra_Vector> temp =
-        scatrafieldexvec_[1]->InsertVector(Scatra1ToScatra2(coup1_boundary), 1);
+        scatrafieldexvec_[1]->insert_vector(Scatra1ToScatra2(coup1_boundary), 1);
     temp->Scale(-1.0);
-    scatraglobalex_->AddVector(*temp, 1, *scatrarhs_);
+    scatraglobalex_->add_vector(*temp, 1, *scatrarhs_);
 
-    Teuchos::RCP<Epetra_Vector> coup2_boundary = scatrafieldexvec_[1]->ExtractVector(coup2, 1);
-    temp = scatrafieldexvec_[0]->InsertVector(Scatra2ToScatra1(coup2_boundary), 1);
+    Teuchos::RCP<Epetra_Vector> coup2_boundary = scatrafieldexvec_[1]->extract_vector(coup2, 1);
+    temp = scatrafieldexvec_[0]->insert_vector(Scatra2ToScatra1(coup2_boundary), 1);
     temp->Scale(-1.0);
-    scatraglobalex_->AddVector(*temp, 0, *scatrarhs_);
+    scatraglobalex_->add_vector(*temp, 0, *scatrarhs_);
   }
 }
 
@@ -636,20 +636,20 @@ void FS3I::FS3IBase::setup_coupled_scatra_vector(Teuchos::RCP<Epetra_Vector> glo
   {
     // concentrations are assumed to be equal at the interface
     // extract the inner (uncoupled) dofs from second field
-    Teuchos::RCP<Epetra_Vector> vec2_other = scatrafieldexvec_[1]->ExtractVector(vec2, 0);
+    Teuchos::RCP<Epetra_Vector> vec2_other = scatrafieldexvec_[1]->extract_vector(vec2, 0);
 
-    Teuchos::RCP<Epetra_Vector> vec2_boundary = scatrafieldexvec_[1]->ExtractVector(vec2, 1);
+    Teuchos::RCP<Epetra_Vector> vec2_boundary = scatrafieldexvec_[1]->extract_vector(vec2, 1);
     Teuchos::RCP<Epetra_Vector> temp =
-        scatrafieldexvec_[0]->InsertVector(Scatra2ToScatra1(vec2_boundary), 1);
+        scatrafieldexvec_[0]->insert_vector(Scatra2ToScatra1(vec2_boundary), 1);
     temp->Update(1.0, *vec1, 1.0);
 
-    scatraglobalex_->InsertVector(*temp, 0, *globalvec);
-    scatraglobalex_->InsertVector(*vec2_other, 1, *globalvec);
+    scatraglobalex_->insert_vector(*temp, 0, *globalvec);
+    scatraglobalex_->insert_vector(*vec2_other, 1, *globalvec);
   }
   else
   {
-    scatraglobalex_->InsertVector(*vec1, 0, *globalvec);
-    scatraglobalex_->InsertVector(*vec2, 1, *globalvec);
+    scatraglobalex_->insert_vector(*vec1, 0, *globalvec);
+    scatraglobalex_->insert_vector(*vec2, 1, *globalvec);
   }
 }
 
@@ -784,21 +784,21 @@ void FS3I::FS3IBase::extract_scatra_field_vectors(Teuchos::RCP<const Epetra_Vect
   if (infperm_)
   {
     // process fluid scatra unknowns
-    vec1 = scatraglobalex_->ExtractVector(globalvec, 0);
+    vec1 = scatraglobalex_->extract_vector(globalvec, 0);
 
     // process structure scatra unknowns at the boundary
-    Teuchos::RCP<Epetra_Vector> vec1_boundary = scatrafieldexvec_[0]->ExtractVector(vec1, 1);
-    Teuchos::RCP<const Epetra_Vector> vec2_inner = scatraglobalex_->ExtractVector(globalvec, 1);
+    Teuchos::RCP<Epetra_Vector> vec1_boundary = scatrafieldexvec_[0]->extract_vector(vec1, 1);
+    Teuchos::RCP<const Epetra_Vector> vec2_inner = scatraglobalex_->extract_vector(globalvec, 1);
     Teuchos::RCP<Epetra_Vector> vec2_boundary = Scatra1ToScatra2(vec1_boundary);
 
-    Teuchos::RCP<Epetra_Vector> vec2_temp = scatrafieldexvec_[1]->InsertVector(vec2_inner, 0);
-    scatrafieldexvec_[1]->InsertVector(vec2_boundary, 1, vec2_temp);
+    Teuchos::RCP<Epetra_Vector> vec2_temp = scatrafieldexvec_[1]->insert_vector(vec2_inner, 0);
+    scatrafieldexvec_[1]->insert_vector(vec2_boundary, 1, vec2_temp);
     vec2 = vec2_temp;
   }
   else
   {
-    vec1 = scatraglobalex_->ExtractVector(globalvec, 0);
-    vec2 = scatraglobalex_->ExtractVector(globalvec, 1);
+    vec1 = scatraglobalex_->extract_vector(globalvec, 0);
+    vec2 = scatraglobalex_->extract_vector(globalvec, 1);
   }
 }
 

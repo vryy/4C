@@ -92,8 +92,8 @@ void Core::LinAlg::BgS2x2Operator::setup_block_preconditioners()
 int Core::LinAlg::BgS2x2Operator::ApplyInverse(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
-  Teuchos::RCP<Epetra_MultiVector> y1 = mmex_.ExtractVector(Y, firstind_);
-  Teuchos::RCP<Epetra_MultiVector> y2 = mmex_.ExtractVector(Y, secind_);
+  Teuchos::RCP<Epetra_MultiVector> y1 = mmex_.extract_vector(Y, firstind_);
+  Teuchos::RCP<Epetra_MultiVector> y2 = mmex_.extract_vector(Y, secind_);
 
   Teuchos::RCP<Epetra_MultiVector> z1 =
       Teuchos::rcp(new Epetra_MultiVector(y1->Map(), y1->NumVectors()));
@@ -113,8 +113,8 @@ int Core::LinAlg::BgS2x2Operator::ApplyInverse(
   // outer Richardson loop
   for (int run = 0; run < global_iter_; ++run)
   {
-    Teuchos::RCP<Epetra_MultiVector> x1 = a_->DomainExtractor().ExtractVector(X, firstind_);
-    Teuchos::RCP<Epetra_MultiVector> x2 = a_->DomainExtractor().ExtractVector(X, secind_);
+    Teuchos::RCP<Epetra_MultiVector> x1 = a_->DomainExtractor().extract_vector(X, firstind_);
+    Teuchos::RCP<Epetra_MultiVector> x2 = a_->DomainExtractor().extract_vector(X, secind_);
 
     // ----------------------------------------------------------------
     // first block
@@ -166,8 +166,8 @@ int Core::LinAlg::BgS2x2Operator::ApplyInverse(
     }
   }
 
-  mmex_.InsertVector(*y1, firstind_, Y);
-  mmex_.InsertVector(*y2, secind_, Y);
+  mmex_.insert_vector(*y1, firstind_, Y);
+  mmex_.insert_vector(*y2, secind_, Y);
 
   return 0;
 }

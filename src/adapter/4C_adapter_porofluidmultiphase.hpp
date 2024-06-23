@@ -139,7 +139,7 @@ namespace Adapter
     virtual int get_dof_set_number_of_solid_pressure() const = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const = 0;
 
     //! right-hand side alias the dynamic force residual
     virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;

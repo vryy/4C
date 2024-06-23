@@ -109,7 +109,7 @@ namespace Adapter
     virtual void SetSolveScatra(const bool solvescatra) = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const = 0;
 
   };  // class ArtNet
 

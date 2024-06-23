@@ -101,7 +101,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::init()
   maps.push_back(Teuchos::rcp(new Epetra_Map(*contdis_->dof_row_map())));
   maps.push_back(Teuchos::rcp(new Epetra_Map(*arterydis_->dof_row_map())));
 
-  fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
+  fullmap_ = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
   /// dof row map of coupled problem splitted in (field) blocks
   globalex_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
   globalex_->setup(*fullmap_, maps);
@@ -203,17 +203,17 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSyste
     Teuchos::RCP<const Epetra_Map> dbcmap_art_with_collapsed)
 {
   // add normal part to rhs
-  rhs->Update(1.0, *globalex_->InsertVector(rhs_cont, 0), 1.0);
-  rhs->Update(1.0, *globalex_->InsertVector(rhs_art, 1), 1.0);
+  rhs->Update(1.0, *globalex_->insert_vector(rhs_cont, 0), 1.0);
+  rhs->Update(1.0, *globalex_->insert_vector(rhs_art, 1), 1.0);
 
   // apply DBCs
   // 1) on vector
-  Core::LinAlg::apply_dirichlet_to_system(*rhs, *zeros_cont_, *(dbcmap_cont->CondMap()));
+  Core::LinAlg::apply_dirichlet_to_system(*rhs, *zeros_cont_, *(dbcmap_cont->cond_map()));
   Core::LinAlg::apply_dirichlet_to_system(*rhs, *zeros_art_, *(dbcmap_art));
   // 2) on OD-matrices
   sysmat->Matrix(0, 1).Complete(sysmat_art->RangeMap(), sysmat_cont->RangeMap());
   sysmat->Matrix(1, 0).Complete(sysmat_cont->RangeMap(), sysmat_art->RangeMap());
-  sysmat->Matrix(0, 1).ApplyDirichlet(*(dbcmap_cont->CondMap()), false);
+  sysmat->Matrix(0, 1).ApplyDirichlet(*(dbcmap_cont->cond_map()), false);
   sysmat->Matrix(1, 0).ApplyDirichlet(*(dbcmap_art_with_collapsed), false);
 
   // 3) get also the main-diag terms into the global sysmat
@@ -222,7 +222,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSyste
   sysmat->Matrix(0, 0).Complete();
   sysmat->Matrix(1, 1).Complete();
   // and apply DBC
-  sysmat->Matrix(0, 0).ApplyDirichlet(*(dbcmap_cont->CondMap()), true);
+  sysmat->Matrix(0, 0).ApplyDirichlet(*(dbcmap_cont->cond_map()), true);
   sysmat->Matrix(1, 1).ApplyDirichlet(*(dbcmap_art_with_collapsed), true);
   // Assign view to 3D system matrix (such that it now includes also contributions from coupling)
   // this is important! Monolithic algorithms use this matrix
@@ -623,19 +623,19 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
   // Note: all terms are negative since rhs
   // pp*D^T*kappa^{-1}*D*phi_np^art
   dtkd->Multiply(false, *phinp_art_, *art_contribution);
-  rhs->Update(-pp_ * timefacrhs_art_, *globalex_->InsertVector(art_contribution, 1), 1.0);
+  rhs->Update(-pp_ * timefacrhs_art_, *globalex_->insert_vector(art_contribution, 1), 1.0);
 
   // -pp*D^T*kappa^{-1}*M*phi_np^cont
   dtkm->Multiply(false, *phinp_cont_, *art_contribution);
-  rhs->Update(pp_ * timefacrhs_art_, *globalex_->InsertVector(art_contribution, 1), 1.0);
+  rhs->Update(pp_ * timefacrhs_art_, *globalex_->insert_vector(art_contribution, 1), 1.0);
 
   // pp*M^T*kappa^{-1}*M*phi_np^cont
   mtkm->Multiply(false, *phinp_cont_, *cont_contribution);
-  rhs->Update(-pp_ * timefacrhs_cont_, *globalex_->InsertVector(cont_contribution, 0), 1.0);
+  rhs->Update(-pp_ * timefacrhs_cont_, *globalex_->insert_vector(cont_contribution, 0), 1.0);
 
   // -pp*M^T*kappa^{-1}*D*phi_np^art = -pp*(D^T*kappa^{-1}*M)^T*phi_np^art
   dtkm->Multiply(true, *phinp_art_, *cont_contribution);
-  rhs->Update(pp_ * timefacrhs_cont_, *globalex_->InsertVector(cont_contribution, 0), 1.0);
+  rhs->Update(pp_ * timefacrhs_cont_, *globalex_->insert_vector(cont_contribution, 0), 1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -761,8 +761,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup_vect
   // zero out
   vec->PutScalar(0.0);
   // set up global vector
-  globalex_->InsertVector(*vec_cont, 0, *vec);
-  globalex_->InsertVector(*vec_art, 1, *vec);
+  globalex_->insert_vector(*vec_cont, 0, *vec);
+  globalex_->insert_vector(*vec_art, 1, *vec);
 }
 
 /*----------------------------------------------------------------------*
@@ -772,9 +772,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::extract_si
     Teuchos::RCP<const Epetra_Vector>& vec_art)
 {
   // process first field (continuous)
-  vec_cont = globalex_->ExtractVector(globalvec, 0);
+  vec_cont = globalex_->extract_vector(globalvec, 0);
   // process second field (artery)
-  vec_art = globalex_->ExtractVector(globalvec, 1);
+  vec_art = globalex_->extract_vector(globalvec, 1);
 }
 
 /*----------------------------------------------------------------------*

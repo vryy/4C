@@ -307,9 +307,9 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
         // pass master-side scatra degrees of freedom to thermo discretization
         const Teuchos::RCP<Epetra_Vector> imasterphinp = Core::LinAlg::CreateVector(
             *scatra_->ScaTraField()->discretization()->dof_row_map(), true);
-        strategyscatra_->InterfaceMaps()->InsertVector(
+        strategyscatra_->InterfaceMaps()->insert_vector(
             strategyscatra_->CouplingAdapter()->MasterToSlave(
-                strategyscatra_->InterfaceMaps()->ExtractVector(*scatra, 2)),
+                strategyscatra_->InterfaceMaps()->extract_vector(*scatra, 2)),
             1, imasterphinp);
         thermo_->ScaTraField()->discretization()->set_state(2, "imasterscatra", imasterphinp);
 

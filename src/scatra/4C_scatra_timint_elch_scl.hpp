@@ -124,7 +124,7 @@ namespace ScaTra
     //! increment of coupled ELCH-SCL problem
     Teuchos::RCP<Epetra_Vector> increment_elch_scl_;
 
-    //! map extractor to get the coupled dofs from macro discretization (CondMap) out of all macro
+    //! map extractor to get the coupled dofs from macro discretization (cond_map) out of all macro
     //! dofs
     Teuchos::RCP<Core::LinAlg::MapExtractor> macro_coupling_dofs_;
 
@@ -138,7 +138,7 @@ namespace ScaTra
     //! type of system matrix of coupled ELCH-SCL problem
     const Core::LinAlg::MatrixType matrixtype_elch_scl_;
 
-    //! map extractor to get the coupled dofs from micro discretization (CondMap) out of all micro
+    //! map extractor to get the coupled dofs from micro discretization (cond_map) out of all micro
     //! dofs
     Teuchos::RCP<Core::LinAlg::MapExtractor> micro_coupling_dofs_;
 

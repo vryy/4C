@@ -52,9 +52,9 @@ void PaSI::PartitionedAlgo::init()
   interface_ = structurefield_->Interface();
 
   // construct interface states
-  intfdispnp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
-  intfvelnp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
-  intfaccnp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
+  intfdispnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
+  intfvelnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
+  intfaccnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
 
   // set init flag
   set_is_init(true);
@@ -168,9 +168,9 @@ void PaSI::PartitionedAlgo::extract_interface_states()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PaSI::PartitionedAlgo::extract_interface_states");
 
-  intfdispnp_ = interface_->ExtractPASICondVector(structurefield_->Dispnp());
-  intfvelnp_ = interface_->ExtractPASICondVector(structurefield_->Velnp());
-  intfaccnp_ = interface_->ExtractPASICondVector(structurefield_->Accnp());
+  intfdispnp_ = interface_->extract_pasi_cond_vector(structurefield_->Dispnp());
+  intfvelnp_ = interface_->extract_pasi_cond_vector(structurefield_->Velnp());
+  intfaccnp_ = interface_->extract_pasi_cond_vector(structurefield_->Accnp());
 }
 
 void PaSI::PartitionedAlgo::set_interface_states(Teuchos::RCP<const Epetra_Vector> intfdispnp,

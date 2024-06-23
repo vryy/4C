@@ -863,7 +863,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_additional_dbc_for_vol_frac_press()
         {
           // if not already in original dirich map     &&   if it is not a valid volume fraction
           // pressure dof identified with < 1
-          if (dbcmaps_->CondMap()->LID(dofs[idof]) == -1 &&
+          if (dbcmaps_->cond_map()->LID(dofs[idof]) == -1 &&
               (int)(*valid_volfracpress_dofs_)[discret_->dof_row_map()->LID(dofs[idof])] < 1)
             if (not(std::find(mydirichdofs.begin(), mydirichdofs.end(), dofs[idof]) !=
                     mydirichdofs.end()))
@@ -884,10 +884,10 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_additional_dbc_for_vol_frac_press()
   // build vector of maps
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
   condmaps.push_back(dirichmap);
-  condmaps.push_back(dbcmaps_->CondMap());
+  condmaps.push_back(dbcmaps_->cond_map());
 
   // combined map
-  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::MergeMaps(condmaps);
+  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
   *dbcmaps_with_volfracpress_ = Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), condmerged);
 
   return;
@@ -920,7 +920,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_starting_dbc()
                 dirichlet_dofs.end())
             {
               // LID returns -1 if not found in this map/on this processor
-              if (dbcmaps_with_volfracpress_->CondMap()->LID(gid) == -1)
+              if (dbcmaps_with_volfracpress_->cond_map()->LID(gid) == -1)
               {
                 dirichlet_dofs.push_back(gid);
               }
@@ -942,10 +942,10 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_starting_dbc()
 
   std::vector<Teuchos::RCP<const Epetra_Map>> condition_maps;
   condition_maps.emplace_back(additional_map);
-  condition_maps.push_back(dbcmaps_with_volfracpress_->CondMap());
+  condition_maps.push_back(dbcmaps_with_volfracpress_->cond_map());
 
   Teuchos::RCP<Epetra_Map> combined_map =
-      Core::LinAlg::MultiMapExtractor::MergeMaps(condition_maps);
+      Core::LinAlg::MultiMapExtractor::merge_maps(condition_maps);
   *dbcmaps_starting_condition_ =
       Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), combined_map);
 }
@@ -1867,12 +1867,12 @@ void POROFLUIDMULTIPHASE::TimIntImpl::prepare_system_for_newton_solve()
     if (time_ <= starting_dbc_time_end_)
     {
       Core::LinAlg::apply_dirichlet_to_system(
-          *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_starting_condition_->CondMap()));
+          *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_starting_condition_->cond_map()));
     }
     else
     {
       Core::LinAlg::apply_dirichlet_to_system(
-          *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_with_volfracpress_->CondMap()));
+          *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_with_volfracpress_->cond_map()));
     }
   }
 }

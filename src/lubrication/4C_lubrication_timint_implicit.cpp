@@ -710,7 +710,7 @@ void LUBRICATION::TimIntImpl::nonlinear_solve()
       TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:       + apply DBC to system");
 
       Core::LinAlg::apply_dirichlet_to_system(
-          *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
+          *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->cond_map()));
 
       // additionally apply Dirichlet condition to unprojectable nodes
       // (gap undefined, i.e. no reasonalbe Reynolds equation to be solved)
@@ -1246,7 +1246,7 @@ void LUBRICATION::TimIntImpl::evaluate()
   // Apply Dirichlet boundary conditions to system of equations
   // residual values are supposed to be zero at Dirichlet boundaries
   Core::LinAlg::apply_dirichlet_to_system(
-      *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
+      *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->cond_map()));
 
   // additionally apply Dirichlet condition to unprojectable nodes
   // (gap undefined, i.e. no reasonalbe Reynolds equation to be solved)

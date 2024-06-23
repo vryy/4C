@@ -54,10 +54,10 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::MortarMonolithicFluidSplitSaddlePoin
   // Create intersection of slave DOFs that hold a Dirichlet boundary condition
   // and are located at the FSI interface
   std::vector<Teuchos::RCP<const Epetra_Map>> intersectionmaps;
-  intersectionmaps.push_back(fluid_field()->GetDBCMapExtractor()->CondMap());
-  intersectionmaps.push_back(fluid_field()->Interface()->FSICondMap());
+  intersectionmaps.push_back(fluid_field()->get_dbc_map_extractor()->cond_map());
+  intersectionmaps.push_back(fluid_field()->Interface()->fsi_cond_map());
   Teuchos::RCP<Epetra_Map> intersectionmap =
-      Core::LinAlg::MultiMapExtractor::IntersectMaps(intersectionmaps);
+      Core::LinAlg::MultiMapExtractor::intersect_maps(intersectionmaps);
 
   // Check whether the intersection is empty
   if (intersectionmap->NumGlobalElements() != 0)
@@ -217,8 +217,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
 
     // fluid to ale at the interface
     interface_coup_fluid_ale.setup_condition_coupling(*fluid_field()->discretization(),
-        fluid_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
-        ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+        fluid_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
+        ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
     Core::Adapter::Coupling& coup_fluid_ale = fluid_ale_coupling();
 
@@ -240,7 +240,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
     // build ale system matrix in splitted system
     ale_field()->create_system_matrix(ale_field()->Interface());
 
-    aleresidual_ = Teuchos::rcp(new Epetra_Vector(*ale_field()->Interface()->OtherMap()));
+    aleresidual_ = Teuchos::rcp(new Epetra_Vector(*ale_field()->Interface()->other_map()));
 
     // -------------------------------------------------------------------------
     // Build the global Dirichlet map extractor
@@ -280,9 +280,9 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
 void FSI::MortarMonolithicFluidSplitSaddlePoint::create_lagrange_multiplier_dof_row_map()
 {
   const int num_glob_elem_fluid_interface =
-      fluid_field()->Interface()->FSICondMap()->NumGlobalElements();
+      fluid_field()->Interface()->fsi_cond_map()->NumGlobalElements();
   const int num_loc_elem_fluid_interface =
-      fluid_field()->Interface()->FSICondMap()->NumMyElements();
+      fluid_field()->Interface()->fsi_cond_map()->NumMyElements();
   const int max_gid_ale = ale_field()->dof_row_map()->MaxAllGID();
   lag_mult_dof_map_ = Teuchos::rcp(new Epetra_Map(
       num_glob_elem_fluid_interface, num_loc_elem_fluid_interface, max_gid_ale + 1, comm_));
@@ -295,7 +295,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::create_combined_dof_row_map()
   std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
   vecSpaces.push_back(structure_field()->dof_row_map());
   vecSpaces.push_back(fluid_field()->dof_row_map());
-  vecSpaces.push_back(ale_field()->Interface()->OtherMap());
+  vecSpaces.push_back(ale_field()->Interface()->other_map());
   vecSpaces.push_back(lag_mult_dof_map_);
 
   if (vecSpaces[1]->NumGlobalElements() == 0)
@@ -513,18 +513,18 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_dbc_map_extractor()
    * intersection of inner ALE DOFs with Dirichlet ALE DOFs.
    */
   std::vector<Teuchos::RCP<const Epetra_Map>> aleintersectionmaps;
-  aleintersectionmaps.push_back(ale_field()->GetDBCMapExtractor()->CondMap());
-  aleintersectionmaps.push_back(ale_field()->Interface()->OtherMap());
+  aleintersectionmaps.push_back(ale_field()->get_dbc_map_extractor()->cond_map());
+  aleintersectionmaps.push_back(ale_field()->Interface()->other_map());
   Teuchos::RCP<const Epetra_Map> aleintersectionmap =
-      Core::LinAlg::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
+      Core::LinAlg::MultiMapExtractor::intersect_maps(aleintersectionmaps);
 
   // Merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map
   std::vector<Teuchos::RCP<const Epetra_Map>> dbcmaps;
-  dbcmaps.push_back(structure_field()->GetDBCMapExtractor()->CondMap());
-  dbcmaps.push_back(fluid_field()->GetDBCMapExtractor()->CondMap());
+  dbcmaps.push_back(structure_field()->get_dbc_map_extractor()->cond_map());
+  dbcmaps.push_back(fluid_field()->get_dbc_map_extractor()->cond_map());
   dbcmaps.push_back(aleintersectionmap);
 
-  Teuchos::RCP<const Epetra_Map> dbcmap = Core::LinAlg::MultiMapExtractor::MergeMaps(dbcmaps);
+  Teuchos::RCP<const Epetra_Map> dbcmap = Core::LinAlg::MultiMapExtractor::merge_maps(dbcmaps);
 
   // Finally, create the global FSI Dirichlet map extractor
   dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(*dof_row_map(), dbcmap, true));
@@ -564,19 +564,19 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::combine_field_vectors(Epetra_Ve
   {
     // extract inner DOFs from slave vectors
     Teuchos::RCP<const Epetra_Vector> ale_other_vector =
-        ale_field()->Interface()->ExtractOtherVector(ale_vector);
+        ale_field()->Interface()->extract_other_vector(ale_vector);
 
-    extractor().AddVector(*solid_vector, 0, f);
-    extractor().AddVector(*fluid_vector, 1, f);
-    extractor().AddVector(*ale_other_vector, 2, f);
-    extractor().AddVector(*lag_mult_vector, 3, f);
+    extractor().add_vector(*solid_vector, 0, f);
+    extractor().add_vector(*fluid_vector, 1, f);
+    extractor().add_vector(*ale_other_vector, 2, f);
+    extractor().add_vector(*lag_mult_vector, 3, f);
   }
   else
   {
-    extractor().AddVector(*solid_vector, 0, f);
-    extractor().AddVector(*fluid_vector, 1, f);
-    extractor().AddVector(*ale_vector, 2, f);
-    extractor().AddVector(*lag_mult_vector, 3, f);
+    extractor().add_vector(*solid_vector, 0, f);
+    extractor().add_vector(*fluid_vector, 1, f);
+    extractor().add_vector(*ale_vector, 2, f);
+    extractor().add_vector(*lag_mult_vector, 3, f);
   }
 }
 
@@ -599,7 +599,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_residual(Epetra_Vecto
       ale_single_field_rhs_vector, lag_mult_rhs_vector, true);
 
   // add additional ale residual to avoid incremental ale errors
-  extractor().AddVector(*aleresidual_, 2, f);
+  extractor().add_vector(*aleresidual_, 2, f);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -638,15 +638,15 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_lambda(Epetra_Vector&
   mortar_d_transf->Multiply(true, *lag_mult_old_, *lag_mult_old_rhs_fluid_interf);
 
   Teuchos::RCP<Epetra_Vector> lag_mult_old_rhs_struc_interf_full =
-      structure_field()->Interface()->InsertFSICondVector(lag_mult_old_rhs_struc_interf);
+      structure_field()->Interface()->insert_fsi_cond_vector(lag_mult_old_rhs_struc_interf);
   Teuchos::RCP<Epetra_Vector> lag_mult_old_rhs_fluid_interf_full =
-      fluid_field()->Interface()->InsertFSICondVector(lag_mult_old_rhs_fluid_interf);
+      fluid_field()->Interface()->insert_fsi_cond_vector(lag_mult_old_rhs_fluid_interf);
 
   lag_mult_old_rhs_fluid_interf_full->Scale(-1.0 / fluid_res_scale);
 
   // add lagrange multiplier
-  extractor().AddVector(*lag_mult_old_rhs_struc_interf_full, 0, f);
-  extractor().AddVector(*lag_mult_old_rhs_fluid_interf_full, 1, f);
+  extractor().add_vector(*lag_mult_old_rhs_struc_interf_full, 0, f);
+  extractor().add_vector(*lag_mult_old_rhs_fluid_interf_full, 1, f);
 
   // helper variables
   Teuchos::RCP<Epetra_Vector> lag_mult_step_increment_rhs_struc_interf =
@@ -660,17 +660,18 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_lambda(Epetra_Vector&
       true, *lag_mult_step_increment, *lag_mult_step_increment_rhs_fluid_interf);
 
   Teuchos::RCP<Epetra_Vector> lag_mult_step_increment_rhs_struc_interf_full =
-      structure_field()->Interface()->InsertFSICondVector(lag_mult_step_increment_rhs_struc_interf);
+      structure_field()->Interface()->insert_fsi_cond_vector(
+          lag_mult_step_increment_rhs_struc_interf);
   Teuchos::RCP<Epetra_Vector> lag_mult_step_increment_rhs_fluid_interf_full =
-      fluid_field()->Interface()->InsertFSICondVector(lag_mult_step_increment_rhs_fluid_interf);
+      fluid_field()->Interface()->insert_fsi_cond_vector(lag_mult_step_increment_rhs_fluid_interf);
 
   lag_mult_step_increment_rhs_struc_interf_full->Scale(1.0 * (1. - solid_time_int_param));
   lag_mult_step_increment_rhs_fluid_interf_full->Scale(
       -1.0 * (1. - fluid_time_int_param) / fluid_res_scale);
 
   // add lagrange multiplier
-  extractor().AddVector(*lag_mult_step_increment_rhs_struc_interf_full, 0, f);
-  extractor().AddVector(*lag_mult_step_increment_rhs_fluid_interf_full, 1, f);
+  extractor().add_vector(*lag_mult_step_increment_rhs_struc_interf_full, 0, f);
+  extractor().add_vector(*lag_mult_step_increment_rhs_fluid_interf_full, 1, f);
 }
 
 
@@ -728,9 +729,9 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Epetra_Vect
 
     rhs->Scale(Dt());
 
-    rhs = fluid_field()->Interface()->InsertOtherVector(rhs);
+    rhs = fluid_field()->Interface()->insert_other_vector(rhs);
 
-    extractor().AddVector(*rhs, 1, f);
+    extractor().add_vector(*rhs, 1, f);
   }
   // ----------end of term 1
   // ----------end of inner fluid DOFs
@@ -751,9 +752,9 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Epetra_Vect
 
     fluid_mesh_interf_interf.Apply(*fluid_veln, *rhs);
     rhs->Scale(Dt());
-    rhs = fluid_field()->Interface()->InsertFSICondVector(rhs);
+    rhs = fluid_field()->Interface()->insert_fsi_cond_vector(rhs);
 
-    extractor().AddVector(*rhs, 1, f);
+    extractor().add_vector(*rhs, 1, f);
   }
   // ----------end of term 1
   // ----------end of interface fluid DOFs
@@ -771,7 +772,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Epetra_Vect
   ale_inner_interf.Apply(*fluid_veln, *rhs);
   rhs->Scale(-1. * Dt());
 
-  extractor().AddVector(*rhs, 2, f);
+  extractor().add_vector(*rhs, 2, f);
   // ----------end of term 1
   // ----------end of inner ALE DOFs
 
@@ -791,7 +792,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Epetra_Vect
   mortar_d_transf->Apply(*fluid_veln, *rhs);
   rhs->Scale(Dt());
 
-  extractor().AddVector(*rhs, 3, f);
+  extractor().add_vector(*rhs, 3, f);
   // ----------end of term 1
 
   // ----------addressing term 2
@@ -800,7 +801,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Epetra_Vect
   mortar_m_transf->Apply(*ddgpred_, *rhs);
   rhs->Scale(-1.);
 
-  extractor().AddVector(*rhs, 3, f);
+  extractor().add_vector(*rhs, 3, f);
   // ----------end of term 2
   // ----------end of lagrange multiplier
 }
@@ -962,7 +963,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
   mat.Complete();
 
   // Finally, take care of Dirichlet boundary conditions
-  mat.ApplyDirichlet(*(dbcmaps_->CondMap()), true);
+  mat.ApplyDirichlet(*(dbcmaps_->cond_map()), true);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1008,14 +1009,14 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::scale_system(
       FOUR_C_THROW("ale scaling failed");
 
     // do scaling of structure and ale rhs vectors
-    Teuchos::RCP<Epetra_Vector> sx = extractor().ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> ax = extractor().ExtractVector(b, 2);
+    Teuchos::RCP<Epetra_Vector> sx = extractor().extract_vector(b, 0);
+    Teuchos::RCP<Epetra_Vector> ax = extractor().extract_vector(b, 2);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    extractor().InsertVector(*sx, 0, b);
-    extractor().InsertVector(*ax, 2, b);
+    extractor().insert_vector(*sx, 0, b);
+    extractor().insert_vector(*ax, 2, b);
   }
 }
 
@@ -1032,23 +1033,23 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::unscale_solution(
 
   if (scaling_infnorm)
   {
-    Teuchos::RCP<Epetra_Vector> sy = extractor().ExtractVector(x, 0);
-    Teuchos::RCP<Epetra_Vector> ay = extractor().ExtractVector(x, 2);
+    Teuchos::RCP<Epetra_Vector> sy = extractor().extract_vector(x, 0);
+    Teuchos::RCP<Epetra_Vector> ay = extractor().extract_vector(x, 2);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    extractor().InsertVector(*sy, 0, x);
-    extractor().InsertVector(*ay, 2, x);
+    extractor().insert_vector(*sy, 0, x);
+    extractor().insert_vector(*ay, 2, x);
 
-    Teuchos::RCP<Epetra_Vector> sx = extractor().ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> ax = extractor().ExtractVector(b, 2);
+    Teuchos::RCP<Epetra_Vector> sx = extractor().extract_vector(b, 0);
+    Teuchos::RCP<Epetra_Vector> ax = extractor().extract_vector(b, 2);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    extractor().InsertVector(*sx, 0, b);
-    extractor().InsertVector(*ax, 2, b);
+    extractor().insert_vector(*sx, 0, b);
+    extractor().insert_vector(*ax, 2, b);
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
     srowsum_->Reciprocal(*srowsum_);
@@ -1079,10 +1080,10 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::unscale_solution(
   mat.Apply(x, r);
   r.Update(1., b, 1.);
 
-  Teuchos::RCP<Epetra_Vector> sr = extractor().ExtractVector(r, 0);
-  Teuchos::RCP<Epetra_Vector> fr = extractor().ExtractVector(r, 1);
-  Teuchos::RCP<Epetra_Vector> ar = extractor().ExtractVector(r, 2);
-  Teuchos::RCP<Epetra_Vector> lmr = extractor().ExtractVector(r, 3);
+  Teuchos::RCP<Epetra_Vector> sr = extractor().extract_vector(r, 0);
+  Teuchos::RCP<Epetra_Vector> fr = extractor().extract_vector(r, 1);
+  Teuchos::RCP<Epetra_Vector> ar = extractor().extract_vector(r, 2);
+  Teuchos::RCP<Epetra_Vector> lmr = extractor().extract_vector(r, 3);
 
   // increment additional ale residual
   aleresidual_->Update(-1., *ar, 0.);
@@ -1207,31 +1208,31 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::extract_field_vectors(
   // ---------------------------------------------------------------------------
   // process structure unknowns
   // ---------------------------------------------------------------------------
-  sx = extractor().ExtractVector(x, 0);
+  sx = extractor().extract_vector(x, 0);
   // extract structure solution increment from NOX increment
 
   // ---------------------------------------------------------------------------
   // process fluid unknowns
   // ---------------------------------------------------------------------------
   // extract fluid solution increment from NOX increment
-  fx = extractor().ExtractVector(x, 1);
+  fx = extractor().extract_vector(x, 1);
 
   // ---------------------------------------------------------------------------
   // process ale unknowns
   // ---------------------------------------------------------------------------
   // extract inner ALE solution increment from NOX increment
-  Teuchos::RCP<const Epetra_Vector> aox = extractor().ExtractVector(x, 2);
+  Teuchos::RCP<const Epetra_Vector> aox = extractor().extract_vector(x, 2);
 
   // convert fluid interface velocities into ALE interface displacements
-  Teuchos::RCP<Epetra_Vector> fcx = fluid_field()->Interface()->ExtractFSICondVector(fx);
+  Teuchos::RCP<Epetra_Vector> fcx = fluid_field()->Interface()->extract_fsi_cond_vector(fx);
   fluid_field()->velocity_to_displacement(fcx);
   Teuchos::RCP<Epetra_Vector> acx = fluid_to_ale_interface(fcx);
 
   // put inner and interface ALE solution increments together
-  Teuchos::RCP<Epetra_Vector> a = ale_field()->Interface()->InsertOtherVector(aox);
-  ale_field()->Interface()->InsertFSICondVector(acx, a);
+  Teuchos::RCP<Epetra_Vector> a = ale_field()->Interface()->insert_other_vector(aox);
+  ale_field()->Interface()->insert_fsi_cond_vector(acx, a);
 
-  lagx = extractor().ExtractVector(x, 3);
+  lagx = extractor().extract_vector(x, 3);
 
   ax = a;
 }
@@ -1276,8 +1277,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::OutputLambda()
    * output or restart data.
    */
   auto copy = Teuchos::rcp(new Epetra_Vector(*lag_mult_));
-  copy->ReplaceMap(*fluid_field()->Interface()->FSICondMap());
-  Teuchos::RCP<Epetra_Vector> lambdafull = fluid_field()->Interface()->InsertFSICondVector(copy);
+  copy->ReplaceMap(*fluid_field()->Interface()->fsi_cond_map());
+  Teuchos::RCP<Epetra_Vector> lambdafull = fluid_field()->Interface()->insert_fsi_cond_vector(copy);
   const int uprestart = timeparams_.get<int>("RESTARTEVRY");
   const int upres = timeparams_.get<int>("RESULTSEVRY");
   if ((uprestart != 0 and fluid_field()->Step() % uprestart == 0) or
@@ -1298,7 +1299,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::read_restart(int step)
   Core::IO::DiscretizationReader reader = Core::IO::DiscretizationReader(
       fluid_field()->discretization(), Global::Problem::Instance()->InputControlFile(), step);
   reader.read_vector(lambdafull, "fsilambda");
-  auto lag_mult_old_on_fluid_map = fluid_field()->Interface()->ExtractFSICondVector(lambdafull);
+  auto lag_mult_old_on_fluid_map = fluid_field()->Interface()->extract_fsi_cond_vector(lambdafull);
 
   // Convert Lagrange multipliers to their actual map
   lag_mult_old_on_fluid_map->ReplaceMap(*lag_mult_dof_map_);

@@ -596,13 +596,13 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Strategy>> Core::LinAlg::SparseMatr
           domainmaps, rangemaps, 0, explicitdirichlet_, savegraph_));
 
   // perform matrix splitting
-  if (domainmaps.NumMaps() == 2 && rangemaps.NumMaps() == 2)
+  if (domainmaps.num_maps() == 2 && rangemaps.num_maps() == 2)
     this->split2x2(*blockA);
-  else if (domainmaps.NumMaps() > 0 && rangemaps.NumMaps() > 0)
+  else if (domainmaps.num_maps() > 0 && rangemaps.num_maps() > 0)
     this->split_mx_n(*blockA);
   else
     FOUR_C_THROW("Invalid number %d of row blocks or %d of column blocks for splitting operation!",
-        rangemaps.NumMaps(), domainmaps.NumMaps());
+        rangemaps.num_maps(), domainmaps.num_maps());
 
   // return resulting BlockSparseMatrix
   return blockA;

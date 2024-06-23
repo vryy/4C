@@ -215,7 +215,7 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Teuchos::RCP<const Epetra_Map> dofrowmap = auxdbcmapextractor->CondMap();
+  const Teuchos::RCP<const Epetra_Map> dofrowmap = auxdbcmapextractor->cond_map();
 
   if (dofrowmap->NumGlobalElements() == 0) return;  // no dbc gids ->leave
 
@@ -509,9 +509,9 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   massmatrix->reset();
 
   // insert nodal values to sysvec
-  auxdbcmapextractor->InsertCondVector(dbcvector, systemvectors[0]);
-  if (assemblevecd) auxdbcmapextractor->InsertCondVector(dbcvectord, systemvectors[1]);
-  if (assemblevecdd) auxdbcmapextractor->InsertCondVector(dbcvectordd, systemvectors[2]);
+  auxdbcmapextractor->insert_cond_vector(dbcvector, systemvectors[0]);
+  if (assemblevecd) auxdbcmapextractor->insert_cond_vector(dbcvectord, systemvectors[1]);
+  if (assemblevecdd) auxdbcmapextractor->insert_cond_vector(dbcvectordd, systemvectors[2]);
 
   if (myrank == 0) std::cout << timer.totalElapsedTime(true) << " seconds \n\n";
 

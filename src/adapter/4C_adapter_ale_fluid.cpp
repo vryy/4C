@@ -26,7 +26,7 @@ Adapter::AleFluidWrapper::AleFluidWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(al
   interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
   interface_->setup(*discretization());
   // extend dirichlet map by the dof
-  if (interface_->FSICondRelevant())
+  if (interface_->fsi_cond_relevant())
     SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_part_fsi, interface_);
 }
 
@@ -41,7 +41,7 @@ Teuchos::RCP<const ALE::UTILS::MapExtractor> Adapter::AleFluidWrapper::Interface
 /*----------------------------------------------------------------------------*/
 int Adapter::AleFluidWrapper::Solve()
 {
-  if (interface_->FSICondRelevant())
+  if (interface_->fsi_cond_relevant())
     evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_part_fsi);
   else
     evaluate();
@@ -57,7 +57,7 @@ int Adapter::AleFluidWrapper::Solve()
 void Adapter::AleFluidWrapper::apply_free_surface_displacements(
     Teuchos::RCP<const Epetra_Vector> fsdisp)
 {
-  interface_->InsertFSCondVector(fsdisp, WriteAccessDispnp());
+  interface_->insert_fs_cond_vector(fsdisp, WriteAccessDispnp());
 }
 
 /*----------------------------------------------------------------------------*/
@@ -65,7 +65,7 @@ void Adapter::AleFluidWrapper::apply_free_surface_displacements(
 void Adapter::AleFluidWrapper::apply_ale_update_displacements(
     Teuchos::RCP<const Epetra_Vector> audisp)
 {
-  interface_->InsertAUCondVector(audisp, WriteAccessDispnp());
+  interface_->insert_au_cond_vector(audisp, WriteAccessDispnp());
 }
 
 /*----------------------------------------------------------------------------*/
@@ -73,7 +73,7 @@ void Adapter::AleFluidWrapper::apply_ale_update_displacements(
 void Adapter::AleFluidWrapper::apply_interface_displacements(
     Teuchos::RCP<const Epetra_Vector> idisp)
 {
-  interface_->InsertFSICondVector(idisp, WriteAccessDispnp());
+  interface_->insert_fsi_cond_vector(idisp, WriteAccessDispnp());
 }
 
 FOUR_C_NAMESPACE_CLOSE

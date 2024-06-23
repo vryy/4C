@@ -57,7 +57,7 @@ FSI::LungMonolithic::LungMonolithic(
   // consistency check: all dofs contained in ale(fluid)-structure coupling need to
   // be part of the structure volume constraint, too. this needs to be checked because during
   // setup_system_matrix, we rely on this information!
-  const Teuchos::RCP<const Epetra_Map> asimap = structure_field()->Interface()->LungASICondMap();
+  const Teuchos::RCP<const Epetra_Map> asimap = structure_field()->Interface()->lung_asi_cond_map();
   for (int i = 0; i < asimap->NumMyElements(); ++i)
   {
     if (structfield->LungConstrMap()->LID(asimap->GID(i)) == -1)
@@ -221,20 +221,20 @@ void FSI::LungMonolithic::GeneralSetup()
   // structure to fluid
 
   coupsf.setup_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->FSICondMap(), *fluid_field()->discretization(),
-      fluid_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      structure_field()->Interface()->fsi_cond_map(), *fluid_field()->discretization(),
+      fluid_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // structure to ale
 
   coupsa.setup_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
-      ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      structure_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
   icoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
-      ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      fluid_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -263,22 +263,23 @@ void FSI::LungMonolithic::GeneralSetup()
 
   // coupling of structure and ale dofs at airway outflow
   coupsaout_->setup_constrained_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->LungASICondMap(), *ale_field()->discretization(),
-      ale_field()->Interface()->LungASICondMap(), "StructAleCoupling", "FSICoupling", ndim);
+      structure_field()->Interface()->lung_asi_cond_map(), *ale_field()->discretization(),
+      ale_field()->Interface()->lung_asi_cond_map(), "StructAleCoupling", "FSICoupling", ndim);
   if (coupsaout_->MasterDofMap()->NumGlobalElements() == 0)
     FOUR_C_THROW("No nodes in matching structure ale interface. Empty coupling condition?");
 
   // coupling of fluid and structure dofs at airway outflow
   coupfsout_->setup_constrained_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->Interface()->LungASICondMap(), *structure_field()->discretization(),
-      structure_field()->Interface()->LungASICondMap(), "StructAleCoupling", "FSICoupling", ndim);
+      fluid_field()->Interface()->lung_asi_cond_map(), *structure_field()->discretization(),
+      structure_field()->Interface()->lung_asi_cond_map(), "StructAleCoupling", "FSICoupling",
+      ndim);
   if (coupfsout_->MasterDofMap()->NumGlobalElements() == 0)
     FOUR_C_THROW("No nodes in matching structure ale/fluid interface. Empty coupling condition?");
 
   // coupling of fluid and ale dofs at airway outflow
   coupfaout_->setup_constrained_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->Interface()->LungASICondMap(), *ale_field()->discretization(),
-      ale_field()->Interface()->LungASICondMap(), "StructAleCoupling", "FSICoupling", ndim);
+      fluid_field()->Interface()->lung_asi_cond_map(), *ale_field()->discretization(),
+      ale_field()->Interface()->lung_asi_cond_map(), "StructAleCoupling", "FSICoupling", ndim);
   if (coupfaout_->MasterDofMap()->NumGlobalElements() == 0)
     FOUR_C_THROW("No nodes in matching ale fluid ouflow interface. Empty coupling condition?");
 
@@ -366,7 +367,7 @@ void FSI::LungMonolithic::evaluate(Teuchos::RCP<const Epetra_Vector> step_increm
   {
     // extract sum of all iterative increments of lagrange multipliers
     // in this time step (this is what we get from NOX)
-    IncLagrMultVec_ = extractor().ExtractVector(step_increment, 3);
+    IncLagrMultVec_ = extractor().extract_vector(step_increment, 3);
 
     // update current lagrange multipliers
     LagrMultVec_->Update(1.0, *LagrMultVecOld_, 1.0, *IncLagrMultVec_, 0.0);
@@ -477,14 +478,14 @@ void FSI::LungMonolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat,
         mat.Matrix(3, 2).EpetraMatrix()->RightScale(*acolsum_))
       FOUR_C_THROW("ale scaling failed");
 
-    Teuchos::RCP<Epetra_Vector> sx = extractor().ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> ax = extractor().ExtractVector(b, 2);
+    Teuchos::RCP<Epetra_Vector> sx = extractor().extract_vector(b, 0);
+    Teuchos::RCP<Epetra_Vector> ax = extractor().extract_vector(b, 2);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    extractor().InsertVector(*sx, 0, b);
-    extractor().InsertVector(*ax, 2, b);
+    extractor().insert_vector(*sx, 0, b);
+    extractor().insert_vector(*ax, 2, b);
   }
 }
 
@@ -500,23 +501,23 @@ void FSI::LungMonolithic::unscale_solution(
 
   if (scaling_infnorm)
   {
-    Teuchos::RCP<Epetra_Vector> sy = extractor().ExtractVector(x, 0);
-    Teuchos::RCP<Epetra_Vector> ay = extractor().ExtractVector(x, 2);
+    Teuchos::RCP<Epetra_Vector> sy = extractor().extract_vector(x, 0);
+    Teuchos::RCP<Epetra_Vector> ay = extractor().extract_vector(x, 2);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    extractor().InsertVector(*sy, 0, x);
-    extractor().InsertVector(*ay, 2, x);
+    extractor().insert_vector(*sy, 0, x);
+    extractor().insert_vector(*ay, 2, x);
 
-    Teuchos::RCP<Epetra_Vector> sx = extractor().ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> ax = extractor().ExtractVector(b, 2);
+    Teuchos::RCP<Epetra_Vector> sx = extractor().extract_vector(b, 0);
+    Teuchos::RCP<Epetra_Vector> ax = extractor().extract_vector(b, 2);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    extractor().InsertVector(*sx, 0, b);
-    extractor().InsertVector(*ax, 2, b);
+    extractor().insert_vector(*sx, 0, b);
+    extractor().insert_vector(*ax, 2, b);
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
     srowsum_->Reciprocal(*srowsum_);
@@ -549,10 +550,10 @@ void FSI::LungMonolithic::unscale_solution(
   mat.Apply(x, r);
   r.Update(1., b, 1.);
 
-  Teuchos::RCP<Epetra_Vector> sr = extractor().ExtractVector(r, 0);
-  Teuchos::RCP<Epetra_Vector> fr = extractor().ExtractVector(r, 1);
-  Teuchos::RCP<Epetra_Vector> ar = extractor().ExtractVector(r, 2);
-  Teuchos::RCP<Epetra_Vector> cr = extractor().ExtractVector(r, 3);
+  Teuchos::RCP<Epetra_Vector> sr = extractor().extract_vector(r, 0);
+  Teuchos::RCP<Epetra_Vector> fr = extractor().extract_vector(r, 1);
+  Teuchos::RCP<Epetra_Vector> ar = extractor().extract_vector(r, 2);
+  Teuchos::RCP<Epetra_Vector> cr = extractor().extract_vector(r, 3);
 
   // increment additional ale residual
   aleresidual_->Update(-1., *ar, 0.);
@@ -673,7 +674,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
   // setup tests for interface
 
   std::vector<Teuchos::RCP<const Epetra_Map>> interface;
-  interface.push_back(fluid_field()->Interface()->FSICondMap());
+  interface.push_back(fluid_field()->Interface()->fsi_cond_map());
   interface.push_back(Teuchos::null);
   Core::LinAlg::MultiMapExtractor interfaceextract(*dof_row_map(), interface);
 

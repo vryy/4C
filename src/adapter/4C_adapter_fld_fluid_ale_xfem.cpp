@@ -75,18 +75,20 @@ void Adapter::FluidAleXFEM::nonlinear_solve(
   if (ivel != Teuchos::null) xfluid->apply_struct_interface_velocities(ivel);
 
   // Update the ale update part
-  if (fluid_field()->Interface()->AUCondRelevant())
+  if (fluid_field()->Interface()->au_cond_relevant())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->Dispnp();
-    Teuchos::RCP<Epetra_Vector> audispnp = fluid_field()->Interface()->ExtractAUCondVector(dispnp);
+    Teuchos::RCP<Epetra_Vector> audispnp =
+        fluid_field()->Interface()->extract_au_cond_vector(dispnp);
     ale_field()->apply_ale_update_displacements(aucoupfa_->MasterToSlave(audispnp));
   }
 
   // Update the free-surface part
-  if (fluid_field()->Interface()->FSCondRelevant())
+  if (fluid_field()->Interface()->fs_cond_relevant())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->Dispnp();
-    Teuchos::RCP<Epetra_Vector> fsdispnp = fluid_field()->Interface()->ExtractFSCondVector(dispnp);
+    Teuchos::RCP<Epetra_Vector> fsdispnp =
+        fluid_field()->Interface()->extract_fs_cond_vector(dispnp);
     ale_field()->apply_free_surface_displacements(fscoupfa_->MasterToSlave(fsdispnp));
   }
 

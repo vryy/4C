@@ -546,8 +546,8 @@ bool Core::LinAlg::split_vector(const Epetra_Map& xmap, const Epetra_Vector& x,
   Core::LinAlg::MapExtractor extractor(xmap, x1map, x2map);
 
   // extract subvectors from fullvector
-  x1 = extractor.ExtractVector(x, 1);
-  x2 = extractor.ExtractVector(x, 0);
+  x1 = extractor.extract_vector(x, 1);
+  x2 = extractor.extract_vector(x, 0);
 
   return true;
 }
@@ -563,8 +563,8 @@ bool Core::LinAlg::split_vector(const Epetra_Map& xmap, const Epetra_Vector& x,
   Core::LinAlg::MapExtractor extractor(xmap, x1map, x2map);
 
   // extract subvectors from fullvector
-  x1 = extractor.ExtractVector(x, 1);
-  x2 = extractor.ExtractVector(x, 0);
+  x1 = extractor.extract_vector(x, 1);
+  x2 = extractor.extract_vector(x, 0);
 
   return true;
 }

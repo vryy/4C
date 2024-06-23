@@ -79,7 +79,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FSIStructureWrapper::RelaxationSolve(
   fsi_model_evaluator()->set_is_relaxation_solve(false);
 
   // we are just interested in the incremental interface displacements
-  return interface_->ExtractFSICondVector(idisi);
+  return interface_->extract_fsi_cond_vector(idisi);
 }
 
 /*----------------------------------------------------------------------*/
@@ -97,11 +97,11 @@ Teuchos::RCP<Epetra_Vector> Adapter::FSIStructureWrapper::predict_interface_disp
       // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
       if (PrestressIsActive(Time()))
       {
-        idis = Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(), true));
+        idis = Teuchos::rcp(new Epetra_Vector(*interface_->fsi_cond_map(), true));
       }
       else
       {
-        idis = interface_->ExtractFSICondVector(Dispn());
+        idis = interface_->extract_fsi_cond_vector(Dispn());
       }
       break;
     }
@@ -117,8 +117,8 @@ Teuchos::RCP<Epetra_Vector> Adapter::FSIStructureWrapper::predict_interface_disp
 
       double dt = Dt();
 
-      idis = interface_->ExtractFSICondVector(Dispn());
-      Teuchos::RCP<Epetra_Vector> ivel = interface_->ExtractFSICondVector(Veln());
+      idis = interface_->extract_fsi_cond_vector(Dispn());
+      Teuchos::RCP<Epetra_Vector> ivel = interface_->extract_fsi_cond_vector(Veln());
 
       idis->Update(dt, *ivel, 1.0);
       break;
@@ -131,9 +131,9 @@ Teuchos::RCP<Epetra_Vector> Adapter::FSIStructureWrapper::predict_interface_disp
 
       double dt = Dt();
 
-      idis = interface_->ExtractFSICondVector(Dispn());
-      Teuchos::RCP<Epetra_Vector> ivel = interface_->ExtractFSICondVector(Veln());
-      Teuchos::RCP<Epetra_Vector> iacc = interface_->ExtractFSICondVector(Accn());
+      idis = interface_->extract_fsi_cond_vector(Dispn());
+      Teuchos::RCP<Epetra_Vector> ivel = interface_->extract_fsi_cond_vector(Veln());
+      Teuchos::RCP<Epetra_Vector> iacc = interface_->extract_fsi_cond_vector(Accn());
 
       idis->Update(dt, *ivel, 0.5 * dt * dt, *iacc, 1.0);
       break;
@@ -162,11 +162,11 @@ Teuchos::RCP<Epetra_Vector> Adapter::FSIStructureWrapper::extract_interface_disp
   // prestressing business
   if (PrestressIsActive(Time()))
   {
-    return Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(), true));
+    return Teuchos::rcp(new Epetra_Vector(*interface_->fsi_cond_map(), true));
   }
   else
   {
-    return interface_->ExtractFSICondVector(Dispn());
+    return interface_->extract_fsi_cond_vector(Dispn());
   }
 }
 
@@ -184,11 +184,11 @@ Teuchos::RCP<Epetra_Vector> Adapter::FSIStructureWrapper::extract_interface_disp
     if (discretization()->Comm().MyPID() == 0)
       std::cout << "Applying no displacements to the fluid since we do prestressing" << std::endl;
 
-    return Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(), true));
+    return Teuchos::rcp(new Epetra_Vector(*interface_->fsi_cond_map(), true));
   }
   else
   {
-    return interface_->ExtractFSICondVector(Dispnp());
+    return interface_->extract_fsi_cond_vector(Dispnp());
   }
 }
 
@@ -199,7 +199,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FSIStructureWrapper::extract_interface_disp
 void Adapter::FSIStructureWrapper::apply_interface_forces(Teuchos::RCP<Epetra_Vector> iforce)
 {
   fsi_model_evaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
-  interface_->AddFSICondVector(iforce, fsi_model_evaluator()->get_interface_force_np_ptr());
+  interface_->add_fsi_cond_vector(iforce, fsi_model_evaluator()->get_interface_force_np_ptr());
   return;
 }
 
@@ -212,7 +212,7 @@ void Adapter::FSIStructureWrapper::apply_interface_forces_temporary_deprecated(
 {
   Teuchos::RCP<Epetra_Vector> fifc = Core::LinAlg::CreateVector(*dof_row_map(), true);
 
-  interface_->AddFSICondVector(iforce, fifc);
+  interface_->add_fsi_cond_vector(iforce, fifc);
 
   SetForceInterface(fifc);
 

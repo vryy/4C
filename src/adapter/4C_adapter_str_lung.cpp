@@ -107,7 +107,7 @@ Adapter::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   //----------------------------------------------------------------------
   // build mapextractor for fsi <-> full map
   fsiinterface_ = Teuchos::rcp(
-      new Core::LinAlg::MapExtractor(*Interface()->FullMap(), Interface()->FSICondMap()));
+      new Core::LinAlg::MapExtractor(*Interface()->FullMap(), Interface()->fsi_cond_map()));
 
   //----------------------------------------------------------------------
   // find all dofs belonging to enclosing boundary -> volume coupling dofs
@@ -384,15 +384,16 @@ void Adapter::StructureLung::EvaluateVolCon(
   // Apply Dirichlet BC to stiffness matrix and rhs vector and
   // exclude all forces on the outflow boundary (except those at the fsi
   // partition) and corresponding stiffness matrix contributions
-  const Teuchos::RCP<const Epetra_Map>& condmap = GetDBCMapExtractor()->CondMap();
+  const Teuchos::RCP<const Epetra_Map>& condmap = get_dbc_map_extractor()->cond_map();
   const Teuchos::RCP<const Epetra_Map>& outflowmap = Interface()->Map(2);
   Teuchos::RCP<Epetra_Map> finmap = Core::LinAlg::MergeMap(*condmap, *outflowmap, false);
   StructMatrix->ApplyDirichlet(*finmap, false);
 
   const Teuchos::RCP<const Epetra_Map>& dispmap = StructMatrix->RangeExtractor().Map(0);
   Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::CreateVector(*dispmap, true);
-  GetDBCMapExtractor()->InsertCondVector(GetDBCMapExtractor()->ExtractCondVector(zeros), StructRHS);
-  Interface()->InsertVector(Interface()->ExtractVector(zeros, 2), 2, StructRHS);
+  get_dbc_map_extractor()->insert_cond_vector(
+      get_dbc_map_extractor()->extract_cond_vector(zeros), StructRHS);
+  Interface()->insert_vector(Interface()->extract_vector(zeros, 2), 2, StructRHS);
 }
 
 

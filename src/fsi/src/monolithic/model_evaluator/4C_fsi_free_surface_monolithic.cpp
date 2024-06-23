@@ -292,7 +292,7 @@ void FSI::MonolithicMainFS::evaluate(Teuchos::RCP<const Epetra_Vector> step_incr
 void FSI::MonolithicMainFS::set_dof_row_maps(
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
-  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
   blockrowdofmap_.setup(*fullmap, maps);
 }
 
@@ -478,8 +478,8 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::Paramete
   icoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
   const int ndim = Global::Problem::Instance()->NDim();
   icoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->Interface()->FSCondMap(), *ale_field()->discretization(),
-      ale_field()->Interface()->FSCondMap(), "FREESURFCoupling", ndim);
+      fluid_field()->Interface()->fs_cond_map(), *ale_field()->discretization(),
+      ale_field()->Interface()->fs_cond_map(), "FREESURFCoupling", ndim);
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = fluid_field()->discretization()->NodeRowMap();
@@ -494,7 +494,7 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::Paramete
 
   std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
   vecSpaces.push_back(fluid_field()->dof_row_map());
-  vecSpaces.push_back(ale_field()->Interface()->OtherMap());
+  vecSpaces.push_back(ale_field()->Interface()->other_map());
 
   set_dof_row_maps(vecSpaces);
 
@@ -594,7 +594,7 @@ void FSI::MonolithicFS::setup_rhs(Epetra_Vector& f, bool firstcall)
 
     rhs->Scale(-1. * Dt());
 
-    extractor().AddVector(*rhs, 1, f);
+    extractor().add_vector(*rhs, 1, f);
 
     // shape derivatives
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm = fluid_field()->ShapeDerivatives();
@@ -606,15 +606,15 @@ void FSI::MonolithicFS::setup_rhs(Epetra_Vector& f, bool firstcall)
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
       fmig.Apply(*fveln, *rhs);
-      Teuchos::RCP<Epetra_Vector> veln = fluid_field()->Interface()->InsertOtherVector(rhs);
+      Teuchos::RCP<Epetra_Vector> veln = fluid_field()->Interface()->insert_other_vector(rhs);
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
       fmgg.Apply(*fveln, *rhs);
-      fluid_field()->Interface()->InsertFSCondVector(rhs, veln);
+      fluid_field()->Interface()->insert_fs_cond_vector(rhs, veln);
 
       veln->Scale(-1. * Dt());
 
-      extractor().AddVector(*veln, 0, f);
+      extractor().add_vector(*veln, 0, f);
     }
   }
 
@@ -728,11 +728,11 @@ void FSI::MonolithicFS::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, E
         mat.Matrix(0, 1).EpetraMatrix()->RightScale(*acolsum_))
       FOUR_C_THROW("ale scaling failed");
 
-    Teuchos::RCP<Epetra_Vector> ax = extractor().ExtractVector(b, 1);
+    Teuchos::RCP<Epetra_Vector> ax = extractor().extract_vector(b, 1);
 
     if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    extractor().InsertVector(*ax, 1, b);
+    extractor().insert_vector(*ax, 1, b);
   }
 }
 
@@ -748,17 +748,17 @@ void FSI::MonolithicFS::unscale_solution(
 
   if (scaling_infnorm)
   {
-    Teuchos::RCP<Epetra_Vector> ay = extractor().ExtractVector(x, 1);
+    Teuchos::RCP<Epetra_Vector> ay = extractor().extract_vector(x, 1);
 
     if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    extractor().InsertVector(*ay, 1, x);
+    extractor().insert_vector(*ay, 1, x);
 
-    Teuchos::RCP<Epetra_Vector> ax = extractor().ExtractVector(b, 1);
+    Teuchos::RCP<Epetra_Vector> ax = extractor().extract_vector(b, 1);
 
     if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    extractor().InsertVector(*ax, 1, b);
+    extractor().insert_vector(*ax, 1, b);
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(1, 1).EpetraMatrix();
     arowsum_->Reciprocal(*arowsum_);
@@ -777,11 +777,11 @@ void FSI::MonolithicFS::setup_vector(
     Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av)
 {
   // extract the inner dofs of the ale field
-  Teuchos::RCP<Epetra_Vector> aov = ale_field()->Interface()->ExtractOtherVector(av);
+  Teuchos::RCP<Epetra_Vector> aov = ale_field()->Interface()->extract_other_vector(av);
 
-  extractor().InsertVector(*fv, 0, f);
+  extractor().insert_vector(*fv, 0, f);
 
-  extractor().InsertVector(*aov, 1, f);
+  extractor().insert_vector(*aov, 1, f);
 }
 
 
@@ -852,7 +852,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MonolithicFS::create_status_test(
   // setup tests for interface
 
   std::vector<Teuchos::RCP<const Epetra_Map>> interface;
-  interface.push_back(fluid_field()->Interface()->FSCondMap());
+  interface.push_back(fluid_field()->Interface()->fs_cond_map());
   interface.push_back(Teuchos::null);
   Core::LinAlg::MultiMapExtractor interfaceextract(*dof_row_map(), interface);
 
@@ -929,18 +929,18 @@ void FSI::MonolithicFS::extract_field_vectors(Teuchos::RCP<const Epetra_Vector> 
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFS::extract_field_vectors");
 
-  fx = extractor().ExtractVector(x, 0);
+  fx = extractor().extract_vector(x, 0);
 
-  Teuchos::RCP<Epetra_Vector> fcx = fluid_field()->Interface()->ExtractFSCondVector(fx);
+  Teuchos::RCP<Epetra_Vector> fcx = fluid_field()->Interface()->extract_fs_cond_vector(fx);
   fluid_field()->free_surf_velocity_to_displacement(fcx);
 
   // process ale unknowns
 
-  Teuchos::RCP<const Epetra_Vector> aox = extractor().ExtractVector(x, 1);
+  Teuchos::RCP<const Epetra_Vector> aox = extractor().extract_vector(x, 1);
   Teuchos::RCP<Epetra_Vector> acx = icoupfa_->MasterToSlave(fcx);
 
-  Teuchos::RCP<Epetra_Vector> a = ale_field()->Interface()->InsertOtherVector(aox);
-  ale_field()->Interface()->InsertFSCondVector(acx, a);
+  Teuchos::RCP<Epetra_Vector> a = ale_field()->Interface()->insert_other_vector(aox);
+  ale_field()->Interface()->insert_fs_cond_vector(acx, a);
   ax = a;
 }
 
@@ -1180,8 +1180,8 @@ void FSI::OverlappingBlockMatrixFS::sgs(const Epetra_MultiVector& X, Epetra_Mult
 
   Epetra_Vector& y = Teuchos::dyn_cast<Epetra_Vector>(Y);
 
-  Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().ExtractVector(y, 0);
-  Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().ExtractVector(y, 1);
+  Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().extract_vector(y, 0);
+  Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().extract_vector(y, 1);
 
   Teuchos::RCP<Epetra_Vector> fz = Teuchos::rcp(new Epetra_Vector(fy->Map()));
   Teuchos::RCP<Epetra_Vector> az = Teuchos::rcp(new Epetra_Vector(ay->Map()));
@@ -1192,8 +1192,8 @@ void FSI::OverlappingBlockMatrixFS::sgs(const Epetra_MultiVector& X, Epetra_Mult
   // outer Richardson loop
   for (int run = 0; run < iterations_; ++run)
   {
-    Teuchos::RCP<Epetra_Vector> fx = DomainExtractor().ExtractVector(x, 0);
-    Teuchos::RCP<Epetra_Vector> ax = DomainExtractor().ExtractVector(x, 1);
+    Teuchos::RCP<Epetra_Vector> fx = DomainExtractor().extract_vector(x, 0);
+    Teuchos::RCP<Epetra_Vector> ax = DomainExtractor().extract_vector(x, 1);
 
     // ----------------------------------------------------------------
     // lower GS
@@ -1250,8 +1250,8 @@ void FSI::OverlappingBlockMatrixFS::sgs(const Epetra_MultiVector& X, Epetra_Mult
 
     if (symmetric_)
     {
-      fx = DomainExtractor().ExtractVector(x, 0);
-      ax = DomainExtractor().ExtractVector(x, 1);
+      fx = DomainExtractor().extract_vector(x, 0);
+      ax = DomainExtractor().extract_vector(x, 1);
 
       // ----------------------------------------------------------------
       // upper GS
@@ -1281,8 +1281,8 @@ void FSI::OverlappingBlockMatrixFS::sgs(const Epetra_MultiVector& X, Epetra_Mult
     }
   }
 
-  RangeExtractor().InsertVector(*fy, 0, y);
-  RangeExtractor().InsertVector(*ay, 1, y);
+  RangeExtractor().insert_vector(*fy, 0, y);
+  RangeExtractor().insert_vector(*ay, 1, y);
 }
 
 

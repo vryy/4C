@@ -294,11 +294,11 @@ void PoroElastScaTra::PoroScatraMono::evaluate(Teuchos::RCP<const Epetra_Vector>
   if (stepinc != Teuchos::null)
   {
     // process structure unknowns of the first field
-    porostructinc = extractor()->ExtractVector(stepinc, 0);
-    porofluidinc = extractor()->ExtractVector(stepinc, 1);
+    porostructinc = extractor()->extract_vector(stepinc, 0);
+    porofluidinc = extractor()->extract_vector(stepinc, 1);
 
     // process fluid unknowns of the second field
-    scatrainc = extractor()->ExtractVector(stepinc, 2);
+    scatrainc = extractor()->extract_vector(stepinc, 2);
   }
 
   // Newton update of the fluid field
@@ -358,7 +358,7 @@ void PoroElastScaTra::PoroScatraMono::SetupSystem()
   // build dbc map of monolithic system
   {
     const Teuchos::RCP<const Epetra_Map> porocondmap = poro_field()->combined_dbc_map();
-    const Teuchos::RCP<const Epetra_Map> scatracondmap = ScaTraField()->DirichMaps()->CondMap();
+    const Teuchos::RCP<const Epetra_Map> scatracondmap = ScaTraField()->DirichMaps()->cond_map();
     Teuchos::RCP<const Epetra_Map> dbcmap =
         Core::LinAlg::MergeMap(porocondmap, scatracondmap, false);
 
@@ -418,9 +418,9 @@ void PoroElastScaTra::PoroScatraMono::setup_vector(
   //  Teuchos::RCP<const Epetra_Vector> psx;
   //  Teuchos::RCP<const Epetra_Vector> pfx;
 
-  extractor()->InsertVector(*(poro_field()->Extractor()->ExtractVector(pv, 0)), 0, f);
-  extractor()->InsertVector(*(poro_field()->Extractor()->ExtractVector(pv, 1)), 1, f);
-  extractor()->InsertVector(*sv, 2, f);
+  extractor()->insert_vector(*(poro_field()->Extractor()->extract_vector(pv, 0)), 0, f);
+  extractor()->insert_vector(*(poro_field()->Extractor()->extract_vector(pv, 1)), 1, f);
+  extractor()->insert_vector(*sv, 2, f);
 }
 
 /*----------------------------------------------------------------------*
@@ -938,20 +938,21 @@ void PoroElastScaTra::PoroScatraMono::build_convergence_norms()
   Teuchos::RCP<const Epetra_Vector> rhs_scalar;
 
   // process structure unknowns of the first field
-  rhs_s = extractor()->ExtractVector(rhs_, 0);
+  rhs_s = extractor()->extract_vector(rhs_, 0);
 
   // process fluid unknowns of the second field
-  rhs_f = extractor()->ExtractVector(rhs_, 1);
+  rhs_f = extractor()->extract_vector(rhs_, 1);
   rhs_fvel = poro_field()->fluid_field()->ExtractVelocityPart(rhs_f);
   rhs_fpres = poro_field()->fluid_field()->ExtractPressurePart(rhs_f);
 
   // process scalar unknowns of the third field
-  rhs_scalar = extractor()->ExtractVector(rhs_, 2);
+  rhs_scalar = extractor()->extract_vector(rhs_, 2);
 
   //  if(porositydof_)
   //  {
-  //    Teuchos::RCP<const Epetra_Vector> rhs_poro = porositysplitter_->ExtractCondVector(rhs_s);
-  //    Teuchos::RCP<const Epetra_Vector> rhs_sdisp = porositysplitter_->ExtractOtherVector(rhs_s);
+  //    Teuchos::RCP<const Epetra_Vector> rhs_poro = porositysplitter_->extract_cond_vector(rhs_s);
+  //    Teuchos::RCP<const Epetra_Vector> rhs_sdisp =
+  //    porositysplitter_->extract_other_vector(rhs_s);
   //
   //    normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_,rhs_sdisp);
   //    normrhsporo_ = UTILS::calculate_vector_norm(vectornormfres_,rhs_poro);
@@ -977,21 +978,21 @@ void PoroElastScaTra::PoroScatraMono::build_convergence_norms()
   Teuchos::RCP<const Epetra_Vector> interincscalar;
 
   // process structure unknowns of the first field
-  interincs = extractor()->ExtractVector(iterinc_, 0);
+  interincs = extractor()->extract_vector(iterinc_, 0);
 
   // process fluid unknowns of the second field
-  interincf = extractor()->ExtractVector(iterinc_, 1);
+  interincf = extractor()->extract_vector(iterinc_, 1);
   interincfvel = poro_field()->fluid_field()->ExtractVelocityPart(interincf);
   interincfpres = poro_field()->fluid_field()->ExtractPressurePart(interincf);
 
   // process scalar unknowns of the third field
-  interincscalar = extractor()->ExtractVector(iterinc_, 2);
+  interincscalar = extractor()->extract_vector(iterinc_, 2);
 
   //  if(porositydof_)
   //  {
   //    Teuchos::RCP<const Epetra_Vector> interincporo =
-  //    porositysplitter_->ExtractCondVector(interincs); Teuchos::RCP<const Epetra_Vector>
-  //    interincsdisp = porositysplitter_->ExtractOtherVector(interincs);
+  //    porositysplitter_->extract_cond_vector(interincs); Teuchos::RCP<const Epetra_Vector>
+  //    interincsdisp = porositysplitter_->extract_other_vector(interincs);
   //
   //    normincstruct_     = UTILS::calculate_vector_norm(vectornorminc_,interincsdisp);
   //    normincporo_       = UTILS::calculate_vector_norm(vectornorminc_,interincporo);
@@ -1021,7 +1022,7 @@ Teuchos::RCP<const Epetra_Map> PoroElastScaTra::PoroScatraMono::dof_row_map() co
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> PoroElastScaTra::PoroScatraMono::combined_dbc_map() const
 {
-  return dbcmaps_->CondMap();
+  return dbcmaps_->cond_map();
 }
 
 /*----------------------------------------------------------------------*
@@ -1039,7 +1040,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> PoroElastScaTra::PoroScatraMono::System
 void PoroElastScaTra::PoroScatraMono::set_dof_row_maps(
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
-  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
 
   // full monolithic-blockmap
   blockrowdofmap_->setup(*fullmap, maps);

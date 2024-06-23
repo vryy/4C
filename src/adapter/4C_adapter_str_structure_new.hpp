@@ -451,7 +451,7 @@ namespace Adapter
     Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override = 0;
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override = 0;
 
     /// create result test for encapsulated structure algorithm
     Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override = 0;

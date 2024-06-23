@@ -269,7 +269,7 @@ void THR::TimIntOneStepTheta::update_iter_incrementally()
   aux->Update(1.0, *tempn_, -1.0, *(*temp_)(0), 0.0);
   aux->Update(-(1.0 - theta_) / theta_, *(*rate_)(0), 1.0 / (theta_ * (*dt_)[0]));
   // put only to free/non-DBC DOFs
-  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), raten_);
+  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(aux), raten_);
 
   // bye
   return;

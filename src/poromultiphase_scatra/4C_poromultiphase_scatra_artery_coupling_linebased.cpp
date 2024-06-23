@@ -99,8 +99,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
 
   // call base class
   PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSystem(sysmat, rhs,
-      sysmat_cont, sysmat_art, rhs_cont, rhs_art_with_collapsed, dbcmap_cont, dbcmap_art->CondMap(),
-      dbcmap_art_with_collapsed);
+      sysmat_cont, sysmat_art, rhs_cont, rhs_art_with_collapsed, dbcmap_cont,
+      dbcmap_art->cond_map(), dbcmap_art_with_collapsed);
 }
 
 Teuchos::RCP<Epetra_Map>
@@ -160,10 +160,10 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::get_additional_dbc_
   // build vector of maps
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
   condmaps.push_back(dirichmap);
-  condmaps.push_back(dbcmap_art->CondMap());
+  condmaps.push_back(dbcmap_art->cond_map());
 
   // combined map
-  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::MergeMaps(condmaps);
+  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
 
   return condmerged;
 }

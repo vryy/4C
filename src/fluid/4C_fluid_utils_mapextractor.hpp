@@ -64,12 +64,12 @@ namespace FLD
       Teuchos::RCP<std::set<int>> conditioned_element_map(
           const Core::FE::Discretization& dis) const;
 
-      MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
-      MAP_EXTRACTOR_VECTOR_METHODS(FSICond, cond_fsi)
-      MAP_EXTRACTOR_VECTOR_METHODS(FSCond, cond_fs)
-      MAP_EXTRACTOR_VECTOR_METHODS(LungASICond, cond_lung_asi)
-      MAP_EXTRACTOR_VECTOR_METHODS(MortarCond, cond_mortar)
-      MAP_EXTRACTOR_VECTOR_METHODS(AUCond, cond_au)
+      MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)
+      MAP_EXTRACTOR_VECTOR_METHODS(fsi_cond, cond_fsi)
+      MAP_EXTRACTOR_VECTOR_METHODS(fs_cond, cond_fs)
+      MAP_EXTRACTOR_VECTOR_METHODS(lung_asi_cond, cond_lung_asi)
+      MAP_EXTRACTOR_VECTOR_METHODS(mortar_cond, cond_mortar)
+      MAP_EXTRACTOR_VECTOR_METHODS(au_cond, cond_au)
     };
 
     /// specific MultiMapExtractor to handle the part of fluid with volumetric surface flow
@@ -86,8 +86,8 @@ namespace FLD
       /// setup the whole thing
       void setup(const Core::FE::Discretization& dis);
 
-      MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
-      MAP_EXTRACTOR_VECTOR_METHODS(VolumetricSurfaceFlowCond, cond_vol_surf_flow)
+      MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)
+      MAP_EXTRACTOR_VECTOR_METHODS(volumetric_surface_flow_cond, cond_vol_surf_flow)
     };
 
     /// specific MultiMapExtractor to handle the part of fluid with Krylov space projection
@@ -107,8 +107,8 @@ namespace FLD
       Teuchos::RCP<std::set<int>> conditioned_element_map(
           const Core::FE::Discretization& dis) const;
 
-      MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
-      MAP_EXTRACTOR_VECTOR_METHODS(KSPCond, cond_ksp)
+      MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)
+      MAP_EXTRACTOR_VECTOR_METHODS(ksp_cond, cond_ksp)
     };
 
     /// specific MultiMapExtractor to handle the velocity-pressure split
@@ -118,8 +118,8 @@ namespace FLD
       /// setup the whole thing
       void setup(const Core::FE::Discretization& dis);
 
-      MAP_EXTRACTOR_VECTOR_METHODS(Velocity, 0)
-      MAP_EXTRACTOR_VECTOR_METHODS(Pressure, 1)
+      MAP_EXTRACTOR_VECTOR_METHODS(velocity, 0)
+      MAP_EXTRACTOR_VECTOR_METHODS(pressure, 1)
     };
 
     /// specific MultiMapExtractor to handle the fsi and ale meshtying at the same time
@@ -138,8 +138,8 @@ namespace FLD
       void setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
           const FLD::UTILS::FsiMapExtractor& extractor);
 
-      MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
-      MAP_EXTRACTOR_VECTOR_METHODS(FSI, cond_fsi)
+      MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)
+      MAP_EXTRACTOR_VECTOR_METHODS(fsi, cond_fsi)
     };
 
     /// specific MultiMapExtractor to handle the fluid field
@@ -156,8 +156,8 @@ namespace FLD
       void setup(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> fluidmap,
           Teuchos::RCP<const Epetra_Map> xfluidmap);
 
-      MAP_EXTRACTOR_VECTOR_METHODS(Fluid, cond_fluid)
-      MAP_EXTRACTOR_VECTOR_METHODS(XFluid, cond_xfluid)
+      MAP_EXTRACTOR_VECTOR_METHODS(fluid, cond_fluid)
+      MAP_EXTRACTOR_VECTOR_METHODS(x_fluid, cond_xfluid)
     };
 
   }  // namespace UTILS

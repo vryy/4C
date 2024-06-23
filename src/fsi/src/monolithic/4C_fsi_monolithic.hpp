@@ -554,8 +554,8 @@ namespace FSI
     //! fluid and ALE field, where the condensed interface DOFs have been dropped
     //! during construction.
     //!
-    //! CondMap()   = Dirichlet DOFs
-    //! OtherMap()  = DOFs without Dirichlet boundary condition
+    //! cond_map()   = Dirichlet DOFs
+    //! other_map()  = DOFs without Dirichlet boundary condition
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     //! Create initial guess for monolithic solution vector from data of the single fields

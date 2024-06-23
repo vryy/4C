@@ -350,10 +350,10 @@ void Core::Adapter::Coupling::setup_coupling(const Core::FE::Discretization& mas
 
   // merge maps for all conditions, but keep order (= keep assignment of permuted slave node map and
   // master map)
-  auto masternodemap = Core::LinAlg::MultiMapExtractor::MergeMapsKeepOrder(masternodemap_cond);
-  auto slavenodemap = Core::LinAlg::MultiMapExtractor::MergeMapsKeepOrder(slavenodemap_cond);
+  auto masternodemap = Core::LinAlg::MultiMapExtractor::merge_maps_keep_order(masternodemap_cond);
+  auto slavenodemap = Core::LinAlg::MultiMapExtractor::merge_maps_keep_order(slavenodemap_cond);
   auto permslavenodemap =
-      Core::LinAlg::MultiMapExtractor::MergeMapsKeepOrder(permslavenodemap_cond);
+      Core::LinAlg::MultiMapExtractor::merge_maps_keep_order(permslavenodemap_cond);
 
   finish_coupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap,
       build_dof_vector_from_num_dof(numdof), build_dof_vector_from_num_dof(numdof), nds_master,

@@ -1141,21 +1141,21 @@ void STR::TimInt::determine_mass_damp_consist_accel()
     rhs->Update(-1.0, *finert0, 1.0);
 
     // blank RHS and system matrix on DBC DOFs
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
+    dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), rhs);
 
     // Apply Dirichlet conditions also to mass matrix (which represents the system matrix of
     // the considered linear system of equations)
-    mass->ApplyDirichlet(*(dbcmaps_->CondMap()));
+    mass->ApplyDirichlet(*(dbcmaps_->cond_map()));
 
     if (pressure_ != Teuchos::null)
     {
-      pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), rhs);
-      mass->ApplyDirichlet(*(pressure_->CondMap()));
+      pressure_->insert_cond_vector(pressure_->extract_cond_vector(zeros_), rhs);
+      mass->ApplyDirichlet(*(pressure_->cond_map()));
     }
     if (porositysplitter_ != Teuchos::null)
     {
-      porositysplitter_->InsertCondVector(porositysplitter_->ExtractCondVector(zeros_), rhs);
-      mass->ApplyDirichlet(*(porositysplitter_->CondMap()));
+      porositysplitter_->insert_cond_vector(porositysplitter_->extract_cond_vector(zeros_), rhs);
+      mass->ApplyDirichlet(*(porositysplitter_->cond_map()));
     }
 
     // Meier 2015: Due to the Dirichlet conditions applied to the mass matrix, we solely solve
@@ -1383,7 +1383,7 @@ void STR::TimInt::update_step_contact_vum()
       Bc->Add(*M, true, -1.0, 1.0);
       Bc->Add(*D, true, 1.0, 1.0);
       Bc->Complete(*slavedofmap, *dofmap);
-      Bc->ApplyDirichlet(*(dbcmaps_->CondMap()), false);
+      Bc->ApplyDirichlet(*(dbcmaps_->cond_map()), false);
 
       // matrix of the normal vectors
       Teuchos::RCP<Core::LinAlg::SparseMatrix> N = cmtbridge_->GetStrategy().EvaluateNormals(disn_);
@@ -2235,7 +2235,7 @@ void STR::TimInt::output_state(bool& datawritten)
 
   if (porositysplitter_ != Teuchos::null)
   {
-    Teuchos::RCP<Epetra_Vector> porosity = porositysplitter_->ExtractCondVector((*dis_)(0));
+    Teuchos::RCP<Epetra_Vector> porosity = porositysplitter_->extract_cond_vector((*dis_)(0));
     output_->write_vector("porosity_p1", porosity);
   }
 
@@ -3397,8 +3397,8 @@ void STR::TimInt::AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
   condmaps.push_back(maptoadd);
-  condmaps.push_back(GetDBCMapExtractor()->CondMap());
-  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::MergeMaps(condmaps);
+  condmaps.push_back(get_dbc_map_extractor()->cond_map());
+  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
   *dbcmaps_ = Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), condmerged);
 }
 
@@ -3408,8 +3408,8 @@ void STR::TimInt::RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptorem
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
   othermaps.push_back(maptoremove);
-  othermaps.push_back(GetDBCMapExtractor()->OtherMap());
-  Teuchos::RCP<Epetra_Map> othermerged = Core::LinAlg::MultiMapExtractor::MergeMaps(othermaps);
+  othermaps.push_back(get_dbc_map_extractor()->other_map());
+  Teuchos::RCP<Epetra_Map> othermerged = Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
   *dbcmaps_ = Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), othermerged, false);
 }
 

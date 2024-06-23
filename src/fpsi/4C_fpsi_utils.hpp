@@ -130,9 +130,9 @@ namespace FPSI
       Teuchos::RCP<std::set<int>> conditioned_element_map(
           const Core::FE::Discretization& dis) const;
 
-      MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
-      MAP_EXTRACTOR_VECTOR_METHODS(FSICond, cond_fsi)
-      MAP_EXTRACTOR_VECTOR_METHODS(FPSICond, cond_fpsi)
+      MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)
+      MAP_EXTRACTOR_VECTOR_METHODS(fsi_cond, cond_fsi)
+      MAP_EXTRACTOR_VECTOR_METHODS(fpsi_cond, cond_fpsi)
     };
 
   }  // namespace UTILS

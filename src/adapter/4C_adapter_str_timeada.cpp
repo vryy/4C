@@ -402,7 +402,7 @@ void Adapter::StructureTimeAda::evaluate_local_error_dis()
 void Adapter::StructureTimeAda::indicate(bool& accepted, double& stpsiznew)
 {
   // norm of local discretisation error vector
-  const int numneglect = stm_->GetDBCMapExtractor()->CondMap()->NumGlobalElements();
+  const int numneglect = stm_->get_dbc_map_extractor()->cond_map()->NumGlobalElements();
   const double norm = calculate_vector_norm(errnorm_, locerrdisn_, numneglect);
 
   // check if acceptable

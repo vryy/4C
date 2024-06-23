@@ -130,8 +130,8 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   {
     Teuchos::RCP<Core::Adapter::Coupling> icoupfa = Teuchos::rcp(new Core::Adapter::Coupling());
     icoupfa->setup_condition_coupling(*fluid_field()->discretization(),
-        fluid_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
-        ale_field()->Interface()->FSICondMap(), condname, ndim, true, nds_master, nds_slave);
+        fluid_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
+        ale_field()->Interface()->fsi_cond_map(), condname, ndim, true, nds_master, nds_slave);
     icoupfa_ = icoupfa;
   }
   else
@@ -164,13 +164,14 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
 
   fscoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
   fscoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->Interface()->FSCondMap(), *ale_field()->discretization(),
-      ale_field()->Interface()->FSCondMap(), "FREESURFCoupling", ndim, true, nds_master, nds_slave);
+      fluid_field()->Interface()->fs_cond_map(), *ale_field()->discretization(),
+      ale_field()->Interface()->fs_cond_map(), "FREESURFCoupling", ndim, true, nds_master,
+      nds_slave);
 
   aucoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
   aucoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->Interface()->AUCondMap(), *ale_field()->discretization(),
-      ale_field()->Interface()->AUCondMap(), "ALEUPDATECoupling", ndim, true, nds_master,
+      fluid_field()->Interface()->au_cond_map(), *ale_field()->discretization(),
+      ale_field()->Interface()->au_cond_map(), "ALEUPDATECoupling", ndim, true, nds_master,
       nds_slave);
 
   fluid_field()->SetMeshMap(coupfa_->MasterDofMap(), nds_master);
@@ -227,7 +228,7 @@ void Adapter::FluidAle::output()
     {
       Teuchos::RCP<Epetra_Vector> lambda = fluid_field()->extract_interface_forces();
       Teuchos::RCP<Epetra_Vector> lambdafull =
-          fluid_field()->Interface()->InsertFSICondVector(lambda);
+          fluid_field()->Interface()->insert_fsi_cond_vector(lambda);
       fluid_field()->DiscWriter()->write_vector("fsilambda", lambdafull);
     }
   }
@@ -259,18 +260,20 @@ void Adapter::FluidAle::nonlinear_solve(
   }
 
   // Update the ale update part
-  if (fluid_field()->Interface()->AUCondRelevant())
+  if (fluid_field()->Interface()->au_cond_relevant())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->Dispnp();
-    Teuchos::RCP<Epetra_Vector> audispnp = fluid_field()->Interface()->ExtractAUCondVector(dispnp);
+    Teuchos::RCP<Epetra_Vector> audispnp =
+        fluid_field()->Interface()->extract_au_cond_vector(dispnp);
     ale_field()->apply_ale_update_displacements(aucoupfa_->MasterToSlave(audispnp));
   }
 
   // Update the free-surface part
-  if (fluid_field()->Interface()->FSCondRelevant())
+  if (fluid_field()->Interface()->fs_cond_relevant())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->Dispnp();
-    Teuchos::RCP<Epetra_Vector> fsdispnp = fluid_field()->Interface()->ExtractFSCondVector(dispnp);
+    Teuchos::RCP<Epetra_Vector> fsdispnp =
+        fluid_field()->Interface()->extract_fs_cond_vector(dispnp);
     ale_field()->apply_free_surface_displacements(fscoupfa_->MasterToSlave(fsdispnp));
   }
 
@@ -294,23 +297,25 @@ void Adapter::FluidAle::nonlinear_solve_vol_coupl(Teuchos::RCP<Epetra_Vector> id
   if (idisp != Teuchos::null)
   {
     ale_field()->apply_interface_displacements(
-        ale_field()->Interface()->ExtractFSICondVector(idisp));
+        ale_field()->Interface()->extract_fsi_cond_vector(idisp));
     fluid_field()->apply_interface_velocities(ivel);
   }
 
   // Update the ale update part
-  if (fluid_field()->Interface()->AUCondRelevant())
+  if (fluid_field()->Interface()->au_cond_relevant())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->Dispnp();
-    Teuchos::RCP<Epetra_Vector> audispnp = fluid_field()->Interface()->ExtractAUCondVector(dispnp);
+    Teuchos::RCP<Epetra_Vector> audispnp =
+        fluid_field()->Interface()->extract_au_cond_vector(dispnp);
     ale_field()->apply_ale_update_displacements(aucoupfa_->MasterToSlave(audispnp));
   }
 
   // Update the free-surface part
-  if (fluid_field()->Interface()->FSCondRelevant())
+  if (fluid_field()->Interface()->fs_cond_relevant())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->Dispnp();
-    Teuchos::RCP<Epetra_Vector> fsdispnp = fluid_field()->Interface()->ExtractFSCondVector(dispnp);
+    Teuchos::RCP<Epetra_Vector> fsdispnp =
+        fluid_field()->Interface()->extract_fs_cond_vector(dispnp);
     ale_field()->apply_free_surface_displacements(fscoupfa_->MasterToSlave(fsdispnp));
   }
 
@@ -340,10 +345,11 @@ void Adapter::FluidAle::apply_interface_values(
     fluid_field()->apply_interface_velocities(ivel);
   }
 
-  if (fluid_field()->Interface()->FSCondRelevant())
+  if (fluid_field()->Interface()->fs_cond_relevant())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->Dispnp();
-    Teuchos::RCP<Epetra_Vector> fsdispnp = fluid_field()->Interface()->ExtractFSCondVector(dispnp);
+    Teuchos::RCP<Epetra_Vector> fsdispnp =
+        fluid_field()->Interface()->extract_fs_cond_vector(dispnp);
     ale_field()->apply_free_surface_displacements(fscoupfa_->MasterToSlave(fsdispnp));
   }
 

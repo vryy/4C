@@ -65,7 +65,7 @@ namespace FLD
       void EvaluateVelocities(const Teuchos::RCP<Epetra_Vector> velocities, const double time);
 
 
-      void InsertCondVector(Epetra_Vector& vec1, Epetra_Vector& vec2);
+      void insert_cond_vector(Epetra_Vector& vec1, Epetra_Vector& vec2);
 
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::update_residual

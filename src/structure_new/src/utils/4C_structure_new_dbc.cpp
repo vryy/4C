@@ -240,7 +240,7 @@ void STR::Dbc::apply_dirichlet_to_vector(Teuchos::RCP<Epetra_Vector>& vec) const
   // rotate the coordinate system if desired
   RotateGlobalToLocal(vec);
   // apply the dbc
-  Core::LinAlg::apply_dirichlet_to_system(*vec, *zeros_ptr_, *(dbcmap_ptr_->CondMap()));
+  Core::LinAlg::apply_dirichlet_to_system(*vec, *zeros_ptr_, *(dbcmap_ptr_->cond_map()));
   // rotate back
   RotateLocalToGlobal(vec);
 }
@@ -255,7 +255,7 @@ void STR::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Epetra_Vector>& b) cons
   RotateGlobalToLocal(b);
 
   extract_freact(b);
-  Core::LinAlg::apply_dirichlet_to_system(*b, *zeros_ptr_, *(dbcmap_ptr_->CondMap()));
+  Core::LinAlg::apply_dirichlet_to_system(*b, *zeros_ptr_, *(dbcmap_ptr_->cond_map()));
 
 
   return;
@@ -285,7 +285,7 @@ void STR::Dbc::apply_dirichlet_to_local_jacobian(Teuchos::RCP<Core::LinAlg::Spar
    * behavior during the usage of locsys. Furthermore, the consideration of
    * DBCs in an explicit way is a pretty expensive operation.
    *                                                          hiermeier 01/18 */
-  if (A->IsDbcApplied(*dbcmap_ptr_->CondMap(), true, get_loc_sys_trafo().get())) return;
+  if (A->IsDbcApplied(*dbcmap_ptr_->cond_map(), true, get_loc_sys_trafo().get())) return;
 
   if (RotateGlobalToLocal(A))
   {
@@ -297,13 +297,13 @@ void STR::Dbc::apply_dirichlet_to_local_jacobian(Teuchos::RCP<Core::LinAlg::Spar
       Core::LinAlg::SparseMatrix& mat = *(*mats)[i];
 
       mat.apply_dirichlet_with_trafo(
-          *get_loc_sys_trafo(), *(dbcmap_ptr_->CondMap()), (i == 0), false);
+          *get_loc_sys_trafo(), *(dbcmap_ptr_->cond_map()), (i == 0), false);
     }
 
     if (not A->Filled()) A->Complete();
   }
   else
-    A->ApplyDirichlet(*(dbcmap_ptr_->CondMap()));
+    A->ApplyDirichlet(*(dbcmap_ptr_->cond_map()));
 
   return;
 }
@@ -419,12 +419,12 @@ void STR::Dbc::insert_vector_in_non_dbc_dofs(
     Teuchos::RCP<const Epetra_Vector> source_ptr, Teuchos::RCP<Epetra_Vector> target_ptr) const
 {
   check_init_setup();
-  dbcmap_ptr_->InsertOtherVector(dbcmap_ptr_->ExtractOtherVector(source_ptr), target_ptr);
+  dbcmap_ptr_->insert_other_vector(dbcmap_ptr_->extract_other_vector(source_ptr), target_ptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::MapExtractor> STR::Dbc::GetDBCMapExtractor() const
+Teuchos::RCP<const Core::LinAlg::MapExtractor> STR::Dbc::get_dbc_map_extractor() const
 {
   check_init_setup();
   return dbcmap_ptr_;
@@ -476,8 +476,8 @@ void STR::Dbc::AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
   condmaps.push_back(maptoadd);
-  condmaps.push_back(dbcmap_ptr_->CondMap());
-  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::MergeMaps(condmaps);
+  condmaps.push_back(dbcmap_ptr_->cond_map());
+  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
   *dbcmap_ptr_ = Core::LinAlg::MapExtractor(*(discret_ptr_->dof_row_map()), condmerged);
   return;
 }
@@ -488,8 +488,8 @@ void STR::Dbc::RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
   othermaps.push_back(maptoremove);
-  othermaps.push_back(dbcmap_ptr_->OtherMap());
-  Teuchos::RCP<Epetra_Map> othermerged = Core::LinAlg::MultiMapExtractor::MergeMaps(othermaps);
+  othermaps.push_back(dbcmap_ptr_->other_map());
+  Teuchos::RCP<Epetra_Map> othermerged = Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
   *dbcmap_ptr_ = Core::LinAlg::MapExtractor(*(discret_ptr_->dof_row_map()), othermerged, false);
   return;
 }

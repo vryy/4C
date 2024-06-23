@@ -104,7 +104,7 @@ void FS3I::ACFSI::set_mean_wall_shear_stresses() const
 
   // extract FSI-Interface from fluid field
   Teuchos::RCP<Epetra_Vector> WallShearStress =
-      fsi_->fluid_field()->Interface()->ExtractFSICondVector(wall_shear_stress_lp_);
+      fsi_->fluid_field()->Interface()->extract_fsi_cond_vector(wall_shear_stress_lp_);
 
   // replace global fluid interface dofs through structure interface dofs
   WallShearStress = fsi_->fluid_to_struct(WallShearStress);
@@ -115,7 +115,7 @@ void FS3I::ACFSI::set_mean_wall_shear_stresses() const
 
   // Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of
   // structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )
-  fsi_->structure_field()->Interface()->InsertVector(WallShearStress, 1, structurewss);
+  fsi_->structure_field()->Interface()->insert_vector(WallShearStress, 1, structurewss);
   scatravec_[1]->ScaTraField()->set_wall_shear_stresses(
       structure_to_structure_scalar(structurewss));
 }
@@ -172,7 +172,7 @@ void FS3I::ACFSI::evaluateith_scatra_surface_permeability(const int i  // id of 
 
   // apply Dirichlet boundary conditions to coupling matrix and vector
   const Teuchos::RCP<const Epetra_Map> dbcmap =
-      scatravec_[i]->ScaTraField()->DirichMaps()->CondMap();
+      scatravec_[i]->ScaTraField()->DirichMaps()->cond_map();
   mat_scal->ApplyDirichlet(*dbcmap, false);
   Core::LinAlg::apply_dirichlet_to_system(*rhs_scal, *scatrazeros_[i], *dbcmap);
 }
@@ -356,9 +356,9 @@ void FS3I::ACFSI::struct_scatra_evaluate_solve_iter_update()
 
   // add contribution of the fluid field
   Teuchos::RCP<Epetra_Vector> rhs_fluid_scal_boundary =
-      scatrafieldexvec_[0]->ExtractVector(scatracoupforce_[0], 1);
+      scatrafieldexvec_[0]->extract_vector(scatracoupforce_[0], 1);
   Teuchos::RCP<Epetra_Vector> rhs_fluid_scal =
-      scatrafieldexvec_[1]->InsertVector(Scatra1ToScatra2(rhs_fluid_scal_boundary), 1);
+      scatrafieldexvec_[1]->insert_vector(Scatra1ToScatra2(rhs_fluid_scal_boundary), 1);
 
   residual->Update(-1.0, *rhs_fluid_scal, 1.0);
 
@@ -539,7 +539,7 @@ bool FS3I::ACFSI::does_growth_needs_update()
 
     // Extract the dof of interest
     Teuchos::RCP<Epetra_Vector> phidiff_bltsl_j =
-        extractjthstructscalar_[sc1 - 1]->ExtractCondVector(phidiff_bltsl_);
+        extractjthstructscalar_[sc1 - 1]->extract_cond_vector(phidiff_bltsl_);
 
     // get the maximum
     double max_phidiff_bltsl = 0.0;

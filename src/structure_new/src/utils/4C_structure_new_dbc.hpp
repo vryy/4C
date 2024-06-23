@@ -116,7 +116,7 @@ namespace STR
     //!@{
 
     //! Get the Dirichlet Boundary Condition map extractor
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() const;
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const;
 
     //! Get a pointer to the local system manager
     Teuchos::RCP<Core::Conditions::LocsysManager> LocSysManagerPtr();

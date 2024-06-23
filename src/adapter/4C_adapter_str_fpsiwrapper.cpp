@@ -50,11 +50,11 @@ Teuchos::RCP<Epetra_Vector> Adapter::FPSIStructureWrapper::extract_interface_dis
     // prestressing business
     if (PrestressIsActive(TimeOld()))
     {
-      return Teuchos::rcp(new Epetra_Vector(*interface_->FPSICondMap(), true));
+      return Teuchos::rcp(new Epetra_Vector(*interface_->fpsi_cond_map(), true));
     }
     else
     {
-      return interface_->ExtractFPSICondVector(Dispn());
+      return interface_->extract_fpsi_cond_vector(Dispn());
     }
   }
 }
@@ -73,11 +73,11 @@ Teuchos::RCP<Epetra_Vector> Adapter::FPSIStructureWrapper::extract_interface_dis
     // prestressing business
     if (PrestressIsActive(Time()))
     {
-      return Teuchos::rcp(new Epetra_Vector(*interface_->FPSICondMap(), true));
+      return Teuchos::rcp(new Epetra_Vector(*interface_->fpsi_cond_map(), true));
     }
     else
     {
-      return interface_->ExtractFPSICondVector(Dispnp());
+      return interface_->extract_fpsi_cond_vector(Dispnp());
     }
   }
 }

@@ -275,7 +275,7 @@ void SSI::SSICouplingNonMatchingBoundary::set_mesh_disp(
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> disp)
 {
   scatra->ScaTraField()->ApplyMeshMovement(
-      adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(disp)));
+      adaptermeshtying_->MasterToSlave(extractor_->extract_cond_vector(disp)));
 }
 
 /*----------------------------------------------------------------------*/
@@ -285,10 +285,11 @@ void SSI::SSICouplingNonMatchingBoundary::set_velocity_fields(
     Teuchos::RCP<const Epetra_Vector> vel)
 {
   scatra->ScaTraField()->set_velocity_field(
-      adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(convvel)),  // convective vel.
-      Teuchos::null,                                                             // acceleration
-      adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(vel)),      // velocity
-      Teuchos::null                                                              // fsvel
+      adaptermeshtying_->MasterToSlave(
+          extractor_->extract_cond_vector(convvel)),                           // convective vel.
+      Teuchos::null,                                                           // acceleration
+      adaptermeshtying_->MasterToSlave(extractor_->extract_cond_vector(vel)),  // velocity
+      Teuchos::null                                                            // fsvel
   );
 }
 

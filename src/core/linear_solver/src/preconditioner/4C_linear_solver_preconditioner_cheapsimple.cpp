@@ -394,8 +394,8 @@ int Core::LinearSolver::CheapSimpleBlockPreconditioner::ApplyInverse(
   // so we better deep copy here
 
   // extract initial guess and rhs for velocity and pressure
-  mmex_.ExtractVector(X, 0, *vb_);
-  mmex_.ExtractVector(X, 1, *pb_);
+  mmex_.extract_vector(X, 0, *vb_);
+  mmex_.extract_vector(X, 1, *pb_);
 
 #if CHEAPSIMPLE_ALGORITHM  // SIMPLE and SIMPLEC but without solve, just AMG
   cheap_simple(*vx_, *px_, *vb_, *pb_);
@@ -410,8 +410,8 @@ int Core::LinearSolver::CheapSimpleBlockPreconditioner::ApplyInverse(
 #endif
 
   // insert solution for velocity and pressure
-  mmex_.InsertVector(*vx_, 0, Y);
-  mmex_.InsertVector(*px_, 1, Y);
+  mmex_.insert_vector(*vx_, 0, Y);
+  mmex_.insert_vector(*px_, 1, Y);
 
   return 0;
 }

@@ -134,7 +134,7 @@ void Adapter::FBIPenaltyConstraintenforcer::print_violation(double time, int ste
     double norm = 0.0, normf = 0.0, norms = 0.0, norm_vel = 0.0;
 
     get_velocity_pressure_splitter()
-        ->ExtractOtherVector(
+        ->extract_other_vector(
             Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(get_fluid(), true)->Velnp())
         ->MaxValue(&norm_vel);
 

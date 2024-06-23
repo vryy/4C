@@ -170,7 +170,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_maps()
   if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid equation. Panic.");
 
   // full Poromultiphase-elasticity-map
-  fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
+  fullmap_ = Core::LinAlg::MultiMapExtractor::merge_maps(vecSpaces);
 
   // full Poromultiphase-elasticity-blockmap
   blockrowdofmap_->setup(*fullmap_, vecSpaces);
@@ -237,8 +237,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::build_combined_dbc_map()
 {
   // get structure and fluid dbc maps
   const Teuchos::RCP<const Epetra_Map> scondmap =
-      structure_field()->GetDBCMapExtractor()->CondMap();
-  const Teuchos::RCP<const Epetra_Map> fcondmap = fluid_field()->GetDBCMapExtractor()->CondMap();
+      structure_field()->get_dbc_map_extractor()->cond_map();
+  const Teuchos::RCP<const Epetra_Map> fcondmap =
+      fluid_field()->get_dbc_map_extractor()->cond_map();
   // merge them
   combinedDBCMap_ = Core::LinAlg::MergeMap(scondmap, fcondmap, false);
 
@@ -349,11 +350,11 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_system_matrix(
     // --> if dof has an inclined DBC: blank the complete row, the '1.0' is set
     //     on diagonal of row, i.e. on diagonal of k_ss
     k_ss->apply_dirichlet_with_trafo(
-        *locsysman_->Trafo(), *structure_field()->GetDBCMapExtractor()->CondMap(), true);
+        *locsysman_->Trafo(), *structure_field()->get_dbc_map_extractor()->cond_map(), true);
   }  // end locsys
   // default: (locsysman_ == Teuchos::null), i.e. NO inclined Dirichlet BC
   else
-    k_ss->ApplyDirichlet(*structure_field()->GetDBCMapExtractor()->CondMap(), true);
+    k_ss->ApplyDirichlet(*structure_field()->get_dbc_map_extractor()->cond_map(), true);
 
   /*----------------------------------------------------------------------*/
   // structural part k_sf ((ndim*n_nodes)x(n_phases*n_nodes))
@@ -394,11 +395,11 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_system_matrix(
     // --> if dof has an inclined DBC: blank the complete row, the '1.0' is set
     //     on diagonal of row, i.e. on diagonal of k_ss
     k_sf->apply_dirichlet_with_trafo(
-        *locsysman_->Trafo(), *structure_field()->GetDBCMapExtractor()->CondMap(), false);
+        *locsysman_->Trafo(), *structure_field()->get_dbc_map_extractor()->cond_map(), false);
   }  // end locsys
   // default: (locsysman_ == Teuchos::null), i.e. NO inclined Dirichlet BC
   else
-    k_sf->ApplyDirichlet(*structure_field()->GetDBCMapExtractor()->CondMap(), false);
+    k_sf->ApplyDirichlet(*structure_field()->get_dbc_map_extractor()->cond_map(), false);
 
   /*----------------------------------------------------------------------*/
   // pure fluid part k_ff ( (n_phases*n_nodes)x(n_phases*n_nodes) )
@@ -424,7 +425,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_system_matrix(
   apply_fluid_coupl_matrix(k_fs);
 
   // apply DBC's also on off-diagonal fluid-structure coupling block
-  k_fs->ApplyDirichlet(*fluid_field()->GetDBCMapExtractor()->CondMap(), false);
+  k_fs->ApplyDirichlet(*fluid_field()->get_dbc_map_extractor()->cond_map(), false);
 
   // uncomplete matrix block (appears to be required in certain cases (locsys+iterative solver))
   if (solve_structure_)
@@ -977,10 +978,10 @@ POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_structure_partof_rhs()
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_vector(
     Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> sv, Teuchos::RCP<const Epetra_Vector> fv)
 {
-  Extractor()->InsertVector(*sv, 0, f);
+  Extractor()->insert_vector(*sv, 0, f);
 
   f.Scale(-1);
-  Extractor()->InsertVector(*fv, 1, f);
+  Extractor()->insert_vector(*fv, 1, f);
 }
 /*----------------------------------------------------------------------*
  | extract field vectors for calling evaluate() of the  kremheller 03/17|
@@ -994,10 +995,10 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::extract_field_vectors(
       "POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::extract_field_vectors");
 
   // process structure unknowns of the first field
-  sx = Extractor()->ExtractVector(x, 0);
+  sx = Extractor()->extract_vector(x, 0);
 
   // process fluid unknowns of the second field
-  fx = Extractor()->ExtractVector(x, 1);
+  fx = Extractor()->extract_vector(x, 1);
 }
 /*----------------------------------------------------------------------*
  | extract 3D field vecotrs (structure and fluid)    kremheller 10/20   |
@@ -1333,13 +1334,13 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::setup_maps()
   if (vecSpaces[2]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid equation. Panic.");
 
   // full Poromultiphase-elasticity-map
-  fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
+  fullmap_ = Core::LinAlg::MultiMapExtractor::merge_maps(vecSpaces);
 
   // full Poromultiphase-elasticity-blockmap
   blockrowdofmap_->setup(*fullmap_, vecSpaces);
 
   // full map of artery and poromulti DOFs
-  fullmap_artporo_ = Core::LinAlg::MultiMapExtractor::MergeMaps({vecSpaces[1], vecSpaces[2]});
+  fullmap_artporo_ = Core::LinAlg::MultiMapExtractor::merge_maps({vecSpaces[1], vecSpaces[2]});
 
   // full artery-poromulti-blockmap
   blockrowdofmap_artporo_->setup(*fullmap_artporo_, {vecSpaces[1], vecSpaces[2]});
@@ -1353,8 +1354,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::setup_maps()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::build_convergence_norms()
 {
-  Teuchos::RCP<const Epetra_Vector> arteryrhs = Extractor()->ExtractVector(rhs_, 2);
-  Teuchos::RCP<const Epetra_Vector> arteryinc = Extractor()->ExtractVector(iterinc_, 2);
+  Teuchos::RCP<const Epetra_Vector> arteryrhs = Extractor()->extract_vector(rhs_, 2);
+  Teuchos::RCP<const Epetra_Vector> arteryinc = Extractor()->extract_vector(iterinc_, 2);
 
   // build also norms for artery
   normrhsart_ = UTILS::calculate_vector_norm(vectornormfres_, arteryrhs);
@@ -1379,16 +1380,16 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::extract_field
       "POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::extract_field_vectors");
 
   // process structure unknowns of the first field
-  sx = Extractor()->ExtractVector(x, 0);
+  sx = Extractor()->extract_vector(x, 0);
 
   // process artery and porofluid unknowns
-  Teuchos::RCP<const Epetra_Vector> porofluid = Extractor()->ExtractVector(x, 1);
-  Teuchos::RCP<const Epetra_Vector> artery = Extractor()->ExtractVector(x, 2);
+  Teuchos::RCP<const Epetra_Vector> porofluid = Extractor()->extract_vector(x, 1);
+  Teuchos::RCP<const Epetra_Vector> artery = Extractor()->extract_vector(x, 2);
 
   Teuchos::RCP<Epetra_Vector> dummy = Teuchos::rcp(new Epetra_Vector(*fullmap_artporo_));
 
-  blockrowdofmap_artporo_->InsertVector(porofluid, 0, dummy);
-  blockrowdofmap_artporo_->InsertVector(artery, 1, dummy);
+  blockrowdofmap_artporo_->insert_vector(porofluid, 0, dummy);
+  blockrowdofmap_artporo_->insert_vector(artery, 1, dummy);
 
   fx = dummy;
 
@@ -1424,14 +1425,14 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::setup_rhs()
   Teuchos::RCP<Epetra_Vector> str_rhs = setup_structure_partof_rhs();
 
   // insert and scale
-  Extractor()->InsertVector(*str_rhs, 0, *rhs_);
+  Extractor()->insert_vector(*str_rhs, 0, *rhs_);
   rhs_->Scale(-1.0);
 
   // insert artery part and porofluid part
-  Extractor()->InsertVector(
-      *(blockrowdofmap_artporo_->ExtractVector(fluid_field()->ArteryPorofluidRHS(), 0)), 1, *rhs_);
-  Extractor()->InsertVector(
-      *(blockrowdofmap_artporo_->ExtractVector(fluid_field()->ArteryPorofluidRHS(), 1)), 2, *rhs_);
+  Extractor()->insert_vector(
+      *(blockrowdofmap_artporo_->extract_vector(fluid_field()->ArteryPorofluidRHS(), 0)), 1, *rhs_);
+  Extractor()->insert_vector(
+      *(blockrowdofmap_artporo_->extract_vector(fluid_field()->ArteryPorofluidRHS(), 1)), 2, *rhs_);
 
   return;
 }
@@ -1444,7 +1445,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::build_combine
   PoroMultiPhaseMonolithicTwoWay::build_combined_dbc_map();
 
   const Teuchos::RCP<const Epetra_Map> artcondmap =
-      fluid_field()->ArtNetTimInt()->GetDBCMapExtractor()->CondMap();
+      fluid_field()->ArtNetTimInt()->get_dbc_map_extractor()->cond_map();
 
   // merge them
   combinedDBCMap_ = Core::LinAlg::MergeMap(combinedDBCMap_, artcondmap, false);

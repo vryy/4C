@@ -113,9 +113,9 @@ namespace Adapter
         ) override;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
     {
-      return structure_->GetDBCMapExtractor();
+      return structure_->get_dbc_map_extractor();
     };
 
     /// domain map of system matrix

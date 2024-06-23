@@ -662,7 +662,7 @@ std::vector<int> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem subproblem) c
       if (scatra_matrixtype_ == Core::LinAlg::MatrixType::sparse)
         block_position.emplace_back(1);
       else
-        block_position.emplace_back(BlockMapScaTra()->NumMaps());
+        block_position.emplace_back(BlockMapScaTra()->num_maps());
       break;
     }
     case Subproblem::scalar_transport:
@@ -671,7 +671,7 @@ std::vector<int> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem subproblem) c
         block_position.emplace_back(0);
       else
       {
-        for (int i = 0; i < BlockMapScaTra()->NumMaps(); ++i) block_position.emplace_back(i);
+        for (int i = 0; i < BlockMapScaTra()->num_maps(); ++i) block_position.emplace_back(i);
       }
       break;
     }
@@ -681,10 +681,10 @@ std::vector<int> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem subproblem) c
         block_position.emplace_back(2);
       else
       {
-        auto scatra_manifold_num_block_maps = block_map_sca_tra_manifold()->NumMaps();
+        auto scatra_manifold_num_block_maps = block_map_sca_tra_manifold()->num_maps();
 
         for (int i = 0; i < scatra_manifold_num_block_maps; ++i)
-          block_position.emplace_back(BlockMapScaTra()->NumMaps() + 1 + i);
+          block_position.emplace_back(BlockMapScaTra()->num_maps() + 1 + i);
       }
       break;
     }
@@ -737,13 +737,13 @@ void SSI::UTILS::SSIMaps::create_and_check_block_maps_sub_problems(
     const SSI::SsiMono& ssi_mono_algorithm)
 {
   const int num_blocks_systemmatrix =
-      BlockMapScaTra()->NumMaps() + BlockMapStructure()->NumMaps() +
-      (ssi_mono_algorithm.is_sca_tra_manifold() ? block_map_sca_tra_manifold()->NumMaps() : 0);
+      BlockMapScaTra()->num_maps() + BlockMapStructure()->num_maps() +
+      (ssi_mono_algorithm.is_sca_tra_manifold() ? block_map_sca_tra_manifold()->num_maps() : 0);
 
   std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps_system_matrix(
       num_blocks_systemmatrix, Teuchos::null);
 
-  for (int i = 0; i < BlockMapScaTra()->NumMaps(); ++i)
+  for (int i = 0; i < BlockMapScaTra()->num_maps(); ++i)
 
   {
     auto block_positions_scatra = GetBlockPositions(Subproblem::scalar_transport);
@@ -755,7 +755,7 @@ void SSI::UTILS::SSIMaps::create_and_check_block_maps_sub_problems(
 
   if (ssi_mono_algorithm.is_sca_tra_manifold())
   {
-    for (int i = 0; i < block_map_sca_tra_manifold()->NumMaps(); ++i)
+    for (int i = 0; i < block_map_sca_tra_manifold()->num_maps(); ++i)
     {
       auto block_positions_manifold = GetBlockPositions(Subproblem::manifold);
       partial_maps_system_matrix[block_positions_manifold.at(i)] =
@@ -922,8 +922,8 @@ SSI::UTILS::SSIMeshTying::SSIMeshTying(const std::string& conditionname_coupling
     master_maps.emplace_back(meshtying->SlaveMasterCoupling()->MasterDofMap());
   }
 
-  full_master_side_map_ = Core::LinAlg::MultiMapExtractor::MergeMaps(master_maps);
-  full_slave_side_map_ = Core::LinAlg::MultiMapExtractor::MergeMaps(slave_maps);
+  full_master_side_map_ = Core::LinAlg::MultiMapExtractor::merge_maps(master_maps);
+  full_slave_side_map_ = Core::LinAlg::MultiMapExtractor::merge_maps(slave_maps);
   auto interface_map = Core::LinAlg::MergeMap(full_master_side_map_, full_slave_side_map_);
 
   interior_map_ = Core::LinAlg::SplitMap(*dis->dof_row_map(), *interface_map);
@@ -1383,7 +1383,7 @@ void SSI::UTILS::SSIMeshTying::check_slave_side_has_dirichlet_conditions(
   for (const auto& meshtying : meshtying_handlers_)
   {
     maps[1] = meshtying->SlaveMasterCoupling()->SlaveDofMap();
-    if (Core::LinAlg::MultiMapExtractor::IntersectMaps(maps)->NumGlobalElements() > 0)
+    if (Core::LinAlg::MultiMapExtractor::intersect_maps(maps)->NumGlobalElements() > 0)
       FOUR_C_THROW("Must not apply Dirichlet conditions to slave-side structural displacements!");
   }
 }
