@@ -95,7 +95,7 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
 Teuchos::RCP<Epetra_Map> SSTI::SSTIMaps::MapInterface(
     Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtyingstrategy) const
 {
-  auto mergedInterfaceMap = Core::LinAlg::MultiMapExtractor::MergeMaps(
+  auto mergedInterfaceMap = Core::LinAlg::MultiMapExtractor::merge_maps(
       {meshtyingstrategy->CouplingAdapter()->MasterDofMap(),
           meshtyingstrategy->CouplingAdapter()->SlaveDofMap()});
   if (not mergedInterfaceMap->UniqueGIDs()) FOUR_C_THROW("Map not unique");
@@ -126,7 +126,7 @@ Teuchos::RCP<Core::LinAlg::MultiMapExtractor> SSTI::SSTIMaps::MapsInterfaceBlock
       std::vector<Teuchos::RCP<const Epetra_Map>> partial_blockmapinterface(nummaps, Teuchos::null);
       for (int iblockmap = 0; iblockmap < static_cast<int>(nummaps); ++iblockmap)
       {
-        partial_blockmapinterface[iblockmap] = Core::LinAlg::MultiMapExtractor::MergeMaps(
+        partial_blockmapinterface[iblockmap] = Core::LinAlg::MultiMapExtractor::merge_maps(
             {meshtyingstrategy->BlockMapsSlave().Map(iblockmap),
                 meshtyingstrategy->BlockMapsMaster().Map(iblockmap)});
       }
@@ -483,14 +483,14 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   double concdofnorm(0.0);
   ssti_mono.ScaTraField()
       ->Splitter()
-      ->ExtractOtherVector(ssti_mono.ScaTraField()->Phinp())
+      ->extract_other_vector(ssti_mono.ScaTraField()->Phinp())
       ->Norm2(&concdofnorm);
 
   // compute L2 norm of concentration increment vector
   double concincnorm(0.0);
   ssti_mono.ScaTraField()
       ->Splitter()
-      ->ExtractOtherVector(ssti_mono.AllMaps()->MapsSubProblems()->ExtractVector(
+      ->extract_other_vector(ssti_mono.AllMaps()->MapsSubProblems()->extract_vector(
           ssti_mono.Increment(), ssti_mono.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&concincnorm);
 
@@ -498,7 +498,7 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   double concresnorm(0.0);
   ssti_mono.ScaTraField()
       ->Splitter()
-      ->ExtractOtherVector(ssti_mono.AllMaps()->MapsSubProblems()->ExtractVector(
+      ->extract_other_vector(ssti_mono.AllMaps()->MapsSubProblems()->extract_vector(
           ssti_mono.Residual(), ssti_mono.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&concresnorm);
 
@@ -506,14 +506,14 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   double potdofnorm(0.0);
   ssti_mono.ScaTraField()
       ->Splitter()
-      ->ExtractCondVector(ssti_mono.ScaTraField()->Phinp())
+      ->extract_cond_vector(ssti_mono.ScaTraField()->Phinp())
       ->Norm2(&potdofnorm);
 
   // compute L2 norm of potential increment vector
   double potincnorm(0.0);
   ssti_mono.ScaTraField()
       ->Splitter()
-      ->ExtractCondVector(ssti_mono.AllMaps()->MapsSubProblems()->ExtractVector(
+      ->extract_cond_vector(ssti_mono.AllMaps()->MapsSubProblems()->extract_vector(
           ssti_mono.Increment(), ssti_mono.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&potincnorm);
 
@@ -521,7 +521,7 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   double potresnorm(0.0);
   ssti_mono.ScaTraField()
       ->Splitter()
-      ->ExtractCondVector(ssti_mono.AllMaps()->MapsSubProblems()->ExtractVector(
+      ->extract_cond_vector(ssti_mono.AllMaps()->MapsSubProblems()->extract_vector(
           ssti_mono.Residual(), ssti_mono.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&potresnorm);
 
@@ -533,14 +533,14 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   double structureresnorm(0.0);
   ssti_mono.AllMaps()
       ->MapsSubProblems()
-      ->ExtractVector(ssti_mono.Residual(), ssti_mono.GetProblemPosition(Subproblem::structure))
+      ->extract_vector(ssti_mono.Residual(), ssti_mono.GetProblemPosition(Subproblem::structure))
       ->Norm2(&structureresnorm);
 
   // compute L2 norm of structural increment vector
   double structureincnorm(0.0);
   ssti_mono.AllMaps()
       ->MapsSubProblems()
-      ->ExtractVector(ssti_mono.Increment(), ssti_mono.GetProblemPosition(Subproblem::structure))
+      ->extract_vector(ssti_mono.Increment(), ssti_mono.GetProblemPosition(Subproblem::structure))
       ->Norm2(&structureincnorm);
 
   // compute L2 norm of thermo state vector
@@ -551,14 +551,14 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   double thermoresnorm(0.0);
   ssti_mono.AllMaps()
       ->MapsSubProblems()
-      ->ExtractVector(ssti_mono.Residual(), ssti_mono.GetProblemPosition(Subproblem::thermo))
+      ->extract_vector(ssti_mono.Residual(), ssti_mono.GetProblemPosition(Subproblem::thermo))
       ->Norm2(&thermoresnorm);
 
   // compute L2 norm of thermo increment vector
   double thermoincnorm(0.0);
   ssti_mono.AllMaps()
       ->MapsSubProblems()
-      ->ExtractVector(ssti_mono.Increment(), ssti_mono.GetProblemPosition(Subproblem::thermo))
+      ->extract_vector(ssti_mono.Increment(), ssti_mono.GetProblemPosition(Subproblem::thermo))
       ->Norm2(&thermoincnorm);
 
   // compute L2 norm of total residual vector

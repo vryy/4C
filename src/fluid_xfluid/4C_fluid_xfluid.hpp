@@ -265,11 +265,11 @@ namespace FLD
     }
     Teuchos::RCP<const Epetra_Map> VelocityRowMap() override
     {
-      return state_->velpressplitter_->OtherMap();
+      return state_->velpressplitter_->other_map();
     }
     Teuchos::RCP<const Epetra_Map> PressureRowMap() override
     {
-      return state_->velpressplitter_->CondMap();
+      return state_->velpressplitter_->cond_map();
     }
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
@@ -288,7 +288,7 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> RHS_s_Vec(const std::string& cond_name);
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
     {
       return state_->dbcmaps_;
     }

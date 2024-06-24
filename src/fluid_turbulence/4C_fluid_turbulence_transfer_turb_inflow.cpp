@@ -629,7 +629,7 @@ void FLD::TransferTurbulentInflowCondition::set_values_available_on_this_proc(
     std::vector<int>& mymasters, std::vector<std::vector<double>>& mymasters_vel,
     Teuchos::RCP<Epetra_Vector> velnp)
 {
-  const Teuchos::RCP<const Epetra_Map> activedbcdofs = dbcmaps_->CondMap();
+  const Teuchos::RCP<const Epetra_Map> activedbcdofs = dbcmaps_->cond_map();
 
   for (unsigned nn = 0; nn < mymasters.size(); ++nn)
   {
@@ -846,7 +846,7 @@ void FLD::TransferTurbulentInflowConditionXW::set_values_available_on_this_proc(
     std::vector<int>& mymasters, std::vector<std::vector<double>>& mymasters_vel,
     Teuchos::RCP<Epetra_Vector> velnp)
 {
-  const Teuchos::RCP<const Epetra_Map> activedbcdofs = dbcmaps_->CondMap();
+  const Teuchos::RCP<const Epetra_Map> activedbcdofs = dbcmaps_->cond_map();
 
   for (unsigned nn = 0; nn < mymasters.size(); ++nn)
   {

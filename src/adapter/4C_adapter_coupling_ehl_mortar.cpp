@@ -223,7 +223,7 @@ void Adapter::CouplingEhlMortar::CondenseContact(
       interface_->assemble_lin_slip_normal_regularization(*dcsdLMc, *dcsdd, *rcsa_fr);
       interface_->AssembleLinStick(*dcsdLMc, *dcsdd, *rcsa_fr);
       rcsa_fr->Scale(-1.);
-      CONTACT::UTILS::AddVector(*rcsa_fr, *fcsa);
+      CONTACT::UTILS::add_vector(*rcsa_fr, *fcsa);
     }
     else
     {
@@ -233,7 +233,7 @@ void Adapter::CouplingEhlMortar::CondenseContact(
       interface_->AssembleTNderiv(dcsdd, Teuchos::null);
       interface_->AssembleTangrhs(*rcsa_fr);
       rcsa_fr->Scale(-1.);
-      CONTACT::UTILS::AddVector(*rcsa_fr, *fcsa);
+      CONTACT::UTILS::add_vector(*rcsa_fr, *fcsa);
     }
   }
   else
@@ -260,7 +260,7 @@ void Adapter::CouplingEhlMortar::CondenseContact(
       if (gact->ReplaceMap(*interface_->ActiveNDofs())) FOUR_C_THROW("replaceMap went wrong");
     }
   }
-  CONTACT::UTILS::AddVector(*gact, *fcsa);
+  CONTACT::UTILS::add_vector(*gact, *fcsa);
   fcsa->Norm2(&contact_rhs_norm_);
 
   // complete all the new matrix blocks
@@ -463,7 +463,7 @@ void Adapter::CouplingEhlMortar::CondenseContact(
   Core::LinAlg::Export(*z_, *tmpv2);
   dcsdLMc->Multiply(false, *tmpv2, *tmpv);
   tmpv->Scale(-1.);
-  CONTACT::UTILS::AddVector(*tmpv, *fcsa);
+  CONTACT::UTILS::add_vector(*tmpv, *fcsa);
   tmpv = Teuchos::null;
   tmpv2 = Teuchos::null;
 
@@ -514,7 +514,7 @@ void Adapter::CouplingEhlMortar::CondenseContact(
 
   // reset rhs
   combined_RHS->PutScalar(0.);
-  CONTACT::UTILS::AddVector(*rt, *combined_RHS);
+  CONTACT::UTILS::add_vector(*rt, *combined_RHS);
 
   // **********************************************************************
   // **********************************************************************
@@ -525,17 +525,17 @@ void Adapter::CouplingEhlMortar::CondenseContact(
   // (1) add the blocks, we do nothing with (i.e. (Inactive+others))
   kss_new.Add(*kss_ni, false, 1., 1.);
   kst_new.Add(*kst_ni, false, 1., 1.);
-  CONTACT::UTILS::AddVector(rsni, *combined_RHS);
+  CONTACT::UTILS::add_vector(rsni, *combined_RHS);
 
   // (2) add the 'uncondensed' blocks (i.e. everything w/o a D^-1
   // (2)a actual stiffness blocks of the master-rows
   kss_new.Add(*kss_m, false, 1., 1.);
   kst_new.Add(*kst_m, false, 1., 1.);
-  CONTACT::UTILS::AddVector(rsm, *combined_RHS);
+  CONTACT::UTILS::add_vector(rsm, *combined_RHS);
 
   // (2)b active constraints in the active slave rows
   kss_new.Add(*dcsdd, false, 1., 1.);
-  CONTACT::UTILS::AddVector(*fcsa, *combined_RHS);
+  CONTACT::UTILS::add_vector(*fcsa, *combined_RHS);
 
   // (3) condensed parts
   // second row
@@ -545,7 +545,7 @@ void Adapter::CouplingEhlMortar::CondenseContact(
       *Core::LinAlg::MLMultiply(*dInvMa, true, *kst_a, false, false, false, true), false, 1., 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*interface_->MasterRowDofs()));
   if (dInvMa->Multiply(true, *rsa, *tmpv)) FOUR_C_THROW("multiply failed");
-  CONTACT::UTILS::AddVector(*tmpv, *combined_RHS);
+  CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
   tmpv = Teuchos::null;
 
   // third row
@@ -558,7 +558,7 @@ void Adapter::CouplingEhlMortar::CondenseContact(
   tmpv = Teuchos::rcp(new Epetra_Vector(*interface_->ActiveDofs()));
   wDinv->Multiply(false, *rsa, *tmpv);
   tmpv->Scale(-1. / (1. - alphaf_));
-  CONTACT::UTILS::AddVector(*tmpv, *combined_RHS);
+  CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
   tmpv = Teuchos::null;
   wDinv = Teuchos::null;
 
@@ -663,7 +663,7 @@ void Adapter::CouplingEhlMortar::store_dirichlet_status(
     for (int k = 0; k < cnode->NumDof(); ++k)
     {
       int currdof = cnode->Dofs()[k];
-      int lid = (dbcmaps->CondMap())->LID(currdof);
+      int lid = (dbcmaps->cond_map())->LID(currdof);
 
       // store dbc status if found
       if (lid >= 0 && cnode->DbcDofs()[k] == false) cnode->SetDbc() = true;
@@ -682,7 +682,7 @@ void Adapter::CouplingEhlMortar::store_dirichlet_status(
   }
   // create old style dirichtoggle vector (supposed to go away)
   sdirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowDofs(), true));
-  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->CondMap())));
+  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->cond_map())));
   temp->PutScalar(1.0);
   Core::LinAlg::Export(*temp, *sdirichtoggle_);
 

@@ -345,7 +345,7 @@ void THR::TimIntGenAlpha::update_iter_incrementally()
   aux->Update(1.0, *tempn_, -1.0, *(*temp_)(0), 0.0);
   aux->Update(-(1.0 - gamma_) / gamma_, *(*rate_)(0), (1 / (gamma_ * dt)));
   // put only to free/non-DBC DOFs
-  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), raten_);
+  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(aux), raten_);
 
   // bye
   return;

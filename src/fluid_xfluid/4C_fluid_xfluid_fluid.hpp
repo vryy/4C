@@ -181,7 +181,7 @@ namespace FLD
     }
 
     //! get combined background and embedded fluid dirichlet map extractor
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
     {
       return xff_state_->xffluiddbcmaps_;
     }

@@ -297,7 +297,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::evaluate()
   arttoporofluidcoupling_->SetupSystem(comb_systemmatrix_, rhs_,
       porofluidmultitimint_->SystemMatrix(), artnettimint_->SystemMatrix(),
       porofluidmultitimint_->RHS(), artnettimint_->RHS(),
-      porofluidmultitimint_->GetDBCMapExtractor(), artnettimint_->GetDBCMapExtractor());
+      porofluidmultitimint_->get_dbc_map_extractor(), artnettimint_->get_dbc_map_extractor());
 
   return;
 }

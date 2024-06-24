@@ -740,7 +740,7 @@ void XFEM::MultiFieldMapExtractor::build_element_map_extractor()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> XFEM::MultiFieldMapExtractor::ExtractVector(
+Teuchos::RCP<Epetra_Vector> XFEM::MultiFieldMapExtractor::extract_vector(
     const Epetra_Vector& full, enum FieldName field, enum MapType map_type) const
 {
   const int dis_id = slave_id(field);
@@ -756,14 +756,14 @@ Teuchos::RCP<Epetra_Vector> XFEM::MultiFieldMapExtractor::ExtractVector(
   Teuchos::RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*sl_full_map));
 
   // extract the actual vector and return it
-  ExtractVector(full, dis_id, *vec, map_type);
+  extract_vector(full, dis_id, *vec, map_type);
 
   return vec;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> XFEM::MultiFieldMapExtractor::ExtractVector(
+Teuchos::RCP<Epetra_MultiVector> XFEM::MultiFieldMapExtractor::extract_vector(
     const Epetra_MultiVector& full, enum FieldName field, enum MapType map_type) const
 {
   const int dis_id = slave_id(field);
@@ -780,33 +780,33 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::MultiFieldMapExtractor::ExtractVector(
       Teuchos::rcp(new Epetra_MultiVector(*sl_full_map, full.NumVectors()));
 
   // extract the actual vector and return it
-  ExtractVector(full, dis_id, *vec, map_type);
+  extract_vector(full, dis_id, *vec, map_type);
 
   return vec;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::ExtractVector(const Epetra_MultiVector& full, int block,
+void XFEM::MultiFieldMapExtractor::extract_vector(const Epetra_MultiVector& full, int block,
     Epetra_MultiVector& partial, enum MapType map_type) const
 {
   // --------------------------------------------------------------------------
   // extract the non-interface part
   // --------------------------------------------------------------------------
   Teuchos::RCP<Epetra_MultiVector> partial_non_interface =
-      ma_map_extractor(map_type).ExtractVector(full, num_sl_dis() + block);
+      ma_map_extractor(map_type).extract_vector(full, num_sl_dis() + block);
   sl_map_extractor(block, map_type)
-      .InsertVector(*partial_non_interface, MultiField::block_non_interface, partial);
+      .insert_vector(*partial_non_interface, MultiField::block_non_interface, partial);
 
   // --------------------------------------------------------------------------
   // extract the interface part
   // --------------------------------------------------------------------------
   Teuchos::RCP<Epetra_MultiVector> partial_ma_interface =
-      ma_map_extractor(map_type).ExtractVector(full, block);
+      ma_map_extractor(map_type).extract_vector(full, block);
   Teuchos::RCP<Epetra_MultiVector> partial_sl_interface =
       i_coupling(block).MasterToSlave(partial_ma_interface, map_type);
   sl_map_extractor(block, map_type)
-      .InsertVector(*partial_sl_interface, MultiField::block_interface, partial);
+      .insert_vector(*partial_sl_interface, MultiField::block_interface, partial);
 }
 
 /*----------------------------------------------------------------------------*
@@ -814,7 +814,7 @@ void XFEM::MultiFieldMapExtractor::ExtractVector(const Epetra_MultiVector& full,
 void XFEM::MultiFieldMapExtractor::extract_element_vector(
     const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial) const
 {
-  element_map_extractor_->ExtractVector(full, block, partial);
+  element_map_extractor_->extract_vector(full, block, partial);
 }
 
 /*----------------------------------------------------------------------------*
@@ -822,7 +822,7 @@ void XFEM::MultiFieldMapExtractor::extract_element_vector(
 void XFEM::MultiFieldMapExtractor::InsertElementVector(
     const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full) const
 {
-  element_map_extractor_->InsertVector(partial, block, full);
+  element_map_extractor_->insert_vector(partial, block, full);
 }
 
 /*----------------------------------------------------------------------------*
@@ -830,23 +830,23 @@ void XFEM::MultiFieldMapExtractor::InsertElementVector(
 void XFEM::MultiFieldMapExtractor::AddElementVector(
     const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full, double scale) const
 {
-  element_map_extractor_->AddVector(partial, block, full, scale);
+  element_map_extractor_->add_vector(partial, block, full, scale);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> XFEM::MultiFieldMapExtractor::InsertVector(
+Teuchos::RCP<Epetra_Vector> XFEM::MultiFieldMapExtractor::insert_vector(
     const Epetra_Vector& partial, enum FieldName field, enum MapType map_type) const
 {
   const int dis_id = slave_id(field);
   Teuchos::RCP<Epetra_Vector> full = Teuchos::rcp(new Epetra_Vector(*FullMap(map_type)));
-  InsertVector(partial, dis_id, *full, map_type);
+  insert_vector(partial, dis_id, *full, map_type);
   return full;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> XFEM::MultiFieldMapExtractor::InsertVector(
+Teuchos::RCP<Epetra_MultiVector> XFEM::MultiFieldMapExtractor::insert_vector(
     const Epetra_MultiVector& partial, enum FieldName field, enum MapType map_type) const
 {
   const int dis_id = slave_id(field);
@@ -854,58 +854,58 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::MultiFieldMapExtractor::InsertVector(
   Teuchos::RCP<Epetra_MultiVector> full =
       Teuchos::rcp(new Epetra_MultiVector(*FullMap(map_type), partial.NumVectors()));
 
-  InsertVector(partial, dis_id, *full, map_type);
+  insert_vector(partial, dis_id, *full, map_type);
   return full;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::InsertVector(const Epetra_MultiVector& partial, int block,
+void XFEM::MultiFieldMapExtractor::insert_vector(const Epetra_MultiVector& partial, int block,
     Epetra_MultiVector& full, enum MapType map_type) const
 {
   // --------------------------------------------------------------------------
   // insert the non_interface part
   // --------------------------------------------------------------------------
   Teuchos::RCP<Epetra_MultiVector> partial_non_interface =
-      sl_map_extractor(block, map_type).ExtractVector(partial, MultiField::block_non_interface);
+      sl_map_extractor(block, map_type).extract_vector(partial, MultiField::block_non_interface);
 
-  ma_map_extractor(map_type).InsertVector(*partial_non_interface, num_sl_dis() + block, full);
+  ma_map_extractor(map_type).insert_vector(*partial_non_interface, num_sl_dis() + block, full);
 
   // --------------------------------------------------------------------------
   // insert the interface part
   // --------------------------------------------------------------------------
   Teuchos::RCP<Epetra_MultiVector> partial_sl_interface =
-      sl_map_extractor(block, map_type).ExtractVector(partial, MultiField::block_interface);
+      sl_map_extractor(block, map_type).extract_vector(partial, MultiField::block_interface);
 
   Teuchos::RCP<Epetra_MultiVector> partial_ma_interface =
       i_coupling(block).SlaveToMaster(partial_sl_interface, map_type);
 
-  ma_map_extractor(map_type).InsertVector(*partial_ma_interface, block, full);
+  ma_map_extractor(map_type).insert_vector(*partial_ma_interface, block, full);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::AddVector(const Epetra_MultiVector& partial, int block,
+void XFEM::MultiFieldMapExtractor::add_vector(const Epetra_MultiVector& partial, int block,
     Epetra_MultiVector& full, double scale, enum MapType map_type) const
 {
   // --------------------------------------------------------------------------
   // insert the non_interface part
   // --------------------------------------------------------------------------
   Teuchos::RCP<Epetra_MultiVector> partial_non_interface =
-      sl_map_extractor(block, map_type).ExtractVector(partial, MultiField::block_non_interface);
+      sl_map_extractor(block, map_type).extract_vector(partial, MultiField::block_non_interface);
 
-  ma_map_extractor(map_type).AddVector(*partial_non_interface, num_sl_dis() + block, full, scale);
+  ma_map_extractor(map_type).add_vector(*partial_non_interface, num_sl_dis() + block, full, scale);
 
   // --------------------------------------------------------------------------
   // insert the interface part
   // --------------------------------------------------------------------------
   Teuchos::RCP<Epetra_MultiVector> partial_sl_interface =
-      sl_map_extractor(block, map_type).ExtractVector(partial, MultiField::block_interface);
+      sl_map_extractor(block, map_type).extract_vector(partial, MultiField::block_interface);
 
   Teuchos::RCP<Epetra_MultiVector> partial_ma_interface =
       i_coupling(block).SlaveToMaster(partial_sl_interface, map_type);
 
-  ma_map_extractor(map_type).AddVector(*partial_ma_interface, block, full, scale);
+  ma_map_extractor(map_type).add_vector(*partial_ma_interface, block, full, scale);
 }
 
 /*----------------------------------------------------------------------------*

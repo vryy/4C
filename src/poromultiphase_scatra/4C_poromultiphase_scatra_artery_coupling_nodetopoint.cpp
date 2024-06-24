@@ -113,8 +113,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::SetupSystem(
 {
   // call base class
   PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSystem(sysmat, rhs,
-      sysmat_cont, sysmat_art, rhs_cont, rhs_art, dbcmap_cont, dbcmap_art->CondMap(),
-      dbcmap_art->CondMap());
+      sysmat_cont, sysmat_art, rhs_cont, rhs_art, dbcmap_cont, dbcmap_art->cond_map(),
+      dbcmap_art->cond_map());
 }
 
 /*----------------------------------------------------------------------*

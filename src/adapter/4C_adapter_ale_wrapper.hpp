@@ -92,17 +92,17 @@ namespace Adapter
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor()
+    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor()
     {
-      return ale_->GetDBCMapExtractor(ALE::UTILS::MapExtractor::dbc_set_std);
+      return ale_->get_dbc_map_extractor(ALE::UTILS::MapExtractor::dbc_set_std);
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions in case of non-standard Dirichlet sets
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor(
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type  ///< type of dbc set
         ) override
     {
-      return ale_->GetDBCMapExtractor(dbc_type);
+      return ale_->get_dbc_map_extractor(dbc_type);
     }
 
     //! reset state vectors to zero

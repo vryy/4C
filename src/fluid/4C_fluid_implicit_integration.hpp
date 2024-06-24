@@ -659,7 +659,7 @@ namespace FLD
     }
 
     /// access to Dirichlet maps
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
     {
       return dbcmaps_;
     }

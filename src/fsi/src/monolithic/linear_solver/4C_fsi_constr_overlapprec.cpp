@@ -39,7 +39,7 @@ FSI::ConstrOverlappingBlockMatrix::ConstrOverlappingBlockMatrix(
   fsimaps.push_back(maps.Map(0));
   fsimaps.push_back(maps.Map(1));
   fsimaps.push_back(maps.Map(2));
-  overallfsimap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(fsimaps);
+  overallfsimap_ = Core::LinAlg::MultiMapExtractor::merge_maps(fsimaps);
   fsiextractor_ = Core::LinAlg::MultiMapExtractor(*overallfsimap_, fsimaps);
 
   // stuff needed for SIMPLE preconditioner -> this needs to be read
@@ -109,10 +109,10 @@ void FSI::ConstrOverlappingBlockMatrix::sgs(
 
   Epetra_Vector& y = Teuchos::dyn_cast<Epetra_Vector>(Y);
 
-  Teuchos::RCP<Epetra_Vector> sy = RangeExtractor().ExtractVector(y, 0);
-  Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().ExtractVector(y, 1);
-  Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().ExtractVector(y, 2);
-  Teuchos::RCP<Epetra_Vector> cy = RangeExtractor().ExtractVector(y, 3);
+  Teuchos::RCP<Epetra_Vector> sy = RangeExtractor().extract_vector(y, 0);
+  Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().extract_vector(y, 1);
+  Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().extract_vector(y, 2);
+  Teuchos::RCP<Epetra_Vector> cy = RangeExtractor().extract_vector(y, 3);
 
   Teuchos::RCP<Epetra_Vector> sz = Teuchos::rcp(new Epetra_Vector(sy->Map()));
   Teuchos::RCP<Epetra_Vector> fz = Teuchos::rcp(new Epetra_Vector(fy->Map()));
@@ -132,9 +132,9 @@ void FSI::ConstrOverlappingBlockMatrix::sgs(
 
     for (int run = 0; run < iterations_; ++run)
     {
-      Teuchos::RCP<Epetra_Vector> sx = DomainExtractor().ExtractVector(x, 0);
-      Teuchos::RCP<Epetra_Vector> fx = DomainExtractor().ExtractVector(x, 1);
-      Teuchos::RCP<Epetra_Vector> ax = DomainExtractor().ExtractVector(x, 2);
+      Teuchos::RCP<Epetra_Vector> sx = DomainExtractor().extract_vector(x, 0);
+      Teuchos::RCP<Epetra_Vector> fx = DomainExtractor().extract_vector(x, 1);
+      Teuchos::RCP<Epetra_Vector> ax = DomainExtractor().extract_vector(x, 2);
 
       // ----------------------------------------------------------------
       // lower GS
@@ -250,9 +250,9 @@ void FSI::ConstrOverlappingBlockMatrix::sgs(
 
       if (symmetric_)
       {
-        sx = DomainExtractor().ExtractVector(x, 0);
-        fx = DomainExtractor().ExtractVector(x, 1);
-        ax = DomainExtractor().ExtractVector(x, 2);
+        sx = DomainExtractor().extract_vector(x, 0);
+        fx = DomainExtractor().extract_vector(x, 1);
+        ax = DomainExtractor().extract_vector(x, 2);
 
         // ----------------------------------------------------------------
         // upper GS
@@ -323,7 +323,7 @@ void FSI::ConstrOverlappingBlockMatrix::sgs(
 
     // cx - B^ * u_(n+1/2)
 
-    Teuchos::RCP<Epetra_Vector> cx = DomainExtractor().ExtractVector(x, 3);
+    Teuchos::RCP<Epetra_Vector> cx = DomainExtractor().extract_vector(x, 3);
 
     Epetra_Vector inter(cx->Map());
     ConStructOp.Multiply(false, *sy, inter);
@@ -445,10 +445,10 @@ void FSI::ConstrOverlappingBlockMatrix::sgs(
     fy->Update(-1.0, *temp2, 1.0);
   }
 
-  RangeExtractor().InsertVector(*sy, 0, y);
-  RangeExtractor().InsertVector(*fy, 1, y);
-  RangeExtractor().InsertVector(*ay, 2, y);
-  RangeExtractor().InsertVector(*cy, 3, y);
+  RangeExtractor().insert_vector(*sy, 0, y);
+  RangeExtractor().insert_vector(*fy, 1, y);
+  RangeExtractor().insert_vector(*ay, 2, y);
+  RangeExtractor().insert_vector(*cy, 3, y);
 }
 
 

@@ -292,9 +292,10 @@ void SSTI::SSTIAlgorithm::distribute_scatra_solution()
     // pass master-side scatra degrees of freedom to thermo discretization
     const Teuchos::RCP<Epetra_Vector> imasterphinp =
         Core::LinAlg::CreateVector(*ScaTraField()->discretization()->dof_row_map(), true);
-    meshtying_strategy_scatra_->InterfaceMaps()->InsertVector(
+    meshtying_strategy_scatra_->InterfaceMaps()->insert_vector(
         meshtying_strategy_scatra_->CouplingAdapter()->MasterToSlave(
-            meshtying_strategy_scatra_->InterfaceMaps()->ExtractVector(*ScaTraField()->Phinp(), 2)),
+            meshtying_strategy_scatra_->InterfaceMaps()->extract_vector(
+                *ScaTraField()->Phinp(), 2)),
         1, imasterphinp);
     ThermoField()->discretization()->set_state(2, "imasterscatra", imasterphinp);
   }
@@ -313,16 +314,17 @@ void SSTI::SSTIAlgorithm::distribute_thermo_solution()
     // extract master side temperatures and copy to slave side dof map
     const Teuchos::RCP<Epetra_Vector> imastertempnp =
         Core::LinAlg::CreateVector(*ThermoField()->discretization()->dof_row_map(), true);
-    meshtying_strategy_thermo_->InterfaceMaps()->InsertVector(
+    meshtying_strategy_thermo_->InterfaceMaps()->insert_vector(
         meshtying_strategy_thermo_->CouplingAdapter()->MasterToSlave(
-            meshtying_strategy_thermo_->InterfaceMaps()->ExtractVector(*ThermoField()->Phinp(), 2)),
+            meshtying_strategy_thermo_->InterfaceMaps()->extract_vector(
+                *ThermoField()->Phinp(), 2)),
         1, imastertempnp);
 
     // extract slave side temperatures
     const Teuchos::RCP<Epetra_Vector> islavetempnp =
         Core::LinAlg::CreateVector(*ThermoField()->discretization()->dof_row_map(), true);
-    meshtying_strategy_thermo_->InterfaceMaps()->InsertVector(
-        meshtying_strategy_thermo_->InterfaceMaps()->ExtractVector(*ThermoField()->Phinp(), 1), 1,
+    meshtying_strategy_thermo_->InterfaceMaps()->insert_vector(
+        meshtying_strategy_thermo_->InterfaceMaps()->extract_vector(*ThermoField()->Phinp(), 1), 1,
         islavetempnp);
 
     // set master side temperature to thermo discretization

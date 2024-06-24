@@ -80,10 +80,10 @@ void XFEM::XffCouplingManager::SetCouplingStates()
   //  mcffi_->update_displacement_iteration_vectors();
   //
   //  //2 Set Displacement on both mesh couplings ... we get them from the embedded fluid field!
-  //  InsertVector(0,fluid_->Dispnp(),0,mcffi_->IDispnp(),Coupling_Comm_Manager::full_to_partial);
+  //  insert_vector(0,fluid_->Dispnp(),0,mcffi_->IDispnp(),Coupling_Comm_Manager::full_to_partial);
   //
   //
-  //  InsertVector(0,fluid_->Velnp(),0,mcffi_->IVelnp(),Coupling_Comm_Manager::full_to_partial);
+  //  insert_vector(0,fluid_->Velnp(),0,mcffi_->IVelnp(),Coupling_Comm_Manager::full_to_partial);
   //
 
   return;
@@ -125,7 +125,7 @@ void XFEM::XffCouplingManager::AddCouplingRHS(
 
   Teuchos::RCP<Epetra_Vector> coup_rhs = Teuchos::rcp(new Epetra_Vector(*me.Map(idx_[0]), true));
   Core::LinAlg::Export(*coup_rhs_sum, *coup_rhs);
-  me.AddVector(coup_rhs, idx_[0], rhs);
+  me.add_vector(coup_rhs, idx_[0], rhs);
 
   return;
 }

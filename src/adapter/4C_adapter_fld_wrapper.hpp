@@ -103,9 +103,9 @@ namespace Adapter
       return fluid_->discretization();
     }
     Teuchos::RCP<const Core::DOFSets::DofSet> DofSet() override { return fluid_->DofSet(); }
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
     {
-      return fluid_->GetDBCMapExtractor();
+      return fluid_->get_dbc_map_extractor();
     }
     void SetInitialFlowField(
         const Inpar::FLUID::InitialField initfield, const int startfuncno) override

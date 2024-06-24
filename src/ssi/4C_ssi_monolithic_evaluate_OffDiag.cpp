@@ -239,7 +239,7 @@ void SSI::ScatraStructureOffDiagCoupling::
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
-      const int numberscatrablocks = sca_tra_field()->BlockMaps()->NumMaps();
+      const int numberscatrablocks = sca_tra_field()->BlockMaps()->num_maps();
 
       // cast master and slave matrix
       auto blockslavematrix =
@@ -511,7 +511,7 @@ void SSI::ScatraStructureOffDiagCoupling::
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();
 
-        for (int iblock = 0; iblock < sca_tra_field()->BlockMaps()->NumMaps(); ++iblock)
+        for (int iblock = 0; iblock < sca_tra_field()->BlockMaps()->num_maps(); ++iblock)
         {
           auto scatra_slave_flux_structure_slave_dofs_on_scatra_slave_iblock =
               scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix_block->Matrix(
@@ -659,7 +659,7 @@ void SSI::ScatraStructureOffDiagCoupling::
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();
 
-        for (int iblock = 0; iblock < sca_tra_field()->BlockMaps()->NumMaps(); ++iblock)
+        for (int iblock = 0; iblock < sca_tra_field()->BlockMaps()->num_maps(); ++iblock)
         {
           auto evaluate_iblock = evaluate_matrix_block->Matrix(iblock, 0);
           auto slave_iblock = slavematrix_block->Matrix(iblock, 0);

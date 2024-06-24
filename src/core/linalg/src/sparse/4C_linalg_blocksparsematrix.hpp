@@ -121,10 +121,10 @@ namespace Core::LinAlg
     //@{
 
     /// number of row blocks
-    int Rows() const { return rangemaps_.NumMaps(); }
+    int Rows() const { return rangemaps_.num_maps(); }
 
     /// number of column blocks
-    int Cols() const { return domainmaps_.NumMaps(); }
+    int Cols() const { return domainmaps_.num_maps(); }
 
     /// range map for given row block
     const Epetra_Map& RangeMap(int r) const { return *rangemaps_.Map(r); }

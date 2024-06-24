@@ -470,7 +470,7 @@ void FS3I::PartFPS3I::SetupSystem()
     maps.push_back(scatrafieldexvec_[0]->FullMap());
     maps.push_back(scatrafieldexvec_[1]->FullMap());
   }
-  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
   scatraglobalex_->setup(*fullmap, maps);
 
   // create coupling vectors and matrices (only needed for finite surface permeabilities)
@@ -734,7 +734,7 @@ void FS3I::PartFPS3I::evaluate_scatra_fields()
       scatra->KedemKatchalsky(coupmat, coupforce);
 
       // apply Dirichlet boundary conditions to coupling matrix and vector
-      const Teuchos::RCP<const Epetra_Map> dbcmap = scatra->DirichMaps()->CondMap();
+      const Teuchos::RCP<const Epetra_Map> dbcmap = scatra->DirichMaps()->cond_map();
       coupmat->ApplyDirichlet(*dbcmap, false);
       Core::LinAlg::apply_dirichlet_to_system(*coupforce, *scatrazeros_[i], *dbcmap);
     }
@@ -782,7 +782,7 @@ void FS3I::PartFPS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>&
 
   // extract FPSI-Interface from fluid field
   WallShearStress =
-      fpsi_->FPSICoupl()->fluid_fpsi_vel_pres_extractor()->ExtractCondVector(WallShearStress);
+      fpsi_->FPSICoupl()->fluid_fpsi_vel_pres_extractor()->extract_cond_vector(WallShearStress);
 
   // replace global fluid interface dofs through porofluid interface dofs
   WallShearStress = fpsi_->FPSICoupl()->iFluidToPorofluid(WallShearStress);
@@ -792,7 +792,7 @@ void FS3I::PartFPS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>&
       Core::LinAlg::CreateVector(*(fpsi_->poro_field()->fluid_field()->dof_row_map()), true);
 
   // Parameter int block of function InsertVector:
-  fpsi_->FPSICoupl()->poro_fluid_fpsi_vel_pres_extractor()->InsertVector(
+  fpsi_->FPSICoupl()->poro_fluid_fpsi_vel_pres_extractor()->insert_vector(
       WallShearStress, 1, porofluid);
 
   wss.push_back(porofluid);

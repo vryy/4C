@@ -919,7 +919,7 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
 {
   // create old style dirichtoggle vector (supposed to go away)
   dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->FullMap())));
-  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
+  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->cond_map())));
   temp->PutScalar(1.0);
   Core::LinAlg::Export(*temp, *dirichtoggle_);
 
@@ -940,8 +940,8 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
 
 
   // apply DBC to additional offdiagonal coupling matrices
-  mat_dcardvasc0d_dd->ApplyDirichlet(*(dbcmaps_->CondMap()), false);
-  mat_dstruct_dcv0ddof->ApplyDirichlet(*(dbcmaps_->CondMap()), false);
+  mat_dcardvasc0d_dd->ApplyDirichlet(*(dbcmaps_->cond_map()), false);
+  mat_dstruct_dcv0ddof->ApplyDirichlet(*(dbcmaps_->cond_map()), false);
 
   // define maps of standard dofs and additional pressures
   Teuchos::RCP<Epetra_Map> standrowmap = Teuchos::rcp(new Epetra_Map(mat_structstiff->RowMap()));
@@ -1162,26 +1162,26 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   {
     // initialize and write vector with reduced displacement dofs
     Teuchos::RCP<Epetra_Vector> disp_R = Teuchos::rcp(new Epetra_Vector(*mapext_R.Map(0)));
-    mapext_R.ExtractVector(mergedsol, 0, disp_R);
+    mapext_R.extract_vector(mergedsol, 0, disp_R);
 
     // initialize and write vector with pressure dofs, replace row map
     Teuchos::RCP<Epetra_Vector> cv0ddof = Teuchos::rcp(new Epetra_Vector(*mapext_R.Map(1)));
-    mapext_R.ExtractVector(mergedsol, 1, cv0ddof);
+    mapext_R.extract_vector(mergedsol, 1, cv0ddof);
     cv0ddof->ReplaceMap(*cardvasc0drowmap);
 
     // extend reduced displacement dofs to high dimension
     Teuchos::RCP<Epetra_Vector> disp_full = mor_->ExtendSolution(disp_R);
 
     // assemble displacement and pressure dofs
-    mergedsol_full = mapext.InsertVector(disp_full, 0);
-    mapext.AddVector(cv0ddof, 1, mergedsol_full, 1);
+    mergedsol_full = mapext.insert_vector(disp_full, 0);
+    mapext.add_vector(cv0ddof, 1, mergedsol_full, 1);
   }
   else
     mergedsol_full = mergedsol;
 
   // store results in smaller vectors
-  mapext.ExtractVector(mergedsol_full, 0, dispinc);
-  mapext.ExtractVector(mergedsol_full, 1, cv0ddofincr);
+  mapext.extract_vector(mergedsol_full, 0, dispinc);
+  mapext.extract_vector(mergedsol_full, 1, cv0ddofincr);
 
   cv0ddofincrement_->Update(1., *cv0ddofincr, 0.);
 

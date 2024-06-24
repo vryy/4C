@@ -2417,7 +2417,7 @@ void ScaTra::ScaTraTimIntImpl::apply_dirichlet_to_system()
     // are not used anyway.
     // We could avoid this though, if the dofrowmap would not include
     // the Dirichlet values as well. But it is expensive to avoid that.
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
+    dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), residual_);
 
     //--------- Apply Dirichlet boundary conditions to system of equations
     // residual values are supposed to be zero at Dirichlet boundaries
@@ -2428,7 +2428,7 @@ void ScaTra::ScaTraTimIntImpl::apply_dirichlet_to_system()
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
 
       Core::LinAlg::apply_dirichlet_to_system(
-          *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
+          *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->cond_map()));
     }
   }
   else
@@ -2437,7 +2437,7 @@ void ScaTra::ScaTraTimIntImpl::apply_dirichlet_to_system()
     TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
 
     Core::LinAlg::apply_dirichlet_to_system(
-        *sysmat_, *phinp_, *residual_, *phinp_, *(dbcmaps_->CondMap()));
+        *sysmat_, *phinp_, *residual_, *phinp_, *(dbcmaps_->cond_map()));
   }
 }
 
@@ -2801,9 +2801,9 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_solve()
   if (explpredictor)
   {
     // explicit predictor + recovery of DBC values
-    auto phinp_dirich = dbcmaps_->ExtractCondVector(phinp_);
+    auto phinp_dirich = dbcmaps_->extract_cond_vector(phinp_);
     explicit_predictor();
-    dbcmaps_->InsertCondVector(phinp_dirich, phinp_);
+    dbcmaps_->insert_cond_vector(phinp_dirich, phinp_);
   }
 
   // start Newton-Raphson iteration
@@ -2830,7 +2830,7 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_solve()
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
 
       Core::LinAlg::apply_dirichlet_to_system(
-          *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
+          *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->cond_map()));
     }
 
     // abort nonlinear iteration if desired
@@ -3153,8 +3153,8 @@ void ScaTra::ScaTraTimIntImpl::add_dirich_cond(const Teuchos::RCP<const Epetra_M
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
   condmaps.push_back(maptoadd);
-  condmaps.push_back(dbcmaps_->CondMap());
-  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::MergeMaps(condmaps);
+  condmaps.push_back(dbcmaps_->cond_map());
+  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
   *dbcmaps_ = Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), condmerged);
 }
 
@@ -3172,8 +3172,8 @@ void ScaTra::ScaTraTimIntImpl::remove_dirich_cond(const Teuchos::RCP<const Epetr
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
   othermaps.push_back(maptoremove);
-  othermaps.push_back(dbcmaps_->OtherMap());
-  Teuchos::RCP<Epetra_Map> othermerged = Core::LinAlg::MultiMapExtractor::MergeMaps(othermaps);
+  othermaps.push_back(dbcmaps_->other_map());
+  Teuchos::RCP<Epetra_Map> othermerged = Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
   *dbcmaps_ = Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), othermerged, false);
 }
 
@@ -3570,7 +3570,7 @@ void ScaTra::ScaTraTimIntImpl::build_block_null_spaces(
     Teuchos::RCP<Core::LinAlg::Solver> solver, int init_block_number) const
 {
   // loop over blocks of global system matrix
-  for (int iblock = init_block_number; iblock < BlockMaps()->NumMaps() + init_block_number;
+  for (int iblock = init_block_number; iblock < BlockMaps()->num_maps() + init_block_number;
        ++iblock)
   {
     // store number of current block as string, starting from 1

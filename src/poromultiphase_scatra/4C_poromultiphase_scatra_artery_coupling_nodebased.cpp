@@ -99,7 +99,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::init()
   maps.push_back(contfieldex_->FullMap());
   maps.push_back(artex_->Map(0));
 
-  fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
+  fullmap_ = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
   /// dof row map of coupled problem splitted in (field) blocks
   globalex_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
   globalex_->setup(*fullmap_, maps);
@@ -143,12 +143,12 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_map_extr
   }
   // fullmap coupled -> all coupled dofs
   Teuchos::RCP<Epetra_Map> fullmap_coupled =
-      Core::LinAlg::MultiMapExtractor::MergeMaps(partialmaps_coupled);
+      Core::LinAlg::MultiMapExtractor::merge_maps(partialmaps_coupled);
 
   // fullmap uncoupled -> all uncoupled dofs
   Teuchos::RCP<Core::LinAlg::MapExtractor> temp =
       Teuchos::rcp(new Core::LinAlg::MapExtractor(*dis->dof_row_map(), fullmap_coupled, false));
-  Teuchos::RCP<Epetra_Map> fullmap_uncoupled = Teuchos::rcp(new Epetra_Map(*temp->CondMap()));
+  Teuchos::RCP<Epetra_Map> fullmap_uncoupled = Teuchos::rcp(new Epetra_Map(*temp->cond_map()));
 
   // vector for setup of extractor
   std::vector<Teuchos::RCP<const Epetra_Map>> fullmap_vector;
@@ -191,21 +191,21 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_vector(
   vec->PutScalar(0.0);
 
   // inner (uncoupled) DOFs of artery
-  Teuchos::RCP<Epetra_Vector> vec2_uncoupled = artex_->ExtractVector(vec_art, 0);
+  Teuchos::RCP<Epetra_Vector> vec2_uncoupled = artex_->extract_vector(vec_art, 0);
 
   // boundary (coupled) DOFs of artery
-  Teuchos::RCP<Epetra_Vector> vec2_coupled = artex_->ExtractVector(vec_art, 1);
+  Teuchos::RCP<Epetra_Vector> vec2_coupled = artex_->extract_vector(vec_art, 1);
 
   // transform boundary DOFs to continuous dis
   Teuchos::RCP<Epetra_Vector> temp =
-      contfieldex_->InsertVector(artcontfieldcoup_->SlaveToMaster(vec2_coupled), 1);
+      contfieldex_->insert_vector(artcontfieldcoup_->SlaveToMaster(vec2_coupled), 1);
 
   // add to continous vec
   temp->Update(1.0, *vec_cont, 1.0);
 
   // set up global vector
-  globalex_->InsertVector(*temp, 0, *vec);
-  globalex_->InsertVector(*vec2_uncoupled, 1, *vec);
+  globalex_->insert_vector(*temp, 0, *vec);
+  globalex_->insert_vector(*vec2_uncoupled, 1, *vec);
 }
 
 /*----------------------------------------------------------------------*
@@ -250,20 +250,20 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::extract_single
     Teuchos::RCP<const Epetra_Vector>& vec_art)
 {
   // process second field (continuous)
-  vec_cont = globalex_->ExtractVector(globalvec, 0);
+  vec_cont = globalex_->extract_vector(globalvec, 0);
 
   // process coupled (boundary) DOFs of the second field
-  Teuchos::RCP<Epetra_Vector> boundary = contfieldex_->ExtractVector(vec_cont, 1);
+  Teuchos::RCP<Epetra_Vector> boundary = contfieldex_->extract_vector(vec_cont, 1);
 
   // process inner (uncoupled) and boundary (coupled) DOFs of artery
-  Teuchos::RCP<const Epetra_Vector> artery_inner = globalex_->ExtractVector(globalvec, 1);
+  Teuchos::RCP<const Epetra_Vector> artery_inner = globalex_->extract_vector(globalvec, 1);
   Teuchos::RCP<Epetra_Vector> artery_boundary = artcontfieldcoup_->MasterToSlave(boundary);
 
   // build vector for artery
   // 1) inner DOFs
-  Teuchos::RCP<Epetra_Vector> artery_temp = artex_->InsertVector(artery_inner, 0);
+  Teuchos::RCP<Epetra_Vector> artery_temp = artex_->insert_vector(artery_inner, 0);
   // 2) boundary DOFs
-  artex_->InsertVector(artery_boundary, 1, artery_temp);
+  artex_->insert_vector(artery_boundary, 1, artery_temp);
 
   vec_art = artery_temp;
 }
@@ -286,10 +286,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::check_dbc_on_c
   }
   // intersect DBC maps and coupled dof map to check if coupling and DBC are applied on same dofs
   std::vector<Teuchos::RCP<const Epetra_Map>> dummy;
-  dummy.push_back(dbcmaps->CondMap());
+  dummy.push_back(dbcmaps->cond_map());
   dummy.push_back(coupleddofmap);
   Teuchos::RCP<Epetra_Map> intersect_dbc_coupled =
-      Core::LinAlg::MultiMapExtractor::IntersectMaps(dummy);
+      Core::LinAlg::MultiMapExtractor::intersect_maps(dummy);
 
   if (intersect_dbc_coupled->NumGlobalElements() > 0)
   {
@@ -314,13 +314,13 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::CheckInitialFi
     Teuchos::RCP<const Epetra_Vector> vec_cont, Teuchos::RCP<const Epetra_Vector> vec_art)
 {
   // boundary (coupled) DOFs of artery
-  Teuchos::RCP<Epetra_Vector> vec2_coupled = artex_->ExtractVector(vec_art, 1);
+  Teuchos::RCP<Epetra_Vector> vec2_coupled = artex_->extract_vector(vec_art, 1);
 
   // transform boundary DOFs to continuous dis
   Teuchos::RCP<Epetra_Vector> temp = artcontfieldcoup_->SlaveToMaster(vec2_coupled);
 
   // process coupled (boundary) DOFs of the second field
-  Teuchos::RCP<Epetra_Vector> boundary = contfieldex_->ExtractVector(vec_cont, 1);
+  Teuchos::RCP<Epetra_Vector> boundary = contfieldex_->extract_vector(vec_cont, 1);
 
   // subtract artery DOF values from continuous DOF values
   boundary->Update(-1.0, *temp, 1.0);

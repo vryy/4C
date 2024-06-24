@@ -103,13 +103,13 @@ namespace Adapter
     /// extract interface displacements at \f$t_{n}\f$
     virtual Teuchos::RCP<Epetra_Vector> extract_fpsi_interface_dispn()
     {
-      return structure_->Interface()->ExtractFPSICondVector(structure_->Dispn());
+      return structure_->Interface()->extract_fpsi_cond_vector(structure_->Dispn());
     }
 
     /// extract interface displacements at \f$t_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> extract_fpsi_interface_dispnp()
     {
-      return structure_->Interface()->ExtractFPSICondVector(structure_->Dispnp());
+      return structure_->Interface()->extract_fpsi_cond_vector(structure_->Dispnp());
     }
 
     //! unique map of all dofs that should be constrained with DBC
@@ -128,7 +128,7 @@ namespace Adapter
     const Teuchos::RCP<Adapter::FluidPoro>& fluid_field();
 
     //! Insert FSI Condition Vector
-    Teuchos::RCP<Epetra_Vector> InsertFSICondVector(Teuchos::RCP<const Epetra_Vector> cond);
+    Teuchos::RCP<Epetra_Vector> insert_fsi_cond_vector(Teuchos::RCP<const Epetra_Vector> cond);
 
     //! Recover Lagrange Multiplier during iteration (does nothing for structure)
     void recover_lagrange_multiplier_after_newton_step(Teuchos::RCP<Epetra_Vector> iterinc);

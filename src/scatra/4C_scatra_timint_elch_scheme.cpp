@@ -251,7 +251,7 @@ void ScaTra::ScaTraTimIntElchOST::explicit_predictor() const
   TimIntOneStepTheta::explicit_predictor();
 
   // for the electric potential we just use the old values from the previous time step
-  splitter_->InsertCondVector(splitter_->ExtractCondVector(phin_), phinp_);
+  splitter_->insert_cond_vector(splitter_->extract_cond_vector(phin_), phinp_);
 }
 
 
@@ -1161,7 +1161,7 @@ void ScaTra::ScaTraTimIntElchSCLOST::explicit_predictor() const
   TimIntOneStepTheta::explicit_predictor();
 
   // for the electric potential we just use the old values from the previous time step
-  splitter_->InsertCondVector(splitter_->ExtractCondVector(phin_), phinp_);
+  splitter_->insert_cond_vector(splitter_->extract_cond_vector(phin_), phinp_);
 }
 
 /*--------------------------------------------------------------------------*

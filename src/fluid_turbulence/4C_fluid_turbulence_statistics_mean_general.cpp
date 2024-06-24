@@ -1078,7 +1078,7 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
   if (withscatra_) output.write_vector("averaged_scanp", prev_avg_sca_);
 
   // output real pressure
-  Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(prev_avg_);
+  Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.extract_cond_vector(prev_avg_);
   output.write_vector("averaged_pressure", pressure);
 }  // FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec
 

@@ -294,18 +294,19 @@ void FPSI::Monolithic::SetupSystem_FSI()
 
   // structure to fluid
   coupsf_fsi.setup_condition_coupling(*poro_field()->structure_field()->discretization(),
-      poro_field()->structure_field()->Interface()->FSICondMap(), *fluid_field()->discretization(),
-      fluid_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      poro_field()->structure_field()->Interface()->fsi_cond_map(),
+      *fluid_field()->discretization(), fluid_field()->Interface()->fsi_cond_map(), "FSICoupling",
+      ndim);
   // structure to ale
   coupsa_fsi.setup_condition_coupling(*poro_field()->structure_field()->discretization(),
-      poro_field()->structure_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
-      ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      poro_field()->structure_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
   icoupfa_fsi.setup_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
-      ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      fluid_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
 
   // In the following we assume that both couplings find the same dof
@@ -766,7 +767,7 @@ void FPSI::Monolithic::linear_solve()
     {
       // remove entries in condensed dofs from matrix and rhs...
       Core::LinAlg::apply_dirichlet_to_system(
-          *sparse, *iterinc_, *rhs_, *zeros_, *fluid_field()->Interface()->FSICondMap());
+          *sparse, *iterinc_, *rhs_, *zeros_, *fluid_field()->Interface()->fsi_cond_map());
     }
 
     Core::LinAlg::apply_dirichlet_to_system(
@@ -789,7 +790,7 @@ void FPSI::Monolithic::linear_solve()
     {
       // remove entries in condensed dofs from matrix and rhs...
       Core::LinAlg::apply_dirichlet_to_system(
-          *systemmatrix_, *iterinc_, *rhs_, *zeros_, *fluid_field()->Interface()->FSICondMap());
+          *systemmatrix_, *iterinc_, *rhs_, *zeros_, *fluid_field()->Interface()->fsi_cond_map());
     }
 
     Core::LinAlg::apply_dirichlet_to_system(
@@ -944,11 +945,12 @@ void FPSI::Monolithic::LineSearch(Teuchos::RCP<Core::LinAlg::SparseMatrix>& spar
 Teuchos::RCP<Epetra_Map> FPSI::Monolithic::combined_dbc_map()
 {
   const Teuchos::RCP<const Epetra_Map> scondmap =
-      poro_field()->structure_field()->GetDBCMapExtractor()->CondMap();
+      poro_field()->structure_field()->get_dbc_map_extractor()->cond_map();
   const Teuchos::RCP<const Epetra_Map> pfcondmap =
-      poro_field()->fluid_field()->GetDBCMapExtractor()->CondMap();
-  const Teuchos::RCP<const Epetra_Map> fcondmap = fluid_field()->GetDBCMapExtractor()->CondMap();
-  const Teuchos::RCP<const Epetra_Map> acondmap = ale_field()->GetDBCMapExtractor()->CondMap();
+      poro_field()->fluid_field()->get_dbc_map_extractor()->cond_map();
+  const Teuchos::RCP<const Epetra_Map> fcondmap =
+      fluid_field()->get_dbc_map_extractor()->cond_map();
+  const Teuchos::RCP<const Epetra_Map> acondmap = ale_field()->get_dbc_map_extractor()->cond_map();
   Teuchos::RCP<Epetra_Map> tempmap = Core::LinAlg::MergeMap(scondmap, pfcondmap, false);
   Teuchos::RCP<Epetra_Map> condmap_0 = Core::LinAlg::MergeMap(tempmap, fcondmap, false);
   Teuchos::RCP<Epetra_Map> condmap = Core::LinAlg::MergeMap(condmap_0, acondmap, false);
@@ -1053,14 +1055,14 @@ void FPSI::Monolithic::build_convergence_norms()
   Teuchos::RCP<const Epetra_Vector> rhs_ale;
 
 
-  rhs_porostruct = Extractor().ExtractVector(rhs_, structure_block_);
-  rhs_porofluid = Extractor().ExtractVector(rhs_, porofluid_block_);
+  rhs_porostruct = Extractor().extract_vector(rhs_, structure_block_);
+  rhs_porofluid = Extractor().extract_vector(rhs_, porofluid_block_);
   rhs_porofluidvelocity = poro_field()->fluid_field()->ExtractVelocityPart(rhs_porofluid);
   rhs_porofluidpressure = poro_field()->fluid_field()->ExtractPressurePart(rhs_porofluid);
   rhs_porointerface =
-      FPSICoupl()->poro_fluid_fpsi_vel_pres_extractor()->ExtractCondVector(rhs_porofluid);
+      FPSICoupl()->poro_fluid_fpsi_vel_pres_extractor()->extract_cond_vector(rhs_porofluid);
 
-  rhs_fluid = Extractor().ExtractVector(rhs_, fluid_block_);
+  rhs_fluid = Extractor().extract_vector(rhs_, fluid_block_);
   //  Teuchos::RCP<const Epetra_Vector> rhs_fullfluid = Teuchos::rcp(new
   //  Epetra_Vector(*fluid_field()->dof_row_map())); Teuchos::RCP<const Epetra_Vector> rhs_fsi =
   //  Teuchos::rcp(new
@@ -1069,9 +1071,9 @@ void FPSI::Monolithic::build_convergence_norms()
 
   rhs_fluidvelocity = fluid_field()->ExtractVelocityPart(rhs_fluid);
   rhs_fluidpressure = fluid_field()->ExtractPressurePart(rhs_fluid);
-  rhs_fluidinterface = FPSICoupl()->fluid_fpsi_vel_pres_extractor()->ExtractCondVector(rhs_fluid);
+  rhs_fluidinterface = FPSICoupl()->fluid_fpsi_vel_pres_extractor()->extract_cond_vector(rhs_fluid);
 
-  rhs_ale = Extractor().ExtractVector(rhs_, ale_i_block_);  // Extractor().ExtractVector(rhs_, 2);
+  rhs_ale = Extractor().extract_vector(rhs_, ale_i_block_);  // Extractor().extract_vector(rhs_, 2);
 
   rhs_porostruct->Norm2(&normrhsporostruct_);
   rhs_fluid->Norm2(&normrhsfluid_);
@@ -1113,14 +1115,14 @@ void FPSI::Monolithic::build_convergence_norms()
   Teuchos::RCP<const Epetra_Vector> iterincporointerface;
   Teuchos::RCP<const Epetra_Vector> iterincfluidinterface;
 
-  iterincporostruct = Extractor().ExtractVector(iterinc_, structure_block_);
-  iterincporofluid = Extractor().ExtractVector(iterinc_, porofluid_block_);
+  iterincporostruct = Extractor().extract_vector(iterinc_, structure_block_);
+  iterincporofluid = Extractor().extract_vector(iterinc_, porofluid_block_);
   iterincporofluidvelocity = poro_field()->fluid_field()->ExtractVelocityPart(iterincporofluid);
   iterincporofluidpressure = poro_field()->fluid_field()->ExtractPressurePart(iterincporofluid);
   iterincporointerface =
-      FPSICoupl()->poro_fluid_fpsi_vel_pres_extractor()->ExtractCondVector(iterincporofluid);
+      FPSICoupl()->poro_fluid_fpsi_vel_pres_extractor()->extract_cond_vector(iterincporofluid);
 
-  iterincfluid = Extractor().ExtractVector(iterinc_, fluid_block_);
+  iterincfluid = Extractor().extract_vector(iterinc_, fluid_block_);
 
   //  Teuchos::RCP<const Epetra_Vector> iterincfullfluid = Teuchos::rcp(new
   //  Epetra_Vector(*fluid_field()->dof_row_map())); Teuchos::RCP<const Epetra_Vector> iterincfsi =
@@ -1131,9 +1133,9 @@ void FPSI::Monolithic::build_convergence_norms()
   iterincfluidvelocity = fluid_field()->ExtractVelocityPart(iterincfluid);
   iterincfluidpressure = fluid_field()->ExtractPressurePart(iterincfluid);
   iterincfluidinterface =
-      FPSICoupl()->fluid_fpsi_vel_pres_extractor()->ExtractCondVector(iterincfluid);
+      FPSICoupl()->fluid_fpsi_vel_pres_extractor()->extract_cond_vector(iterincfluid);
 
-  iterincale = Extractor().ExtractVector(iterinc_, ale_i_block_);
+  iterincale = Extractor().extract_vector(iterinc_, ale_i_block_);
 
   iterincporostruct->Norm2(&normofiterincporostruct_);
   iterincporofluid->Norm2(&normofiterincporofluid_);
@@ -1576,7 +1578,7 @@ void FPSI::Monolithic::FPSIFDCheck()
     int im1 = dof_row_map()->GID(i_loc - 1);
     int ip1 = dof_row_map()->GID(i_loc + 1);
     std::cout << i << "... " << std::flush;
-    if (combined_dbc_map()->MyGID(i) or fluid_field()->Interface()->FSICondMap()->MyGID(i))
+    if (combined_dbc_map()->MyGID(i) or fluid_field()->Interface()->fsi_cond_map()->MyGID(i))
     {
       iterinc->ReplaceGlobalValue(i, 0, 0.0);
     }
@@ -1588,7 +1590,7 @@ void FPSI::Monolithic::FPSIFDCheck()
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
     poro_field()->ClearPoroIterinc();
     Core::LinAlg::apply_dirichlet_to_system(
-        *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *fluid_field()->Interface()->FSICondMap());
+        *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *fluid_field()->Interface()->fsi_cond_map());
     Core::LinAlg::apply_dirichlet_to_system(
         *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *combined_dbc_map());
 
@@ -1614,7 +1616,8 @@ void FPSI::Monolithic::FPSIFDCheck()
 
     }  // j-loop (rows)
 
-    if (not combined_dbc_map()->MyGID(i) and not fluid_field()->Interface()->FSICondMap()->MyGID(i))
+    if (not combined_dbc_map()->MyGID(i) and
+        not fluid_field()->Interface()->fsi_cond_map()->MyGID(i))
       iterinc->ReplaceGlobalValue(i, 0, -delta);
 
     iterinc->ReplaceGlobalValue(im1, 0, 0.0);
@@ -1661,14 +1664,14 @@ void FPSI::Monolithic::FPSIFDCheck()
   {
     int i = dof_row_map()->GID(i_loc);
     if (not combined_dbc_map()->MyGID(i) and
-        not fluid_field()->Interface()->FSICondMap()->MyGID(
+        not fluid_field()->Interface()->fsi_cond_map()->MyGID(
             i))  // only if there is no dirichlet value on dof and dof is not condensed
     {
       for (int j_loc = 0; j_loc < dofs; ++j_loc)
       {
         int j = dof_row_map()->GID(j_loc);
         if (not combined_dbc_map()->MyGID(j) and
-            not fluid_field()->Interface()->FSICondMap()->MyGID(j))
+            not fluid_field()->Interface()->fsi_cond_map()->MyGID(j))
         {
           double stiff_approx_ij = 0.0;
           double sparse_ij = 0.0;

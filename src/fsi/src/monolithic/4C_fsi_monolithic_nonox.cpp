@@ -92,20 +92,20 @@ void FSI::MonolithicNoNOX::SetupSystem()
   // structure to fluid
 
   coupsf.setup_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->FSICondMap(), *fluid_field()->discretization(),
-      fluid_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      structure_field()->Interface()->fsi_cond_map(), *fluid_field()->discretization(),
+      fluid_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // structure to ale
 
   coupsa.setup_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
-      ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      structure_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
   icoupfa.setup_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
-      ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      fluid_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -334,7 +334,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
 
   // Save the inner fluid map that includes the background fluid DOF in order to
   // determine a change.
-  const Epetra_BlockMap fluidincrementmap = extractor().ExtractVector(step_increment, 1)->Map();
+  const Epetra_BlockMap fluidincrementmap = extractor().extract_vector(step_increment, 1)->Map();
 
   if (not firstcall_)
   {
@@ -355,7 +355,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
     if (sdbg_ != Teuchos::null)
     {
       sdbg_->NewIteration();
-      sdbg_->write_vector("x", *structure_field()->Interface()->ExtractFSICondVector(sx));
+      sdbg_->write_vector("x", *structure_field()->Interface()->extract_fsi_cond_vector(sx));
     }
   }
 
@@ -388,7 +388,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicNoNOX::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
-  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
   blockrowdofmap_.setup(*fullmap, maps);
 }
 

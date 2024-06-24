@@ -209,10 +209,10 @@ void FSI::InterfaceCorrector::correct_interface_displacements(
 
   // std::cout<<*finterface->FullMap()<<std::endl;
   // std::cout<<*disp_fluid<<std::endl;
-  deltadisp_ = Core::LinAlg::CreateVector(*finterface->FSICondMap(), true);
+  deltadisp_ = Core::LinAlg::CreateVector(*finterface->fsi_cond_map(), true);
 
   Core::LinAlg::Export(*disp_fluid, *deltadisp_);
-  // deltadisp_ = finterface->ExtractFSICondVector(disp_fluid);
+  // deltadisp_ = finterface->extract_fsi_cond_vector(disp_fluid);
 
   // FOUR_C_THROW("stop");
 
@@ -221,7 +221,7 @@ void FSI::InterfaceCorrector::correct_interface_displacements(
   deltadisp_->Update(1.0, *idisp_fluid_corrected, -1.0);
 
   Core::LinAlg::Export(*idisp_fluid_corrected, *disp_fluid);
-  // finterface->InsertFSICondVector(idisp_fluid_corrected,disp_fluid);
+  // finterface->insert_fsi_cond_vector(idisp_fluid_corrected,disp_fluid);
 
   volcorrector_->correct_vol_displacements(fluidale_, deltadisp_, disp_fluid, finterface);
 

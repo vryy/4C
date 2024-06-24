@@ -70,7 +70,7 @@ void XFEM::XfaCouplingManager::predict_coupling_states()
       //-------------------------------------------
 
       // first manipulate the fluid-solid interface, then setup the ale system
-      Ale_Struct_coupling_->InsertVector(1,structure_->Dispnp(),0,ale_->WriteAccessDispnp(),XFEM::Coupling_Comm_Manager::full_to_full);
+      Ale_Struct_coupling_->insert_vector(1,structure_->Dispnp(),0,ale_->WriteAccessDispnp(),XFEM::Coupling_Comm_Manager::full_to_full);
 
       // apply inner Dirichlet conditions (don't forget to reset the time and the step!)
       ale_->prepare_time_step(); // applies DBCs to the current dispnp
@@ -89,15 +89,15 @@ void XFEM::XfaCouplingManager::SetCouplingStates()
 {
   // 1 Sets structural conditioned Dispnp onto Ale
   if (ale_struct_coupling_ != Teuchos::null)
-    ale_struct_coupling_->InsertVector(1, structure_->Dispnp(), 0, ale_->WriteAccessDispnp(),
+    ale_struct_coupling_->insert_vector(1, structure_->Dispnp(), 0, ale_->WriteAccessDispnp(),
         XFEM::CouplingCommManager::full_to_full);
 
   // 2 Get AleDisplacements
   Teuchos::RCP<Epetra_Vector> aledisplacements =
       Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->Map(1), true));
-  InsertVector(1, ale_->Dispnp(), 0, aledisplacements, CouplingCommManager::partial_to_partial);
+  insert_vector(1, ale_->Dispnp(), 0, aledisplacements, CouplingCommManager::partial_to_partial);
   // 3 Set Fluid Dispnp
-  GetMapExtractor(0)->InsertVector(aledisplacements, 1, xfluid_->WriteAccessDispnp());
+  GetMapExtractor(0)->insert_vector(aledisplacements, 1, xfluid_->WriteAccessDispnp());
 
   // 4 new grid velocity
   xfluid_->UpdateGridv();
@@ -150,8 +150,8 @@ void XFEM::XfaCouplingManager::AddCouplingRHS(
     Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me, double scaling)
 {
   Teuchos::RCP<const Epetra_Vector> av = ale_->RHS();
-  Teuchos::RCP<Epetra_Vector> aov = ale_->Interface()->ExtractOtherVector(av);
-  me.InsertVector(*aov, idx_[1], *rhs);  // add ALE contributions to 'rhs'
+  Teuchos::RCP<Epetra_Vector> aov = ale_->Interface()->extract_other_vector(av);
+  me.insert_vector(*aov, idx_[1], *rhs);  // add ALE contributions to 'rhs'
   return;
 }
 

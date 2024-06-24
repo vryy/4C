@@ -211,7 +211,7 @@ namespace Adapter
     virtual Teuchos::RCP<const Core::DOFSets::DofSet> DofSet() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() = 0;
 
     /// set initial flow field
     virtual void SetInitialFlowField(

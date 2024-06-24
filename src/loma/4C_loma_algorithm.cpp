@@ -162,7 +162,7 @@ void LowMach::Algorithm::setup()
     if (dofrowmaps[0]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid elements!");
     if (dofrowmaps[1]->NumGlobalElements() == 0) FOUR_C_THROW("No scatra elements!");
 
-    Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(dofrowmaps);
+    Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(dofrowmaps);
 
     // full loma block dofrowmap
     lomablockdofrowmap_.setup(*fullmap, dofrowmaps);
@@ -254,8 +254,9 @@ void LowMach::Algorithm::setup()
     zeros_ = Teuchos::rcp(new Epetra_Vector(*lomablockdofrowmap_.FullMap(), true));
 
     // create combined Dirichlet boundary condition map
-    const Teuchos::RCP<const Epetra_Map> fdbcmap = fluid_field()->GetDBCMapExtractor()->CondMap();
-    const Teuchos::RCP<const Epetra_Map> sdbcmap = ScaTraField()->DirichMaps()->CondMap();
+    const Teuchos::RCP<const Epetra_Map> fdbcmap =
+        fluid_field()->get_dbc_map_extractor()->cond_map();
+    const Teuchos::RCP<const Epetra_Map> sdbcmap = ScaTraField()->DirichMaps()->cond_map();
     lomadbcmap_ = Core::LinAlg::MergeMap(fdbcmap, sdbcmap, false);
   }
 
@@ -760,8 +761,8 @@ void LowMach::Algorithm::setup_mono_loma_rhs()
   Teuchos::RCP<const Epetra_Vector> scatrares = ScaTraField()->Residual();
 
   // insert fluid and scatra residual vectors into loma residual vector
-  lomablockdofrowmap_.InsertVector(*fluidres, 0, *lomarhs_);
-  lomablockdofrowmap_.InsertVector(*scatrares, 1, *lomarhs_);
+  lomablockdofrowmap_.insert_vector(*fluidres, 0, *lomarhs_);
+  lomablockdofrowmap_.insert_vector(*scatrares, 1, *lomarhs_);
 }
 
 
@@ -797,8 +798,8 @@ void LowMach::Algorithm::iter_update()
 
   // extract incremental fluid and scatra solution vectors
   // from incremental low-Mach-number solution vector
-  incfluid = lomablockdofrowmap_.ExtractVector(lomaincrement_, 0);
-  incscatra = lomablockdofrowmap_.ExtractVector(lomaincrement_, 1);
+  incfluid = lomablockdofrowmap_.extract_vector(lomaincrement_, 0);
+  incscatra = lomablockdofrowmap_.extract_vector(lomaincrement_, 1);
 
   // add incremental fluid and scatra solution vectors to
   // respective solution vectors from last iteration step

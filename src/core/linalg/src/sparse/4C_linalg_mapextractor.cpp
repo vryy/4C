@@ -82,7 +82,7 @@ void Core::LinAlg::MultiMapExtractor::check_for_valid_map_extractor() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::LinAlg::MultiMapExtractor::MergeMaps(
+Teuchos::RCP<Epetra_Map> Core::LinAlg::MultiMapExtractor::merge_maps(
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
   if (maps.size() == 0) FOUR_C_THROW("no maps to merge");
@@ -104,7 +104,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::MultiMapExtractor::MergeMaps(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::LinAlg::MultiMapExtractor::MergeMapsKeepOrder(
+Teuchos::RCP<Epetra_Map> Core::LinAlg::MultiMapExtractor::merge_maps_keep_order(
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
   if (maps.empty()) FOUR_C_THROW("no maps to merge");
@@ -133,7 +133,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::MultiMapExtractor::MergeMapsKeepOrder(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::LinAlg::MultiMapExtractor::IntersectMaps(
+Teuchos::RCP<Epetra_Map> Core::LinAlg::MultiMapExtractor::intersect_maps(
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
   if (maps.size() == 0) FOUR_C_THROW("no maps to intersect");
@@ -165,32 +165,32 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::MultiMapExtractor::IntersectMaps(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Core::LinAlg::MultiMapExtractor::ExtractVector(
+Teuchos::RCP<Epetra_Vector> Core::LinAlg::MultiMapExtractor::extract_vector(
     const Epetra_Vector& full, int block) const
 {
   if (maps_[block] == Teuchos::null) FOUR_C_THROW("null map at block %d", block);
   Teuchos::RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*maps_[block]));
-  ExtractVector(full, block, *vec);
+  extract_vector(full, block, *vec);
   return vec;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::LinAlg::MultiMapExtractor::ExtractVector(
+Teuchos::RCP<Epetra_MultiVector> Core::LinAlg::MultiMapExtractor::extract_vector(
     const Epetra_MultiVector& full, int block) const
 {
   if (maps_[block] == Teuchos::null) FOUR_C_THROW("null map at block %d", block);
   Teuchos::RCP<Epetra_MultiVector> vec =
       Teuchos::rcp(new Epetra_MultiVector(*maps_[block], full.NumVectors()));
-  ExtractVector(full, block, *vec);
+  extract_vector(full, block, *vec);
   return vec;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::MultiMapExtractor::ExtractVector(
+void Core::LinAlg::MultiMapExtractor::extract_vector(
     const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial) const
 {
   if (maps_[block] == Teuchos::null) FOUR_C_THROW("null map at block %d", block);
@@ -201,30 +201,30 @@ void Core::LinAlg::MultiMapExtractor::ExtractVector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Core::LinAlg::MultiMapExtractor::InsertVector(
+Teuchos::RCP<Epetra_Vector> Core::LinAlg::MultiMapExtractor::insert_vector(
     const Epetra_Vector& partial, int block) const
 {
   Teuchos::RCP<Epetra_Vector> full = Teuchos::rcp(new Epetra_Vector(*fullmap_));
-  InsertVector(partial, block, *full);
+  insert_vector(partial, block, *full);
   return full;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::LinAlg::MultiMapExtractor::InsertVector(
+Teuchos::RCP<Epetra_MultiVector> Core::LinAlg::MultiMapExtractor::insert_vector(
     const Epetra_MultiVector& partial, int block) const
 {
   Teuchos::RCP<Epetra_MultiVector> full =
       Teuchos::rcp(new Epetra_MultiVector(*fullmap_, partial.NumVectors()));
-  InsertVector(partial, block, *full);
+  insert_vector(partial, block, *full);
   return full;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::MultiMapExtractor::InsertVector(
+void Core::LinAlg::MultiMapExtractor::insert_vector(
     const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full) const
 {
   if (maps_[block] == Teuchos::null) FOUR_C_THROW("null map at block %d", block);
@@ -235,19 +235,20 @@ void Core::LinAlg::MultiMapExtractor::InsertVector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::MultiMapExtractor::AddVector(
+void Core::LinAlg::MultiMapExtractor::add_vector(
     const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full, double scale) const
 {
-  Teuchos::RCP<Epetra_MultiVector> v = ExtractVector(full, block);
+  Teuchos::RCP<Epetra_MultiVector> v = extract_vector(full, block);
   if (not v->Map().SameAs(partial.Map())) FOUR_C_THROW("The maps of the vectors must be the same!");
   v->Update(scale, partial, 1.0);
-  InsertVector(*v, block, full);
+  insert_vector(*v, block, full);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::MultiMapExtractor::PutScalar(Epetra_Vector& full, int block, double scalar) const
+void Core::LinAlg::MultiMapExtractor::put_scalar(
+    Epetra_Vector& full, int block, double scalar) const
 {
   const Epetra_Map& bm = *Map(block);
   const Epetra_Map& fm = *FullMap();
@@ -266,7 +267,7 @@ void Core::LinAlg::MultiMapExtractor::PutScalar(Epetra_Vector& full, int block, 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double Core::LinAlg::MultiMapExtractor::Norm2(const Epetra_Vector& full, int block) const
+double Core::LinAlg::MultiMapExtractor::norm2(const Epetra_Vector& full, int block) const
 {
   const Epetra_Map& bm = *Map(block);
   const Epetra_Map& fm = *FullMap();
@@ -293,7 +294,7 @@ double Core::LinAlg::MultiMapExtractor::Norm2(const Epetra_Vector& full, int blo
 /*----------------------------------------------------------------------*
  | Scale one block only                                      fang 08/16 |
  *----------------------------------------------------------------------*/
-void Core::LinAlg::MultiMapExtractor::Scale(Epetra_Vector& full, int block, double scalar) const
+void Core::LinAlg::MultiMapExtractor::scale(Epetra_Vector& full, int block, double scalar) const
 {
   const Epetra_Map& bm = *Map(block);
   const Epetra_Map& fm = *FullMap();
@@ -313,10 +314,10 @@ void Core::LinAlg::MultiMapExtractor::Scale(Epetra_Vector& full, int block, doub
 /*----------------------------------------------------------------------*
  | Scale one block only                                      fang 08/16 |
  *----------------------------------------------------------------------*/
-void Core::LinAlg::MultiMapExtractor::Scale(
+void Core::LinAlg::MultiMapExtractor::scale(
     Epetra_MultiVector& full, int block, double scalar) const
 {
-  for (int i = 0; i < full.NumVectors(); ++i) Scale(*full(i), block, scalar);
+  for (int i = 0; i < full.NumVectors(); ++i) scale(*full(i), block, scalar);
 }
 
 

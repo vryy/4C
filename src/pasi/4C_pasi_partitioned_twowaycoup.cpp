@@ -47,11 +47,11 @@ void PaSI::PasiPartTwoWayCoup::init()
   PaSI::PartitionedAlgo::init();
 
   // construct interface force
-  intfforcenp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
+  intfforcenp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
 
   // construct interface increment states
-  intfdispincnp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
-  intfforceincnp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
+  intfdispincnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
+  intfforceincnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
 
   // safety check
   if (convtolrelativedisp_ < 0.0 and convtolscaleddisp_ < 0.0 and convtolrelativeforce_ < 0.0 and
@@ -486,9 +486,9 @@ void PaSI::PasiPartTwoWayCoupDispRelax::init()
   PaSI::PasiPartTwoWayCoup::init();
 
   // construct relaxed interface states
-  relaxintfdispnp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
-  relaxintfvelnp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
-  relaxintfaccnp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
+  relaxintfdispnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
+  relaxintfvelnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
+  relaxintfaccnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
 }
 
 void PaSI::PasiPartTwoWayCoupDispRelax::outerloop()
@@ -600,7 +600,7 @@ void PaSI::PasiPartTwoWayCoupDispRelaxAitken::init()
   PaSI::PasiPartTwoWayCoupDispRelax::init();
 
   // construct old interface increment state
-  intfdispincnpold_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
+  intfdispincnpold_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
 }
 
 void PaSI::PasiPartTwoWayCoupDispRelaxAitken::read_restart(int restartstep)
@@ -636,7 +636,7 @@ void PaSI::PasiPartTwoWayCoupDispRelaxAitken::output()
 void PaSI::PasiPartTwoWayCoupDispRelaxAitken::calc_omega(double& omega, const int itnum)
 {
   Teuchos::RCP<Epetra_Vector> intfdispincnpdiff =
-      Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
+      Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
   intfdispincnpdiff->Update(1.0, *intfdispincnp_, (-1.0), *intfdispincnpold_, 0.0);
 
   double dispincnpdiffnorm(0.0);

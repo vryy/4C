@@ -83,7 +83,7 @@ void STR::MODELEVALUATOR::Contact::setup()
   // ---------------------------------------------------------------------
   // final touches to the contact strategy
   // ---------------------------------------------------------------------
-  strategy_ptr_->store_dirichlet_status(integrator().get_dbc().GetDBCMapExtractor());
+  strategy_ptr_->store_dirichlet_status(integrator().get_dbc().get_dbc_map_extractor());
   strategy_ptr_->set_state(Mortar::state_new_displacement, integrator().get_dbc().GetZeros());
   strategy_ptr_->SaveReferenceState(integrator().get_dbc().GetZerosPtr());
   strategy_ptr_->evaluate_reference_state();

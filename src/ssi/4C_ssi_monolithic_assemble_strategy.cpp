@@ -470,16 +470,16 @@ void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs,
     Teuchos::RCP<const Epetra_Vector> rhs_scatra, Teuchos::RCP<const Epetra_Vector> rhs_structure,
     Teuchos::RCP<const Epetra_Vector> rhs_manifold)
 {
-  ssi_maps()->MapsSubProblems()->InsertVector(
+  ssi_maps()->MapsSubProblems()->insert_vector(
       rhs_scatra, UTILS::SSIMaps::GetProblemPosition(SSI::Subproblem::scalar_transport), rhs);
 
   if (is_sca_tra_manifold())
   {
-    ssi_maps()->MapsSubProblems()->InsertVector(
+    ssi_maps()->MapsSubProblems()->insert_vector(
         rhs_manifold, UTILS::SSIMaps::GetProblemPosition(SSI::Subproblem::manifold), rhs);
   }
 
-  ssi_maps()->MapsSubProblems()->AddVector(
+  ssi_maps()->MapsSubProblems()->add_vector(
       rhs_structure, UTILS::SSIMaps::GetProblemPosition(SSI::Subproblem::structure), rhs, -1.0);
 }
 

@@ -529,7 +529,7 @@ void TSI::Algorithm::prepare_contact_strategy()
     // final touches to the contact strategy
     // ---------------------------------------------------------------------
 
-    contact_strategy_lagrange_->store_dirichlet_status(structure_field()->GetDBCMapExtractor());
+    contact_strategy_lagrange_->store_dirichlet_status(structure_field()->get_dbc_map_extractor());
 
     Teuchos::RCP<Epetra_Vector> zero_disp =
         Teuchos::rcp(new Epetra_Vector(*structure_field()->dof_row_map(), true));

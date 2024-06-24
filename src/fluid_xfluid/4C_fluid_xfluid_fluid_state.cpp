@@ -105,17 +105,17 @@ void FLD::XFluidFluidState::create_merged_dbc_map_extractor(
 {
   // create merged dbc map from both fluids
   std::vector<Teuchos::RCP<const Epetra_Map>> dbcmaps;
-  dbcmaps.push_back(XFluidState::dbcmaps_->CondMap());
-  dbcmaps.push_back(embfluiddbcmaps->CondMap());
+  dbcmaps.push_back(XFluidState::dbcmaps_->cond_map());
+  dbcmaps.push_back(embfluiddbcmaps->cond_map());
 
   Teuchos::RCP<const Epetra_Map> xffluiddbcmap =
-      Core::LinAlg::MultiMapExtractor::MergeMaps(dbcmaps);
+      Core::LinAlg::MultiMapExtractor::merge_maps(dbcmaps);
 
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
-  othermaps.push_back(XFluidState::dbcmaps_->OtherMap());
-  othermaps.push_back(embfluiddbcmaps->OtherMap());
+  othermaps.push_back(XFluidState::dbcmaps_->other_map());
+  othermaps.push_back(embfluiddbcmaps->other_map());
   Teuchos::RCP<const Epetra_Map> xffluidothermap =
-      Core::LinAlg::MultiMapExtractor::MergeMaps(othermaps);
+      Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
 
   xffluiddbcmaps_ = Teuchos::rcp(
       new Core::LinAlg::MapExtractor(*xffluiddofrowmap_, xffluiddbcmap, xffluidothermap));

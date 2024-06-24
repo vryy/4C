@@ -341,7 +341,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
     // extract part of true residual vector associated with current boundary segment
     const Teuchos::RCP<Epetra_Vector> trueresidual_boundary =
-        flux_boundary_maps_->ExtractVector(*trueresidual_, icond + 1);
+        flux_boundary_maps_->extract_vector(*trueresidual_, icond + 1);
 
     // initialize vector for nodal values of normal boundary fluxes
     Teuchos::RCP<Epetra_Vector> normalfluxes = Core::LinAlg::CreateVector(dofrowmap);
@@ -633,7 +633,7 @@ void ScaTra::ScaTraTimIntImpl::calc_initial_time_derivative()
   // derivatives of primary degrees of freedom (= transported scalars)
   if (splitter_ != Teuchos::null)
     Core::LinAlg::apply_dirichlet_to_system(
-        *sysmat_, *phidtnp_, *residual_, *zeros_, *(splitter_->CondMap()));
+        *sysmat_, *phidtnp_, *residual_, *zeros_, *(splitter_->cond_map()));
 
   // solve global system of equations for initial time derivative of state variables
   Core::LinAlg::SolverParams solver_params;
@@ -1383,7 +1383,7 @@ void ScaTra::ScaTraTimIntImpl::av_m3_preparation()
 
   // apply DBC to normalized all-scale subgrid-diffusivity matrix
   Core::LinAlg::apply_dirichlet_to_system(
-      *sysmat_sd_, *phinp_, *residual_, *phinp_, *(dbcmaps_->CondMap()));
+      *sysmat_sd_, *phinp_, *residual_, *phinp_, *(dbcmaps_->cond_map()));
 
   // get normalized fine-scale subgrid-diffusivity matrix
   {
@@ -1507,11 +1507,11 @@ Teuchos::RCP<const Epetra_Vector> ScaTra::ScaTraTimIntImpl::dirichlet_toggle()
 {
   if (dbcmaps_ == Teuchos::null) FOUR_C_THROW("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichones =
-      Core::LinAlg::CreateVector(*(dbcmaps_->CondMap()), false);
+      Core::LinAlg::CreateVector(*(dbcmaps_->cond_map()), false);
   dirichones->PutScalar(1.0);
   Teuchos::RCP<Epetra_Vector> dirichtoggle =
       Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
-  dbcmaps_->InsertCondVector(dirichones, dirichtoggle);
+  dbcmaps_->insert_cond_vector(dirichones, dirichtoggle);
   return dirichtoggle;
 }  // ScaTraTimIntImpl::dirichlet_toggle
 
@@ -1811,18 +1811,18 @@ bool ScaTra::ScaTraTimIntImpl::convergence_check(int itnum, int itmax, const dou
   // distinguish whether one or two scalars are considered
   if (NumScal() == 2)
   {
-    Teuchos::RCP<Epetra_Vector> vec1 = splitter_->ExtractOtherVector(residual_);
-    Teuchos::RCP<Epetra_Vector> vec2 = splitter_->ExtractCondVector(residual_);
+    Teuchos::RCP<Epetra_Vector> vec1 = splitter_->extract_other_vector(residual_);
+    Teuchos::RCP<Epetra_Vector> vec2 = splitter_->extract_cond_vector(residual_);
     vec1->Norm2(&res1norm_L2);
     vec2->Norm2(&res2norm_L2);
 
-    vec1 = splitter_->ExtractOtherVector(increment_);
-    vec2 = splitter_->ExtractCondVector(increment_);
+    vec1 = splitter_->extract_other_vector(increment_);
+    vec2 = splitter_->extract_cond_vector(increment_);
     vec1->Norm2(&phi1incnorm_L2);
     vec2->Norm2(&phi2incnorm_L2);
 
-    vec1 = splitter_->ExtractOtherVector(phinp_);
-    vec2 = splitter_->ExtractCondVector(phinp_);
+    vec1 = splitter_->extract_other_vector(phinp_);
+    vec2 = splitter_->extract_cond_vector(phinp_);
     vec1->Norm2(&phi1norm_L2);
     vec2->Norm2(&phi2norm_L2);
 

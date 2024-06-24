@@ -110,8 +110,8 @@ void SSTI::SSTIMono::assemble_mat_and_rhs()
   ssti_matrices_->SystemMatrix()->Complete();
 
   // apply Dirichlet conditions
-  ssti_matrices_->SystemMatrix()->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
-  ssti_matrices_->SystemMatrix()->ApplyDirichlet(*ThermoField()->DirichMaps()->CondMap(), true);
+  ssti_matrices_->SystemMatrix()->ApplyDirichlet(*ScaTraField()->DirichMaps()->cond_map(), true);
+  ssti_matrices_->SystemMatrix()->ApplyDirichlet(*ThermoField()->DirichMaps()->cond_map(), true);
   strategy_assemble_->apply_structural_dbc_system_matrix(ssti_matrices_->SystemMatrix());
 
   // assemble RHS
@@ -326,7 +326,7 @@ void SSTI::SSTIMono::SetupSystem()
 {
   if (interface_meshtying())
     ssti_structure_mesh_tying()->check_slave_side_has_dirichlet_conditions(
-        structure_field()->GetDBCMapExtractor()->CondMap());
+        structure_field()->get_dbc_map_extractor()->cond_map());
 
   // Setup all kind of maps
   ssti_maps_mono_ = Teuchos::rcp(new SSTI::SSTIMapsMono(*this));
@@ -466,7 +466,7 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::extract_sub_increment(Subproblem sub
     case Subproblem::structure:
     {
       // First, extract increment from domain and master side
-      subincrement = ssti_maps_mono_->MapsSubProblems()->ExtractVector(
+      subincrement = ssti_maps_mono_->MapsSubProblems()->extract_vector(
           increment_, GetProblemPosition(Subproblem::structure));
 
       // Second, copy master side displacements and increments to slave side for meshtying
@@ -478,15 +478,15 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::extract_sub_increment(Subproblem sub
           auto coupling_map_extractor = meshtying->slave_master_extractor();
 
           // displacements
-          coupling_map_extractor->InsertVector(
+          coupling_map_extractor->insert_vector(
               coupling_adapter->MasterToSlave(
-                  coupling_map_extractor->ExtractVector(structure_field()->Dispnp(), 2)),
+                  coupling_map_extractor->extract_vector(structure_field()->Dispnp(), 2)),
               1, structure_field()->WriteAccessDispnp());
           structure_field()->set_state(structure_field()->WriteAccessDispnp());
           // increments
-          coupling_map_extractor->InsertVector(
+          coupling_map_extractor->insert_vector(
               coupling_adapter->MasterToSlave(
-                  coupling_map_extractor->ExtractVector(subincrement, 2)),
+                  coupling_map_extractor->extract_vector(subincrement, 2)),
               1, subincrement);
         }
       }
@@ -494,13 +494,13 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::extract_sub_increment(Subproblem sub
     }
     case Subproblem::scalar_transport:
     {
-      subincrement = ssti_maps_mono_->MapsSubProblems()->ExtractVector(
+      subincrement = ssti_maps_mono_->MapsSubProblems()->extract_vector(
           increment_, GetProblemPosition(Subproblem::scalar_transport));
       break;
     }
     case Subproblem::thermo:
     {
-      subincrement = ssti_maps_mono_->MapsSubProblems()->ExtractVector(
+      subincrement = ssti_maps_mono_->MapsSubProblems()->extract_vector(
           increment_, GetProblemPosition(Subproblem::thermo));
       break;
     }
@@ -632,7 +632,7 @@ std::vector<int> SSTI::SSTIMono::GetBlockPositions(Subproblem subproblem) const
       if (ScaTraField()->MatrixType() == Core::LinAlg::MatrixType::sparse)
         block_position.emplace_back(1);
       else
-        block_position.emplace_back(ScaTraField()->BlockMaps()->NumMaps());
+        block_position.emplace_back(ScaTraField()->BlockMaps()->num_maps());
       break;
     }
     case Subproblem::scalar_transport:
@@ -642,7 +642,7 @@ std::vector<int> SSTI::SSTIMono::GetBlockPositions(Subproblem subproblem) const
       else
 
       {
-        for (int i = 0; i < static_cast<int>(ScaTraField()->BlockMaps()->NumMaps()); ++i)
+        for (int i = 0; i < static_cast<int>(ScaTraField()->BlockMaps()->num_maps()); ++i)
           block_position.emplace_back(i);
       }
       break;
@@ -653,8 +653,8 @@ std::vector<int> SSTI::SSTIMono::GetBlockPositions(Subproblem subproblem) const
         block_position.emplace_back(2);
       else
       {
-        for (int i = 0; i < static_cast<int>(ThermoField()->BlockMaps()->NumMaps()); ++i)
-          block_position.emplace_back(ScaTraField()->BlockMaps()->NumMaps() + 1 + i);
+        for (int i = 0; i < static_cast<int>(ThermoField()->BlockMaps()->num_maps()); ++i)
+          block_position.emplace_back(ScaTraField()->BlockMaps()->num_maps() + 1 + i);
       }
       break;
     }

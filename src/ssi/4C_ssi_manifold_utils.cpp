@@ -496,12 +496,12 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::copy_sca_tra_sca_tra_manifold_side(
   const double inv_thickness = scatra_manifold_coupling->InvThickness();
   {
     auto rhs_scatra_cond_extract =
-        scatra_manifold_coupling->ScaTraMapExtractor()->ExtractCondVector(rhs_scatra_cond_);
+        scatra_manifold_coupling->ScaTraMapExtractor()->extract_cond_vector(rhs_scatra_cond_);
 
     auto rhs_manifold_cond_extract =
         scatra_manifold_coupling->CouplingAdapter()->MasterToSlave(rhs_scatra_cond_extract);
 
-    scatra_manifold_coupling->manifold_map_extractor()->AddCondVector(
+    scatra_manifold_coupling->manifold_map_extractor()->add_cond_vector(
         rhs_manifold_cond_extract, rhs_manifold_cond_);
     rhs_manifold_cond_->Scale(-inv_thickness);
   }
@@ -882,7 +882,7 @@ SSI::ManifoldMeshTyingStrategyBlock::ManifoldMeshTyingStrategyBlock(
 {
   // split condensed_dof_map into blocks
   std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps_condensed_block_dof_map;
-  for (int i = 0; i < ssi_maps_->block_map_sca_tra_manifold()->NumMaps(); ++i)
+  for (int i = 0; i < ssi_maps_->block_map_sca_tra_manifold()->num_maps(); ++i)
   {
     partial_maps_condensed_block_dof_map.emplace_back(Core::LinAlg::IntersectMap(
         *condensed_dof_map_, *ssi_maps_->block_map_sca_tra_manifold()->Map(i)));
@@ -905,7 +905,7 @@ SSI::ManifoldMeshTyingStrategyBlock::ManifoldMeshTyingStrategyBlock(
       // split maps according to split of matrix blocks, i.e. block maps
       std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps_slave_block_dof_map;
       std::vector<Teuchos::RCP<Core::Adapter::Coupling>> partial_block_adapters;
-      for (int i = 0; i < ssi_maps_->block_map_sca_tra_manifold()->NumMaps(); ++i)
+      for (int i = 0; i < ssi_maps_->block_map_sca_tra_manifold()->num_maps(); ++i)
       {
         auto [slave_block_map, perm_master_block_map] =
             intersect_coupling_maps_block_map(ssi_maps_->block_map_sca_tra_manifold()->Map(i),
@@ -969,10 +969,10 @@ void SSI::ManifoldMeshTyingStrategyBase::apply_mesh_tying_to_manifold_rhs(
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
       auto multimap = meshtying->slave_master_extractor();
 
-      auto slave_dofs = multimap->ExtractVector(rhs_manifold, 1);
+      auto slave_dofs = multimap->extract_vector(rhs_manifold, 1);
       auto slave_to_master_dofs = coupling_adapter->SlaveToMaster(slave_dofs);
-      multimap->AddVector(slave_to_master_dofs, 2, rhs_manifold);
-      multimap->PutScalar(*rhs_manifold, 1, 0.0);
+      multimap->add_vector(slave_to_master_dofs, 2, rhs_manifold);
+      multimap->put_scalar(*rhs_manifold, 1, 0.0);
     }
   }
 }
@@ -1054,9 +1054,9 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_manifold_matrix(
   auto manifold_block =
       Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(manifold_matrix);
 
-  for (int row = 0; row < condensed_block_dof_map_->NumMaps(); ++row)
+  for (int row = 0; row < condensed_block_dof_map_->num_maps(); ++row)
   {
-    for (int col = 0; col < condensed_block_dof_map_->NumMaps(); ++col)
+    for (int col = 0; col < condensed_block_dof_map_->num_maps(); ++col)
     {
       // add derivs. of interior/master dofs. w.r.t. interior/master dofs
       Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_block->Matrix(row, col),
@@ -1170,9 +1170,9 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_manifold_scatra_mat
   auto manifold_scatra_block =
       Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(manifold_scatra_matrix);
 
-  for (int row = 0; row < condensed_block_dof_map_->NumMaps(); ++row)
+  for (int row = 0; row < condensed_block_dof_map_->num_maps(); ++row)
   {
-    for (int col = 0; col < ssi_maps_->BlockMapScaTra()->NumMaps(); ++col)
+    for (int col = 0; col < ssi_maps_->BlockMapScaTra()->num_maps(); ++col)
     {
       // add derivs. of interior/master dofs w.r.t. scatra dofs
       Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_scatra_block->Matrix(row, col),
@@ -1261,7 +1261,7 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_manifold_structure_
   auto temp_manifold_structure = SSI::UTILS::SSIMatrices::setup_block_matrix(
       ssi_maps_->block_map_sca_tra_manifold(), ssi_maps_->BlockMapStructure());
 
-  for (int row = 0; row < condensed_block_dof_map_->NumMaps(); ++row)
+  for (int row = 0; row < condensed_block_dof_map_->num_maps(); ++row)
   {
     // add derivs. of interior/master dofs w.r.t. structure dofs
     Core::LinAlg::MatrixLogicalSplitAndTransform()(ssi_manifold_structure_block->Matrix(row, 0),
@@ -1346,9 +1346,9 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_scatra_manifold_mat
 
   if (do_uncomplete) ssi_scatra_manifold_block->UnComplete();
 
-  for (int row = 0; row < ssi_maps_->BlockMapScaTra()->NumMaps(); ++row)
+  for (int row = 0; row < ssi_maps_->BlockMapScaTra()->num_maps(); ++row)
   {
-    for (int col = 0; col < condensed_block_dof_map_->NumMaps(); ++col)
+    for (int col = 0; col < condensed_block_dof_map_->num_maps(); ++col)
     {
       // add derivs. of scatra w.r.t. interior/master dofs
       Core::LinAlg::MatrixLogicalSplitAndTransform()(scatra_manifold_block->Matrix(row, col),

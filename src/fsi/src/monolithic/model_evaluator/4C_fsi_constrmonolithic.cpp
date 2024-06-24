@@ -76,20 +76,20 @@ void FSI::ConstrMonolithic::GeneralSetup()
   // structure to fluid
   const int ndim = Global::Problem::Instance()->NDim();
   coupsf.setup_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->FSICondMap(), *fluid_field()->discretization(),
-      fluid_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      structure_field()->Interface()->fsi_cond_map(), *fluid_field()->discretization(),
+      fluid_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // structure to ale
 
   coupsa.setup_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
-      ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      structure_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
   icoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
-      ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      fluid_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -120,17 +120,17 @@ void FSI::ConstrMonolithic::GeneralSetup()
   // are not part of the final system of equations. Hence, we just need the
   // intersection of inner ALE DOFs with Dirichlet ALE DOFs.
   std::vector<Teuchos::RCP<const Epetra_Map>> aleintersectionmaps;
-  aleintersectionmaps.push_back(ale_field()->GetDBCMapExtractor()->CondMap());
-  aleintersectionmaps.push_back(ale_field()->Interface()->OtherMap());
+  aleintersectionmaps.push_back(ale_field()->get_dbc_map_extractor()->cond_map());
+  aleintersectionmaps.push_back(ale_field()->Interface()->other_map());
   Teuchos::RCP<Epetra_Map> aleintersectionmap =
-      Core::LinAlg::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
+      Core::LinAlg::MultiMapExtractor::intersect_maps(aleintersectionmaps);
 
   // Merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map
   std::vector<Teuchos::RCP<const Epetra_Map>> dbcmaps;
-  dbcmaps.push_back(structure_field()->GetDBCMapExtractor()->CondMap());
-  dbcmaps.push_back(fluid_field()->GetDBCMapExtractor()->CondMap());
+  dbcmaps.push_back(structure_field()->get_dbc_map_extractor()->cond_map());
+  dbcmaps.push_back(fluid_field()->get_dbc_map_extractor()->cond_map());
   dbcmaps.push_back(aleintersectionmap);
-  Teuchos::RCP<const Epetra_Map> dbcmap = Core::LinAlg::MultiMapExtractor::MergeMaps(dbcmaps);
+  Teuchos::RCP<const Epetra_Map> dbcmap = Core::LinAlg::MultiMapExtractor::merge_maps(dbcmaps);
 
   // Finally, create the global FSI Dirichlet map extractor
   dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(*dof_row_map(), dbcmap, true));
@@ -153,7 +153,7 @@ void FSI::ConstrMonolithic::evaluate(Teuchos::RCP<const Epetra_Vector> step_incr
   //-----------------------------------------------------------------------------
   if (step_increment != Teuchos::null)
   {
-    Teuchos::RCP<Epetra_Vector> lagrincr = extractor().ExtractVector(step_increment, 3);
+    Teuchos::RCP<Epetra_Vector> lagrincr = extractor().extract_vector(step_increment, 3);
     conman_->UpdateTotLagrMult(lagrincr);
   }
 
@@ -203,14 +203,14 @@ void FSI::ConstrMonolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& ma
         mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_))
       FOUR_C_THROW("ale scaling failed");
 
-    Teuchos::RCP<Epetra_Vector> sx = extractor().ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> ax = extractor().ExtractVector(b, 2);
+    Teuchos::RCP<Epetra_Vector> sx = extractor().extract_vector(b, 0);
+    Teuchos::RCP<Epetra_Vector> ax = extractor().extract_vector(b, 2);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    extractor().InsertVector(*sx, 0, b);
-    extractor().InsertVector(*ax, 2, b);
+    extractor().insert_vector(*sx, 0, b);
+    extractor().insert_vector(*ax, 2, b);
   }
 }
 
@@ -226,23 +226,23 @@ void FSI::ConstrMonolithic::unscale_solution(
 
   if (scaling_infnorm)
   {
-    Teuchos::RCP<Epetra_Vector> sy = extractor().ExtractVector(x, 0);
-    Teuchos::RCP<Epetra_Vector> ay = extractor().ExtractVector(x, 2);
+    Teuchos::RCP<Epetra_Vector> sy = extractor().extract_vector(x, 0);
+    Teuchos::RCP<Epetra_Vector> ay = extractor().extract_vector(x, 2);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    extractor().InsertVector(*sy, 0, x);
-    extractor().InsertVector(*ay, 2, x);
+    extractor().insert_vector(*sy, 0, x);
+    extractor().insert_vector(*ay, 2, x);
 
-    Teuchos::RCP<Epetra_Vector> sx = extractor().ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> ax = extractor().ExtractVector(b, 2);
+    Teuchos::RCP<Epetra_Vector> sx = extractor().extract_vector(b, 0);
+    Teuchos::RCP<Epetra_Vector> ax = extractor().extract_vector(b, 2);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    extractor().InsertVector(*sx, 0, b);
-    extractor().InsertVector(*ax, 2, b);
+    extractor().insert_vector(*sx, 0, b);
+    extractor().insert_vector(*ax, 2, b);
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
     srowsum_->Reciprocal(*srowsum_);
@@ -273,9 +273,9 @@ void FSI::ConstrMonolithic::unscale_solution(
   mat.Apply(x, r);
   r.Update(1., b, 1.);
 
-  Teuchos::RCP<Epetra_Vector> sr = extractor().ExtractVector(r, 0);
-  Teuchos::RCP<Epetra_Vector> fr = extractor().ExtractVector(r, 1);
-  Teuchos::RCP<Epetra_Vector> ar = extractor().ExtractVector(r, 2);
+  Teuchos::RCP<Epetra_Vector> sr = extractor().extract_vector(r, 0);
+  Teuchos::RCP<Epetra_Vector> fr = extractor().extract_vector(r, 1);
+  Teuchos::RCP<Epetra_Vector> ar = extractor().extract_vector(r, 2);
 
   // increment additional ale residual
   aleresidual_->Update(-1., *ar, 0.);
@@ -388,7 +388,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::ConstrMonolithic::create_status_test
   //  // setup tests for interface
   //
   //  std::vector<Teuchos::RCP<const Epetra_Map> > interface;
-  //  interface.push_back(fluid_field()->Interface()->FSICondMap());
+  //  interface.push_back(fluid_field()->Interface()->fsi_cond_map());
   //  interface.push_back(Teuchos::null);
   //  Core::LinAlg::MultiMapExtractor interfaceextract(*dof_row_map(),interface);
   //

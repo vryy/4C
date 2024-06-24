@@ -625,9 +625,9 @@ void SSI::SsiMono::prepare_time_step()
       auto coupling_map_extractor = meshtying->slave_master_extractor();
 
       // displacements
-      coupling_map_extractor->InsertVector(
+      coupling_map_extractor->insert_vector(
           coupling_adapter->MasterToSlave(
-              coupling_map_extractor->ExtractVector(structure_field()->Dispnp(), 2)),
+              coupling_map_extractor->extract_vector(structure_field()->Dispnp(), 2)),
           1, structure_field()->WriteAccessDispnp());
       structure_field()->set_state(structure_field()->WriteAccessDispnp());
     }
@@ -952,13 +952,13 @@ void SSI::SsiMono::update()
 void SSI::SsiMono::update_iter_sca_tra()
 {
   // update scalar transport field
-  ScaTraField()->UpdateIter(MapsSubProblems()->ExtractVector(
+  ScaTraField()->UpdateIter(MapsSubProblems()->extract_vector(
       ssi_vectors_->Increment(), UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)));
   ScaTraField()->compute_intermediate_values();
 
   if (is_sca_tra_manifold())
   {
-    auto increment_manifold = MapsSubProblems()->ExtractVector(
+    auto increment_manifold = MapsSubProblems()->extract_vector(
         ssi_vectors_->Increment(), UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold));
 
     // reconstruct slave side solution from master side
@@ -970,9 +970,9 @@ void SSI::SsiMono::update_iter_sca_tra()
         auto coupling_adapter = meshtying->SlaveMasterCoupling();
         auto multimap = meshtying->slave_master_extractor();
 
-        auto master_dofs = multimap->ExtractVector(increment_manifold, 2);
+        auto master_dofs = multimap->extract_vector(increment_manifold, 2);
         auto master_dofs_to_slave = coupling_adapter->MasterToSlave(master_dofs);
-        multimap->InsertVector(master_dofs_to_slave, 1, increment_manifold);
+        multimap->insert_vector(master_dofs_to_slave, 1, increment_manifold);
       }
     }
 
@@ -986,7 +986,7 @@ void SSI::SsiMono::update_iter_sca_tra()
 void SSI::SsiMono::update_iter_structure()
 {
   // set up structural increment vector
-  const Teuchos::RCP<Epetra_Vector> increment_structure = MapsSubProblems()->ExtractVector(
+  const Teuchos::RCP<Epetra_Vector> increment_structure = MapsSubProblems()->extract_vector(
       ssi_vectors_->Increment(), UTILS::SSIMaps::GetProblemPosition(Subproblem::structure));
 
   // consider structural meshtying. Copy master increments and displacements to slave side.
@@ -998,16 +998,16 @@ void SSI::SsiMono::update_iter_structure()
       auto coupling_map_extractor = meshtying->slave_master_extractor();
 
       // displacements
-      coupling_map_extractor->InsertVector(
+      coupling_map_extractor->insert_vector(
           coupling_adapter->MasterToSlave(
-              coupling_map_extractor->ExtractVector(structure_field()->Dispnp(), 2)),
+              coupling_map_extractor->extract_vector(structure_field()->Dispnp(), 2)),
           1, structure_field()->WriteAccessDispnp());
       structure_field()->set_state(structure_field()->WriteAccessDispnp());
 
       // increment
-      coupling_map_extractor->InsertVector(
+      coupling_map_extractor->insert_vector(
           coupling_adapter->MasterToSlave(
-              coupling_map_extractor->ExtractVector(increment_structure, 2)),
+              coupling_map_extractor->extract_vector(increment_structure, 2)),
           1, increment_structure);
     }
   }
@@ -1228,13 +1228,13 @@ void SSI::SsiMono::calc_initial_potential_field()
     if (is_sca_tra_manifold())
     {
       auto conc_map = Core::LinAlg::MergeMap(
-          scatra_elch_splitter->OtherMap(), manifold_elch_splitter->OtherMap());
+          scatra_elch_splitter->other_map(), manifold_elch_splitter->other_map());
       pseudo_dbc_map = Core::LinAlg::MergeMap(conc_map, structure_field()->dof_row_map());
     }
     else
     {
       pseudo_dbc_map = Core::LinAlg::MergeMap(
-          scatra_elch_splitter->OtherMap(), structure_field()->dof_row_map());
+          scatra_elch_splitter->other_map(), structure_field()->dof_row_map());
     }
 
     auto dbc_zeros = Teuchos::rcp(new Epetra_Vector(*pseudo_dbc_map, true));
@@ -1371,13 +1371,13 @@ void SSI::SsiMono::calc_initial_time_derivative()
                           : Teuchos::null;
 
   rhs_scatra->Update(1.0,
-      *MapsSubProblems()->ExtractVector(ssi_vectors_->Residual(),
+      *MapsSubProblems()->extract_vector(ssi_vectors_->Residual(),
           UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)),
       0.0);
   if (is_sca_tra_manifold())
   {
     rhs_manifold->Update(1.0,
-        *MapsSubProblems()->ExtractVector(
+        *MapsSubProblems()->extract_vector(
             ssi_vectors_->Residual(), UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold)),
         0.0);
   }
@@ -1490,10 +1490,10 @@ void SSI::SsiMono::calc_initial_time_derivative()
 
   // reconstruct global residual from partial residuals
   auto rhs_system = Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*dof_row_map(), true));
-  MapsSubProblems()->InsertVector(
+  MapsSubProblems()->insert_vector(
       rhs_scatra, UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport), rhs_system);
   if (is_sca_tra_manifold())
-    MapsSubProblems()->InsertVector(
+    MapsSubProblems()->insert_vector(
         rhs_manifold, UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold), rhs_system);
 
   // apply artificial Dirichlet boundary conditions to system of equations to non-transported
@@ -1501,14 +1501,14 @@ void SSI::SsiMono::calc_initial_time_derivative()
   Teuchos::RCP<Epetra_Map> pseudo_dbc_map;
   if (is_sca_tra_manifold() and is_elch)
   {
-    auto conc_map =
-        Core::LinAlg::MergeMap(scatra_elch_splitter->CondMap(), manifold_elch_splitter->CondMap());
+    auto conc_map = Core::LinAlg::MergeMap(
+        scatra_elch_splitter->cond_map(), manifold_elch_splitter->cond_map());
     pseudo_dbc_map = Core::LinAlg::MergeMap(conc_map, structure_field()->dof_row_map());
   }
   else if (is_elch)
   {
     pseudo_dbc_map =
-        Core::LinAlg::MergeMap(scatra_elch_splitter->CondMap(), structure_field()->dof_row_map());
+        Core::LinAlg::MergeMap(scatra_elch_splitter->cond_map(), structure_field()->dof_row_map());
   }
   else
     pseudo_dbc_map = Teuchos::rcp(new Epetra_Map(*structure_field()->dof_row_map()));
@@ -1527,14 +1527,14 @@ void SSI::SsiMono::calc_initial_time_derivative()
   solver_->Solve(massmatrix_system->EpetraOperator(), phidtnp_system, rhs_system, solver_params);
 
   // copy solution to sub problmes
-  auto phidtnp_scatra = MapsSubProblems()->ExtractVector(
+  auto phidtnp_scatra = MapsSubProblems()->extract_vector(
       phidtnp_system, UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport));
   ScaTraField()->Phidtnp()->Update(1.0, *phidtnp_scatra, 0.0);
   ScaTraField()->Phidtn()->Update(1.0, *phidtnp_scatra, 0.0);
 
   if (is_sca_tra_manifold())
   {
-    auto phidtnp_manifold = MapsSubProblems()->ExtractVector(
+    auto phidtnp_manifold = MapsSubProblems()->extract_vector(
         phidtnp_system, UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold));
     ScaTraManifold()->Phidtnp()->Update(1.0, *phidtnp_manifold, 0.0);
     ScaTraManifold()->Phidtn()->Update(1.0, *phidtnp_manifold, 0.0);
@@ -1668,9 +1668,9 @@ void SSI::SsiMono::set_scatra_manifold_solution(Teuchos::RCP<const Epetra_Vector
 
   for (const auto& coup : manifoldscatraflux_->sca_tra_manifold_couplings())
   {
-    auto manifold_cond = coup->manifold_map_extractor()->ExtractCondVector(*phi);
+    auto manifold_cond = coup->manifold_map_extractor()->extract_cond_vector(*phi);
     auto manifold_on_scatra_cond = coup->CouplingAdapter()->SlaveToMaster(manifold_cond);
-    coup->ScaTraMapExtractor()->InsertCondVector(manifold_on_scatra_cond, manifold_on_scatra);
+    coup->ScaTraMapExtractor()->insert_cond_vector(manifold_on_scatra_cond, manifold_on_scatra);
   }
   ScaTraField()->discretization()->set_state(0, "manifold_on_scatra", manifold_on_scatra);
 }

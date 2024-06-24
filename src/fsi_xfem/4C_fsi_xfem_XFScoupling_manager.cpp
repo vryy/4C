@@ -60,12 +60,12 @@ XFEM::XfsCouplingManager::XfsCouplingManager(Teuchos::RCP<ConditionManager> cond
 void XFEM::XfsCouplingManager::InitCouplingStates()
 {
   // 1 Set Displacement on both mesh couplings ... we get them from the structure field!
-  InsertVector(0, struct_->Dispn(), 0, mcfsi_->IDispn(), CouplingCommManager::full_to_partial);
-  InsertVector(0, struct_->Dispn(), 0, mcfsi_->IDispnp(), CouplingCommManager::full_to_partial);
+  insert_vector(0, struct_->Dispn(), 0, mcfsi_->IDispn(), CouplingCommManager::full_to_partial);
+  insert_vector(0, struct_->Dispn(), 0, mcfsi_->IDispnp(), CouplingCommManager::full_to_partial);
 
   // 2 Set Displacement on both mesh couplings ... we get them from the structure field!
-  InsertVector(0, struct_->Veln(), 0, mcfsi_->IVeln(), CouplingCommManager::full_to_partial);
-  InsertVector(0, struct_->Veln(), 0, mcfsi_->IVelnp(), CouplingCommManager::full_to_partial);
+  insert_vector(0, struct_->Veln(), 0, mcfsi_->IVeln(), CouplingCommManager::full_to_partial);
+  insert_vector(0, struct_->Veln(), 0, mcfsi_->IVelnp(), CouplingCommManager::full_to_partial);
 }
 
 /*-----------------------------------------------------------------------------------------*
@@ -77,7 +77,7 @@ void XFEM::XfsCouplingManager::SetCouplingStates()
   mcfsi_->update_displacement_iteration_vectors();
 
   // 2 Set Displacement on both mesh couplings ... we get them from the structure field!
-  InsertVector(0, struct_->Dispnp(), 0, mcfsi_->IDispnp(), CouplingCommManager::full_to_partial);
+  insert_vector(0, struct_->Dispnp(), 0, mcfsi_->IDispnp(), CouplingCommManager::full_to_partial);
 
   // get interface velocity at t(n)
   Teuchos::RCP<Epetra_Vector> velnp =
@@ -92,7 +92,7 @@ void XFEM::XfsCouplingManager::SetCouplingStates()
   velnp->Update(-(dt - 1 / scaling_FSI) * scaling_FSI, *mcfsi_->IVeln(), scaling_FSI);
 
   // 3 Set Structural Velocity onto ps mesh coupling
-  InsertVector(0, velnp, 0, mcfsi_->IVelnp(), CouplingCommManager::partial_to_partial);
+  insert_vector(0, velnp, 0, mcfsi_->IVelnp(), CouplingCommManager::partial_to_partial);
 
   // 4 Set Structural Velocity onto the structural discretization
   if (mcfsi_->get_averaging_strategy() != Inpar::XFEM::Xfluid_Sided)
@@ -207,8 +207,8 @@ void XFEM::XfsCouplingManager::AddCouplingRHS(
   Teuchos::RCP<Epetra_Vector> coup_rhs = Teuchos::rcp(new Epetra_Vector(*me.Map(idx_[0]), true));
   Core::LinAlg::Export(*coup_rhs_sum, *coup_rhs);  // use this command as long as poro ist not split
                                                    // into two bocks in the monolithic algorithm!
-  // InsertVector(0,coup_rhs_sum,0,coup_rhs,Coupling_Comm_Manager::partial_to_full);
-  me.AddVector(coup_rhs, idx_[0], rhs);
+  // insert_vector(0,coup_rhs_sum,0,coup_rhs,Coupling_Comm_Manager::partial_to_full);
+  me.add_vector(coup_rhs, idx_[0], rhs);
 }
 
 /*----------------------------------------------------------------------*/
@@ -238,7 +238,7 @@ void XFEM::XfsCouplingManager::output(Core::IO::DiscretizationWriter& writer)
   //--------------------------------
   Teuchos::RCP<Epetra_Vector> lambdafull =
       Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->FullMap(), true));
-  InsertVector(0, lambda_, 0, lambdafull, CouplingCommManager::partial_to_full);
+  insert_vector(0, lambda_, 0, lambdafull, CouplingCommManager::partial_to_full);
   writer.write_vector("fsilambda", lambdafull);
   return;
 }
@@ -250,7 +250,7 @@ void XFEM::XfsCouplingManager::read_restart(Core::IO::DiscretizationReader& read
   Teuchos::RCP<Epetra_Vector> lambdafull =
       Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->FullMap(), true));
   reader.read_vector(lambdafull, "fsilambda");
-  InsertVector(0, lambdafull, 0, lambda_, CouplingCommManager::full_to_partial);
+  insert_vector(0, lambdafull, 0, lambda_, CouplingCommManager::full_to_partial);
   return;
 }
 

@@ -382,20 +382,20 @@ void FSI::Monolithic::SetupSystem()
   // structure to fluid
 
   coupsf.setup_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->FSICondMap(), *fluid_field()->discretization(),
-      fluid_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      structure_field()->Interface()->fsi_cond_map(), *fluid_field()->discretization(),
+      fluid_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // structure to ale
 
   coupsa.setup_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
-      ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      structure_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
   icoupfa.setup_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
-      ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      fluid_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -845,7 +845,7 @@ void FSI::Monolithic::evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
     if (sdbg_ != Teuchos::null)
     {
       sdbg_->NewIteration();
-      sdbg_->write_vector("x", *structure_field()->Interface()->ExtractFSICondVector(sx));
+      sdbg_->write_vector("x", *structure_field()->Interface()->extract_fsi_cond_vector(sx));
     }
   }
 
@@ -888,7 +888,7 @@ void FSI::Monolithic::evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
-  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
   blockrowdofmap_.setup(*fullmap, maps);
 }
 
@@ -1038,7 +1038,7 @@ void FSI::Monolithic::setup_rhs(Epetra_Vector& f, bool firstcall)
     // Finally, we take care of Dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(f));
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(f.Map(), true));
-    Core::LinAlg::apply_dirichlet_to_system(*rhs, *zeros, *(dbcmaps_->CondMap()));
+    Core::LinAlg::apply_dirichlet_to_system(*rhs, *zeros, *(dbcmaps_->cond_map()));
     f.Update(1.0, *rhs, 0.0);
   }
 
@@ -1063,9 +1063,9 @@ void FSI::Monolithic::initial_guess(Teuchos::RCP<Epetra_Vector> initial_guess)
 void FSI::Monolithic::combine_field_vectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
     Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av)
 {
-  extractor().AddVector(*sv, 0, v);
-  extractor().AddVector(*fv, 1, v);
-  extractor().AddVector(*av, 2, v);
+  extractor().add_vector(*sv, 0, v);
+  extractor().add_vector(*fv, 1, v);
+  extractor().add_vector(*av, 2, v);
 }
 
 /*----------------------------------------------------------------------------*/

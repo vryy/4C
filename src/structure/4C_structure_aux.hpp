@@ -56,14 +56,13 @@ namespace STR
     /// get all element gids those nodes are touched by any condition
     Teuchos::RCP<std::set<int>> conditioned_element_map(const Core::FE::Discretization& dis) const;
 
-    MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
-    MAP_EXTRACTOR_VECTOR_METHODS(FSICond, cond_fsi)
-    MAP_EXTRACTOR_VECTOR_METHODS(LungASICond, cond_lung_asi)
-    MAP_EXTRACTOR_VECTOR_METHODS(BioGrCond, cond_bio_gr)
-    MAP_EXTRACTOR_VECTOR_METHODS(AleWearCond, cond_ale_wear)
-    MAP_EXTRACTOR_VECTOR_METHODS(FPSICond, cond_fpsi)
-    MAP_EXTRACTOR_VECTOR_METHODS(IMMERSEDCond, cond_immersed)
-    MAP_EXTRACTOR_VECTOR_METHODS(PASICond, cond_pasi)
+    MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)
+    MAP_EXTRACTOR_VECTOR_METHODS(fsi_cond, cond_fsi)
+    MAP_EXTRACTOR_VECTOR_METHODS(lung_asi_cond, cond_lung_asi)
+    MAP_EXTRACTOR_VECTOR_METHODS(ale_wear_cond, cond_ale_wear)
+    MAP_EXTRACTOR_VECTOR_METHODS(fpsi_cond, cond_fpsi)
+    MAP_EXTRACTOR_VECTOR_METHODS(immersed_cond, cond_immersed)
+    MAP_EXTRACTOR_VECTOR_METHODS(pasi_cond, cond_pasi)
   };
 }  // namespace STR
 

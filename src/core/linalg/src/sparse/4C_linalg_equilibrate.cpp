@@ -306,7 +306,7 @@ void Core::LinAlg::EquilibrationBlock::equilibrate_matrix(
         equilibrate_matrix_rows(blocksparsematrix->Matrix(i, j), invrowsums);
 
       // insert inverse row sums of current main diagonal matrix block into global vector
-      blockmaps->InsertVector(invrowsums, i, invrowsums_);
+      blockmaps->insert_vector(invrowsums, i, invrowsums_);
     }
   }
 
@@ -377,7 +377,7 @@ void Core::LinAlg::EquilibrationBlock::equilibrate_matrix(
         equilibrate_matrix_columns(blocksparsematrix->Matrix(i, j), invcolsums);
 
       // insert inverse column sums of current main diagonal matrix block into global vector
-      blockmaps->InsertVector(invcolsums, j, invcolsums_);
+      blockmaps->insert_vector(invcolsums, j, invcolsums_);
     }
   }
 }
@@ -414,7 +414,7 @@ void Core::LinAlg::EquilibrationBlockSpecific::equilibrate_matrix(
         equilibrate_matrix_rows(blocksparsematrix->Matrix(i, j), invrowsums);
 
       // insert inverse row sums of current main diagonal matrix block into global vector
-      blockmaps->InsertVector(invrowsums, i, invrowsums_);
+      blockmaps->insert_vector(invrowsums, i, invrowsums_);
     }
     if (method == EquilibrationMethod::columns_maindiag or
         method == EquilibrationMethod::rowsandcolumns_maindiag)
@@ -429,7 +429,7 @@ void Core::LinAlg::EquilibrationBlockSpecific::equilibrate_matrix(
         equilibrate_matrix_columns(blocksparsematrix->Matrix(j, i), invcolsums);
 
       // insert inverse column sums of current main diagonal matrix block into global vector
-      blockmaps->InsertVector(invcolsums, i, invcolsums_);
+      blockmaps->insert_vector(invcolsums, i, invcolsums_);
     }
     if (method == EquilibrationMethod::symmetry)
     {
@@ -445,8 +445,8 @@ void Core::LinAlg::EquilibrationBlockSpecific::equilibrate_matrix(
       }
 
       // insert inverse row sums of current main diagonal matrix block into global vector
-      blockmaps->InsertVector(invsymmetry, i, invcolsums_);
-      blockmaps->InsertVector(invsymmetry, i, invrowsums_);
+      blockmaps->insert_vector(invsymmetry, i, invcolsums_);
+      blockmaps->insert_vector(invsymmetry, i, invrowsums_);
     }
   }
 }

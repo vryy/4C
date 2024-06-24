@@ -89,10 +89,10 @@ void Adapter::FluidFSI::init()
   if (dirichletcond_)
   {
     // mark all interface velocities as dirichlet values
-    fluidimpl_->add_dirich_cond(Interface()->FSICondMap());
+    fluidimpl_->add_dirich_cond(Interface()->fsi_cond_map());
   }
 
-  interfaceforcen_ = Teuchos::rcp(new Epetra_Vector(*(Interface()->FSICondMap())));
+  interfaceforcen_ = Teuchos::rcp(new Epetra_Vector(*(Interface()->fsi_cond_map())));
 
   // time step size adaptivity in monolithic FSI
   const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
@@ -121,10 +121,10 @@ void Adapter::FluidFSI::init()
     // Create intersection of fluid DOFs that hold a Dirichlet boundary condition
     // and are located at the FSI interface.
     std::vector<Teuchos::RCP<const Epetra_Map>> intersectionmaps;
-    intersectionmaps.push_back(GetDBCMapExtractor()->CondMap());
-    intersectionmaps.push_back(Interface()->FSICondMap());
+    intersectionmaps.push_back(get_dbc_map_extractor()->cond_map());
+    intersectionmaps.push_back(Interface()->fsi_cond_map());
     Teuchos::RCP<Epetra_Map> intersectionmap =
-        Core::LinAlg::MultiMapExtractor::IntersectMaps(intersectionmaps);
+        Core::LinAlg::MultiMapExtractor::intersect_maps(intersectionmaps);
 
     // store number of interface DOFs subject to Dirichlet BCs on structure and fluid side of the
     // interface
@@ -164,7 +164,8 @@ void Adapter::FluidFSI::update()
   if (Global::Problem::Instance()->spatial_approximation_type() !=
       Core::FE::ShapeFunctionType::hdg)  // TODO als fix this!
   {
-    Teuchos::RCP<Epetra_Vector> interfaceforcem = Interface()->ExtractFSICondVector(TrueResidual());
+    Teuchos::RCP<Epetra_Vector> interfaceforcem =
+        Interface()->extract_fsi_cond_vector(TrueResidual());
 
     interfaceforcen_ = fluidimpl_->ExtrapolateEndPoint(interfaceforcen_, interfaceforcem);
   }
@@ -179,7 +180,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidFSI::RelaxationSolve(Teuchos::RCP<Epet
 {
   const Epetra_Map* dofrowmap = discretization()->dof_row_map();
   Teuchos::RCP<Epetra_Vector> relax = Core::LinAlg::CreateVector(*dofrowmap, true);
-  Interface()->InsertFSICondVector(ivel, relax);
+  Interface()->insert_fsi_cond_vector(ivel, relax);
   fluidimpl_->linear_relaxation_solve(relax);
   return extract_interface_forces();
 }
@@ -193,7 +194,8 @@ Teuchos::RCP<const Epetra_Map> Adapter::FluidFSI::InnerVelocityRowMap() { return
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> Adapter::FluidFSI::extract_interface_forces()
 {
-  Teuchos::RCP<Epetra_Vector> interfaceforcem = Interface()->ExtractFSICondVector(TrueResidual());
+  Teuchos::RCP<Epetra_Vector> interfaceforcem =
+      Interface()->extract_fsi_cond_vector(TrueResidual());
 
   return fluidimpl_->ExtrapolateEndPoint(interfaceforcen_, interfaceforcem);
 }
@@ -203,7 +205,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidFSI::extract_interface_forces()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> Adapter::FluidFSI::extract_interface_velnp()
 {
-  return Interface()->ExtractFSICondVector(Velnp());
+  return Interface()->extract_fsi_cond_vector(Velnp());
 }
 
 
@@ -212,14 +214,14 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidFSI::extract_interface_velnp()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> Adapter::FluidFSI::extract_interface_veln()
 {
-  return Interface()->ExtractFSICondVector(Veln());
+  return Interface()->extract_fsi_cond_vector(Veln());
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> Adapter::FluidFSI::extract_free_surface_veln()
 {
-  return Interface()->ExtractFSCondVector(Veln());
+  return Interface()->extract_fs_cond_vector(Veln());
 }
 
 /*----------------------------------------------------------------------*/
@@ -227,7 +229,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidFSI::extract_free_surface_veln()
 void Adapter::FluidFSI::apply_interface_velocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
   // apply the interface velocities
-  Interface()->InsertFSICondVector(ivel, fluidimpl_->WriteAccessVelnp());
+  Interface()->insert_fsi_cond_vector(ivel, fluidimpl_->WriteAccessVelnp());
 
   const Teuchos::ParameterList& fsipart =
       Global::Problem::Instance()->FSIDynamicParams().sublist("PARTITIONED SOLVER");
@@ -251,15 +253,15 @@ void Adapter::FluidFSI::apply_initial_mesh_displacement(
   if (fluidimpl_ == Teuchos::null)
     FOUR_C_THROW("Failed to cast Adapter::Fluid to FLD::FluidImplicitTimeInt.");
 
-  meshmap_->InsertCondVector(initfluiddisp, fluidimpl_->CreateDispn());
-  meshmap_->InsertCondVector(initfluiddisp, fluidimpl_->CreateDispnp());
+  meshmap_->insert_cond_vector(initfluiddisp, fluidimpl_->CreateDispn());
+  meshmap_->insert_cond_vector(initfluiddisp, fluidimpl_->CreateDispnp());
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FluidFSI::apply_mesh_displacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
 {
-  meshmap_->InsertCondVector(fluiddisp, fluidimpl_->WriteAccessDispnp());
+  meshmap_->insert_cond_vector(fluiddisp, fluidimpl_->WriteAccessDispnp());
 
   // new grid velocity
   fluidimpl_->UpdateGridv();
@@ -278,7 +280,7 @@ void Adapter::FluidFSI::UpdateGridv()
 /*----------------------------------------------------------------------*/
 void Adapter::FluidFSI::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel)
 {
-  meshmap_->InsertCondVector(gridvel, fluidimpl_->WriteAccessGridVel());
+  meshmap_->insert_cond_vector(gridvel, fluidimpl_->WriteAccessGridVel());
 }
 
 /*----------------------------------------------------------------------*
@@ -294,7 +296,7 @@ void Adapter::FluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int 
 void Adapter::FluidFSI::displacement_to_velocity(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
-  const Teuchos::RCP<const Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
+  const Teuchos::RCP<const Epetra_Vector> veln = Interface()->extract_fsi_cond_vector(Veln());
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // check, whether maps are the same
@@ -320,7 +322,7 @@ void Adapter::FluidFSI::displacement_to_velocity(Teuchos::RCP<Epetra_Vector> fcx
 void Adapter::FluidFSI::velocity_to_displacement(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
-  const Teuchos::RCP<const Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
+  const Teuchos::RCP<const Epetra_Vector> veln = Interface()->extract_fsi_cond_vector(Veln());
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // check, whether maps are the same
@@ -346,7 +348,7 @@ void Adapter::FluidFSI::velocity_to_displacement(Teuchos::RCP<Epetra_Vector> fcx
 void Adapter::FluidFSI::free_surf_displacement_to_velocity(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSCondVector(Veln());
+  const Teuchos::RCP<Epetra_Vector> veln = Interface()->extract_fs_cond_vector(Veln());
 
   // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
   //
@@ -361,7 +363,7 @@ void Adapter::FluidFSI::free_surf_displacement_to_velocity(Teuchos::RCP<Epetra_V
 void Adapter::FluidFSI::free_surf_velocity_to_displacement(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSCondVector(Veln());
+  const Teuchos::RCP<Epetra_Vector> veln = Interface()->extract_fs_cond_vector(Veln());
 
   // We convert Delta u(n+1,i+1) to Delta d(n+1,i+1) here.
   //
@@ -375,7 +377,7 @@ void Adapter::FluidFSI::free_surf_velocity_to_displacement(Teuchos::RCP<Epetra_V
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> Adapter::FluidFSI::integrate_interface_shape()
 {
-  return Interface()->ExtractFSICondVector(fluidimpl_->integrate_interface_shape("FSICoupling"));
+  return Interface()->extract_fsi_cond_vector(fluidimpl_->integrate_interface_shape("FSICoupling"));
 }
 
 /*----------------------------------------------------------------------*
@@ -404,12 +406,12 @@ void Adapter::FluidFSI::ProjVelToDivZero()
 
   //   get maps with Dirichlet DOFs and fsi interface DOFs
   std::vector<Teuchos::RCP<const Epetra_Map>> dbcfsimaps;
-  dbcfsimaps.push_back(GetDBCMapExtractor()->CondMap());
-  dbcfsimaps.push_back(Interface()->FSICondMap());
+  dbcfsimaps.push_back(get_dbc_map_extractor()->cond_map());
+  dbcfsimaps.push_back(Interface()->fsi_cond_map());
 
   // create a map with all DOFs that have either a Dirichlet boundary condition
   // or are located on the fsi interface
-  Teuchos::RCP<Epetra_Map> dbcfsimap = Core::LinAlg::MultiMapExtractor::MergeMaps(dbcfsimaps);
+  Teuchos::RCP<Epetra_Map> dbcfsimap = Core::LinAlg::MultiMapExtractor::merge_maps(dbcfsimaps);
 
   // create an element map with offset
   const int numallele = discretization()->NumGlobalElements();
@@ -421,7 +423,7 @@ void Adapter::FluidFSI::ProjVelToDivZero()
   std::vector<Teuchos::RCP<const Epetra_Map>> domainmaps;
   domainmaps.push_back(dbcfsimap);
   domainmaps.push_back(elemap);
-  Teuchos::RCP<Epetra_Map> domainmap = Core::LinAlg::MultiMapExtractor::MergeMaps(domainmaps);
+  Teuchos::RCP<Epetra_Map> domainmap = Core::LinAlg::MultiMapExtractor::merge_maps(domainmaps);
 
   // build the corresponding map extractor
   Teuchos::RCP<Core::LinAlg::MapExtractor> domainmapex =
@@ -492,7 +494,7 @@ void Adapter::FluidFSI::ProjVelToDivZero()
   B->Multiply(true, *Velnp(), *BTvR);
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*dbcfsimap, true));
 
-  domainmapex->InsertCondVector(zeros, BTvR);
+  domainmapex->insert_cond_vector(zeros, BTvR);
 
   Teuchos::RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(*domainmap));
 
@@ -662,25 +664,26 @@ void Adapter::FluidFSI::IndicateErrorNorms(double& err, double& errcond, double&
   // set '0' on Dirichlet DOFs
   zeros = Teuchos::rcp(new Epetra_Vector(locerrvelnp_->Map(), true));
   Core::LinAlg::apply_dirichlet_to_system(
-      *locerrvelnp_, *zeros, *(GetDBCMapExtractor()->CondMap()));
+      *locerrvelnp_, *zeros, *(get_dbc_map_extractor()->cond_map()));
 
   // extract the condition part of the full error vector (i.e. only interface velocity DOFs)
   Teuchos::RCP<Epetra_Vector> errorcond =
-      Teuchos::rcp(new Epetra_Vector(*Interface()->ExtractFSICondVector(locerrvelnp_)));
+      Teuchos::rcp(new Epetra_Vector(*Interface()->extract_fsi_cond_vector(locerrvelnp_)));
 
   /* in case of structure split: extract the other part of the full error vector
    * (i.e. interior velocity and all pressure DOFs) */
   Teuchos::RCP<Epetra_Vector> errorother =
-      Teuchos::rcp(new Epetra_Vector(*Interface()->ExtractOtherVector(locerrvelnp_)));
+      Teuchos::rcp(new Epetra_Vector(*Interface()->extract_other_vector(locerrvelnp_)));
 
   // calculate L2-norms of different subsets of temporal discretization error vector
   // (neglect Dirichlet and pressure DOFs for length scaling)
-  err = calculate_error_norm(*locerrvelnp_,
-      GetDBCMapExtractor()->CondMap()->NumGlobalElements() + PressureRowMap()->NumGlobalElements());
+  err =
+      calculate_error_norm(*locerrvelnp_, get_dbc_map_extractor()->cond_map()->NumGlobalElements() +
+                                              PressureRowMap()->NumGlobalElements());
   errcond = calculate_error_norm(*errorcond, numfsidbcdofs_);
   errother = calculate_error_norm(
       *errorother, PressureRowMap()->NumGlobalElements() +
-                       (GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numfsidbcdofs_));
+                       (get_dbc_map_extractor()->cond_map()->NumGlobalElements() - numfsidbcdofs_));
 
   // calculate L-inf-norms of temporal discretization errors
   locerrvelnp_->NormInf(&errinf);
@@ -832,9 +835,9 @@ void Adapter::FluidFSI::build_inner_vel_map()
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
   maps.push_back(FluidWrapper::VelocityRowMap());
-  maps.push_back(Interface()->OtherMap());
-  maps.push_back(GetDBCMapExtractor()->OtherMap());
-  innervelmap_ = Core::LinAlg::MultiMapExtractor::IntersectMaps(maps);
+  maps.push_back(Interface()->other_map());
+  maps.push_back(get_dbc_map_extractor()->other_map());
+  innervelmap_ = Core::LinAlg::MultiMapExtractor::intersect_maps(maps);
 }
 
 /*----------------------------------------------------------------------*

@@ -83,15 +83,15 @@ bool ElCh::Algorithm::convergence_check(
 
   // Calculate concentration increment and concentration L2 - Norm
   phiincnp_->Update(1.0, *ScaTraField()->Phinp(), -1.0);
-  auto onlycon = conpotsplitter->ExtractOtherVector(phiincnp_);
+  auto onlycon = conpotsplitter->extract_other_vector(phiincnp_);
   onlycon->Norm2(&conincnorm_L2);
-  conpotsplitter->ExtractOtherVector(ScaTraField()->Phinp(), onlycon);
+  conpotsplitter->extract_other_vector(ScaTraField()->Phinp(), onlycon);
   onlycon->Norm2(&connorm_L2);
 
   // Calculate potential increment and potential L2 - Norm
-  auto onlypot = conpotsplitter->ExtractCondVector(phiincnp_);
+  auto onlypot = conpotsplitter->extract_cond_vector(phiincnp_);
   onlypot->Norm2(&potincnorm_L2);
-  conpotsplitter->ExtractCondVector(ScaTraField()->Phinp(), onlypot);
+  conpotsplitter->extract_cond_vector(ScaTraField()->Phinp(), onlypot);
   onlypot->Norm2(&potnorm_L2);
 
   // care for the case that there is (almost) zero temperature or velocity

@@ -310,12 +310,12 @@ bool ScaTra::ConvCheckStrategyStdElch::abort_nonlin_iter(
 
   // compute L2 norm of concentration state vector
   Teuchos::RCP<Epetra_Vector> conc_vector =
-      scatratimint.Splitter()->ExtractOtherVector(scatratimint.Phinp());
+      scatratimint.Splitter()->extract_other_vector(scatratimint.Phinp());
   double conc_state_L2(0.0);
   conc_vector->Norm2(&conc_state_L2);
 
   // compute L2 norm of concentration residual vector
-  scatratimint.Splitter()->ExtractOtherVector(scatratimint.Residual(), conc_vector);
+  scatratimint.Splitter()->extract_other_vector(scatratimint.Residual(), conc_vector);
   double conc_res_L2(0.);
   conc_vector->Norm2(&conc_res_L2);
 
@@ -324,23 +324,23 @@ bool ScaTra::ConvCheckStrategyStdElch::abort_nonlin_iter(
   conc_vector->NormInf(&conc_res_inf);
 
   // compute L2 norm of concentration increment vector
-  scatratimint.Splitter()->ExtractOtherVector(scatratimint.Increment(), conc_vector);
+  scatratimint.Splitter()->extract_other_vector(scatratimint.Increment(), conc_vector);
   double conc_inc_L2(0.);
   conc_vector->Norm2(&conc_inc_L2);
 
   // compute L2 norm of electric potential state vector
   Teuchos::RCP<Epetra_Vector> pot_vector =
-      scatratimint.Splitter()->ExtractCondVector(scatratimint.Phinp());
+      scatratimint.Splitter()->extract_cond_vector(scatratimint.Phinp());
   double pot_state_L2(0.0);
   pot_vector->Norm2(&pot_state_L2);
 
   // compute L2 norm of electric potential residual vector
-  scatratimint.Splitter()->ExtractCondVector(scatratimint.Residual(), pot_vector);
+  scatratimint.Splitter()->extract_cond_vector(scatratimint.Residual(), pot_vector);
   double pot_res_L2(0.);
   pot_vector->Norm2(&pot_res_L2);
 
   // compute L2 norm of electric potential increment vector
-  scatratimint.Splitter()->ExtractCondVector(scatratimint.Increment(), pot_vector);
+  scatratimint.Splitter()->extract_cond_vector(scatratimint.Increment(), pot_vector);
   double pot_inc_L2(0.);
   pot_vector->Norm2(&pot_inc_L2);
 
@@ -627,12 +627,12 @@ bool ScaTra::ConvCheckStrategyS2ILMElch::abort_nonlin_iter(
 
   // compute L2 norm of concentration state vector
   Teuchos::RCP<Epetra_Vector> conc_vector =
-      scatratimint.Splitter()->ExtractOtherVector(scatratimint.Phinp());
+      scatratimint.Splitter()->extract_other_vector(scatratimint.Phinp());
   double conc_state_L2(0.0);
   conc_vector->Norm2(&conc_state_L2);
 
   // compute L2 norm of concentration residual vector
-  scatratimint.Splitter()->ExtractOtherVector(scatratimint.Residual(), conc_vector);
+  scatratimint.Splitter()->extract_other_vector(scatratimint.Residual(), conc_vector);
   double conc_res_L2(0.);
   conc_vector->Norm2(&conc_res_L2);
 
@@ -641,23 +641,23 @@ bool ScaTra::ConvCheckStrategyS2ILMElch::abort_nonlin_iter(
   conc_vector->NormInf(&conc_res_inf);
 
   // compute L2 norm of concentration increment vector
-  scatratimint.Splitter()->ExtractOtherVector(scatratimint.Increment(), conc_vector);
+  scatratimint.Splitter()->extract_other_vector(scatratimint.Increment(), conc_vector);
   double conc_inc_L2(0.);
   conc_vector->Norm2(&conc_inc_L2);
 
   // compute L2 norm of electric potential state vector
   Teuchos::RCP<Epetra_Vector> pot_vector =
-      scatratimint.Splitter()->ExtractCondVector(scatratimint.Phinp());
+      scatratimint.Splitter()->extract_cond_vector(scatratimint.Phinp());
   double pot_state_L2(0.0);
   pot_vector->Norm2(&pot_state_L2);
 
   // compute L2 norm of electric potential residual vector
-  scatratimint.Splitter()->ExtractCondVector(scatratimint.Residual(), pot_vector);
+  scatratimint.Splitter()->extract_cond_vector(scatratimint.Residual(), pot_vector);
   double pot_res_L2(0.);
   pot_vector->Norm2(&pot_res_L2);
 
   // compute L2 norm of electric potential increment vector
-  scatratimint.Splitter()->ExtractCondVector(scatratimint.Increment(), pot_vector);
+  scatratimint.Splitter()->extract_cond_vector(scatratimint.Increment(), pot_vector);
   double pot_inc_L2(0.);
   pot_vector->Norm2(&pot_inc_L2);
 
@@ -822,12 +822,12 @@ bool ScaTra::ConvCheckStrategyStdMacroScaleElch::abort_nonlin_iter(
 
   // compute L2 norm of state vector associated with electrolyte concentration
   const Teuchos::RCP<Epetra_Vector> vector_conc_el =
-      elchtimint->SplitterMacro()->ExtractVector(scatratimint.Phinp(), 0);
+      elchtimint->SplitterMacro()->extract_vector(scatratimint.Phinp(), 0);
   double L2_state_conc_el(0.);
   vector_conc_el->Norm2(&L2_state_conc_el);
 
   // compute L2 norm of residual vector associated with electrolyte concentration
-  elchtimint->SplitterMacro()->ExtractVector(scatratimint.Residual(), 0, vector_conc_el);
+  elchtimint->SplitterMacro()->extract_vector(scatratimint.Residual(), 0, vector_conc_el);
   double L2_res_conc_el(0.);
   vector_conc_el->Norm2(&L2_res_conc_el);
 
@@ -836,39 +836,39 @@ bool ScaTra::ConvCheckStrategyStdMacroScaleElch::abort_nonlin_iter(
   vector_conc_el->NormInf(&inf_res_conc_el);
 
   // compute L2 norm of increment vector associated with electrolyte concentration
-  elchtimint->SplitterMacro()->ExtractVector(scatratimint.Increment(), 0, vector_conc_el);
+  elchtimint->SplitterMacro()->extract_vector(scatratimint.Increment(), 0, vector_conc_el);
   double L2_inc_conc_el(0.);
   vector_conc_el->Norm2(&L2_inc_conc_el);
 
   // compute L2 norm of state vector associated with electrolyte potential
   const Teuchos::RCP<Epetra_Vector> vector_pot_el =
-      elchtimint->SplitterMacro()->ExtractVector(scatratimint.Phinp(), 1);
+      elchtimint->SplitterMacro()->extract_vector(scatratimint.Phinp(), 1);
   double L2_state_pot_el(0.);
   vector_pot_el->Norm2(&L2_state_pot_el);
 
   // compute L2 norm of residual vector associated with electrolyte potential
-  elchtimint->SplitterMacro()->ExtractVector(scatratimint.Residual(), 1, vector_pot_el);
+  elchtimint->SplitterMacro()->extract_vector(scatratimint.Residual(), 1, vector_pot_el);
   double L2_res_pot_el(0.);
   vector_pot_el->Norm2(&L2_res_pot_el);
 
   // compute L2 norm of increment vector associated with electrolyte potential
-  elchtimint->SplitterMacro()->ExtractVector(scatratimint.Increment(), 1, vector_pot_el);
+  elchtimint->SplitterMacro()->extract_vector(scatratimint.Increment(), 1, vector_pot_el);
   double L2_inc_pot_el(0.);
   vector_pot_el->Norm2(&L2_inc_pot_el);
 
   // compute L2 norm of state vector associated with electrode potential
   const Teuchos::RCP<Epetra_Vector> vector_pot_ed =
-      elchtimint->SplitterMacro()->ExtractVector(scatratimint.Phinp(), 2);
+      elchtimint->SplitterMacro()->extract_vector(scatratimint.Phinp(), 2);
   double L2_state_pot_ed(0.);
   vector_pot_ed->Norm2(&L2_state_pot_ed);
 
   // compute L2 norm of residual vector associated with electrode potential
-  elchtimint->SplitterMacro()->ExtractVector(scatratimint.Residual(), 2, vector_pot_ed);
+  elchtimint->SplitterMacro()->extract_vector(scatratimint.Residual(), 2, vector_pot_ed);
   double L2_res_pot_ed(0.);
   vector_pot_ed->Norm2(&L2_res_pot_ed);
 
   // compute L2 norm of increment vector associated with electrode potential
-  elchtimint->SplitterMacro()->ExtractVector(scatratimint.Increment(), 2, vector_pot_ed);
+  elchtimint->SplitterMacro()->extract_vector(scatratimint.Increment(), 2, vector_pot_ed);
   double L2_inc_pot_ed(0.);
   vector_pot_ed->Norm2(&L2_inc_pot_ed);
 
@@ -1015,24 +1015,24 @@ bool ScaTra::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter(
 
   // compute vector norms
   const Teuchos::RCP<Epetra_Vector> vector_conc_el =
-      elchtimint->SplitterMacro()->ExtractVector(scatratimint.Phinp(), 0);
+      elchtimint->SplitterMacro()->extract_vector(scatratimint.Phinp(), 0);
   double L2_state_conc_el(0.);
   vector_conc_el->Norm2(&L2_state_conc_el);
-  elchtimint->SplitterMacro()->ExtractVector(scatratimint.PhinpInc(), 0, vector_conc_el);
+  elchtimint->SplitterMacro()->extract_vector(scatratimint.PhinpInc(), 0, vector_conc_el);
   double L2_inc_conc_el(0.);
   vector_conc_el->Norm2(&L2_inc_conc_el);
   const Teuchos::RCP<Epetra_Vector> vector_pot_el =
-      elchtimint->SplitterMacro()->ExtractVector(scatratimint.Phinp(), 1);
+      elchtimint->SplitterMacro()->extract_vector(scatratimint.Phinp(), 1);
   double L2_state_pot_el(0.);
   vector_pot_el->Norm2(&L2_state_pot_el);
-  elchtimint->SplitterMacro()->ExtractVector(scatratimint.PhinpInc(), 1, vector_pot_el);
+  elchtimint->SplitterMacro()->extract_vector(scatratimint.PhinpInc(), 1, vector_pot_el);
   double L2_inc_pot_el(0.);
   vector_pot_el->Norm2(&L2_inc_pot_el);
   const Teuchos::RCP<Epetra_Vector> vector_pot_ed =
-      elchtimint->SplitterMacro()->ExtractVector(scatratimint.Phinp(), 2);
+      elchtimint->SplitterMacro()->extract_vector(scatratimint.Phinp(), 2);
   double L2_state_pot_ed(0.);
   vector_pot_ed->Norm2(&L2_state_pot_ed);
-  elchtimint->SplitterMacro()->ExtractVector(scatratimint.PhinpInc(), 2, vector_pot_ed);
+  elchtimint->SplitterMacro()->extract_vector(scatratimint.PhinpInc(), 2, vector_pot_ed);
   double L2_inc_pot_ed(0.);
   vector_pot_ed->Norm2(&L2_inc_pot_ed);
   if (L2_state_conc_el < 1.e-10) L2_state_conc_el = 1.;

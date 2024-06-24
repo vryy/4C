@@ -114,7 +114,7 @@ namespace Adapter
     virtual Teuchos::RCP<Core::FE::Discretization> write_access_discretization() = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor(
+    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type  ///< type of dbc set
         ) = 0;
 

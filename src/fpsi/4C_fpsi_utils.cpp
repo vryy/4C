@@ -658,13 +658,13 @@ void FPSI::UTILS::MapExtractor::setup(
   // build the new othermap
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
   othermaps.push_back(additionalothermap);
-  othermaps.push_back(extractor.OtherMap());
+  othermaps.push_back(extractor.other_map());
 
-  if (Core::LinAlg::MultiMapExtractor::IntersectMaps(othermaps)->NumGlobalElements() > 0)
-    FOUR_C_THROW("Failed to add dofmap of foreign discretization to OtherMap. Detected overlap.");
+  if (Core::LinAlg::MultiMapExtractor::intersect_maps(othermaps)->NumGlobalElements() > 0)
+    FOUR_C_THROW("Failed to add dofmap of foreign discretization to other_map. Detected overlap.");
 
   Teuchos::RCP<const Epetra_Map> mergedothermap =
-      Core::LinAlg::MultiMapExtractor::MergeMaps(othermaps);
+      Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
 
   // the vector of maps for the new map extractor consists of othermap at position 0
   // followed by the maps of conditioned DOF
@@ -673,10 +673,10 @@ void FPSI::UTILS::MapExtractor::setup(
   maps.push_back(mergedothermap);
 
   // append the condition maps subsequently
-  for (int i = 1; i < extractor.NumMaps(); ++i) maps.push_back(extractor.Map(i));
+  for (int i = 1; i < extractor.num_maps(); ++i) maps.push_back(extractor.Map(i));
 
   // merge
-  Teuchos::RCP<const Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<const Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
 
   Core::LinAlg::MultiMapExtractor::setup(*fullmap, maps);
 }

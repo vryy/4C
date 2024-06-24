@@ -137,10 +137,10 @@ void ScaTra::ScaTraTimIntElch::setup()
   // for certain ELCH problem formulations we have to provide
   // additional flux terms / currents across Dirichlet boundaries for the standard element call
   Teuchos::RCP<Epetra_Vector> dirichones =
-      Core::LinAlg::CreateVector(*(dbcmaps_->CondMap()), false);
+      Core::LinAlg::CreateVector(*(dbcmaps_->cond_map()), false);
   dirichones->PutScalar(1.0);
   dctoggle_ = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
-  dbcmaps_->InsertCondVector(dirichones, dctoggle_);
+  dbcmaps_->insert_cond_vector(dirichones, dctoggle_);
 
   // screen output (has to come after SetInitialField)
   // a safety check for the solver type
@@ -1954,25 +1954,25 @@ void ScaTra::ScaTraTimIntElch::calc_initial_potential_field()
 
     // apply actual Dirichlet boundary conditions to system of equations
     Core::LinAlg::apply_dirichlet_to_system(
-        *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
+        *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->cond_map()));
 
     // apply artificial Dirichlet boundary conditions to system of equations
     // to hold initial concentrations constant when solving for initial potential field
     Core::LinAlg::apply_dirichlet_to_system(
-        *sysmat_, *increment_, *residual_, *zeros_, *(splitter_->OtherMap()));
+        *sysmat_, *increment_, *residual_, *zeros_, *(splitter_->other_map()));
 
     // compute L2 norm of electric potential state vector
-    Teuchos::RCP<Epetra_Vector> pot_vector = splitter_->ExtractCondVector(phinp_);
+    Teuchos::RCP<Epetra_Vector> pot_vector = splitter_->extract_cond_vector(phinp_);
     double pot_state_L2(0.0);
     pot_vector->Norm2(&pot_state_L2);
 
     // compute L2 norm of electric potential residual vector
-    splitter_->ExtractCondVector(residual_, pot_vector);
+    splitter_->extract_cond_vector(residual_, pot_vector);
     double pot_res_L2(0.);
     pot_vector->Norm2(&pot_res_L2);
 
     // compute L2 norm of electric potential increment vector
-    splitter_->ExtractCondVector(increment_, pot_vector);
+    splitter_->extract_cond_vector(increment_, pot_vector);
     double pot_inc_L2(0.);
     pot_vector->Norm2(&pot_inc_L2);
 
@@ -2082,7 +2082,7 @@ void ScaTra::ScaTraTimIntElch::calc_initial_potential_field()
     dtsolve_ = Teuchos::Time::wallTime() - time;
 
     // update electric potential degrees of freedom in initial state vector
-    splitter_->AddCondVector(splitter_->ExtractCondVector(increment_), phinp_);
+    splitter_->add_cond_vector(splitter_->extract_cond_vector(increment_), phinp_);
 
     // copy initial state vector
     phin_->Update(1., *phinp_, 0.);
@@ -3054,13 +3054,13 @@ void ScaTra::ScaTraTimIntElch::perform_aitken_relaxation(
       FOUR_C_THROW("Map extractor for macro scale has not been initialized yet!");
 
     // loop over all degrees of freedom
-    for (int idof = 0; idof < splitter_macro_->NumMaps(); ++idof)
+    for (int idof = 0; idof < splitter_macro_->num_maps(); ++idof)
     {
       // extract subvectors associated with current degree of freedom
       const Teuchos::RCP<const Epetra_Vector> phinp_inc_dof =
-          splitter_macro_->ExtractVector(*phinp_inc_, idof);
+          splitter_macro_->extract_vector(*phinp_inc_, idof);
       const Teuchos::RCP<const Epetra_Vector> phinp_inc_diff_dof =
-          splitter_macro_->ExtractVector(phinp_inc_diff, idof);
+          splitter_macro_->extract_vector(phinp_inc_diff, idof);
 
       // compute L2 norm of difference between current and previous increments of current degree
       // of freedom
@@ -3078,7 +3078,7 @@ void ScaTra::ScaTraTimIntElch::perform_aitken_relaxation(
         omega_[idof] *= 1 - phinp_inc_dot_phinp_inc_diff / (phinp_inc_diff_L2 * phinp_inc_diff_L2);
 
       // perform Aitken relaxation for current degree of freedom
-      splitter_macro_->AddVector(*phinp_inc_dof, idof, phinp, omega_[idof]);
+      splitter_macro_->add_vector(*phinp_inc_dof, idof, phinp, omega_[idof]);
     }
   }
 
@@ -3108,7 +3108,7 @@ void ScaTra::ScaTraTimIntElch::output_flux(
     // CalcFluxAtBoundary is also scaled by this factor. To avoid confusion, we remove the scaling
     // factor from the boundary flux before outputting it, so that the result can be physically
     // interpreted as the plain boundary current density without any scaling.
-    splitter_->Scale(*flux, 1, elchparams_->get<double>("FARADAY_CONSTANT"));
+    splitter_->scale(*flux, 1, elchparams_->get<double>("FARADAY_CONSTANT"));
   }
 
   else
@@ -3247,7 +3247,7 @@ void ScaTra::ScaTraTimIntElch::reduce_dimension_null_space_blocks(
     Teuchos::RCP<Core::LinAlg::Solver> solver, int init_block_number) const
 {
   // loop over blocks of global system matrix
-  for (int iblock = 0; iblock < BlockMaps()->NumMaps(); ++iblock)
+  for (int iblock = 0; iblock < BlockMaps()->num_maps(); ++iblock)
   {
     std::ostringstream iblockstr;
     iblockstr << init_block_number + iblock + 1;

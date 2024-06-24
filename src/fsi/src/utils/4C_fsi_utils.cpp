@@ -152,7 +152,7 @@ bool FSI::UTILS::FluidAleNodesDisjoint(
     intersectionmaps.push_back(fluidmap);
     intersectionmaps.push_back(alemap);
     Teuchos::RCP<Epetra_Map> intersectionmap =
-        Core::LinAlg::MultiMapExtractor::IntersectMaps(intersectionmaps);
+        Core::LinAlg::MultiMapExtractor::intersect_maps(intersectionmaps);
 
     if (intersectionmap->NumGlobalElements() == 0) isdisjoint = true;
   }

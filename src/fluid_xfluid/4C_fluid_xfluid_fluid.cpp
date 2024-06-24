@@ -195,9 +195,9 @@ void FLD::XFluidFluid::prepare_time_step()
 
 Teuchos::RCP<const Epetra_Vector> FLD::XFluidFluid::initial_guess()
 {
-  xff_state_->xffluidsplitter_->InsertFluidVector(
+  xff_state_->xffluidsplitter_->insert_fluid_vector(
       embedded_fluid_->initial_guess(), xff_state_->xffluidincvel_);
-  xff_state_->xffluidsplitter_->InsertXFluidVector(
+  xff_state_->xffluidsplitter_->insert_x_fluid_vector(
       XFluid::initial_guess(), xff_state_->xffluidincvel_);
   return xff_state_->xffluidincvel_;
 }
@@ -207,12 +207,13 @@ void FLD::XFluidFluid::PrepareXFEMSolve()
   XFluid::PrepareXFEMSolve();
 
   // merge the velnp each into one large Epetra_Vector for the composed system
-  xff_state_->xffluidsplitter_->InsertXFluidVector(xff_state_->velnp_, xff_state_->xffluidvelnp_);
-  xff_state_->xffluidsplitter_->InsertFluidVector(
+  xff_state_->xffluidsplitter_->insert_x_fluid_vector(
+      xff_state_->velnp_, xff_state_->xffluidvelnp_);
+  xff_state_->xffluidsplitter_->insert_fluid_vector(
       embedded_fluid_->Velnp(), xff_state_->xffluidvelnp_);
 
-  xff_state_->xffluidsplitter_->InsertXFluidVector(xff_state_->veln_, xff_state_->xffluidveln_);
-  xff_state_->xffluidsplitter_->InsertFluidVector(
+  xff_state_->xffluidsplitter_->insert_x_fluid_vector(xff_state_->veln_, xff_state_->xffluidveln_);
+  xff_state_->xffluidsplitter_->insert_fluid_vector(
       embedded_fluid_->Veln(), xff_state_->xffluidveln_);
 }
 
@@ -226,19 +227,19 @@ void FLD::XFluidFluid::evaluate(
 
   if (stepinc != Teuchos::null)
   {
-    stepinc_xfluid = xff_state_->xffluidsplitter_->ExtractXFluidVector(stepinc);
-    stepinc_emb = xff_state_->xffluidsplitter_->ExtractFluidVector(stepinc);
+    stepinc_xfluid = xff_state_->xffluidsplitter_->extract_x_fluid_vector(stepinc);
+    stepinc_emb = xff_state_->xffluidsplitter_->extract_fluid_vector(stepinc);
 
     // compute increment
     xff_state_->xffluidincvel_->Update(1.0, *stepinc, -1.0, *stepinc_, 0.0);
 
-    xff_state_->xffluiddbcmaps_->InsertCondVector(
-        xff_state_->xffluiddbcmaps_->ExtractCondVector(xff_state_->xffluidzeros_),
+    xff_state_->xffluiddbcmaps_->insert_cond_vector(
+        xff_state_->xffluiddbcmaps_->extract_cond_vector(xff_state_->xffluidzeros_),
         xff_state_->xffluidincvel_);
 
     // update embedded fluid solution by increment
     embedded_fluid_->update_iter_incrementally(
-        xff_state_->xffluidsplitter_->ExtractFluidVector(xff_state_->xffluidincvel_));
+        xff_state_->xffluidsplitter_->extract_fluid_vector(xff_state_->xffluidincvel_));
   }
 
   if (mc_xff_->get_averaging_strategy() == Inpar::XFEM::Embedded_Sided and nitsche_evp_)
@@ -298,12 +299,12 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> FLD::XFluidFluid::BlockSystemM
 
 Teuchos::RCP<const Epetra_Map> FLD::XFluidFluid::PressureRowMap()
 {
-  return xff_state_->xffluidvelpressplitter_->CondMap();
+  return xff_state_->xffluidvelpressplitter_->cond_map();
 }
 
 Teuchos::RCP<const Epetra_Map> FLD::XFluidFluid::VelocityRowMap()
 {
-  return xff_state_->xffluidvelpressplitter_->OtherMap();
+  return xff_state_->xffluidvelpressplitter_->other_map();
 }
 
 Teuchos::RCP<Core::UTILS::ResultTest> FLD::XFluidFluid::CreateFieldTest()
@@ -342,7 +343,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidFluid::get_new_state()
   stepinc_ = Core::LinAlg::CreateVector(*state->xffluiddofrowmap_, true);
 
   // build a merged map from fluid-fluid dbc-maps
-  state->create_merged_dbc_map_extractor(embedded_fluid_->GetDBCMapExtractor());
+  state->create_merged_dbc_map_extractor(embedded_fluid_->get_dbc_map_extractor());
 
   return state;
 }
@@ -392,7 +393,7 @@ void FLD::XFluidFluid::assemble_mat_and_rhs(int itnum  ///< iteration number
   XFluid::assemble_mat_and_rhs(itnum);
 
   // insert XFluid residual to merged
-  xff_state_->xffluidsplitter_->InsertXFluidVector(
+  xff_state_->xffluidsplitter_->insert_x_fluid_vector(
       xff_state_->residual_, xff_state_->xffluidresidual_);
 
   // add coupling contribution to embedded residual
@@ -422,7 +423,7 @@ void FLD::XFluidFluid::assemble_mat_and_rhs(int itnum  ///< iteration number
   }
 
   // add embedded part of merged residual
-  xff_state_->xffluidsplitter_->InsertFluidVector(
+  xff_state_->xffluidsplitter_->insert_fluid_vector(
       embedded_fluid_->Residual(), xff_state_->xffluidresidual_);
 
   // assemble XFluid and embedded fluid system matrices into one
@@ -482,11 +483,11 @@ void FLD::XFluidFluid::update_by_increment()
   XFluid::update_by_increment();
   // update xfluid
   xff_state_->velnp_->Update(
-      1.0, *xff_state_->xffluidsplitter_->ExtractXFluidVector(xff_state_->xffluidvelnp_), 0.0);
+      1.0, *xff_state_->xffluidsplitter_->extract_x_fluid_vector(xff_state_->xffluidvelnp_), 0.0);
   // update embedded fluid
-  // embedded_fluid_->IterUpdate(xff_state_->xffluidsplitter_->ExtractFluidVector(xff_state_->xffluidincvel_));
+  // embedded_fluid_->IterUpdate(xff_state_->xffluidsplitter_->extract_fluid_vector(xff_state_->xffluidincvel_));
   embedded_fluid_->WriteAccessVelnp()->Update(
-      1.0, *xff_state_->xffluidsplitter_->ExtractFluidVector(xff_state_->xffluidvelnp_), 0.0);
+      1.0, *xff_state_->xffluidsplitter_->extract_fluid_vector(xff_state_->xffluidvelnp_), 0.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -625,11 +626,11 @@ void FLD::XFluidFluid::update_monolithic_fluid_solution(
     const Teuchos::RCP<const Epetra_Map>& fsidofmap)
 {
   // manipulate the dbc map extractor
-  Teuchos::RCP<const Epetra_Map> dbcmap = embedded_fluid_->GetDBCMapExtractor()->CondMap();
+  Teuchos::RCP<const Epetra_Map> dbcmap = embedded_fluid_->get_dbc_map_extractor()->cond_map();
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
   condmaps.push_back(dbcmap);
   condmaps.push_back(fsidofmap);
-  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::MergeMaps(condmaps);
+  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
 
   Teuchos::RCP<Core::LinAlg::MapExtractor> fsidbcmapex =
       Teuchos::rcp(new Core::LinAlg::MapExtractor(*(embedded_fluid_->dof_row_map()), condmerged));
@@ -637,7 +638,7 @@ void FLD::XFluidFluid::update_monolithic_fluid_solution(
   // DBC map-extractor containing FSI-dof
   xff_state_->create_merged_dbc_map_extractor(fsidbcmapex);
   Solve();
-  xff_state_->create_merged_dbc_map_extractor(embedded_fluid_->GetDBCMapExtractor());
+  xff_state_->create_merged_dbc_map_extractor(embedded_fluid_->get_dbc_map_extractor());
 }
 
 /*----------------------------------------------------------------------*/

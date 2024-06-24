@@ -190,7 +190,7 @@ void Immersed::ImmersedBase::ApplyDirichlet(
     const Teuchos::RCP<const Epetra_Vector>& dirichvals)
 {
   const Teuchos::RCP<const Epetra_Map> condmap_orig =
-      field_wrapper->GetDBCMapExtractor()->CondMap();
+      field_wrapper->get_dbc_map_extractor()->cond_map();
 
   // build map of dofs subjected to Dirichlet condition
   build_condition_dof_map(dis, condname, condmap_orig, numdof, cond_dofrowmap);
@@ -200,7 +200,7 @@ void Immersed::ImmersedBase::ApplyDirichlet(
 
   // write Dirichlet values to systemvector
   DoDirichletCond(field_wrapper->WriteAccessDispnp(), dirichvals,
-      field_wrapper->GetDBCMapExtractor()->CondMap());
+      field_wrapper->get_dbc_map_extractor()->cond_map());
 
   return;
 }  // ApplyDirichlet
@@ -216,7 +216,7 @@ void Immersed::ImmersedBase::apply_dirichlet_to_fluid(
 {
   // save the original condition map
   const Teuchos::RCP<const Epetra_Map> condmap_orig =
-      field_wrapper->GetDBCMapExtractor()->CondMap();
+      field_wrapper->get_dbc_map_extractor()->cond_map();
 
   // build map of dofs subjected to Dirichlet condition
   build_condition_dof_map(dis, condname, condmap_orig, numdof, cond_dofrowmap);
@@ -226,7 +226,7 @@ void Immersed::ImmersedBase::apply_dirichlet_to_fluid(
 
   // write Dirichlet values to systemvector
   DoDirichletCond(field_wrapper->WriteAccessVelnp(), dirichvals,
-      field_wrapper->GetDBCMapExtractor()->CondMap());
+      field_wrapper->get_dbc_map_extractor()->cond_map());
 
   return;
 }  // ApplyDirichlet

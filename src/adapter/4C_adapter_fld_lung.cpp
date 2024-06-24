@@ -60,16 +60,16 @@ void Adapter::FluidLung::init()
   // build map extractor for fsi <-> full map
 
   fsiinterface_ = Teuchos::rcp(
-      new Core::LinAlg::MapExtractor(*Interface()->FullMap(), Interface()->FSICondMap()));
+      new Core::LinAlg::MapExtractor(*Interface()->FullMap(), Interface()->fsi_cond_map()));
 
   // build map extractor for asi, other <-> full inner map
 
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
-  maps.push_back(Interface()->OtherMap());
-  maps.push_back(Interface()->LungASICondMap());
-  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
+  maps.push_back(Interface()->other_map());
+  maps.push_back(Interface()->lung_asi_cond_map());
+  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
   innersplit_ =
-      Teuchos::rcp(new Core::LinAlg::MapExtractor(*fullmap, Interface()->LungASICondMap()));
+      Teuchos::rcp(new Core::LinAlg::MapExtractor(*fullmap, Interface()->lung_asi_cond_map()));
 
   // build mapextractor for outflow fsi boundary dofs <-> full map
 
@@ -324,7 +324,7 @@ void Adapter::FluidLung::EvaluateVolCon(
   AleConstrMatrix->Complete();
 
   // transposed "ale" constraint matrix -> linearization of constraint equation
-  for (int i = 0; i < Interface()->NumMaps(); ++i)
+  for (int i = 0; i < Interface()->num_maps(); ++i)
     ConstrAleMatrix->Matrix(0, i) = *AleConstrMatrix->Matrix(i, 0).Transpose();
   ConstrAleMatrix->Complete();
 
@@ -350,7 +350,8 @@ void Adapter::FluidLung::EvaluateVolCon(
   ConstrFluidMatrix->Scale(dttheta);
 
   Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::CreateVector(*dof_row_map(), true);
-  outflowfsiinterface_->InsertCondVector(outflowfsiinterface_->ExtractCondVector(zeros), FluidRHS);
+  outflowfsiinterface_->insert_cond_vector(
+      outflowfsiinterface_->extract_cond_vector(zeros), FluidRHS);
 }
 
 

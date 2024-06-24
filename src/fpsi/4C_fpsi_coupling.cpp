@@ -72,7 +72,7 @@ void FPSI::FpsiCoupling::init_coupling_matrixes_rhs()
   Core::LinAlg::MapExtractor fluidextractor(*fluid_->dof_row_map(), fluid_->dof_row_map(), false);
   // ale extractor
   Core::LinAlg::MapExtractor aleextractor(
-      *(ale_->Interface()->OtherMap()), ale_->Interface()->OtherMap(), false);
+      *(ale_->Interface()->other_map()), ale_->Interface()->other_map(), false);
 
   c_pp_ = Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>(
       new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
@@ -170,11 +170,11 @@ void FPSI::FpsiCoupling::setup_interface_coupling()
         poro_field()->structure_field()->Interface()->Map(STR::MapExtractor::cond_fsi));
     vecSpaces.push_back(s_other_map);  // other map
     vecSpaces.push_back(poro_field()->structure_field()->Interface()->Map(
-        STR::MapExtractor::cond_fpsi));                     // fpsi_coupling
-    vecSpaces.push_back(porofluid_extractor_->OtherMap());  // other map
-    vecSpaces.push_back(porofluid_extractor_->CondMap());   // fpsi_coupling
+        STR::MapExtractor::cond_fpsi));                      // fpsi_coupling
+    vecSpaces.push_back(porofluid_extractor_->other_map());  // other map
+    vecSpaces.push_back(porofluid_extractor_->cond_map());   // fpsi_coupling
 
-    Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
+    Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(vecSpaces);
     // full Poroelasticity-blockmap
     poro_extractor_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
     poro_extractor_->setup(*fullmap, vecSpaces);
@@ -182,18 +182,18 @@ void FPSI::FpsiCoupling::setup_interface_coupling()
 
   // porous fluid to fluid
   icoup_pf_f_ = Teuchos::rcp(new Core::Adapter::Coupling());
-  icoup_pf_f_->setup_condition_coupling(*porofluiddis, porofluid_extractor_->CondMap(), *fluiddis,
-      fluidvelpres_extractor_->CondMap(), "fpsi_coupling", ndim + 1, false);
+  icoup_pf_f_->setup_condition_coupling(*porofluiddis, porofluid_extractor_->cond_map(), *fluiddis,
+      fluidvelpres_extractor_->cond_map(), "fpsi_coupling", ndim + 1, false);
 
   // porous structure to fluid
   icoup_ps_f_ = Teuchos::rcp(new Core::Adapter::Coupling());
-  icoup_ps_f_->setup_condition_coupling(*porostructdis, porostruct_extractor_->CondMap(), *fluiddis,
-      fluidvel_extractor_->CondMap(), "fpsi_coupling", ndim, false);
+  icoup_ps_f_->setup_condition_coupling(*porostructdis, porostruct_extractor_->cond_map(),
+      *fluiddis, fluidvel_extractor_->cond_map(), "fpsi_coupling", ndim, false);
 
   // porous structure to ale
   icoup_ps_a_ = Teuchos::rcp(new Core::Adapter::Coupling());
-  icoup_ps_a_->setup_condition_coupling(*porostructdis, porostruct_extractor_->CondMap(),
-      *ale_field()->discretization(), ale_field()->Interface()->FPSICondMap(), "fpsi_coupling",
+  icoup_ps_a_->setup_condition_coupling(*porostructdis, porostruct_extractor_->cond_map(),
+      *ale_field()->discretization(), ale_field()->Interface()->fpsi_cond_map(), "fpsi_coupling",
       ndim, false);
 
   return;
@@ -562,7 +562,7 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
     fluid_field()->discretization()->evaluate_condition(fparams, rhscontistrategy, "fpsi_coupling");
 
     // extract FPSI part of the fluid field
-    temprhs = fluidvelpres_extractor_->ExtractCondVector(temprhs);
+    temprhs = fluidvelpres_extractor_->extract_cond_vector(temprhs);
 
     // replace global fluid interface dofs through porofluid interface dofs
     temprhs = iFluidToPorofluid(temprhs);
@@ -570,7 +570,7 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
     // insert porofluid interface entries into vector with full porofield length (0: inner dofs of
     // structure, 1: interface dofs of structure, 2: inner dofs of porofluid, 3: interface dofs of
     // porofluid )
-    porofluid_extractor_->InsertCondVector(temprhs, c_rhs_pf_);
+    porofluid_extractor_->insert_cond_vector(temprhs, c_rhs_pf_);
 
     // add vector with full porofield length to global rhs
 
@@ -592,11 +592,11 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
         fparams, rhsstructurestrategy, "fpsi_coupling");
 
     // extract FPSI part of the fluid field
-    temprhs = fluidvel_extractor_->ExtractCondVector(temprhs);  //
+    temprhs = fluidvel_extractor_->extract_cond_vector(temprhs);  //
     // replace global fluid interface dofs through porofluid interface dofs
     temprhs = iFluidToPorostruct(temprhs);  //
     // insert porofluid interface
-    porostruct_extractor_->AddCondVector(temprhs, c_rhs_s_);
+    porostruct_extractor_->add_cond_vector(temprhs, c_rhs_s_);
 
     temprhs->PutScalar(0.0);
     temprhs2->PutScalar(0.0);
@@ -615,12 +615,12 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
     poro_field()->fluid_field()->discretization()->evaluate_condition(
         fparams, rhsfluidstrategy, "fpsi_coupling");
     // extract FPSI part of the poro fluid field
-    temprhs = porofluid_extractor_->ExtractCondVector(temprhs);  //
+    temprhs = porofluid_extractor_->extract_cond_vector(temprhs);  //
 
     // replace global fluid interface dofs through porofluid interface dofs
     temprhs = iPorofluidToFluid(temprhs);
     // insert porofluid interface entries into vector with full fluidfield length
-    fluidvelpres_extractor_->InsertCondVector(temprhs, temprhs2);
+    fluidvelpres_extractor_->insert_cond_vector(temprhs, temprhs2);
     // add vector with full porofield length to global rhs
     c_rhs_f_->Update(1.0, *temprhs2, 0.0);
 
@@ -711,7 +711,8 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
         tmp_c_fp.Add(tmp_c_fa->Matrix(
                          FLD::UTILS::MapExtractor::cond_fsi, ALE::UTILS::MapExtractor::cond_fsi),
             false, 1.0, 1.0);
-        tmp_c_fp.Complete(*ale_field()->Interface()->FPSICondMap(), *fluid_field()->dof_row_map());
+        tmp_c_fp.Complete(
+            *ale_field()->Interface()->fpsi_cond_map(), *fluid_field()->dof_row_map());
 
         // For Ale Condensation ==> AleColumns to StructuralColumns
         (*couplingcoltransform2_)(ale_field()->BlockSystemMatrix()->FullRowMap(),

@@ -232,14 +232,14 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::Solve(
   Epetra_MultiVector Xmv(*(range_ex.FullMap()), NV);
   Epetra_MultiVector Ymv(*(domain_ex.FullMap()), NV);
 
-  for (int i = 0; i < X.GetNumBlocks(); i++) range_ex.InsertVector(*(X.GetVector(i)), i, Xmv);
+  for (int i = 0; i < X.GetNumBlocks(); i++) range_ex.insert_vector(*(X.GetVector(i)), i, Xmv);
 
   b_->Update(1., Xmv, 0.);
   Core::LinAlg::SolverParams solver_params;
   solver_->Solve(a_, x_, b_, solver_params);
   Ymv.Update(1., *x_, 0.);
 
-  for (int i = 0; i < X.GetNumBlocks(); i++) domain_ex.ExtractVector(Ymv, i, *(Y.GetVector(i)));
+  for (int i = 0; i < X.GetNumBlocks(); i++) domain_ex.extract_vector(Ymv, i, *(Y.GetVector(i)));
 }
 
 

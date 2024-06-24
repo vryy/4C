@@ -189,11 +189,11 @@ void FLD::FluidImplicitTimeInt::init()
   // -------------------------------------------------------------------
   numdim_ = params_->get<int>("number of velocity degrees of freedom");
 
-  if (velpressplitter_->NumMaps() == 0)
+  if (velpressplitter_->num_maps() == 0)
     Core::LinAlg::CreateMapExtractorFromDiscretization(*discret_, numdim_, *velpressplitter_);
   // if the pressure map is empty, the user obviously specified a wrong
   // number of space dimensions in the input file
-  if (velpressplitter_->CondMap()->NumGlobalElements() < 1)
+  if (velpressplitter_->cond_map()->NumGlobalElements() < 1)
     FOUR_C_THROW("Pressure map empty. Wrong DIM value in input file?");
 
   // -------------------------------------------------------------------
@@ -1131,7 +1131,7 @@ void FLD::FluidImplicitTimeInt::assemble_mat_and_rhs()
     shapederivatives_->Complete();
     // apply Dirichlet conditions to a non-diagonal matrix
     // (The Dirichlet rows will become all zero, no diagonal one.)
-    shapederivatives_->ApplyDirichlet(*(dbcmaps_->CondMap()), false);
+    shapederivatives_->ApplyDirichlet(*(dbcmaps_->cond_map()), false);
   }
 
   // end time measurement for element
@@ -2034,7 +2034,7 @@ void FLD::FluidImplicitTimeInt::evaluate_fluid_edge_based(
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::free_surface_flow_surface_tension_update()
 {
-  if (alefluid_ and surfacesplitter_->FSCondRelevant())
+  if (alefluid_ and surfacesplitter_->fs_cond_relevant())
   {
     // employs the divergence theorem acc. to Saksono eq. (24) and does
     // not require second derivatives.
@@ -2077,12 +2077,12 @@ void FLD::FluidImplicitTimeInt::apply_dirichlet_to_system()
 
     Core::LinAlg::apply_dirichlet_to_system(
         *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(sysmat_), *incvel_, *residual_,
-        *locsysman_->Trafo(), *zeros_, *(dbcmaps_->CondMap()));
+        *locsysman_->Trafo(), *zeros_, *(dbcmaps_->cond_map()));
   }
   else
   {
     Core::LinAlg::apply_dirichlet_to_system(
-        *sysmat_, *incvel_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
+        *sysmat_, *incvel_, *residual_, *zeros_, *(dbcmaps_->cond_map()));
   }
 
 }  // FluidImplicitTimeInt::apply_dirichlet_to_system
@@ -2179,7 +2179,7 @@ void FLD::FluidImplicitTimeInt::update_krylov_space_projection()
   Teuchos::RCP<Epetra_Vector> c0 = Teuchos::rcp((*c)(0), false);
   c0->PutScalar(0.0);
   // extract vector of pressure-dofs
-  Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_->ExtractCondVector(*c0);
+  Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_->extract_cond_vector(*c0);
 
   const std::string* weighttype = projector_->WeightType();
   Teuchos::RCP<Epetra_Vector> w0_update = Teuchos::null;
@@ -2247,7 +2247,7 @@ void FLD::FluidImplicitTimeInt::update_krylov_space_projection()
   presmode->PutScalar(1.0);
   Teuchos::RCP<Epetra_Vector> tmpc = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
   Core::LinAlg::Export(*presmode, *tmpc);
-  Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->ExtractKSPCondVector(*tmpc);
+  Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->extract_ksp_cond_vector(*tmpc);
   Core::LinAlg::Export(*tmpkspc, *c0);
   // adapt kernel vector according to meshtying case
 
@@ -2359,13 +2359,13 @@ bool FLD::FluidImplicitTimeInt::convergence_check(int itnum, int itmax, const do
   // not include the dirichlet values as well. But it is expensive
   // to avoid that.)
   // -------------------------------------------------------------------
-  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
+  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), residual_);
 
   // -------------------------------------------------------------------
   // take surface volumetric flow rate into account
   //    Teuchos::RCP<Epetra_Vector> temp_vec = Teuchos::rcp(new
-  //    Epetra_Vector(*vol_surf_flow_bcmaps_,true)); vol_surf_flow_bc_->InsertCondVector( *temp_vec
-  //    , *residual_);
+  //    Epetra_Vector(*vol_surf_flow_bcmaps_,true)); vol_surf_flow_bc_->insert_cond_vector(
+  //    *temp_vec , *residual_);
   // -------------------------------------------------------------------
   insert_volumetric_surface_flow_cond_vector(zeros_, residual_);
 
@@ -2383,25 +2383,25 @@ bool FLD::FluidImplicitTimeInt::convergence_check(int itnum, int itmax, const do
 
 
 
-  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_->ExtractOtherVector(residual_);
+  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_->extract_other_vector(residual_);
 
   onlyvel->Norm2(&vresnorm_);
 
-  velpressplitter_->ExtractOtherVector(incvel_, onlyvel);
+  velpressplitter_->extract_other_vector(incvel_, onlyvel);
 
   onlyvel->Norm2(&incvelnorm_L2_);
 
-  velpressplitter_->ExtractOtherVector(velnp_, onlyvel);
+  velpressplitter_->extract_other_vector(velnp_, onlyvel);
 
   onlyvel->Norm2(&velnorm_L2_);
 
-  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_->ExtractCondVector(residual_);
+  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_->extract_cond_vector(residual_);
   onlypre->Norm2(&presnorm_);
 
-  velpressplitter_->ExtractCondVector(incvel_, onlypre);
+  velpressplitter_->extract_cond_vector(incvel_, onlypre);
   onlypre->Norm2(&incprenorm_L2_);
 
-  velpressplitter_->ExtractCondVector(velnp_, onlypre);
+  velpressplitter_->extract_cond_vector(velnp_, onlypre);
   onlypre->Norm2(&prenorm_L2_);
 
   // check for any INF's and NaN's
@@ -2480,11 +2480,11 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
   // Preparation: Check, if an Ale update needs to be done
   if (condName == "FREESURFCoupling")
   {
-    if (not(alefluid_ and surfacesplitter_->FSCondRelevant())) return;
+    if (not(alefluid_ and surfacesplitter_->fs_cond_relevant())) return;
   }
   else if (condName == "ALEUPDATECoupling")
   {
-    if (not(alefluid_ and surfacesplitter_->AUCondRelevant())) return;
+    if (not(alefluid_ and surfacesplitter_->au_cond_relevant())) return;
   }
   else
   {
@@ -2579,17 +2579,17 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
     // Set variables depending on condition
     if (condName == "FREESURFCoupling")
     {
-      velnp = surfacesplitter_->ExtractFSCondVector(velnp_);
-      gridv = surfacesplitter_->ExtractFSCondVector(gridv_);
-      disp = surfacesplitter_->ExtractFSCondVector(dispn_);
-      dispnp = surfacesplitter_->ExtractFSCondVector(dispnp_);
+      velnp = surfacesplitter_->extract_fs_cond_vector(velnp_);
+      gridv = surfacesplitter_->extract_fs_cond_vector(gridv_);
+      disp = surfacesplitter_->extract_fs_cond_vector(dispn_);
+      dispnp = surfacesplitter_->extract_fs_cond_vector(dispnp_);
     }
     else if (condName == "ALEUPDATECoupling")
     {
-      velnp = surfacesplitter_->ExtractAUCondVector(velnp_);
-      gridv = surfacesplitter_->ExtractAUCondVector(gridv_);
-      disp = surfacesplitter_->ExtractAUCondVector(dispn_);
-      dispnp = surfacesplitter_->ExtractAUCondVector(dispnp_);
+      velnp = surfacesplitter_->extract_au_cond_vector(velnp_);
+      gridv = surfacesplitter_->extract_au_cond_vector(gridv_);
+      disp = surfacesplitter_->extract_au_cond_vector(dispn_);
+      dispnp = surfacesplitter_->extract_au_cond_vector(dispnp_);
     }
 
     // Do the local lagrangian coupling
@@ -2639,26 +2639,26 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
         // (vector only contain the nodes in the condition).
         if (condName == "FREESURFCoupling")
         {
-          nodeNormals = surfacesplitter_->ExtractFSCondVector(globalNodeNormals);
-          nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->FSCondMap()));
+          nodeNormals = surfacesplitter_->extract_fs_cond_vector(globalNodeNormals);
+          nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->fs_cond_map()));
         }
         else if (condName == "ALEUPDATECoupling")
         {
-          nodeNormals = surfacesplitter_->ExtractAUCondVector(globalNodeNormals);
-          nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->AUCondMap()));
+          nodeNormals = surfacesplitter_->extract_au_cond_vector(globalNodeNormals);
+          nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->au_cond_map()));
         }
       }
       else
       {  // Obtain node normals from function
         if (condName == "FREESURFCoupling")
         {
-          nodeNormals = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->FSCondMap()));
-          nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->FSCondMap()));
+          nodeNormals = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->fs_cond_map()));
+          nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->fs_cond_map()));
         }
         else if (condName == "ALEUPDATECoupling")
         {
-          nodeNormals = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->AUCondMap()));
-          nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->AUCondMap()));
+          nodeNormals = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->au_cond_map()));
+          nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->au_cond_map()));
         }
 
         // Loop through all nodes and obtain node normal from function
@@ -2991,13 +2991,13 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
     // Insert calculated displacements and velocities at n+1 into global Ale variables
     if (condName == "FREESURFCoupling")
     {
-      surfacesplitter_->InsertFSCondVector(dispnp, dispnp_);
-      surfacesplitter_->InsertFSCondVector(gridv, gridv_);
+      surfacesplitter_->insert_fs_cond_vector(dispnp, dispnp_);
+      surfacesplitter_->insert_fs_cond_vector(gridv, gridv_);
     }
     else if (condName == "ALEUPDATECoupling")
     {
-      surfacesplitter_->InsertAUCondVector(dispnp, dispnp_);
-      surfacesplitter_->InsertAUCondVector(gridv, gridv_);
+      surfacesplitter_->insert_au_cond_vector(dispnp, dispnp_);
+      surfacesplitter_->insert_au_cond_vector(gridv, gridv_);
     }
   }
 }
@@ -3049,7 +3049,7 @@ void FLD::FluidImplicitTimeInt::evaluate(Teuchos::RCP<const Epetra_Vector> stepi
     aux->Update(1.0, *veln_, 1.0, *stepinc, 0.0);
 
     // Set Dirichlet values
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(velnp_), aux);
+    dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(velnp_), aux);
 
     insert_volumetric_surface_flow_cond_vector(velnp_, aux);
 
@@ -3283,11 +3283,11 @@ void FLD::FluidImplicitTimeInt::tim_int_calculate_acceleration()
   }
   else  // standard case
   {
-    onlyaccn = velpressplitter_->ExtractOtherVector(accn_);
-    onlyaccnp = velpressplitter_->ExtractOtherVector(accnp_);
-    onlyvelnm = velpressplitter_->ExtractOtherVector(velnm_);
-    onlyveln = velpressplitter_->ExtractOtherVector(veln_);
-    onlyvelnp = velpressplitter_->ExtractOtherVector(velnp_);
+    onlyaccn = velpressplitter_->extract_other_vector(accn_);
+    onlyaccnp = velpressplitter_->extract_other_vector(accnp_);
+    onlyvelnm = velpressplitter_->extract_other_vector(velnm_);
+    onlyveln = velpressplitter_->extract_other_vector(veln_);
+    onlyvelnp = velpressplitter_->extract_other_vector(velnp_);
   }
 
   calculate_acceleration(onlyvelnp, onlyveln, onlyvelnm, onlyaccn, onlyaccnp);
@@ -3461,7 +3461,7 @@ void FLD::FluidImplicitTimeInt::WriteRuntimeOutput()
 
   if (runtime_output_params_.OutputPressureState())
   {
-    Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->ExtractCondVector(velnp_);
+    Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->extract_cond_vector(velnp_);
     Core::LinAlg::Export(*pressure, *col_version);
     runtime_output_writer_->append_dof_based_result_data_vector(col_version, 1, 3, "pressure");
   }
@@ -3521,7 +3521,7 @@ void FLD::FluidImplicitTimeInt::output()
     output_->write_vector("velnp", velnp_);
 
     // (hydrodynamic) pressure
-    Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->ExtractCondVector(velnp_);
+    Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->extract_cond_vector(velnp_);
     output_->write_vector("pressure", pressure);
 
     if (xwall_ != Teuchos::null)
@@ -3537,7 +3537,7 @@ void FLD::FluidImplicitTimeInt::output()
     if (physicaltype_ == Inpar::FLUID::varying_density or
         physicaltype_ == Inpar::FLUID::boussinesq or physicaltype_ == Inpar::FLUID::tempdepwater)
     {
-      Teuchos::RCP<Epetra_Vector> scalar_field = velpressplitter_->ExtractCondVector(scaaf_);
+      Teuchos::RCP<Epetra_Vector> scalar_field = velpressplitter_->extract_cond_vector(scaaf_);
       output_->write_vector("scalar_field", scalar_field);
     }
 
@@ -4028,11 +4028,11 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
   }
 
   // Set proper grid velocities at the free-surface and for the ale update conditions
-  Teuchos::RCP<Epetra_Vector> auveln = surfacesplitter_->ExtractAUCondVector(veln_);
-  surfacesplitter_->InsertAUCondVector(auveln, gridv_);
+  Teuchos::RCP<Epetra_Vector> auveln = surfacesplitter_->extract_au_cond_vector(veln_);
+  surfacesplitter_->insert_au_cond_vector(auveln, gridv_);
 
-  Teuchos::RCP<Epetra_Vector> fsveln = surfacesplitter_->ExtractFSCondVector(veln_);
-  surfacesplitter_->InsertFSCondVector(fsveln, gridv_);
+  Teuchos::RCP<Epetra_Vector> fsveln = surfacesplitter_->extract_fs_cond_vector(veln_);
+  surfacesplitter_->insert_fs_cond_vector(fsveln, gridv_);
 }
 
 
@@ -4158,7 +4158,7 @@ void FLD::FluidImplicitTimeInt::av_m3_assemble_mat_and_rhs(Teuchos::ParameterLis
 
   // apply DBC to system matrix
   Core::LinAlg::apply_dirichlet_to_system(
-      *sysmat_, *incvel_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
+      *sysmat_, *incvel_, *residual_, *zeros_, *(dbcmaps_->cond_map()));
 }
 
 
@@ -4814,7 +4814,7 @@ void FLD::FluidImplicitTimeInt::SetScalarFields(Teuchos::RCP<const Epetra_Vector
 Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ExtractVelocityPart(
     Teuchos::RCP<const Epetra_Vector> velpres)
 {
-  return VelPresSplitter()->ExtractOtherVector(velpres);
+  return VelPresSplitter()->extract_other_vector(velpres);
 }
 
 /*----------------------------------------------------------------------*/
@@ -4822,7 +4822,7 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ExtractVelocityPart
 Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ExtractPressurePart(
     Teuchos::RCP<const Epetra_Vector> velpres)
 {
-  return VelPresSplitter()->ExtractCondVector(velpres);
+  return VelPresSplitter()->extract_cond_vector(velpres);
 }
 
 /*----------------------------------------------------------------------*
@@ -5432,8 +5432,8 @@ void FLD::FluidImplicitTimeInt::linear_relaxation_solve(Teuchos::RCP<Epetra_Vect
     //          residual displacements are supposed to be zero at
     //          boundary conditions
     dirichletlines_ = Teuchos::null;
-    dirichletlines_ = SystemMatrix()->extract_dirichlet_rows(*(dbcmaps_->CondMap()));
-    sysmat_->ApplyDirichlet(*(dbcmaps_->CondMap()));
+    dirichletlines_ = SystemMatrix()->extract_dirichlet_rows(*(dbcmaps_->cond_map()));
+    sysmat_->ApplyDirichlet(*(dbcmaps_->cond_map()));
   }
 
   // No, we do not want to have any rhs. There cannot be any.
@@ -5452,7 +5452,7 @@ void FLD::FluidImplicitTimeInt::linear_relaxation_solve(Teuchos::RCP<Epetra_Vect
   //          boundary conditions
   incvel_->PutScalar(0.0);
 
-  Core::LinAlg::apply_dirichlet_to_system(*incvel_, *residual_, *relax, *(dbcmaps_->CondMap()));
+  Core::LinAlg::apply_dirichlet_to_system(*incvel_, *residual_, *relax, *(dbcmaps_->cond_map()));
 
   CustomSolve(relax);
   //-------solve for residual displacements to correct incremental displacements
@@ -5486,8 +5486,8 @@ void FLD::FluidImplicitTimeInt::add_dirich_cond(const Teuchos::RCP<const Epetra_
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
   condmaps.push_back(maptoadd);
-  condmaps.push_back(dbcmaps_->CondMap());
-  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::MergeMaps(condmaps);
+  condmaps.push_back(dbcmaps_->cond_map());
+  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
   *dbcmaps_ = Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), condmerged);
 }
 
@@ -5497,8 +5497,8 @@ void FLD::FluidImplicitTimeInt::remove_dirich_cond(const Teuchos::RCP<const Epet
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
   othermaps.push_back(maptoremove);
-  othermaps.push_back(dbcmaps_->OtherMap());
-  Teuchos::RCP<Epetra_Map> othermerged = Core::LinAlg::MultiMapExtractor::MergeMaps(othermaps);
+  othermaps.push_back(dbcmaps_->other_map());
+  Teuchos::RCP<Epetra_Map> othermerged = Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
   *dbcmaps_ = Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), othermerged, false);
 }
 
@@ -5508,11 +5508,11 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::Dirichlet()
 {
   if (dbcmaps_ == Teuchos::null) FOUR_C_THROW("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichones =
-      Core::LinAlg::CreateVector(*(dbcmaps_->CondMap()), false);
+      Core::LinAlg::CreateVector(*(dbcmaps_->cond_map()), false);
   dirichones->PutScalar(1.0);
   Teuchos::RCP<Epetra_Vector> dirichtoggle =
       Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
-  dbcmaps_->InsertCondVector(dirichones, dirichtoggle);
+  dbcmaps_->insert_cond_vector(dirichones, dirichtoggle);
   return dirichtoggle;
 }
 
@@ -5522,11 +5522,11 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::InvDirichlet()
 {
   if (dbcmaps_ == Teuchos::null) FOUR_C_THROW("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichzeros =
-      Core::LinAlg::CreateVector(*(dbcmaps_->CondMap()), true);
+      Core::LinAlg::CreateVector(*(dbcmaps_->cond_map()), true);
   Teuchos::RCP<Epetra_Vector> invtoggle =
       Core::LinAlg::CreateVector(*(discret_->dof_row_map()), false);
   invtoggle->PutScalar(1.0);
-  dbcmaps_->InsertCondVector(dirichzeros, invtoggle);
+  dbcmaps_->insert_cond_vector(dirichzeros, invtoggle);
   return invtoggle;
 }
 
@@ -5534,14 +5534,14 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::InvDirichlet()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> FLD::FluidImplicitTimeInt::VelocityRowMap()
 {
-  return velpressplitter_->OtherMap();
+  return velpressplitter_->other_map();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> FLD::FluidImplicitTimeInt::PressureRowMap()
 {
-  return velpressplitter_->CondMap();
+  return velpressplitter_->cond_map();
 }
 
 
@@ -5800,8 +5800,8 @@ void FLD::FluidImplicitTimeInt::update_iter_incrementally(Teuchos::RCP<const Epe
     // values.
     Teuchos::RCP<Epetra_Vector> aux = Core::LinAlg::CreateVector(*(discret_->dof_row_map(0)), true);
     aux->Update(1.0, *velnp_, 1.0, *vel, 0.0);
-    //    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), velnp_);
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(velnp_), aux);
+    //    dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(aux), velnp_);
+    dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(velnp_), aux);
 
     *velnp_ = *aux;
   }
@@ -6255,7 +6255,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcDivOp()
   discret_->ClearState();
 
   //  // blank DOFs which are on Dirichlet BC, since they may not be modified
-  //  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), divop);
+  //  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), divop);
 
   return divop;
 }
@@ -6389,16 +6389,16 @@ void FLD::FluidImplicitTimeInt::predict_tang_vel_consist_acc()
 
   // extract reaction forces
   freact->Update(1.0, *residual_, 0.0);
-  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact);
+  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact);
 
   // blank residual at DOFs on Dirichlet BC
-  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
+  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), residual_);
 
   // apply Dirichlet BCs to system of equations
   incvel_->PutScalar(0.0);
   sysmat_->Complete();
   Core::LinAlg::apply_dirichlet_to_system(
-      *sysmat_, *incvel_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
+      *sysmat_, *incvel_, *residual_, *zeros_, *(dbcmaps_->cond_map()));
 
   // solve for incvel_
   Core::LinAlg::SolverParams solver_params;
@@ -6413,7 +6413,7 @@ void FLD::FluidImplicitTimeInt::predict_tang_vel_consist_acc()
   update_iter_incrementally(incvel_);
 
   // keep pressure values from previous time step
-  velpressplitter_->InsertCondVector(velpressplitter_->ExtractCondVector(veln_), velnp_);
+  velpressplitter_->insert_cond_vector(velpressplitter_->extract_cond_vector(veln_), velnp_);
 
   // Note: accelerations on Dirichlet DOFs are not set.
 
@@ -6458,7 +6458,7 @@ void FLD::FluidImplicitTimeInt::setup_meshtying()
   sysmat_ = meshtying_->init_system_matrix();
 
   // Check if there are DC defined on the master side of the internal interface
-  meshtying_->DirichletOnMaster(dbcmaps_->CondMap());
+  meshtying_->DirichletOnMaster(dbcmaps_->cond_map());
 
   if (predictor_ != "steady_state")
   {
@@ -6647,10 +6647,10 @@ void FLD::FluidImplicitTimeInt::explicit_predictor()
     velnp_->Update(1.0, *veln_, 0.0);
 
     // split between acceleration and pressure
-    Teuchos::RCP<Epetra_Vector> inc = velpressplitter_->ExtractOtherVector(accn_);
+    Teuchos::RCP<Epetra_Vector> inc = velpressplitter_->extract_other_vector(accn_);
     inc->Scale((1.0 - theta_) * dta_);
 
-    velpressplitter_->AddOtherVector(inc, velnp_);
+    velpressplitter_->add_other_vector(inc, velnp_);
   }
   else if (predictor_ == "constant_acceleration")
   {
@@ -6668,10 +6668,10 @@ void FLD::FluidImplicitTimeInt::explicit_predictor()
     //
     velnp_->Update(1.0, *veln_, 0.0);
 
-    Teuchos::RCP<Epetra_Vector> inc = velpressplitter_->ExtractOtherVector(accn_);
+    Teuchos::RCP<Epetra_Vector> inc = velpressplitter_->extract_other_vector(accn_);
     inc->Scale(dta_);
 
-    velpressplitter_->AddOtherVector(inc, velnp_);
+    velpressplitter_->add_other_vector(inc, velnp_);
   }
   else if (predictor_ == "constant_increment")
   {
@@ -6689,12 +6689,12 @@ void FLD::FluidImplicitTimeInt::explicit_predictor()
     //
     velnp_->Update(1.0, *veln_, 0.0);
 
-    Teuchos::RCP<Epetra_Vector> un = velpressplitter_->ExtractOtherVector(veln_);
-    Teuchos::RCP<Epetra_Vector> unm = velpressplitter_->ExtractOtherVector(velnm_);
+    Teuchos::RCP<Epetra_Vector> un = velpressplitter_->extract_other_vector(veln_);
+    Teuchos::RCP<Epetra_Vector> unm = velpressplitter_->extract_other_vector(velnm_);
     unm->Scale(-1.0);
 
-    velpressplitter_->AddOtherVector(un, velnp_);
-    velpressplitter_->AddOtherVector(unm, velnp_);
+    velpressplitter_->add_other_vector(un, velnp_);
+    velpressplitter_->add_other_vector(unm, velnp_);
   }
   else if (predictor_ == "explicit_second_order_midpoint")
   {
@@ -6721,12 +6721,12 @@ void FLD::FluidImplicitTimeInt::explicit_predictor()
     velnp_->Update(1.0, *veln_, 0.0);
 
     // split between acceleration and pressure
-    Teuchos::RCP<Epetra_Vector> unm = velpressplitter_->ExtractOtherVector(velnm_);
-    Teuchos::RCP<Epetra_Vector> an = velpressplitter_->ExtractOtherVector(accn_);
+    Teuchos::RCP<Epetra_Vector> unm = velpressplitter_->extract_other_vector(velnm_);
+    Teuchos::RCP<Epetra_Vector> an = velpressplitter_->extract_other_vector(accn_);
 
     unm->Update(2.0 * dta_, *an, 1.0);
 
-    velpressplitter_->InsertOtherVector(unm, velnp_);
+    velpressplitter_->insert_other_vector(unm, velnp_);
   }
   else
     FOUR_C_THROW("Unknown fluid predictor %s", predictor_.c_str());

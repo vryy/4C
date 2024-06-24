@@ -127,7 +127,7 @@ void CONSTRAINTS::ConstraintSolver::solve_uzawa(Teuchos::RCP<Core::LinAlg::Spars
     dbcmaps_ = Core::LinAlg::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
 
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(rhsstand->Map(), true));
-  Teuchos::RCP<Epetra_Vector> dirichzeros = dbcmaps_->ExtractCondVector(zeros);
+  Teuchos::RCP<Epetra_Vector> dirichzeros = dbcmaps_->extract_cond_vector(zeros);
 
   // Compute residual of the uzawa algorithm
   Teuchos::RCP<Epetra_Vector> fresmcopy = Teuchos::rcp(new Epetra_Vector(*rhsstand));
@@ -136,7 +136,7 @@ void CONSTRAINTS::ConstraintSolver::solve_uzawa(Teuchos::RCP<Core::LinAlg::Spars
   uzawa_res.Update(1.0, *fresmcopy, -1.0);
 
   // blank residual DOFs which are on Dirichlet BC
-  dbcmaps_->InsertCondVector(dirichzeros, Teuchos::rcp(&uzawa_res, false));
+  dbcmaps_->insert_cond_vector(dirichzeros, Teuchos::rcp(&uzawa_res, false));
 
   uzawa_res.Norm2(&norm_uzawa);
   Epetra_Vector constr_res(lagrinc->Map());
@@ -179,7 +179,7 @@ void CONSTRAINTS::ConstraintSolver::solve_uzawa(Teuchos::RCP<Core::LinAlg::Spars
     uzawa_res.Update(1.0, *fresmcopy, -1.0);
 
     // blank residual DOFs which are on Dirichlet BC
-    dbcmaps_->InsertCondVector(dirichzeros, Teuchos::rcp(&uzawa_res, false));
+    dbcmaps_->insert_cond_vector(dirichzeros, Teuchos::rcp(&uzawa_res, false));
     norm_uzawa_old = norm_uzawa;
     uzawa_res.Norm2(&norm_uzawa);
     Epetra_Vector constr_res(lagrinc->Map());
@@ -286,8 +286,8 @@ void CONSTRAINTS::ConstraintSolver::solve_direct(Teuchos::RCP<Core::LinAlg::Spar
   solver_->Solve(mergedmatrix->EpetraMatrix(), mergedsol, mergedrhs, solver_params);
   solver_->ResetTolerance();
   // store results in smaller vectors
-  mapext.ExtractCondVector(mergedsol, dispinc);
-  mapext.ExtractOtherVector(mergedsol, lagrinc);
+  mapext.extract_cond_vector(mergedsol, dispinc);
+  mapext.extract_other_vector(mergedsol, lagrinc);
 
   counter_++;
   return;
@@ -323,7 +323,7 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<Core::LinAlg::Spar
 
   // stuff needed for Dirichlet BCs
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(rhsstand->Map(), true));
-  Teuchos::RCP<Epetra_Vector> dirichzeros = dbcmaps_->ExtractCondVector(zeros);
+  Teuchos::RCP<Epetra_Vector> dirichzeros = dbcmaps_->extract_cond_vector(zeros);
   Teuchos::RCP<Epetra_Vector> rhscopy = Teuchos::rcp(new Epetra_Vector(*rhsstand));
 
   // FIXME: The solver should not be taken from the contact dynamic section here,
@@ -397,8 +397,8 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<Core::LinAlg::Spar
   solver_->Params() = sfparams;  // store back original parameter list
 
   // store results in smaller vectors
-  rowmapext.ExtractCondVector(mergedsol, lagrinc);
-  rowmapext.ExtractOtherVector(mergedsol, dispinc);
+  rowmapext.extract_cond_vector(mergedsol, lagrinc);
+  rowmapext.extract_other_vector(mergedsol, dispinc);
 
   counter_++;
   return;

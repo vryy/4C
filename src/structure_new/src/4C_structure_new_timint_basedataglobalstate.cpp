@@ -616,7 +616,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TimeInt::BaseDataGlobalState::create_gl
             modeleval->evaluator(ci->first).get_last_time_step_solution_ptr();
         // if there is a partial solution, we insert it into the full vector
         if (not model_sol_ptr.is_null())
-          block_extractor().InsertVector(model_sol_ptr, ci->second, xvec_ptr);
+          block_extractor().insert_vector(model_sol_ptr, ci->second, xvec_ptr);
         model_sol_ptr = Teuchos::null;
       }
       break;
@@ -634,7 +634,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TimeInt::BaseDataGlobalState::create_gl
             modeleval->evaluator(ci->first).get_current_solution_ptr();
         // if there is a partial solution, we insert it into the full vector
         if (not model_sol_ptr.is_null())
-          block_extractor().InsertVector(model_sol_ptr, ci->second, xvec_ptr);
+          block_extractor().insert_vector(model_sol_ptr, ci->second, xvec_ptr);
       }
       break;
     }
@@ -769,7 +769,7 @@ Teuchos::RCP<Epetra_Vector> STR::TimeInt::BaseDataGlobalState::extract_model_ent
   // extract from the full state vector
   if (source.Map().NumGlobalElements() == block_extractor().FullMap()->NumGlobalElements())
   {
-    model_ptr = block_extractor().ExtractVector(source, model_block_id_.at(mt));
+    model_ptr = block_extractor().extract_vector(source, model_block_id_.at(mt));
   }
   // copy the vector
   else if (source.Map().NumGlobalElements() == model_maps_.at(mt)->NumGlobalElements())
@@ -801,7 +801,7 @@ void STR::TimeInt::BaseDataGlobalState::remove_element_technologies(
     {
       case (Inpar::STR::EleTech::pressure):
       {
-        rhs_ptr = get_element_technology_map_extractor(et).ExtractVector(rhs_ptr, 0);
+        rhs_ptr = get_element_technology_map_extractor(et).extract_vector(rhs_ptr, 0);
         break;
       }
       // element technology doesn't use extra DOFs: skip
@@ -823,7 +823,7 @@ void STR::TimeInt::BaseDataGlobalState::extract_element_technologies(
   {
     case Inpar::STR::EleTech::pressure:
     {
-      rhs_ptr = get_element_technology_map_extractor(eletech).ExtractVector(rhs_ptr, 1);
+      rhs_ptr = get_element_technology_map_extractor(eletech).extract_vector(rhs_ptr, 1);
       break;
     }
     default:
@@ -856,7 +856,7 @@ void STR::TimeInt::BaseDataGlobalState::apply_element_technology_to_acceleration
 
         // set 0 on pressure DOFs in rhs
         const Epetra_Vector zeros(*mapext.Map(1), true);
-        mapext.InsertVector(zeros, 1, rhs);
+        mapext.insert_vector(zeros, 1, rhs);
 
         break;
       }
@@ -873,7 +873,7 @@ Teuchos::RCP<Epetra_Vector> STR::TimeInt::BaseDataGlobalState::extract_additive_
     const Epetra_Vector& source) const
 {
   Teuchos::RCP<Epetra_Vector> addit_ptr =
-      get_element_technology_map_extractor(Inpar::STR::EleTech::rotvec).ExtractVector(source, 0);
+      get_element_technology_map_extractor(Inpar::STR::EleTech::rotvec).extract_vector(source, 0);
 
   return addit_ptr;
 }
@@ -884,7 +884,7 @@ Teuchos::RCP<Epetra_Vector> STR::TimeInt::BaseDataGlobalState::extract_rot_vec_e
     const Epetra_Vector& source) const
 {
   Teuchos::RCP<Epetra_Vector> addit_ptr =
-      get_element_technology_map_extractor(Inpar::STR::EleTech::rotvec).ExtractVector(source, 1);
+      get_element_technology_map_extractor(Inpar::STR::EleTech::rotvec).extract_vector(source, 1);
 
   return addit_ptr;
 }

@@ -346,13 +346,13 @@ void STI::Partitioned::solve_two_way()
               FOUR_C_THROW("Map extractor was not initialized!");
 
             // loop over all degrees of freedom
-            for (int idof = 0; idof < ScaTraField()->Splitter()->NumMaps(); ++idof)
+            for (int idof = 0; idof < ScaTraField()->Splitter()->num_maps(); ++idof)
             {
               // extract subvectors associated with current degree of freedom
               const Teuchos::RCP<const Epetra_Vector> scatra_inc_dof =
-                  ScaTraField()->Splitter()->ExtractVector(*ScaTraField()->PhinpInc(), idof);
+                  ScaTraField()->Splitter()->extract_vector(*ScaTraField()->PhinpInc(), idof);
               const Teuchos::RCP<const Epetra_Vector> scatra_inc_diff_dof =
-                  ScaTraField()->Splitter()->ExtractVector(scatra_inc_diff, idof);
+                  ScaTraField()->Splitter()->extract_vector(scatra_inc_diff, idof);
 
               // compute L2 norm of difference between current and previous increments of current
               // degree of freedom
@@ -375,7 +375,7 @@ void STI::Partitioned::solve_two_way()
                 ScaTraField()->Omega()[idof] = omegamax_;
 
               // perform Aitken relaxation for current degree of freedom
-              ScaTraField()->Splitter()->AddVector(
+              ScaTraField()->Splitter()->add_vector(
                   *scatra_inc_dof, idof, *scatra_relaxed, ScaTraField()->Omega()[idof]);
             }
           }

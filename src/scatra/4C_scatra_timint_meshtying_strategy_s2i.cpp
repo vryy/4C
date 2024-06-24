@@ -185,7 +185,7 @@ void ScaTra::MeshtyingStrategyS2I::CondenseMatAndRHS(
 
         // extract slave-side entries of global residual vector
         Teuchos::RCP<Epetra_Vector> residualslave =
-            interfacemaps_->ExtractVector(scatratimint_->Residual(), 1);
+            interfacemaps_->extract_vector(scatratimint_->Residual(), 1);
 
         // apply scatra-scatra interface coupling
         if (not slaveonly_)
@@ -195,22 +195,22 @@ void ScaTra::MeshtyingStrategyS2I::CondenseMatAndRHS(
           Epetra_Vector Q_residualslave(*interfacemaps_->Map(1));
           if (Q_->Multiply(true, *residualslave, Q_residualslave))
             FOUR_C_THROW("Matrix-vector multiplication failed!");
-          interfacemaps_->InsertVector(Q_residualslave, 1, *scatratimint_->Residual());
-          interfacemaps_->AddVector(islaveresidual_, 1, scatratimint_->Residual());
+          interfacemaps_->insert_vector(Q_residualslave, 1, *scatratimint_->Residual());
+          interfacemaps_->add_vector(islaveresidual_, 1, scatratimint_->Residual());
         }
 
         // apply standard meshtying
         else
         {
           // zero out slave-side entries of global residual vector
-          interfacemaps_->PutScalar(*scatratimint_->Residual(), 1, 0.);
+          interfacemaps_->put_scalar(*scatratimint_->Residual(), 1, 0.);
         }
 
         // add projected slave-side entries to master-side entries of global residual vector
         Epetra_Vector P_residualslave(*interfacemaps_->Map(2));
         if (P_->Multiply(true, *residualslave, P_residualslave))
           FOUR_C_THROW("Matrix-vector multiplication failed!");
-        interfacemaps_->AddVector(P_residualslave, 2, *scatratimint_->Residual());
+        interfacemaps_->add_vector(P_residualslave, 2, *scatratimint_->Residual());
       }
 
       else
@@ -243,21 +243,21 @@ void ScaTra::MeshtyingStrategyS2I::CondenseMatAndRHS(
 
         // extract master-side entries of global residual vector
         Teuchos::RCP<Epetra_Vector> residualmaster =
-            interfacemaps_->ExtractVector(scatratimint_->Residual(), 2);
+            interfacemaps_->extract_vector(scatratimint_->Residual(), 2);
 
         // replace master-side entries of global residual vector by projected master-side entries
         // including interface contributions
         Epetra_Vector Q_residualmaster(*interfacemaps_->Map(2));
         if (Q_->Multiply(true, *residualmaster, Q_residualmaster))
           FOUR_C_THROW("Matrix-vector multiplication failed!");
-        interfacemaps_->InsertVector(Q_residualmaster, 2, *scatratimint_->Residual());
-        interfacemaps_->AddVector(*imasterresidual_, 2, *scatratimint_->Residual());
+        interfacemaps_->insert_vector(Q_residualmaster, 2, *scatratimint_->Residual());
+        interfacemaps_->add_vector(*imasterresidual_, 2, *scatratimint_->Residual());
 
         // add projected master-side entries to slave-side entries of global residual vector
         Epetra_Vector P_residualmaster(*interfacemaps_->Map(1));
         if (P_->Multiply(true, *residualmaster, P_residualmaster))
           FOUR_C_THROW("Matrix-vector multiplication failed!");
-        interfacemaps_->AddVector(P_residualmaster, 1, *scatratimint_->Residual());
+        interfacemaps_->add_vector(P_residualmaster, 1, *scatratimint_->Residual());
       }
 
       break;
@@ -522,12 +522,12 @@ void ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying()
       }
 
       // assemble slave residuals into global residual vector
-      interfacemaps_->AddVector(islaveresidual_, 1, scatratimint_->Residual());
+      interfacemaps_->add_vector(islaveresidual_, 1, scatratimint_->Residual());
 
       if (not slaveonly_)
       {
         // transform master residuals and assemble into global residual vector
-        interfacemaps_->AddVector(
+        interfacemaps_->add_vector(
             icoup_->SlaveToMaster(islaveresidual_), 2, scatratimint_->Residual(), -1.);
       }
       // In case the interface linearizations and residuals are evaluated on slave side only,
@@ -562,7 +562,7 @@ void ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying()
 
         // add slave-side entries of residual vector to corresponding master-side entries to
         // finalize vector condensation of slave-side degrees of freedom
-        interfacemaps_->AddVector(
+        interfacemaps_->add_vector(
             icoup_->SlaveToMaster(residualslave), 2, scatratimint_->Residual());
       }
 
@@ -688,8 +688,8 @@ void ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying()
                       : Mortar::MatrixRowTransform(imastermatrix_, imastermap_);
               systemmatrix->Add(*islavematrix, false, 1., 1.);
               systemmatrix->Add(*imastermatrix, false, 1., 1.);
-              interfacemaps_->AddVector(islaveresidual_, 1, scatratimint_->Residual());
-              interfacemaps_->AddVector(*imasterresidual_, 2, *scatratimint_->Residual());
+              interfacemaps_->add_vector(islaveresidual_, 1, scatratimint_->Residual());
+              interfacemaps_->add_vector(*imasterresidual_, 2, *scatratimint_->Residual());
 
               break;
             }
@@ -703,13 +703,13 @@ void ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying()
                 Epetra_Vector islaveresidual(*interfacemaps_->Map(1));
                 if (D_->Multiply(true, *lm_, islaveresidual))
                   FOUR_C_THROW("Matrix-vector multiplication failed!");
-                interfacemaps_->AddVector(islaveresidual, 1, *scatratimint_->Residual(), -1.);
+                interfacemaps_->add_vector(islaveresidual, 1, *scatratimint_->Residual(), -1.);
 
                 // assemble master-side interface contributions into global residual vector
                 Epetra_Vector imasterresidual(*interfacemaps_->Map(2));
                 if (M_->Multiply(true, *lm_, imasterresidual))
                   FOUR_C_THROW("Matrix-vector multiplication failed!");
-                interfacemaps_->AddVector(imasterresidual, 2, *scatratimint_->Residual());
+                interfacemaps_->add_vector(imasterresidual, 2, *scatratimint_->Residual());
 
                 // build constraint residual vector associated with Lagrange multiplier dofs
                 Epetra_Vector ilmresidual(*islaveresidual_);
@@ -726,13 +726,13 @@ void ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying()
                 Epetra_Vector islaveresidual(*interfacemaps_->Map(1));
                 if (M_->Multiply(true, *lm_, islaveresidual))
                   FOUR_C_THROW("Matrix-vector multiplication failed!");
-                interfacemaps_->AddVector(islaveresidual, 1, *scatratimint_->Residual());
+                interfacemaps_->add_vector(islaveresidual, 1, *scatratimint_->Residual());
 
                 // assemble master-side interface contributions into global residual vector
                 Epetra_Vector imasterresidual(*interfacemaps_->Map(2));
                 if (D_->Multiply(true, *lm_, imasterresidual))
                   FOUR_C_THROW("Matrix-vector multiplication failed!");
-                interfacemaps_->AddVector(imasterresidual, 2, *scatratimint_->Residual(), -1.);
+                interfacemaps_->add_vector(imasterresidual, 2, *scatratimint_->Residual(), -1.);
 
                 // build constraint residual vector associated with Lagrange multiplier dofs
                 Epetra_Vector ilmresidual(Copy, *imasterresidual_, 0);
@@ -755,11 +755,11 @@ void ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying()
                 systemmatrix->Add(
                     *Core::LinAlg::MLMultiply(*P_, true, *islavematrix_, false, false, false, true),
                     false, -1., 1.);
-                interfacemaps_->AddVector(islaveresidual_, 1, scatratimint_->Residual());
+                interfacemaps_->add_vector(islaveresidual_, 1, scatratimint_->Residual());
                 Epetra_Vector imasterresidual(*interfacemaps_->Map(2));
                 if (P_->Multiply(true, *islaveresidual_, imasterresidual))
                   FOUR_C_THROW("Matrix-vector multiplication failed!");
-                interfacemaps_->AddVector(imasterresidual, 2, *scatratimint_->Residual(), -1.);
+                interfacemaps_->add_vector(imasterresidual, 2, *scatratimint_->Residual(), -1.);
               }
               else
               {
@@ -770,8 +770,8 @@ void ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying()
                 Epetra_Vector islaveresidual(*interfacemaps_->Map(1));
                 if (P_->Multiply(true, *imasterresidual_, islaveresidual))
                   FOUR_C_THROW("Matrix-vector multiplication failed!");
-                interfacemaps_->AddVector(islaveresidual, 1, *scatratimint_->Residual(), -1.);
-                interfacemaps_->AddVector(*imasterresidual_, 2, *scatratimint_->Residual());
+                interfacemaps_->add_vector(islaveresidual, 1, *scatratimint_->Residual(), -1.);
+                interfacemaps_->add_vector(*imasterresidual_, 2, *scatratimint_->Residual());
               }
 
               break;
@@ -783,7 +783,7 @@ void ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying()
               if (slaveonly_)
               {
                 systemmatrix->Add(*islavematrix_, false, 1., 1.);
-                interfacemaps_->AddVector(islaveresidual_, 1, scatratimint_->Residual());
+                interfacemaps_->add_vector(islaveresidual_, 1, scatratimint_->Residual());
               }
 
               // during calculation of initial time derivative, condensation must not be performed
@@ -840,8 +840,8 @@ void ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying()
               blocksystemmatrix->Add(*blockmastermatrix, false, 1., 1.);
 
               // assemble interface residual vectors into global residual vector
-              interfacemaps_->AddVector(islaveresidual_, 1, scatratimint_->Residual());
-              interfacemaps_->AddVector(*imasterresidual_, 2, *scatratimint_->Residual());
+              interfacemaps_->add_vector(islaveresidual_, 1, scatratimint_->Residual());
+              interfacemaps_->add_vector(*imasterresidual_, 2, *scatratimint_->Residual());
 
               break;
             }
@@ -994,7 +994,7 @@ void ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying()
         // As before, we only need to consider residual contributions from the master-side fluxes.
 
         // transform master residuals and assemble into global residual vector
-        interfacemaps_->AddVector(
+        interfacemaps_->add_vector(
             icoup_->SlaveToMaster(islaveresidual_), 2, scatratimint_->Residual(), -1.);
 
         // compute additional linearizations and residuals in case of monolithic evaluation approach
@@ -1108,7 +1108,7 @@ void ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying()
                 scatragrowthblock->Complete(dofrowmap_growth, dofrowmap_scatra);
 
                 // apply Dirichlet boundary conditions to global matrix block
-                scatragrowthblock->ApplyDirichlet(*scatratimint_->DirichMaps()->CondMap(), false);
+                scatragrowthblock->ApplyDirichlet(*scatratimint_->DirichMaps()->cond_map(), false);
               }
 
               // assemble off-diagonal growth-scatra block of global system matrix, containing
@@ -1214,7 +1214,7 @@ void ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying()
 
                 // derive linearizations of master fluxes associated with scatra-scatra interface
                 // coupling w.r.t. scatra-scatra interface layer thicknesses
-                for (int iblock = 0; iblock < blockmaps_slave_->NumMaps(); ++iblock)
+                for (int iblock = 0; iblock < blockmaps_slave_->num_maps(); ++iblock)
                   Core::LinAlg::MatrixRowTransform()(blockslavematrix->Matrix(iblock, 0), -1.,
                       Core::Adapter::CouplingSlaveConverter(*icoup_), mastermatrix, true);
 
@@ -1229,7 +1229,7 @@ void ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying()
 
                 // derive linearizations of master fluxes associated with scatra-scatra interface
                 // layer growth w.r.t. scatra-scatra interface layer thicknesses
-                for (int iblock = 0; iblock < blockmaps_slave_->NumMaps(); ++iblock)
+                for (int iblock = 0; iblock < blockmaps_slave_->num_maps(); ++iblock)
                   Core::LinAlg::MatrixRowTransform()(blockslavematrix->Matrix(iblock, 0), -1.,
                       Core::Adapter::CouplingSlaveConverter(*icoup_), mastermatrix, true);
 
@@ -1247,7 +1247,7 @@ void ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying()
                 scatragrowthblock_->Complete();
 
                 // apply Dirichlet boundary conditions to global matrix block
-                scatragrowthblock_->ApplyDirichlet(*scatratimint_->DirichMaps()->CondMap(), false);
+                scatragrowthblock_->ApplyDirichlet(*scatratimint_->DirichMaps()->cond_map(), false);
               }
 
               // assemble off-diagonal growth-scatra block of global system matrix, containing
@@ -1493,9 +1493,9 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
   }
 
   // assemble slave residuals into global residual vector
-  interfacemaps_->AddVector(islaveresidual_, 1, scatratimint_->Residual());
+  interfacemaps_->add_vector(islaveresidual_, 1, scatratimint_->Residual());
   // transform master residuals and assemble into global residual vector
-  interfacemaps_->AddVector(
+  interfacemaps_->add_vector(
       icoup_->SlaveToMaster(imasterresidual_on_slave_side), 2, scatratimint_->Residual(), 1.0);
 }
 
@@ -2800,7 +2800,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
               blockmapgrowth_->check_for_valid_map_extractor();
 
               // initialize extended map extractor associated with blocks of global system matrix
-              const unsigned nblockmaps = scatratimint_->BlockMaps()->NumMaps();
+              const unsigned nblockmaps = scatratimint_->BlockMaps()->num_maps();
               std::vector<Teuchos::RCP<const Epetra_Map>> extendedblockmaps(
                   nblockmaps + 1, Teuchos::null);
               for (int iblockmap = 0; iblockmap < static_cast<int>(nblockmaps); ++iblockmap)
@@ -3394,18 +3394,18 @@ void ScaTra::MeshtyingStrategyS2I::add_time_integration_specific_vectors() const
   if (couplingtype_ == Inpar::S2I::coupling_matching_nodes)
   {
     // add state vector containing master-side scatra degrees of freedom to scatra discretization
-    interfacemaps_->InsertVector(
-        icoup_->MasterToSlave(interfacemaps_->ExtractVector(*(scatratimint_->Phiafnp()), 2)), 1,
+    interfacemaps_->insert_vector(
+        icoup_->MasterToSlave(interfacemaps_->extract_vector(*(scatratimint_->Phiafnp()), 2)), 1,
         imasterphi_on_slave_side_np_);
     scatratimint_->discretization()->set_state("imasterphinp", imasterphi_on_slave_side_np_);
 
     if (has_capacitive_contributions_)
     {
-      interfacemaps_->InsertVector(
-          interfacemaps_->ExtractVector(*(scatratimint_->Phidtnp()), 1), 1, islavephidtnp_);
+      interfacemaps_->insert_vector(
+          interfacemaps_->extract_vector(*(scatratimint_->Phidtnp()), 1), 1, islavephidtnp_);
       scatratimint_->discretization()->set_state("islavephidtnp", islavephidtnp_);
-      interfacemaps_->InsertVector(
-          icoup_->MasterToSlave(interfacemaps_->ExtractVector(*(scatratimint_->Phidtnp()), 2)), 1,
+      interfacemaps_->insert_vector(
+          icoup_->MasterToSlave(interfacemaps_->extract_vector(*(scatratimint_->Phidtnp()), 2)), 1,
           imasterphidt_on_slave_side_np_);
       scatratimint_->discretization()->set_state("imasterphidtnp", imasterphidt_on_slave_side_np_);
     }
@@ -3572,7 +3572,7 @@ void ScaTra::MeshtyingStrategyS2I::build_block_map_extractors()
       matrixtype_ == Core::LinAlg::MatrixType::block_condition_dof)
   {
     // initialize reduced interface map extractors associated with blocks of global system matrix
-    const int nblocks = scatratimint_->BlockMaps()->NumMaps();
+    const int nblocks = scatratimint_->BlockMaps()->num_maps();
     std::vector<Teuchos::RCP<const Epetra_Map>> blockmaps_slave(nblocks);
     std::vector<Teuchos::RCP<const Epetra_Map>> blockmaps_master(nblocks);
     for (int iblock = 0; iblock < nblocks; ++iblock)
@@ -3582,11 +3582,11 @@ void ScaTra::MeshtyingStrategyS2I::build_block_map_extractors()
       maps[1] = not imortarredistribution_
                     ? interfacemaps_->Map(1)
                     : Teuchos::rcp_dynamic_cast<const Epetra_Map>(islavemap_);
-      blockmaps_slave[iblock] = Core::LinAlg::MultiMapExtractor::IntersectMaps(maps);
+      blockmaps_slave[iblock] = Core::LinAlg::MultiMapExtractor::intersect_maps(maps);
       maps[1] = not imortarredistribution_
                     ? interfacemaps_->Map(2)
                     : Teuchos::rcp_dynamic_cast<const Epetra_Map>(imastermap_);
-      blockmaps_master[iblock] = Core::LinAlg::MultiMapExtractor::IntersectMaps(maps);
+      blockmaps_master[iblock] = Core::LinAlg::MultiMapExtractor::intersect_maps(maps);
     }
     blockmaps_slave_ =
         Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(*interfacemaps_->Map(1), blockmaps_slave));
@@ -3605,7 +3605,7 @@ void ScaTra::MeshtyingStrategyS2I::equip_extended_solver_with_null_space_info() 
   if (intlayergrowth_evaluation_ == Inpar::S2I::growth_evaluation_monolithic)
   {
     // loop over blocks of scalar transport system matrix
-    for (int iblock = 0; iblock < scatratimint_->BlockMaps()->NumMaps(); ++iblock)
+    for (int iblock = 0; iblock < scatratimint_->BlockMaps()->num_maps(); ++iblock)
     {
       // store number of current block as string, starting from 1
       std::ostringstream iblockstr;
@@ -3617,7 +3617,7 @@ void ScaTra::MeshtyingStrategyS2I::equip_extended_solver_with_null_space_info() 
     }
     // store number of matrix block associated with scatra-scatra interface layer growth as string
     std::stringstream iblockstr;
-    iblockstr << scatratimint_->BlockMaps()->NumMaps() + 1;
+    iblockstr << scatratimint_->BlockMaps()->num_maps() + 1;
 
     // equip smoother for extra matrix block with null space associated with all degrees of freedom
     // for scatra-scatra interface layer growth
@@ -3706,17 +3706,17 @@ void ScaTra::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<Core::LinAlg::Solver
           extendedsystemmatrix.Matrix(1, 1).Add(*E_, true, -1., 0.);
           extendedsystemmatrix.Complete();
           extendedsystemmatrix.Matrix(0, 1).ApplyDirichlet(
-              *scatratimint_->DirichMaps()->CondMap(), false);
+              *scatratimint_->DirichMaps()->cond_map(), false);
 
           Teuchos::RCP<Epetra_Vector> extendedresidual =
               Core::LinAlg::CreateVector(*extendedmaps_->FullMap());
-          extendedmaps_->InsertVector(scatratimint_->Residual(), 0, extendedresidual);
-          extendedmaps_->InsertVector(lmresidual_, 1, extendedresidual);
+          extendedmaps_->insert_vector(scatratimint_->Residual(), 0, extendedresidual);
+          extendedmaps_->insert_vector(lmresidual_, 1, extendedresidual);
 
           Teuchos::RCP<Epetra_Vector> extendedincrement =
               Core::LinAlg::CreateVector(*extendedmaps_->FullMap());
-          extendedmaps_->InsertVector(scatratimint_->Increment(), 0, extendedincrement);
-          extendedmaps_->InsertVector(lmincrement_, 1, extendedincrement);
+          extendedmaps_->insert_vector(scatratimint_->Increment(), 0, extendedincrement);
+          extendedmaps_->insert_vector(lmincrement_, 1, extendedincrement);
 
           // solve extended system of equations
           solver_params.refactor = true;
@@ -3725,8 +3725,8 @@ void ScaTra::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<Core::LinAlg::Solver
               solver_params);
 
           // store solution
-          extendedmaps_->ExtractVector(extendedincrement, 0, increment);
-          extendedmaps_->ExtractVector(extendedincrement, 1, lmincrement_);
+          extendedmaps_->extract_vector(extendedincrement, 0, increment);
+          extendedmaps_->extract_vector(extendedincrement, 1, lmincrement_);
 
           // update Lagrange multipliers
           lm_->Update(1., *lmincrement_, 1.);
@@ -3784,7 +3784,7 @@ void ScaTra::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<Core::LinAlg::Solver
 
               // extract number of matrix row or column blocks associated with scalar transport
               // field
-              const int nblockmaps = static_cast<int>(scatratimint_->BlockMaps()->NumMaps());
+              const int nblockmaps = static_cast<int>(scatratimint_->BlockMaps()->num_maps());
 
               // construct extended system matrix by assigning matrix blocks
               for (int iblock = 0; iblock < nblockmaps; ++iblock)
@@ -3822,8 +3822,8 @@ void ScaTra::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<Core::LinAlg::Solver
           // assemble extended residual vector
           Teuchos::RCP<Epetra_Vector> extendedresidual =
               Teuchos::rcp(new Epetra_Vector(*extendedmaps_->FullMap(), true));
-          extendedmaps_->InsertVector(scatratimint_->Residual(), 0, extendedresidual);
-          extendedmaps_->InsertVector(growthresidual_, 1, extendedresidual);
+          extendedmaps_->insert_vector(scatratimint_->Residual(), 0, extendedresidual);
+          extendedmaps_->insert_vector(growthresidual_, 1, extendedresidual);
 
           // perform finite-difference check if desired
           if (scatratimint_->FDCheckType() == Inpar::ScaTra::fdcheck_global_extended)
@@ -3832,8 +3832,8 @@ void ScaTra::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<Core::LinAlg::Solver
           // assemble extended increment vector
           Teuchos::RCP<Epetra_Vector> extendedincrement =
               Teuchos::rcp(new Epetra_Vector(*extendedmaps_->FullMap(), true));
-          extendedmaps_->InsertVector(scatratimint_->Increment(), 0, extendedincrement);
-          extendedmaps_->InsertVector(growthincrement_, 1, extendedincrement);
+          extendedmaps_->insert_vector(scatratimint_->Increment(), 0, extendedincrement);
+          extendedmaps_->insert_vector(growthincrement_, 1, extendedincrement);
 
           // equilibrate global system of equations if necessary
           equilibration_->EquilibrateSystem(
@@ -3849,8 +3849,8 @@ void ScaTra::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<Core::LinAlg::Solver
           equilibration_->unequilibrate_increment(extendedincrement);
 
           // store solution
-          extendedmaps_->ExtractVector(extendedincrement, 0, increment);
-          extendedmaps_->ExtractVector(extendedincrement, 1, growthincrement_);
+          extendedmaps_->extract_vector(extendedincrement, 0, increment);
+          extendedmaps_->extract_vector(extendedincrement, 1, growthincrement_);
 
           // update state vector of discrete scatra-scatra interface layer thicknesses
           growthnp_->Update(1., *growthincrement_, 1.);
@@ -3920,8 +3920,8 @@ void ScaTra::MeshtyingStrategyS2I::fd_check(
 
   // create global state vector
   Epetra_Vector statenp(*extendedmaps_->FullMap(), true);
-  extendedmaps_->InsertVector(*scatratimint_->Phinp(), 0, statenp);
-  extendedmaps_->InsertVector(*growthnp_, 1, statenp);
+  extendedmaps_->insert_vector(*scatratimint_->Phinp(), 0, statenp);
+  extendedmaps_->insert_vector(*growthnp_, 1, statenp);
 
   // make a copy of global state vector to undo perturbations later
   Epetra_Vector statenp_original(statenp);
@@ -3958,15 +3958,15 @@ void ScaTra::MeshtyingStrategyS2I::fd_check(
       if (statenp.SumIntoGlobalValue(colgid, 0, fdcheckeps))
         FOUR_C_THROW(
             "Perturbation could not be imposed on state vector for finite difference check!");
-    scatratimint_->Phinp()->Update(1., *extendedmaps_->ExtractVector(statenp, 0), 0.);
-    growthnp_->Update(1., *extendedmaps_->ExtractVector(statenp, 1), 0.);
+    scatratimint_->Phinp()->Update(1., *extendedmaps_->extract_vector(statenp, 0), 0.);
+    growthnp_->Update(1., *extendedmaps_->extract_vector(statenp, 1), 0.);
 
     // calculate global right-hand side contributions based on perturbed state
     scatratimint_->assemble_mat_and_rhs();
 
     // assemble global residual vector
-    extendedmaps_->InsertVector(scatratimint_->Residual(), 0, extendedresidual);
-    extendedmaps_->InsertVector(growthresidual_, 1, extendedresidual);
+    extendedmaps_->insert_vector(scatratimint_->Residual(), 0, extendedresidual);
+    extendedmaps_->insert_vector(growthresidual_, 1, extendedresidual);
 
     // Now we compare the difference between the current entries in the system matrix
     // and their finite difference approximations according to
@@ -4091,8 +4091,8 @@ void ScaTra::MeshtyingStrategyS2I::fd_check(
   }
 
   // undo perturbations of state variables
-  scatratimint_->Phinp()->Update(1., *extendedmaps_->ExtractVector(statenp_original, 0), 0.);
-  growthnp_->Update(1., *extendedmaps_->ExtractVector(statenp_original, 1), 0.);
+  scatratimint_->Phinp()->Update(1., *extendedmaps_->extract_vector(statenp_original, 0), 0.);
+  growthnp_->Update(1., *extendedmaps_->extract_vector(statenp_original, 1), 0.);
 
   // recompute system matrix and right-hand side vector based on original state variables
   scatratimint_->assemble_mat_and_rhs();

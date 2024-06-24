@@ -187,18 +187,18 @@ const Epetra_Map& STR::TimeInt::Base::GetMassDomainMap() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::MapExtractor> STR::TimeInt::Base::GetDBCMapExtractor()
+Teuchos::RCP<const Core::LinAlg::MapExtractor> STR::TimeInt::Base::get_dbc_map_extractor()
 {
   check_init_setup();
-  return dbc_ptr_->GetDBCMapExtractor();
+  return dbc_ptr_->get_dbc_map_extractor();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::MapExtractor> STR::TimeInt::Base::GetDBCMapExtractor() const
+Teuchos::RCP<const Core::LinAlg::MapExtractor> STR::TimeInt::Base::get_dbc_map_extractor() const
 {
   check_init_setup();
-  return dbc_ptr_->GetDBCMapExtractor();
+  return dbc_ptr_->get_dbc_map_extractor();
 }
 
 /*----------------------------------------------------------------------------*

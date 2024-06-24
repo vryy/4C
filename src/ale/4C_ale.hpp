@@ -305,7 +305,7 @@ namespace ALE
     /// create result test for encapsulated algorithm
     Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor(
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
             ALE::UTILS::MapExtractor::dbc_set_std  //!< application-specific type of Dirichlet set
         ) override

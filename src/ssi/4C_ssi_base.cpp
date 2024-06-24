@@ -943,7 +943,7 @@ void SSI::SSIBase::SetupSystem()
 {
   if (ssiinterfacemeshtying_)
     ssi_structure_mesh_tying()->check_slave_side_has_dirichlet_conditions(
-        structure_field()->GetDBCMapExtractor()->CondMap());
+        structure_field()->get_dbc_map_extractor()->cond_map());
 }
 
 /*---------------------------------------------------------------------------------*

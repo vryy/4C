@@ -32,17 +32,17 @@ Adapter::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<S
   // immersed_ale fsi part
   std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
 
-  vecSpaces.push_back(interface_->FSICondMap());       // fsi
-  vecSpaces.push_back(interface_->IMMERSEDCondMap());  // immersed
+  vecSpaces.push_back(interface_->fsi_cond_map());       // fsi
+  vecSpaces.push_back(interface_->immersed_cond_map());  // immersed
 
-  combinedmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
+  combinedmap_ = Core::LinAlg::MultiMapExtractor::merge_maps(vecSpaces);
 
   // full blockmap
   Core::LinAlg::MultiMapExtractor blockrowdofmap;
   blockrowdofmap.setup(*combinedmap_, vecSpaces);
 
   combinedinterface_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(
-      *combinedmap_, interface_->FSICondMap(), interface_->IMMERSEDCondMap()));
+      *combinedmap_, interface_->fsi_cond_map(), interface_->immersed_cond_map()));
 }
 
 /*----------------------------------------------------------------------*/
@@ -53,9 +53,10 @@ void Adapter::FSIStructureWrapperImmersed::apply_immersed_interface_forces(
   fsi_model_evaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
 
   if (iforce_fsi != Teuchos::null)
-    interface_->AddFSICondVector(iforce_fsi, fsi_model_evaluator()->get_interface_force_np_ptr());
+    interface_->add_fsi_cond_vector(
+        iforce_fsi, fsi_model_evaluator()->get_interface_force_np_ptr());
   if (iforce_immersed != Teuchos::null)
-    interface_->AddIMMERSEDCondVector(
+    interface_->add_immersed_cond_vector(
         iforce_immersed, fsi_model_evaluator()->get_interface_force_np_ptr());
 
   return;
@@ -69,7 +70,7 @@ Adapter::FSIStructureWrapperImmersed::extract_immersed_interface_dispnp()
   FOUR_C_ASSERT(interface_->FullMap()->PointSameAs(Dispnp()->Map()),
       "Full map of map extractor and Dispnp() do not match.");
 
-  return interface_->ExtractIMMERSEDCondVector(Dispnp());
+  return interface_->extract_immersed_cond_vector(Dispnp());
 }
 
 /*----------------------------------------------------------------------*/
@@ -83,9 +84,9 @@ Teuchos::RCP<Epetra_Vector> Adapter::FSIStructureWrapperImmersed::extract_full_i
       Teuchos::rcp(new Epetra_Vector(*combinedinterface_->FullMap(), true));
 
   // CondVector is FSI vector
-  combinedinterface_->AddCondVector(interface_->ExtractFSICondVector(Dispnp()), fullvec);
+  combinedinterface_->add_cond_vector(interface_->extract_fsi_cond_vector(Dispnp()), fullvec);
   // OtherVector is IMMERSED vector
-  combinedinterface_->AddOtherVector(interface_->ExtractIMMERSEDCondVector(Dispnp()), fullvec);
+  combinedinterface_->add_other_vector(interface_->extract_immersed_cond_vector(Dispnp()), fullvec);
 
   return fullvec;
 }
@@ -101,7 +102,7 @@ Adapter::FSIStructureWrapperImmersed::predict_immersed_interface_dispnp()
   {
     case 1:
     {
-      idis = interface_->ExtractIMMERSEDCondVector(Dispn());
+      idis = interface_->extract_immersed_cond_vector(Dispn());
 
       break;
     }
@@ -114,8 +115,8 @@ Adapter::FSIStructureWrapperImmersed::predict_immersed_interface_dispnp()
       // d(n)+dt*v(n)
       double dt = Dt();
 
-      idis = interface_->ExtractIMMERSEDCondVector(Dispn());
-      Teuchos::RCP<Epetra_Vector> ivel = interface_->ExtractIMMERSEDCondVector(Veln());
+      idis = interface_->extract_immersed_cond_vector(Dispn());
+      Teuchos::RCP<Epetra_Vector> ivel = interface_->extract_immersed_cond_vector(Veln());
 
       idis->Update(dt, *ivel, 1.0);
       break;
@@ -125,9 +126,9 @@ Adapter::FSIStructureWrapperImmersed::predict_immersed_interface_dispnp()
       // d(n)+dt*v(n)+0.5*dt^2*a(n)
       double dt = Dt();
 
-      idis = interface_->ExtractIMMERSEDCondVector(Dispn());
-      Teuchos::RCP<Epetra_Vector> ivel = interface_->ExtractIMMERSEDCondVector(Veln());
-      Teuchos::RCP<Epetra_Vector> iacc = interface_->ExtractIMMERSEDCondVector(Accn());
+      idis = interface_->extract_immersed_cond_vector(Dispn());
+      Teuchos::RCP<Epetra_Vector> ivel = interface_->extract_immersed_cond_vector(Veln());
+      Teuchos::RCP<Epetra_Vector> iacc = interface_->extract_immersed_cond_vector(Accn());
 
       idis->Update(dt, *ivel, 0.5 * dt * dt, *iacc, 1.0);
       break;
@@ -157,9 +158,9 @@ Teuchos::RCP<Epetra_Vector> Adapter::FSIStructureWrapperImmersed::predict_full_i
     case 1:
     {
       // CondVector is FSI vector
-      combinedinterface_->AddCondVector(interface_->ExtractFSICondVector(Dispn()), idis);
+      combinedinterface_->add_cond_vector(interface_->extract_fsi_cond_vector(Dispn()), idis);
       // OtherVector is IMMERSED vector
-      combinedinterface_->AddOtherVector(interface_->ExtractIMMERSEDCondVector(Dispn()), idis);
+      combinedinterface_->add_other_vector(interface_->extract_immersed_cond_vector(Dispn()), idis);
 
       break;
     }
@@ -173,17 +174,17 @@ Teuchos::RCP<Epetra_Vector> Adapter::FSIStructureWrapperImmersed::predict_full_i
       double dt = Dt();
 
       // CondVector is FSI vector
-      combinedinterface_->AddCondVector(interface_->ExtractFSICondVector(Dispn()), idis);
+      combinedinterface_->add_cond_vector(interface_->extract_fsi_cond_vector(Dispn()), idis);
       // OtherVector is IMMERSED vector
-      combinedinterface_->AddOtherVector(interface_->ExtractIMMERSEDCondVector(Dispn()), idis);
+      combinedinterface_->add_other_vector(interface_->extract_immersed_cond_vector(Dispn()), idis);
 
       Teuchos::RCP<Epetra_Vector> ivel =
           Teuchos::rcp(new Epetra_Vector(*combinedinterface_->FullMap(), true));
 
       // CondVector is FSI vector
-      combinedinterface_->AddCondVector(interface_->ExtractFSICondVector(Veln()), ivel);
+      combinedinterface_->add_cond_vector(interface_->extract_fsi_cond_vector(Veln()), ivel);
       // OtherVector is IMMERSED vector
-      combinedinterface_->AddOtherVector(interface_->ExtractIMMERSEDCondVector(Veln()), ivel);
+      combinedinterface_->add_other_vector(interface_->extract_immersed_cond_vector(Veln()), ivel);
 
       idis->Update(dt, *ivel, 1.0);
       break;
@@ -194,25 +195,25 @@ Teuchos::RCP<Epetra_Vector> Adapter::FSIStructureWrapperImmersed::predict_full_i
       double dt = Dt();
 
       // CondVector is FSI vector
-      combinedinterface_->AddCondVector(interface_->ExtractFSICondVector(Dispn()), idis);
+      combinedinterface_->add_cond_vector(interface_->extract_fsi_cond_vector(Dispn()), idis);
       // OtherVector is IMMERSED vector
-      combinedinterface_->AddOtherVector(interface_->ExtractIMMERSEDCondVector(Dispn()), idis);
+      combinedinterface_->add_other_vector(interface_->extract_immersed_cond_vector(Dispn()), idis);
 
       Teuchos::RCP<Epetra_Vector> ivel =
           Teuchos::rcp(new Epetra_Vector(*combinedinterface_->FullMap(), true));
 
       // CondVector is FSI vector
-      combinedinterface_->AddCondVector(interface_->ExtractFSICondVector(Veln()), ivel);
+      combinedinterface_->add_cond_vector(interface_->extract_fsi_cond_vector(Veln()), ivel);
       // OtherVector is IMMERSED vector
-      combinedinterface_->AddOtherVector(interface_->ExtractIMMERSEDCondVector(Veln()), ivel);
+      combinedinterface_->add_other_vector(interface_->extract_immersed_cond_vector(Veln()), ivel);
 
       Teuchos::RCP<Epetra_Vector> iacc =
           Teuchos::rcp(new Epetra_Vector(*combinedinterface_->FullMap(), true));
 
       // CondVector is FSI vector
-      combinedinterface_->AddCondVector(interface_->ExtractFSICondVector(Accn()), iacc);
+      combinedinterface_->add_cond_vector(interface_->extract_fsi_cond_vector(Accn()), iacc);
       // OtherVector is IMMERSED vector
-      combinedinterface_->AddOtherVector(interface_->ExtractIMMERSEDCondVector(Accn()), iacc);
+      combinedinterface_->add_other_vector(interface_->extract_immersed_cond_vector(Accn()), iacc);
 
       idis->Update(dt, *ivel, 0.5 * dt * dt, *iacc, 1.0);
       break;

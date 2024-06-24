@@ -196,7 +196,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_maps()
   }
 
   // full fluid-structure-scatra-map
-  fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
+  fullmap_ = Core::LinAlg::MultiMapExtractor::merge_maps(vecSpaces);
 
   // full Poromultiphase-elasticity-blockmap
   blockrowdofmap_->setup(*fullmap_, vecSpaces);
@@ -214,7 +214,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_combined_
   // Combined DBC map of poromultielast-problem
   const Teuchos::RCP<const Epetra_Map> porocondmap = poro_field()->combined_dbc_map();
   const Teuchos::RCP<const Epetra_Map> scatracondmap =
-      ScatraAlgo()->ScaTraField()->DirichMaps()->CondMap();
+      ScatraAlgo()->ScaTraField()->DirichMaps()->cond_map();
   combinedDBCMap_ = Core::LinAlg::MergeMap(porocondmap, scatracondmap, false);
 
   return;
@@ -485,7 +485,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_system_ma
 
   // apply DBC's also on off-diagonal fluid-scatra coupling block (main-diagonal blocks have already
   // been set, either in poromultielast_monolithic.cpp or in the respective evalute calls)
-  k_pfs->ApplyDirichlet(*poro_field()->fluid_field()->GetDBCMapExtractor()->CondMap(), false);
+  k_pfs->ApplyDirichlet(*poro_field()->fluid_field()->get_dbc_map_extractor()->cond_map(), false);
 
   // uncomplete matrix block (appears to be required in certain cases)
   // k_pss_->UnComplete();
@@ -508,7 +508,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_system_ma
 
   // apply DBC's also on off-diagonal scatra-structure coupling block (main-diagonal blocks have
   // already been set, either in poromultielast_monolithic.cpp or in the respective evalute calls)
-  k_sps->ApplyDirichlet(*ScatraAlgo()->ScaTraField()->DirichMaps()->CondMap(), false);
+  k_sps->ApplyDirichlet(*ScatraAlgo()->ScaTraField()->DirichMaps()->cond_map(), false);
 
   // create empty matrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_spf = scatra_poro_fluid_coupling_matrix();
@@ -518,7 +518,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_system_ma
 
   // apply DBC's also on off-diagonal scatra-fluid coupling block (main-diagonal blocks have already
   // been set, either in poromultielast_monolithic.cpp or in the respective evalute calls)
-  k_spf->ApplyDirichlet(*ScatraAlgo()->ScaTraField()->DirichMaps()->CondMap(), false);
+  k_spf->ApplyDirichlet(*ScatraAlgo()->ScaTraField()->DirichMaps()->cond_map(), false);
 
   // uncomplete matrix block (appears to be required in certain cases (locsys+iterative solver))
   k_sps->UnComplete();
@@ -732,9 +732,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_vector(
   //  Teuchos::RCP<const Epetra_Vector> pfx;
 
   if (solve_structure_)
-    Extractor()->InsertVector(*(poro_field()->Extractor()->ExtractVector(pv, 0)), 0, f);
-  Extractor()->InsertVector(*(poro_field()->Extractor()->ExtractVector(pv, 1)), struct_offset_, f);
-  Extractor()->InsertVector(*sv, struct_offset_ + 1, f);
+    Extractor()->insert_vector(*(poro_field()->Extractor()->extract_vector(pv, 0)), 0, f);
+  Extractor()->insert_vector(
+      *(poro_field()->Extractor()->extract_vector(pv, 1)), struct_offset_, f);
+  Extractor()->insert_vector(*sv, struct_offset_ + 1, f);
 }
 
 /*----------------------------------------------------------------------*
@@ -748,15 +749,15 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::extract_field_v
 
   // process structure unknowns of the first field
   if (solve_structure_)
-    stx = Extractor()->ExtractVector(x, 0);
+    stx = Extractor()->extract_vector(x, 0);
   else
     stx = Teuchos::rcp(new Epetra_Vector(*poro_field()->StructDofRowMap(), true));
 
   // process fluid unknowns of the second field
-  flx = Extractor()->ExtractVector(x, struct_offset_);
+  flx = Extractor()->extract_vector(x, struct_offset_);
 
   // process scatra unknowns of the third field
-  scx = Extractor()->ExtractVector(x, struct_offset_ + 1);
+  scx = Extractor()->extract_vector(x, struct_offset_ + 1);
 }
 
 /*----------------------------------------------------------------------*
@@ -1392,7 +1393,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
   }
 
   // full fluid-structure-scatra-artery-arteryscatra map
-  fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
+  fullmap_ = Core::LinAlg::MultiMapExtractor::merge_maps(vecSpaces);
 
   // full Poromultiphasescatra block map coupled with artery network
   blockrowdofmap_->setup(*fullmap_, vecSpaces);
@@ -1401,7 +1402,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
   blockrowdofmap_->check_for_valid_map_extractor();
 
   // full porofluid-artery map
-  fullmap_artporo_ = Core::LinAlg::MultiMapExtractor::MergeMaps(
+  fullmap_artporo_ = Core::LinAlg::MultiMapExtractor::merge_maps(
       {vecSpaces[struct_offset_], vecSpaces[struct_offset_ + 2]});
 
   // full porofluid-artery blockmap
@@ -1409,7 +1410,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
       *fullmap_artporo_, {vecSpaces[struct_offset_], vecSpaces[struct_offset_ + 2]});
 
   // full artery-arteryscatra map
-  fullmap_artscatra_ = Core::LinAlg::MultiMapExtractor::MergeMaps(
+  fullmap_artscatra_ = Core::LinAlg::MultiMapExtractor::merge_maps(
       {vecSpaces[struct_offset_ + 1], vecSpaces[struct_offset_ + 3]});
 
   // full artery-arteryscatra blockmap
@@ -1422,7 +1423,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::update_scatra(
     Teuchos::RCP<const Epetra_Vector> scatrainc)
 {
-  ScatraAlgo()->ScaTraField()->UpdateIter(blockrowdofmap_artscatra_->ExtractVector(scatrainc, 0));
+  ScatraAlgo()->ScaTraField()->UpdateIter(blockrowdofmap_artscatra_->extract_vector(scatrainc, 0));
   scatramsht_->UpdateArtScatraIter(scatrainc);
 }
 
@@ -1438,31 +1439,31 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
 
   // process structure unknowns of the first field
   if (solve_structure_)
-    stx = Extractor()->ExtractVector(x, 0);
+    stx = Extractor()->extract_vector(x, 0);
   else
     stx = Teuchos::rcp(new Epetra_Vector(*poro_field()->StructDofRowMap(), true));
 
   // process artery and porofluid unknowns
-  Teuchos::RCP<const Epetra_Vector> porofluid = Extractor()->ExtractVector(x, struct_offset_);
-  Teuchos::RCP<const Epetra_Vector> artery = Extractor()->ExtractVector(x, struct_offset_ + 2);
+  Teuchos::RCP<const Epetra_Vector> porofluid = Extractor()->extract_vector(x, struct_offset_);
+  Teuchos::RCP<const Epetra_Vector> artery = Extractor()->extract_vector(x, struct_offset_ + 2);
 
   Teuchos::RCP<Epetra_Vector> dummy1 = Teuchos::rcp(new Epetra_Vector(*fullmap_artporo_));
 
   // build the combined increment of porofluid and artery
-  blockrowdofmap_artporo_->InsertVector(porofluid, 0, dummy1);
-  blockrowdofmap_artporo_->InsertVector(artery, 1, dummy1);
+  blockrowdofmap_artporo_->insert_vector(porofluid, 0, dummy1);
+  blockrowdofmap_artporo_->insert_vector(artery, 1, dummy1);
 
   flx = dummy1;
 
   // process scatra and artery scatra unknowns of the third field
-  Teuchos::RCP<const Epetra_Vector> scatra = Extractor()->ExtractVector(x, struct_offset_ + 1);
-  Teuchos::RCP<const Epetra_Vector> artscatra = Extractor()->ExtractVector(x, struct_offset_ + 3);
+  Teuchos::RCP<const Epetra_Vector> scatra = Extractor()->extract_vector(x, struct_offset_ + 1);
+  Teuchos::RCP<const Epetra_Vector> artscatra = Extractor()->extract_vector(x, struct_offset_ + 3);
 
   Teuchos::RCP<Epetra_Vector> dummy2 = Teuchos::rcp(new Epetra_Vector(*fullmap_artscatra_));
 
   // build the combined increment of artery and artery-scatra
-  blockrowdofmap_artscatra_->InsertVector(scatra, 0, dummy2);
-  blockrowdofmap_artscatra_->InsertVector(artscatra, 1, dummy2);
+  blockrowdofmap_artscatra_->insert_vector(scatra, 0, dummy2);
+  blockrowdofmap_artscatra_->insert_vector(artscatra, 1, dummy2);
 
   scx = dummy2;
 }
@@ -1507,7 +1508,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
 
     // apply DBC's also on off-diagonal scatra-fluid coupling block (main-diagonal blocks have
     // already been set, either in poromultielast_monolithic.cpp or in the respective evalute calls)
-    k_asa->ApplyDirichlet(*scatramsht_->ArtScatraField()->DirichMaps()->CondMap(), false);
+    k_asa->ApplyDirichlet(*scatramsht_->ArtScatraField()->DirichMaps()->cond_map(), false);
 
     // arteryscatra-scatra part
     systemmatrix_->Assign(struct_offset_ + 3, struct_offset_ + 2, Core::LinAlg::View, *k_asa);
@@ -1525,22 +1526,22 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
 
   // structure
   if (solve_structure_)
-    Extractor()->InsertVector(
-        *(poro_field()->Extractor()->ExtractVector(poro_field()->RHS(), 0)), 0, *rhs_);
+    Extractor()->insert_vector(
+        *(poro_field()->Extractor()->extract_vector(poro_field()->RHS(), 0)), 0, *rhs_);
   // porofluid
-  Extractor()->InsertVector(
-      *(poro_field()->Extractor()->ExtractVector(poro_field()->RHS(), 1)), struct_offset_, *rhs_);
+  Extractor()->insert_vector(
+      *(poro_field()->Extractor()->extract_vector(poro_field()->RHS(), 1)), struct_offset_, *rhs_);
   // scatra
-  Extractor()->InsertVector(
-      *(blockrowdofmap_artscatra_->ExtractVector(scatramsht_->CombinedRHS(), 0)),
+  Extractor()->insert_vector(
+      *(blockrowdofmap_artscatra_->extract_vector(scatramsht_->CombinedRHS(), 0)),
       struct_offset_ + 1, *rhs_);
 
   // artery
-  Extractor()->InsertVector(*(poro_field()->Extractor()->ExtractVector(poro_field()->RHS(), 2)),
+  Extractor()->insert_vector(*(poro_field()->Extractor()->extract_vector(poro_field()->RHS(), 2)),
       struct_offset_ + 2, *rhs_);
   // arteryscatra
-  Extractor()->InsertVector(
-      *(blockrowdofmap_artscatra_->ExtractVector(scatramsht_->CombinedRHS(), 1)),
+  Extractor()->insert_vector(
+      *(blockrowdofmap_artscatra_->extract_vector(scatramsht_->CombinedRHS(), 1)),
       struct_offset_ + 3, *rhs_);
 }
 
@@ -1550,9 +1551,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
     build_convergence_norms()
 {
   Teuchos::RCP<const Epetra_Vector> arteryrhs =
-      Extractor()->ExtractVector(rhs_, struct_offset_ + 2);
+      Extractor()->extract_vector(rhs_, struct_offset_ + 2);
   Teuchos::RCP<const Epetra_Vector> arteryinc =
-      Extractor()->ExtractVector(iterinc_, struct_offset_ + 2);
+      Extractor()->extract_vector(iterinc_, struct_offset_ + 2);
 
   // build also norms for artery
   normrhsart_ = UTILS::calculate_vector_norm(vectornormfres_, arteryrhs);
@@ -1561,9 +1562,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
       vectornorminc_, (poro_field()->fluid_field()->ArtNetTimInt()->Pressurenp()));
 
   Teuchos::RCP<const Epetra_Vector> arteryscarhs =
-      Extractor()->ExtractVector(rhs_, struct_offset_ + 3);
+      Extractor()->extract_vector(rhs_, struct_offset_ + 3);
   Teuchos::RCP<const Epetra_Vector> arteryscainc =
-      Extractor()->ExtractVector(iterinc_, struct_offset_ + 3);
+      Extractor()->extract_vector(iterinc_, struct_offset_ + 3);
 
   // build also norms for artery
   normrhsartsca_ = UTILS::calculate_vector_norm(vectornormfres_, arteryscarhs);
@@ -1592,7 +1593,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
   PoroMultiPhaseScaTraMonolithicTwoWay::build_combined_dbc_map();
 
   const Teuchos::RCP<const Epetra_Map> artscatracondmap =
-      scatramsht_->ArtScatraField()->DirichMaps()->CondMap();
+      scatramsht_->ArtScatraField()->DirichMaps()->cond_map();
 
   combinedDBCMap_ = Core::LinAlg::MergeMap(combinedDBCMap_, artscatracondmap, false);
 }

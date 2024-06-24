@@ -53,7 +53,7 @@ namespace Adapter
     //! add ALE wear condition vector
     void apply_interface_displacements(Teuchos::RCP<Epetra_Vector> idisp)
     {
-      interface_->AddAleWearCondVector(idisp, WriteAccessDispnp());
+      interface_->add_ale_wear_cond_vector(idisp, WriteAccessDispnp());
     }
 
    private:

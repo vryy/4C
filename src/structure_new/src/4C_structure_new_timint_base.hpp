@@ -129,8 +129,8 @@ namespace STR
       }
 
       /// Return MapExtractor for Dirichlet boundary conditions
-      Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override;
-      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() const;
+      Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override;
+      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const;
 
       //! Return locsys manager
       Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() override;

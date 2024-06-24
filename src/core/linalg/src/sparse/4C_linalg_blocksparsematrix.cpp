@@ -197,7 +197,7 @@ void Core::LinAlg::BlockSparseMatrixBase::ApplyDirichlet(
   int cols = Cols();
   for (int rblock = 0; rblock < rows; ++rblock)
   {
-    Teuchos::RCP<Epetra_Vector> rowtoggle = rangemaps_.ExtractVector(dbctoggle, rblock);
+    Teuchos::RCP<Epetra_Vector> rowtoggle = rangemaps_.extract_vector(dbctoggle, rblock);
     for (int cblock = 0; cblock < cols; ++cblock)
     {
       Core::LinAlg::SparseMatrix& bmat = Matrix(rblock, cblock);
@@ -267,11 +267,11 @@ int Core::LinAlg::BlockSparseMatrixBase::Apply(
   {
     for (int rblock = 0; rblock < rows; ++rblock)
     {
-      Teuchos::RCP<Epetra_MultiVector> rowresult = rangemaps_.Vector(rblock, Y.NumVectors());
-      Teuchos::RCP<Epetra_MultiVector> rowy = rangemaps_.Vector(rblock, Y.NumVectors());
+      Teuchos::RCP<Epetra_MultiVector> rowresult = rangemaps_.vector(rblock, Y.NumVectors());
+      Teuchos::RCP<Epetra_MultiVector> rowy = rangemaps_.vector(rblock, Y.NumVectors());
       for (int cblock = 0; cblock < cols; ++cblock)
       {
-        Teuchos::RCP<Epetra_MultiVector> colx = domainmaps_.ExtractVector(X, cblock);
+        Teuchos::RCP<Epetra_MultiVector> colx = domainmaps_.extract_vector(X, cblock);
         const Core::LinAlg::SparseMatrix& bmat = Matrix(rblock, cblock);
         int err = bmat.Apply(*colx, *rowy);
         if (err != 0)
@@ -279,24 +279,24 @@ int Core::LinAlg::BlockSparseMatrixBase::Apply(
               "failed to apply vector to matrix block (%d,%d): err=%d", rblock, cblock, err);
         rowresult->Update(1.0, *rowy, 1.0);
       }
-      rangemaps_.InsertVector(*rowresult, rblock, Y);
+      rangemaps_.insert_vector(*rowresult, rblock, Y);
     }
   }
   else
   {
     for (int rblock = 0; rblock < cols; ++rblock)
     {
-      Teuchos::RCP<Epetra_MultiVector> rowresult = rangemaps_.Vector(rblock, Y.NumVectors());
-      Teuchos::RCP<Epetra_MultiVector> rowy = rangemaps_.Vector(rblock, Y.NumVectors());
+      Teuchos::RCP<Epetra_MultiVector> rowresult = rangemaps_.vector(rblock, Y.NumVectors());
+      Teuchos::RCP<Epetra_MultiVector> rowy = rangemaps_.vector(rblock, Y.NumVectors());
       for (int cblock = 0; cblock < rows; ++cblock)
       {
-        Teuchos::RCP<Epetra_MultiVector> colx = domainmaps_.ExtractVector(X, cblock);
+        Teuchos::RCP<Epetra_MultiVector> colx = domainmaps_.extract_vector(X, cblock);
         const Core::LinAlg::SparseMatrix& bmat = Matrix(cblock, rblock);
         int err = bmat.Apply(*colx, *rowy);
         if (err != 0) FOUR_C_THROW("failed to apply vector to matrix: err=%d", err);
         rowresult->Update(1.0, *rowy, 1.0);
       }
-      rangemaps_.InsertVector(*rowresult, rblock, Y);
+      rangemaps_.insert_vector(*rowresult, rblock, Y);
     }
   }
 
@@ -525,7 +525,7 @@ Core::LinAlg::BlockMatrix2x2(Core::LinAlg::SparseMatrix& A00, Core::LinAlg::Spar
 
   range_maps.emplace_back(Teuchos::rcp(new Epetra_Map(A00.RangeMap())));
   range_maps.emplace_back(Teuchos::rcp(new Epetra_Map(A10.RangeMap())));
-  Teuchos::RCP<const Epetra_Map> range_map = MultiMapExtractor::MergeMaps(range_maps);
+  Teuchos::RCP<const Epetra_Map> range_map = MultiMapExtractor::merge_maps(range_maps);
   Teuchos::RCP<MultiMapExtractor> rangeMMex =
       Teuchos::rcp(new MultiMapExtractor(*range_map, range_maps));
 
@@ -535,7 +535,7 @@ Core::LinAlg::BlockMatrix2x2(Core::LinAlg::SparseMatrix& A00, Core::LinAlg::Spar
 
   domain_maps.emplace_back(Teuchos::rcp(new Epetra_Map(A00.DomainMap())));
   domain_maps.emplace_back(Teuchos::rcp(new Epetra_Map(A01.DomainMap())));
-  Teuchos::RCP<const Epetra_Map> domain_map = MultiMapExtractor::MergeMaps(domain_maps);
+  Teuchos::RCP<const Epetra_Map> domain_map = MultiMapExtractor::merge_maps(domain_maps);
   Teuchos::RCP<MultiMapExtractor> domainMMex =
       Teuchos::rcp(new MultiMapExtractor(*domain_map, domain_maps));
 

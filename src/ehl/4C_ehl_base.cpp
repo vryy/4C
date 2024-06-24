@@ -85,7 +85,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
   lubrication_ = Teuchos::rcp(new Adapter::LubricationBaseAlgorithm());
   lubrication_->setup(*lubricationtimeparams, lubricationparams,
       problem->SolverParams(linsolvernumber), lubrication_disname, isale);
-  mortaradapter_->store_dirichlet_status(structure_field()->GetDBCMapExtractor());
+  mortaradapter_->store_dirichlet_status(structure_field()->get_dbc_map_extractor());
 
   // Structure displacement at the lubricated interface
   Teuchos::RCP<Epetra_Vector> disp = Core::LinAlg::CreateVector(*(structdis->dof_row_map()), true);
@@ -210,7 +210,7 @@ void EHL::Base::set_struct_solution(Teuchos::RCP<const Epetra_Vector> disp)
   //  //Extract the structure displacement at the lubricated interface
   //  Teuchos::RCP<Epetra_Vector> idisp = Core::LinAlg::CreateVector(*(mergedrowmapextr_->Map(0)),
   //  true);//Structure displacement at the lubricated interface
-  //  mergedrowmapextr_->ExtractVector(disp,0,idisp);
+  //  mergedrowmapextr_->extract_vector(disp,0,idisp);
   // Reevalute the mortar martices D and M
   mortaradapter_->Integrate(disp, Dt());
 
@@ -274,8 +274,8 @@ Teuchos::RCP<Epetra_Vector> EHL::Base::EvaluateFluidForce(
       Teuchos::rcp(new Epetra_Vector(*(structure_->dof_row_map())));
 
   // Insert both interface forces into the global force vector
-  slaverowmapextr_->InsertVector(slaveiforce, 0, strforce);
-  masterrowmapextr_->InsertVector(masteriforce, 0, strforce);
+  slaverowmapextr_->insert_vector(slaveiforce, 0, strforce);
+  masterrowmapextr_->insert_vector(masteriforce, 0, strforce);
 
   return strforce;
 }
@@ -499,7 +499,7 @@ void EHL::Base::set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp)
   // Extract the structure displacement at the slave-side interface
   Teuchos::RCP<Epetra_Vector> slaveidisp = Core::LinAlg::CreateVector(
       *(slaverowmapextr_->Map(0)), true);  // Structure displacement at the lubricated interface
-  slaverowmapextr_->ExtractVector(disp, 0, slaveidisp);
+  slaverowmapextr_->extract_vector(disp, 0, slaveidisp);
 
   // Transfer the displacement vector onto the lubrication field
   Teuchos::RCP<Epetra_Vector> lubridisp = ada_strDisp_to_lubDisp_->MasterToSlave(slaveidisp);

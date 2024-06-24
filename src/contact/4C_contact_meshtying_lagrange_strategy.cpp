@@ -748,7 +748,7 @@ void CONTACT::MtLagrangeStrategy::build_saddle_point_system(
   // the use of a toggle vector is more flexible here. It allows to apply dirichlet
   // conditions on different matrix blocks separately.
   Teuchos::RCP<Epetra_Vector> dirichtoggle = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->FullMap())));
-  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->CondMap())));
+  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->cond_map())));
   temp->PutScalar(1.0);
   Core::LinAlg::Export(*temp, *dirichtoggle);
 
@@ -853,8 +853,8 @@ void CONTACT::MtLagrangeStrategy::update_displacements_and_l_mincrements(
   Teuchos::RCP<Epetra_Vector> sollm = Teuchos::rcp(new Epetra_Vector(*glmdofrowmap_));
   Teuchos::RCP<Epetra_Map> mergedmap = Core::LinAlg::MergeMap(ProblemDofs(), glmdofrowmap_, false);
   Core::LinAlg::MapExtractor mapext(*mergedmap, ProblemDofs(), glmdofrowmap_);
-  mapext.ExtractCondVector(blocksol, sold);
-  mapext.ExtractOtherVector(blocksol, sollm);
+  mapext.extract_cond_vector(blocksol, sold);
+  mapext.extract_other_vector(blocksol, sollm);
   sollm->ReplaceMap(*gsdofrowmap_);
 
   zincr_->Update(1.0, *sollm, 0.0);

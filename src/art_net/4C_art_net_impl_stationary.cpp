@@ -230,7 +230,7 @@ void Arteries::ArtNetImplStationary::PrepareLinearSolve()
 {
   // apply map: rhs = pressurenp_
   Core::LinAlg::apply_dirichlet_to_system(
-      *sysmat_, *pressureincnp_, *rhs_, *zeros_, *(dbcmaps_->CondMap()));
+      *sysmat_, *pressureincnp_, *rhs_, *zeros_, *(dbcmaps_->cond_map()));
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

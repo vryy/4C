@@ -80,11 +80,11 @@ void FLD::UTILS::FluidInfNormScaling::scale_system(
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_))
       FOUR_C_THROW("fluid scaling failed");
 
-    Teuchos::RCP<Epetra_Vector> sx = velpressplitter_.ExtractVector(b, 0);
+    Teuchos::RCP<Epetra_Vector> sx = velpressplitter_.extract_vector(b, 0);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("fluid scaling failed");
 
-    velpressplitter_.InsertVector(*sx, 0, b);
+    velpressplitter_.insert_vector(*sx, 0, b);
 
     // continuity equation
     Teuchos::RCP<Epetra_CrsMatrix> A11 = mat.Matrix(1, 1).EpetraMatrix();
@@ -119,11 +119,11 @@ void FLD::UTILS::FluidInfNormScaling::scale_system(
     )
       FOUR_C_THROW("fluid scaling failed");
 
-    Teuchos::RCP<Epetra_Vector> px = velpressplitter_.ExtractVector(b, 1);
+    Teuchos::RCP<Epetra_Vector> px = velpressplitter_.extract_vector(b, 1);
 
     if (px->Multiply(1.0, *prowsum_, *px, 0.0)) FOUR_C_THROW("fluid scaling failed");
 
-    velpressplitter_.InsertVector(*px, 1, b);
+    velpressplitter_.insert_vector(*px, 1, b);
 
 
   }  // BlockSparseMatrix
@@ -143,9 +143,9 @@ void FLD::UTILS::FluidInfNormScaling::scale_system(
     if (myrank_ == 0) std::cout << "do left scaling of SparseMatrix" << std::endl;
 
     // leave continuity equation unscaled! -> scaling factors are one
-    Teuchos::RCP<Epetra_Vector> px = velpressplitter_.ExtractVector(*srowsum_, 1);
+    Teuchos::RCP<Epetra_Vector> px = velpressplitter_.extract_vector(*srowsum_, 1);
     px->PutScalar(1.0);
-    velpressplitter_.InsertVector(*px, 1, *srowsum_);
+    velpressplitter_.insert_vector(*px, 1, *srowsum_);
 
     if (smat->LeftScale(*srowsum_)) FOUR_C_THROW("fluid scaling failed");
     if (b.Multiply(1.0, *srowsum_, b, 0.0)) FOUR_C_THROW("fluid scaling failed");
@@ -154,9 +154,9 @@ void FLD::UTILS::FluidInfNormScaling::scale_system(
     if (myrank_ == 0) std::cout << "do right scaling pressure" << std::endl;
 
     // leave velocity columns equation unscaled!
-    Teuchos::RCP<Epetra_Vector> ux = velpressplitter_.ExtractVector(*scolsum_, 0);
+    Teuchos::RCP<Epetra_Vector> ux = velpressplitter_.extract_vector(*scolsum_, 0);
     ux->PutScalar(1.0);
-    velpressplitter_.InsertVector(*ux, 0, *scolsum_);
+    velpressplitter_.insert_vector(*ux, 0, *scolsum_);
 
     if (smat->RightScale(*scolsum_)) FOUR_C_THROW("fluid scaling failed");
   }  // SparseMatrix
@@ -202,17 +202,17 @@ void FLD::UTILS::FluidInfNormScaling::unscale_solution(
   {
     Core::LinAlg::BlockSparseMatrixBase& mat = *matrcp;
 
-    Teuchos::RCP<Epetra_Vector> sy = velpressplitter_.ExtractVector(x, 0);
+    Teuchos::RCP<Epetra_Vector> sy = velpressplitter_.extract_vector(x, 0);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("fluid scaling failed");
 
-    velpressplitter_.InsertVector(*sy, 0, x);
+    velpressplitter_.insert_vector(*sy, 0, x);
 
-    Teuchos::RCP<Epetra_Vector> sx = velpressplitter_.ExtractVector(b, 0);
+    Teuchos::RCP<Epetra_Vector> sx = velpressplitter_.extract_vector(b, 0);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("fluid scaling failed");
 
-    velpressplitter_.InsertVector(*sx, 0, b);
+    velpressplitter_.insert_vector(*sx, 0, b);
 
     Teuchos::RCP<Epetra_CrsMatrix> A00 = mat.Matrix(0, 0).EpetraMatrix();
     srowsum_->Reciprocal(*srowsum_);

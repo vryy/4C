@@ -580,28 +580,29 @@ void FS3I::ACFSI::IsScatraPeriodic()
 
     // extract interface concentrations
     const Teuchos::RCP<const Epetra_Vector> phinp_bar_boundary =
-        scatrafieldexvec_[0]->ExtractVector(
+        scatrafieldexvec_[0]->extract_vector(
             meanmanager_->GetMeanValue("mean_phi"), 1);  // mean fluidscatra at fs3i interface
     // move to struct interface (with full struct scatra dof map)
     const Teuchos::RCP<const Epetra_Vector> phinp_bar_boundary_on_struct =
-        scatrafieldexvec_[1]->InsertVector(Scatra1ToScatra2(phinp_bar_boundary), 1);
+        scatrafieldexvec_[1]->insert_vector(Scatra1ToScatra2(phinp_bar_boundary), 1);
     // extract i-th scalar
     const Teuchos::RCP<const Epetra_Vector> ith_phinp_bar_boundary_on_struct =
-        extractjthstructscalar_[i]->ExtractCondVector(phinp_bar_boundary_on_struct);
+        extractjthstructscalar_[i]->extract_cond_vector(phinp_bar_boundary_on_struct);
 
     // extract interface concentrations
-    const Teuchos::RCP<const Epetra_Vector> phin_bar_boundary = scatrafieldexvec_[0]->ExtractVector(
-        fluidphinp_lp_, 1);  // mean fluidscatra at fs3i interface
+    const Teuchos::RCP<const Epetra_Vector> phin_bar_boundary =
+        scatrafieldexvec_[0]->extract_vector(
+            fluidphinp_lp_, 1);  // mean fluidscatra at fs3i interface
     // move to struct interface (with full struct scatra dof map)
     const Teuchos::RCP<const Epetra_Vector> phin_bar_boundary_on_struct =
-        scatrafieldexvec_[1]->InsertVector(Scatra1ToScatra2(phin_bar_boundary), 1);
+        scatrafieldexvec_[1]->insert_vector(Scatra1ToScatra2(phin_bar_boundary), 1);
     // extract i-th scalar
     const Teuchos::RCP<const Epetra_Vector> ith_phin_bar_boundary_on_struct =
-        extractjthstructscalar_[i]->ExtractCondVector(phin_bar_boundary_on_struct);
+        extractjthstructscalar_[i]->extract_cond_vector(phin_bar_boundary_on_struct);
 
     // calculate the difference vector
     const Teuchos::RCP<Epetra_Vector> ith_phi_diff_bar_boundary =
-        extractjthstructscalar_[i]->ExtractCondVector(
+        extractjthstructscalar_[i]->extract_cond_vector(
             Core::LinAlg::CreateVector(*scatravec_[1]->ScaTraField()->dof_row_map(0), true));
     ith_phi_diff_bar_boundary->Update(
         1.0, *ith_phinp_bar_boundary_on_struct, -1.0, *ith_phin_bar_boundary_on_struct, 0.0);

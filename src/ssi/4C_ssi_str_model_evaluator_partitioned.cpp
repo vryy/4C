@@ -130,9 +130,9 @@ void STR::MODELEVALUATOR::PartitionedSSI::run_pre_compute_x(
       auto coupling_map_extractor = meshtying->slave_master_extractor();
 
       // transform and assemble master-side part of structural increment vector to slave side
-      coupling_map_extractor->InsertVector(
+      coupling_map_extractor->insert_vector(
           *meshtying->SlaveMasterCoupling()->MasterToSlave(
-              coupling_map_extractor->ExtractVector(dir_mutable, 2)),
+              coupling_map_extractor->extract_vector(dir_mutable, 2)),
           1, dir_mutable);
     }
   }
@@ -162,12 +162,12 @@ bool STR::MODELEVALUATOR::PartitionedSSI::assemble_force(
     {
       auto coupling_map_extractor = meshtying->slave_master_extractor();
       // transform and assemble slave-side part of structural right-hand side vector to master side
-      coupling_map_extractor->AddVector(*meshtying->SlaveMasterCoupling()->SlaveToMaster(
-                                            coupling_map_extractor->ExtractVector(f, 1)),
+      coupling_map_extractor->add_vector(*meshtying->SlaveMasterCoupling()->SlaveToMaster(
+                                             coupling_map_extractor->extract_vector(f, 1)),
           2, f);
 
       // zero out slave-side part of structural right-hand side vector
-      coupling_map_extractor->PutScalar(f, 1, 0.0);
+      coupling_map_extractor->put_scalar(f, 1, 0.0);
     }
   }
 

@@ -186,7 +186,7 @@ void ALE::Ale::create_system_matrix(Teuchos::RCP<const ALE::UTILS::MapExtractor>
   {
     std::vector<int> coupleddof(Global::Problem::Instance()->NDim(), 1);
     sysmat_ = meshtying_->setup(coupleddof, dispnp_);
-    meshtying_->DirichletOnMaster(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
+    meshtying_->DirichletOnMaster(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->cond_map());
 
     if (interface != Teuchos::null)
     {
@@ -256,18 +256,18 @@ void ALE::Ale::evaluate(
     {
       Core::LinAlg::apply_dirichlet_to_system(
           *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(sysmat_), *disi_, *residual_,
-          *get_loc_sys_trafo(), *dispnp_local, *(dbcmaps_[dbc_type]->CondMap()));
+          *get_loc_sys_trafo(), *dispnp_local, *(dbcmaps_[dbc_type]->cond_map()));
     }
     else
     {
       Core::LinAlg::apply_dirichlet_to_system(
-          *sysmat_, *disi_, *residual_, *dispnp_local, *(dbcmaps_[dbc_type]->CondMap()));
+          *sysmat_, *disi_, *residual_, *dispnp_local, *(dbcmaps_[dbc_type]->cond_map()));
     }
   }
   else
   {
     Core::LinAlg::apply_dirichlet_to_system(
-        *sysmat_, *disi_, *residual_, *zeros_, *(dbcmaps_[dbc_type]->CondMap()));
+        *sysmat_, *disi_, *residual_, *zeros_, *(dbcmaps_[dbc_type]->cond_map()));
   }
 
   /* residual_ contains the most recent "mechanical" residual including DBCs.
@@ -633,9 +633,9 @@ void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
     case ALE::UTILS::MapExtractor::dbc_set_x_ff:
     {
       std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
-      condmaps.push_back(xff_interface->XFluidFluidCondMap());
-      condmaps.push_back(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
-      Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::MergeMaps(condmaps);
+      condmaps.push_back(xff_interface->xfluid_fluid_cond_map());
+      condmaps.push_back(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->cond_map());
+      Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
 
       dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_x_ff] =
           Teuchos::rcp(new Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), condmerged));
@@ -646,9 +646,9 @@ void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
     case ALE::UTILS::MapExtractor::dbc_set_part_fsi:
     {
       std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
-      condmaps.push_back(interface->FSICondMap());
-      condmaps.push_back(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
-      Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::MergeMaps(condmaps);
+      condmaps.push_back(interface->fsi_cond_map());
+      condmaps.push_back(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->cond_map());
+      Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
 
       dbcmaps_[dbc_type] =
           Teuchos::rcp(new Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), condmerged));
@@ -657,10 +657,10 @@ void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
     case ALE::UTILS::MapExtractor::dbc_set_wear:
     {
       std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
-      condmaps.push_back(interface->AleWearCondMap());
-      condmaps.push_back(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
+      condmaps.push_back(interface->ale_wear_cond_map());
+      condmaps.push_back(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->cond_map());
 
-      Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::MergeMaps(condmaps);
+      Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
       dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_wear] =
           Teuchos::rcp(new Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), condmerged));
       break;

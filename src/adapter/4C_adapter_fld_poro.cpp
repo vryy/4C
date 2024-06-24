@@ -178,7 +178,7 @@ void Adapter::FluidPoro::output(const int step, const double time)
     fluid_field()->DiscWriter()->write_vector("velnp", fluid_field()->Velnp());
     // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure =
-        fluid_field()->GetVelPressSplitter()->ExtractCondVector(fluid_field()->Velnp());
+        fluid_field()->GetVelPressSplitter()->extract_cond_vector(fluid_field()->Velnp());
     fluid_field()->DiscWriter()->write_vector("pressure", pressure);
 
     if (alefluid_) fluid_field()->DiscWriter()->write_vector("dispnp", fluid_field()->Dispnp());

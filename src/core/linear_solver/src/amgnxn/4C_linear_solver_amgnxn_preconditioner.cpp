@@ -362,8 +362,8 @@ int Core::LinearSolver::AmGnxnOperator::ApplyInverse(
     Teuchos::RCP<Epetra_MultiVector> Yi =
         Teuchos::rcp(new Epetra_MultiVector(*(domain_ex.Map(i)), NV));
 
-    range_ex.ExtractVector(X, i, *Xi);
-    domain_ex.ExtractVector(Y, i, *Yi);
+    range_ex.extract_vector(X, i, *Xi);
+    domain_ex.extract_vector(Y, i, *Yi);
     Xbl.SetVector(Xi, i);
     Ybl.SetVector(Yi, i);
   }
@@ -372,7 +372,7 @@ int Core::LinearSolver::AmGnxnOperator::ApplyInverse(
 
   v_->Solve(Xbl, Ybl, true);
 
-  for (int i = 0; i < NumBlocks; i++) domain_ex.InsertVector(*(Ybl.GetVector(i)), i, Y);
+  for (int i = 0; i < NumBlocks; i++) domain_ex.insert_vector(*(Ybl.GetVector(i)), i, Y);
 
   return 0;
 }
@@ -478,8 +478,8 @@ int Core::LinearSolver::BlockSmootherOperator::ApplyInverse(
         Teuchos::rcp(new Epetra_MultiVector(*(range_ex.Map(i)), NV));
     Teuchos::RCP<Epetra_MultiVector> Yi =
         Teuchos::rcp(new Epetra_MultiVector(*(domain_ex.Map(i)), NV));
-    range_ex.ExtractVector(X, i, *Xi);
-    domain_ex.ExtractVector(Y, i, *Yi);
+    range_ex.extract_vector(X, i, *Xi);
+    domain_ex.extract_vector(Y, i, *Yi);
     Xbl.SetVector(Xi, i);
     Ybl.SetVector(Yi, i);
   }
@@ -489,7 +489,7 @@ int Core::LinearSolver::BlockSmootherOperator::ApplyInverse(
 
   s_->Solve(Xbl, Ybl, true);
 
-  for (int i = 0; i < NumBlocks; i++) domain_ex.InsertVector(*(Ybl.GetVector(i)), i, Y);
+  for (int i = 0; i < NumBlocks; i++) domain_ex.insert_vector(*(Ybl.GetVector(i)), i, Y);
 
 
 

@@ -198,9 +198,9 @@ void FLD::TimIntGenAlpha::gen_alpha_update_acceleration()
   }
   else
   {
-    Teuchos::RCP<Epetra_Vector> onlyaccn = velpressplitter_->ExtractOtherVector(accn_);
-    Teuchos::RCP<Epetra_Vector> onlyveln = velpressplitter_->ExtractOtherVector(veln_);
-    Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_->ExtractOtherVector(velnp_);
+    Teuchos::RCP<Epetra_Vector> onlyaccn = velpressplitter_->extract_other_vector(accn_);
+    Teuchos::RCP<Epetra_Vector> onlyveln = velpressplitter_->extract_other_vector(veln_);
+    Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_->extract_other_vector(velnp_);
 
     Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::rcp(new Epetra_Vector(onlyaccn->Map()));
 
@@ -239,8 +239,8 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values()
   }
   else
   {
-    Teuchos::RCP<Epetra_Vector> onlyaccn = velpressplitter_->ExtractOtherVector(accn_);
-    Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_->ExtractOtherVector(accnp_);
+    Teuchos::RCP<Epetra_Vector> onlyaccn = velpressplitter_->extract_other_vector(accn_);
+    Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_->extract_other_vector(accnp_);
 
     Teuchos::RCP<Epetra_Vector> onlyaccam = Teuchos::rcp(new Epetra_Vector(onlyaccnp->Map()));
 

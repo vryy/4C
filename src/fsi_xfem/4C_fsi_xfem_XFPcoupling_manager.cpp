@@ -86,13 +86,13 @@ void XFEM::XfpCouplingManager::InitCouplingStates()
 void XFEM::XfpCouplingManager::SetCouplingStates()
 {
   // 1 Set Displacement on both mesh couplings ... we get them from the structure field!
-  InsertVector(0, poro_->structure_field()->Dispnp(), 0, mcfpi_ps_ps_->IDispnp(),
+  insert_vector(0, poro_->structure_field()->Dispnp(), 0, mcfpi_ps_ps_->IDispnp(),
       CouplingCommManager::full_to_partial);
-  InsertVector(0, poro_->structure_field()->Dispnp(), 0, mcfpi_ps_pf_->IDispnp(),
+  insert_vector(0, poro_->structure_field()->Dispnp(), 0, mcfpi_ps_pf_->IDispnp(),
       CouplingCommManager::full_to_partial);
-  InsertVector(0, poro_->structure_field()->Dispnp(), 0, mcfpi_pf_ps_->IDispnp(),
+  insert_vector(0, poro_->structure_field()->Dispnp(), 0, mcfpi_pf_ps_->IDispnp(),
       CouplingCommManager::full_to_partial);
-  InsertVector(0, poro_->structure_field()->Dispnp(), 0, mcfpi_pf_pf_->IDispnp(),
+  insert_vector(0, poro_->structure_field()->Dispnp(), 0, mcfpi_pf_pf_->IDispnp(),
       CouplingCommManager::full_to_partial);
 
   // As interfaces embedded into the background mesh are fully ghosted, we don't know which
@@ -112,18 +112,18 @@ void XFEM::XfpCouplingManager::SetCouplingStates()
 
 
   // 2 Set Structural Velocity onto ps mesh coupling
-  InsertVector(0, poro_->structure_field()->Velnp(), 0, mcfpi_ps_ps_->IVelnp(),
+  insert_vector(0, poro_->structure_field()->Velnp(), 0, mcfpi_ps_ps_->IVelnp(),
       CouplingCommManager::full_to_partial);
-  InsertVector(0, poro_->structure_field()->Velnp(), 0, mcfpi_pf_ps_->IVelnp(),
+  insert_vector(0, poro_->structure_field()->Velnp(), 0, mcfpi_pf_ps_->IVelnp(),
       CouplingCommManager::full_to_partial);
   //  poro_->structure_field()->Velnp()->Print(std::cout);
 
-  //  InsertVector(1,poro_->fluid_field()->GridVel(),0,mcfpi_ps_ps_->IVelnp(),Coupling_Comm_Manager::full_to_partial);
-  //  InsertVector(1,poro_->fluid_field()->GridVel(),0,mcfpi_pf_ps_->IVelnp(),Coupling_Comm_Manager::full_to_partial);
+  //  insert_vector(1,poro_->fluid_field()->GridVel(),0,mcfpi_ps_ps_->IVelnp(),Coupling_Comm_Manager::full_to_partial);
+  //  insert_vector(1,poro_->fluid_field()->GridVel(),0,mcfpi_pf_ps_->IVelnp(),Coupling_Comm_Manager::full_to_partial);
   // 3 Set Fluid Velocity onto pf mesh coupling
-  InsertVector(1, poro_->fluid_field()->Velnp(), 0, mcfpi_ps_pf_->IVelnp(),
+  insert_vector(1, poro_->fluid_field()->Velnp(), 0, mcfpi_ps_pf_->IVelnp(),
       CouplingCommManager::full_to_partial);
-  InsertVector(1, poro_->fluid_field()->Velnp(), 0, mcfpi_pf_pf_->IVelnp(),
+  insert_vector(1, poro_->fluid_field()->Velnp(), 0, mcfpi_pf_pf_->IVelnp(),
       CouplingCommManager::full_to_partial);
 }
 
@@ -238,12 +238,12 @@ void XFEM::XfpCouplingManager::AddCouplingRHS(
 
     Teuchos::RCP<Epetra_Vector> prhs = Teuchos::rcp(new Epetra_Vector(*me.Map(idx_[0]), true));
 
-    InsertVector(0, rhs_C_ps_ps, 0, prhs, CouplingCommManager::partial_to_global, true, scaling);
-    InsertVector(0, rhs_C_ps_pf, 0, prhs, CouplingCommManager::partial_to_global, true, scaling);
+    insert_vector(0, rhs_C_ps_ps, 0, prhs, CouplingCommManager::partial_to_global, true, scaling);
+    insert_vector(0, rhs_C_ps_pf, 0, prhs, CouplingCommManager::partial_to_global, true, scaling);
 
-    InsertVector(
+    insert_vector(
         0, rhs_C_pf_ps, 1, prhs, CouplingCommManager::partial_to_global, true, scaling * dt);
-    InsertVector(
+    insert_vector(
         0, rhs_C_pf_pf, 1, prhs, CouplingCommManager::partial_to_global, true, scaling * dt);
 
     // Add lambda contribution
@@ -264,13 +264,13 @@ void XFEM::XfpCouplingManager::AddCouplingRHS(
       // scale factor for the structure system matrix w.r.t the new time step
       const double scaling_S = 1.0 / (1.0 - stiparam);  // 1/(1-alpha_F) = 1/weight^S_np
 
-      InsertVector(0, lambda_ps_, 0, prhs, CouplingCommManager::partial_to_global, true,
+      insert_vector(0, lambda_ps_, 0, prhs, CouplingCommManager::partial_to_global, true,
           stiparam * scaling_S);
-      InsertVector(0, lambda_pf_, 1, prhs, CouplingCommManager::partial_to_global, true,
+      insert_vector(0, lambda_pf_, 1, prhs, CouplingCommManager::partial_to_global, true,
           stiparam * scaling_S);
     }
 
-    me.AddVector(prhs, idx_[0], rhs);
+    me.add_vector(prhs, idx_[0], rhs);
   }
   else if (idx_.size() == 3)
   {
@@ -282,12 +282,12 @@ void XFEM::XfpCouplingManager::AddCouplingRHS(
     Teuchos::RCP<Epetra_Vector> srhs = Teuchos::rcp(new Epetra_Vector(*me.Map(idx_[0]), true));
     Teuchos::RCP<Epetra_Vector> pfrhs = Teuchos::rcp(new Epetra_Vector(*me.Map(idx_[2]), true));
 
-    InsertVector(0, rhs_C_ps_ps, 0, srhs, CouplingCommManager::partial_to_full, true, scaling);
-    InsertVector(0, rhs_C_ps_pf, 0, srhs, CouplingCommManager::partial_to_full, true, scaling);
+    insert_vector(0, rhs_C_ps_ps, 0, srhs, CouplingCommManager::partial_to_full, true, scaling);
+    insert_vector(0, rhs_C_ps_pf, 0, srhs, CouplingCommManager::partial_to_full, true, scaling);
 
-    InsertVector(
+    insert_vector(
         0, rhs_C_pf_ps, 1, pfrhs, CouplingCommManager::partial_to_full, true, scaling * dt);
-    InsertVector(
+    insert_vector(
         0, rhs_C_pf_pf, 1, pfrhs, CouplingCommManager::partial_to_full, true, scaling * dt);
 
     // Add lambda contribution
@@ -308,14 +308,14 @@ void XFEM::XfpCouplingManager::AddCouplingRHS(
       // scale factor for the structure system matrix w.r.t the new time step
       const double scaling_S = 1.0 / (1.0 - stiparam);  // 1/(1-alpha_F) = 1/weight^S_np
 
-      InsertVector(
+      insert_vector(
           0, lambda_ps_, 0, srhs, CouplingCommManager::partial_to_full, true, stiparam * scaling_S);
-      InsertVector(0, lambda_pf_, 1, pfrhs, CouplingCommManager::partial_to_full, true,
+      insert_vector(0, lambda_pf_, 1, pfrhs, CouplingCommManager::partial_to_full, true,
           stiparam * scaling_S);
     }
 
-    me.AddVector(srhs, idx_[0], rhs);
-    me.AddVector(pfrhs, idx_[2], rhs);
+    me.add_vector(srhs, idx_[0], rhs);
+    me.add_vector(pfrhs, idx_[2], rhs);
   }
   else
     FOUR_C_THROW("XFPCoupling_Manager::AddCouplingRHS: Not implemented for number of blocks = %d",
@@ -354,11 +354,11 @@ void XFEM::XfpCouplingManager::output(Core::IO::DiscretizationWriter& writer)
   //--------------------------------
   Teuchos::RCP<Epetra_Vector> lambdafull =
       Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->FullMap(), true));
-  InsertVector(0, lambda_ps_, 0, lambdafull, CouplingCommManager::partial_to_full);
+  insert_vector(0, lambda_ps_, 0, lambdafull, CouplingCommManager::partial_to_full);
   writer.write_vector("fpilambda_ps", lambdafull);
 
   lambdafull = Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->FullMap(), true));
-  InsertVector(0, lambda_pf_, 0, lambdafull, CouplingCommManager::partial_to_full);
+  insert_vector(0, lambda_pf_, 0, lambdafull, CouplingCommManager::partial_to_full);
   writer.write_vector("fpilambda_pf", lambdafull);
   return;
 }
@@ -370,11 +370,11 @@ void XFEM::XfpCouplingManager::read_restart(Core::IO::DiscretizationReader& read
   Teuchos::RCP<Epetra_Vector> lambdafull =
       Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->FullMap(), true));
   reader.read_vector(lambdafull, "fpilambda_ps");
-  InsertVector(0, lambdafull, 0, lambda_ps_, CouplingCommManager::full_to_partial);
+  insert_vector(0, lambdafull, 0, lambda_ps_, CouplingCommManager::full_to_partial);
 
   lambdafull = Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->FullMap(), true));
   reader.read_vector(lambdafull, "fpilambda_pf");
-  InsertVector(0, lambdafull, 0, lambda_pf_, CouplingCommManager::full_to_partial);
+  insert_vector(0, lambdafull, 0, lambda_pf_, CouplingCommManager::full_to_partial);
   return;
 }
 

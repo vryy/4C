@@ -159,7 +159,7 @@ namespace Arteries
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() const override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const override
     {
       return dbcmaps_;
     }

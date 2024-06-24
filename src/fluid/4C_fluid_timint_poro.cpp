@@ -162,7 +162,7 @@ void FLD::TimIntPoro::update_iter_incrementally(
     aux->Update(1.0 / (theta_ * dta_), *velnp_, -1.0 / (theta_ * dta_), *(*veln_)(0), 0.0);
     aux->Update(-(1.0 - theta_) / theta_, *(*accn_)(0), 1.0);
     // put only to free/non-DBC DOFs
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(accnp_), aux);
+    dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(accnp_), aux);
     *accnp_ = *aux;
   }
 }

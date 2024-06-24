@@ -222,7 +222,7 @@ void Core::Adapter::CouplingMortar::check_slave_dirichlet_overlap(
     for (int k = 0; k < mtnode->NumDof(); ++k)
     {
       int currdof = mtnode->Dofs()[k];
-      int lid = (dbcmaps->CondMap())->LID(currdof);
+      int lid = (dbcmaps->cond_map())->LID(currdof);
 
       // found slave node with dbc
       if (lid >= 0)

@@ -69,9 +69,9 @@ XFEM::CouplingCommManager::CouplingCommManager(
 | Transfer conditioned part of Vector from discretization A --> B with different transfer types ager
 03/2016|
 *--------------------------------------------------------------------------------------------------------------*/
-void XFEM::CouplingCommManager::InsertVector(const int idxA, Teuchos::RCP<const Epetra_Vector> vecA,
-    const int idxB, Teuchos::RCP<Epetra_Vector> vecB, const CouplingCommManager::TransferType ttype,
-    bool add, double scale)
+void XFEM::CouplingCommManager::insert_vector(const int idxA,
+    Teuchos::RCP<const Epetra_Vector> vecA, const int idxB, Teuchos::RCP<Epetra_Vector> vecB,
+    const CouplingCommManager::TransferType ttype, bool add, double scale)
 {
   switch (ttype)
   {
@@ -79,16 +79,16 @@ void XFEM::CouplingCommManager::InsertVector(const int idxA, Teuchos::RCP<const 
     {
       Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mmeb = GetMapExtractor(idxB);
       Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::rcp(new Epetra_Vector(*mmeb->Map(1), true));
-      InsertVector(idxA, vecA, idxB, tmpvec, CouplingCommManager::full_to_partial, false, scale);
+      insert_vector(idxA, vecA, idxB, tmpvec, CouplingCommManager::full_to_partial, false, scale);
       if (!add)
-        mmeb->InsertVector(tmpvec, 1, vecB);
+        mmeb->insert_vector(tmpvec, 1, vecB);
       else
-        mmeb->AddVector(tmpvec, 1, vecB);
+        mmeb->add_vector(tmpvec, 1, vecB);
       break;
     }
     case CouplingCommManager::full_to_partial:
     {
-      InsertVector(idxA, GetMapExtractor(idxA)->ExtractVector(vecA, 1), idxB, vecB,
+      insert_vector(idxA, GetMapExtractor(idxA)->extract_vector(vecA, 1), idxB, vecB,
           CouplingCommManager::partial_to_partial, add, scale);
       break;
     }
@@ -96,11 +96,12 @@ void XFEM::CouplingCommManager::InsertVector(const int idxA, Teuchos::RCP<const 
     {
       Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mmeb = GetMapExtractor(idxB);
       Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::rcp(new Epetra_Vector(*mmeb->Map(1), true));
-      InsertVector(idxA, vecA, idxB, tmpvec, CouplingCommManager::partial_to_partial, false, scale);
+      insert_vector(
+          idxA, vecA, idxB, tmpvec, CouplingCommManager::partial_to_partial, false, scale);
       if (!add)
-        mmeb->InsertVector(tmpvec, 1, vecB);
+        mmeb->insert_vector(tmpvec, 1, vecB);
       else
-        mmeb->AddVector(tmpvec, 1, vecB);
+        mmeb->add_vector(tmpvec, 1, vecB);
       break;
     }
     case CouplingCommManager::partial_to_partial:
@@ -138,22 +139,22 @@ void XFEM::CouplingCommManager::InsertVector(const int idxA, Teuchos::RCP<const 
     {
       Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mme = get_full_map_extractor();
       Teuchos::RCP<Epetra_Vector> fullvec = Teuchos::rcp(new Epetra_Vector(*mme->Map(idxB), true));
-      InsertVector(idxA, vecA, idxB, fullvec, CouplingCommManager::partial_to_full, false, scale);
+      insert_vector(idxA, vecA, idxB, fullvec, CouplingCommManager::partial_to_full, false, scale);
       if (!add)
-        mme->InsertVector(fullvec, idxB, vecB);
+        mme->insert_vector(fullvec, idxB, vecB);
       else
-        mme->AddVector(fullvec, idxB, vecB);
+        mme->add_vector(fullvec, idxB, vecB);
       break;
     }
     case CouplingCommManager::full_to_global:
     {
       Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mme = get_full_map_extractor();
       Teuchos::RCP<Epetra_Vector> fullvec = Teuchos::rcp(new Epetra_Vector(*mme->Map(idxB), true));
-      InsertVector(idxA, vecA, idxB, fullvec, CouplingCommManager::full_to_full, false, scale);
+      insert_vector(idxA, vecA, idxB, fullvec, CouplingCommManager::full_to_full, false, scale);
       if (!add)
-        mme->InsertVector(fullvec, idxB, vecB);
+        mme->insert_vector(fullvec, idxB, vecB);
       else
-        mme->AddVector(fullvec, idxB, vecB);
+        mme->add_vector(fullvec, idxB, vecB);
       break;
     }
     default:
@@ -362,7 +363,7 @@ void XFEM::CouplingCommManager::setup_full_extractor(
     maps.push_back(Teuchos::rcp(new Epetra_Map(*(*dit).second->dof_row_map())));
   }
 
-  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
   fullextractor_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(*fullmap, maps));
 }
 

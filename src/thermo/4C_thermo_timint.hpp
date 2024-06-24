@@ -500,10 +500,13 @@ namespace THR
     virtual inline const Epetra_Comm& Comm() const { return discret_->Comm(); }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() const { return dbcmaps_; }
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const
+    {
+      return dbcmaps_;
+    }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
     {
       return dbcmaps_;
     }

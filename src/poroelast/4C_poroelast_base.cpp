@@ -354,7 +354,7 @@ Teuchos::RCP<Epetra_Vector> PoroElast::PoroBase::structure_to_fluid_field(
   if (matchinggrid_)
   {
     if (submeshes_)
-      return coupling_fluid_structure_->MasterToSlave(psi_extractor_->ExtractCondVector(iv));
+      return coupling_fluid_structure_->MasterToSlave(psi_extractor_->extract_cond_vector(iv));
     else
       return coupling_fluid_structure_->MasterToSlave(iv);
   }
@@ -363,7 +363,7 @@ Teuchos::RCP<Epetra_Vector> PoroElast::PoroBase::structure_to_fluid_field(
     Teuchos::RCP<const Epetra_Vector> mv = volcoupl_->apply_vector_mapping21(iv);
 
     Teuchos::RCP<Epetra_Vector> sv =
-        Core::LinAlg::CreateVector(*(fluid_field()->VelPresSplitter()->OtherMap()));
+        Core::LinAlg::CreateVector(*(fluid_field()->VelPresSplitter()->other_map()));
 
     std::copy(mv->Values(),
         mv->Values() + (static_cast<ptrdiff_t>(mv->MyLength() * mv->NumVectors())), sv->Values());
@@ -378,7 +378,7 @@ void PoroElast::PoroBase::set_struct_solution()
   if (structure_field()->HaveConstraint())
   {
     // displacement vector without lagrange-multipliers
-    dispnp = cond_splitter_->ExtractCondVector(structure_field()->Dispnp());
+    dispnp = cond_splitter_->extract_cond_vector(structure_field()->Dispnp());
   }
   else
     dispnp = structure_field()->Dispnp();
@@ -496,7 +496,7 @@ void PoroElast::PoroBase::setup_coupling()
   }
   else
   {
-    fluid_field()->SetMeshMap(fluid_field()->VelPresSplitter()->OtherMap());
+    fluid_field()->SetMeshMap(fluid_field()->VelPresSplitter()->other_map());
   }
 }
 

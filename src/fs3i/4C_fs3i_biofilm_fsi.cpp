@@ -189,8 +189,8 @@ void FS3I::BiofilmFSI::setup()
   // set up ale-fluid couplings
   icoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
   icoupfa_->setup_condition_coupling(*(fsi_->fluid_field()->discretization()),
-      (fsi_->fluid_field()->Interface()->FSICondMap()), *(fsi_->ale_field()->discretization()),
-      (fsi_->ale_field()->Interface()->FSICondMap()), condname, ndim);
+      (fsi_->fluid_field()->Interface()->fsi_cond_map()), *(fsi_->ale_field()->discretization()),
+      (fsi_->ale_field()->Interface()->fsi_cond_map()), condname, ndim);
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = fsi_->fluid_field()->discretization()->NodeRowMap();
   const Epetra_Map* fluidalenodemap = fsi_->ale_field()->discretization()->NodeRowMap();
@@ -201,8 +201,8 @@ void FS3I::BiofilmFSI::setup()
   // set up structale-structure couplings
   icoupsa_ = Teuchos::rcp(new Core::Adapter::Coupling());
   icoupsa_->setup_condition_coupling(*(fsi_->structure_field()->discretization()),
-      fsi_->structure_field()->Interface()->FSICondMap(), *structaledis,
-      ale_->Interface()->FSICondMap(), condname, ndim);
+      fsi_->structure_field()->Interface()->fsi_cond_map(), *structaledis,
+      ale_->Interface()->fsi_cond_map(), condname, ndim);
   // the structure-structale coupling always matches
   const Epetra_Map* structurenodemap = fsi_->structure_field()->discretization()->NodeRowMap();
   const Epetra_Map* structalenodemap = structaledis->NodeRowMap();
@@ -458,7 +458,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
       lambda_ = fsi_->GetLambda();
     }
 
-    lambdafull = fsi_->structure_field()->Interface()->InsertFSICondVector(lambda_);
+    lambdafull = fsi_->structure_field()->Interface()->insert_fsi_cond_vector(lambda_);
 
     // calculate interface normals in deformed configuration
     Teuchos::RCP<Epetra_Vector> nodalnormals =

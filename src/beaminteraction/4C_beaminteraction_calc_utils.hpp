@@ -69,9 +69,9 @@ namespace BEAMINTERACTION
         solid = 2
       };
 
-      MAP_EXTRACTOR_VECTOR_METHODS(Beam, beam)
-      MAP_EXTRACTOR_VECTOR_METHODS(Sphere, sphere)
-      MAP_EXTRACTOR_VECTOR_METHODS(Solid, solid)
+      MAP_EXTRACTOR_VECTOR_METHODS(beam, beam)
+      MAP_EXTRACTOR_VECTOR_METHODS(sphere, sphere)
+      MAP_EXTRACTOR_VECTOR_METHODS(solid, solid)
     };
 
     /// class for comparing Core::Elements::Element* (and Core::Nodes::Node*) in a std::set

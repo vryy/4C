@@ -1067,10 +1067,10 @@ void TSI::Monolithic::extract_field_vectors(
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::extract_field_vectors");
 
   // process structure unknowns of the first field
-  sx = extractor()->ExtractVector(x, 0);
+  sx = extractor()->extract_vector(x, 0);
 
   // process thermo unknowns of the second field
-  tx = extractor()->ExtractVector(x, 1);
+  tx = extractor()->extract_vector(x, 1);
 }  // extract_field_vectors()
 
 
@@ -1139,7 +1139,7 @@ void TSI::Monolithic::set_dof_row_maps()
   if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
   if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No temperature equation. Panic.");
 
-  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
+  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(vecSpaces);
 
   // full TSI-blockmap
   extractor()->setup(*fullmap, vecSpaces);
@@ -1257,8 +1257,8 @@ void TSI::Monolithic::setup_rhs()
     str_rhs->Scale(-1.);
 
   // insert vectors to tsi rhs
-  extractor()->InsertVector(*str_rhs, 0, *rhs_);
-  extractor()->InsertVector(*ThermoField()->RHS(), 1, *rhs_);
+  extractor()->insert_vector(*str_rhs, 0, *rhs_);
+  extractor()->insert_vector(*ThermoField()->RHS(), 1, *rhs_);
 
   // apply mortar coupling
   if (mortar_coupling_ != Teuchos::null) mortar_coupling_->CondenseRhs(rhs_);
@@ -1374,8 +1374,8 @@ void TSI::Monolithic::setup_vector(
   // extract dofs of the two fields
   // and put the structural/thermal field vector into the global vector f
   // noticing the block number
-  extractor()->InsertVector(*sv, 0, f);
-  extractor()->InsertVector(*tv, 1, f);
+  extractor()->insert_vector(*sv, 0, f);
+  extractor()->insert_vector(*tv, 1, f);
 
 }  // setup_vector()
 
@@ -2202,8 +2202,9 @@ void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
 Teuchos::RCP<Epetra_Map> TSI::Monolithic::combined_dbc_map()
 {
   const Teuchos::RCP<const Epetra_Map> scondmap =
-      structure_field()->GetDBCMapExtractor()->CondMap();
-  const Teuchos::RCP<const Epetra_Map> tcondmap = ThermoField()->GetDBCMapExtractor()->CondMap();
+      structure_field()->get_dbc_map_extractor()->cond_map();
+  const Teuchos::RCP<const Epetra_Map> tcondmap =
+      ThermoField()->get_dbc_map_extractor()->cond_map();
   Teuchos::RCP<Epetra_Map> condmap = Core::LinAlg::MergeMap(scondmap, tcondmap, false);
   return condmap;
 
@@ -2266,14 +2267,14 @@ void TSI::Monolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epe
         (mat.Matrix(0, 1).EpetraMatrix()->RightScale(*tcolsum_)))
       FOUR_C_THROW("thermo scaling failed");
 
-    Teuchos::RCP<Epetra_Vector> sx = extractor()->ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> tx = extractor()->ExtractVector(b, 1);
+    Teuchos::RCP<Epetra_Vector> sx = extractor()->extract_vector(b, 0);
+    Teuchos::RCP<Epetra_Vector> tx = extractor()->extract_vector(b, 1);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (tx->Multiply(1.0, *trowsum_, *tx, 0.0)) FOUR_C_THROW("thermo scaling failed");
 
-    extractor()->InsertVector(*sx, 0, b);
-    extractor()->InsertVector(*tx, 1, b);
+    extractor()->insert_vector(*sx, 0, b);
+    extractor()->insert_vector(*tx, 1, b);
   }
 }  // scale_system
 
@@ -2288,23 +2289,23 @@ void TSI::Monolithic::unscale_solution(
 
   if (scaling_infnorm)
   {
-    Teuchos::RCP<Epetra_Vector> sy = extractor()->ExtractVector(x, 0);
-    Teuchos::RCP<Epetra_Vector> ty = extractor()->ExtractVector(x, 1);
+    Teuchos::RCP<Epetra_Vector> sy = extractor()->extract_vector(x, 0);
+    Teuchos::RCP<Epetra_Vector> ty = extractor()->extract_vector(x, 1);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ty->Multiply(1.0, *tcolsum_, *ty, 0.0)) FOUR_C_THROW("thermo scaling failed");
 
-    extractor()->InsertVector(*sy, 0, x);
-    extractor()->InsertVector(*ty, 1, x);
+    extractor()->insert_vector(*sy, 0, x);
+    extractor()->insert_vector(*ty, 1, x);
 
-    Teuchos::RCP<Epetra_Vector> sx = extractor()->ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> tx = extractor()->ExtractVector(b, 1);
+    Teuchos::RCP<Epetra_Vector> sx = extractor()->extract_vector(b, 0);
+    Teuchos::RCP<Epetra_Vector> tx = extractor()->extract_vector(b, 1);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (tx->ReciprocalMultiply(1.0, *trowsum_, *tx, 0.0)) FOUR_C_THROW("thermo scaling failed");
 
-    extractor()->InsertVector(*sx, 0, b);
-    extractor()->InsertVector(*tx, 1, b);
+    extractor()->insert_vector(*sx, 0, b);
+    extractor()->insert_vector(*tx, 1, b);
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
     srowsum_->Reciprocal(*srowsum_);
@@ -2922,23 +2923,23 @@ void TSI::Monolithic::apply_dbc()
     {
       locsysman_->RotateGlobalToLocal(k_ss);
       k_ss->apply_dirichlet_with_trafo(
-          *locsysman_->Trafo(), *structure_field()->GetDBCMapExtractor()->CondMap(), true);
+          *locsysman_->Trafo(), *structure_field()->get_dbc_map_extractor()->cond_map(), true);
       locsysman_->RotateLocalToGlobal(k_ss);
     }
     {
       locsysman_->RotateGlobalToLocal(k_st);
       k_st->apply_dirichlet_with_trafo(
-          *locsysman_->Trafo(), *structure_field()->GetDBCMapExtractor()->CondMap(), false);
+          *locsysman_->Trafo(), *structure_field()->get_dbc_map_extractor()->cond_map(), false);
       locsysman_->RotateLocalToGlobal(k_st);
     }
   }
   else
   {
-    k_ss->ApplyDirichlet(*structure_field()->GetDBCMapExtractor()->CondMap(), true);
-    k_st->ApplyDirichlet(*structure_field()->GetDBCMapExtractor()->CondMap(), false);
+    k_ss->ApplyDirichlet(*structure_field()->get_dbc_map_extractor()->cond_map(), true);
+    k_st->ApplyDirichlet(*structure_field()->get_dbc_map_extractor()->cond_map(), false);
   }
-  k_ts->ApplyDirichlet(*ThermoField()->GetDBCMapExtractor()->CondMap(), false);
-  k_tt->ApplyDirichlet(*ThermoField()->GetDBCMapExtractor()->CondMap(), true);
+  k_ts->ApplyDirichlet(*ThermoField()->get_dbc_map_extractor()->cond_map(), false);
+  k_tt->ApplyDirichlet(*ThermoField()->get_dbc_map_extractor()->cond_map(), true);
 
 
   systemmatrix_->UnComplete();
@@ -2955,21 +2956,21 @@ void TSI::Monolithic::apply_dbc()
     extract_field_vectors(rhs_, s_rhs, t_rhs);
     locsysman_->RotateGlobalToLocal(s_rhs);
     Core::LinAlg::apply_dirichlet_to_system(
-        *s_rhs, *zeros_, *structure_field()->GetDBCMapExtractor()->CondMap());
+        *s_rhs, *zeros_, *structure_field()->get_dbc_map_extractor()->cond_map());
     locsysman_->RotateLocalToGlobal(s_rhs);
 
     Core::LinAlg::apply_dirichlet_to_system(
-        *t_rhs, *zeros_, *ThermoField()->GetDBCMapExtractor()->CondMap());
+        *t_rhs, *zeros_, *ThermoField()->get_dbc_map_extractor()->cond_map());
 
-    extractor()->InsertVector(*s_rhs, 0, *rhs_);
-    extractor()->InsertVector(*t_rhs, 1, *rhs_);
+    extractor()->insert_vector(*s_rhs, 0, *rhs_);
+    extractor()->insert_vector(*t_rhs, 1, *rhs_);
   }
   else
   {
     Core::LinAlg::apply_dirichlet_to_system(
-        *rhs_, *zeros_, *structure_field()->GetDBCMapExtractor()->CondMap());
+        *rhs_, *zeros_, *structure_field()->get_dbc_map_extractor()->cond_map());
     Core::LinAlg::apply_dirichlet_to_system(
-        *rhs_, *zeros_, *ThermoField()->GetDBCMapExtractor()->CondMap());
+        *rhs_, *zeros_, *ThermoField()->get_dbc_map_extractor()->cond_map());
   }
 }
 

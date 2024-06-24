@@ -62,13 +62,13 @@ namespace Adapter
     //! apply interface displacements
     void apply_interface_displacements(Teuchos::RCP<const Epetra_Vector> idisp)
     {
-      interface_->InsertFSICondVector(idisp, WriteAccessDispnp());
+      interface_->insert_fsi_cond_vector(idisp, WriteAccessDispnp());
     }
 
     //! get Dirichlet map extractor
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
     {
-      return AleWrapper::GetDBCMapExtractor();
+      return AleWrapper::get_dbc_map_extractor();
     }
 
    private:

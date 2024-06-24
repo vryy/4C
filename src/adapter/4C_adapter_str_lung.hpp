@@ -88,7 +88,7 @@ namespace Adapter
     Teuchos::RCP<const Epetra_Map> lungconstraintmap_;
 
     /// map extractor for fsi <-> full map
-    /// this is needed since otherwise "OtherMap" contains only dofs
+    /// this is needed since otherwise "other_map" contains only dofs
     /// which are not part of a condition. however, asi dofs are of
     /// course also "inner" dofs for the structural field.
     Teuchos::RCP<Core::LinAlg::MapExtractor> fsiinterface_;

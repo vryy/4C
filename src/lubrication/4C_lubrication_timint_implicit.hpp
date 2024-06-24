@@ -190,7 +190,10 @@ namespace LUBRICATION
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() const { return dbcmaps_; }
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const
+    {
+      return dbcmaps_;
+    }
 
     //! right-hand side alias the dynamic force residual
     Teuchos::RCP<const Epetra_Vector> RHS() { return residual_; }
