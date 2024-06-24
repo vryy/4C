@@ -608,7 +608,7 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
   (*stress)(5) = 0.5 * (PK2(2, 0) + PK2(0, 2));
 
   // ---------------------------------------------------- tangent modulus
-  // express coefficents of tangent in Kirchhoff stresses
+  // express coefficients of tangent in Kirchhoff stresses
   cmat->clear();
   for (int a = 0; a < 3; a++)
   {
