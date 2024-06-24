@@ -30,15 +30,9 @@
 \level 2
 
 */
-/*----------------------------------------------------------------------*
- | definitions                                               dano 09/13 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_DAMAGE_HPP
 #define FOUR_C_MAT_DAMAGE_HPP
 
-/*----------------------------------------------------------------------*
- | headers                                                   dano 09/13 |
- *----------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
@@ -175,7 +169,7 @@ namespace Mat
       return Teuchos::rcp(new Damage(*this));
     }
 
-    /// check if element kinematics and material kinematics are compatible
+    //! check if element kinematics and material kinematics are compatible
     void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
       if (!(kinem == Inpar::STR::KinemType::linear))
@@ -217,6 +211,28 @@ namespace Mat
         int gp,                                                    //!< Gauss point
         int eleGID);                                               //!< element GID
 
+    //! return derivative of piecewise linear function for the
+    //! yield stress, i.e. isotropic hardening modulus at current
+    //! accumulated plastic strain
+    double get_iso_hard_at_strainbarnp(Mat::PAR::Damage* matparameter, const double strainbar_p);
+
+
+    //! compute current yield stress sigma_y(astrain^p)
+    //! calculate yield stress from (sigma_y-astrain^p)-samples
+    double get_sigma_y_at_strainbarnp(Mat::PAR::Damage* matparameter, const double strainbar_p);
+
+
+
+    //! This is the residual and tangent calculation without consideration of damage
+    std::pair<double, double> residuum_and_jacobian_no_damage(
+        Mat::PAR::Damage* matparameter, double Dgamma, double accplstrain_last, double q_tilde);
+
+
+    //! This is the residual and tangent calculation including damage
+    std::pair<double, double> residuum_and_jacobian_with_damage(Mat::PAR::Damage* matparameter,
+        double Dgamma, double isohardvarlast, double q_tilde, double p_tilde, double omegaold);
+
+
     //! computes stress
     void Stress(const double p,                                   //!< volumetric stress tensor
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
@@ -247,10 +263,10 @@ namespace Mat
         double energyrelrate,  // damage energy release rate
         double Ytan,           // derivative of engergy release rate Ytan w.r.t. Dgamma
         double sigma_y, double Hiso, Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Nbar,
-        int gp,             //!< current Gauss point
-        bool damevolution,  //!< flag indicating if damage threshold is passed, i.e. if damage
-                            //!< evolves
-        double heaviside    //!< heaviside function: decide if loading/unloading
+        int gp,                 //!< current Gauss point
+        bool damevolution,      //!< flag indicating if damage threshold is passed, i.e. if damage
+                                //!< evolves
+        bool active_plasticity  //!< flag indicating active plasticity
     );
 
     //! computes isotropic elastoplastic damage tensor in matrix nation for 3d
@@ -259,7 +275,7 @@ namespace Mat
             cmat,                                        //!< elasto-plastic tangent modulus (out)
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1> N_tilde,  //!< flow vector
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress,  //!< total stress
-        double heaviside,                                //!< heaviside-function
+        bool active_plasticity,                          //!< flag indicating active plasticity
         double Dgamma,                                   //!< plastic multiplier
         double s_N,  //!< s_N = 2 * G * (Dgamma / omega_{n+1})^2 * s / r * (Y_{n+1} / r)^(s-1) * (1
                      //!< + nu) / E * s^tilde_{n+1} : N^tilde_{n+1}
@@ -280,33 +296,15 @@ namespace Mat
             b_NbetaoldN  // beta_n - 2/3 . (N_tilde : beta_n) . N_tilde
     );
 
-    //! calculates the derivative of get_sigma_y_at_strainbarnp() w.r.t. astrain_{n+1}
-    //! and returns the isotropic hardening modulus
-    double get_iso_hard_at_strainbarnp(
-        const double strainbar_p  //!< current accumulated strain
-                                  //!< or if damage!=0: isotropic hardening internal variable
-    );
-
-    //! calculates current yield stress from (sigma_y-astrain)-samples which
-    //! describe a piecewise constant function
-    double get_sigma_y_at_strainbarnp(
-        const double strainbar_p  //!< current accumulated strain, in case of dependent hardening
-                                  //!< or if damage!=0: isotropic hardening internal variable
-    );
-
     //! return density
-    double Density() const override { return params_->density_; }
+    [[nodiscard]] double Density() const override { return params_->density_; }
 
     //! return accumulated strain at Gauss points
     //! use the old vector (last_) for postprocessing
     //! Output is called after(!!) Update, so that newest values are included in
     //! the old history vectors last_, while the current history vectors curr_
     //! are reset
-    double AccumulatedStrain(int gp  //!< current Gauss point
-    ) const
-    {
-      return strainbarpllast_->at(gp);
-    }
+    [[nodiscard]] double accumulated_strain(int gp) const { return strainbarpllast_.at(gp); }
 
     //! return damaged isotropic hardening variable R at Gauss points
     //! in undamaged case: corresponding to the accumulated strain strainbar_p
@@ -314,10 +312,9 @@ namespace Mat
     //! Output is called after(!!) Update, so that newest values are included in
     //! the old history vectors last_, while the current history vectors curr_
     //! are reset
-    double isotropic_hardening_variable(int gp  //!< current Gauss point
-    ) const
+    [[nodiscard]] double isotropic_hardening_variable(int gp) const
     {
-      return isohardvarlast_->at(gp);
+      return isohardvarlast_.at(gp);
     }
 
     //! return scalar-valued isotropic damage variable at Gauss points
@@ -325,17 +322,20 @@ namespace Mat
     //! Output is called after(!!) Update, so that newest values are included in
     //! the old history vectors last_, while the current history vectors curr_
     //! are reset
-    double IsotropicDamage(int gp  //!< current Gauss point
-    ) const
-    {
-      return damagelast_->at(gp);
-    }
+    [[nodiscard]] double isotropic_damage(int gp) const { return damagelast_.at(gp); }
+
+    //! return boolean flag for complete failure at Gauss points
+    //! use the old vector (last_) for postprocessing
+    //! Output is called after(!!) Update, so that newest values are included in
+    //! the old history vectors last_, while the current history vectors curr_
+    //! are reset
+    [[nodiscard]] double failure_flag(int gp) const { return failedlast_.at(gp); }
 
     //! check if history variables are already initialised
-    bool Initialized() const { return (isinit_ and (strainplcurr_ != Teuchos::null)); }
+    [[nodiscard]] bool Initialized() const { return isinit_; }
 
     //! return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    [[nodiscard]] Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     //! return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;
@@ -343,35 +343,45 @@ namespace Mat
     //! return visualization data
     bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
+    //! return names of visualization data available for direct VTK output
+    void register_output_data_names(
+        std::unordered_map<std::string, int>& names_and_size) const override;
+
+    //! return visualization data for direct VTK output
+    bool EvaluateOutputData(
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
+
    private:
     //! my material parameters
     Mat::PAR::Damage* params_;
 
     //! plastic history vector
     //! old plastic strain at t_n
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>
         strainpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     //! current plastic strain at t_n+1
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
+    std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>
         strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
     //! old back stress at t_n
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
-        backstresslast_;  //!< \f${\beta}_{n}\f$
+    std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>> backstresslast_;  //!< \f${\beta}_{n}\f$
     //! current back stress at t_n+1
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
-        backstresscurr_;  //!< \f${\beta}_{n+1}\f$
+    std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>> backstresscurr_;  //!< \f${\beta}_{n+1}\f$
     //! old accumulated plastic strain at t_n
-    Teuchos::RCP<std::vector<double>> strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
+    std::vector<double> strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     //! current accumulated plastic strain at t_n+1
-    Teuchos::RCP<std::vector<double>> strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
+    std::vector<double> strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
     //! old damaged accumulated plastic strain corresponding to isotropic hardening at t_n
-    Teuchos::RCP<std::vector<double>> isohardvarlast_;  //!< \f${R}_{n+1}\f$
+    std::vector<double> isohardvarlast_;  //!< \f${R}_{n+1}\f$
     //! current damaged accumulated plastic strain corresponding to isotropic hardening at t_n+1
-    Teuchos::RCP<std::vector<double>> isohardvarcurr_;  //!< \f${R}_{n}\f$
+    std::vector<double> isohardvarcurr_;  //!< \f${R}_{n}\f$
     //! old damage internal state variable D at t_n
-    Teuchos::RCP<std::vector<double>> damagelast_;  //!< \f${D}_{n}\f$
+    std::vector<double> damagelast_;  //!< \f${D}_{n}\f$
     //! current damage internal state variable D at t_n+1
-    Teuchos::RCP<std::vector<double>> damagecurr_;  //!< \f${D}_{n+1}\f$
+    std::vector<double> damagecurr_;  //!< \f${D}_{n+1}\f$
+    //! flag whether the integration point has failed at t_n
+    std::vector<bool> failedlast_;
+    //! flag whether the integration point has failed at t_n
+    std::vector<bool> failedcurr_;
 
     //! indicator if #Initialize routine has been called
     bool isinit_;
