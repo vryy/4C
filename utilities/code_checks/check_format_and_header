@@ -111,7 +111,7 @@ for line in $(git ls-files)
 do
 
 # check if there are non-ascii characters in the file (excluding *.md files)
-if [[ "$line" != *.md && "$line" != *.rst ]]
+if [[ "$line" != *.md && "$line" != *.rst && "$line" != .* ]]
 then
   non_ascii_chars=`(grep --perl-regex --no-filename --only-matching --binary-files=without-match "[^\x00-\x7F]" $line | sort --unique | tr --delete '\n')`
   if [ -n "$non_ascii_chars" ]; then
