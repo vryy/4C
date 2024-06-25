@@ -974,42 +974,18 @@ void Core::Binstrategy::BinningStrategy::distribute_single_element_to_bins_using
   // ijk_range contains: i_min i_max j_min j_max k_min k_max
   int ijk_range[] = {ijk[0], ijk[0], ijk[1], ijk[1], ijk[2], ijk[2]};
 
-  // bounding box idea for rigid sphere element with just one node needs
-  // some special treatment
-  switch (element_filter_(eleptr))
-  {
-    case Utils::SpecialElement::rigid_sphere:
-    {
-      double currpos[3] = {0.0, 0.0, 0.0};
-      Utils::GetCurrentNodePos(
-          discret, eleptr->Nodes()[0], correct_beam_center_node_, disnp, currpos);
-      build_axis_alignedijk_range_for_rigid_sphere(
-          eleptr, currpos, ijk, ijk_range, rigid_sphere_radius_(eleptr));
-      break;
-    }
-    case Utils::SpecialElement::beam:
-    {
-      // fill in remaining nodes
-      for (int j = 1; j < eleptr->num_node(); ++j)
-      {
-        Core::Nodes::Node const* const node = nodes[j];
-        getijk_of_single_node_in_current_position(discret, node, disnp, ijk);
-        addijk_to_axis_alignedijk_range_of_beam_element(ijk, ijk_range);
-      }
-      break;
-    }
-    default:
-    {
-      // fill in remaining nodes
-      for (int j = 1; j < eleptr->num_node(); ++j)
-      {
-        Core::Nodes::Node const* const node = nodes[j];
-        getijk_of_single_node_in_current_position(discret, node, disnp, ijk);
-        addijk_to_axis_alignedijk_range_of_element(ijk, ijk_range);
-      }
-      break;
-    }
-  }
+  // get an axis-aligned bounding box for the element
+  // ((x_min, y_min, z_min), (x_max, y_max, z_max))
+  const std::pair<std::array<double, 3>, std::array<double, 3>> aabb =
+      compute_aabb(*discret, *eleptr, disnp);
+
+  // Add the bounding box in ijk-space
+  ConvertPosToijk(aabb.first.data(), ijk);
+  addijk_to_axis_alignedijk_range_of_beam_element(ijk, ijk_range);
+  ConvertPosToijk(aabb.second.data(), ijk);
+  addijk_to_axis_alignedijk_range_of_beam_element(ijk, ijk_range);
+
+
   // get corresponding bin ids in ijk range
   binIds.reserve(get_number_of_bins_inijk_range(ijk_range));
   GidsInijkRange(ijk_range, binIds, false);
@@ -1086,7 +1062,7 @@ void Core::Binstrategy::BinningStrategy::getijk_of_single_node_in_current_positi
     Teuchos::RCP<const Epetra_Vector> const& disnp, int ijk[3]) const
 {
   double currpos[3] = {0.0, 0.0, 0.0};
-  Utils::GetCurrentNodePos(discret, node, correct_beam_center_node_, disnp, currpos);
+  Utils::GetCurrentNodePos(*discret, node, correct_beam_center_node_, disnp, currpos);
   double const* coords = currpos;
   ConvertPosToijk(coords, ijk);
 }
@@ -1103,7 +1079,7 @@ void Core::Binstrategy::BinningStrategy::distribute_row_nodes_to_bins(
   for (int lid = 0; lid < discret->NumMyRowNodes(); ++lid)
   {
     Core::Nodes::Node* node = discret->lRowNode(lid);
-    Utils::GetCurrentNodePos(discret, node, correct_beam_center_node_, disnp, currpos);
+    Utils::GetCurrentNodePos(*discret, node, correct_beam_center_node_, disnp, currpos);
 
     const double* coords = currpos;
     int ijk[3];
@@ -1232,7 +1208,7 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::weighted_distributi
       FOUR_C_THROW(
           "ERROR:NumProc %i > NumBin %i. Too many processors to "
           "distribute your bins properly!!!",
-          numbin, numbin < discret[0]->Comm().NumProc());
+          discret[0]->Comm().NumProc(), numbin);
     }
 
     if (numbin < 8 * discret[0]->Comm().NumProc() && myrank_ == 0)
@@ -1677,7 +1653,7 @@ void Core::Binstrategy::BinningStrategy::
 
   // calculate current position of this node
   double currpos[3] = {0.0, 0.0, 0.0};
-  Utils::GetCurrentNodePos(discret[0], node, correct_beam_center_node_, disnp[0], currpos);
+  Utils::GetCurrentNodePos(*discret[0], node, correct_beam_center_node_, disnp[0], currpos);
 
   for (int dim = 0; dim < 3; ++dim)
   {
@@ -1719,57 +1695,19 @@ double Core::Binstrategy::BinningStrategy::
   {
     // lower bound for bin size as largest element in discret
     double loc_max_bin_size_lower_bound = 0.0;
-    double currpos[3] = {0.0, 0.0, 0.0};
 
     // loop over row elements of each proc
-    for (int i = 0; i < discret[ndis]->NumMyRowElements(); ++i)
+    for (const auto* ele : discret[ndis]->MyRowElementRange())
     {
-      Core::Elements::Element* ele = discret[ndis]->lRowElement(i);
+      // get an axis-aligned bounding box for the element
+      // ((x_min, y_min, z_min), (x_max, y_max, z_max))
+      const std::pair<std::array<double, 3>, std::array<double, 3>> aabb =
+          compute_aabb(*discret[ndis], *ele, disnp[ndis]);
 
-      // eleXAABB for each row element
-      Core::LinAlg::Matrix<3, 2> eleXAABB(false);
-
-      // initialize eleXAABB as rectangle around the first node of ele
-      Utils::GetCurrentNodePos(
-          discret[ndis], ele->Nodes()[0], correct_beam_center_node_, disnp[ndis], currpos);
-      for (int dim = 0; dim < 3; ++dim)
-      {
-        eleXAABB(dim, 0) = currpos[dim] - Core::Geo::TOL7;
-        eleXAABB(dim, 1) = currpos[dim] + Core::Geo::TOL7;
-      }
-
-      // rigid sphere elements needs to consider its radius
-      if (element_filter_(ele) == Utils::SpecialElement::rigid_sphere)
-      {
-        for (int dim = 0; dim < 3; ++dim)
-        {
-          eleXAABB(dim, 0) = std::min(
-              eleXAABB(dim, 0), eleXAABB(dim, 0) - rigid_sphere_radius_(ele) - Core::Geo::TOL7);
-          eleXAABB(dim, 1) = std::max(
-              eleXAABB(dim, 1), eleXAABB(dim, 0) + rigid_sphere_radius_(ele) + Core::Geo::TOL7);
-        }
-      }
-      else
-      {
-        // loop over remaining nodes of current rowele
-        for (int lid = 1; lid < ele->num_node(); ++lid)
-        {
-          const Core::Nodes::Node* node = ele->Nodes()[lid];
-          Utils::GetCurrentNodePos(
-              discret[ndis], node, correct_beam_center_node_, disnp[ndis], currpos);
-
-          //  merge eleXAABB of all nodes of this element
-          for (int dim = 0; dim < 3; ++dim)
-          {
-            eleXAABB(dim, 0) = std::min(eleXAABB(dim, 0), currpos[dim] - Core::Geo::TOL7);
-            eleXAABB(dim, 1) = std::max(eleXAABB(dim, 1), currpos[dim] + Core::Geo::TOL7);
-          }
-        }
-      }
       // compute lower bound for bin size as largest element in discret
       for (int dim = 0; dim < 3; ++dim)
-        loc_max_bin_size_lower_bound =
-            std::max(loc_max_bin_size_lower_bound, eleXAABB(dim, 1) - eleXAABB(dim, 0));
+        loc_max_bin_size_lower_bound = std::max(
+            loc_max_bin_size_lower_bound, aabb.second[dim] - aabb.first[dim] + 2 * Core::Geo::TOL7);
     }
 
     double globmax_bin_size_lower_bound = 0.0;
@@ -1842,7 +1780,7 @@ void Core::Binstrategy::BinningStrategy::
   // initialize XAABB of discret as rectangle around the first node of
   // discret on each proc
   Utils::GetCurrentNodePos(
-      discret, discret->lRowNode(0), correct_beam_center_node_, disnp, currpos);
+      *discret, discret->lRowNode(0), correct_beam_center_node_, disnp, currpos);
   for (int dim = 0; dim < 3; ++dim)
   {
     XAABB(dim, 0) = currpos[dim] - Core::Geo::TOL7;
@@ -1854,44 +1792,20 @@ void Core::Binstrategy::BinningStrategy::
   {
     Core::Elements::Element* ele = discret->lRowElement(i);
 
-    // eleXAABB for each row element
-    Core::LinAlg::Matrix<3, 2> eleXAABB(false);
-
-    // initialize eleXAABB as rectangle around the first node of ele
-    Utils::GetCurrentNodePos(discret, ele->Nodes()[0], correct_beam_center_node_, disnp, currpos);
-    for (int dim = 0; dim < 3; ++dim)
-    {
-      eleXAABB(dim, 0) = currpos[dim] - Core::Geo::TOL7;
-      eleXAABB(dim, 1) = currpos[dim] + Core::Geo::TOL7;
-    }
-
-    // loop over remaining nodes of current rowele
-    for (int lid = 1; lid < ele->num_node(); ++lid)
-    {
-      const Core::Nodes::Node* node = ele->Nodes()[lid];
-      Utils::GetCurrentNodePos(discret, node, correct_beam_center_node_, disnp, currpos);
-
-      //  merge eleXAABB of all nodes of this element
-      for (int dim = 0; dim < 3; dim++)
-      {
-        eleXAABB(dim, 0) = std::min(eleXAABB(dim, 0), currpos[dim] - Core::Geo::TOL7);
-        eleXAABB(dim, 1) = std::max(eleXAABB(dim, 1), currpos[dim] + Core::Geo::TOL7);
-      }
-    }
-
+    const auto aabb = compute_aabb(*discret, *ele, disnp);
     // compute lower bound for bin size as largest element in discret
     if (set_bin_size_lower_bound_)
     {
       for (int dim = 0; dim < 3; ++dim)
-        locmax_set_bin_size_lower_bound =
-            std::max(locmax_set_bin_size_lower_bound, eleXAABB(dim, 1) - eleXAABB(dim, 0));
+        locmax_set_bin_size_lower_bound = std::max(locmax_set_bin_size_lower_bound,
+            aabb.second[dim] - aabb.first[dim] + 2 * Core::Geo::TOL7);
     }
 
     // merge XAABB of all roweles
     for (int dim = 0; dim < 3; dim++)
     {
-      XAABB(dim, 0) = std::min(XAABB(dim, 0), eleXAABB(dim, 0));
-      XAABB(dim, 1) = std::max(XAABB(dim, 1), eleXAABB(dim, 1));
+      XAABB(dim, 0) = std::min(XAABB(dim, 0), aabb.first[dim] - Core::Geo::TOL7);
+      XAABB(dim, 1) = std::max(XAABB(dim, 1), aabb.second[dim] + Core::Geo::TOL7);
     }
   }
 
@@ -1940,7 +1854,7 @@ void Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements(
   {
     // get current node and position
     Core::Nodes::Node* currnode = discret->lColNode(i);
-    Utils::GetCurrentNodePos(discret, currnode, correct_beam_center_node_, disnp, currpos);
+    Utils::GetCurrentNodePos(*discret, currnode, correct_beam_center_node_, disnp, currpos);
 
     int const gidofbin = ConvertPosToGid(currpos);
 
@@ -2018,6 +1932,44 @@ void Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements(
   // send and receive new elements to bin relation, like this no fillcomplete call necessary here
   Utils::CommunicateDistributionOfTransferredElementsToBins(
       discret, toranktosendbinids, bintorowelemap);
+}
+
+std::pair<std::array<double, 3>, std::array<double, 3>>
+Core::Binstrategy::BinningStrategy::compute_aabb(const Core::FE::Discretization& discret,
+    const Core::Elements::Element& ele, Teuchos::RCP<const Epetra_Vector> disnp) const
+{
+  std::pair<std::array<double, 3>, std::array<double, 3>> aabb{
+      {std::numeric_limits<double>::max(), std::numeric_limits<double>::max(),
+          std::numeric_limits<double>::max()},
+      {-std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(),
+          -std::numeric_limits<double>::max()}};
+
+  switch (element_filter_(&ele))
+  {
+    case Utils::SpecialElement::rigid_sphere:
+    {
+      double currpos[3] = {0.0, 0.0, 0.0};
+      Utils::GetCurrentNodePos(discret, ele.Nodes()[0], correct_beam_center_node_, disnp, currpos);
+      const double radius = rigid_sphere_radius_(&ele);
+      return {{currpos[0] - radius, currpos[1] - radius, currpos[2] - radius},
+          {currpos[0] + radius, currpos[1] + radius, currpos[2] + radius}};
+    }
+    default:
+    {
+      const Core::Nodes::Node* const* nodes = ele.Nodes();
+      for (int j = 0; j < ele.num_node(); ++j)
+      {
+        double currpos[3] = {0.0, 0.0, 0.0};
+        Utils::GetCurrentNodePos(discret, nodes[j], correct_beam_center_node_, disnp, currpos);
+        for (unsigned d = 0; d < 3; ++d)
+        {
+          aabb.first[d] = std::min(aabb.first[d], currpos[d]);
+          aabb.second[d] = std::max(aabb.second[d], currpos[d]);
+        }
+      }
+      return aabb;
+    }
+  }
 }
 
 FOUR_C_NAMESPACE_CLOSE
