@@ -140,8 +140,9 @@ checkcode:
   script:
     - echo code check
     - ./set_up_dev_env.sh
-    # Old code checks that are not yet ported to pre-commit
-    - bash utilities/code_checks/check_format_and_header
+    # Special check for code owner rules: this check runs differently in CI since we want to check that every rule
+    # matches at least one file. This is not the feasible in the normal pre-commit check.
+    - bash utilities/code_checks/check_code_owner_rules
     # Run pre-commit checks without caches on all files
     - source ./utilities/python-venv/bin/activate
     - pre-commit clean

@@ -1,6 +1,7 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
 
 [project]
 name = "four_c_utils"
@@ -12,3 +13,14 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["four_c_utils"]
+
+[project.scripts]
+check-file-header = "four_c_utils.check_file_header:main"
+check-filenames-and-includes = "four_c_utils.check_filenames_and_includes:main"
+check-header-guards = "four_c_utils.check_header_guards:main"
+check-codeowners = "four_c_utils.check_codeowners:main"
+check-test-files = "four_c_utils.check_test_files:main"

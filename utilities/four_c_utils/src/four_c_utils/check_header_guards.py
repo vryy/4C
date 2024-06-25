@@ -3,14 +3,9 @@ import os
 from four_c_utils import common_utils as utils
 
 
-def check_header_guards(look_cmd, allerrors):
+def check_header_guards(filenames, allerrors):
     num_wrong_header_guards = 0
-    for file_path in utils.files_changed(look_cmd):
-        file_ending = os.path.splitext(os.path.basename(file_path))[1]
-
-        if file_path == "" or (file_ending != ".hpp" and file_ending != ".h"):
-            continue
-
+    for file_path in filenames:
         file_name = os.path.splitext(os.path.basename(file_path))[0]
         define_name = file_name.replace("-", "_").replace(".", "_").upper() + "_HPP"
         define_name = define_name.replace("4C", "FOUR_C")
@@ -39,10 +34,9 @@ def main():
     # build command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--diff_only",
-        action="store_true",
-        help="Add this tag if only the difference to HEAD should be analyzed. This flag should be used as a pre-commit hook. Otherwise all files are checked.",
+        "filenames", nargs="*", help="List of files to be checked for header guards."
     )
+
     parser.add_argument(
         "--out",
         type=str,
@@ -51,19 +45,12 @@ def main():
     )
     args = parser.parse_args()
 
-    # flag, whether only touched files should be checked
-    diff_only = args.diff_only
-
     # error file (None for sys.stderr)
     errfile = args.out
     errors = 0
     allerrors = []
     try:
-        if diff_only:
-            look_cmd = "git diff --name-only --cached --diff-filter=MRAC"
-        else:
-            look_cmd = "git ls-files"
-        errors += check_header_guards(look_cmd, allerrors)
+        errors += check_header_guards(args.filenames, allerrors)
     except ValueError:
         print("Something went wrong! Check the error functions in this script again!")
         errors += 1

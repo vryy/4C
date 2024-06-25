@@ -1,6 +1,10 @@
 from codecs import namereplace_errors
 import dataclasses
-import os, sys, argparse, re, json
+import os
+import sys
+import argparse
+import re
+import json
 from four_c_utils import common_utils as utils
 from typing import Optional, List
 
@@ -11,18 +15,15 @@ class TestMacro:
     pattern: re.Pattern
 
     # group ids in the regular expression that matches a test name
-    test_names_groups: List[int] = dataclasses.field(default_factory=lambda: [0])
+    test_names_groups: List[int] = dataclasses.field(default_factory=lambda: [1])
 
     # group id in the regular expression that matches the mpi rank
     mpirank_group: Optional[int] = None
 
 
 # CHECK INPUT FILE TESTS
-def check_inputtests(look_cmd, allerrors):
+def check_inputtests(filenames, allerrors):
     errors = 0
-    input_tests = [
-        str(ff) for ff in utils.files_changed(look_cmd)[:-1] if utils.is_input_file(ff)
-    ]
 
     mpi_non_compliant_tests: List[str] = []
     list_of_all_testnames: List[str] = []
@@ -35,47 +36,31 @@ def check_inputtests(look_cmd, allerrors):
         # Defining the list of test macros with regular expressions that recognize them in the cmake file
         test_macros = [
             TestMacro(
-                re.compile(r"four_c_test\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"),
-                mpirank_group=1,
+                re.compile(r"four_c_test\s*\(TEST_FILE\s+([a-zA-Z0-9_\.\-]+)\)"),
+                mpirank_group=None,
             ),
             TestMacro(
                 re.compile(
-                    r"four_c_test_extended_timeout\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"
+                    r"four_c_test\s*\(TEST_FILE\s+([a-zA-Z0-9_\.\-]+)\s+.*NP\s+(\d+)\)"
                 ),
-                mpirank_group=1,
-            ),
-            TestMacro(
-                re.compile(r"four_c_test_omp\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"),
-                mpirank_group=1,
+                mpirank_group=2,
             ),
             TestMacro(
                 re.compile(
-                    r"four_c_test_and_post_ensight_test\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"
+                    r"four_c_test_nested_parallelism\s*\(\s*([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+)\s*\)"
                 ),
-                mpirank_group=1,
-            ),
-            TestMacro(
-                re.compile(
-                    r"four_c_restart_only\s*\(*([a-zA-Z0-9_\.\-]+)\s+(?:[a-zA-Z0-9_\.\-]+)\s+(\d+)"
-                ),
-                mpirank_group=1,
-            ),
-            TestMacro(
-                re.compile(
-                    r"four_c_test_nested_par\s*\(\s*([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+)\s*"
-                ),
-                test_names_groups=[0, 1],
+                test_names_groups=[1, 2],
             ),
         ]
 
         for test_macro in test_macros:
             # search for tests of this macro
-            for test in test_macro.pattern.findall(all_lines):
+            for test in test_macro.pattern.finditer(all_lines):
                 # get list of test names defined in this macro (ignore empty test names)
                 my_names = [
-                    test[i]
+                    test.group(i)
                     for i in test_macro.test_names_groups
-                    if len(test[i].strip()) > 0 and test[i].strip() != '""'
+                    if len(test.group(i).strip()) > 0
                 ]
                 list_of_all_testnames.extend(my_names)
 
@@ -95,7 +80,7 @@ def check_inputtests(look_cmd, allerrors):
 
     # check if some input tests are missing
     missing_input_tests = []
-    for input_test in input_tests:
+    for input_test in filenames:
         # check, whether this input file is in TestingFrameworkListOfTests.cmake
 
         expected_test_name = os.path.splitext(os.path.basename(input_test))[0]
@@ -113,7 +98,7 @@ def check_inputtests(look_cmd, allerrors):
     # check if input tests have empty sections
     tests_empty_sections = []
 
-    for input_test in input_tests:
+    for input_test in filenames:
         with open(input_test, "r") as f:
             num_current_section_non_empty_lines = None
 
@@ -149,11 +134,7 @@ def check_inputtests(look_cmd, allerrors):
 def main():
     # build command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--diff_only",
-        action="store_true",
-        help="Add this tag if only the difference to HEAD should be analyzed. This flag should be used as a pre-commit hook. Otherwise all files are checked.",
-    )
+    parser.add_argument("filenames", nargs="*")
     parser.add_argument(
         "--out",
         type=str,
@@ -162,24 +143,13 @@ def main():
     )
     args = parser.parse_args()
 
-    # flag, whether only touched files should be checked
-    diff_only = args.diff_only
-
     # error file (None for sys.stderr)
     errfile = args.out
     errors = 0
     allerrors = []
-    try:
-        if diff_only:
-            look_cmd = "git diff --name-only --cached --diff-filter=MRAC"
-        else:
-            look_cmd = "git ls-files"
+    # check input file tests
+    errors += check_inputtests(args.filenames, allerrors)
 
-        # check input file tests
-        errors += check_inputtests(look_cmd, allerrors)
-    except ValueError:
-        print("Something went wrong! Check the error functions in this script again!")
-        errors += 1
     utils.pretty_print_error_report("", allerrors, errfile)
     return errors
 

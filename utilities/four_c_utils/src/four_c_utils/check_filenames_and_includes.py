@@ -136,16 +136,14 @@ def invalid_includes(path, module_names):
     return invalid_include_lines
 
 
-def check_cpp_files_filename(look_cmd, module_roots):
+def check_cpp_files_filename(filenames, module_roots):
     files_with_wrong_filename = [
-        ff
-        for ff in utils.files_changed(look_cmd)
-        if utils.is_source_file(ff) and not has_valid_filename(ff, module_roots)
+        ff for ff in filenames if not has_valid_filename(ff, module_roots)
     ]
     return files_with_wrong_filename
 
 
-def check_include_style(look_cmd, module_roots):
+def check_include_style(filenames, module_roots):
     def get_module_names(module_root):
         module_names = [
             os.path.basename(f.path) for f in os.scandir(module_root) if f.is_dir()
@@ -155,10 +153,7 @@ def check_include_style(look_cmd, module_roots):
     all_module_names = [i for m in module_roots for i in get_module_names(m)]
 
     files_with_wrong_include_style = [
-        output
-        for ff in utils.files_changed(look_cmd)
-        if utils.is_source_file(ff)
-        for output in invalid_includes(ff, all_module_names)
+        output for ff in filenames for output in invalid_includes(ff, all_module_names)
     ]
     return files_with_wrong_include_style
 
@@ -166,17 +161,9 @@ def check_include_style(look_cmd, module_roots):
 def main():
     # build command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "paths",
-        nargs="+",
-        help="The paths in which to check source files for the correct filename.",
-    )
+    parser.add_argument("--paths", nargs="*")
+    parser.add_argument("--files", nargs="*")
 
-    parser.add_argument(
-        "--diff_only",
-        action="store_true",
-        help="Add this tag if only the difference to HEAD should be analyzed. This flag should be used as a pre-commit hook. Otherwise all files are checked.",
-    )
     parser.add_argument(
         "--out",
         type=str,
@@ -187,12 +174,6 @@ def main():
 
     # error file (None for sys.stderr)
     errfile = args.out
-    if args.diff_only:
-        look_cmd = "git diff --name-only --cached --diff-filter=MRAC -- " + " ".join(
-            args.paths
-        )
-    else:
-        look_cmd = "git ls-files " + " ".join(args.paths)
 
     # Get all the module roots and sort them in reverse.
     # This has the effect that longer paths come before shorter paths. If we match files to the module roots in this
@@ -200,9 +181,9 @@ def main():
     module_roots = find_all_module_roots(args.paths)
     module_roots.sort(reverse=True)
 
-    errors_filename = check_cpp_files_filename(look_cmd, module_roots)
+    errors_filename = check_cpp_files_filename(args.files, module_roots)
 
-    errors_include_style = check_include_style(look_cmd, module_roots)
+    errors_include_style = check_include_style(args.files, module_roots)
 
     utils.pretty_print_error_report(
         "A valid filename looks like this: 4C_<module_name>_<detailed_name>[_test].(.hpp|cpp). "
