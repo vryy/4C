@@ -26,51 +26,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// Attention: In the case a Core::LinAlg::Matrix is created with float_type ClnWrapper,
-// include the header "/cut/cut_clnwrapper.H" before this header is processed.
-
 namespace Core::LinAlg
 {
-  namespace DenseError
-  {
-    /// Compile time error definitions
-    /*!
-      A struct that's used for compile time error checking. The
-      template argument is the expression to be checked, if it
-      evaluates to true nothing happens. If it is false a compile
-      error similiar to
-      "'matrix_dimensions_cannot_be_zero' is not a member of
-      'Core::LinAlg::DenseError::Checker<false>'" is generated (with gcc). Obviously the test
-      expression must be known at compile time.
-
-      This is the (general) definition that is used for expr==true. It
-      defines all known errors als empty static inline functions, so
-      that the compiler can optimize them away.
-     */
-    template <bool expr>
-    struct Checker
-    {
-      static inline void matrix_dimensions_cannot_be_zero(){};
-      static inline void cannot_call_1_d_access_function_on_2_d_matrix(){};
-      static inline void cannot_compute_determinant_of_nonsquare_matrix(){};
-      static inline void cannot_compute_inverse_of_nonsquare_matrix(){};
-      static inline void transpose_argument_must_be_n_or_t(){};
-      static inline void matrix_size_in_solver_must_be_square(){};
-      static inline void use_fixed_size_serial_dense_solver_for_matrices_bigger_than_3x3(){};
-    };
-
-    /// Compile time error definitions: missing functions raise errors
-    /*!
-      This is the specialisation for expr==false. It is empty, so that
-      the compiler does not find the functions and raises errors.
-     */
-    template <>
-    struct Checker<false>
-    {
-    };
-
-  }  // namespace DenseError
-
   namespace DenseFunctions
   {
     /*
@@ -2197,7 +2154,7 @@ namespace Core::LinAlg
 #ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
-      DenseError::Checker<i == j>::cannot_compute_inverse_of_nonsquare_matrix();
+      static_assert(i == j, "Cannot compute inverse of non-square matrix");
 
       switch (i)
       {
@@ -2208,8 +2165,7 @@ namespace Core::LinAlg
         case 3:
           return invert3x3(out, in);
         default:
-          DenseError::Checker<(
-              i < 4)>::use_fixed_size_serial_dense_solver_for_matrices_bigger_than_3x3();
+          static_assert(i < 4, "Cannot compute inverse of matrix bigger than 3x3");
           return 0.0;
       }
     }
@@ -2274,7 +2230,7 @@ namespace Core::LinAlg
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type invert(value_type* mat)
     {
-      DenseError::Checker<i == j>::cannot_compute_inverse_of_nonsquare_matrix();
+      static_assert(i == j, "Cannot compute inverse of non-square matrix");
 
       switch (i)
       {
@@ -2285,8 +2241,7 @@ namespace Core::LinAlg
         case 3:
           return invert3x3(mat);
         default:
-          DenseError::Checker<(
-              i < 4)>::use_fixed_size_serial_dense_solver_for_matrices_bigger_than_3x3();
+          static_assert(i < 4, "Cannot compute inverse of matrix bigger than 3x3");
           return 0.0;
       }
     }
@@ -2331,7 +2286,7 @@ namespace Core::LinAlg
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type determinant(const value_type* mat)
     {
-      DenseError::Checker<i == j>::cannot_compute_determinant_of_nonsquare_matrix();
+      static_assert(i == j, "Matrix must be square");
 
       switch (i)
       {
@@ -3318,6 +3273,9 @@ namespace Core::LinAlg
   template <unsigned int rows, unsigned int cols, class value_type = double>
   class Matrix
   {
+    static_assert(rows > 0, "Number of rows must be greater than zero!");
+    static_assert(cols > 0, "Number of columns must be greater than zero!");
+
    private:
     /// threshold for when to allocate the memory instead of placing the matrix on the stack.
     /// set to 512 bytes (or 64 entries for double matrices).
@@ -4426,7 +4384,6 @@ namespace Core::LinAlg
   Matrix<rows, cols, value_type>::Matrix(bool setzero)
       : data_(nullptr), isview_(false), isreadonly_(false)
   {
-    DenseError::Checker<(rows != 0) and (cols != 0)>::matrix_dimensions_cannot_be_zero();
     if (allocatesmemory_)
       data_ = new value_type[rows * cols];
     else
@@ -4438,7 +4395,6 @@ namespace Core::LinAlg
   Matrix<rows, cols, value_type>::Matrix(value_type* d, bool view)
       : data_(nullptr), isview_(view), isreadonly_(false)
   {
-    DenseError::Checker<(rows != 0) and cols != 0>::matrix_dimensions_cannot_be_zero();
     if (isview_)
     {
       data_ = d;
@@ -4457,7 +4413,6 @@ namespace Core::LinAlg
   Matrix<rows, cols, value_type>::Matrix(const value_type* d, bool view)
       : data_(nullptr), isview_(view), isreadonly_(false)
   {
-    DenseError::Checker<(rows != 0) and cols != 0>::matrix_dimensions_cannot_be_zero();
     if (isview_)
     {
       isreadonly_ = true;
@@ -4477,7 +4432,6 @@ namespace Core::LinAlg
   Matrix<rows, cols, value_type>::Matrix(Core::LinAlg::SerialDenseMatrix::Base& d, bool view)
       : data_(nullptr), isview_(view), isreadonly_(false)
   {
-    DenseError::Checker<(rows != 0) and cols != 0>::matrix_dimensions_cannot_be_zero();
     if (d.values() == nullptr) return;
     if (d.numRows() != rows or d.numCols() != cols)
       FOUR_C_THROW("illegal matrix dimension (%d,%d)", d.numRows(), d.numCols());
@@ -4505,7 +4459,6 @@ namespace Core::LinAlg
   Matrix<rows, cols, value_type>::Matrix(Matrix<rows, cols, value_type>& source, bool view)
       : data_(nullptr), isview_(view), isreadonly_(false)
   {
-    DenseError::Checker<(rows != 0) and cols != 0>::matrix_dimensions_cannot_be_zero();
     if (isview_)
     {
       data_ = source.data_;
@@ -4524,7 +4477,6 @@ namespace Core::LinAlg
   Matrix<rows, cols, value_type>::Matrix(const Matrix<rows, cols, value_type>& source)
       : data_(nullptr), isview_(false), isreadonly_(false)
   {
-    DenseError::Checker<(rows != 0) and cols != 0>::matrix_dimensions_cannot_be_zero();
     if (allocatesmemory_)
       data_ = new value_type[rows * cols];
     else
@@ -4536,7 +4488,6 @@ namespace Core::LinAlg
   Matrix<rows, cols, value_type>::Matrix(const Matrix<rows, cols, value_type>& source, bool view)
       : data_(nullptr), isview_(view), isreadonly_(false)
   {
-    DenseError::Checker<(rows != 0) and cols != 0>::matrix_dimensions_cannot_be_zero();
     if (isview_)
     {
       isreadonly_ = true;
@@ -4605,7 +4556,7 @@ namespace Core::LinAlg
   template <unsigned int rows, unsigned int cols, class value_type>
   inline value_type Matrix<rows, cols, value_type>::Determinant() const
   {
-    DenseError::Checker<rows == cols>::cannot_compute_determinant_of_nonsquare_matrix();
+    static_assert(rows == cols, "Cannot compute determinant of non-square matrix.");
     return DenseFunctions::determinant<value_type, rows, cols>(A());
   }
 
@@ -4613,7 +4564,7 @@ namespace Core::LinAlg
   template <unsigned int rows, unsigned int cols, class value_type>
   inline value_type Matrix<rows, cols, value_type>::Invert()
   {
-    DenseError::Checker<rows == cols>::cannot_compute_inverse_of_nonsquare_matrix();
+    static_assert(rows == cols, "Cannot compute inverse of non-square matrix");
     return DenseFunctions::invert<value_type, rows, cols>(A());
   }
 
@@ -4621,7 +4572,7 @@ namespace Core::LinAlg
   inline value_type Matrix<rows, cols, value_type>::Invert(
       const Matrix<rows, cols, value_type>& other)
   {
-    DenseError::Checker<rows == cols>::cannot_compute_inverse_of_nonsquare_matrix();
+    static_assert(rows == cols, "Cannot compute inverse of non-square matrix");
     return DenseFunctions::invert<value_type, rows, cols>(A(), other.values());
   }
 
@@ -4737,8 +4688,7 @@ namespace Core::LinAlg
   template <unsigned int rows, unsigned int cols, class value_type>
   inline value_type& Matrix<rows, cols, value_type>::operator()(unsigned int r)
   {
-    DenseError::Checker<(cols == 1) or
-                        (rows == 1)>::cannot_call_1_d_access_function_on_2_d_matrix();
+    static_assert((cols == 1) or (rows == 1), "cannot call 1-d access function on 2-d matrix");
 #ifdef FOUR_C_DEBUG
     if (r >= (cols == 1 ? rows : cols))
       FOUR_C_THROW("Index %i out of range in Matrix<%i,%i>.", r, rows, cols);
@@ -4749,8 +4699,7 @@ namespace Core::LinAlg
   template <unsigned int rows, unsigned int cols, class value_type>
   inline const value_type& Matrix<rows, cols, value_type>::operator()(unsigned int r) const
   {
-    DenseError::Checker<(cols == 1) or
-                        (rows == 1)>::cannot_call_1_d_access_function_on_2_d_matrix();
+    static_assert((cols == 1) or (rows == 1), "cannot call 1-d access function on 2-d matrix");
 #ifdef FOUR_C_DEBUG
     if (r >= (cols == 1 ? rows : cols))
       FOUR_C_THROW("Index %i out of range in Matrix<%i,%i>.", r, rows, cols);
@@ -4781,6 +4730,10 @@ namespace Core::LinAlg
   class FixedSizeSerialDenseSolver
   {
    private:
+    static_assert(rows > 0, "FixedSizeSerialDenseSolver needs at least one row");
+    static_assert(cols > 0, "FixedSizeSerialDenseSolver needs at least one row");
+    static_assert(rows == cols, "FixedSizeSerialDenseSolver only works for square matrices");
+
     // we do not need these functions
     FixedSizeSerialDenseSolver(const FixedSizeSerialDenseSolver<rows, cols, dim_rhs>&);
     FixedSizeSerialDenseSolver& operator=(const FixedSizeSerialDenseSolver<rows, cols, dim_rhs>&);
@@ -4942,8 +4895,6 @@ namespace Core::LinAlg
         inverted_(false),
         solved_(false)
   {
-    DenseError::Checker<(rows != 0) and (cols != 0)>::matrix_dimensions_cannot_be_zero();
-    DenseError::Checker<rows == cols>::matrix_size_in_solver_must_be_square();
   }
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
